@@ -1123,11 +1123,26 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
 
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption_NamePart& from);
-  UninterpretedOption_NamePart(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption_NamePart&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption_NamePart&& from) noexcept
+      : ::google::protobuf::Message(arena, UninterpretedOption_NamePart_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(UninterpretedOption_NamePart) -
+                   PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) UninterpretedOption_NamePart(arena);
+    } else {
+      ::new (static_cast<void*>(this)) UninterpretedOption_NamePart(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
+  }
+  #else
+  UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption_NamePart&& from) noexcept
       : UninterpretedOption_NamePart(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption.NamePart)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1335,11 +1350,26 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo_Location& from);
-  SourceCodeInfo_Location(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo_Location&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo_Location&& from) noexcept
+      : ::google::protobuf::Message(arena, SourceCodeInfo_Location_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(SourceCodeInfo_Location) -
+                   PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) SourceCodeInfo_Location(arena);
+    } else {
+      ::new (static_cast<void*>(this)) SourceCodeInfo_Location(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
+  }
+  #else
+  SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo_Location&& from) noexcept
       : SourceCodeInfo_Location(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo.Location)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1621,11 +1651,26 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo_Annotation& from);
-  GeneratedCodeInfo_Annotation(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo_Annotation&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo_Annotation&& from) noexcept
+      : ::google::protobuf::Message(arena, GeneratedCodeInfo_Annotation_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(GeneratedCodeInfo_Annotation) -
+                   PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) GeneratedCodeInfo_Annotation(arena);
+    } else {
+      ::new (static_cast<void*>(this)) GeneratedCodeInfo_Annotation(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
+  }
+  #else
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo_Annotation&& from) noexcept
       : GeneratedCodeInfo_Annotation(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1904,11 +1949,26 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   explicit FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_FeatureSupport& from);
-  FieldOptions_FeatureSupport(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_FeatureSupport&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_FeatureSupport&& from) noexcept
+      : ::google::protobuf::Message(arena, FieldOptions_FeatureSupport_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FieldOptions_FeatureSupport) -
+                   PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FieldOptions_FeatureSupport(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FieldOptions_FeatureSupport(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.FeatureSupport)
+  }
+  #else
+  FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_FeatureSupport&& from) noexcept
       : FieldOptions_FeatureSupport(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.FeatureSupport)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -2163,11 +2223,26 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
 
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_EditionDefault& from);
-  FieldOptions_EditionDefault(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_EditionDefault&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_EditionDefault&& from) noexcept
+      : ::google::protobuf::Message(arena, FieldOptions_EditionDefault_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FieldOptions_EditionDefault) -
+                   PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FieldOptions_EditionDefault(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FieldOptions_EditionDefault(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.EditionDefault)
+  }
+  #else
+  FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_EditionDefault&& from) noexcept
       : FieldOptions_EditionDefault(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions.EditionDefault)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -2347,11 +2422,26 @@ class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::prot
 
   explicit FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_VisibilityFeature& from);
-  FeatureSet_VisibilityFeature(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_VisibilityFeature&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_VisibilityFeature&& from) noexcept
+      : ::google::protobuf::internal::ZeroFieldsBase(arena, FeatureSet_VisibilityFeature_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FeatureSet_VisibilityFeature) -
+                   PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FeatureSet_VisibilityFeature(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FeatureSet_VisibilityFeature(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet.VisibilityFeature)
+  }
+  #else
+  FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_VisibilityFeature&& from) noexcept
       : FeatureSet_VisibilityFeature(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet.VisibilityFeature)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -2537,11 +2627,26 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   explicit FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet& from);
-  FeatureSet(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet&& from) noexcept
+      : ::google::protobuf::Message(arena, FeatureSet_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FeatureSet) -
+                   PROTOBUF_FIELD_OFFSET(FeatureSet, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FeatureSet(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FeatureSet(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet)
+  }
+  #else
+  FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet&& from) noexcept
       : FeatureSet(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -3168,11 +3273,26 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions_Declaration& from);
-  ExtensionRangeOptions_Declaration(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions_Declaration&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions_Declaration&& from) noexcept
+      : ::google::protobuf::Message(arena, ExtensionRangeOptions_Declaration_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(ExtensionRangeOptions_Declaration) -
+                   PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) ExtensionRangeOptions_Declaration(arena);
+    } else {
+      ::new (static_cast<void*>(this)) ExtensionRangeOptions_Declaration(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
+  }
+  #else
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions_Declaration&& from) noexcept
       : ExtensionRangeOptions_Declaration(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -3427,10 +3547,12 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
 
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from);
-  EnumDescriptorProto_EnumReservedRange(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto_EnumReservedRange&& from) noexcept
-      : EnumDescriptorProto_EnumReservedRange(arena) {
-    *this = ::std::move(from);
+  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto_EnumReservedRange&& from) noexcept
+      : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_class_data_.base()) {
+    ::google::protobuf::Message::TrivialMoveConstructImpl<
+        ::google::protobuf::UnknownFieldSet, PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_),
+        sizeof(_impl_)>(arena, ::std::move(from));
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
@@ -3634,10 +3756,12 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
 
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from);
-  DescriptorProto_ReservedRange(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ReservedRange&& from) noexcept
-      : DescriptorProto_ReservedRange(arena) {
-    *this = ::std::move(from);
+  DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ReservedRange&& from) noexcept
+      : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_class_data_.base()) {
+    ::google::protobuf::Message::TrivialMoveConstructImpl<
+        ::google::protobuf::UnknownFieldSet, PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_),
+        sizeof(_impl_)>(arena, ::std::move(from));
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
@@ -3846,11 +3970,26 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   explicit UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption& from);
-  UninterpretedOption(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption&& from) noexcept
+      : ::google::protobuf::Message(arena, UninterpretedOption_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(UninterpretedOption) -
+                   PROTOBUF_FIELD_OFFSET(UninterpretedOption, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) UninterpretedOption(arena);
+    } else {
+      ::new (static_cast<void*>(this)) UninterpretedOption(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
+  }
+  #else
+  UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption&& from) noexcept
       : UninterpretedOption(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.UninterpretedOption)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4150,11 +4289,26 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   explicit SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo& from);
-  SourceCodeInfo(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo&& from) noexcept
+      : ::google::protobuf::Message(arena, SourceCodeInfo_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(SourceCodeInfo) -
+                   PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) SourceCodeInfo(arena);
+    } else {
+      ::new (static_cast<void*>(this)) SourceCodeInfo(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
+  }
+  #else
+  SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo&& from) noexcept
       : SourceCodeInfo(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceCodeInfo)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4541,11 +4695,26 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
 
   explicit GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo& from);
-  GeneratedCodeInfo(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo&& from) noexcept
+      : ::google::protobuf::Message(arena, GeneratedCodeInfo_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(GeneratedCodeInfo) -
+                   PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) GeneratedCodeInfo(arena);
+    } else {
+      ::new (static_cast<void*>(this)) GeneratedCodeInfo(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
+  }
+  #else
+  GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo&& from) noexcept
       : GeneratedCodeInfo(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.GeneratedCodeInfo)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4746,11 +4915,26 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
 
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
-  FeatureSetDefaults_FeatureSetEditionDefault(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
+      : ::google::protobuf::Message(arena, FeatureSetDefaults_FeatureSetEditionDefault_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FeatureSetDefaults_FeatureSetEditionDefault) -
+                   PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FeatureSetDefaults_FeatureSetEditionDefault(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FeatureSetDefaults_FeatureSetEditionDefault(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+  }
+  #else
+  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
       : FeatureSetDefaults_FeatureSetEditionDefault(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4980,11 +5164,26 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   explicit ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceOptions& from);
-  ServiceOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, ServiceOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(ServiceOptions) -
+                   PROTOBUF_FIELD_OFFSET(ServiceOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) ServiceOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) ServiceOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
+  }
+  #else
+  ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceOptions&& from) noexcept
       : ServiceOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -5407,11 +5606,26 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   explicit OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofOptions& from);
-  OneofOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, OneofOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(OneofOptions) -
+                   PROTOBUF_FIELD_OFFSET(OneofOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) OneofOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) OneofOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
+  }
+  #else
+  OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofOptions&& from) noexcept
       : OneofOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -5820,11 +6034,26 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   explicit MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodOptions& from);
-  MethodOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, MethodOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(MethodOptions) -
+                   PROTOBUF_FIELD_OFFSET(MethodOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) MethodOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) MethodOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
+  }
+  #else
+  MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodOptions&& from) noexcept
       : MethodOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -6282,11 +6511,26 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   explicit MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MessageOptions& from);
-  MessageOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MessageOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MessageOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, MessageOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(MessageOptions) -
+                   PROTOBUF_FIELD_OFFSET(MessageOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) MessageOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) MessageOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
+  }
+  #else
+  MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MessageOptions&& from) noexcept
       : MessageOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.MessageOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -6765,11 +7009,26 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   explicit FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileOptions& from);
-  FileOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, FileOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FileOptions) -
+                   PROTOBUF_FIELD_OFFSET(FileOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FileOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FileOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
+  }
+  #else
+  FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileOptions&& from) noexcept
       : FileOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FileOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -7515,11 +7774,26 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   explicit FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions& from);
-  FieldOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, FieldOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FieldOptions) -
+                   PROTOBUF_FIELD_OFFSET(FieldOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FieldOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FieldOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
+  }
+  #else
+  FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions&& from) noexcept
       : FieldOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -8207,11 +8481,26 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
 
   explicit FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults& from);
-  FeatureSetDefaults(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults&& from) noexcept
+      : ::google::protobuf::Message(arena, FeatureSetDefaults_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FeatureSetDefaults) -
+                   PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FeatureSetDefaults(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FeatureSetDefaults(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults)
+  }
+  #else
+  FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults&& from) noexcept
       : FeatureSetDefaults(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSetDefaults)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -8440,11 +8729,26 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   explicit ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions& from);
-  ExtensionRangeOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, ExtensionRangeOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(ExtensionRangeOptions) -
+                   PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) ExtensionRangeOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) ExtensionRangeOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
+  }
+  #else
+  ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions&& from) noexcept
       : ExtensionRangeOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ExtensionRangeOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -8908,11 +9212,26 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   explicit EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueOptions& from);
-  EnumValueOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, EnumValueOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(EnumValueOptions) -
+                   PROTOBUF_FIELD_OFFSET(EnumValueOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) EnumValueOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) EnumValueOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
+  }
+  #else
+  EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueOptions&& from) noexcept
       : EnumValueOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -9367,11 +9686,26 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   explicit EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumOptions& from);
-  EnumOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumOptions&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumOptions&& from) noexcept
+      : ::google::protobuf::Message(arena, EnumOptions_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(EnumOptions) -
+                   PROTOBUF_FIELD_OFFSET(EnumOptions, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) EnumOptions(arena);
+    } else {
+      ::new (static_cast<void*>(this)) EnumOptions(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
+  }
+  #else
+  EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumOptions&& from) noexcept
       : EnumOptions(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumOptions)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -9822,11 +10156,26 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
 
   explicit OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofDescriptorProto& from);
-  OneofDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofDescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofDescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, OneofDescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(OneofDescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) OneofDescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) OneofDescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
+  }
+  #else
+  OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofDescriptorProto&& from) noexcept
       : OneofDescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.OneofDescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -10043,11 +10392,26 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   explicit MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodDescriptorProto& from);
-  MethodDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodDescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodDescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, MethodDescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(MethodDescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) MethodDescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) MethodDescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
+  }
+  #else
+  MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodDescriptorProto&& from) noexcept
       : MethodDescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.MethodDescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -10330,11 +10694,26 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   explicit FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldDescriptorProto& from);
-  FieldDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldDescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldDescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, FieldDescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FieldDescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FieldDescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FieldDescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
+  }
+  #else
+  FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldDescriptorProto&& from) noexcept
       : FieldDescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldDescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -10754,11 +11133,26 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
 
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueDescriptorProto& from);
-  EnumValueDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueDescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueDescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, EnumValueDescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(EnumValueDescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) EnumValueDescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) EnumValueDescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
+  }
+  #else
+  EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueDescriptorProto&& from) noexcept
       : EnumValueDescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValueDescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -10989,11 +11383,26 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
 
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ExtensionRange& from);
-  DescriptorProto_ExtensionRange(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ExtensionRange&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ExtensionRange&& from) noexcept
+      : ::google::protobuf::Message(arena, DescriptorProto_ExtensionRange_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(DescriptorProto_ExtensionRange) -
+                   PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) DescriptorProto_ExtensionRange(arena);
+    } else {
+      ::new (static_cast<void*>(this)) DescriptorProto_ExtensionRange(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
+  }
+  #else
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ExtensionRange&& from) noexcept
       : DescriptorProto_ExtensionRange(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ExtensionRange)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -11219,11 +11628,26 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
 
   explicit ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceDescriptorProto& from);
-  ServiceDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceDescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceDescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, ServiceDescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(ServiceDescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) ServiceDescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) ServiceDescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
+  }
+  #else
+  ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceDescriptorProto&& from) noexcept
       : ServiceDescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.ServiceDescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -11460,11 +11884,26 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   explicit EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto& from);
-  EnumDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, EnumDescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(EnumDescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) EnumDescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) EnumDescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
+  }
+  #else
+  EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto&& from) noexcept
       : EnumDescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -11761,11 +12200,26 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   explicit DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto& from);
-  DescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, DescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(DescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(DescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) DescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) DescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
+  }
+  #else
+  DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto&& from) noexcept
       : DescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -12163,11 +12617,26 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   explicit FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorProto& from);
-  FileDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorProto&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorProto&& from) noexcept
+      : ::google::protobuf::Message(arena, FileDescriptorProto_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FileDescriptorProto) -
+                   PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FileDescriptorProto(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FileDescriptorProto(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
+  }
+  #else
+  FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorProto&& from) noexcept
       : FileDescriptorProto(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorProto)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -12626,11 +13095,26 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   explicit FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorSet& from);
-  FileDescriptorSet(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorSet&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorSet&& from) noexcept
+      : ::google::protobuf::Message(arena, FileDescriptorSet_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(FileDescriptorSet) -
+                   PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) FileDescriptorSet(arena);
+    } else {
+      ::new (static_cast<void*>(this)) FileDescriptorSet(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
+  }
+  #else
+  FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorSet&& from) noexcept
       : FileDescriptorSet(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.FileDescriptorSet)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,

@@ -97,6 +97,8 @@ class MessageGenerator {
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* p);
 
+  void GenerateMoveConstructorBody(io::Printer* p);
+
   void GenerateZeroInitFields(io::Printer* p) const;
   void GenerateCopyInitFields(io::Printer* p) const;
 

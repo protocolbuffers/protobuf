@@ -450,6 +450,42 @@ bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
   }
 }
 
+bool HasTrivialDestructiveMove(const FieldDescriptor* field,
+                               const Options& options) {
+  // RepeatedField/RepeatedPtrField/Map are supported.
+  if (field->is_repeated() || field->is_map()) return true;
+
+  ABSL_CHECK(!ShouldSplit(field, options))
+      << "Split fields are not destructibly moved";
+
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      // Note: Lazy fields are supported too.
+      return true;
+    case FieldDescriptor::CPPTYPE_STRING:
+      if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
+        // We don't control the ABI of absl::Cord, so no.
+        return false;
+      }
+      if (IsStringInlined(field, options)) {
+        // We have an inline std::string, so we have to go through their
+        // methods.
+        return false;
+      }
+      return true;
+    default:
+      ABSL_LOG(FATAL);
+  }
+}
+
 std::string ClassName(const Descriptor* descriptor) {
   const Descriptor* parent = descriptor->containing_type();
   std::string res;

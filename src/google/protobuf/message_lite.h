@@ -981,6 +981,21 @@ class PROTOBUF_EXPORT MessageLite {
       : _internal_metadata_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
+  // To reduce code size we make the core of the move constructors
+  // out of line. This allows more sharing.
+  // We use a template for the size to allow optimizations on the memcpy call.
+  template <typename UF, size_t impl_offset, size_t impl_size>
+  PROTOBUF_NOINLINE void TrivialMoveConstructImpl(Arena* arena,
+                                                  MessageLite&& from) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      _internal_metadata_.InternalSwap(&from._internal_metadata_);
+    } else {
+      _internal_metadata_.MergeFrom<UF>(from._internal_metadata_);
+    }
+    memcpy(reinterpret_cast<char*>(this) + impl_offset,
+           reinterpret_cast<const char*>(&from) + impl_offset, impl_size);
+  }
+
   // GetClassData() returns a pointer to a ClassData struct which
   // exists in global memory and is unique to each subclass.  This uniqueness
   // property is used in order to quickly determine whether two messages are

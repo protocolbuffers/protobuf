@@ -253,11 +253,26 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from);
-  Version(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
+      : ::google::protobuf::Message(arena, Version_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(Version) -
+                   PROTOBUF_FIELD_OFFSET(Version, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) Version(arena);
+    } else {
+      ::new (static_cast<void*>(this)) Version(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
+  }
+  #else
+  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
       : Version(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -493,11 +508,26 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from);
-  CodeGeneratorResponse_File(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
+      : ::google::protobuf::Message(arena, CodeGeneratorResponse_File_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(CodeGeneratorResponse_File) -
+                   PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) CodeGeneratorResponse_File(arena);
+    } else {
+      ::new (static_cast<void*>(this)) CodeGeneratorResponse_File(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
+  }
+  #else
+  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
       : CodeGeneratorResponse_File(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -747,11 +777,26 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from);
-  CodeGeneratorResponse(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
+      : ::google::protobuf::Message(arena, CodeGeneratorResponse_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(CodeGeneratorResponse) -
+                   PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) CodeGeneratorResponse(arena);
+    } else {
+      ::new (static_cast<void*>(this)) CodeGeneratorResponse(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
+  }
+  #else
+  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
       : CodeGeneratorResponse(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1034,11 +1079,26 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from);
-  CodeGeneratorRequest(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
+      : ::google::protobuf::Message(arena, CodeGeneratorRequest_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(CodeGeneratorRequest) -
+                   PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) CodeGeneratorRequest(arena);
+    } else {
+      ::new (static_cast<void*>(this)) CodeGeneratorRequest(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
+  }
+  #else
+  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
       : CodeGeneratorRequest(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,

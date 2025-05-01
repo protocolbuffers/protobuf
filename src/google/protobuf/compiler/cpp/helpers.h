@@ -114,6 +114,9 @@ bool CanClearByZeroing(const FieldDescriptor* field);
 // Determines if swap can be implemented via memcpy.
 bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
                     MessageSCCAnalyzer* scc_analyzer);
+// Returns true if it is safe to use memcpy for a destructive move.
+bool HasTrivialDestructiveMove(const FieldDescriptor* field,
+                               const Options& options);
 
 PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
 PROTOC_EXPORT std::string ClassName(const EnumDescriptor* enum_descriptor);

@@ -43,6 +43,9 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
   using Message::Message;
   ~ZeroFieldsBase() PROTOBUF_OVERRIDE;
 
+  void SharedCtor(Arena* arena) {
+    // empty
+  }
   static void SharedDtor(MessageLite& msg);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   static void CopyImpl(Message& to, const Message& from);

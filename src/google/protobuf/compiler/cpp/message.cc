@@ -2113,6 +2113,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                 void InternalSwap($classname$* $nonnull$ other);
               )cc");
         }},
+       {"move_ctor", [&] { GenerateMoveConstructorBody(p); }},
        {"arena_dtor",
         [&] {
           switch (NeedsArenaDestructor()) {
@@ -2352,12 +2353,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           explicit $classname$($pb$::Arena* $nullable$ arena);
           $classname$($pb$::Arena* $nullable$ arena, const $classname$& from);
-          $classname$(
-              //~
-              $pb$::Arena* $nullable$ arena, $classname$&& from) noexcept
-              : $classname$(arena) {
-            *this = ::std::move(from);
-          }
+          $move_ctor$;
           $arena_dtor$;
           const $pbi$::ClassData* $nonnull$ GetClassData() const PROTOBUF_FINAL;
           static void* $nonnull$ PlacementNew_(
@@ -3526,6 +3522,76 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
               // @@protoc_insertion_point(copy_constructor:$full_name$)
             }
           )cc");
+}
+
+void MessageGenerator::GenerateMoveConstructorBody(io::Printer* p) {
+  const auto tail = [&] {
+    p->Emit(R"cc(
+      $WeakDescriptorSelfPin$;
+      // @@protoc_insertion_point(arena_constructor:$full_name$)
+    )cc");
+  };
+
+  const auto simple_constructor = [&] {
+    p->Emit({{"tail", tail}}, R"cc(
+      $classname$($pb$::Arena* $nullable$ arena, $classname$&& from) noexcept
+          : $classname$(arena) {
+        *this = ::std::move(from);
+        $tail$;
+      }
+    )cc");
+  };
+
+  // Note: Not checking for extensions. ExtensionSet is supported.
+  // Note: Not checking for oneofs. They are all supported.
+  for (const auto* field : optimized_order_) {
+    // We don't care about split fields. We can copy the split
+    // pointer.
+    if (ShouldSplit(field, options_)) continue;
+    if (!HasTrivialDestructiveMove(field, options_)) {
+      simple_constructor();
+      return;
+    }
+  }
+
+  // If we can trivial copy, don't bother resetting the source (other than
+  // _internal_metadata_).
+  if (CanUseTrivialCopy()) {
+    p->Emit({{"tail", tail}}, R"cc(
+      $classname$($pb$::Arena* $nullable$ arena, $classname$&& from) noexcept
+          : $superclass$(arena, $classname$_class_data_.base()) {
+        $superclass$::TrivialMoveConstructImpl<
+            $unknown_fields_type$, PROTOBUF_FIELD_OFFSET($classname$, _impl_),
+            sizeof(_impl_)>(arena, ::std::move(from));
+        $tail$;
+      }
+    )cc");
+    return;
+  }
+
+  // For ASan builds we can't do this because there might be poisoned bytes in
+  // repeated fields and such. Use the slower approach, which would also apply
+  // the poisoning to the destination.
+  p->Emit({{"tail", tail}, {"simple_constructor", simple_constructor}}, R"cc(
+#if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+    $classname$($pb$::Arena* $nullable$ arena, $classname$&& from) noexcept
+        : $superclass$(arena, $classname$_class_data_.base()) {
+      if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+        ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+                 sizeof($classname$) -
+                     PROTOBUF_FIELD_OFFSET($classname$, _internal_metadata_));
+        //~ Reset the moved-from via default constructor.
+        ::new (static_cast<void*>(&from)) $classname$(arena);
+      } else {
+        //~ Reconstruct self but calling the copy constructor instead.
+        ::new (static_cast<void*>(this)) $classname$(arena, from);
+      }
+      $tail$;
+    }
+#else
+    $simple_constructor$;
+#endif
+  )cc");
 }
 
 void MessageGenerator::GenerateStructors(io::Printer* p) {

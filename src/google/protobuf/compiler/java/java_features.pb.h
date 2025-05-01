@@ -249,11 +249,26 @@ class PROTOC_EXPORT JavaFeatures_NestInFileClassFeature final : public ::google:
 
   explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures_NestInFileClassFeature& from);
-  JavaFeatures_NestInFileClassFeature(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept
+  #if !defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept
+      : ::google::protobuf::internal::ZeroFieldsBase(arena, JavaFeatures_NestInFileClassFeature_class_data_.base()) {
+    if (ABSL_PREDICT_TRUE(from.GetArena() == arena)) {
+      ::memcpy(&_internal_metadata_, &from._internal_metadata_,
+               sizeof(JavaFeatures_NestInFileClassFeature) -
+                   PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature, _internal_metadata_));
+      ::new (static_cast<void*>(&from)) JavaFeatures_NestInFileClassFeature(arena);
+    } else {
+      ::new (static_cast<void*>(this)) JavaFeatures_NestInFileClassFeature(arena, from);
+    }
+    // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures.NestInFileClassFeature)
+  }
+  #else
+  JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept
       : JavaFeatures_NestInFileClassFeature(arena) {
     *this = ::std::move(from);
+    // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures.NestInFileClassFeature)
   }
+  #endif
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -433,10 +448,12 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 
   explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
-  JavaFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
-      : JavaFeatures(arena) {
-    *this = ::std::move(from);
+  JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
+      : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()) {
+    ::google::protobuf::Message::TrivialMoveConstructImpl<
+        ::google::protobuf::UnknownFieldSet, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_),
+        sizeof(_impl_)>(arena, ::std::move(from));
+    // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(

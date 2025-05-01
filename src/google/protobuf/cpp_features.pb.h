@@ -234,10 +234,12 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
   explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
-  CppFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept
-      : CppFeatures(arena) {
-    *this = ::std::move(from);
+  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept
+      : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()) {
+    ::google::protobuf::Message::TrivialMoveConstructImpl<
+        ::google::protobuf::UnknownFieldSet, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_),
+        sizeof(_impl_)>(arena, ::std::move(from));
+    // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
