@@ -1507,9 +1507,10 @@ void Reflection::ClearField(Message* message,
                 MutableRaw<InlinedStringField>(message, field)->ClearToEmpty();
               } else if (IsMicroString(field)) {
                 if (field->has_default_value()) {
-                  // TODO: Use an unowned block instead.
                   MutableRaw<MicroString>(message, field)
-                      ->Set(field->default_value_string(), message->GetArena());
+                      ->ClearToDefault(GetRaw<MicroString>(
+                                           *schema_.default_instance_, field),
+                                       message->GetArena());
                 } else {
                   MutableRaw<MicroString>(message, field)->Clear();
                 }

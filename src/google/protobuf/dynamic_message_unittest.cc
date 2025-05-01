@@ -32,6 +32,7 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/edition_unittest.pb.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
@@ -67,6 +68,60 @@ void AddUnittestDescriptors(
   add(google::protobuf::DescriptorProto::descriptor());
   add(pb::CppFeatures::descriptor());
   add(edition_unittest::TestAllTypes::descriptor());
+}
+
+TEST(DynamicMessageTest,
+     MicroStringFieldsWithDefaultValuesDontCopyTheDefaultOnCreate) {
+  if (!internal::EnableExperimentalMicroString()) {
+    GTEST_SKIP() << "MicroString is not enabled.";
+  }
+  DynamicMessageFactory factory;
+  const auto& prototype =
+      factory.GetPrototype(edition_unittest::TestAllTypes::descriptor());
+  std::unique_ptr<Message> msg(prototype->New()), msg2(prototype->New());
+
+  const auto* field =
+      edition_unittest::TestAllTypes::descriptor()->FindFieldByName(
+          "default_string");
+
+  Reflection::ScratchSpace scratch;
+  absl::string_view str =
+      msg->GetReflection()->GetStringView(*msg, field, scratch);
+  absl::string_view str2 =
+      msg2->GetReflection()->GetStringView(*msg2, field, scratch);
+
+  EXPECT_EQ(str, "hello");
+  EXPECT_EQ(str2, "hello");
+  // But also both point to the exact same buffer.
+  EXPECT_EQ(static_cast<const void*>(str.data()),
+            static_cast<const void*>(str2.data()));
+}
+
+TEST(DynamicMessageTest,
+     MicroStringFieldsWithDefaultValuesResetProperlyOnClear) {
+  if (!internal::EnableExperimentalMicroString()) {
+    GTEST_SKIP() << "MicroString is not enabled.";
+  }
+  DynamicMessageFactory factory;
+  const auto& prototype =
+      factory.GetPrototype(edition_unittest::TestAllTypes::descriptor());
+  std::unique_ptr<Message> msg(prototype->New());
+
+  const auto* field =
+      edition_unittest::TestAllTypes::descriptor()->FindFieldByName(
+          "default_string");
+  const auto* ref = msg->GetReflection();
+
+  Reflection::ScratchSpace scratch;
+  absl::string_view default_value = ref->GetStringView(*msg, field, scratch);
+  ref->SetString(msg.get(), field, std::string("foo"));
+  EXPECT_EQ("foo", ref->GetStringView(*msg, field, scratch));
+  msg->Clear();
+  EXPECT_EQ(default_value, ref->GetStringView(*msg, field, scratch));
+  // But also points to the original default buffer.
+  EXPECT_EQ(
+      static_cast<const void*>(ref->GetStringView(*msg, field, scratch).data()),
+      static_cast<const void*>(default_value.data()));
 }
 
 class DynamicMessageTest

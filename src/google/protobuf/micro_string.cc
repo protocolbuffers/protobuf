@@ -25,6 +25,23 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+MicroString MicroString::MakeDefaultValuePrototype(
+    absl::string_view default_value) {
+  if (default_value.empty()) return MicroString();
+  return MicroString(*new auto(MakeUnownedPayload(default_value)));
+}
+
+void MicroString::DestroyDefaultValuePrototype() {
+  if (is_inline()) {
+    // The empty case
+    return;
+  }
+  // This is a prototype dynamic object so we actually own the unowned payload.
+  ABSL_DCHECK(is_large_rep());
+  ABSL_DCHECK_EQ(+large_rep_kind(), +kUnowned);
+  ::operator delete(large_rep());
+}
+
 void MicroString::DestroySlow() {
   if (is_micro_rep()) {
     internal::SizedDelete(micro_rep(), MicroRepSize(micro_rep()->capacity));
@@ -296,6 +313,20 @@ void MicroString::ClearToDefault(const UnownedPayload& unowned_input,
     Set(input, arena);
   } else {
     SetUnowned(unowned_input, arena);
+  }
+}
+
+void MicroString::ClearToDefault(const MicroString& other, Arena* arena) {
+  auto input = other.Get();
+  if (arena != nullptr && Capacity() >= input.size()) {
+    // If we are in an arena and the input fits in the existing capacity, use
+    // that instead.
+    Set(input, arena);
+  } else {
+    // Otherwise, set to the unowned instance.
+    ABSL_DCHECK_EQ(+other.large_rep_kind(), +kUnowned);
+    if (arena == nullptr) Destroy();
+    rep_ = other.rep_;
   }
 }
 
