@@ -68,11 +68,7 @@ import javax.annotation.Nullable;
 
 /**
  * Utility class to convert protobuf messages to/from the <a href=
- * 'https://developers.google.com/protocol-buffers/docs/proto3#json'>Proto3 JSON format.</a>
- * Only proto3 features are supported. Proto2 only features such as extensions and unknown fields
- * are discarded in the conversion. That is, when converting proto2 messages to JSON format,
- * extensions and unknown fields are treated as if they do not exist. This applies to proto2
- * messages embedded in proto3 messages as well.
+ * 'https://protobuf.dev/programming-guides/json/'>ProtoJSON format.</a>
  */
 public class JsonFormat {
   private static final Logger logger = Logger.getLogger(JsonFormat.class.getName());
