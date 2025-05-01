@@ -1002,7 +1002,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   ~UninterpretedOption_NamePart() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(UninterpretedOption_NamePart* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(UninterpretedOption_NamePart* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(UninterpretedOption_NamePart));
   }
@@ -1217,7 +1217,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   ~SourceCodeInfo_Location() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(SourceCodeInfo_Location* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(SourceCodeInfo_Location* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(SourceCodeInfo_Location));
   }
@@ -1498,7 +1498,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   ~GeneratedCodeInfo_Annotation() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(GeneratedCodeInfo_Annotation));
   }
@@ -1776,7 +1776,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   ~FieldOptions_FeatureSupport() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FieldOptions_FeatureSupport* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FieldOptions_FeatureSupport* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FieldOptions_FeatureSupport));
   }
@@ -2012,7 +2012,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   ~FieldOptions_EditionDefault() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FieldOptions_EditionDefault* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FieldOptions_EditionDefault* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FieldOptions_EditionDefault));
   }
@@ -2221,7 +2221,7 @@ class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::prot
   inline FeatureSet_VisibilityFeature() : FeatureSet_VisibilityFeature(nullptr) {}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FeatureSet_VisibilityFeature* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FeatureSet_VisibilityFeature* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FeatureSet_VisibilityFeature));
   }
@@ -2391,7 +2391,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   ~FeatureSet() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FeatureSet* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FeatureSet* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FeatureSet));
   }
@@ -3006,7 +3006,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   ~ExtensionRangeOptions_Declaration() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(ExtensionRangeOptions_Declaration));
   }
@@ -3260,7 +3260,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   ~EnumDescriptorProto_EnumReservedRange() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(EnumDescriptorProto_EnumReservedRange));
   }
@@ -3465,7 +3465,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   ~DescriptorProto_ReservedRange() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(DescriptorProto_ReservedRange* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(DescriptorProto_ReservedRange* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(DescriptorProto_ReservedRange));
   }
@@ -3670,7 +3670,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   ~UninterpretedOption() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(UninterpretedOption* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(UninterpretedOption* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(UninterpretedOption));
   }
@@ -3967,7 +3967,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   ~SourceCodeInfo() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(SourceCodeInfo* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(SourceCodeInfo* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(SourceCodeInfo));
   }
@@ -4348,7 +4348,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   ~GeneratedCodeInfo() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(GeneratedCodeInfo* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(GeneratedCodeInfo* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(GeneratedCodeInfo));
   }
@@ -4546,7 +4546,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   ~FeatureSetDefaults_FeatureSetEditionDefault() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FeatureSetDefaults_FeatureSetEditionDefault));
   }
@@ -4777,7 +4777,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   ~ServiceOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(ServiceOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(ServiceOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(ServiceOptions));
   }
@@ -5188,7 +5188,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   ~OneofOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(OneofOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(OneofOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(OneofOptions));
   }
@@ -5586,7 +5586,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   ~MethodOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(MethodOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(MethodOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(MethodOptions));
   }
@@ -6031,7 +6031,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   ~MessageOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(MessageOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(MessageOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(MessageOptions));
   }
@@ -6494,7 +6494,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   ~FileOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FileOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FileOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FileOptions));
   }
@@ -7210,7 +7210,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   ~FieldOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FieldOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FieldOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FieldOptions));
   }
@@ -7875,7 +7875,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   ~FeatureSetDefaults() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FeatureSetDefaults* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FeatureSetDefaults* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FeatureSetDefaults));
   }
@@ -8105,7 +8105,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   ~ExtensionRangeOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(ExtensionRangeOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(ExtensionRangeOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(ExtensionRangeOptions));
   }
@@ -8556,7 +8556,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   ~EnumValueOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(EnumValueOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(EnumValueOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(EnumValueOptions));
   }
@@ -8997,7 +8997,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   ~EnumOptions() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(EnumOptions* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(EnumOptions* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(EnumOptions));
   }
@@ -9434,7 +9434,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   ~OneofDescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(OneofDescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(OneofDescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(OneofDescriptorProto));
   }
@@ -9653,7 +9653,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   ~MethodDescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(MethodDescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(MethodDescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(MethodDescriptorProto));
   }
@@ -9934,7 +9934,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   ~FieldDescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FieldDescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FieldDescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FieldDescriptorProto));
   }
@@ -10347,7 +10347,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   ~EnumValueDescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(EnumValueDescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(EnumValueDescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(EnumValueDescriptorProto));
   }
@@ -10579,7 +10579,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   ~DescriptorProto_ExtensionRange() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(DescriptorProto_ExtensionRange* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(DescriptorProto_ExtensionRange* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(DescriptorProto_ExtensionRange));
   }
@@ -10806,7 +10806,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   ~ServiceDescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(ServiceDescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(ServiceDescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(ServiceDescriptorProto));
   }
@@ -11044,7 +11044,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   ~EnumDescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(EnumDescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(EnumDescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(EnumDescriptorProto));
   }
@@ -11339,7 +11339,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ~DescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(DescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(DescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(DescriptorProto));
   }
@@ -11730,7 +11730,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   ~FileDescriptorProto() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FileDescriptorProto* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FileDescriptorProto* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FileDescriptorProto));
   }
@@ -12179,7 +12179,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   ~FileDescriptorSet() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(FileDescriptorSet* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(FileDescriptorSet* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(FileDescriptorSet));
   }

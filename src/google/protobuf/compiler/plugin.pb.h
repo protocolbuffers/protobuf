@@ -137,7 +137,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   ~Version() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Version* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(Version* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Version));
   }
@@ -373,7 +373,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   ~CodeGeneratorResponse_File() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CodeGeneratorResponse_File* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(CodeGeneratorResponse_File* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorResponse_File));
   }
@@ -623,7 +623,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   ~CodeGeneratorResponse() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CodeGeneratorResponse* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(CodeGeneratorResponse* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorResponse));
   }
@@ -900,7 +900,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   ~CodeGeneratorRequest() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CodeGeneratorRequest* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(CodeGeneratorRequest* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CodeGeneratorRequest));
   }

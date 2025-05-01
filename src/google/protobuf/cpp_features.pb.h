@@ -118,7 +118,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   ~CppFeatures() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(CppFeatures* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(CppFeatures* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(CppFeatures));
   }

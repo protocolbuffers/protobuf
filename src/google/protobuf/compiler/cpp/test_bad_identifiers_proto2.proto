@@ -173,6 +173,8 @@ message TestConflictingSymbolNames {
   // For clashing local variables in Serialize and ByteSize calculation.
   optional string target = 38;
 
+  map<int32, string> map_field = 57;
+
   // clang-format off
   extensions 1000 to max [verification = UNVERIFIED];  // NO_PROTO3
   // clang-format on
@@ -189,6 +191,10 @@ message MergeFrom {}
 message GetMetadata {}
 message Clear {}
 message IsInitialized {}
+
+// Duplicate some of the symbols but at package scope.
+message int32 {}
+message std {}
 
 extend TestConflictingSymbolNames.BadKnownNamesValues {  // NO_PROTO3
   optional int32 unknown_fields = 11;                    // NO_PROTO3

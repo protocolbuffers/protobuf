@@ -160,7 +160,7 @@ class PROTOC_EXPORT JavaFeatures_NestInFileClassFeature final : public ::google:
   inline JavaFeatures_NestInFileClassFeature() : JavaFeatures_NestInFileClassFeature(nullptr) {}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(JavaFeatures_NestInFileClassFeature* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(JavaFeatures_NestInFileClassFeature));
   }
@@ -329,7 +329,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   ~JavaFeatures() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(JavaFeatures* PROTOBUF_NONNULL msg, std::destroying_delete_t) {
+  void operator delete(JavaFeatures* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
     SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(JavaFeatures));
   }
