@@ -52,9 +52,12 @@ message GoFeatures {
     feature_support = {
       edition_introduced: EDITION_2023,
     },
-    edition_defaults = { edition: EDITION_LEGACY, value: "API_LEVEL_UNSPECIFIED" },
+    edition_defaults = {
+      edition: EDITION_LEGACY,
+      value: "API_LEVEL_UNSPECIFIED"
+    },
     edition_defaults = { edition: EDITION_2024, value: "API_OPAQUE" }
-   ];
+  ];
 
   enum StripEnumPrefix {
     STRIP_ENUM_PREFIX_UNSPECIFIED = 0;
