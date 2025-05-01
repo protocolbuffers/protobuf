@@ -153,6 +153,14 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: mkruskal@, natebrennan@
 #define PROTOBUF_FUTURE_REMOVE_ADD_IGNORE_CRITERIA 1
 
+// Marks several logically constant operations on Repeated*Field as nodiscard.
+// Owner: ckennelly@, mkruskal@
+#define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
+
+#else
+
+#define PROTOBUF_FUTURE_ADD_NODISCARD
+
 #endif
 
 // Introducing a future-breaking change guard for descriptor database migration.

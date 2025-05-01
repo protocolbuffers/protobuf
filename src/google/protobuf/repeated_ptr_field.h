@@ -272,7 +272,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // application code.
 
   template <typename TypeHandler>
-  const Value<TypeHandler>& Get(int index) const {
+  PROTOBUF_FUTURE_ADD_NODISCARD const Value<TypeHandler>& Get(int index) const {
     if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kReturnDefault) {
       if (ABSL_PREDICT_FALSE(index < 0 || index >= current_size_)) {
         // `default_instance()` is not supported for MessageLite and Message.
@@ -330,7 +330,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Returns true if there are no preallocated elements in the array.
-  bool PrepareForParse() { return allocated_size() == current_size_; }
+  PROTOBUF_FUTURE_ADD_NODISCARD bool PrepareForParse() {
+    return allocated_size() == current_size_;
+  }
 
   // Similar to `AddAllocated` but faster.
   //
@@ -488,7 +490,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  [[nodiscard]] Value<TypeHandler>* ReleaseLast() {
+  PROTOBUF_FUTURE_ADD_NODISCARD Value<TypeHandler>* ReleaseLast() {
     Value<TypeHandler>* result = UnsafeArenaReleaseLast<TypeHandler>();
     // Now perform a copy if we're on an arena.
     Arena* arena = GetArena();
@@ -1013,11 +1015,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   ~RepeatedPtrField();
 
-  bool empty() const;
-  int size() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
 
-  const_reference Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  pointer Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer Mutable(int index)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Unlike std::vector, adding an element to a RepeatedPtrField doesn't always
   // make a new element; it might re-use an element left over from when the
@@ -1045,15 +1049,19 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   template <typename Iter>
   void Add(Iter begin, Iter end);
 
-  const_reference operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return Get(index);
   }
-  reference operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator[](int index)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return *Mutable(index);
   }
 
-  const_reference at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Removes the last element in the array.
   // Ownership of the element is retained by the array.
@@ -1082,13 +1090,14 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // array is grown, it will always be at least doubled in size.
   void Reserve(int new_size);
 
-  int Capacity() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  Element**
-  mutable_data() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const Element* const* data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD Element** mutable_data()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const Element* const* data() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Swaps entire contents with "other". If they are on separate arenas, then
   // copies data.
@@ -1103,36 +1112,48 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
-  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  reverse_iterator rbegin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rbegin()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(end());
   }
-  const_reverse_iterator rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
+  rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(end());
   }
-  reverse_iterator rend() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rend()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(begin());
   }
-  const_reverse_iterator rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
+  rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(begin());
   }
 
-  pointer_iterator pointer_begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_pointer_iterator pointer_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  pointer_iterator pointer_end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_pointer_iterator pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer_iterator pointer_begin()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_pointer_iterator
+  pointer_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer_iterator pointer_end()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_pointer_iterator
+  pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Returns (an estimate of) the number of bytes used by the repeated field,
   // excluding sizeof(*this).
-  size_t SpaceUsedExcludingSelfLong() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD size_t SpaceUsedExcludingSelfLong() const;
 
-  int SpaceUsedExcludingSelf() const {
+  PROTOBUF_FUTURE_ADD_NODISCARD int SpaceUsedExcludingSelf() const {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
@@ -1160,7 +1181,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // If this RepeatedPtrField is on an arena, an object copy is required to pass
   // ownership back to the user (for compatible semantics). Use
   // UnsafeArenaReleaseLast() if this behavior is undesired.
-  [[nodiscard]] Element* ReleaseLast();
+  PROTOBUF_FUTURE_ADD_NODISCARD Element* ReleaseLast();
 
   // Adds an already-allocated object, skipping arena-ownership checks. The user
   // must guarantee that the given object is in the same arena as this
@@ -1232,7 +1253,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                  const_iterator last) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Gets the arena on which this RepeatedPtrField stores its elements.
-  inline Arena* GetArena();
+  PROTOBUF_FUTURE_ADD_NODISCARD inline Arena* GetArena();
 
   // For internal use only.
   //
@@ -1669,8 +1690,12 @@ class RepeatedPtrIterator {
       : it_(other.it_) {}
 
   // dereferenceable
-  reference operator*() const { return *reinterpret_cast<Element*>(*it_); }
-  pointer operator->() const { return &(operator*()); }
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
+    return *reinterpret_cast<Element*>(*it_);
+  }
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
+    return &(operator*());
+  }
 
   // {inc,dec}rementable
   iterator& operator++() {
@@ -1729,7 +1754,9 @@ class RepeatedPtrIterator {
   }
 
   // indexable
-  reference operator[](difference_type d) const { return *(*this + d); }
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator[](difference_type d) const {
+    return *(*this + d);
+  }
 
   // random access iterator
   friend difference_type operator-(iterator it1, iterator it2) {
@@ -1793,8 +1820,12 @@ class RepeatedPtrOverPtrsIterator {
       : it_(other.it_) {}
 
   // dereferenceable
-  reference operator*() const { return *reinterpret_cast<Element*>(it_); }
-  pointer operator->() const { return reinterpret_cast<Element*>(it_); }
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
+    return *reinterpret_cast<Element*>(it_);
+  }
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
+    return reinterpret_cast<Element*>(it_);
+  }
 
   // {inc,dec}rementable
   iterator& operator++() {
@@ -1853,7 +1884,9 @@ class RepeatedPtrOverPtrsIterator {
   }
 
   // indexable
-  reference operator[](difference_type d) const { return *(*this + d); }
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator[](difference_type d) const {
+    return *(*this + d);
+  }
 
   // random access iterator
   friend difference_type operator-(iterator it1, iterator it2) {
