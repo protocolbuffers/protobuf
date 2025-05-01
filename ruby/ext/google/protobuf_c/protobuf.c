@@ -183,7 +183,7 @@ const rb_data_type_t Arena_type = {
 };
 
 static void *ruby_upb_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,
-                                size_t size) {
+                                size_t size, size_t *actual_size) {
   if (size == 0) {
     xfree(ptr);
     return NULL;

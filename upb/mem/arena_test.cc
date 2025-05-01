@@ -44,15 +44,15 @@ struct CustomAlloc {
   bool ran_cleanup;
 };
 
-void* CustomAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                      size_t size) {
+void* CustomAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize, size_t size,
+                      size_t* actual_size) {
   CustomAlloc* custom_alloc = reinterpret_cast<CustomAlloc*>(alloc);
   if (size == 0) {
     custom_alloc->counter--;
   } else {
     custom_alloc->counter++;
   }
-  return upb_alloc_global.func(alloc, ptr, oldsize, size);
+  return upb_alloc_global.func(alloc, ptr, oldsize, size, actual_size);
 }
 
 void CustomAllocCleanup(upb_alloc* alloc) {
@@ -71,30 +71,42 @@ TEST(ArenaTest, ArenaWithAllocCleanup) {
   EXPECT_TRUE(alloc.ran_cleanup);
 }
 
+struct Size {
+  size_t requested;
+  size_t allocated;
+};
+
 struct SizeTracker {
   upb_alloc alloc;
   upb_alloc* delegate_alloc;
-  absl::flat_hash_map<void*, size_t>* sizes;
+  absl::flat_hash_map<void*, Size>* sizes;
 };
 
 static_assert(std::is_standard_layout<SizeTracker>());
 
 static void* size_checking_allocfunc(upb_alloc* alloc, void* ptr,
-                                     size_t oldsize, size_t size) {
+                                     size_t oldsize, size_t size,
+                                     size_t* actual_size) {
   SizeTracker* size_alloc = reinterpret_cast<SizeTracker*>(alloc);
-  void* result = size_alloc->delegate_alloc->func(alloc, ptr, oldsize, size);
+  size_t actual_size_tmp = 0;
+  if (actual_size == nullptr) {
+    actual_size = &actual_size_tmp;
+  }
+  void* result =
+      size_alloc->delegate_alloc->func(alloc, ptr, oldsize, size, actual_size);
   if (ptr != nullptr) {
-    UPB_ASSERT(size_alloc->sizes->at(ptr) == oldsize);
+    Size& size_ref = size_alloc->sizes->at(ptr);
+    UPB_ASSERT(size_ref.requested == oldsize || size_ref.allocated == oldsize);
     size_alloc->sizes->erase(ptr);
   }
   if (result != nullptr) {
-    size_alloc->sizes->emplace(result, size);
+    size_alloc->sizes->emplace(result, Size{size, UPB_MAX(size, *actual_size)});
   }
   return result;
 }
 
 TEST(ArenaTest, SizedFree) {
-  absl::flat_hash_map<void*, size_t> sizes;
+  absl::flat_hash_map<void*, Size> sizes;
   SizeTracker alloc;
   alloc.alloc.func = size_checking_allocfunc;
   alloc.delegate_alloc = &upb_alloc_global;
@@ -137,7 +149,7 @@ TEST(ArenaTest, ReallocFastPath) {
 }
 
 TEST(ArenaTest, SizeHint) {
-  absl::flat_hash_map<void*, size_t> sizes;
+  absl::flat_hash_map<void*, Size> sizes;
   SizeTracker alloc;
   alloc.alloc.func = size_checking_allocfunc;
   alloc.delegate_alloc = &upb_alloc_global;
@@ -197,7 +209,7 @@ class OverheadTest {
   upb_Arena* arena_;
 
  protected:
-  absl::flat_hash_map<void*, size_t> sizes_;
+  absl::flat_hash_map<void*, Size> sizes_;
   SizeTracker alloc_;
   uintptr_t arena_alloced_;
   uintptr_t arena_alloc_count_;
@@ -482,7 +494,8 @@ TEST(ArenaTest, FuzzFuseFuseRace) {
 }
 
 static void* checking_global_allocfunc(upb_alloc* alloc, void* ptr,
-                                       size_t oldsize, size_t size) {
+                                       size_t oldsize, size_t size,
+                                       size_t* actual_size) {
   int header_size = std::max(alignof(max_align_t), sizeof(int));
   if (ptr) {
     ptr = UPB_PTR_AT(ptr, -header_size, void);

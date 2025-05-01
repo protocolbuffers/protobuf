@@ -368,11 +368,14 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   // We may need to exceed the max block size if the user requested a large
   // allocation.
   size_t block_size = UPB_MAX(kUpb_MemblockReserve + size, target_size);
+  upb_alloc* block_alloc = _upb_ArenaInternal_BlockAlloc(ai);
+  upb_SizedPtr alloc_result = upb_SizeReturningMalloc(block_alloc, block_size);
 
-  upb_MemBlock* block =
-      upb_malloc(_upb_ArenaInternal_BlockAlloc(ai), block_size);
+  if (!alloc_result.p) return NULL;
 
-  if (!block) return NULL;
+  upb_MemBlock* block = alloc_result.p;
+  size_t actual_block_size = alloc_result.n;
+
   // Atomic add not required here, as threads won't race allocating blocks, plus
   // atomic fetch-add is slower than load/add/store on arm devices compiled
   // targetting pre-v8.1. Relaxed order is safe as nothing depends on order of
@@ -380,11 +383,12 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
 
   uintptr_t old_space_allocated =
       upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
-  upb_Atomic_Store(&ai->space_allocated, old_space_allocated + block_size,
+  upb_Atomic_Store(&ai->space_allocated,
+                   old_space_allocated + actual_block_size,
                    memory_order_relaxed);
   if (UPB_UNLIKELY(insert_after_head)) {
     upb_ArenaInternal* ai = upb_Arena_Internal(a);
-    block->size_or_hint = block_size;
+    block->size_or_hint = actual_block_size;
     upb_MemBlock* head = ai->blocks;
     block->next = head->next;
     head->next = block;
@@ -393,7 +397,7 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
     UPB_POISON_MEMORY_REGION(allocated + size, UPB_ASAN_GUARD_SIZE);
     return allocated;
   } else {
-    _upb_Arena_AddBlock(a, block, kUpb_MemblockReserve, block_size);
+    _upb_Arena_AddBlock(a, block, kUpb_MemblockReserve, actual_block_size);
     UPB_ASSERT(UPB_PRIVATE(_upb_ArenaHas)(a) >= size);
     return upb_Arena_Malloc(a, size - UPB_ASAN_GUARD_SIZE);
   }
@@ -405,13 +409,17 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   upb_ArenaState* a;
 
   // We need to malloc the initial block.
-  char* mem;
+
   size_t block_size =
       first_block_overhead +
       UPB_MAX(256, UPB_ALIGN_MALLOC(first_size) + UPB_ASAN_GUARD_SIZE);
-  if (!alloc || !(mem = upb_malloc(alloc, block_size))) {
+  upb_SizedPtr alloc_result;
+  if (!alloc ||
+      !(alloc_result = upb_SizeReturningMalloc(alloc, block_size)).p) {
     return NULL;
   }
+  char* mem = alloc_result.p;
+  size_t actual_block_size = alloc_result.n;
 
   a = UPB_PTR_AT(mem, kUpb_MemblockReserve, upb_ArenaState);
 
@@ -420,12 +428,12 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   upb_Atomic_Init(&a->body.next, NULL);
   upb_Atomic_Init(&a->body.previous_or_tail,
                   _upb_Arena_TaggedFromTail(&a->body));
-  upb_Atomic_Init(&a->body.space_allocated, block_size);
+  upb_Atomic_Init(&a->body.space_allocated, actual_block_size);
   a->body.blocks = NULL;
   a->body.upb_alloc_cleanup = NULL;
   UPB_TSAN_INIT_PUBLISHED(&a->body);
 
-  _upb_Arena_AddBlock(&a->head, mem, first_block_overhead, block_size);
+  _upb_Arena_AddBlock(&a->head, mem, first_block_overhead, actual_block_size);
 
   return &a->head;
 }

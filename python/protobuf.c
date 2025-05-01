@@ -219,7 +219,7 @@ typedef struct {
 // unpredictable
 // times.
 static void* upb_trim_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                                size_t size) {
+                                size_t size, size_t* actual_size) {
   (void)alloc;
   (void)oldsize;
   if (size == 0) {
