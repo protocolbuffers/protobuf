@@ -55,7 +55,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = 
 #endif
   UPB_FASTTABLE_INIT({
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x002000003f00000a, &upb_prs_1bt},
+    {0x002000000000000a, &upb_prs_1bt},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -69,9 +69,9 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = 
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x003000003f01007a, &upb_prm_1bt_maxmaxb},
+    {0x003000000001007a, &upb_prm_1bt_max192b},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x003800003f02018a, &upb_prm_2bt_maxmaxb},
+    {0x003800000002018a, &upb_prm_2bt_max192b},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
@@ -125,7 +125,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init =
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x003000003f00007a, &upb_prm_1bt_max128b},
+    {0x003000000000007a, &upb_prm_1bt_max128b},
   })
 };
 
