@@ -48,17 +48,17 @@ const upb_MiniTable* GetMiniTable(Ptr<T>) {
 
 template <typename T>
 auto* GetMessage(T&& message) {
-  return hpb::internal::PrivateAccess::GetInternalMsg(std::forward<T>(message));
+  return internal::PrivateAccess::GetInternalMsg(std::forward<T>(message));
 }
 
 template <typename T>
 upb_Arena* GetArena(Ptr<T> message) {
-  return hpb::internal::PrivateAccess::GetInternalArena(message);
+  return internal::PrivateAccess::GetInternalArena(message);
 }
 
 template <typename T>
 upb_Arena* GetArena(T* message) {
-  return hpb::internal::PrivateAccess::GetInternalArena(message);
+  return internal::PrivateAccess::GetInternalArena(message);
 }
 
 /**
@@ -82,7 +82,7 @@ upb_Arena* GetArena(T* message) {
  */
 template <typename T>
 typename T::CProxy MakeCHandle(const upb_Message* msg, upb_Arena* arena) {
-  return hpb::internal::PrivateAccess::CProxy<T>(msg, arena);
+  return internal::PrivateAccess::CProxy<T>(msg, arena);
 }
 
 /**
@@ -106,7 +106,7 @@ typename T::Proxy MakeHandle(upb_Message* msg, upb_Arena* arena) {
  */
 template <typename T>
 typename T::Proxy CreateMessage(upb_Arena* arena) {
-  return hpb::internal::PrivateAccess::CreateMessage<T>(arena);
+  return internal::PrivateAccess::CreateMessage<T>(arena);
 }
 
 inline absl::string_view FromUpbStringView(upb_StringView str) {
