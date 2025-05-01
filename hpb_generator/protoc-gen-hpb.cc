@@ -30,8 +30,14 @@ namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
-void WriteSource(const protobuf::FileDescriptor* file, Context& ctx);
 void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx);
+void WriteHeaderCpp(const protobuf::FileDescriptor* file, Context& ctx);
+void WriteHeaderUpb(const protobuf::FileDescriptor* file, Context& ctx);
+
+void WriteSource(const protobuf::FileDescriptor* file, Context& ctx);
+void WriteSourceCpp(const protobuf::FileDescriptor* file, Context& ctx);
+void WriteSourceUpb(const protobuf::FileDescriptor* file, Context& ctx);
+
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
                                  Context& ctx);
 void WriteTypedefForwardingHeader(
@@ -103,9 +109,14 @@ void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
 }
 
 void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
-  if (ctx.options().backend == Backend::CPP) {
-    abort();
+  if (ctx.options().backend == Backend::UPB) {
+    WriteHeaderUpb(file, ctx);
+  } else {
+    WriteHeaderCpp(file, ctx);
   }
+}
+
+void WriteHeaderUpb(const protobuf::FileDescriptor* file, Context& ctx) {
   EmitFileWarning(file, ctx);
   ctx.EmitLegacy(
       R"cc(
@@ -169,11 +180,21 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
   ctx.EmitLegacy("#endif  /* $0_HPB_PROTO_H_ */\n", ToPreproc(file->name()));
 }
 
+void WriteHeaderCpp(const protobuf::FileDescriptor* file, Context& ctx) {
+  EmitFileWarning(file, ctx);
+  WrapNamespace(file, ctx, [&]() { ctx.Emit("// stub hpb(cpp) hdr"); });
+}
+
 // Writes a .hpb.cc source file.
 void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
-  if (ctx.options().backend == Backend::CPP) {
-    abort();
+  if (ctx.options().backend == Backend::UPB) {
+    WriteSourceUpb(file, ctx);
+  } else {
+    WriteSourceCpp(file, ctx);
   }
+}
+
+void WriteSourceUpb(const protobuf::FileDescriptor* file, Context& ctx) {
   EmitFileWarning(file, ctx);
 
   ctx.EmitLegacy(
@@ -198,6 +219,11 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
   WrapNamespace(file, ctx, [&]() { WriteMessageImplementations(file, ctx); });
 
   ctx.Emit("#include \"upb/port/undef.inc\"\n\n");
+}
+
+void WriteSourceCpp(const protobuf::FileDescriptor* file, Context& ctx) {
+  EmitFileWarning(file, ctx);
+  WrapNamespace(file, ctx, [&]() { ctx.Emit("// stub hpb(cpp) src"); });
 }
 
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
