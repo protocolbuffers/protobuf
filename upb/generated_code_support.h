@@ -41,7 +41,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 #ifdef UPB_INCLUDE_FAST_DECODE
-#include "upb/wire/internal/decode_fast.h"
+#include "upb/wire/decode_fast/field_parsers.h"
 #endif
 // IWYU pragma: end_exports
 

@@ -28,10 +28,10 @@
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.hpp"
+#include "upb/wire/decode_fast/select.h"
 #include "upb_generator/common.h"
 #include "upb_generator/common/names.h"
 #include "upb_generator/file_layout.h"
-#include "upb_generator/minitable/fasttable.h"
 #include "upb_generator/minitable/names.h"
 #include "upb_generator/minitable/names_internal.h"
 #include "upb_generator/plugin.h"
@@ -174,7 +174,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   std::vector<TableEntry> table;
   uint8_t table_mask = ~0;
 
-  table = FastDecodeTable(message, pools);
+  table = FastDecodeTable(pools.GetMiniTable64(message));
 
   if (table.size() > 1) {
     UPB_ASSERT((table.size() & (table.size() - 1)) == 0);
@@ -432,8 +432,8 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 std::string MultipleSourceFilename(upb::FileDefPtr file,
                                    absl::string_view full_name, int* i) {
   *i += 1;
-  return absl::StrCat(StripExtension(file.name()), ".upb_weak_minitables/",
-                      *i, ".upb.c");
+  return absl::StrCat(StripExtension(file.name()), ".upb_weak_minitables/", *i,
+                      ".upb.c");
 }
 
 void WriteMiniTableMultipleSources(

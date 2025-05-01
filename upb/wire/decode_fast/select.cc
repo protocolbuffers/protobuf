@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "upb_generator/minitable/fasttable.h"
+#include "upb/wire/decode_fast/select.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -19,9 +19,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
-#include "upb/reflection/def.hpp"
 #include "upb/wire/types.h"
-#include "upb_generator/file_layout.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -34,27 +32,22 @@ namespace {
 // Returns fields in order of "hotness", eg. how frequently they appear in
 // serialized payloads. Ideally this will use a profile. When we don't have
 // that, we assume that fields with smaller numbers are used more frequently.
-inline std::vector<upb::FieldDefPtr> FieldHotnessOrder(
-    upb::MessageDefPtr message) {
-  std::vector<upb::FieldDefPtr> fields;
-  size_t field_count = message.field_count();
+inline std::vector<const upb_MiniTableField*> FieldHotnessOrder(
+    const upb_MiniTable* mt) {
+  std::vector<const upb_MiniTableField*> fields;
+  size_t field_count = upb_MiniTable_FieldCount(mt);
   fields.reserve(field_count);
   for (size_t i = 0; i < field_count; i++) {
-    fields.push_back(message.field(i));
+    fields.push_back(upb_MiniTable_GetFieldByIndex(mt, i));
   }
-  std::sort(fields.begin(), fields.end(),
-            [](upb::FieldDefPtr a, upb::FieldDefPtr b) {
-              return std::make_pair(!a.is_required(), a.number()) <
-                     std::make_pair(!b.is_required(), b.number());
-            });
   return fields;
 }
 
 typedef std::pair<std::string, uint64_t> TableEntry;
 
-uint32_t GetWireTypeForField(upb::FieldDefPtr field) {
-  if (field.packed()) return kUpb_WireType_Delimited;
-  switch (field.type()) {
+uint32_t GetWireTypeForField(const upb_MiniTableField* field) {
+  if (upb_MiniTableField_IsPacked(field)) return kUpb_WireType_Delimited;
+  switch (upb_MiniTableField_Type(field)) {
     case kUpb_FieldType_Double:
     case kUpb_FieldType_Fixed64:
     case kUpb_FieldType_SFixed64:
@@ -97,9 +90,9 @@ size_t WriteVarint32ToArray(uint64_t val, char* buf) {
   return i;
 }
 
-uint64_t GetEncodedTag(upb::FieldDefPtr field) {
+uint64_t GetEncodedTag(const upb_MiniTableField* field) {
   uint32_t wire_type = GetWireTypeForField(field);
-  uint32_t unencoded_tag = MakeTag(field.number(), wire_type);
+  uint32_t unencoded_tag = MakeTag(upb_MiniTableField_Number(field), wire_type);
   char tag_bytes[10] = {0};
   WriteVarint32ToArray(unencoded_tag, tag_bytes);
   uint64_t encoded_tag = 0;
@@ -108,7 +101,7 @@ uint64_t GetEncodedTag(upb::FieldDefPtr field) {
   return encoded_tag;
 }
 
-int GetTableSlot(upb::FieldDefPtr field) {
+int GetTableSlot(const upb_MiniTableField* field) {
   uint64_t tag = GetEncodedTag(field);
   if (tag > 0x7fff) {
     // Tag must fit within a two-byte varint.
@@ -117,11 +110,8 @@ int GetTableSlot(upb::FieldDefPtr field) {
   return (tag & 0xf8) >> 3;
 }
 
-bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
+bool TryFillTableEntry(const upb_MiniTable* mt, const upb_MiniTableField* mt_f,
                        TableEntry& ent) {
-  const upb_MiniTable* mt = pools.GetMiniTable64(field.containing_type());
-  const upb_MiniTableField* mt_f =
-      upb_MiniTable_FindFieldByNumber(mt, field.number());
   std::string type = "";
   std::string cardinality = "";
   switch (upb_MiniTableField_Type(mt_f)) {
@@ -179,7 +169,7 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
     return false;  // Not supported yet (ever?).
   }
 
-  uint64_t expected_tag = GetEncodedTag(field);
+  uint64_t expected_tag = GetEncodedTag(mt_f);
 
   // Data is:
   //
@@ -193,13 +183,14 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
   uint64_t data =
       static_cast<uint64_t>(mt_f->UPB_PRIVATE(offset)) << 48 | expected_tag;
 
-  if (field.IsSequence()) {
+  if (!upb_MiniTableField_IsScalar(mt_f)) {
     // No hasbit/oneof-related fields.
-  }
-  if (field.real_containing_oneof()) {
+  } else if (upb_MiniTableField_IsInOneof(mt_f)) {
     uint64_t case_offset = ~mt_f->presence;
-    if (case_offset > 0xffff || field.number() > 0xff) return false;
-    data |= field.number() << 24;
+    if (case_offset > 0xffff || upb_MiniTableField_Number(mt_f) > 0xff) {
+      return false;
+    }
+    data |= upb_MiniTableField_Number(mt_f) << 24;
     data |= case_offset << 32;
   } else {
     uint64_t hasbit_index = 63;  // No hasbit (set a high, unused bit).
@@ -210,21 +201,15 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
     data |= hasbit_index << 24;
   }
 
-  if (field.ctype() == kUpb_CType_Message) {
+  if (upb_MiniTableField_CType(mt_f) == kUpb_CType_Message) {
     uint64_t idx = mt_f->UPB_PRIVATE(submsg_index);
     if (idx > 255) return false;
     data |= idx << 16;
 
     std::string size_ceil = "max";
     size_t size = SIZE_MAX;
-    if (field.message_type().file() == field.file()) {
-      // We can only be guaranteed the size of the sub-message if it is in the
-      // same file as us.  We could relax this to increase the speed of
-      // cross-file sub-message parsing if we are comfortable requiring that
-      // users compile all messages at the same time.
-      const upb_MiniTable* sub_mt = pools.GetMiniTable64(field.message_type());
-      size = sub_mt->UPB_PRIVATE(size) + 8;
-    }
+    const upb_MiniTable* sub_mt = upb_MiniTable_GetSubMessageTable(mt, mt_f);
+    size = sub_mt->UPB_PRIVATE(size) + 8;
     std::vector<size_t> breaks = {64, 128, 192, 256};
     for (auto brk : breaks) {
       if (size <= brk) {
@@ -245,10 +230,9 @@ bool TryFillTableEntry(const DefPoolPair& pools, upb::FieldDefPtr field,
 
 }  // namespace
 
-std::vector<TableEntry> FastDecodeTable(upb::MessageDefPtr message,
-                                        const DefPoolPair& pools) {
+std::vector<TableEntry> FastDecodeTable(const upb_MiniTable* mt) {
   std::vector<TableEntry> table;
-  for (const auto field : FieldHotnessOrder(message)) {
+  for (const auto field : FieldHotnessOrder(mt)) {
     TableEntry ent;
     int slot = GetTableSlot(field);
     // std::cerr << "table slot: " << field->number() << ": " << slot << "\n";
@@ -256,7 +240,7 @@ std::vector<TableEntry> FastDecodeTable(upb::MessageDefPtr message,
       // Tag can't fit in the table.
       continue;
     }
-    if (!TryFillTableEntry(pools, field, ent)) {
+    if (!TryFillTableEntry(mt, field, ent)) {
       // Unsupported field type or offset, hasbit index, etc. doesn't fit.
       continue;
     }

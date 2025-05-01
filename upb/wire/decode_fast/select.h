@@ -13,16 +13,14 @@
 #include <utility>
 #include <vector>
 
-#include "upb/reflection/def.hpp"
-#include "upb_generator/file_layout.h"
+#include "upb/mini_table/message.h"
 
 namespace upb {
 namespace generator {
 
 typedef std::pair<std::string, uint64_t> TableEntry;
 
-std::vector<TableEntry> FastDecodeTable(upb::MessageDefPtr message,
-                                        const DefPoolPair& pools);
+std::vector<TableEntry> FastDecodeTable(const upb_MiniTable* mt);
 
 }  // namespace generator
 }  // namespace upb
