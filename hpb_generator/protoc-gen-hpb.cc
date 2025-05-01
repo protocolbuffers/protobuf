@@ -30,10 +30,8 @@ namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
-void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
-                 bool fasttable_enabled, bool strip_feature_includes);
-void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
-                 bool strip_feature_includes);
+void WriteSource(const protobuf::FileDescriptor* file, Context& ctx);
+void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx);
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
                                  Context& ctx);
 void WriteTypedefForwardingHeader(
@@ -41,7 +39,7 @@ void WriteTypedefForwardingHeader(
     const std::vector<const protobuf::Descriptor*>& file_messages,
     Context& ctx);
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
-                                    Context& ctx, bool strip_feature_includes);
+                                    Context& ctx);
 
 class Generator : public protoc::CodeGenerator {
  public:
@@ -61,16 +59,13 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
                          const std::string& parameter,
                          protoc::GeneratorContext* context,
                          std::string* error) const {
-  bool fasttable_enabled = false;
   bool strip_nonfunctional_codegen = false;
   Backend backend = Backend::UPB;
   std::vector<std::pair<std::string, std::string>> params;
   google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
 
   for (const auto& pair : params) {
-    if (pair.first == "fasttable") {
-      fasttable_enabled = true;
-    } else if (pair.first == "experimental_strip_nonfunctional_codegen") {
+    if (pair.first == "experimental_strip_nonfunctional_codegen") {
       strip_nonfunctional_codegen = true;
     } else if (pair.first == "backend" && pair.second == "cpp") {
       backend = Backend::CPP;
@@ -81,17 +76,18 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
   }
 
   // Write model.hpb.h
-  Options options = {.backend = backend};
+  Options options = {.backend = backend,
+                     .strip_feature_includes = strip_nonfunctional_codegen};
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
       context->Open(CppHeaderFilename(file)));
   Context hdr_ctx(file, header_output_stream.get(), options);
-  WriteHeader(file, hdr_ctx, strip_nonfunctional_codegen);
+  WriteHeader(file, hdr_ctx);
 
   // Write model.hpb.cc
   std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
       context->Open(CppSourceFilename(file)));
   auto cc_ctx = Context(file, cc_output_stream.get(), options);
-  WriteSource(file, cc_ctx, fasttable_enabled, strip_nonfunctional_codegen);
+  WriteSource(file, cc_ctx);
   return true;
 }
 
@@ -106,8 +102,7 @@ void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
   WriteTypedefForwardingHeader(file, this_file_messages, ctx);
 }
 
-void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
-                 bool strip_feature_includes) {
+void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
     abort();
   }
@@ -147,7 +142,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
     ctx.Emit("\n");
   }
 
-  WriteHeaderMessageForwardDecls(file, ctx, strip_feature_includes);
+  WriteHeaderMessageForwardDecls(file, ctx);
   WriteForwardDecls(file, ctx);
 
   std::vector<const protobuf::EnumDescriptor*> this_file_enums =
@@ -175,8 +170,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx,
 }
 
 // Writes a .hpb.cc source file.
-void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
-                 bool fasttable_enabled, bool strip_feature_includes) {
+void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
     abort();
   }
@@ -192,7 +186,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx,
       CppHeaderFilename(file));
 
   for (int i = 0; i < file->dependency_count(); i++) {
-    if (strip_feature_includes &&
+    if (ctx.options().strip_feature_includes &&
         compiler::IsKnownFeatureProto(file->dependency(i)->name())) {
       // Strip feature imports for editions codegen tests.
       continue;
@@ -240,13 +234,13 @@ void WriteTypedefForwardingHeader(
 
 /// Writes includes for upb C minitables and fwd.h for transitive typedefs.
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
-                                    Context& ctx, bool strip_feature_includes) {
+                                    Context& ctx) {
   // Import forward-declaration of types defined in this file.
   ctx.EmitLegacy("#include \"$0\"\n", UpbCFilename(file));
   WriteForwardDecls(file, ctx);
   // Import forward-declaration of types in dependencies.
   for (int i = 0; i < file->dependency_count(); ++i) {
-    if (strip_feature_includes &&
+    if (ctx.options().strip_feature_includes &&
         compiler::IsKnownFeatureProto(file->dependency(i)->name())) {
       // Strip feature imports for editions codegen tests.
       continue;
