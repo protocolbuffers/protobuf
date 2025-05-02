@@ -124,9 +124,9 @@ SourceContext::SourceContext(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
 PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::SourceContext& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::SourceContext& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         file_name_(arena, from.file_name_) {}
@@ -148,8 +148,8 @@ SourceContext::SourceContext(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
 PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         file_name_(arena) {}
 

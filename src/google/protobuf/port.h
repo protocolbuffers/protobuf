@@ -584,7 +584,8 @@ constexpr bool HasMemoryPoisoning() {
 }
 
 // Poison memory region when supported by sanitizer config.
-inline void PoisonMemoryRegion(const void* p, size_t n) {
+inline void PoisonMemoryRegion([[maybe_unused]] const void* p,
+                               [[maybe_unused]] size_t n) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
   ASAN_POISON_MEMORY_REGION(p, n);
 #else
@@ -592,7 +593,8 @@ inline void PoisonMemoryRegion(const void* p, size_t n) {
 #endif
 }
 
-inline void UnpoisonMemoryRegion(const void* p, size_t n) {
+inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
+                                 [[maybe_unused]] size_t n) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
   ASAN_UNPOISON_MEMORY_REGION(p, n);
 #else
@@ -600,7 +602,7 @@ inline void UnpoisonMemoryRegion(const void* p, size_t n) {
 #endif
 }
 
-inline bool IsMemoryPoisoned(const void* p) {
+inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
   return __asan_address_is_poisoned(p);
 #else

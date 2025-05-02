@@ -402,11 +402,12 @@ struct PROTOBUF_EXPORT ClassData {
       bool (*is_initialized)(const MessageLite&),
       void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
       internal::MessageCreator message_creator,
-      void (*destroy_message)(MessageLite& msg),  //
-      void (MessageLite::*clear)(),
-      size_t (*byte_size_long)(const MessageLite&),
-      uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
-                            io::EpsCopyOutputStream* stream),
+      [[maybe_unused]] void (*destroy_message)(MessageLite& msg),  //
+      [[maybe_unused]] void (MessageLite::*clear)(),
+      [[maybe_unused]] size_t (*byte_size_long)(const MessageLite&),
+      [[maybe_unused]] uint8_t* (*serialize)(const MessageLite& msg,
+                                             uint8_t* ptr,
+                                             io::EpsCopyOutputStream* stream),
       uint32_t cached_size_offset, bool is_lite
       )
       : prototype(prototype),

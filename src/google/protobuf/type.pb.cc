@@ -403,9 +403,9 @@ Type::Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Type)
 }
 PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Type& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Type& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         fields_{visibility, arena, from.fields_},
@@ -436,8 +436,8 @@ Type::Type(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
 }
 PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         fields_{visibility, arena},
         oneofs_{visibility, arena},
@@ -897,9 +897,9 @@ Field::Field(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Field)
 }
 PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Field& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Field& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         options_{visibility, arena, from.options_},
@@ -932,8 +932,8 @@ Field::Field(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Field)
 }
 PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         options_{visibility, arena},
         name_(arena),
@@ -1492,9 +1492,9 @@ Enum::Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Enum)
 }
 PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Enum& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Enum& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         enumvalue_{visibility, arena, from.enumvalue_},
@@ -1524,8 +1524,8 @@ Enum::Enum(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
 }
 PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         enumvalue_{visibility, arena},
         options_{visibility, arena},
@@ -1955,9 +1955,9 @@ EnumValue::EnumValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValue)
 }
 PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::EnumValue& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::EnumValue& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         options_{visibility, arena, from.options_},
@@ -1981,8 +1981,8 @@ EnumValue::EnumValue(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValue)
 }
 PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         options_{visibility, arena},
         name_(arena) {}
@@ -2300,9 +2300,9 @@ Option::Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Option)
 }
 PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Option& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Option& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_) {}
@@ -2328,8 +2328,8 @@ Option::Option(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
 PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena) {}
 

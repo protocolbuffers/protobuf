@@ -401,7 +401,7 @@ inline void InternalRegisterArenaDtor(Arena* arena, void* object,
 
 inline InlinedStringField::InlinedStringField(Arena* /*arena*/) : str_() {}
 
-inline InlinedStringField::InlinedStringField(Arena* arena,
+inline InlinedStringField::InlinedStringField([[maybe_unused]] Arena* arena,
                                               const InlinedStringField& rhs) {
   const std::string& src = *rhs.get_const();
   ::new (static_cast<void*>(&str_)) std::string(src);

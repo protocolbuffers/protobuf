@@ -136,8 +136,8 @@ Timestamp::Timestamp(
       from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE Timestamp::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0} {}
 
 inline void Timestamp::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {

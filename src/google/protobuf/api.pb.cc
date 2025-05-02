@@ -266,9 +266,9 @@ Api::Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Api)
 }
 PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Api& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Api& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         methods_{visibility, arena, from.methods_},
@@ -299,8 +299,8 @@ Api::Api(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
 }
 PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         methods_{visibility, arena},
         options_{visibility, arena},
@@ -766,9 +766,9 @@ Method::Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Method)
 }
 PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Method& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Method& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         options_{visibility, arena, from.options_},
@@ -800,8 +800,8 @@ Method::Method(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Method)
 }
 PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         options_{visibility, arena},
         name_(arena),
@@ -1256,9 +1256,9 @@ Mixin::Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Mixin)
 }
 PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::Mixin& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::Mixin& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_),
@@ -1281,8 +1281,8 @@ Mixin::Mixin(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Mixin)
 }
 PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena),
         root_(arena) {}

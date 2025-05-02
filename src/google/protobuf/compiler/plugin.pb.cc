@@ -303,9 +303,9 @@ Version::Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
 }
 PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::compiler::Version& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::compiler::Version& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         suffix_(arena, from.suffix_) {}
@@ -334,8 +334,8 @@ Version::Version(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.Version)
 }
 PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         suffix_(arena) {}
 
@@ -650,9 +650,9 @@ CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_N
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         file_to_generate_{visibility, arena, from.file_to_generate_},
@@ -681,8 +681,8 @@ CodeGeneratorRequest::CodeGeneratorRequest(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         file_to_generate_{visibility, arena},
         proto_file_{visibility, arena},
@@ -1071,9 +1071,9 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::compiler::CodeGeneratorResponse_File& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         name_(arena, from.name_),
@@ -1101,8 +1101,8 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         name_(arena),
         insertion_point_(arena),
@@ -1425,9 +1425,9 @@ CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-    const ::google::protobuf::compiler::CodeGeneratorResponse& from_msg)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorResponse& from_msg)
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         file_{visibility, arena, from.file_},
@@ -1457,8 +1457,8 @@ CodeGeneratorResponse::CodeGeneratorResponse(
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
-    ::google::protobuf::internal::InternalVisibility visibility,
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : _cached_size_{0},
         file_{visibility, arena},
         error_(arena) {}
