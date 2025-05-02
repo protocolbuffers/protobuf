@@ -243,6 +243,8 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   std::string field_ptr = member;
   if (IsArenaStringPtr(field, opts)) {
     field_ptr = absl::Substitute("$0.UnsafeGetPointer()", member);
+  } else if (IsMicroString(field, opts)) {
+    field_ptr = absl::Substitute("&$0", member);
   }
 
   std::string has =
@@ -255,7 +257,7 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   }
 
   Getters getters;
-  if (field->default_value_string().empty()
+  if (field->default_value_string().empty() || IsMicroString(field, opts)
   ) {
     getters.base = absl::Substitute("$0 ? $1 : nullptr", has, field_ptr);
   } else {
