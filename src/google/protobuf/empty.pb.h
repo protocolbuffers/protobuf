@@ -199,17 +199,6 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
-  struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
-    inline explicit Impl_(
-        ::google::protobuf::internal::InternalVisibility visibility,
-        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-    inline explicit Impl_(
-        ::google::protobuf::internal::InternalVisibility visibility,
-        ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
-        const Empty& from_msg);
-    PROTOBUF_TSAN_DECLARE_MEMBER
-  };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
 };
 
