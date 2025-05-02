@@ -1515,9 +1515,10 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
   // Prepare decls for _cached_size_ and _has_bits_.  Their position in the
   // output will be determined later.
-  bool need_to_emit_cached_size = !HasSimpleBaseClass(descriptor_, options_);
+  bool need_to_emit_cached_size = true;
   const size_t sizeof_has_bits = HasBitsSize();
 
   // To minimize padding, data members are divided into three sections:
