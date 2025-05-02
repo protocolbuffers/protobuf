@@ -691,6 +691,7 @@ cc_library(
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/functional:function_ref",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/hash",
         "@abseil-cpp//absl/log:absl_check",
