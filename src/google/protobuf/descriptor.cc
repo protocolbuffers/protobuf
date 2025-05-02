@@ -5173,6 +5173,21 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
   return absl::OkStatus();
 }
 
+bool DescriptorPool::ShouldEnforceExtensionDeclaration(
+    const FieldDescriptor& field) const {
+  ABSL_DCHECK(field.is_extension());
+  const Descriptor* containing_type = field.containing_type();
+  switch (enforce_extension_declarations_) {
+    case ExtDeclEnforcementLevel::kCustomExtensions:
+      return containing_type->file()->name() !=
+             "google/protobuf/descriptor.proto";
+    case ExtDeclEnforcementLevel::kAllExtensions:
+      return true;
+    default:
+      return false;
+  }
+}
+
 const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
   if (feature_set_defaults_spec_ != nullptr) return *feature_set_defaults_spec_;
   static const FeatureSetDefaults* cpp_default_spec =
@@ -8717,7 +8732,9 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       return;
     }
 
-    if (pool_->EnforceCustomExtensionDeclarations()) {
+    // TODO: b/396020109 - Check for MessageSet extensions in separate .txtpb
+    // file.
+    if (pool_->ShouldEnforceExtensionDeclaration(*field)) {
       for (const auto& declaration : extension_range->options_->declaration()) {
         if (declaration.number() != field->number()) continue;
         if (declaration.reserved()) {

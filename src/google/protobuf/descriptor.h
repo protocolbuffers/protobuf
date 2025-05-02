@@ -2386,17 +2386,12 @@ class PROTOBUF_EXPORT DescriptorPool {
     enforce_extension_declarations_ = enforce;
   }
 
-  bool EnforceDescriptorExtensionDeclarations() const {
+  bool ShouldEnforceDescriptorExtensionDeclarations() const {
     return enforce_extension_declarations_ ==
            ExtDeclEnforcementLevel::kAllExtensions;
   }
 
-  bool EnforceCustomExtensionDeclarations() const {
-    return enforce_extension_declarations_ ==
-               ExtDeclEnforcementLevel::kAllExtensions ||
-           enforce_extension_declarations_ ==
-               ExtDeclEnforcementLevel::kCustomExtensions;
-  }
+  bool ShouldEnforceExtensionDeclaration(const FieldDescriptor& field) const;
 
 #ifndef SWIG
   // Dispatch recursive builds to a callback that may stick them onto a separate
