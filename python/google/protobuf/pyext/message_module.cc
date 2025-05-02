@@ -85,7 +85,7 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
       return false;
     }
 
-    bool ok = output->ParseFromArray(
+    bool ok = output->ParsePartialFromArray(
         reinterpret_cast<uint8_t*>(PyBytes_AS_STRING(pyfile_serialized)),
         PyBytes_GET_SIZE(pyfile_serialized));
     if (!ok) {
@@ -207,8 +207,8 @@ absl::StatusOr<google::protobuf::Message*> CreateNewMessage(PyObject* py_msg) {
 bool CopyToOwnedMsg(google::protobuf::Message** copy, const google::protobuf::Message& message) {
   *copy = message.New();
   std::string wire;
-  message.SerializeToString(&wire);
-  (*copy)->ParseFromArray(wire.data(), wire.size());
+  message.SerializePartialToString(&wire);
+  (*copy)->ParsePartialFromArray(wire.data(), wire.size());
   return true;
 }
 
@@ -245,7 +245,7 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
     auto msg = CreateNewMessage(py_msg);
     RETURN_IF_ERROR(msg.status());
     PyObject* serialized_pb(
-        PyObject_CallMethod(py_msg, "SerializeToString", nullptr));
+        PyObject_CallMethod(py_msg, "SerializePartialToString", nullptr));
     if (serialized_pb == nullptr) {
       return absl::InternalError("Fail to serialize py_msg");
     }
@@ -256,7 +256,7 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
       return absl::InternalError(
           "Fail to get bytes from py_msg serialized data");
     }
-    if (!(*msg)->ParseFromArray(data, len)) {
+    if (!(*msg)->ParsePartialFromArray(data, len)) {
       Py_DECREF(serialized_pb);
       return absl::InternalError(
           "Couldn't parse py_message to google::protobuf::Message*!");

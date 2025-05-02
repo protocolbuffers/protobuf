@@ -2,6 +2,7 @@
 
 #include <Python.h>
 
+#include <climits>
 #include <memory>
 #include <string>
 
@@ -38,7 +39,7 @@ PythonMessageMutator::~PythonMessageMutator() {
   // check.
   if (!PyErr_Occurred() && owned_msg_ != nullptr) {
     std::string wire;
-    message_->SerializeToString(&wire);
+    message_->SerializePartialToString(&wire);
     PyObject* py_wire = PyBytes_FromStringAndSize(
         wire.data(), static_cast<Py_ssize_t>(wire.size()));
     PyObject* parse =
@@ -81,8 +82,14 @@ bool PythonConstMessagePointer::NotChanged() {
     return false;
   }
 
+  // Skip the check if too large. Parse won't work
+  // for messages larger than 2 GB.
+  if (message_->ByteSizeLong() > INT_MAX) {
+    return true;
+  }
+
   PyObject* py_serialized_pb(
-      PyObject_CallMethod(py_msg_, "SerializeToString", nullptr));
+      PyObject_CallMethod(py_msg_, "SerializePartialToString", nullptr));
   if (py_serialized_pb == nullptr) {
     PyErr_Format(PyExc_ValueError, "Fail to serialize py_msg");
     return false;
@@ -99,19 +106,19 @@ bool PythonConstMessagePointer::NotChanged() {
   // serialize result may still diff between languages. So parse to
   // another c++ message for compare.
   std::unique_ptr<google::protobuf::Message> parsed_msg(owned_msg_->New());
-  parsed_msg->ParseFromArray(data, static_cast<int>(len));
+  parsed_msg->ParsePartialFromArray(data, static_cast<int>(len));
   std::string wire_other;
   google::protobuf::io::StringOutputStream stream_other(&wire_other);
   google::protobuf::io::CodedOutputStream output_other(&stream_other);
   output_other.SetSerializationDeterministic(true);
-  parsed_msg->SerializeToCodedStream(&output_other);
+  parsed_msg->SerializePartialToCodedStream(&output_other);
   output_other.Trim();
 
   std::string wire;
   google::protobuf::io::StringOutputStream stream(&wire);
   google::protobuf::io::CodedOutputStream output(&stream);
   output.SetSerializationDeterministic(true);
-  owned_msg_->SerializeToCodedStream(&output);
+  owned_msg_->SerializePartialToCodedStream(&output);
   output.Trim();
 
   if (wire == wire_other) {
