@@ -30,8 +30,8 @@ namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
-void WriteSource(const protobuf::FileDescriptor* file, Context& ctx);
 void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx);
+void WriteSource(const protobuf::FileDescriptor* file, Context& ctx);
 void WriteMessageImplementations(const protobuf::FileDescriptor* file,
                                  Context& ctx);
 void WriteTypedefForwardingHeader(
@@ -103,10 +103,42 @@ void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
 }
 
 void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
-  if (ctx.options().backend == Backend::CPP) {
-    abort();
-  }
   EmitFileWarning(file, ctx);
+
+  if (ctx.options().backend == Backend::CPP || true) {
+    const auto msgs = SortedMessages(file);
+    auto ns = absl::StrCat(absl::StrReplaceAll(file->package(), {{".", "::"}}),
+                           "::hpb");
+    for (auto message : msgs) {
+      ctx.Emit({{"class_name", ClassName(message)}, {"namespace", ns}},
+               R"cc(
+
+                 namespace $namespace$ {
+
+                 class $class_name$ {
+                  public:
+                   using CProxy = bool;
+                   using Proxy = bool;
+                   using Access = bool;
+
+                   $class_name$() = default;
+
+                   $class_name$(void* msg) : msg_(msg) {}
+
+                   void* msg() const { return msg_; }
+
+                   // $class_name$::$class_name$(int x): x_(x) {
+                   //  }
+
+                   // friend class hpb::internal::backend::cpp::Shim;
+                   // friend struct hpb::internal::PrivateAccess;
+                  private:
+                   void* msg_;
+                 };
+                 }  // namespace $namespace$
+               )cc");
+    }
+  }
   ctx.EmitLegacy(
       R"cc(
 #ifndef $0_HPB_PROTO_H_
@@ -171,10 +203,10 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
 
 // Writes a .hpb.cc source file.
 void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
-  if (ctx.options().backend == Backend::CPP) {
-    abort();
-  }
   EmitFileWarning(file, ctx);
+  if (ctx.options().backend == Backend::CPP || true) {
+    return;
+  }
 
   ctx.EmitLegacy(
       R"cc(
