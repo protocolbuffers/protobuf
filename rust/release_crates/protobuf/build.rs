@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use std::path::Path;
+
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn clean_path(path: &Path) -> String {
