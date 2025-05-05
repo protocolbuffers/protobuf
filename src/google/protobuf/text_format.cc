@@ -66,7 +66,6 @@ namespace google {
 namespace protobuf {
 
 using internal::FieldReporterLevel;
-using internal::ReflectionMode;
 using internal::ScopedReflectionMode;
 
 namespace {
