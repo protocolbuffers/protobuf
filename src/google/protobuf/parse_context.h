@@ -176,13 +176,13 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return true;
   }
 
-  [[nodiscard]] const char* Skip(const char* ptr, int size) {
+  [[nodiscard]] const char* Skip(const char* ptr, int64_t size) {
     if (size <= BytesAvailable(ptr)) {
       return ptr + size;
     }
     return SkipFallback(ptr, size);
   }
-  [[nodiscard]] const char* ReadString(const char* ptr, int size,
+  [[nodiscard]] const char* ReadString(const char* ptr, int64_t size,
                                        std::string* s) {
     if (size <= BytesAvailable(ptr)) {
       // Fundamentally we just want to do assign to the string.
@@ -196,7 +196,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     return ReadStringFallback(ptr, size, s);
   }
-  [[nodiscard]] const char* AppendString(const char* ptr, int size,
+  [[nodiscard]] const char* AppendString(const char* ptr, int64_t size,
                                          std::string* s) {
     if (size <= BytesAvailable(ptr)) {
       s->append(ptr, size);
@@ -209,7 +209,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
                                             Arena* arena);
-  [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr, int size,
+  [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr,
+                                                    int64_t size,
                                                     MicroString& str,
                                                     Arena* arena);
 
@@ -217,7 +218,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
                                             Arena* arena);
 
-  [[nodiscard]] const char* ReadCord(const char* ptr, int size,
+  [[nodiscard]] const char* ReadCord(const char* ptr, int64_t size,
                                      ::absl::Cord* cord) {
     if (size <= std::min<int>(BytesAvailable(ptr), kMaxCordBytesToCopy)) {
       *cord = absl::string_view(ptr, size);
@@ -228,7 +229,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 
   template <typename FuncT>
-  [[nodiscard]] const char* ReadChunkAndCallback(const char* ptr, int size,
+  [[nodiscard]] const char* ReadChunkAndCallback(const char* ptr, int64_t size,
                                                  FuncT&& callback) {
     if (size <= BytesAvailable(ptr)) {
       callback(ptr, size);
@@ -242,7 +243,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
                                               RepeatedField<T>* out);
 
   template <typename T>
-  [[nodiscard]] const char* ReadPackedFixed(const char* ptr, int size,
+  [[nodiscard]] const char* ReadPackedFixed(const char* ptr, int64_t size,
                                             RepeatedField<T>* out);
   template <typename Add>
   [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add) {
@@ -334,13 +335,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res;
   }
 
- private:
+ protected:
   enum { kSlopBytes = 16, kPatchBufferSize = 32 };
   static_assert(kPatchBufferSize >= kSlopBytes * 2,
                 "Patch buffer needs to be at least large enough to hold all "
                 "the slop bytes from the previous buffer, plus the first "
                 "kSlopBytes from the next buffer.");
 
+ private:
   const char* limit_end_;  // buffer_end_ + min(limit_, 0)
   const char* buffer_end_;
   const char* next_chunk_;
@@ -369,14 +371,16 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
+ protected:
   int BytesAvailable(const char* ptr) const {
     ABSL_DCHECK_NE(ptr, nullptr);
-    ptrdiff_t available = buffer_end_ + kSlopBytes - ptr;
+    ptrdiff_t available = (buffer_end_ - ptr) + kSlopBytes;
     ABSL_DCHECK_GE(available, 0);
     ABSL_DCHECK_LE(available, INT_MAX);
     return static_cast<int>(available);
   }
 
+ private:
   // Advances to next buffer chunk returns a pointer to the same logical place
   // in the stream as set by overrun. Overrun indicates the position in the slop
   // region the parse was left (0 <= overrun <= kSlopBytes). Returns true if at
@@ -399,11 +403,13 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // groups (or negative if the use case does not need careful tracking).
   template <bool kExperimentalV2>
   inline const char* NextBuffer(int overrun, int depth);
-  const char* SkipFallback(const char* ptr, int size);
-  const char* AppendStringFallback(const char* ptr, int size, std::string* str);
+  const char* SkipFallback(const char* ptr, int64_t size);
+  const char* AppendStringFallback(const char* ptr, int64_t size,
+                                   std::string* str);
   const char* VerifyUTF8Fallback(const char* ptr, size_t size);
-  const char* ReadStringFallback(const char* ptr, int size, std::string* str);
-  const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
+  const char* ReadStringFallback(const char* ptr, int64_t size,
+                                 std::string* str);
+  const char* ReadCordFallback(const char* ptr, int64_t size, absl::Cord* cord);
   template <bool kExperimentalV2>
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
@@ -417,14 +423,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   template <typename A>
-  const char* AppendSize(const char* ptr, int size, const A& append) {
+  const char* AppendSize(const char* ptr, int64_t size, const A& append) {
     // Some append functions may return false to bail out early.
     constexpr bool kCheckReturn =
         std::is_invocable_r_v<bool, decltype(append), const char*, int>;
 
     int chunk_size = BytesAvailable(ptr);
     do {
-      ABSL_DCHECK(size > chunk_size);
+      ABSL_DCHECK_GT(size, chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
       if constexpr (kCheckReturn) {
         if (!append(ptr, chunk_size)) return nullptr;
@@ -1225,7 +1231,7 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
   GOOGLE_PROTOBUF_ASSERT_RETURN(predicate, nullptr)
 
 template <typename T>
-const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
+const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int64_t size,
                                                 RepeatedField<T>* out) {
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int nbytes = BytesAvailable(ptr);
