@@ -7,6 +7,15 @@
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+fn clean_path(path: &Path) -> String {
+    let canonical = path.canonicalize().unwrap();
+    let path_str = canonical.to_string_lossy();
+    path_str
+        .strip_prefix(r"\\?\")
+        .unwrap_or(&path_str)
+        .to_string()
+}
+
 fn main() {
     cc::Build::new()
         .flag("-std=c99")
@@ -20,6 +29,6 @@ fn main() {
         .define("UPB_BUILD_API", Some("1"))
         .compile("libupb");
     let path = std::path::Path::new("libupb");
-    println!("cargo:include={}", path.canonicalize().unwrap().display());
+    println!("cargo:include={}", clean_path(&path));
     println!("cargo:version={}", VERSION);
 }
