@@ -267,8 +267,6 @@ void WriteModelPublicDeclaration(
         friend struct ::hpb::internal::PrivateAccess;
         friend Proxy;
         friend CProxy;
-        friend $0(hpb::interop::upb::MoveMessage<$0>(upb_Message* msg,
-                                                     upb_Arena* arena));
       )cc",
       ClassName(descriptor),
       upb::generator::CApiMessageType(descriptor->full_name()),

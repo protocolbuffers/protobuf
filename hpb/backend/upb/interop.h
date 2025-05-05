@@ -33,7 +33,7 @@ namespace hpb::interop::upb {
 // TODO: b/365824801 - consider rename to OwnMessage
 template <typename T>
 T MoveMessage(upb_Message* msg, upb_Arena* arena) {
-  return T(msg, arena);
+  return internal::PrivateAccess::InvokeConstructor<T>(msg, arena);
 }
 
 template <typename T>
