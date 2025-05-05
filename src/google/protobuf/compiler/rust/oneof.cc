@@ -190,6 +190,7 @@ void GenerateOneofDefinition(Context& ctx, const OneofDescriptor& oneof) {
            R"rs(
       #[repr(C)]
       #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+      #[non_exhaustive]
       #[allow(dead_code)]
       pub enum $case_enum_name$ {
         $cases$
