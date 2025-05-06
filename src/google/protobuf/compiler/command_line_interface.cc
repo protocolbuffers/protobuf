@@ -124,16 +124,23 @@ using google::protobuf::io::win32::write;
 static const char* kDefaultDirectDependenciesViolationMsg =
     "File is imported but not declared in --direct_dependencies: %s";
 
-// Returns true if the text looks like a Windows-style absolute path, starting
-// with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
-// copy in importer.cc?
-static bool IsWindowsAbsolutePath(const std::string& text) {
-#if defined(_WIN32) || defined(__CYGWIN__)
+// Returns true if the text begins with a Windows-style absolute path, starting
+// with a drive letter.  Example:  "C:\foo".
+static bool StartsWithWindowsAbsolutePath(absl::string_view text) {
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__) || \
+    defined(__MSYS2__)
   return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
-         (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
+         (text[2] == '/' || text[2] == '\\');
 #else
   return false;
 #endif
+}
+
+// Returns true if the text looks like a single Windows-style absolute path,
+// starting with a drive letter.  Example:  "C:\foo".  TODO:  Share this
+// with copy in importer.cc?
+static bool IsWindowsAbsolutePath(absl::string_view text) {
+  return StartsWithWindowsAbsolutePath(text) && text.find_last_of(':') == 1;
 }
 
 void SetFdToTextMode(int fd) {
@@ -2062,12 +2069,17 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #endif  // _WIN32
 
   } else if (name == "-I" || name == "--proto_path") {
+    // If we have something that starts with a Windows absolute path,
+    // then the only path separator that makes sense is the semicolon.
+    const char* separator = StartsWithWindowsAbsolutePath(value)
+                                ? ";"
+                                : CommandLineInterface::kPathSeparator;
+
     // Java's -classpath (and some other languages) delimits path components
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
-    std::vector<std::string> parts = absl::StrSplit(
-        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
-        absl::SkipEmpty());
+    std::vector<std::string> parts =
+        absl::StrSplit(value, absl::ByAnyChar(separator), absl::SkipEmpty());
 
     for (size_t i = 0; i < parts.size(); ++i) {
       std::string virtual_path;
