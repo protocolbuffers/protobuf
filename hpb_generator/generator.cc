@@ -5,91 +5,39 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <cstdint>
+#include "google/protobuf/compiler/hpb/generator.h"
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/hpb/context.h"
 #include "google/protobuf/compiler/hpb/gen_enums.h"
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 #include "google/protobuf/compiler/hpb/gen_messages.h"
 #include "google/protobuf/compiler/hpb/gen_utils.h"
 #include "google/protobuf/compiler/hpb/names.h"
-#include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 namespace {
 
-namespace protoc = ::google::protobuf::compiler;
 namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
-using google::protobuf::Edition;
 
-void WriteSource(const protobuf::FileDescriptor* file, Context& ctx);
-void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx);
-void WriteMessageImplementations(const protobuf::FileDescriptor* file,
-                                 Context& ctx);
 void WriteTypedefForwardingHeader(
     const protobuf::FileDescriptor* file,
     const std::vector<const protobuf::Descriptor*>& file_messages,
     Context& ctx);
+
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
                                     Context& ctx);
 
-class Generator : public protoc::CodeGenerator {
- public:
-  ~Generator() override = default;
-  bool Generate(const protobuf::FileDescriptor* file,
-                const std::string& parameter, protoc::GeneratorContext* context,
-                std::string* error) const override;
-  uint64_t GetSupportedFeatures() const override {
-    return Feature::FEATURE_PROTO3_OPTIONAL |
-           Feature::FEATURE_SUPPORTS_EDITIONS;
-  }
-  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
-};
-
-bool Generator::Generate(const protobuf::FileDescriptor* file,
-                         const std::string& parameter,
-                         protoc::GeneratorContext* context,
-                         std::string* error) const {
-  bool strip_nonfunctional_codegen = false;
-  Backend backend = Backend::UPB;
-  std::vector<std::pair<std::string, std::string>> params;
-  google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
-
-  for (const auto& pair : params) {
-    if (pair.first == "experimental_strip_nonfunctional_codegen") {
-      strip_nonfunctional_codegen = true;
-    } else if (pair.first == "backend" && pair.second == "cpp") {
-      backend = Backend::CPP;
-    } else {
-      *error = "Unknown parameter: " + pair.first;
-      return false;
-    }
-  }
-
-  // Write model.hpb.h
-  Options options = {.backend = backend,
-                     .strip_feature_includes = strip_nonfunctional_codegen};
-  std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
-      context->Open(CppHeaderFilename(file)));
-  Context hdr_ctx(file, header_output_stream.get(), options);
-  WriteHeader(file, hdr_ctx);
-
-  // Write model.hpb.cc
-  std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
-      context->Open(CppSourceFilename(file)));
-  auto cc_ctx = Context(file, cc_output_stream.get(), options);
-  WriteSource(file, cc_ctx);
-  return true;
-}
+void WriteMessageImplementations(const protobuf::FileDescriptor* file,
+                                 Context& ctx);
 
 void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
   for (int i = 0; i < file->public_dependency_count(); ++i) {
@@ -251,10 +199,42 @@ void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
 }
 
 }  // namespace
+
+bool Generator::Generate(const protobuf::FileDescriptor* file,
+                         const std::string& parameter,
+                         protoc::GeneratorContext* context,
+                         std::string* error) const {
+  {
+    bool strip_nonfunctional_codegen = false;
+    Backend backend = Backend::UPB;
+    std::vector<std::pair<std::string, std::string>> params;
+    google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
+
+    for (const auto& pair : params) {
+      if (pair.first == "experimental_strip_nonfunctional_codegen") {
+        strip_nonfunctional_codegen = true;
+      } else if (pair.first == "backend" && pair.second == "cpp") {
+        backend = Backend::CPP;
+      } else {
+        *error = "Unknown parameter: " + pair.first;
+        return false;
+      }
+    }
+    // Write model.hpb.h
+    Options options = {.backend = backend,
+                       .strip_feature_includes = strip_nonfunctional_codegen};
+    std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> header_output_stream(
+        context->Open(CppHeaderFilename(file)));
+    Context hdr_ctx(file, header_output_stream.get(), options);
+    WriteHeader(file, hdr_ctx);
+
+    // Write model.hpb.cc
+    std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> cc_output_stream(
+        context->Open(CppSourceFilename(file)));
+    auto cc_ctx = Context(file, cc_output_stream.get(), options);
+    WriteSource(file, cc_ctx);
+    return true;
+  }
+}
 }  // namespace protobuf
 }  // namespace google::hpb_generator
-
-int main(int argc, char** argv) {
-  google::protobuf::hpb_generator::Generator generator_cc;
-  return google::protobuf::compiler::PluginMain(argc, argv, &generator_cc);
-}
