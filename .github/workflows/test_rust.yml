@@ -30,7 +30,7 @@ jobs:
 
           # Override cases with custom images
           - config: { name: Cargo }
-            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-1.74.0-b77fdae6d4771789dfc66a56bf8d806354e8011a"
+            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-1.79.0-d271543f317955b5732ce19b2be672a195e96508"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
 
