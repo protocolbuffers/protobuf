@@ -609,15 +609,26 @@ bool MessageDifferencer::CompareWithFields(
 bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2, int unpacked_any,
                                  std::vector<SpecificField>* parent_fields) {
+  // If the messages are the same object, we can do less work.
+  bool same_message_object = &message1 == &message2;
+
   // Expand google.protobuf.Any payload if possible.
   if (message1.GetDescriptor()->full_name() == internal::kAnyFullTypeName) {
-    std::unique_ptr<Message> data1;
-    std::unique_ptr<Message> data2;
-    if (unpack_any_field_.UnpackAny(message1, &data1) &&
-        unpack_any_field_.UnpackAny(message2, &data2) &&
-        data1->GetDescriptor() == data2->GetDescriptor()) {
-      return Compare(*data1, *data2, unpacked_any + 1, parent_fields);
+    if (same_message_object) {
+      std::unique_ptr<Message> data1;
+      if (unpack_any_field_.UnpackAny(message1, &data1)) {
+        return Compare(*data1, *data1, unpacked_any + 1, parent_fields);
+      }
+    } else {
+      std::unique_ptr<Message> data1;
+      std::unique_ptr<Message> data2;
+      if (unpack_any_field_.UnpackAny(message1, &data1) &&
+          unpack_any_field_.UnpackAny(message2, &data2) &&
+          data1->GetDescriptor() == data2->GetDescriptor()) {
+        return Compare(*data1, *data2, unpacked_any + 1, parent_fields);
+      }
     }
+
     // If the Any payload is unparsable, or the payload types are different
     // between message1 and message2, fall through and treat Any as a regular
     // proto.
@@ -627,11 +638,16 @@ bool MessageDifferencer::Compare(const Message& message1,
   // Ignore unknown fields in EQUIVALENT mode
   if (message_field_comparison_ != EQUIVALENT) {
     const Reflection* reflection1 = message1.GetReflection();
-    const Reflection* reflection2 = message2.GetReflection();
     const UnknownFieldSet& unknown_field_set1 =
         reflection1->GetUnknownFields(message1);
+
+    // If the messages are the same object, we can use the same fields.
+    const Reflection* reflection2 =
+        same_message_object ? reflection1 : message2.GetReflection();
     const UnknownFieldSet& unknown_field_set2 =
-        reflection2->GetUnknownFields(message2);
+        same_message_object ? unknown_field_set1
+                            : reflection2->GetUnknownFields(message2);
+
     if (!CompareUnknownFields(message1, message2, unknown_field_set1,
                               unknown_field_set2, parent_fields)) {
       if (reporter_ == nullptr) {
@@ -643,8 +659,9 @@ bool MessageDifferencer::Compare(const Message& message1,
 
   std::vector<const FieldDescriptor*> message1_fields =
       RetrieveFields(message1, true);
+  // If the messages are the same object, we can use the same fields.
   std::vector<const FieldDescriptor*> message2_fields =
-      RetrieveFields(message2, false);
+      same_message_object ? message1_fields : RetrieveFields(message2, false);
 
   return CompareRequestedFieldsUsingSettings(message1, message2, unpacked_any,
                                              message1_fields, message2_fields,
