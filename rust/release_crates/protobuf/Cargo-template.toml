@@ -11,7 +11,7 @@ version = "{VERSION}"
 edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
 links = "upb"
 license = "BSD-3-Clause"
-rust-version = "1.74"
+rust-version = "1.79"
 description = "Protocol Buffers - Google's data interchange format"
 
 [lib]
