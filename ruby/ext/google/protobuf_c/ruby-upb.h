@@ -590,6 +590,7 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 
+#include <stdint.h>
 #include <string.h>
 
 
@@ -975,8 +976,9 @@ typedef struct {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t input_delta;  // Diff between the original input pointer and patch
-  int limit;   // Submessage limit relative to end
-  bool error;  // To distinguish between EOF and error.
+  const char* buffer_start;  // Pointer to the original input buffer
+  int limit;                 // Submessage limit relative to end
+  bool error;                // To distinguish between EOF and error.
   bool aliasing;
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
@@ -1000,6 +1002,7 @@ typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
 UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
                                             const char** ptr, size_t size,
                                             bool enable_aliasing) {
+  e->buffer_start = *ptr;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
     if (size) memcpy(&e->patch, *ptr, size);
@@ -1174,7 +1177,13 @@ UPB_INLINE bool upb_EpsCopyInputStream_AliasingAvailable(
 // be different if we are currently parsing out of the patch buffer.
 UPB_INLINE const char* upb_EpsCopyInputStream_GetInputPtr(
     upb_EpsCopyInputStream* e, const char* ptr) {
-  return (const char*)(((uintptr_t)ptr) + e->input_delta);
+  // This somewhat silly looking add-and-subtract behavior provides provenance
+  // from the original input buffer's pointer. After optimization it produces
+  // the same assembly as just casting `(uintptr_t)ptr+input_delta`
+  // https://godbolt.org/z/zosG88oPn
+  size_t position =
+      (uintptr_t)ptr + e->input_delta - (uintptr_t)e->buffer_start;
+  return e->buffer_start + position;
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing
@@ -3514,15 +3523,21 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
 
 // Adds unknown data (serialized protobuf data) to the given message. The data
 // must represent one or more complete and well formed proto fields.
-// If alias is set, will keep a view to the provided data; otherwise a copy is
-// made.
+//
+// If `alias_base` is NULL, the bytes from `data` will be copied into the
+// destination arena. Otherwise it must be a pointer to the beginning of the
+// buffer that `data` points into, which signals that the message must alias
+// the bytes instead of copying them. The value of `alias_base` is also used
+// to mark the boundary of the buffer, so that we do not inappropriately
+// coalesce two buffers that are separate objects but happen to be contiguous
+// in memory.
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
                                                      const char* data,
                                                      size_t len,
                                                      upb_Arena* arena,
-                                                     bool alias) {
+                                                     const char* alias_base) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  if (alias) {
+  if (alias_base) {
     // Aliasing parse of a message with sequential unknown fields is a simple
     // pointer bump, so inline it.
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
@@ -3530,10 +3545,13 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
       upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
       if (upb_TaggedAuxPtr_IsUnknown(ptr)) {
         upb_StringView* existing = upb_TaggedAuxPtr_UnknownData(ptr);
-        bool was_aliased = upb_TaggedAuxPtr_IsUnknownAliased(ptr);
         // Fast path if the field we're adding is immediately after the last
-        // added unknown field.
-        if (was_aliased && existing->data + existing->size == data) {
+        // added unknown field. However, we could be merging into an existing
+        // message with an allocation that just happens to be positioned
+        // immediately after the previous merged unknown field; this is
+        // considered out-of-bounds and thus UB. Ensure it's in-bounds by
+        // comparing with the original input pointer for our buffer.
+        if (data != alias_base && existing->data + existing->size == data) {
           existing->size += len;
           return true;
         }
@@ -3541,7 +3559,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
     }
   }
   return UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(msg, data, len, arena,
-                                                      alias);
+                                                      alias_base != NULL);
 }
 
 // Adds unknown data (serialized protobuf data) to the given message.
