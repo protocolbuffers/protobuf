@@ -116,9 +116,9 @@ upb_UnknownCompareResult CompareUnknownWithMaxDepth(UnknownFields uf1,
   std::string buf1 = ToBinaryPayload(uf1);
   std::string buf2 = ToBinaryPayload(uf2);
   UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg1), buf1.data(),
-                                       buf1.size(), arena1.ptr(), false);
+                                       buf1.size(), arena1.ptr(), nullptr);
   UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf2.data(),
-                                       buf2.size(), arena2.ptr(), false);
+                                       buf2.size(), arena2.ptr(), nullptr);
   return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
       UPB_UPCAST(msg1), UPB_UPCAST(msg2), max_depth);
 }
