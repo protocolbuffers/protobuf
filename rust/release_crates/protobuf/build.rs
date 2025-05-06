@@ -5,18 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use std::path::Path;
-
 const VERSION: &str = env!("CARGO_PKG_VERSION");
-
-fn clean_path(path: &Path) -> String {
-    let canonical = path.canonicalize().unwrap();
-    let path_str = canonical.to_string_lossy();
-    path_str
-        .strip_prefix(r"\\?\")
-        .unwrap_or(&path_str)
-        .to_string()
-}
 
 fn main() {
     cc::Build::new()
@@ -30,7 +19,9 @@ fn main() {
         .file("libupb/third_party/utf8_range/utf8_range.c")
         .define("UPB_BUILD_API", Some("1"))
         .compile("libupb");
-    let path = std::path::Path::new("libupb");
-    println!("cargo:include={}", clean_path(&path));
+
+    let path = std::path::absolute("libupb").expect("Failed to get resolve path libupb");
+
+    println!("cargo:include={}", path.display());
     println!("cargo:version={}", VERSION);
 }
