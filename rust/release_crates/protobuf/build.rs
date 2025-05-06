@@ -19,7 +19,9 @@ fn main() {
         .file("libupb/third_party/utf8_range/utf8_range.c")
         .define("UPB_BUILD_API", Some("1"))
         .compile("libupb");
-    let path = std::path::Path::new("libupb");
-    println!("cargo:include={}", path.canonicalize().unwrap().display());
+
+    let path = std::path::absolute("libupb").expect("Failed to get full path to libupb");
+
+    println!("cargo:include={}", path.display());
     println!("cargo:version={}", VERSION);
 }
