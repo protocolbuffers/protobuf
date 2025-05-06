@@ -47,9 +47,6 @@ upb_minitable_proto_library_aspect = aspect(
         "_upb_minitable_toolchain": attr.label(
             default = Label("//upb_generator/minitable:toolchain"),
         ),
-        "_cc_toolchain": attr.label(
-            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
-        ),
         "_fasttable_enabled": attr.label(default = "//upb:fasttable_enabled"),
     },
     implementation = _upb_minitable_proto_library_aspect_impl,
