@@ -9,6 +9,6 @@
 #include "google/protobuf/compiler/plugin.h"
 
 int main(int argc, char** argv) {
-  google::protobuf::hpb_generator::Generator generator_cc;
-  return google::protobuf::compiler::PluginMain(argc, argv, &generator_cc);
+  google::protobuf::hpb_generator::Generator hpb_generator;
+  return google::protobuf::compiler::PluginMain(argc, argv, &hpb_generator);
 }
