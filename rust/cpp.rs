@@ -105,6 +105,10 @@ extern "C" {
     pub fn proto2_rust_Message_delete(m: RawMessage);
     pub fn proto2_rust_Message_clear(m: RawMessage);
     pub fn proto2_rust_Message_parse(m: RawMessage, input: SerializedData) -> bool;
+    pub fn proto2_rust_Message_parse_dont_enforce_required(
+        m: RawMessage,
+        input: SerializedData,
+    ) -> bool;
     pub fn proto2_rust_Message_serialize(m: RawMessage, output: &mut SerializedData) -> bool;
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage) -> bool;
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage) -> bool;
