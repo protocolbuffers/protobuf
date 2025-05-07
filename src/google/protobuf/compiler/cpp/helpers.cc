@@ -609,7 +609,7 @@ std::string QualifiedDefaultInstancePtr(const Descriptor* descriptor,
 std::string ClassDataType(const Descriptor* descriptor,
                           const Options& options) {
   return HasDescriptorMethods(descriptor->file(), options) ||
-                 // Boostrap protos are always full, even when lite is forced
+                 // Bootstrap protos are always full, even when lite is forced
                  // via options.
                  IsBootstrapProto(options, descriptor->file())
              ? "ClassDataFull"
