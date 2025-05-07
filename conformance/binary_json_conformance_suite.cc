@@ -2087,6 +2087,24 @@ void BinaryAndJsonConformanceSuiteImpl<
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<
+    MessageType>::RunJsonTestsForReservedFields() {
+  for (const auto& test_case : std::vector<std::pair<std::string, std::string>>{
+           {"Boolean", "true"},
+           {"Number", "1"},
+           {"String", "\"hello\""},
+           {"Message", R"json({ "a": 1 })json"},
+       }) {
+    ExpectParseFailureForJson(
+        absl::StrCat("RejectReservedFieldName.", test_case.first), REQUIRED,
+        absl::Substitute(R"json({
+          "reserved_field": $0
+        })json",
+                         test_case.second));
+  }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<
     MessageType>::RunJsonTestsForUnknownEnumStringValues() {
   // Tests the handling of unknown enum values when encoded as string labels.
   // The expected behavior depends on whether unknown fields are ignored:

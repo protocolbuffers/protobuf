@@ -46,8 +46,6 @@ exports_files([
     "text_format_failure_list_php.txt",
     "text_format_failure_list_php_c.txt",
     "text_format_failure_list_python.txt",
-    "text_format_failure_list_python_cpp.txt",
-    "text_format_failure_list_python_upb.txt",
 ])
 
 cc_proto_library(
