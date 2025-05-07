@@ -272,7 +272,7 @@ static int Message_has_property(zend_object* obj, zend_string* member,
 
   if (!f) return 0;
 
-  if (upb_FieldDef_IsOptional(f) && !upb_FieldDef_HasPresence(f)) {
+  if (!upb_FieldDef_HasPresence(f)) {
     return 0;
   }
 
