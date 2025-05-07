@@ -194,9 +194,6 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
          mt_64->UPB_PRIVATE(field_count), msgext,
          mt_64->UPB_PRIVATE(dense_below), table_mask,
          mt_64->UPB_PRIVATE(required_count));
-  output("#ifdef UPB_TRACING_ENABLED\n");
-  output("  \"$0\",\n", message.full_name());
-  output("#endif\n");
   if (table_size > 0) {
     output("  UPB_FASTTABLE_INIT({\n");
     for (int i = 0; i < table_size; i++) {

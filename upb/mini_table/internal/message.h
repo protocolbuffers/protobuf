@@ -60,10 +60,6 @@ struct upb_MiniTable {
   uint8_t UPB_PRIVATE(table_mask);
   uint8_t UPB_PRIVATE(required_count);  // Required fields have the low hasbits.
 
-#ifdef UPB_TRACING_ENABLED
-  const char* UPB_PRIVATE(full_name);
-#endif
-
 #ifdef UPB_FASTTABLE
   // To statically initialize the tables of variable length, we need a flexible
   // array member, and we need to compile in gnu99 mode (constant initialization
@@ -179,20 +175,6 @@ UPB_PRIVATE(_upb_MiniTable_RequiredMask)(const struct upb_MiniTable* m) {
   UPB_ASSERT(0 < n && n <= 64);
   return (1ULL << n) - 1;
 }
-
-#ifdef UPB_TRACING_ENABLED
-UPB_INLINE const char* upb_MiniTable_FullName(
-    const struct upb_MiniTable* mini_table) {
-  return mini_table->UPB_PRIVATE(full_name);
-}
-// Initializes tracing proto name from language runtimes that construct
-// mini tables dynamically at runtime. The runtime is responsible for passing
-// controlling lifetime of name such as storing in same arena as mini_table.
-UPB_INLINE void upb_MiniTable_SetFullName(struct upb_MiniTable* mini_table,
-                                          const char* full_name) {
-  mini_table->UPB_PRIVATE(full_name) = full_name;
-}
-#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

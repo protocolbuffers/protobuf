@@ -9,10 +9,6 @@
 
 #include "upb/port/sanitizers.h"
 
-#ifdef UPB_TRACING_ENABLED
-#include <stdatomic.h>
-#endif
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -184,38 +180,6 @@ static uintptr_t _upb_Arena_MakeBlockAlloc(upb_alloc* alloc, bool has_initial) {
 static bool _upb_ArenaInternal_HasInitialBlock(upb_ArenaInternal* ai) {
   return ai->block_alloc & 0x1;
 }
-
-#ifdef UPB_TRACING_ENABLED
-static void (*_init_arena_trace_handler)(const upb_Arena*, size_t size) = NULL;
-static void (*_fuse_arena_trace_handler)(const upb_Arena*,
-                                         const upb_Arena*) = NULL;
-static void (*_free_arena_trace_handler)(const upb_Arena*) = NULL;
-
-void upb_Arena_SetTraceHandler(
-    void (*initArenaTraceHandler)(const upb_Arena*, size_t size),
-    void (*fuseArenaTraceHandler)(const upb_Arena*, const upb_Arena*),
-    void (*freeArenaTraceHandler)(const upb_Arena*)) {
-  _init_arena_trace_handler = initArenaTraceHandler;
-  _fuse_arena_trace_handler = fuseArenaTraceHandler;
-  _free_arena_trace_handler = freeArenaTraceHandler;
-}
-
-void upb_Arena_LogInit(const upb_Arena* arena, size_t size) {
-  if (_init_arena_trace_handler) {
-    _init_arena_trace_handler(arena, size);
-  }
-}
-void upb_Arena_LogFuse(const upb_Arena* arena1, const upb_Arena* arena2) {
-  if (_fuse_arena_trace_handler) {
-    _fuse_arena_trace_handler(arena1, arena2);
-  }
-}
-void upb_Arena_LogFree(const upb_Arena* arena) {
-  if (_free_arena_trace_handler) {
-    _free_arena_trace_handler(arena);
-  }
-}
-#endif  // UPB_TRACING_ENABLED
 
 // If the param a is already the root, provides no memory order of refcount.
 // If it has a parent, then acquire memory order is provided for both the root
@@ -460,11 +424,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
     mem = aligned;
   }
   if (UPB_UNLIKELY(n < sizeof(upb_ArenaState) || !mem)) {
-    upb_Arena* ret = _upb_Arena_InitSlow(alloc, mem ? 0 : n);
-#ifdef UPB_TRACING_ENABLED
-    upb_Arena_LogInit(ret, n);
-#endif
-    return ret;
+    return _upb_Arena_InitSlow(alloc, mem ? 0 : n);
   }
 
   a = mem;
@@ -480,9 +440,6 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->head.UPB_PRIVATE(ptr) = (void*)UPB_ALIGN_MALLOC((uintptr_t)(a + 1));
   a->head.UPB_PRIVATE(end) = UPB_PTR_AT(mem, n, char);
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
-#ifdef UPB_TRACING_ENABLED
-  upb_Arena_LogInit(&a->head, n);
-#endif
   return &a->head;
 }
 
@@ -534,9 +491,6 @@ retry:
   // expensive then direct loads.  As an optimization, we only do RMW ops
   // when we need to update things for other threads to see.
   if (poc == _upb_Arena_TaggedFromRefcount(1)) {
-#ifdef UPB_TRACING_ENABLED
-    upb_Arena_LogFree(a);
-#endif
     _upb_Arena_DoFree(ai);
     return;
   }
@@ -763,10 +717,6 @@ static bool _upb_Arena_FixupRefs(upb_ArenaInternal* new_root,
 
 bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
   if (a1 == a2) return true;  // trivial fuse
-
-#ifdef UPB_TRACING_ENABLED
-  upb_Arena_LogFuse(a1, a2);
-#endif
 
   upb_ArenaInternal* ai1 = upb_Arena_Internal(a1);
   upb_ArenaInternal* ai2 = upb_Arena_Internal(a2);

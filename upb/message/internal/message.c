@@ -77,18 +77,3 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
   UPB_ASSERT(in->capacity - in->size >= 1);
   return true;
 }
-
-#ifdef UPB_TRACING_ENABLED
-static void (*_message_trace_handler)(const upb_MiniTable*, const upb_Arena*);
-
-void upb_Message_LogNewMessage(const upb_MiniTable* m, const upb_Arena* arena) {
-  if (_message_trace_handler) {
-    _message_trace_handler(m, arena);
-  }
-}
-
-void upb_Message_SetNewMessageTraceHandler(void (*handler)(const upb_MiniTable*,
-                                                           const upb_Arena*)) {
-  _message_trace_handler = handler;
-}
-#endif  // UPB_TRACING_ENABLED
