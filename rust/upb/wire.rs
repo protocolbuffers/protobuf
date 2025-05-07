@@ -111,7 +111,7 @@ pub unsafe fn decode_with_options(
     // - `mini_table` is the one associated with `msg`
     // - `buf` is legally readable for at least `buf_size` bytes.
     // - `extreg` is null.
-    // - `decode_options` is a valid DecodeOptions, so contains only allowed bits.
+    // - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module.
     let status = unsafe {
         upb_Decode(
             buf,
