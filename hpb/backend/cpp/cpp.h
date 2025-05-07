@@ -23,6 +23,11 @@ typename T::Proxy CreateMessage(Arena& arena) {
 }
 
 template <typename T>
+typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
+  abort();
+}
+
+template <typename T>
 void ClearMessage(PtrOrRawMutable<T> message) {
   abort();
 }

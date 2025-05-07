@@ -25,6 +25,14 @@ typename T::Proxy CreateMessage(Arena& arena) {
 }
 
 template <typename T>
+typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
+  return internal::PrivateAccess::Proxy<T>(
+      internal::DeepClone(interop::upb::GetMessage(message), T::minitable(),
+                          arena.ptr()),
+      arena.ptr());
+}
+
+template <typename T>
 void ClearMessage(PtrOrRawMutable<T> message) {
   auto ptr = Ptr(message);
   auto minitable = interop::upb::GetMiniTable(ptr);
