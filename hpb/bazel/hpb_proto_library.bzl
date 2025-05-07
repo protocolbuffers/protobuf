@@ -143,9 +143,6 @@ _hpb_proto_library_aspect = aspect(
         "_hpb_lang_toolchain": attr.label(
             default = "//src/google/protobuf/compiler/hpb:toolchain",
         ),
-        "_cc_toolchain": attr.label(
-            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
-        ),
         "_upbprotos": attr.label_list(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
