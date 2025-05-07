@@ -774,6 +774,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mini_table/sub.h
   ${protobuf_SOURCE_DIR}/upb/port/atomic.h
   ${protobuf_SOURCE_DIR}/upb/port/def.inc
+  ${protobuf_SOURCE_DIR}/upb/port/sanitizers.h
   ${protobuf_SOURCE_DIR}/upb/port/undef.inc
   ${protobuf_SOURCE_DIR}/upb/port/vsnprintf_compat.h
   ${protobuf_SOURCE_DIR}/upb/reflection/common.h

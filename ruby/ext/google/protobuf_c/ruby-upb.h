@@ -138,7 +138,39 @@ Error, UINTPTR_MAX is undefined
 #define UPBC_API
 #endif
 
+#if UPB_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#define UPB_ASAN 1
+#else
+#define UPB_ASAN 0
+#endif
+
+#if UPB_HAS_FEATURE(hwaddress_sanitizer)
+#define UPB_HWASAN 1
+#define UPB_HWASAN_POISON_TAG 17
+#define UPB_MALLOC_ALIGN 16
+#else
+#define UPB_HWASAN 0
 #define UPB_MALLOC_ALIGN 8
+#endif
+
+#if UPB_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#define UPB_TSAN 1
+#else
+#define UPB_TSAN 0
+#endif
+
+// An unfortunate concession to C++17 and MSVC, which don't support zero-sized
+// structs.
+#if UPB_ASAN || UPB_HWASAN || UPB_TSAN
+#define UPB_XSAN_MEMBER upb_Xsan xsan;
+#define UPB_XSAN(st) (&(st)->xsan)
+#define UPB_XSAN_STRUCT_SIZE 1
+#else
+#define UPB_XSAN_MEMBER
+#define UPB_XSAN(st) (NULL)
+#define UPB_XSAN_STRUCT_SIZE 0
+#endif
+
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
@@ -355,66 +387,6 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #undef UPB_FASTTABLE_SUPPORTED
-
-/* ASAN poisoning (for arena).
- * If using UPB from an interpreted language like Ruby, a build of the
- * interpreter compiled with ASAN enabled must be used in order to get sane and
- * expected behavior.
- */
-
-#if UPB_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
-#define UPB_ASAN 1
-#define UPB_ASAN_GUARD_SIZE 32
-#ifdef __cplusplus
-    extern "C" {
-#endif
-  void __asan_poison_memory_region(void const volatile *addr, size_t size);
-  void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-#define UPB_POISON_MEMORY_REGION(addr, size) \
-  __asan_poison_memory_region((addr), (size))
-#define UPB_UNPOISON_MEMORY_REGION(addr, size) \
-  __asan_unpoison_memory_region((addr), (size))
-#else
-#define UPB_ASAN 0
-#define UPB_ASAN_GUARD_SIZE 0
-#define UPB_POISON_MEMORY_REGION(addr, size) \
-  (UPB_UNUSED(addr), UPB_UNUSED(size))
-#define UPB_UNPOISON_MEMORY_REGION(addr, size) \
-  (UPB_UNUSED(addr), UPB_UNUSED(size))
-#endif
-
-#if UPB_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
-#define UPB_TSAN_PUBLISHED_MEMBER uintptr_t upb_tsan_safely_published;
-#define UPB_TSAN_INIT_PUBLISHED(ptr) (ptr)->upb_tsan_safely_published = 0x5AFE
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
-#define UPB_TSAN_PUBLISH 1
-#define UPB_TSAN_CHECK_READ(member) \
-  __asm__ volatile("" ::"r"(*(char *)&(member)))
-#define UPB_TSAN_CHECK_WRITE(member)                                   \
-  do {                                                                 \
-    char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
-    char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
-    __asm__ volatile("" : "+r"(write_upb_tsan_detect_race));           \
-    *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
-  } while (false)
-#else
-#define UPB_TSAN_PUBLISHED_MEMBER
-#define UPB_TSAN_INIT_PUBLISHED(ptr)
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  do {                                \
-  } while (false && (ptr))
-#define UPB_TSAN_PUBLISH 0
-#define UPB_TSAN_CHECK_READ(member) \
-  do {                              \
-  } while (false && (member))
-#define UPB_TSAN_CHECK_WRITE(member) \
-  do {                               \
-  } while (false && (member))
-#endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
 
@@ -715,6 +687,159 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 #include <stdint.h>
 #include <string.h>
 
+
+#ifndef UPB_PORT_SANITIZERS_H_
+#define UPB_PORT_SANITIZERS_H_
+
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+
+// Must be last.
+
+// Must be inside def.inc/undef.inc
+#if UPB_HWASAN
+#include <sanitizer/hwasan_interface.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// UPB_ARENA_SIZE_HACK depends on this struct having size 1.
+typedef struct {
+  uint8_t state;
+} upb_Xsan;
+
+UPB_INLINE uint8_t _upb_Xsan_NextTag(upb_Xsan *xsan) {
+#if UPB_HWASAN
+  xsan->state++;
+  if (xsan->state <= UPB_HWASAN_POISON_TAG) {
+    xsan->state = UPB_HWASAN_POISON_TAG + 1;
+  }
+  return xsan->state;
+#else
+  return 0;
+#endif
+}
+
+enum {
+#if UPB_ASAN
+  UPB_PRIVATE(kUpb_Asan_GuardSize) = 32,
+#else
+  UPB_PRIVATE(kUpb_Asan_GuardSize) = 0,
+#endif
+};
+
+UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
+#if UPB_HWASAN
+  return __hwasan_get_tag_from_pointer(addr);
+#else
+  return 0;
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
+#if UPB_HWASAN || UPB_TSAN
+  xsan->state = 0;
+#endif
+}
+
+// Marks the given region as poisoned, meaning that it is not accessible until
+// it is unpoisoned.
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_PoisonRegion)(const void *addr,
+                                                   size_t size) {
+#if UPB_ASAN
+  void __asan_poison_memory_region(void const volatile *addr, size_t size);
+  __asan_poison_memory_region(addr, size);
+#elif UPB_HWASAN
+  __hwasan_tag_memory(addr, UPB_HWASAN_POISON_TAG, UPB_ALIGN_MALLOC(size));
+#endif
+}
+
+UPB_INLINE void *UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(void *addr, size_t size,
+                                                       uint8_t tag) {
+#if UPB_ASAN
+  UPB_UNUSED(tag);
+  void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+  __asan_unpoison_memory_region(addr, size);
+  return addr;
+#elif UPB_HWASAN
+  __hwasan_tag_memory(addr, tag, UPB_ALIGN_MALLOC(size));
+  return __hwasan_tag_pointer(addr, tag);
+#else
+  UPB_UNUSED(size);
+  UPB_UNUSED(tag);
+  return addr;
+#endif
+}
+
+// Allows users to read and write to the given region, which will be considered
+// distinct from other regions and may only be accessed through the returned
+// pointer.
+//
+// `addr` must be aligned to the malloc alignment.  Size may be unaligned,
+// and with ASAN we can respect `size` precisely, but with HWASAN we must
+// round `size` up to the next multiple of the malloc alignment, so the caller
+// must guarantee that rounding up `size` will not cause overlap with other
+// regions.
+UPB_INLINE void *UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(upb_Xsan *xsan,
+                                                           void *addr,
+                                                           size_t size) {
+  return UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(addr, size,
+                                               _upb_Xsan_NextTag(xsan));
+}
+
+// Resizes the given region to a new size, *without* invalidating any existing
+// pointers to the region.
+//
+// `tagged_addr` must be a pointer that was previously returned from
+// `upb_Xsan_NewUnpoisonedRegion`.  `old_size` must be the size that was
+// originally passed to `upb_Xsan_NewUnpoisonedRegion`.
+UPB_INLINE void *UPB_PRIVATE(upb_Xsan_ResizeUnpoisonedRegion)(void *tagged_addr,
+                                                              size_t old_size,
+                                                              size_t new_size) {
+  UPB_PRIVATE(upb_Xsan_PoisonRegion)(tagged_addr, old_size);
+  return UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(
+      tagged_addr, new_size, UPB_PRIVATE(_upb_Xsan_GetTag)(tagged_addr));
+}
+
+// Compares two pointers and returns true if they are equal. This returns the
+// correct result even if one or both of the pointers are tagged.
+UPB_INLINE bool UPB_PRIVATE(upb_Xsan_PtrEq)(const void *a, const void *b) {
+#if UPB_HWASAN
+  return __hwasan_tag_pointer(a, 0) == __hwasan_tag_pointer(b, 0);
+#else
+  return a == b;
+#endif
+}
+
+// These annotations improve TSAN's ability to detect data races.  By
+// proactively accessing a non-atomic variable at the point where it is
+// "logically" accessed, we can trigger TSAN diagnostics that might have
+// otherwise been masked by subsequent atomic operations.
+
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadOnly)(upb_Xsan *xsan) {
+#if UPB_TSAN
+  // For performance we avoid using a volatile variable.
+  __asm__ volatile("" ::"r"(xsan->state));
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
+#if UPB_TSAN
+  // For performance we avoid using a volatile variable.
+  __asm__ volatile("" : "+r"(xsan->state));
+#endif
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_PORT_SANITIZERS_H_
+
 // Must be last.
 
 // This is QUITE an ugly hack, which specifies the number of pointers needed
@@ -722,13 +847,14 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 //
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
-#define UPB_ARENA_SIZE_HACK (9 + UPB_TSAN_PUBLISH)
+#define UPB_ARENA_SIZE_HACK (9 + (UPB_XSAN_STRUCT_SIZE * 2))
 
 // LINT.IfChange(upb_Arena)
 
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   char* UPB_ONLYBITS(end);
+  UPB_XSAN_MEMBER
 };
 
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/typescript/arena.ts:upb_Arena)
@@ -746,102 +872,105 @@ UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
-  void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
+UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_AllocSpan)(size_t size) {
+  return UPB_ALIGN_MALLOC(size) + UPB_PRIVATE(kUpb_Asan_GuardSize);
+}
 
-  size = UPB_ALIGN_MALLOC(size);
-  const size_t span = size + UPB_ASAN_GUARD_SIZE;
+UPB_INLINE bool UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(
+    const struct upb_Arena* a, void* ptr, size_t size) {
+  return UPB_PRIVATE(upb_Xsan_PtrEq)(
+      (char*)ptr + UPB_PRIVATE(_upb_Arena_AllocSpan)(size),
+      a->UPB_ONLYBITS(ptr));
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(const void* ptr) {
+  return (uintptr_t)ptr % UPB_MALLOC_ALIGN == 0;
+}
+
+UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+
+  size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
+
   if (UPB_UNLIKELY(UPB_PRIVATE(_upb_ArenaHas)(a) < span)) {
+    void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
     return UPB_PRIVATE(_upb_Arena_SlowMalloc)(a, span);
   }
 
   // We have enough space to do a fast malloc.
   void* ret = a->UPB_ONLYBITS(ptr);
-  UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)ret) == (uintptr_t)ret);
-  UPB_ASSERT(UPB_ALIGN_MALLOC(size) == size);
-  UPB_UNPOISON_MEMORY_REGION(ret, size);
-
   a->UPB_ONLYBITS(ptr) += span;
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(ret));
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(a->UPB_ONLYBITS(ptr)));
 
-  return ret;
+  return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
 }
 
 UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
   UPB_ASSERT(ptr);
   UPB_ASSERT(size <= oldsize);
-  size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
-  oldsize = UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE;
-  if (size == oldsize) {
-    return;
-  }
-  char* arena_ptr = a->UPB_ONLYBITS(ptr);
-  // If it's the last alloc in the last block, we can resize.
-  if ((char*)ptr + oldsize == arena_ptr) {
-    a->UPB_ONLYBITS(ptr) = (char*)ptr + size;
+
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  UPB_PRIVATE(upb_Xsan_ResizeUnpoisonedRegion)(ptr, oldsize, size);
+
+  if (UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(a, ptr, oldsize)) {
+    // We can reclaim some memory.
+    a->UPB_ONLYBITS(ptr) -= UPB_ALIGN_MALLOC(oldsize) - UPB_ALIGN_MALLOC(size);
   } else {
-    // If not, verify that it could have been a full-block alloc that did not
-    // replace the last block.
+    // We can't reclaim any memory, but we need to verify that `ptr` really
+    // does represent the most recent allocation.
 #ifndef NDEBUG
     bool _upb_Arena_WasLastAlloc(struct upb_Arena * a, void* ptr,
                                  size_t oldsize);
     UPB_ASSERT(_upb_Arena_WasLastAlloc(a, ptr, oldsize));
 #endif
   }
-  UPB_POISON_MEMORY_REGION((char*)ptr + (size - UPB_ASAN_GUARD_SIZE),
-                           oldsize - size);
 }
 
 UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
                                         size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
   UPB_ASSERT(ptr);
   UPB_ASSERT(size > oldsize);
-  size = UPB_ALIGN_MALLOC(size) + UPB_ASAN_GUARD_SIZE;
-  oldsize = UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE;
-  if (size == oldsize) {
-    return true;
-  }
-  size_t extend = size - oldsize;
-  if ((char*)ptr + oldsize == a->UPB_ONLYBITS(ptr) &&
+
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  size_t extend = UPB_ALIGN_MALLOC(size) - UPB_ALIGN_MALLOC(oldsize);
+
+  if (UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(a, ptr, oldsize) &&
       UPB_PRIVATE(_upb_ArenaHas)(a) >= extend) {
     a->UPB_ONLYBITS(ptr) += extend;
-    UPB_UNPOISON_MEMORY_REGION((char*)ptr + (oldsize - UPB_ASAN_GUARD_SIZE),
-                               extend);
+    UPB_PRIVATE(upb_Xsan_ResizeUnpoisonedRegion)(ptr, oldsize, size);
     return true;
   }
+
   return false;
 }
 
 UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
                                        size_t oldsize, size_t size) {
-  UPB_TSAN_CHECK_WRITE(a->UPB_ONLYBITS(ptr));
-  if (ptr) {
-    if (size == oldsize) {
-      return ptr;
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+
+  void* ret;
+
+  if (ptr && (size <= oldsize || upb_Arena_TryExtend(a, ptr, oldsize, size))) {
+    // We can extend or shrink in place.
+    if (size <= oldsize &&
+        UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(a, ptr, oldsize)) {
+      upb_Arena_ShrinkLast(a, ptr, oldsize, size);
     }
-    if (size > oldsize) {
-      if (upb_Arena_TryExtend(a, ptr, oldsize, size)) return ptr;
-    } else {
-      if ((char*)ptr + (UPB_ALIGN_MALLOC(oldsize) + UPB_ASAN_GUARD_SIZE) ==
-          a->UPB_ONLYBITS(ptr)) {
-        upb_Arena_ShrinkLast(a, ptr, oldsize, size);
-      } else {
-        UPB_POISON_MEMORY_REGION((char*)ptr + size, oldsize - size);
-      }
-      return ptr;
+    ret = ptr;
+  } else {
+    // We need to copy into a new allocation.
+    ret = upb_Arena_Malloc(a, size);
+    if (ret && oldsize > 0) {
+      memcpy(ret, ptr, UPB_MIN(oldsize, size));
     }
   }
-  void* ret = upb_Arena_Malloc(a, size);
 
-  if (ret && oldsize > 0) {
-    memcpy(ret, ptr, UPB_MIN(oldsize, size));
-    UPB_POISON_MEMORY_REGION(ptr, oldsize);
-  }
-
-  return ret;
+  // We want to invalidate pointers to the old region if hwasan is enabled, so
+  // we poison and unpoison even if ptr == ret.
+  UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, oldsize);
+  return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
 }
 
 #ifdef __cplusplus
@@ -16174,7 +16303,6 @@ google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(
 #undef UPB_ALIGN_MALLOC
 #undef UPB_ALIGN_OF
 #undef UPB_ALIGN_AS
-#undef UPB_MALLOC_ALIGN
 #undef UPB_LIKELY
 #undef UPB_UNLIKELY
 #undef UPB_UNPREDICTABLE
@@ -16200,14 +16328,10 @@ google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(
 #undef UPB_POISON_MEMORY_REGION
 #undef UPB_UNPOISON_MEMORY_REGION
 #undef UPB_ASAN
-#undef UPB_ASAN_GUARD_SIZE
-#undef UPB_CLANG_ASAN
-#undef UPB_TSAN_PUBLISHED_MEMBER
-#undef UPB_TSAN_INIT_PUBLISHED
-#undef UPB_TSAN_CHECK_PUBLISHED
-#undef UPB_TSAN_PUBLISH
-#undef UPB_TSAN_CHECK_READ
-#undef UPB_TSAN_CHECK_WRITE
+#undef UPB_HWASAN
+#undef UPB_HWASAN_POISON_TAG
+#undef UPB_MALLOC_ALIGN
+#undef UPB_TSAN
 #undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
 #undef UPB_DEPRECATED
 #undef UPB_GNUC_MIN
