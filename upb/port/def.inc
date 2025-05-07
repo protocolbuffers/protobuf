@@ -141,7 +141,39 @@ Error, UINTPTR_MAX is undefined
 #define UPBC_API
 #endif
 
+#if UPB_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#define UPB_ASAN 1
+#else
+#define UPB_ASAN 0
+#endif
+
+#if UPB_HAS_FEATURE(hwaddress_sanitizer)
+#define UPB_HWASAN 1
+#define UPB_HWASAN_POISON_TAG 17
+#define UPB_MALLOC_ALIGN 16
+#else
+#define UPB_HWASAN 0
 #define UPB_MALLOC_ALIGN 8
+#endif
+
+#if UPB_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#define UPB_TSAN 1
+#else
+#define UPB_TSAN 0
+#endif
+
+// An unfortunate concession to C++17 and MSVC, which don't support zero-sized
+// structs.
+#if UPB_ASAN || UPB_HWASAN || UPB_TSAN
+#define UPB_XSAN_MEMBER upb_Xsan xsan;
+#define UPB_XSAN(st) (&(st)->xsan)
+#define UPB_XSAN_STRUCT_SIZE 1
+#else
+#define UPB_XSAN_MEMBER
+#define UPB_XSAN(st) (NULL)
+#define UPB_XSAN_STRUCT_SIZE 0
+#endif
+
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
@@ -358,66 +390,6 @@ Error, UINTPTR_MAX is undefined
 #endif
 
 #undef UPB_FASTTABLE_SUPPORTED
-
-/* ASAN poisoning (for arena).
- * If using UPB from an interpreted language like Ruby, a build of the
- * interpreter compiled with ASAN enabled must be used in order to get sane and
- * expected behavior.
- */
-
-#if UPB_HAS_FEATURE(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
-#define UPB_ASAN 1
-#define UPB_ASAN_GUARD_SIZE 32
-#ifdef __cplusplus
-    extern "C" {
-#endif
-  void __asan_poison_memory_region(void const volatile *addr, size_t size);
-  void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-#define UPB_POISON_MEMORY_REGION(addr, size) \
-  __asan_poison_memory_region((addr), (size))
-#define UPB_UNPOISON_MEMORY_REGION(addr, size) \
-  __asan_unpoison_memory_region((addr), (size))
-#else
-#define UPB_ASAN 0
-#define UPB_ASAN_GUARD_SIZE 0
-#define UPB_POISON_MEMORY_REGION(addr, size) \
-  (UPB_UNUSED(addr), UPB_UNUSED(size))
-#define UPB_UNPOISON_MEMORY_REGION(addr, size) \
-  (UPB_UNUSED(addr), UPB_UNUSED(size))
-#endif
-
-#if UPB_HAS_FEATURE(thread_sanitizer) || defined(__SANITIZE_THREAD__)
-#define UPB_TSAN_PUBLISHED_MEMBER uintptr_t upb_tsan_safely_published;
-#define UPB_TSAN_INIT_PUBLISHED(ptr) (ptr)->upb_tsan_safely_published = 0x5AFE
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  UPB_ASSERT((ptr)->upb_tsan_safely_published == 0x5AFE)
-#define UPB_TSAN_PUBLISH 1
-#define UPB_TSAN_CHECK_READ(member) \
-  __asm__ volatile("" ::"r"(*(char *)&(member)))
-#define UPB_TSAN_CHECK_WRITE(member)                                   \
-  do {                                                                 \
-    char *write_upb_tsan_detect_race_ptr = (char *)&(member);          \
-    char write_upb_tsan_detect_race = *write_upb_tsan_detect_race_ptr; \
-    __asm__ volatile("" : "+r"(write_upb_tsan_detect_race));           \
-    *write_upb_tsan_detect_race_ptr = write_upb_tsan_detect_race;      \
-  } while (false)
-#else
-#define UPB_TSAN_PUBLISHED_MEMBER
-#define UPB_TSAN_INIT_PUBLISHED(ptr)
-#define UPB_TSAN_CHECK_PUBLISHED(ptr) \
-  do {                                \
-  } while (false && (ptr))
-#define UPB_TSAN_PUBLISH 0
-#define UPB_TSAN_CHECK_READ(member) \
-  do {                              \
-  } while (false && (member))
-#define UPB_TSAN_CHECK_WRITE(member) \
-  do {                               \
-  } while (false && (member))
-#endif
 
 /* Disable proto2 arena behavior (TEMPORARY) **********************************/
 

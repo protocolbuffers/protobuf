@@ -31,10 +31,9 @@ upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* m,
                  UPB_PRIVATE(_upb_ArenaHas)(&d->arena) >= msg_ceil_bytes)) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
     msg_data = d->arena.UPB_PRIVATE(ptr);
+    // TODO: fix for Xsan
     d->arena.UPB_PRIVATE(ptr) += size;
-    UPB_UNPOISON_MEMORY_REGION(msg_data, msg_ceil_bytes);
     memset(msg_data, 0, msg_ceil_bytes);
-    UPB_POISON_MEMORY_REGION(msg_data + size, msg_ceil_bytes - size);
   } else {
     msg_data = (char*)upb_Arena_Malloc(&d->arena, size);
     memset(msg_data, 0, size);

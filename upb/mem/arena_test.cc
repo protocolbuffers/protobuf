@@ -32,6 +32,7 @@
 #include "absl/time/time.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/port/sanitizers.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -138,13 +139,33 @@ TEST(ArenaTest, TryExtend) {
 }
 
 TEST(ArenaTest, ReallocFastPath) {
-  upb_Arena* arena = upb_Arena_Init(nullptr, 4096, &upb_alloc_global);
+  upb_Arena* arena = upb_Arena_Init(nullptr, 1024, &upb_alloc_global);
   void* initial = upb_Arena_Malloc(arena, 512);
   uintptr_t initial_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+
   void* extend = upb_Arena_Realloc(arena, initial, 512, 1024);
-  uintptr_t extend_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+  EXPECT_EQ(initial_allocated, upb_Arena_SpaceAllocated(arena, nullptr));
+#if UPB_HWASAN
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(initial, extend));
+  EXPECT_NE(initial, extend);
+#else
   EXPECT_EQ(initial, extend);
-  EXPECT_EQ(initial_allocated, extend_allocated);
+#endif
+
+  void* shrunk = upb_Arena_Realloc(arena, extend, 1024, 512);
+  EXPECT_EQ(initial_allocated, upb_Arena_SpaceAllocated(arena, nullptr));
+#if UPB_HWASAN
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(initial, shrunk));
+  EXPECT_NE(initial, shrunk);
+  EXPECT_NE(extend, shrunk);
+#else
+  EXPECT_EQ(initial, shrunk);
+#endif
+
+  EXPECT_NE(nullptr, upb_Arena_Malloc(arena, 256));
+  // Should have allocated into shrunk space
+  EXPECT_EQ(initial_allocated, upb_Arena_SpaceAllocated(arena, nullptr));
+
   upb_Arena_Free(arena);
 }
 
@@ -278,7 +299,7 @@ TEST(OverheadTest, SmallBlocksLargerThanInitial_many) {
   for (int i = 0; i < 100; i++) {
     test.Alloc(initial_block_size * 2 + 1);
   }
-  if (!UPB_ASAN) {
+  if (!UPB_ASAN && sizeof(upb_Xsan) == 0) {
 #ifdef __ANDROID__
     EXPECT_NEAR(test.WastePct(), 0.09, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.12, 0.025);
@@ -726,6 +747,6 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   for (auto& t : threads) t.join();
 }
 
-#endif
+#endif  // UPB_SUPPRESS_MISSING_ATOMICS
 
 }  // namespace

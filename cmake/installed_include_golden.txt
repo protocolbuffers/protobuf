@@ -192,6 +192,7 @@ upb/mini_table/message.h
 upb/mini_table/sub.h
 upb/port/atomic.h
 upb/port/def.inc
+upb/port/sanitizers.h
 upb/port/undef.inc
 upb/port/vsnprintf_compat.h
 upb/reflection/common.h

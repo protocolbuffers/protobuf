@@ -88,10 +88,8 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
                        char* data, size_t data_offset, upb_StringView* dst) {
   d->arena.UPB_PRIVATE(ptr) += copy;
   dst->data = data + data_offset;
-  UPB_UNPOISON_MEMORY_REGION(data, copy);
+  // TODO: fix for Xsan
   memcpy(data, ptr, copy);
-  UPB_POISON_MEMORY_REGION(data + data_offset + size,
-                           copy - data_offset - size);
 }
 
 #define FASTDECODE_COPYSTRING(d, ptr, msg, table, hasbits, data, tagbytes,     \
