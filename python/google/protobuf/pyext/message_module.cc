@@ -34,20 +34,7 @@ namespace {
 
 class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
  public:
-  ProtoAPIDescriptorDatabase() {
-    PyObject* descriptor_pool =
-        PyImport_ImportModule("google.protobuf.descriptor_pool");
-    if (descriptor_pool == nullptr) {
-      ABSL_LOG(ERROR)
-          << "Failed to import google.protobuf.descriptor_pool module.";
-    }
-
-    pool_ = PyObject_CallMethod(descriptor_pool, "Default", nullptr);
-    if (pool_ == nullptr) {
-      ABSL_LOG(ERROR) << "Failed to get python Default pool.";
-    }
-    Py_DECREF(descriptor_pool);
-  };
+  ProtoAPIDescriptorDatabase(PyObject* py_pool) : pool_(py_pool) {};
 
   ~ProtoAPIDescriptorDatabase() {
     // Objects of this class are meant to be `static`ally initialized and
@@ -114,8 +101,10 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
 
 absl::StatusOr<const google::protobuf::Descriptor*> FindMessageDescriptor(
     PyObject* pyfile, const char* descriptor_full_name) {
-  static auto* database = new ProtoAPIDescriptorDatabase();
-  static auto* pool = new google::protobuf::DescriptorPool(database);
+  static std::map<PyObject*,
+                  std::pair<std::unique_ptr<ProtoAPIDescriptorDatabase>,
+                            std::unique_ptr<google::protobuf::DescriptorPool>>>
+      pool_map;
   PyObject* pyfile_name = PyObject_GetAttrString(pyfile, "name");
   if (pyfile_name == nullptr) {
     return absl::InvalidArgumentError("FileDescriptor has no attribute 'name'");
@@ -125,8 +114,18 @@ absl::StatusOr<const google::protobuf::Descriptor*> FindMessageDescriptor(
     Py_DECREF(pyfile_name);
     return absl::InvalidArgumentError("FileDescriptor has no attribute 'pool'");
   }
-  // Check the file descriptor is from generated pool.
-  bool is_from_generated_pool = database->pool() == pyfile_pool;
+  google::protobuf::DescriptorPool* pool;
+  if (auto it = pool_map.find(pyfile_pool); it != pool_map.end()) {
+    pool = it->second.second.get();
+  } else {
+    std::unique_ptr<ProtoAPIDescriptorDatabase> unique_db =
+        std::make_unique<ProtoAPIDescriptorDatabase>(pyfile_pool);
+    std::unique_ptr<google::protobuf::DescriptorPool> unique_pool =
+        std::make_unique<google::protobuf::DescriptorPool>(unique_db.get());
+    pool = unique_pool.get();
+    pool_map.emplace(pyfile_pool, std::make_pair(std::move(unique_db),
+                                                 std::move(unique_pool)));
+  }
   Py_DECREF(pyfile_pool);
   const char* pyfile_name_char_ptr = PyUnicode_AsUTF8(pyfile_name);
   if (pyfile_name_char_ptr == nullptr) {
@@ -134,18 +133,11 @@ absl::StatusOr<const google::protobuf::Descriptor*> FindMessageDescriptor(
     return absl::InvalidArgumentError(
         "FileDescriptor 'name' PyUnicode_AsUTF8() failure.");
   }
-  if (!is_from_generated_pool) {
-    std::string error_msg = absl::StrCat(pyfile_name_char_ptr,
-                                         " is not from generated pool");
-    Py_DECREF(pyfile_name);
-    return absl::InvalidArgumentError(error_msg);
-  }
   const google::protobuf::FileDescriptor* file_descriptor =
       pool->FindFileByName(pyfile_name_char_ptr);
   Py_DECREF(pyfile_name);
   if (file_descriptor == nullptr) {
-    // Already checked the file is from generated pool above, this
-    // error should never be reached.
+    // This error should never be reached.
     ABSL_DLOG(ERROR) << "MEANT TO BE UNREACHABLE.";
     std::string error_msg = absl::StrCat("Fail to find/build file ",
                                          pyfile_name_char_ptr);
