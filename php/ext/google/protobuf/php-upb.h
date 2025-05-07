@@ -1932,6 +1932,8 @@ UPB_API_INLINE upb_MutableMessageValue upb_MutableMessageValue_Zero(void) {
 #ifndef UPB_MINI_TABLE_MESSAGE_H_
 #define UPB_MINI_TABLE_MESSAGE_H_
 
+#include <stdint.h>
+
 
 #ifndef UPB_MINI_TABLE_ENUM_H_
 #define UPB_MINI_TABLE_ENUM_H_
@@ -2474,6 +2476,10 @@ UPB_API_INLINE int upb_MiniTable_FieldCount(const struct upb_MiniTable* m) {
   return m->UPB_ONLYBITS(field_count);
 }
 
+UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
+  return m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
     const struct upb_MiniTable* m) {
   extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
@@ -2592,6 +2598,8 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
     const upb_MiniTable* m, uint32_t index);
 
 UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m);
+
+UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const upb_MiniTable* m);
 
 // DEPRECATED: use upb_MiniTable_SubMessage() instead
 // Returns the MiniTable for a message field, NULL if the field is unlinked.
@@ -3388,6 +3396,11 @@ upb_MiniTableExtension_Number(const struct upb_MiniTableExtension* e) {
   return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
 }
 
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_Extendee(
+    const struct upb_MiniTableExtension* e) {
+  return e->UPB_PRIVATE(extendee);
+}
+
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const struct upb_MiniTableExtension* e) {
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Message) {
@@ -3449,6 +3462,9 @@ upb_MiniTableExtension_CType(const upb_MiniTableExtension* e);
 
 UPB_API_INLINE uint32_t
 upb_MiniTableExtension_Number(const upb_MiniTableExtension* e);
+
+UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_Extendee(
+    const upb_MiniTableExtension* e);
 
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const upb_MiniTableExtension* e);
@@ -5834,6 +5850,7 @@ typedef enum {
   kUpb_ExtensionRegistryStatus_Ok = 0,
   kUpb_ExtensionRegistryStatus_DuplicateEntry = 1,
   kUpb_ExtensionRegistryStatus_OutOfMemory = 2,
+  kUpb_ExtensionRegistryStatus_InvalidExtension = 3,
 } upb_ExtensionRegistryStatus;
 
 // Creates a upb_ExtensionRegistry in the given arena.
