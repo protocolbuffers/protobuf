@@ -50,19 +50,26 @@ class GeneratedClassTest extends TestBase
         $message = new TestMessage();
 
         $this->assertTrue(property_exists(TestMessage::class, 'optional_string'));
+        $this->assertTrue(property_exists(TestMessage::class, 'repeated_int32'));
         $this->assertTrue(property_exists($message, 'optional_string'));
+        $this->assertTrue(property_exists($message, 'repeated_int32'));
 
         $message->setOptionalString('bar');
+        $message->setRepeatedInt32([1, 2, 3]);
 
         $this->assertTrue(property_exists(TestMessage::class, 'optional_string'));
+        $this->assertTrue(property_exists(TestMessage::class, 'repeated_int32'));
         $this->assertFalse(property_exists(TestMessage::class, 'foo'));
 
         $this->assertTrue(property_exists($message, 'optional_string'));
+        $this->assertTrue(property_exists($message, 'repeated_int32'));
         $this->assertFalse(property_exists($message, 'foo'));
 
         // isset() should return false for attributes that are not public.
         $this->assertFalse(isset($message->optional_string));
-        // Should be false for attributes that are not part of the message.
+        // doesn't have presence
+        $this->assertFalse(isset($message->repeated_int32));
+        // Not a proto field
         $this->assertFalse(isset($message->foo));
     }
 
