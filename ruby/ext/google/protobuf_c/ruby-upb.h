@@ -5988,6 +5988,7 @@ UPB_API_INLINE int upb_MiniTableFile_MessageCount(const upb_MiniTableFile* f);
 extern "C" {
 #endif
 
+// LINT.IfChange
 enum {
   /* If set, strings and unknown fields will alias the input buffer instead of
    * copying into the arena. */
@@ -6057,6 +6058,7 @@ enum {
    */
   kUpb_DecodeOption_AlwaysValidateUtf8 = 8,
 };
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
