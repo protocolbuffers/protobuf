@@ -99,6 +99,8 @@ Error, UINTPTR_MAX is undefined
   (((SIZE_MAX - offsetof(type, member[0])) /                \
     (offsetof(type, member[1]) - offsetof(type, member[0]))) < (size_t)count)
 
+#define UPB_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
+
 #define UPB_MAPTYPE_STRING 0
 
 // UPB_EXPORT: always generate a public symbol.
@@ -15405,7 +15407,7 @@ typedef struct upb_Decoder {
   upb_EpsCopyInputStream input;
   const upb_ExtensionRegistry* extreg;
   upb_Message* original_msg;  // Pointer to preserve data to
-  int depth;                 // Tracks recursion depth to bound stack usage.
+  int depth;                  // Tracks recursion depth to bound stack usage.
   uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
   uint16_t options;
   bool missing_required;
@@ -15454,6 +15456,10 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
 
 const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
                                         const char* ptr, int overrun);
+
+const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
+                                       upb_Message* msg,
+                                       const upb_MiniTable* layout);
 
 UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
   return upb_EpsCopyInputStream_IsDoneWithCallback(

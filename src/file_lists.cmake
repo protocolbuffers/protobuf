@@ -488,7 +488,6 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.cc
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.cc
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
@@ -631,7 +630,6 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/zip_writer.h
-  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
@@ -699,6 +697,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.c
   ${protobuf_SOURCE_DIR}/upb/wire/byte_size.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
+  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
   ${protobuf_SOURCE_DIR}/upb/wire/reader.c
@@ -818,6 +817,9 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/util/required_fields.h
   ${protobuf_SOURCE_DIR}/upb/wire/byte_size.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode.h
+  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/combinations.h
+  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/data.h
+  ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.h
