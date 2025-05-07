@@ -42,8 +42,17 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
 
 UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension* e) {
+  uint32_t fieldnum = upb_MiniTableExtension_Number(e);
+  const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
+
+  const uint32_t kMaxFieldNumber = (1 << 29) - 1;
+  if (fieldnum == 0 ||
+      (fieldnum > kMaxFieldNumber && !upb_MiniTable_IsMessageSet(extendee))) {
+    return kUpb_ExtensionRegistryStatus_InvalidExtension;
+  }
+
   char buf[EXTREG_KEY_SIZE];
-  extreg_key(buf, e->UPB_PRIVATE(extendee), upb_MiniTableExtension_Number(e));
+  extreg_key(buf, extendee, fieldnum);
 
   if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, NULL)) {
     return kUpb_ExtensionRegistryStatus_DuplicateEntry;

@@ -98,6 +98,10 @@ UPB_API_INLINE int upb_MiniTable_FieldCount(const struct upb_MiniTable* m) {
   return m->UPB_ONLYBITS(field_count);
 }
 
+UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const struct upb_MiniTable* m) {
+  return m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet;
+}
+
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
     const struct upb_MiniTable* m) {
   extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
