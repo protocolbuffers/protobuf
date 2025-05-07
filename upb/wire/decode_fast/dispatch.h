@@ -129,6 +129,17 @@ const char* fastdecode_delimited(
   return ptr;
 }
 
+UPB_FORCEINLINE
+uint64_t upb_DecodeFast_LoadHasbits(upb_Message* msg) {
+  return *(uint32_t*)&msg[1];
+}
+
+UPB_FORCEINLINE
+void upb_DecodeFast_SetHasbits(upb_Message* msg, uint64_t hasbits) {
+  // TODO: Can we use `=` instead of` |=`?
+  *(uint32_t*)&msg[1] |= hasbits;
+}
+
 #include "upb/port/undef.inc"
 
 #endif  // UPB_WIRE_DECODE_FAST_FIELD_DISPATCH_H_

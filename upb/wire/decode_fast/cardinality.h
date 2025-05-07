@@ -15,6 +15,8 @@
 #include "upb/message/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
+#include "upb/wire/decode_fast/combinations.h"
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/internal/decoder.h"
 
@@ -22,13 +24,6 @@
 #include "upb/port/def.inc"
 
 /* singular, oneof, repeated field handling ***********************************/
-
-typedef enum {
-  CARD_s = 0, /* Singular (optional, non-repeated) */
-  CARD_o = 1, /* Oneof */
-  CARD_r = 2, /* Repeated */
-  CARD_p = 3  /* Packed Repeated */
-} upb_card;
 
 typedef struct {
   upb_Array* arr;
@@ -117,28 +112,29 @@ void* fastdecode_fieldmem(upb_Message* msg, uint64_t data) {
 UPB_FORCEINLINE
 void* fastdecode_getfield(upb_Decoder* d, const char* ptr, upb_Message* msg,
                           uint64_t* data, uint64_t* hasbits,
-                          fastdecode_arr* farr, int valbytes, upb_card card) {
+                          fastdecode_arr* farr, int valbytes,
+                          upb_DecodeFast_Cardinality card) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   switch (card) {
-    case CARD_s: {
-      uint8_t hasbit_index = *data >> 24;
+    case kUpb_DecodeFast_Scalar: {
+      uint8_t hasbit_index = upb_DecodeFastData_GetPresence(*data);
       // Set hasbit and return pointer to scalar field.
       *hasbits |= 1ull << hasbit_index;
       return fastdecode_fieldmem(msg, *data);
     }
-    case CARD_o: {
-      uint16_t case_ofs = *data >> 32;
+    case kUpb_DecodeFast_Oneof: {
+      uint16_t case_ofs = upb_DecodeFastData_GetCaseOffset(*data);
       uint32_t* oneof_case = UPB_PTR_AT(msg, case_ofs, uint32_t);
-      uint8_t field_number = *data >> 24;
+      uint8_t field_number = upb_DecodeFastData_GetPresence(*data);
       *oneof_case = field_number;
       return fastdecode_fieldmem(msg, *data);
     }
-    case CARD_r: {
+    case kUpb_DecodeFast_Repeated: {
       // Get pointer to upb_Array and allocate/expand if necessary.
       uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
       upb_Array** arr_p = (upb_Array**)fastdecode_fieldmem(msg, *data);
       char* begin;
-      ((uint32_t*)msg)[2] |= *hasbits;
+      upb_DecodeFast_SetHasbits(msg, *hasbits);
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
         farr->arr = UPB_PRIVATE(_upb_Array_New)(&d->arena, 8, elem_size_lg2);
@@ -162,12 +158,13 @@ bool fastdecode_flippacked(uint64_t* data, int tagbytes) {
   return fastdecode_checktag(*data, tagbytes);
 }
 
-#define FASTDECODE_CHECKPACKED(tagbytes, card, func)                \
-  if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {         \
-    if (card == CARD_r && fastdecode_flippacked(&data, tagbytes)) { \
-      UPB_MUSTTAIL return func(UPB_PARSE_ARGS);                     \
-    }                                                               \
-    RETURN_GENERIC("packed check tag mismatch\n");                  \
+#define FASTDECODE_CHECKPACKED(tagbytes, card, func)        \
+  if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) { \
+    if (card == kUpb_DecodeFast_Repeated &&                 \
+        fastdecode_flippacked(&data, tagbytes)) {           \
+      UPB_MUSTTAIL return func(UPB_PARSE_ARGS);             \
+    }                                                       \
+    RETURN_GENERIC("packed check tag mismatch\n");          \
   }
 
 #endif  // UPB_WIRE_DECODE_FAST_FIELD_CARDINALITY_H_

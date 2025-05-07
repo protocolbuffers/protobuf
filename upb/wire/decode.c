@@ -106,10 +106,6 @@ static const upb_MiniTableEnum* _upb_MiniTableSubs_EnumByField(
   return subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(subenum);
 }
 
-static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
-                                              upb_Message* msg,
-                                              const upb_MiniTable* layout);
-
 UPB_NORETURN static void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
                                                 upb_DecodeStatus status) {
   UPB_ASSERT(status != kUpb_DecodeStatus_Ok);
@@ -1306,9 +1302,9 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
 }
 
 UPB_NOINLINE
-static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
-                                              upb_Message* msg,
-                                              const upb_MiniTable* layout) {
+const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
+                                       upb_Message* msg,
+                                       const upb_MiniTable* layout) {
   uint32_t last_field_index = 0;
 
 #if UPB_FASTTABLE
@@ -1373,17 +1369,6 @@ static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
              ? _upb_Decoder_CheckRequired(d, ptr, msg, layout)
              : ptr;
 }
-
-#if UPB_FASTTABLE
-const char* _upb_FastDecoder_DecodeGeneric(struct upb_Decoder* d,
-                                           const char* ptr, upb_Message* msg,
-                                           intptr_t table, uint64_t hasbits,
-                                           uint64_t data) {
-  (void)data;
-  *(uint32_t*)msg |= hasbits;
-  return _upb_Decoder_DecodeMessage(d, ptr, msg, decode_totablep(table));
-}
-#endif
 
 static upb_DecodeStatus _upb_Decoder_DecodeTop(struct upb_Decoder* d,
                                                const char* buf,

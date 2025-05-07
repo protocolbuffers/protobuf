@@ -11,6 +11,7 @@
 
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -59,48 +60,51 @@ done:
   return ptr;
 }
 
-#define FASTDECODE_UNPACKEDVARINT(d, ptr, msg, table, hasbits, data, tagbytes, \
-                                  valbytes, card, zigzag, packed)              \
-  uint64_t val;                                                                \
-  void* dst;                                                                   \
-  fastdecode_arr farr;                                                         \
-                                                                               \
-  FASTDECODE_CHECKPACKED(tagbytes, card, packed);                              \
-                                                                               \
-  dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr, valbytes,     \
-                            card);                                             \
-  if (card == CARD_r) {                                                        \
-    if (UPB_UNLIKELY(!dst)) {                                                  \
-      RETURN_GENERIC("need array resize\n");                                   \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
-  again:                                                                       \
-  if (card == CARD_r) {                                                        \
-    dst = fastdecode_resizearr(d, dst, &farr, valbytes);                       \
-  }                                                                            \
-                                                                               \
-  ptr += tagbytes;                                                             \
-  ptr = fastdecode_varint64(ptr, &val);                                        \
-  if (ptr == NULL) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);  \
-  val = fastdecode_munge(val, valbytes, zigzag);                               \
-  memcpy(dst, &val, valbytes);                                                 \
-                                                                               \
-  if (card == CARD_r) {                                                        \
-    fastdecode_nextret ret = fastdecode_nextrepeated(                          \
-        d, dst, &ptr, &farr, data, tagbytes, valbytes);                        \
-    switch (ret.next) {                                                        \
-      case FD_NEXT_SAMEFIELD:                                                  \
-        dst = ret.dst;                                                         \
-        goto again;                                                            \
-      case FD_NEXT_OTHERFIELD:                                                 \
-        data = ret.tag;                                                        \
-        UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);      \
-      case FD_NEXT_ATLIMIT:                                                    \
-        return ptr;                                                            \
-    }                                                                          \
-  }                                                                            \
-                                                                               \
+#define FASTDECODE_UNPACKEDVARINT(packed, card, d, ptr, msg, table, hasbits,  \
+                                  data, type, tagsize)                        \
+  uint64_t val;                                                               \
+  void* dst;                                                                  \
+  fastdecode_arr farr;                                                        \
+  int valbytes = upb_DecodeFast_ValueBytes(type);                             \
+  bool zigzag = upb_DecodeFast_IsZigZag(type);                                \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                        \
+                                                                              \
+  FASTDECODE_CHECKPACKED(tagbytes, card, packed);                             \
+                                                                              \
+  dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr, valbytes,    \
+                            card);                                            \
+  if (card == kUpb_DecodeFast_Repeated) {                                     \
+    if (UPB_UNLIKELY(!dst)) {                                                 \
+      RETURN_GENERIC("need array resize\n");                                  \
+    }                                                                         \
+  }                                                                           \
+                                                                              \
+  again:                                                                      \
+  if (card == kUpb_DecodeFast_Repeated) {                                     \
+    dst = fastdecode_resizearr(d, dst, &farr, valbytes);                      \
+  }                                                                           \
+                                                                              \
+  ptr += tagbytes;                                                            \
+  ptr = fastdecode_varint64(ptr, &val);                                       \
+  if (ptr == NULL) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed); \
+  val = fastdecode_munge(val, valbytes, zigzag);                              \
+  memcpy(dst, &val, valbytes);                                                \
+                                                                              \
+  if (card == kUpb_DecodeFast_Repeated) {                                     \
+    fastdecode_nextret ret = fastdecode_nextrepeated(                         \
+        d, dst, &ptr, &farr, data, tagbytes, valbytes);                       \
+    switch (ret.next) {                                                       \
+      case FD_NEXT_SAMEFIELD:                                                 \
+        dst = ret.dst;                                                        \
+        goto again;                                                           \
+      case FD_NEXT_OTHERFIELD:                                                \
+        data = ret.tag;                                                       \
+        UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);     \
+      case FD_NEXT_ATLIMIT:                                                   \
+        return ptr;                                                           \
+    }                                                                         \
+  }                                                                           \
+                                                                              \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
 typedef struct {
@@ -131,14 +135,17 @@ const char* fastdecode_topackedvarint(upb_EpsCopyInputStream* e,
   return ptr;
 }
 
-#define FASTDECODE_PACKEDVARINT(d, ptr, msg, table, hasbits, data, tagbytes, \
-                                valbytes, zigzag, unpacked)                  \
+#define FASTDECODE_PACKEDVARINT(unpacked, card, d, ptr, msg, table, hasbits, \
+                                data, type, tagsize)                         \
+  int valbytes = upb_DecodeFast_ValueBytes(type);                            \
+  bool zigzag = upb_DecodeFast_IsZigZag(type);                               \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                       \
   fastdecode_varintdata ctx = {valbytes, zigzag};                            \
                                                                              \
-  FASTDECODE_CHECKPACKED(tagbytes, CARD_r, unpacked);                        \
+  FASTDECODE_CHECKPACKED(tagbytes, kUpb_DecodeFast_Repeated, unpacked);      \
                                                                              \
   ctx.dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &ctx.farr,     \
-                                valbytes, CARD_r);                           \
+                                valbytes, kUpb_DecodeFast_Repeated);         \
   if (UPB_UNLIKELY(!ctx.dst)) {                                              \
     RETURN_GENERIC("need array resize\n");                                   \
   }                                                                          \
@@ -152,57 +159,29 @@ const char* fastdecode_topackedvarint(upb_EpsCopyInputStream* e,
                                                                              \
   UPB_MUSTTAIL return fastdecode_dispatch(d, ptr, msg, table, hasbits, 0);
 
-#define FASTDECODE_VARINT(d, ptr, msg, table, hasbits, data, tagbytes,     \
-                          valbytes, card, zigzag, unpacked, packed)        \
-  if (card == CARD_p) {                                                    \
-    FASTDECODE_PACKEDVARINT(d, ptr, msg, table, hasbits, data, tagbytes,   \
-                            valbytes, zigzag, unpacked);                   \
-  } else {                                                                 \
-    FASTDECODE_UNPACKEDVARINT(d, ptr, msg, table, hasbits, data, tagbytes, \
-                              valbytes, card, zigzag, packed);             \
+#define FASTDECODE_VARINT(unpacked, packed, card, ...)   \
+  if (card == kUpb_DecodeFast_Packed) {                  \
+    FASTDECODE_PACKEDVARINT(unpacked, card, __VA_ARGS__) \
+  } else {                                               \
+    FASTDECODE_UNPACKEDVARINT(packed, card, __VA_ARGS__) \
   }
-
-#define z_ZZ true
-#define b_ZZ false
-#define v_ZZ false
 
 /* Generate all combinations:
  * {s,o,r,p} x {b1,v4,z4,v8,z8} x {1bt,2bt} */
 
-#define F(card, type, valbytes, tagbytes)                                      \
+#define F(type, card, tagsize)                                                 \
   UPB_NOINLINE                                                                 \
-  const char* upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS) { \
-    FASTDECODE_VARINT(d, ptr, msg, table, hasbits, data, tagbytes, valbytes,   \
-                      CARD_##card, type##_ZZ,                                  \
-                      upb_pr##type##valbytes##_##tagbytes##bt,                 \
-                      upb_pp##type##valbytes##_##tagbytes##bt);                \
+  const char* UPB_DECODEFAST_FUNCNAME(type, card, tagsize)(UPB_PARSE_PARAMS) { \
+    FASTDECODE_VARINT(UPB_DECODEFAST_FUNCNAME(type, Repeated, tagsize),        \
+                      UPB_DECODEFAST_FUNCNAME(type, Packed, tagsize),          \
+                      kUpb_DecodeFast_##card, UPB_PARSE_ARGS,                  \
+                      kUpb_DecodeFast_##type, kUpb_DecodeFast_##tagsize);      \
   }
 
-#define TYPES(card, tagbytes) \
-  F(card, b, 1, tagbytes)     \
-  F(card, v, 4, tagbytes)     \
-  F(card, v, 8, tagbytes)     \
-  F(card, z, 4, tagbytes)     \
-  F(card, z, 8, tagbytes)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Bool)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Varint32)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Varint64)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, ZigZag32)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, ZigZag64)
 
-#define TAGBYTES(card) \
-  TYPES(card, 1)       \
-  TYPES(card, 2)
-
-TAGBYTES(s)
-TAGBYTES(o)
-TAGBYTES(r)
-TAGBYTES(p)
-
-#undef z_ZZ
-#undef b_ZZ
-#undef v_ZZ
-#undef o_ONEOF
-#undef s_ONEOF
-#undef r_ONEOF
 #undef F
-#undef TYPES
-#undef TAGBYTES
-#undef FASTDECODE_UNPACKEDVARINT
-#undef FASTDECODE_PACKEDVARINT
-#undef FASTDECODE_VARINT

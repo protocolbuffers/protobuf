@@ -14,6 +14,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -22,11 +23,24 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-typedef const char* fastdecode_copystr_func(struct upb_Decoder* d,
-                                            const char* ptr, upb_Message* msg,
-                                            const upb_MiniTable* table,
-                                            uint64_t hasbits,
-                                            upb_StringView* dst);
+// We generate two functions for each combination:
+// 1. The main function, which attempts to alias the string from the input
+//    stream, but will fall back to (2) if aliasing is not possible.
+// 2. A copy function, which always copies the string from the input stream.
+
+#define STRING_FUNCNAME(type, card, tagsize, copy) \
+  UPB_DECODEFAST_FUNCNAME(copy##type, card, tagsize)
+
+// Forward-declare the copy function type.
+#define F(type, card, tagsize)                            \
+  UPB_NOINLINE                                            \
+  static const char* STRING_FUNCNAME(type, card, tagsize, \
+                                     Copy)(UPB_PARSE_PARAMS);
+
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, String)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Bytes)
+
+#undef F
 
 UPB_NOINLINE
 static const char* fastdecode_verifyutf8(upb_Decoder* d, const char* ptr,
@@ -92,14 +106,16 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
   memcpy(data, ptr, copy);
 }
 
-#define FASTDECODE_COPYSTRING(d, ptr, msg, table, hasbits, data, tagbytes,     \
-                              card, validate_utf8)                             \
+#define FASTDECODE_COPYSTRING(d, ptr, msg, table, hasbits, data, type, card,   \
+                              tagsize)                                         \
   upb_StringView* dst;                                                         \
   fastdecode_arr farr;                                                         \
   int64_t size;                                                                \
   size_t arena_has;                                                            \
   size_t common_has;                                                           \
   char* buf;                                                                   \
+  bool validate_utf8 = type == kUpb_DecodeFast_String;                         \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                         \
                                                                                \
   UPB_ASSERT(!upb_EpsCopyInputStream_AliasingAvailable(&d->input, ptr, 0));    \
   UPB_ASSERT(fastdecode_checktag(data, tagbytes));                             \
@@ -108,7 +124,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
                             sizeof(upb_StringView), card);                     \
                                                                                \
   again:                                                                       \
-  if (card == CARD_r) {                                                        \
+  if (card == kUpb_DecodeFast_Repeated) {                                      \
     dst = fastdecode_resizearr(d, dst, &farr, sizeof(upb_StringView));         \
   }                                                                            \
                                                                                \
@@ -140,7 +156,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
                                                                                \
   ptr += size;                                                                 \
                                                                                \
-  if (card == CARD_r) {                                                        \
+  if (card == kUpb_DecodeFast_Repeated) {                                      \
     if (validate_utf8 &&                                                       \
         !_upb_Decoder_VerifyUtf8Inline(dst->data, dst->size)) {                \
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_BadUtf8);                 \
@@ -159,7 +175,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
     }                                                                          \
   }                                                                            \
                                                                                \
-  if (card != CARD_r && validate_utf8) {                                       \
+  if (card != kUpb_DecodeFast_Repeated && validate_utf8) {                     \
     data = (uint64_t)dst;                                                      \
     UPB_MUSTTAIL return fastdecode_verifyutf8(UPB_PARSE_ARGS);                 \
   }                                                                            \
@@ -167,7 +183,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);                     \
                                                                                \
   longstr:                                                                     \
-  if (card == CARD_r) {                                                        \
+  if (card == kUpb_DecodeFast_Repeated) {                                      \
     fastdecode_commitarr(dst + 1, &farr, sizeof(upb_StringView));              \
   }                                                                            \
   ptr--;                                                                       \
@@ -179,11 +195,13 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
                                                      hasbits, (uint64_t)dst);  \
   }
 
-#define FASTDECODE_STRING(d, ptr, msg, table, hasbits, data, tagbytes, card,  \
-                          copyfunc, validate_utf8)                            \
+#define FASTDECODE_STRING(d, ptr, msg, table, hasbits, data, type, card,      \
+                          tagsize, copyfunc)                                  \
   upb_StringView* dst;                                                        \
   fastdecode_arr farr;                                                        \
   int64_t size;                                                               \
+  bool validate_utf8 = type == kUpb_DecodeFast_String;                        \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                        \
                                                                               \
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {                   \
     RETURN_GENERIC("string field tag mismatch\n");                            \
@@ -198,7 +216,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
                             sizeof(upb_StringView), card);                    \
                                                                               \
   again:                                                                      \
-  if (card == CARD_r) {                                                       \
+  if (card == kUpb_DecodeFast_Repeated) {                                     \
     dst = fastdecode_resizearr(d, dst, &farr, sizeof(upb_StringView));        \
   }                                                                           \
                                                                               \
@@ -222,7 +240,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
   ptr = upb_EpsCopyInputStream_ReadStringAliased(&d->input, &dst->data,       \
                                                  dst->size);                  \
                                                                               \
-  if (card == CARD_r) {                                                       \
+  if (card == kUpb_DecodeFast_Repeated) {                                     \
     if (validate_utf8 &&                                                      \
         !_upb_Decoder_VerifyUtf8Inline(dst->data, dst->size)) {               \
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_BadUtf8);                \
@@ -241,7 +259,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
     }                                                                         \
   }                                                                           \
                                                                               \
-  if (card != CARD_r && validate_utf8) {                                      \
+  if (card != kUpb_DecodeFast_Repeated && validate_utf8) {                    \
     data = (uint64_t)dst;                                                     \
     UPB_MUSTTAIL return fastdecode_verifyutf8(UPB_PARSE_ARGS);                \
   }                                                                           \
@@ -251,37 +269,27 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
 /* Generate all combinations:
  * {p,c} x {s,o,r} x {s, b} x {1bt,2bt} */
 
-#define s_VALIDATE true
-#define b_VALIDATE false
-
-#define F(card, tagbytes, type)                                        \
-  UPB_NOINLINE                                                         \
-  const char* upb_c##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS) {   \
-    FASTDECODE_COPYSTRING(d, ptr, msg, table, hasbits, data, tagbytes, \
-                          CARD_##card, type##_VALIDATE);               \
-  }                                                                    \
-  const char* upb_p##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS) {   \
-    FASTDECODE_STRING(d, ptr, msg, table, hasbits, data, tagbytes,     \
-                      CARD_##card, upb_c##card##type##_##tagbytes##bt, \
-                      type##_VALIDATE);                                \
+#define F(type, card, tagsize)                                            \
+  UPB_NOINLINE                                                            \
+  static const char* STRING_FUNCNAME(type, card, tagsize,                 \
+                                     Copy)(UPB_PARSE_PARAMS) {            \
+    FASTDECODE_COPYSTRING(d, ptr, msg, table, hasbits, data,              \
+                          kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
+                          kUpb_DecodeFast_##tagsize)                      \
+  }                                                                       \
+  const char* STRING_FUNCNAME(type, card, tagsize, )(UPB_PARSE_PARAMS) {  \
+    FASTDECODE_STRING(d, ptr, msg, table, hasbits, data,                  \
+                      kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,     \
+                      kUpb_DecodeFast_##tagsize,                          \
+                      STRING_FUNCNAME(type, card, tagsize, Copy))         \
   }
 
-#define UTF8(card, tagbytes) \
-  F(card, tagbytes, s)       \
-  F(card, tagbytes, b)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, String)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Bytes)
 
-#define TAGBYTES(card) \
-  UTF8(card, 1)        \
-  UTF8(card, 2)
-
-TAGBYTES(s)
-TAGBYTES(o)
-TAGBYTES(r)
-
-#undef s_VALIDATE
-#undef b_VALIDATE
 #undef F
-#undef TAGBYTES
+
+#undef F
 #undef FASTDECODE_LONGSTRING
 #undef FASTDECODE_COPYSTRING
 #undef FASTDECODE_STRING

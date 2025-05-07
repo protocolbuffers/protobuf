@@ -36,7 +36,7 @@ typedef struct upb_Decoder {
   upb_EpsCopyInputStream input;
   const upb_ExtensionRegistry* extreg;
   upb_Message* original_msg;  // Pointer to preserve data to
-  int depth;                 // Tracks recursion depth to bound stack usage.
+  int depth;                  // Tracks recursion depth to bound stack usage.
   uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
   uint16_t options;
   bool missing_required;
@@ -85,6 +85,10 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
 
 const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
                                         const char* ptr, int overrun);
+
+const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
+                                       upb_Message* msg,
+                                       const upb_MiniTable* layout);
 
 UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
   return upb_EpsCopyInputStream_IsDoneWithCallback(

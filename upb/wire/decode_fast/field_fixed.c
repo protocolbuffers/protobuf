@@ -5,57 +5,69 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/message/array.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/dispatch.h"
-#include "upb/wire/decode_fast/field_parsers.h"
+#include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/decoder.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
-#define FASTDECODE_UNPACKEDFIXED(d, ptr, msg, table, hasbits, data, tagbytes, \
-                                 valbytes, card, packed)                      \
-  void* dst;                                                                  \
-  fastdecode_arr farr;                                                        \
-                                                                              \
-  FASTDECODE_CHECKPACKED(tagbytes, card, packed)                              \
-                                                                              \
-  dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr, valbytes,    \
-                            card);                                            \
-  if (card == CARD_r) {                                                       \
-    if (UPB_UNLIKELY(!dst)) {                                                 \
-      RETURN_GENERIC("couldn't allocate array in arena\n");                   \
-    }                                                                         \
-  }                                                                           \
-                                                                              \
-  again:                                                                      \
-  if (card == CARD_r) {                                                       \
-    dst = fastdecode_resizearr(d, dst, &farr, valbytes);                      \
-  }                                                                           \
-                                                                              \
-  ptr += tagbytes;                                                            \
-  memcpy(dst, ptr, valbytes);                                                 \
-  ptr += valbytes;                                                            \
-                                                                              \
-  if (card == CARD_r) {                                                       \
-    fastdecode_nextret ret = fastdecode_nextrepeated(                         \
-        d, dst, &ptr, &farr, data, tagbytes, valbytes);                       \
-    switch (ret.next) {                                                       \
-      case FD_NEXT_SAMEFIELD:                                                 \
-        dst = ret.dst;                                                        \
-        goto again;                                                           \
-      case FD_NEXT_OTHERFIELD:                                                \
-        data = ret.tag;                                                       \
-        UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);     \
-      case FD_NEXT_ATLIMIT:                                                   \
-        return ptr;                                                           \
-    }                                                                         \
-  }                                                                           \
-                                                                              \
+#define FASTDECODE_UNPACKEDFIXED(packed, card, d, ptr, msg, table, hasbits, \
+                                 data, type, tagsize)                       \
+  void* dst;                                                                \
+  fastdecode_arr farr;                                                      \
+  int valbytes = upb_DecodeFast_ValueBytes(type);                           \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                      \
+                                                                            \
+  FASTDECODE_CHECKPACKED(tagbytes, card, packed)                            \
+                                                                            \
+  dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr, valbytes,  \
+                            card);                                          \
+  if (card == kUpb_DecodeFast_Repeated) {                                   \
+    if (UPB_UNLIKELY(!dst)) {                                               \
+      RETURN_GENERIC("couldn't allocate array in arena\n");                 \
+    }                                                                       \
+  }                                                                         \
+                                                                            \
+  again:                                                                    \
+  if (card == kUpb_DecodeFast_Repeated) {                                   \
+    dst = fastdecode_resizearr(d, dst, &farr, valbytes);                    \
+  }                                                                         \
+                                                                            \
+  ptr += tagbytes;                                                          \
+  memcpy(dst, ptr, valbytes);                                               \
+  ptr += valbytes;                                                          \
+                                                                            \
+  if (card == kUpb_DecodeFast_Repeated) {                                   \
+    fastdecode_nextret ret = fastdecode_nextrepeated(                       \
+        d, dst, &ptr, &farr, data, tagbytes, valbytes);                     \
+    switch (ret.next) {                                                     \
+      case FD_NEXT_SAMEFIELD:                                               \
+        dst = ret.dst;                                                      \
+        goto again;                                                         \
+      case FD_NEXT_OTHERFIELD:                                              \
+        data = ret.tag;                                                     \
+        UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);   \
+      case FD_NEXT_ATLIMIT:                                                 \
+        return ptr;                                                         \
+    }                                                                       \
+  }                                                                         \
+                                                                            \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
-#define FASTDECODE_PACKEDFIXED(d, ptr, msg, table, hasbits, data, tagbytes, \
-                               valbytes, unpacked)                          \
-  FASTDECODE_CHECKPACKED(tagbytes, CARD_r, unpacked)                        \
+#define FASTDECODE_PACKEDFIXED(unpacked, card, d, ptr, msg, table, hasbits, \
+                               data, type, tagsize)                         \
+  int valbytes = upb_DecodeFast_ValueBytes(type);                           \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                      \
+                                                                            \
+  FASTDECODE_CHECKPACKED(tagbytes, kUpb_DecodeFast_Repeated, unpacked)      \
                                                                             \
   ptr += tagbytes;                                                          \
   int size = (uint8_t)ptr[0];                                               \
@@ -92,44 +104,32 @@
   ptr += size;                                                              \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
-#define FASTDECODE_FIXED(d, ptr, msg, table, hasbits, data, tagbytes,     \
-                         valbytes, card, unpacked, packed)                \
-  if (card == CARD_p) {                                                   \
-    FASTDECODE_PACKEDFIXED(d, ptr, msg, table, hasbits, data, tagbytes,   \
-                           valbytes, unpacked);                           \
-  } else {                                                                \
-    FASTDECODE_UNPACKEDFIXED(d, ptr, msg, table, hasbits, data, tagbytes, \
-                             valbytes, card, packed);                     \
+#define FASTDECODE_FIXED(unpacked, packed, card, ...)   \
+  if (card == kUpb_DecodeFast_Packed) {                 \
+    FASTDECODE_PACKEDFIXED(unpacked, card, __VA_ARGS__) \
+  } else {                                              \
+    FASTDECODE_UNPACKEDFIXED(packed, card, __VA_ARGS__) \
   }
 
 /* Generate all combinations:
  * {s,o,r,p} x {f4,f8} x {1bt,2bt} */
 
-#define F(card, valbytes, tagbytes)                                         \
-  UPB_NOINLINE                                                              \
-  const char* upb_p##card##f##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS) { \
-    FASTDECODE_FIXED(d, ptr, msg, table, hasbits, data, tagbytes, valbytes, \
-                     CARD_##card, upb_ppf##valbytes##_##tagbytes##bt,       \
-                     upb_prf##valbytes##_##tagbytes##bt);                   \
+#define F(type, card, tagbytes)                                           \
+  UPB_NOINLINE                                                            \
+  const char* UPB_DECODEFAST_FUNCNAME(type, card,                         \
+                                      tagbytes)(UPB_PARSE_PARAMS) {       \
+    FASTDECODE_FIXED(UPB_DECODEFAST_FUNCNAME(type, Repeated, tagbytes),   \
+                     UPB_DECODEFAST_FUNCNAME(type, Packed, tagbytes),     \
+                     kUpb_DecodeFast_##card, UPB_PARSE_ARGS,              \
+                     kUpb_DecodeFast_##type, kUpb_DecodeFast_##tagbytes); \
   }
 
-#define TYPES(card, tagbytes) \
-  F(card, 4, tagbytes)        \
-  F(card, 8, tagbytes)
-
-#define TAGBYTES(card) \
-  TYPES(card, 1)       \
-  TYPES(card, 2)
-
-TAGBYTES(s)
-TAGBYTES(o)
-TAGBYTES(r)
-TAGBYTES(p)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Fixed32)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Fixed64)
 
 #undef F
-#undef TYPES
-#undef TAGBYTES
-#undef FASTDECODE_UNPACKEDFIXED
+#undef FASTDECODE_FIXED
 #undef FASTDECODE_PACKEDFIXED
+#undef FASTDECODE_UNPACKEDFIXED
 
 #include "upb/port/undef.inc"

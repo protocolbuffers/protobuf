@@ -9,20 +9,30 @@ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
 
+# Our preprocessor code does not work with the default (buggy) MSVC preprocessor.
+# TODO: Remove this once the new preprocessor is enabled by default.
+FASTTABLE_COPTS = UPB_DEFAULT_COPTS + select({
+    "//build_defs:config_msvc": ["/Zc:preprocessor"],
+    "//conditions:default": [],
+})
+
 cc_library(
     name = "field_parsers",
     srcs = [
         "cardinality.h",
         "dispatch.h",
         "field_fixed.c",
+        "field_generic.c",
         "field_message.c",
         "field_string.c",
         "field_varint.c",
     ],
     hdrs = ["field_parsers.h"],
-    copts = UPB_DEFAULT_COPTS,
+    copts = FASTTABLE_COPTS,
     visibility = ["//upb:__pkg__"],
     deps = [
+        ":combinations",
+        ":data",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
@@ -36,14 +46,79 @@ cc_library(
 
 cc_library(
     name = "select",
-    srcs = ["select.cc"],
+    srcs = ["select.c"],
     hdrs = ["select.h"],
-    visibility = ["//upb_generator/minitable:__pkg__"],
+    copts = FASTTABLE_COPTS,
+    visibility = [
+        "//pkg:__pkg__",
+        "//upb_generator/minitable:__pkg__",
+    ],
     deps = [
+        ":combinations",
+        ":data",
         "//upb:base",
         "//upb:mini_table",
         "//upb:port",
         "//upb:wire_reader",
+        "//upb/base:internal",
+        "//upb/mini_table:internal",
         "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "select_test",
+    srcs = ["select_test.cc"],
+    deps = [
+        ":combinations",
+        ":select",
+        "@abseil-cpp//absl/base:core_headers",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "combinations",
+    hdrs = ["combinations.h"],
+    copts = FASTTABLE_COPTS,
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        "//upb:mini_table",
+        "//upb:port",
+    ],
+)
+
+cc_library(
+    name = "data",
+    hdrs = ["data.h"],
+    copts = FASTTABLE_COPTS,
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        "//upb:port",
+    ],
+)
+
+cc_library(
+    name = "function_array",
+    srcs = ["function_array.c"],
+    hdrs = ["function_array.h"],
+    copts = FASTTABLE_COPTS,
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        ":combinations",
+        ":field_parsers",
+        "//upb:port",
+        "//upb/mini_table:internal",
+    ],
+)
+
+cc_binary(
+    name = "bisect_helper",
+    srcs = ["bisect_helper.cc"],
+    deps = [
+        ":select",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:parse",
     ],
 )

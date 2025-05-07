@@ -14,6 +14,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -24,10 +25,11 @@
 
 UPB_INLINE
 upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* m,
-                                int msg_ceil_bytes) {
+                                upb_DecodeFast_Type type) {
   size_t size = m->UPB_PRIVATE(size);
   char* msg_data;
-  if (UPB_LIKELY(msg_ceil_bytes > 0 &&
+  size_t msg_ceil_bytes = upb_DecodeFast_MessageCeilingBytes(type);
+  if (UPB_LIKELY(type != kUpb_DecodeFast_MessageBig &&
                  UPB_PRIVATE(_upb_ArenaHas)(&d->arena) >= msg_ceil_bytes)) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
     msg_data = d->arena.UPB_PRIVATE(ptr);
@@ -56,8 +58,9 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   return ptr;
 }
 
-#define FASTDECODE_SUBMSG(d, ptr, msg, table, hasbits, data, tagbytes,    \
-                          msg_ceil_bytes, card)                           \
+#define FASTDECODE_SUBMSG(d, ptr, msg, table, hasbits, data, type, card,  \
+                          tagsize)                                        \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                    \
                                                                           \
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {               \
     RETURN_GENERIC("submessage field tag mismatch\n");                    \
@@ -83,20 +86,20 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr,          \
                             sizeof(upb_Message*), card);                  \
                                                                           \
-  if (card == CARD_s) {                                                   \
-    ((uint32_t*)msg)[2] |= hasbits;                                       \
+  if (card == kUpb_DecodeFast_Scalar) {                                   \
+    upb_DecodeFast_SetHasbits(msg, hasbits);                              \
     hasbits = 0;                                                          \
   }                                                                       \
                                                                           \
   again:                                                                  \
-  if (card == CARD_r) {                                                   \
+  if (card == kUpb_DecodeFast_Repeated) {                                 \
     dst = fastdecode_resizearr(d, dst, &farr, sizeof(upb_Message*));      \
   }                                                                       \
                                                                           \
   submsg.msg = *dst;                                                      \
                                                                           \
-  if (card == CARD_r || UPB_LIKELY(!submsg.msg)) {                        \
-    *dst = submsg.msg = decode_newmsg_ceil(d, subtablep, msg_ceil_bytes); \
+  if (card == kUpb_DecodeFast_Repeated || UPB_LIKELY(!submsg.msg)) {      \
+    *dst = submsg.msg = decode_newmsg_ceil(d, subtablep, type);           \
   }                                                                       \
                                                                           \
   ptr += tagbytes;                                                        \
@@ -106,7 +109,7 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
     _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);            \
   }                                                                       \
                                                                           \
-  if (card == CARD_r) {                                                   \
+  if (card == kUpb_DecodeFast_Repeated) {                                 \
     fastdecode_nextret ret = fastdecode_nextrepeated(                     \
         d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_Message*));       \
     switch (ret.next) {                                                   \
@@ -126,29 +129,18 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   d->depth++;                                                             \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
-#define F(card, tagbytes, size_ceil, ceil_arg)                               \
-  const char* upb_p##card##m_##tagbytes##bt_max##size_ceil##b(               \
-      UPB_PARSE_PARAMS) {                                                    \
-    FASTDECODE_SUBMSG(d, ptr, msg, table, hasbits, data, tagbytes, ceil_arg, \
-                      CARD_##card);                                          \
+#define F(type, card, tagsize)                                                 \
+  const char* UPB_DECODEFAST_FUNCNAME(type, card, tagsize)(UPB_PARSE_PARAMS) { \
+    FASTDECODE_SUBMSG(d, ptr, msg, table, hasbits, data,                       \
+                      kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,          \
+                      kUpb_DecodeFast_##tagsize);                              \
   }
 
-#define SIZES(card, tagbytes) \
-  F(card, tagbytes, 64, 64)   \
-  F(card, tagbytes, 128, 128) \
-  F(card, tagbytes, 192, 192) \
-  F(card, tagbytes, 256, 256) \
-  F(card, tagbytes, max, -1)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message64)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message128)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message192)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message256)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, MessageBig)
 
-#define TAGBYTES(card) \
-  SIZES(card, 1)       \
-  SIZES(card, 2)
-
-TAGBYTES(s)
-TAGBYTES(o)
-TAGBYTES(r)
-
-#undef TAGBYTES
-#undef SIZES
 #undef F
 #undef FASTDECODE_SUBMSG
