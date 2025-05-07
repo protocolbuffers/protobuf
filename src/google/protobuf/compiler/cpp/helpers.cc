@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
-#include <new>
 #include <queue>
 #include <string>
 #include <type_traits>
