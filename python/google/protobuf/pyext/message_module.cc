@@ -58,7 +58,7 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
     ABSL_DLOG(ERROR) << "MEANT TO BE UNREACHABLE.";
   };
 
-  bool FindFileByName(const std::string& filename,
+  bool FindFileByName(StringViewArg filename,
                       google::protobuf::FileDescriptorProto* output) override {
     PyObject* pyfile_name =
         PyUnicode_FromStringAndSize(filename.data(), filename.size());
@@ -95,13 +95,13 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
     return ok;
   }
 
-  bool FindFileContainingSymbol(const std::string& symbol_name,
+  bool FindFileContainingSymbol(StringViewArg symbol_name,
                                 google::protobuf::FileDescriptorProto* output) override {
     return false;
   }
 
   bool FindFileContainingExtension(
-      const std::string& containing_type, int field_number,
+      StringViewArg containing_type, int field_number,
       google::protobuf::FileDescriptorProto* output) override {
     return false;
   }
