@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <memory>
@@ -80,6 +81,20 @@ bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
   return false;
 }
 }  // namespace
+
+bool EpsCopyInputStream::IsRequestedLessThanOrEqualTo(int requested,
+                                                      int available) {
+  return static_cast<int64_t>(static_cast<uint32_t>(requested)) <=
+         static_cast<int64_t>(available);
+}
+
+bool EpsCopyInputStream::CanReadFromPtr(int requested, const char* ptr) {
+  return IsRequestedLessThanOrEqualTo(requested, BytesAvailable(ptr));
+}
+
+bool EpsCopyInputStream::HasEnoughTillLimit(int requested, const char* ptr) {
+  return IsRequestedLessThanOrEqualTo(requested, BytesUntilLimit(ptr));
+}
 
 // Only call if at start of tag.
 template <bool kExperimentalV2>
@@ -209,7 +224,7 @@ const char* EpsCopyInputStream::SkipFallback(const char* ptr, int size) {
 const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
                                                    std::string* str) {
   str->clear();
-  if (ABSL_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
+  if (ABSL_PREDICT_TRUE(HasEnoughTillLimit(size, ptr))) {
     // Reserve the string up to a static safe size. If strings are bigger than
     // this we proceed by growing the string as needed. This protects against
     // malicious payloads making protobuf hold on to a lot of memory.
@@ -338,7 +353,8 @@ const char* EpsCopyInputStream::VerifyUTF8Fallback(const char* ptr,
 
 const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
                                                      std::string* str) {
-  if (ABSL_PREDICT_TRUE(size <= buffer_end_ - ptr + limit_)) {
+  if (ABSL_PREDICT_TRUE(
+          IsRequestedLessThanOrEqualTo(size, BytesUntilLimit(ptr)))) {
     // Reserve the string up to a static safe size. If strings are bigger than
     // this we proceed by growing the string as needed. This protects against
     // malicious payloads making protobuf hold on to a lot of memory.
@@ -351,8 +367,7 @@ const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
 const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
                                                  absl::Cord* cord) {
   if (zcis_ == nullptr) {
-    int bytes_from_buffer = buffer_end_ - ptr + kSlopBytes;
-    if (size <= bytes_from_buffer) {
+    if (CanReadFromPtr(size, ptr)) {
       *cord = absl::string_view(ptr, size);
       return ptr + size;
     }
@@ -361,9 +376,9 @@ const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
     });
   }
   int new_limit = buffer_end_ - ptr + limit_;
-  if (size > new_limit) return nullptr;
+  if (!IsRequestedLessThanOrEqualTo(size, new_limit)) return nullptr;
   new_limit -= size;
-  int bytes_from_buffer = buffer_end_ - ptr + kSlopBytes;
+  int bytes_from_buffer = BytesAvailable(ptr);
   const bool in_patch_buf = reinterpret_cast<uintptr_t>(ptr) -
                                 reinterpret_cast<uintptr_t>(patch_buffer_) <=
                             kPatchBufferSize;

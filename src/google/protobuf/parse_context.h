@@ -177,14 +177,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   [[nodiscard]] const char* Skip(const char* ptr, int size) {
-    if (size <= BytesAvailable(ptr)) {
+    if (CanReadFromPtr(size, ptr)) {
       return ptr + size;
     }
     return SkipFallback(ptr, size);
   }
   [[nodiscard]] const char* ReadString(const char* ptr, int size,
                                        std::string* s) {
-    if (size <= BytesAvailable(ptr)) {
+    if (CanReadFromPtr(size, ptr)) {
       // Fundamentally we just want to do assign to the string.
       // However micro-benchmarks regress on string reading cases. So we copy
       // the same logic from the old CodedInputStream ReadString. Note: as of
@@ -198,7 +198,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
   [[nodiscard]] const char* AppendString(const char* ptr, int size,
                                          std::string* s) {
-    if (size <= BytesAvailable(ptr)) {
+    if (CanReadFromPtr(size, ptr)) {
       s->append(ptr, size);
       return ptr + size;
     }
@@ -219,7 +219,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   [[nodiscard]] const char* ReadCord(const char* ptr, int size,
                                      ::absl::Cord* cord) {
-    if (size <= std::min<int>(BytesAvailable(ptr), kMaxCordBytesToCopy)) {
+    if (IsRequestedLessThanOrEqualTo(
+            size, std::min<int>(BytesAvailable(ptr), kMaxCordBytesToCopy))) {
       *cord = absl::string_view(ptr, size);
       return ptr + size;
     }
@@ -230,7 +231,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename FuncT>
   [[nodiscard]] const char* ReadChunkAndCallback(const char* ptr, int size,
                                                  FuncT&& callback) {
-    if (size <= BytesAvailable(ptr)) {
+    if (CanReadFromPtr(size, ptr)) {
       callback(ptr, size);
       return ptr + size;
     }
@@ -377,6 +378,20 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return static_cast<int>(available);
   }
 
+  // Returns true if it has enough available data given requested. Note that
+  // "available" can be negative but "requested" must not. Casting is done to
+  // preserve sign bit for the latter only.
+  bool IsRequestedLessThanOrEqualTo(int requested, int available);
+
+  // Returns true if "requested" bytes can be read contiguously from "ptr". Note
+  // that negative "requested" is converted to uint32_t before comparison, which
+  // will cause failure.
+  bool CanReadFromPtr(int requested, const char* ptr);
+
+  // Returns true if "requested" bytes are avilable till limit. Note that
+  // negative "requested" is converted to uint32_t before comparison.
+  bool HasEnoughTillLimit(int requested, const char* ptr);
+
   // Advances to next buffer chunk returns a pointer to the same logical place
   // in the stream as set by overrun. Overrun indicates the position in the slop
   // region the parse was left (0 <= overrun <= kSlopBytes). Returns true if at
@@ -417,14 +432,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   template <typename A>
-  const char* AppendSize(const char* ptr, int size, const A& append) {
+  const char* AppendSize(const char* ptr, uint32_t size, const A& append) {
     // Some append functions may return false to bail out early.
     constexpr bool kCheckReturn =
         std::is_invocable_r_v<bool, decltype(append), const char*, int>;
 
-    int chunk_size = BytesAvailable(ptr);
+    ABSL_DCHECK_GE(BytesAvailable(ptr), 0);
+    uint32_t chunk_size = static_cast<uint32_t>(BytesAvailable(ptr));
     do {
-      ABSL_DCHECK(size > chunk_size);
+      ABSL_DCHECK_GT(size, chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
       if constexpr (kCheckReturn) {
         if (!append(ptr, chunk_size)) return nullptr;
