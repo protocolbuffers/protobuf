@@ -65,6 +65,7 @@ class ReflectionTester;  // defined in test_util.h
 
 namespace internal {
 
+
 struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
 class LazyField;             // defined in lazy_field.h
