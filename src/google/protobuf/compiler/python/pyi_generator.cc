@@ -522,10 +522,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     std::string field_name = std::string(field_des->name());
     printer_->Print(", $field_name$: ", "field_name", field_name);
     Annotate("field_name", field_des);
-    if (field_des->is_repeated() ||
-        field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
-      printer_->Print("_Optional[");
-    }
+    printer_->Print("_Optional[");
     if (field_des->is_map()) {
       const Descriptor* map_entry = field_des->message_type();
       printer_->Print(
@@ -557,11 +554,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
         printer_->Print("]");
       }
     }
-    if (field_des->is_repeated() ||
-        field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
-      printer_->Print("]");
-    }
-    printer_->Print(" = ...");
+    printer_->Print("] = ...");
   }
   if (has_python_keywords) {
     printer_->Print(", **kwargs");
