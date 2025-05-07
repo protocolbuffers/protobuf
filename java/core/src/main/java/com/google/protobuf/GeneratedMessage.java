@@ -1222,6 +1222,10 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
 
     private void verifyContainingType(final FieldDescriptor field) {
+      String fieldContainingType = field.getContainingType().getFullName();
+      String messageContainingType = getDescriptorForType().getFullName();
+      String fieldContainingTypeReference = field.getContainingType().toString();
+      String messageContainingTypeReference = getDescriptorForType().toString();
       if (field.getContainingType() != getDescriptorForType()) {
         throw new IllegalArgumentException("FieldDescriptor does not match message type.");
       }
