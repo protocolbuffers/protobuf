@@ -127,9 +127,9 @@ def _generate_upb_protos(ctx, generator, proto_info, feature_configuration):
     srcs = _generate_srcs_list(ctx, generator, proto_info)
     additional_args = ctx.actions.args()
 
-    if implicit_weak:
-        srcs.srcs.extend(_get_implicit_weak_field_sources(ctx, proto_info))
-        additional_args.add("--upb_minitable_opt=one_output_per_message")
+    # if implicit_weak:
+    #     srcs.srcs.extend(_get_implicit_weak_field_sources(ctx, proto_info))
+    #     additional_args.add("--upb_minitable_opt=one_output_per_message")
 
     proto_common.compile(
         actions = ctx.actions,
