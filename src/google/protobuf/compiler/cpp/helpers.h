@@ -255,6 +255,10 @@ std::string PrimitiveTypeName(const Options& options,
 // methods of WireFormat.  For example, TYPE_INT32 becomes "Int32".
 const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 
+// Get the declared cpp_type name in CamelCase format, as is used e.g. for the
+// methods of v2 WireFormat.  For example, CPPTYPE_INT32 becomes "Int32".
+absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type);
+
 // Return the code that evaluates to the number when compiled.
 std::string Int32ToString(int number);
 
@@ -509,6 +513,11 @@ bool IsV2ParseEnabledForMessage(const Descriptor* descriptor);
 // Returns true if a message (descriptor) can have v2 table.
 bool IsV2EnabledForMessage(const Descriptor* descriptor,
                            const Options& options);
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+// Returns true if a field can be batched.
+bool IsEligibleForV2Batching(const FieldDescriptor* field);
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
