@@ -18,9 +18,8 @@
 //
 // These can be generated in any combination, except that non-primitive types
 // cannot be packed.  So we have:
-//   {1bt,2bt} x {s,o,r,p} x {b,v32,v64,z32,z64,f32,f64,ce}  // Primitive types.
-//   {1bt,2bt} x {s,o,r}   x {s,b}                           // String types.
-//   {1bt,2bt} x {s,o,r}   x {m64,m128,m192,m256,mmax}       // Message types.
+//   {1bt,2bt} x {s,o,r,p} x {b,v32,v64,z32,z64,f32,f64,ce}  // Primitive
+//   {1bt,2bt} x {s,o,r}   x {s,b,m}                         // Non-primitive
 
 #define UPB_DECODEFAST_CARDINALITIES(F, ...) \
   F(__VA_ARGS__, Scalar)                     \
@@ -39,11 +38,7 @@
   F(__VA_ARGS__, ClosedEnum)         \
   F(__VA_ARGS__, String)             \
   F(__VA_ARGS__, Bytes)              \
-  F(__VA_ARGS__, Message64)          \
-  F(__VA_ARGS__, Message128)         \
-  F(__VA_ARGS__, Message192)         \
-  F(__VA_ARGS__, Message256)         \
-  F(__VA_ARGS__, MessageBig)
+  F(__VA_ARGS__, Message)
 
 #define UPB_DECODEFAST_TAGSIZES(F, ...) \
   F(__VA_ARGS__, Tag1Byte)              \
@@ -101,11 +96,7 @@ UPB_INLINE int upb_DecodeFast_ValueBytes(upb_DecodeFast_Type type) {
     case kUpb_DecodeFast_Varint64:
     case kUpb_DecodeFast_ZigZag64:
     case kUpb_DecodeFast_Fixed64:
-    case kUpb_DecodeFast_Message64:
-    case kUpb_DecodeFast_Message128:
-    case kUpb_DecodeFast_Message192:
-    case kUpb_DecodeFast_Message256:
-    case kUpb_DecodeFast_MessageBig:
+    case kUpb_DecodeFast_Message:
       return 8;
     case kUpb_DecodeFast_String:
     case kUpb_DecodeFast_Bytes:
@@ -122,21 +113,6 @@ UPB_INLINE bool upb_DecodeFast_IsZigZag(upb_DecodeFast_Type type) {
       return true;
     default:
       return false;
-  }
-}
-
-UPB_INLINE int upb_DecodeFast_MessageCeilingBytes(upb_DecodeFast_Type type) {
-  switch (type) {
-    case kUpb_DecodeFast_Message64:
-      return 64;
-    case kUpb_DecodeFast_Message128:
-      return 128;
-    case kUpb_DecodeFast_Message192:
-      return 192;
-    case kUpb_DecodeFast_Message256:
-      return 256;
-    default:
-      return 0;
   }
 }
 

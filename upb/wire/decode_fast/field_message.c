@@ -24,22 +24,11 @@
 #include "upb/port/def.inc"
 
 UPB_INLINE
-upb_Message* decode_newmsg_ceil(upb_Decoder* d, const upb_MiniTable* m,
-                                upb_DecodeFast_Type type) {
+upb_Message* decode_newmsg(upb_Decoder* d, const upb_MiniTable* m) {
   size_t size = m->UPB_PRIVATE(size);
-  char* msg_data;
-  size_t msg_ceil_bytes = upb_DecodeFast_MessageCeilingBytes(type);
-  if (UPB_LIKELY(type != kUpb_DecodeFast_MessageBig &&
-                 UPB_PRIVATE(_upb_ArenaHas)(&d->arena) >= msg_ceil_bytes)) {
-    UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
-    msg_data = d->arena.UPB_PRIVATE(ptr);
-    // TODO: fix for Xsan
-    d->arena.UPB_PRIVATE(ptr) += size;
-    memset(msg_data, 0, msg_ceil_bytes);
-  } else {
-    msg_data = (char*)upb_Arena_Malloc(&d->arena, size);
-    memset(msg_data, 0, size);
-  }
+  // OPT: specialize for message size
+  char* msg_data = (char*)upb_Arena_Malloc(&d->arena, size);
+  memset(msg_data, 0, size);
   return (upb_Message*)msg_data;
 }
 
@@ -99,7 +88,7 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   submsg.msg = *dst;                                                      \
                                                                           \
   if (card == kUpb_DecodeFast_Repeated || UPB_LIKELY(!submsg.msg)) {      \
-    *dst = submsg.msg = decode_newmsg_ceil(d, subtablep, type);           \
+    *dst = submsg.msg = decode_newmsg(d, subtablep);                      \
   }                                                                       \
                                                                           \
   ptr += tagbytes;                                                        \
@@ -136,11 +125,7 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
                       kUpb_DecodeFast_##tagsize);                              \
   }
 
-UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message64)
-UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message128)
-UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message192)
-UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message256)
-UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, MessageBig)
+UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message)
 
 #undef F
 #undef FASTDECODE_SUBMSG

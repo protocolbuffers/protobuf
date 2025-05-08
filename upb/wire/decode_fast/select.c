@@ -103,44 +103,31 @@ static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
 
   if (upb_MiniTableField_IsClosedEnum(field)) {
     *out_type = kUpb_DecodeFast_ClosedEnum;
-  } else if (type == kUpb_FieldType_Message) {
-    const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(m, field);
-    size_t size = subm->UPB_PRIVATE(size);
-    if (size <= 64) {
-      *out_type = kUpb_DecodeFast_Message64;
-    } else if (size <= 128) {
-      *out_type = kUpb_DecodeFast_Message128;
-    } else if (size <= 192) {
-      *out_type = kUpb_DecodeFast_Message192;
-    } else if (size <= 256) {
-      *out_type = kUpb_DecodeFast_Message256;
-    } else {
-      *out_type = kUpb_DecodeFast_MessageBig;
-    }
-  } else {
-    static const int8_t types[] = {
-        [kUpb_FieldType_Bool] = kUpb_DecodeFast_Bool,
-        [kUpb_FieldType_Enum] = kUpb_DecodeFast_Varint32,
-        [kUpb_FieldType_Int32] = kUpb_DecodeFast_Varint32,
-        [kUpb_FieldType_UInt32] = kUpb_DecodeFast_Varint32,
-        [kUpb_FieldType_Int64] = kUpb_DecodeFast_Varint64,
-        [kUpb_FieldType_UInt64] = kUpb_DecodeFast_Varint64,
-        [kUpb_FieldType_Fixed32] = kUpb_DecodeFast_Fixed32,
-        [kUpb_FieldType_SFixed32] = kUpb_DecodeFast_Fixed32,
-        [kUpb_FieldType_Float] = kUpb_DecodeFast_Fixed32,
-        [kUpb_FieldType_Fixed64] = kUpb_DecodeFast_Fixed64,
-        [kUpb_FieldType_SFixed64] = kUpb_DecodeFast_Fixed64,
-        [kUpb_FieldType_Double] = kUpb_DecodeFast_Fixed64,
-        [kUpb_FieldType_SInt32] = kUpb_DecodeFast_ZigZag32,
-        [kUpb_FieldType_SInt64] = kUpb_DecodeFast_ZigZag64,
-        [kUpb_FieldType_String] = kUpb_DecodeFast_String,
-        [kUpb_FieldType_Bytes] = kUpb_DecodeFast_Bytes,
-    };
-
-    UPB_ASSERT(type < UPB_ARRAY_SIZE(types));
-    *out_type = types[type];
+    return true;
   }
 
+  static const int8_t types[] = {
+      [kUpb_FieldType_Bool] = kUpb_DecodeFast_Bool,
+      [kUpb_FieldType_Enum] = kUpb_DecodeFast_Varint32,
+      [kUpb_FieldType_Int32] = kUpb_DecodeFast_Varint32,
+      [kUpb_FieldType_UInt32] = kUpb_DecodeFast_Varint32,
+      [kUpb_FieldType_Int64] = kUpb_DecodeFast_Varint64,
+      [kUpb_FieldType_UInt64] = kUpb_DecodeFast_Varint64,
+      [kUpb_FieldType_Fixed32] = kUpb_DecodeFast_Fixed32,
+      [kUpb_FieldType_SFixed32] = kUpb_DecodeFast_Fixed32,
+      [kUpb_FieldType_Float] = kUpb_DecodeFast_Fixed32,
+      [kUpb_FieldType_Fixed64] = kUpb_DecodeFast_Fixed64,
+      [kUpb_FieldType_SFixed64] = kUpb_DecodeFast_Fixed64,
+      [kUpb_FieldType_Double] = kUpb_DecodeFast_Fixed64,
+      [kUpb_FieldType_SInt32] = kUpb_DecodeFast_ZigZag32,
+      [kUpb_FieldType_SInt64] = kUpb_DecodeFast_ZigZag64,
+      [kUpb_FieldType_String] = kUpb_DecodeFast_String,
+      [kUpb_FieldType_Bytes] = kUpb_DecodeFast_Bytes,
+      [kUpb_FieldType_Message] = kUpb_DecodeFast_Message,
+  };
+
+  UPB_ASSERT(type < UPB_ARRAY_SIZE(types));
+  *out_type = types[type];
   return true;
 }
 
