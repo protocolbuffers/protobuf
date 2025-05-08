@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
@@ -38,6 +39,16 @@ cc_library(
     deps = [
         "//upb:port",
     ],
+)
+
+rust_library(
+    name = "mem-rust",
+    srcs = [
+        "rust/arena.rs",
+    ],
+    rustc_flags = ["--cfg=bzl"],
+    visibility = ["//upb:__pkg__"],
+    deps = [],
 )
 
 cc_test(
