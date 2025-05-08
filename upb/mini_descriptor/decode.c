@@ -881,3 +881,9 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
   upb_gfree(buf);
   return ret;
 }
+
+upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
+                                   upb_Arena* arena, upb_Status* status) {
+  return _upb_MiniTable_Build(data, len, kUpb_MiniTablePlatform_Native, arena,
+                              status);
+}

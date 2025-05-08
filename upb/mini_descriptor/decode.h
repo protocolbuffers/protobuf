@@ -42,12 +42,9 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
                                     upb_MiniTablePlatform platform,
                                     upb_Arena* arena, upb_Status* status);
 
-UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
-                                                  upb_Arena* arena,
-                                                  upb_Status* status) {
-  return _upb_MiniTable_Build(data, len, kUpb_MiniTablePlatform_Native, arena,
-                              status);
-}
+// Invokes _upb_MiniTableBuild() with the native minitable platform.
+upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
+                                   upb_Arena* arena, upb_Status* status);
 
 // Initializes a MiniTableExtension buffer that has already been allocated.
 // This is needed by upb_FileDef and upb_MessageDef, which allocate all of the
