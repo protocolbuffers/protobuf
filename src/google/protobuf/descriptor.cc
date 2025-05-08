@@ -4274,7 +4274,7 @@ bool FieldDescriptor::has_optional_keyword() const {
           !is_repeated() && !containing_oneof());
 }
 
-FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
+FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
   ABSL_DCHECK(cpp_type() == FieldDescriptor::CPPTYPE_STRING);
 
   if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*this)) {
@@ -6013,6 +6013,13 @@ void DescriptorBuilder::PostProcessFieldFeatures(
     }
   }
 
+  if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+    auto string_type = field.CalculateCppStringType();
+    field.cpp_string_type_ = static_cast<uint8_t>(string_type);
+    // Check that there was no narrowing.
+    ABSL_DCHECK_EQ(field.cpp_string_type_, static_cast<uint8_t>(string_type));
+  }
+
   if (field.options_->has_ctype()) {
     field.legacy_proto_ctype_ = field.options_->ctype();
     const_cast<FieldOptions*>(  // NOLINT(google3-runtime-proto-const-cast)
@@ -7030,6 +7037,10 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->in_real_oneof_ = false;
   result->proto3_optional_ = proto.proto3_optional();
   result->legacy_proto_ctype_ = FieldOptions::CType_MAX + 1;
+  // We initialize to STRING because descriptor.proto needs it for
+  // bootstrapping.
+  result->cpp_string_type_ =
+      static_cast<uint8_t>(FieldDescriptor::CppStringType::kString);
 
   if (proto.proto3_optional() && file_->edition() != Edition::EDITION_PROTO3) {
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,

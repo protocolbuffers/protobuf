@@ -1157,6 +1157,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Returns true if this is a map message type.
   bool is_map_message_type() const;
 
+  CppStringType CalculateCppStringType() const;
+
   bool has_default_value_ : 1;
   bool proto3_optional_ : 1;
   // Whether the user has specified the json_name field option in the .proto
@@ -1171,6 +1173,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   // Actually a `Type`, but stored as uint8_t to save space.
   uint8_t type_;
+
+  // Actually a `CppStringType`, but stored as uint8_t to save space.
+  // We cache it because it's expensive to calculate.
+  uint8_t cpp_string_type_ : 3;
 
   // Can be calculated from containing_oneof(), but we cache it for performance.
   // Located here for bitpacking.
@@ -2909,6 +2915,12 @@ inline FieldDescriptor::Label FieldDescriptor::label() const {
 
 inline FieldDescriptor::Type FieldDescriptor::type() const {
   return static_cast<Type>(type_);
+}
+
+inline FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
+  ABSL_DCHECK_EQ(cpp_string_type_,
+                 static_cast<uint8_t>(CalculateCppStringType()));
+  return static_cast<FieldDescriptor::CppStringType>(cpp_string_type_);
 }
 
 inline bool FieldDescriptor::is_optional() const {
