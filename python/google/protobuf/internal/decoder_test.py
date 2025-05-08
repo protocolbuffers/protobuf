@@ -84,6 +84,19 @@ class DecoderTest(parameterized.TestCase):
     self.assertEqual(parsed[0].data[0].data[0].field_number, 3)
     self.assertEqual(parsed[0].data[0].data[0].data, 4)
 
+  def test_decode_unknown_group_field_too_many_levels(self):
+    data = memoryview(b'\023' * 5_000_000)
+    self.assertRaisesRegex(
+        message.DecodeError,
+        'Error parsing message',
+        decoder._DecodeUnknownField,
+        data,
+        1,
+        len(data),
+        1,
+        wire_format.WIRETYPE_START_GROUP,
+    )
+
   def test_decode_unknown_mismatched_end_group(self):
     self.assertRaisesRegex(
         message.DecodeError,

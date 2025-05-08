@@ -12,6 +12,7 @@ package google.protobuf.python.internal;
 message SelfRecursive {
   SelfRecursive sub = 1;
   int32 i = 2;
+  SelfRecursive sub_group = 3 [features.message_encoding = DELIMITED];
 }
 
 message IndirectRecursive {
