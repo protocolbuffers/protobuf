@@ -335,13 +335,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res;
   }
 
- private:
+ protected:
   enum { kSlopBytes = 16, kPatchBufferSize = 32 };
   static_assert(kPatchBufferSize >= kSlopBytes * 2,
                 "Patch buffer needs to be at least large enough to hold all "
                 "the slop bytes from the previous buffer, plus the first "
                 "kSlopBytes from the next buffer.");
 
+ private:
   const char* limit_end_;  // buffer_end_ + min(limit_, 0)
   const char* buffer_end_;
   const char* next_chunk_;
@@ -370,6 +371,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
+ protected:
   int BytesAvailable(const char* ptr) const {
     ABSL_DCHECK_NE(ptr, nullptr);
     ptrdiff_t available = buffer_end_ + kSlopBytes - ptr;
@@ -378,6 +380,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return static_cast<int>(available);
   }
 
+ private:
   // Returns true if it has enough available data given requested. Note that
   // "available" can be negative but "requested" must not. Casting is done to
   // preserve sign bit for the latter only.
