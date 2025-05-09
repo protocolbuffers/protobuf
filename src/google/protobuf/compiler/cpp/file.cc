@@ -1657,6 +1657,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
 
+
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
   IncludeFile("third_party/protobuf/metadata_lite.h", p);
 
