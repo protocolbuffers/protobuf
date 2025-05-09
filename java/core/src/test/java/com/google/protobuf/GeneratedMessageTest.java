@@ -50,6 +50,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1999,9 +2002,19 @@ public class GeneratedMessageTest {
     assertThat(builder.getRepeatedField(REPEATED_NESTED_MESSAGE_EXTENSION, 0))
         .isEqualTo(NestedMessage.newBuilder().setBb(100).build());
   }
+
+  private TestUtil.TestLogHandler setupLogger() {
+    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
+    Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
+    logger.addHandler(logHandler);
+    logHandler.setLevel(Level.ALL);
+    return logHandler;
+  }
+
   
   @Test
-  public void generatedMessage_makeExtensionsImmutableShouldThrow() {
+  public void generatedMessage_makeExtensionsImmutableShouldLog() {
+    TestUtil.TestLogHandler logHandler = setupLogger();
     GeneratedMessageV3 msg =
         new GeneratedMessageV3() {
           @Override
@@ -2029,27 +2042,24 @@ public class GeneratedMessageTest {
             return null;
           }
         };
-    try {
-      msg.makeExtensionsImmutable();
-      assertWithMessage("Expected UnsupportedOperationException").fail();
-    } catch (UnsupportedOperationException e) {
-      // Expected
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_ACKNOWLEGE_PROPERTY);
-    }
+    msg.makeExtensionsImmutable();
+    List<LogRecord> logs = logHandler.getStoredLogRecords();
+    assertThat(logs).hasSize(1);
+    String message = logs.get(0).getMessage();
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
   }
 
   @Test
   public void extendableMessage_makeExtensionsImmutableShouldThrow() {
+    TestUtil.TestLogHandler logHandler = setupLogger();
     GeneratedMessageV3.ExtendableMessage<TestAllExtensions> msg =
         TestAllExtensions.getDefaultInstance();
-    try {
-      msg.makeExtensionsImmutable();
-      assertWithMessage("Expected UnsupportedOperationException").fail();
-    } catch (UnsupportedOperationException e) {
-      // Expected
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_ACKNOWLEGE_PROPERTY);
-    }
+    msg.makeExtensionsImmutable();
+    List<LogRecord> logs = logHandler.getStoredLogRecords();
+    assertThat(logs).hasSize(1);
+    String message = logs.get(0).getMessage();
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
   }
 }

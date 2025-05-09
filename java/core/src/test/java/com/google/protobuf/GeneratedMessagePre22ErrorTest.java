@@ -1,27 +1,17 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import protobuf_unittest.UnittestProto.TestAllExtensions;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
-public class GeneratedMessagePre22WarningDisabledTest {
-  private TestUtil.TestLogHandler setupLogger() {
-    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
-    Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
-    logger.addHandler(logHandler);
-    logHandler.setLevel(Level.ALL);
-    return logHandler;
-  }
-
+public class GeneratedMessagePre22ErrorTest {
   @Test
-  public void generatedMessage_makeExtensionsImmutableShouldNotLog() {
-    TestUtil.TestLogHandler logHandler = setupLogger();
+  public void generatedMessage_makeExtensionsImmutableShouldError() {
     GeneratedMessageV3 msg =
         new GeneratedMessageV3() {
           @Override
@@ -49,17 +39,15 @@ public class GeneratedMessagePre22WarningDisabledTest {
             return null;
           }
         };
-    msg.makeExtensionsImmutable();
-    assertThat(logHandler.getStoredLogRecords()).isEmpty();
+    Throwable e = assertThrows(UnsupportedOperationException.class, () -> msg.makeExtensionsImmutable());
+    assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
   }
 
   @Test
-  public void extendableMessage_makeExtensionsImmutableShouldNotLog() {
-    TestUtil.TestLogHandler logHandler = setupLogger();
+  public void extendableMessage_makeExtensionsImmutableShouldError() {
     GeneratedMessageV3.ExtendableMessage<TestAllExtensions> msg =
         TestAllExtensions.newBuilder().build();
-    msg.makeExtensionsImmutable();
-    assertThat(logHandler.getStoredLogRecords()).isEmpty();
+    Throwable e = assertThrows(UnsupportedOperationException.class, () -> msg.makeExtensionsImmutable());
+    assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
   }
 }
-
