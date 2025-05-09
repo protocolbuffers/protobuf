@@ -12,8 +12,8 @@ import org.junit.runners.JUnit4;
 public class GeneratedMessagePre22ErrorTest {
   @Test
   public void generatedMessage_makeExtensionsImmutableShouldError() {
-    GeneratedMessage msg =
-        new GeneratedMessage() {
+    GeneratedMessageV3 msg =
+        new GeneratedMessageV3() {
           @Override
           protected FieldAccessorTable internalGetFieldAccessorTable() {
             return null;
@@ -51,7 +51,7 @@ public class GeneratedMessagePre22ErrorTest {
 
   @Test
   public void extendableMessage_makeExtensionsImmutableShouldError() {
-    GeneratedMessage.ExtendableMessage<TestAllExtensions> msg =
+    GeneratedMessageV3.ExtendableMessage<TestAllExtensions> msg =
         TestAllExtensions.newBuilder().build();
     try {
       msg.makeExtensionsImmutable();

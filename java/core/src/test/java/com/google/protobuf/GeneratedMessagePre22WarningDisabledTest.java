@@ -54,7 +54,7 @@ public class GeneratedMessagePre22WarningDisabledTest {
   }
 
   @Test
-  public void extendableMessage_e_makeExtensionsImmutableShouldNotLog() {
+  public void extendableMessage_makeExtensionsImmutableShouldNotLog() {
     TestUtil.TestLogHandler logHandler = setupLogger();
     GeneratedMessageV3.ExtendableMessage<TestAllExtensions> msg =
         TestAllExtensions.newBuilder().build();
