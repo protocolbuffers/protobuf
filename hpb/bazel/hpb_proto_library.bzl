@@ -9,6 +9,7 @@
   - hpb_proto_library()
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "use_cpp_toolchain")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
@@ -42,7 +43,10 @@ _UpbCcWrappedCcInfo = provider("Provider for cc_info for hpb", fields = ["cc_inf
 _WrappedCcGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
 
 def _get_lang_toolchain(ctx):
-    return ctx.attr._hpb_lang_toolchain[proto_common.ProtoLangToolchainInfo]
+    if ctx.attr._backend[BuildSettingInfo].value == "cpp":
+        return ctx.attr._hpb_lang_toolchain_cpp[proto_common.ProtoLangToolchainInfo]
+    else:
+        return ctx.attr._hpb_lang_toolchain[proto_common.ProtoLangToolchainInfo]
 
 def _compile_upb_cc_protos(ctx, proto_info, proto_sources):
     if len(proto_sources) == 0:
@@ -137,11 +141,15 @@ def _upb_cc_proto_library_aspect_impl(target, ctx):
 
 _hpb_proto_library_aspect = aspect(
     attrs = {
+        "_backend": attr.label(default = "//hpb:hpb_backend"),
         "_ccopts": attr.label(
             default = "//hpb:hpb_proto_library_copts",
         ),
         "_hpb_lang_toolchain": attr.label(
             default = "//src/google/protobuf/compiler/hpb:toolchain",
+        ),
+        "_hpb_lang_toolchain_cpp": attr.label(
+            default = "//src/google/protobuf/compiler/hpb:toolchain_cpp",
         ),
         "_upbprotos": attr.label_list(
             default = [

@@ -19,7 +19,7 @@ namespace hpb::internal::backend::cpp {
 
 template <typename T>
 typename T::Proxy CreateMessage(Arena& arena) {
-  abort();
+  return typename T::Proxy();
 }
 
 template <typename T>
