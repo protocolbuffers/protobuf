@@ -1,3 +1,13 @@
+# This script parses the comments in the Ruby C extension files and translates them into Ruby
+# stubs. It looks for an instance of `ruby-doc:` and takes the following string as the object
+# under documentation (a class, instance method, or class method).
+# The intention of generating these files is for use by YARD to auto-generate documentation
+# here: https://www.rubydoc.info/gems/google-protobuf/
+#
+# Because these comments are essentially "pretending" to be Ruby, we had to add one additional
+# YARD tag, `@paramdefault`, which is not a standard YARD tag. This tag is used to specify default
+# values for parameters.
+
 files = Dir.glob('ext/**/*.c')
 classes = {}
 MethodDefn = Struct.new(:name, :body) do
@@ -11,8 +21,8 @@ MethodDefn = Struct.new(:name, :body) do
     end
     params
   end
-
 end
+
 Defn = Struct.new(:name, :instance_meths, :class_meths, :body) do
   def initialize(*args, **kwargs)
     super
@@ -51,7 +61,6 @@ def underscore(str)
     gsub(/([A-Z])(?=[A-Z][a-z])|([a-z\d])(?=[A-Z])/) { ($1 || $2) << "_" }.
     downcase
 end
-
 
 classes.each do |name, defn|
   file = File.join('lib/stubs', "#{underscore(name)}.rb")
