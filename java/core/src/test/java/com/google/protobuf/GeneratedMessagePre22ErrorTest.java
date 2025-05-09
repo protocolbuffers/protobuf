@@ -1,7 +1,7 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
+import static com.google.common.truth.Truth.assertThrows;
 
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import org.junit.Test;
@@ -39,26 +39,15 @@ public class GeneratedMessagePre22ErrorTest {
             return null;
           }
         };
-    ;
-    try {
-      msg.makeExtensionsImmutable();
-      assertWithMessage("Expected UnsupportedOperationException").fail();
-    } catch (UnsupportedOperationException e) {
-      // Expected
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
-    }
+    Throwable e = assertThrows(UnsupportedOperationException.class, () -> msg.makeExtensionsImmutable());
+    assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
   }
 
   @Test
   public void extendableMessage_makeExtensionsImmutableShouldError() {
     GeneratedMessageV3.ExtendableMessage<TestAllExtensions> msg =
         TestAllExtensions.newBuilder().build();
-    try {
-      msg.makeExtensionsImmutable();
-      assertWithMessage("Expected UnsupportedOperationException").fail();
-    } catch (UnsupportedOperationException e) {
-      // Expected
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
-    }
+    Throwable e = assertThrows(UnsupportedOperationException.class, () -> msg.makeExtensionsImmutable());
+    assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
   }
 }
