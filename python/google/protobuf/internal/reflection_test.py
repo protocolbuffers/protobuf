@@ -3286,8 +3286,9 @@ class OptionsTest(unittest.TestCase):
     proto.packed_int32.append(1)
     proto.packed_double.append(3.0)
     for field_descriptor, _ in proto.ListFields():
-      self.assertTrue(field_descriptor.is_packed)
-      self.assertTrue(field_descriptor.is_repeated)
+      self.assertEqual(True, field_descriptor.is_packed)
+      self.assertEqual(descriptor.FieldDescriptor.LABEL_REPEATED,
+                       field_descriptor.label)
 
 
 @testing_refleaks.TestCase

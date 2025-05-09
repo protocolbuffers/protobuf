@@ -236,7 +236,7 @@ class _Printer(object):
               recorded_key = str(key)
             js_map[recorded_key] = self._FieldToJsonObject(v_field, value[key])
           js[name] = js_map
-        elif field.is_repeated:
+        elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
           # Convert a repeated field.
           js[name] = [self._FieldToJsonObject(field, k) for k in value]
         elif field.is_extension:
@@ -266,7 +266,7 @@ class _Printer(object):
             continue
           if _IsMapEntry(field):
             js[name] = {}
-          elif field.is_repeated:
+          elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
             js[name] = []
           else:
             js[name] = self._FieldToJsonObject(field, field.default_value)
@@ -636,7 +636,7 @@ class _Parser(object):
           self._ConvertMapFieldValue(
               value, message, field, '{0}.{1}'.format(path, name)
           )
-        elif field.is_repeated:
+        elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
           message.ClearField(field.name)
           if not isinstance(value, _LIST_LIKE):
             raise ParseError(

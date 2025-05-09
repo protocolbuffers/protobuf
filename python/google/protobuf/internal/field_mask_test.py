@@ -193,7 +193,7 @@ class FieldMaskTest(unittest.TestCase):
       mask.MergeMessage(src, dst)
       # The expected result message.
       msg = unittest_pb2.TestAllTypes()
-      if field.is_repeated:
+      if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
         repeated_src = getattr(src, field_name)
         repeated_msg = getattr(msg, field_name)
         if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:

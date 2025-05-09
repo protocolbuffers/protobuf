@@ -61,7 +61,7 @@ class _ExtensionDict(object):
     if result is not None:
       return result
 
-    if extension_handle.is_repeated:
+    if extension_handle.label == FieldDescriptor.LABEL_REPEATED:
       result = extension_handle._default_constructor(self._extended_message)
     elif extension_handle.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
       message_type = extension_handle.message_type
@@ -129,7 +129,7 @@ class _ExtensionDict(object):
 
     _VerifyExtensionHandle(self._extended_message, extension_handle)
 
-    if (extension_handle.is_repeated or
+    if (extension_handle.label == FieldDescriptor.LABEL_REPEATED or
         extension_handle.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE):
       raise TypeError(
           'Cannot assign to extension "%s" because it is a repeated or '
@@ -183,7 +183,7 @@ class _ExtensionDict(object):
     if extension_handle not in self._extended_message._fields:
       return False
 
-    if extension_handle.is_repeated:
+    if extension_handle.label == FieldDescriptor.LABEL_REPEATED:
       return bool(self._extended_message._fields.get(extension_handle))
 
     if extension_handle.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:

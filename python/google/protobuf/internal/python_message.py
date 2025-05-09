@@ -256,8 +256,7 @@ def _IsMessageSetExtension(field):
           field.containing_type.has_options and
           field.containing_type.GetOptions().message_set_wire_format and
           field.type == _FieldDescriptor.TYPE_MESSAGE and
-          not field.is_required and
-          not field.is_repeated)
+          field.label == _FieldDescriptor.LABEL_OPTIONAL)
 
 
 def _IsMapField(field):
@@ -1261,7 +1260,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
   protocol message class."""
 
   required_fields = [field for field in message_descriptor.fields
-                           if field.is_required]
+                           if field.label == _FieldDescriptor.LABEL_REQUIRED]
 
   def IsInitialized(self, errors=None):
     """Checks if all required fields of a message are set.
