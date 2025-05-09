@@ -7035,6 +7035,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
   result->is_extension_ = is_extension;
   result->is_oneof_ = false;
   result->in_real_oneof_ = false;
+  result->is_map_ = false;
   result->proto3_optional_ = proto.proto3_optional();
   result->legacy_proto_ctype_ = FieldOptions::CType_MAX + 1;
   // We initialize to STRING because descriptor.proto needs it for
@@ -7980,6 +7981,13 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
           return;
         }
       }
+    }
+
+    // Map entries must be in the same file, so we can populate it directly if
+    // the descriptor is already known. If it is not known, then it must not be
+    // a map entry.
+    if (auto* sub_message = type.descriptor()) {
+      field->is_map_ = sub_message->options().map_entry();
     }
 
     if (!type.IsVisibleFrom(file_)) {

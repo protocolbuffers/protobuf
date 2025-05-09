@@ -1182,6 +1182,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Located here for bitpacking.
   bool in_real_oneof_ : 1;
 
+  // We could calculate as `message_type()->options().map_entry()`, but that is
+  // way more expensive and can potentially force load extra lazy files.
+  bool is_map_ : 1;
+
   // Actually an optional `CType`, but stored as uint8_t to save space.  This
   // contains the original ctype option specified in the .proto file.
   uint8_t legacy_proto_ctype_ : 2;
@@ -2937,7 +2941,8 @@ inline bool FieldDescriptor::is_packable() const {
 }
 
 inline bool FieldDescriptor::is_map() const {
-  return type() == TYPE_MESSAGE && is_map_message_type();
+  ABSL_DCHECK_EQ(is_map_, type() == TYPE_MESSAGE && is_map_message_type());
+  return is_map_;
 }
 
 inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
