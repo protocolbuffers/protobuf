@@ -1800,10 +1800,10 @@ inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
 // Destroys any existing oneof union member (if necessary). Returns true if the
 // caller is responsible for initializing the object, or false if the field
 // already has the desired case.
-bool TcParser::ChangeOneof(const TcParseTableBase* table,
-                           const TcParseTableBase::FieldEntry& entry,
-                           uint32_t field_num, ParseContext* ctx,
-                           MessageLite* msg) {
+bool TcParser::ShouldInitOneof(const TcParseTableBase* table,
+                               const TcParseTableBase::FieldEntry& entry,
+                               uint32_t field_num, ParseContext* ctx,
+                               MessageLite* msg) {
   // The _oneof_case_ value offset is stored in the has-bit index.
   uint32_t* oneof_case = &TcParser::RefAt<uint32_t>(msg, entry.has_idx);
   uint32_t current_case = *oneof_case;
@@ -1925,7 +1925,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (card == field_layout::kFcOneof) {
-    ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ShouldInitOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   // Copy the value:
@@ -2077,7 +2077,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ShouldInitOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
@@ -2352,7 +2352,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    need_init = ShouldInitOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
 
   bool is_valid = false;
@@ -2557,7 +2557,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    need_init = ShouldInitOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
