@@ -210,6 +210,63 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test values that are converted by setter
+    #########################################################
+
+    public function testConvertValueSetter()
+    {
+        // convert null
+        $m_null = new TestMessage();
+
+        $m_null->setOptionalBool(null);
+        $m_null->setOptionalBytes(null);
+        $m_null->setOptionalString(null);
+        $m_null->setTrueOptionalBool(null);
+        $m_null->setTrueOptionalBytes(null);
+        $m_null->setTrueOptionalString(null);
+        // allow null message
+        $m_null->setOptionalMessage(null);
+        $m_null->setTrueOptionalMessage(null);
+
+        $this->assertSame(false, $m_null->getOptionalBool());
+        $this->assertSame('', $m_null->getOptionalString());
+        $this->assertSame('', $m_null->getOptionalBytes());
+        $this->assertNull($m_null->getOptionalMessage());
+
+        $this->assertSame(false, $m_null->getTrueOptionalBool());
+        $this->assertSame('', $m_null->getTrueOptionalString());
+        $this->assertSame('', $m_null->getTrueOptionalBytes());
+        $this->assertNull($m_null->getTrueOptionalMessage());
+
+        // Convert int
+        $m_number = new TestMessage();
+
+        $m_number->setOptionalBool(0);
+        $m_number->setOptionalBytes(0);
+        $m_number->setOptionalString(0);
+        $m_number->setTrueOptionalBool(1);
+        $m_number->setTrueOptionalBytes(1);
+        $m_number->setTrueOptionalString(1);
+
+        $this->assertSame(false, $m_number->getOptionalBool());
+        $this->assertSame('0', $m_number->getOptionalString());
+        $this->assertSame('0', $m_number->getOptionalBytes());
+
+        $this->assertSame(true, $m_number->getTrueOptionalBool());
+        $this->assertSame('1', $m_number->getTrueOptionalString());
+        $this->assertSame('1', $m_number->getTrueOptionalBytes());
+
+        // Convert str
+        $m_number_str = new TestMessage();
+
+        $m_number_str->setOptionalBool('');
+        $m_number_str->setTrueOptionalBool('STR');
+
+        $this->assertSame(false, $m_number_str->getOptionalBool());
+        $this->assertSame(true, $m_number_str->getTrueOptionalBool());
+    }
+
+    #########################################################
     # Test uint32 field.
     #########################################################
 
