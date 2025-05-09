@@ -1,7 +1,7 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertThrows;
+import static org.junit.Assert.assertThrows;
 
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import org.junit.Test;
