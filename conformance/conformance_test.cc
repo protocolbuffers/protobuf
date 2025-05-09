@@ -18,8 +18,6 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/util/field_comparator.h"
-#include "google/protobuf/util/message_differencer.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -34,6 +32,8 @@
 #include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/util/field_comparator.h"
+#include "google/protobuf/util/message_differencer.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
