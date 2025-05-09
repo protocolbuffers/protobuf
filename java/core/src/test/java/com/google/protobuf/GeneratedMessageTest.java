@@ -2035,7 +2035,7 @@ public class GeneratedMessageTest {
     } catch (UnsupportedOperationException e) {
       // Expected
       assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_ACKNOWLEGE_PROPERTY);
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
     }
   }
 
@@ -2049,7 +2049,7 @@ public class GeneratedMessageTest {
     } catch (UnsupportedOperationException e) {
       // Expected
       assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
-      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_ACKNOWLEGE_PROPERTY);
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
     }
   }
 }
