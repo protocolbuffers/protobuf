@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * All generated protocol message classes extend this class. This class implements most of the
@@ -310,22 +311,33 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     return memoizedSize;
   }
 
-  static final String PRE22_GENCODE_ACKNOWLEGE_PROPERTY =
+  static final String PRE22_GENCODE_SILENCE_PROPERTY =
       "com.google.protobuf.use_unsafe_pre22_gencode";
+  static final String PRE22_GENCODE_ERROR_PROPERTY =
+      "com.google.protobuf.error_on_unsafe_pre22_gencode";
+
   static final String PRE22_GENCODE_VULNERABILITY_MESSAGE =
       "As of 2022/09/29 (release 21.7) makeExtensionsImmutable should not be called from protobuf"
           + " gencode. If you are seeing this message, your gencode is vulnerable to a denial of"
           + " service attack. You should regenerate your code using protobuf 25.6 or later. Use the"
           + " latest version that meets your needs. However, if you understand the risks and wish"
           + " to continue with vulnerable gencode, you can set the system property"
-          + " `-Dcom.google.protobuf.use_unsafe_pre22_gencode` on the command line. See security"
-          + " vulnerability:"
+          + " `-Dcom.google.protobuf.use_unsafe_pre22_gencode` on the command line to silence this"
+          + " warning. You also can set"
+          + " `-Dcom.google.protobuf.error_on_unsafe_pre22_gencode` to throw an error instead. See"
+          + " security vulnerability:"
           + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
 
   static void warnPre22Gencode() {
-    if (System.getProperty(PRE22_GENCODE_ACKNOWLEGE_PROPERTY) == null) {
-      throw new UnsupportedOperationException(PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
+      return;
     }
+    UnsupportedOperationException exception =
+        new UnsupportedOperationException(PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    if (System.getProperty(PRE22_GENCODE_ERROR_PROPERTY) != null) {
+      throw exception;
+    }
+    logger.warning(exception.toString());
   }
 
   /** Used by parsing constructors in generated classes. */
