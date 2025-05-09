@@ -59,7 +59,7 @@ static const upb_MiniTableField google_protobuf_compiler_CodeGeneratorRequest__f
 const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = {
   &google_protobuf_compiler_CodeGeneratorRequest__submsgs[0],
   &google_protobuf_compiler_CodeGeneratorRequest__fields[0],
-  UPB_SIZE(40, 64), 5, kUpb_ExtMode_NonExtendable, 3, UPB_FASTTABLE_MASK(248), 0,
+  UPB_SIZE(40, 64), 5, kUpb_ExtMode_NonExtendable, 3, UPB_FASTTABLE_MASK(24), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.compiler.CodeGeneratorRequest",
 #endif
@@ -67,34 +67,6 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = 
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x002000003f00000a, &upb_DecodeFast_String_Repeated_Tag1Byte},
     {0x0010000000000012, &upb_DecodeFast_String_Scalar_Tag1Byte},
-    {0x002800000100001a, &upb_DecodeFast_Message_Scalar_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x003000003f01007a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x003800003f02018a, &upb_DecodeFast_Message_Repeated_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
   })
 };
@@ -115,7 +87,7 @@ static const upb_MiniTableField google_protobuf_compiler_CodeGeneratorResponse__
 const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init = {
   &google_protobuf_compiler_CodeGeneratorResponse__submsgs[0],
   &google_protobuf_compiler_CodeGeneratorResponse__fields[0],
-  UPB_SIZE(40, 56), 5, kUpb_ExtMode_NonExtendable, 4, UPB_FASTTABLE_MASK(120), 0,
+  UPB_SIZE(40, 56), 5, kUpb_ExtMode_NonExtendable, 4, UPB_FASTTABLE_MASK(56), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.compiler.CodeGeneratorResponse",
 #endif
@@ -128,14 +100,6 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init =
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x003000003f00007a, &upb_DecodeFast_Message_Repeated_Tag1Byte},
   })
 };
 
@@ -154,7 +118,7 @@ static const upb_MiniTableField google_protobuf_compiler_CodeGeneratorResponse_F
 const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse__File_msg_init = {
   &google_protobuf_compiler_CodeGeneratorResponse_File__submsgs[0],
   &google_protobuf_compiler_CodeGeneratorResponse_File__fields[0],
-  UPB_SIZE(40, 72), 4, kUpb_ExtMode_NonExtendable, 2, UPB_FASTTABLE_MASK(248), 0,
+  UPB_SIZE(40, 72), 4, kUpb_ExtMode_NonExtendable, 2, UPB_FASTTABLE_MASK(120), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.compiler.CodeGeneratorResponse.File",
 #endif
@@ -175,22 +139,6 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse__File_msg_
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
     {0x003000000200007a, &upb_DecodeFast_String_Scalar_Tag1Byte},
-    {0x0040000003000182, &upb_DecodeFast_Message_Scalar_Tag2Byte},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
-    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
   })
 };
 

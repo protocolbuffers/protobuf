@@ -2444,10 +2444,9 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#ifdef UPB_FASTTABLE
-  // To statically initialize the tables of variable length, we need a flexible
-  // array member, and we need to compile in gnu99 mode (constant initialization
-  // of flexible array members is a GNU extension, not in C99 unfortunately.
+#ifndef __cplusplus
+  // Flexible array member is not supported in C++, but luckily C++ doesn't need
+  // to read or write the member.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };
@@ -15488,27 +15487,6 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
   upb_Decoder* d = (upb_Decoder*)e;
   if (!old_end) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   return new_start;
-}
-
-UPB_INLINE
-const char* _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
-                                         upb_Message* msg, intptr_t table,
-                                         uint64_t hasbits, uint64_t tag) {
-  const upb_MiniTable* table_p = decode_totablep(table);
-  uint8_t mask = table;
-  uint64_t data;
-  size_t idx = tag & mask;
-  UPB_ASSUME((idx & 7) == 0);
-  idx >>= 3;
-  data = table_p->UPB_PRIVATE(fasttable)[idx].field_data ^ tag;
-  UPB_MUSTTAIL return table_p->UPB_PRIVATE(fasttable)[idx].field_parser(
-      d, ptr, msg, table, hasbits, data);
-}
-
-UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
-  uint16_t tag;
-  memcpy(&tag, ptr, 2);
-  return tag;
 }
 
 
