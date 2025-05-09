@@ -39,6 +39,10 @@ public final class TextFormat {
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
   private static final String DEBUG_STRING_SILENT_MARKER = " \t ";
+  private static final String ENABLE_INSERT_SILENT_MARKER_ENV_NAME =
+      "SILENT_MARKER_INSERTION_ENABLED";
+  private static final boolean ENABLE_INSERT_SILENT_MARKER =
+      "true".equals(System.getenv(ENABLE_INSERT_SILENT_MARKER_ENV_NAME));
 
   private static final String REDACTED_MARKER = "[REDACTED]";
 
@@ -118,6 +122,11 @@ public final class TextFormat {
     return Printer.DEFAULT_DEBUG_FORMAT;
   }
 
+  /** Printer instance which escapes non-ASCII characters and prints in the debug format. */
+  public static Printer defaultFormatPrinter() {
+    return Printer.DEFAULT_FORMAT;
+  }
+
   /** Helper class for converting protobufs to text. */
   public static final class Printer {
 
@@ -140,6 +149,27 @@ public final class TextFormat {
             ExtensionRegistryLite.getEmptyRegistry(),
             /* enablingSafeDebugFormat= */ true,
             /* singleLine= */ false);
+
+    // Printer instance which escapes non-ASCII characters and inserts a silent marker.
+    private static final Printer DEFAULT_FORMAT =
+        new Printer(
+                /* escapeNonAscii= */ true,
+                /* useShortRepeatedPrimitives= */ false,
+                TypeRegistry.getEmptyTypeRegistry(),
+                ExtensionRegistryLite.getEmptyRegistry(),
+                /* enablingSafeDebugFormat= */ false,
+                /* singleLine= */ false)
+            .setInsertSilentMarker(ENABLE_INSERT_SILENT_MARKER);
+
+    static Printer getOutputModePrinter() {
+      if (ProtobufToStringOutput.isDefaultFormat()) {
+        return defaultFormatPrinter();
+      } else if (ProtobufToStringOutput.shouldOutputDebugFormat()) {
+        return debugFormatPrinter();
+      } else {
+        return printer();
+      }
+    }
 
     /**
      * A list of the public APIs that output human-readable text from a message. A higher-level API
@@ -186,6 +216,14 @@ public final class TextFormat {
 
     private final boolean singleLine;
 
+    private boolean insertSilentMarker;
+
+    @CanIgnoreReturnValue
+    private Printer setInsertSilentMarker(boolean insertSilentMarker) {
+      this.insertSilentMarker = insertSilentMarker;
+      return this;
+    }
+
     // Any API level equal to or greater than this level will be reported. This is set to
     // REPORT_NONE by default to prevent reporting for now.
     private static final ThreadLocal<FieldReporterLevel> sensitiveFieldReportingLevel =
@@ -209,6 +247,7 @@ public final class TextFormat {
       this.extensionRegistry = extensionRegistry;
       this.enablingSafeDebugFormat = enablingSafeDebugFormat;
       this.singleLine = singleLine;
+      this.insertSilentMarker = false;
     }
 
     /**
@@ -338,7 +377,12 @@ public final class TextFormat {
     void print(final MessageOrBuilder message, final Appendable output, FieldReporterLevel level)
         throws IOException {
       TextGenerator generator =
-          setSingleLineOutput(output, this.singleLine, message.getDescriptorForType(), level);
+          setSingleLineOutput(
+              output,
+              this.singleLine,
+              message.getDescriptorForType(),
+              level,
+              this.insertSilentMarker);
       print(message, generator);
     }
 
@@ -408,7 +452,9 @@ public final class TextFormat {
       }
       generator.print("[");
       generator.print(typeUrl);
-      generator.print("] {");
+      generator.print("]");
+      generator.maybePrintSilentMarker();
+      generator.print("{");
       generator.eol();
       generator.indent();
       print(contentBuilder, generator);
@@ -792,11 +838,13 @@ public final class TextFormat {
       }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        generator.print(" {");
+        generator.maybePrintSilentMarker();
+        generator.print("{");
         generator.eol();
         generator.indent();
       } else {
-        generator.print(": ");
+        generator.print(":");
+        generator.maybePrintSilentMarker();
       }
 
       printFieldValue(field, value, generator);
@@ -831,7 +879,8 @@ public final class TextFormat {
             redact);
         for (final UnknownFieldSet value : field.getGroupList()) {
           generator.print(entry.getKey().toString());
-          generator.print(" {");
+          generator.maybePrintSilentMarker();
+          generator.print("{");
           generator.eol();
           generator.indent();
           printUnknownFields(value, generator, redact);
@@ -851,7 +900,8 @@ public final class TextFormat {
         throws IOException {
       for (final Object value : values) {
         generator.print(String.valueOf(number));
-        generator.print(": ");
+        generator.print(":");
+        generator.maybePrintSilentMarker();
         printUnknownFieldValue(wireType, value, generator, redact);
         generator.eol();
       }
@@ -879,15 +929,18 @@ public final class TextFormat {
   }
 
   private static TextGenerator setSingleLineOutput(Appendable output, boolean singleLine) {
-    return new TextGenerator(output, singleLine, null, Printer.FieldReporterLevel.TEXT_GENERATOR);
+    return new TextGenerator(
+        output, singleLine, null, Printer.FieldReporterLevel.TEXT_GENERATOR, false);
   }
 
   private static TextGenerator setSingleLineOutput(
       Appendable output,
       boolean singleLine,
       Descriptor rootMessageType,
-      Printer.FieldReporterLevel fieldReporterLevel) {
-    return new TextGenerator(output, singleLine, rootMessageType, fieldReporterLevel);
+      Printer.FieldReporterLevel fieldReporterLevel,
+      boolean shouldEmitSilentMarker) {
+    return new TextGenerator(
+        output, singleLine, rootMessageType, fieldReporterLevel, shouldEmitSilentMarker);
   }
 
   /** An inner class for writing text to the output stream. */
@@ -895,6 +948,7 @@ public final class TextFormat {
     private final Appendable output;
     private final StringBuilder indent = new StringBuilder();
     private final boolean singleLineMode;
+    private boolean shouldEmitSilentMarker;
     // While technically we are "at the start of a line" at the very beginning of the output, all
     // we would do in response to this is emit the (zero length) indentation, so it has no effect.
     // Setting it false here does however suppress an unwanted leading space in single-line mode.
@@ -910,11 +964,13 @@ public final class TextFormat {
         final Appendable output,
         boolean singleLineMode,
         Descriptor rootMessageType,
-        Printer.FieldReporterLevel fieldReporterLevel) {
+        Printer.FieldReporterLevel fieldReporterLevel,
+        boolean shouldEmitSilentMarker) {
       this.output = output;
       this.singleLineMode = singleLineMode;
       this.rootMessageType = rootMessageType;
       this.fieldReporterLevel = fieldReporterLevel;
+      this.shouldEmitSilentMarker = shouldEmitSilentMarker;
     }
 
     /**
@@ -957,6 +1013,15 @@ public final class TextFormat {
         output.append("\n");
       }
       atStartOfLine = true;
+    }
+
+    void maybePrintSilentMarker() throws IOException {
+      if (shouldEmitSilentMarker) {
+        output.append(DEBUG_STRING_SILENT_MARKER);
+        shouldEmitSilentMarker = false;
+      } else {
+        output.append(" ");
+      }
     }
   }
 
