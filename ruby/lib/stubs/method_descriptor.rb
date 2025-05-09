@@ -10,7 +10,7 @@ class Google::Protobuf::MethodDescriptor
   #  @return [String]
   def name; end
 
-  #  Returns the {MethodOptions} for this {MethodDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L927 MethodOptions} for this {MethodDescriptor}.
   # 
   #  @return [MethodOptions]
   def options; end
@@ -30,7 +30,7 @@ class Google::Protobuf::MethodDescriptor
   #  @return [Boolean]
   def client_streaming; end
 
-  #  Returns the {MethodDescriptorProto} of this {MethodDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L394 MethodDescriptorProto} of this {MethodDescriptor}.
   # 
   #  @return [MethodDescriptorProto]
   def to_proto; end

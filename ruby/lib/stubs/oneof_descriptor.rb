@@ -19,12 +19,12 @@ class Google::Protobuf::OneofDescriptor
   #  @return [nil]
   def each(&block); end
 
-  #  Returns the {OneofOptions} for this {OneofDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L824 OneofOptions} for this {OneofDescriptor}.
   # 
   #  @return [OneofOptions]
   def options; end
 
-  #  Returns the {OneofDescriptorProto} of this {OneofDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L343 OneofDescriptorProto} of this {OneofDescriptor}.
   # 
   #  @return [OneofDescriptorProto]
   def to_proto; end

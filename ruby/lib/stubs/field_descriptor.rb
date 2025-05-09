@@ -95,12 +95,12 @@ class Google::Protobuf::FieldDescriptor
   #  @param value [Object]
   def set(message, value); end
 
-  #  Returns the {FieldOptions} for this {FieldDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L656 FieldOptions} for this {FieldDescriptor}.
   # 
   #  @return [FieldOptions]
   def options; end
 
-  #  Returns the {FieldDescriptorProto} of this {FieldDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L236 FieldDescriptorProto} of this {FieldDescriptor}.
   # 
   #  @return [FieldDescriptorProto]
   def to_proto; end

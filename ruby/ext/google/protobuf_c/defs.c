@@ -120,7 +120,7 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
 /*
  * ruby-doc: DescriptorPool#add_serialized_file
  *
- * Adds the given serialized {FileDescriptorProto} to the pool.
+ * Adds the given serialized {https://protobuf.com/docs/descriptors#file-descriptors FileDescriptorProto} to the pool.
  *
  * @param serialized_file_proto [String]
  * @return [FileDescriptor]
@@ -373,6 +373,7 @@ static VALUE Descriptor_name(VALUE _self) {
 
 /*
  * ruby-doc: Descriptor#each
+ *
  * Iterates over fields in this message type, yielding to the block on each one.
  *
  * @yield [FieldDescriptor]
@@ -467,7 +468,7 @@ static VALUE Descriptor_msgclass(VALUE _self) {
 /*
  * ruby-doc: Descriptor#options
  *
- * Returns the {MessageOptions} for this {Descriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L571 MessageOptions} for this {Descriptor}.
  *
  * @return [MessageOptions]
  */
@@ -487,7 +488,8 @@ static VALUE Descriptor_options(VALUE _self) {
 
 /*
  * ruby-doc: Descriptor#to_proto
- * Returns the {DescriptorProto} of this {Descriptor}.
+ *
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L147 DescriptorProto} of this {Descriptor}.
  *
  * @return [DescriptorProto]
  */
@@ -605,7 +607,7 @@ static VALUE FileDescriptor_name(VALUE _self) {
 /*
  * ruby-doc: FileDescriptor#options
  *
- * Returns the {FileOptions} for this {FileDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L442 FileOptions} for this {FileDescriptor}.
  *
  * @return [FileOptions]
  */
@@ -624,7 +626,7 @@ static VALUE FileDescriptor_options(VALUE _self) {
 /*
  * ruby-doc: FileDescriptor#to_proto
  *
- * Returns the {FileDescriptorProto} of this {FileDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L104 FileDescriptorProto} of this {FileDescriptor}.
  *
  * @return [FileDescriptorProto]
  */
@@ -1074,7 +1076,7 @@ static VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
 /*
  * ruby-doc: FieldDescriptor#options
  *
- * Returns the {FieldOptions} for this {FieldDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L656 FieldOptions} for this {FieldDescriptor}.
  *
  * @return [FieldOptions]
  */
@@ -1094,7 +1096,7 @@ static VALUE FieldDescriptor_options(VALUE _self) {
 /*
  * ruby-doc: FieldDescriptor#to_proto
  *
- * Returns the {FieldDescriptorProto} of this {FieldDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L236 FieldDescriptorProto} of this {FieldDescriptor}.
  *
  * @return [FieldDescriptorProto]
  */
@@ -1245,7 +1247,7 @@ static VALUE OneofDescriptor_each(VALUE _self) {
 /*
  * ruby-doc: OneofDescriptor#options
  *
- * Returns the {OneofOptions} for this {OneofDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L824 OneofOptions} for this {OneofDescriptor}.
  *
  * @return [OneofOptions]
  */
@@ -1265,7 +1267,7 @@ static VALUE OneOfDescriptor_options(VALUE _self) {
 /*
  * ruby-doc: OneofDescriptor#to_proto
  *
- * Returns the {OneofDescriptorProto} of this {OneofDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L343 OneofDescriptorProto} of this {OneofDescriptor}.
  *
  * @return [OneofDescriptorProto]
  */
@@ -1491,7 +1493,7 @@ static VALUE EnumDescriptor_enummodule(VALUE _self) {
 /*
  * ruby-doc: EnumDescriptor#options
  *
- * Returns the {EnumOptions} for this {EnumDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L838 EnumOptions} for this {EnumDescriptor}.
  *
  * @return [EnumOptions]
  */
@@ -1510,7 +1512,7 @@ static VALUE EnumDescriptor_options(VALUE _self) {
 /*
  * ruby-doc: EnumDescriptor#to_proto
  *
- * Returns the {EnumDescriptorProto} of this {EnumDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L349 EnumDescriptorProto} of this {EnumDescriptor}.
  * @return [EnumDescriptorProto]
  */
 static VALUE EnumDescriptor_to_proto(VALUE _self) {
@@ -1663,7 +1665,7 @@ static VALUE ServiceDescriptor_each(VALUE _self) {
 /*
  * ruby-doc: ServiceDescriptor#options
  *
- * Returns the {ServiceOptions} for this {ServiceDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L901 ServiceOptions} for this {ServiceDescriptor}.
  *
  * @return [ServiceOptions]
  */
@@ -1684,7 +1686,7 @@ static VALUE ServiceDescriptor_options(VALUE _self) {
 /*
  * ruby-doc: ServiceDescriptor#to_proto
  *
- * Returns the {ServiceDescriptorProto} of this {ServiceDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L386 ServiceDescriptorProto} of this {ServiceDescriptor}.
  *
  * @return [ServiceDescriptorProto]
  */
@@ -1802,7 +1804,7 @@ static VALUE MethodDescriptor_name(VALUE _self) {
 /*
  * ruby-doc: MethodDescriptor#options
  *
- * Returns the {MethodOptions} for this {MethodDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L927 MethodOptions} for this {MethodDescriptor}.
  *
  * @return [MethodOptions]
  */
@@ -1861,7 +1863,7 @@ static VALUE MethodDescriptor_client_streaming(VALUE _self) {
 /*
  * ruby-doc: MethodDescriptor#to_proto
  *
- * Returns the {MethodDescriptorProto} of this {MethodDescriptor}.
+ * Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L394 MethodDescriptorProto} of this {MethodDescriptor}.
  *
  * @return [MethodDescriptorProto]
  */

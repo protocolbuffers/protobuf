@@ -13,12 +13,12 @@ class Google::Protobuf::FileDescriptor
   #  @return [String]
   def name; end
 
-  #  Returns the {FileOptions} for this {FileDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L442 FileOptions} for this {FileDescriptor}.
   # 
   #  @return [FileOptions]
   def options; end
 
-  #  Returns the {FileDescriptorProto} of this {FileDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L104 FileDescriptorProto} of this {FileDescriptor}.
   # 
   #  @return [FileDescriptorProto]
   def to_proto; end

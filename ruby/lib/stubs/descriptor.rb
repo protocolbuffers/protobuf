@@ -15,7 +15,7 @@ class Google::Protobuf::Descriptor
   #  @return [String]
   def name; end
 
-  Iterates over fields in this message type, yielding to the block on each one.
+  #  Iterates over fields in this message type, yielding to the block on each one.
   # 
   #  @yield [FieldDescriptor]
   #  @return [nil]
@@ -47,12 +47,12 @@ class Google::Protobuf::Descriptor
   #  @return [Class<Google::Protobuf::AbstractMessage>]
   def msgclass; end
 
-  #  Returns the {MessageOptions} for this {Descriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L571 MessageOptions} for this {Descriptor}.
   # 
   #  @return [MessageOptions]
   def options; end
 
-  Returns the {DescriptorProto} of this {Descriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L147 DescriptorProto} of this {Descriptor}.
   # 
   #  @return [DescriptorProto]
   def to_proto; end

@@ -19,12 +19,12 @@ class Google::Protobuf::ServiceDescriptor
   #  @return [nil]
   def each(&block); end
 
-  #  Returns the {ServiceOptions} for this {ServiceDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L901 ServiceOptions} for this {ServiceDescriptor}.
   # 
   #  @return [ServiceOptions]
   def options; end
 
-  #  Returns the {ServiceDescriptorProto} of this {ServiceDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L386 ServiceDescriptorProto} of this {ServiceDescriptor}.
   # 
   #  @return [ServiceDescriptorProto]
   def to_proto; end

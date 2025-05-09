@@ -5,7 +5,7 @@
 #
 class Google::Protobuf::DescriptorPool
 
-  #  Adds the given serialized {FileDescriptorProto} to the pool.
+  #  Adds the given serialized {https://protobuf.com/docs/descriptors#file-descriptors FileDescriptorProto} to the pool.
   # 
   #  @param serialized_file_proto [String]
   #  @return [FileDescriptor]

@@ -45,12 +45,12 @@ class Google::Protobuf::EnumDescriptor
   #  @return [Module]
   def enummodule; end
 
-  #  Returns the {EnumOptions} for this {EnumDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L838 EnumOptions} for this {EnumDescriptor}.
   # 
   #  @return [EnumOptions]
   def options; end
 
-  #  Returns the {EnumDescriptorProto} of this {EnumDescriptor}.
+  #  Returns the {https://github.com/protocolbuffers/protobuf/blob/v30.2/src/google/protobuf/descriptor.proto#L349 EnumDescriptorProto} of this {EnumDescriptor}.
   #  @return [EnumDescriptorProto]
   def to_proto; end
 
