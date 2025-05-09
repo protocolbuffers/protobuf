@@ -1,4 +1,6 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
