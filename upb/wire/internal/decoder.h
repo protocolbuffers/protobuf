@@ -62,8 +62,6 @@ typedef struct upb_Decoder {
  * noreturn. */
 const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, int status);
 
-extern const uint8_t upb_utf8_offsets[];
-
 UPB_INLINE
 bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
   return utf8_range_IsValid(ptr, len);
