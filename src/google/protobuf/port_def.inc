@@ -941,6 +941,16 @@ namespace internal {
 #define PROTOBUF_NULLABLE
 #endif
 
+#ifdef PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE
+#error PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE was previously defined
+#endif
+#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_assume_separate_storage)
+#define PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(a, b) \
+  __builtin_assume_separate_storage(a, b)
+#else
+#define PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(a, b)
+#endif
+
 namespace google {
 namespace protobuf {
 namespace internal {

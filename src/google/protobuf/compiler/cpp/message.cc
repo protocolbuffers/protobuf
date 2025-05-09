@@ -4287,6 +4287,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
       "$full_name$)\n");
   format("$DCHK$_NE(&from, _this);\n");
+  format("PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);\n");
 
   format(
       "$uint32$ cached_has_bits = 0;\n"
