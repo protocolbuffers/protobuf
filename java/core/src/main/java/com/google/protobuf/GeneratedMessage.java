@@ -36,6 +36,7 @@ import java.util.logging.Logger;
  */
 public abstract class GeneratedMessage extends AbstractMessage implements Serializable {
   private static final long serialVersionUID = 1L;
+  private static final Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
 
   /**
    * For testing. Allows a test to disable the optimization that avoids using field builders for
