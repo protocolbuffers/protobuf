@@ -1,4 +1,9 @@
-load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_py_proto_library")
+load(
+    "//:protobuf.bzl",
+    "internal_csharp_proto_library",
+    "internal_objc_proto_library",
+    "internal_py_proto_library",
+)
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
@@ -10,25 +15,15 @@ package(
     default_visibility = ["//conformance:__pkg__"],
 )
 
-proto_library(
-    name = "test_messages_edition2023_proto",
-    srcs = ["test_messages_edition2023.proto"],
-    visibility = ["//visibility:public"],
-)
-
-cc_proto_library(
-    name = "test_messages_edition2023_cc_proto",
-    deps = [":test_messages_edition2023_proto"],
-)
-
 internal_csharp_proto_library(
     name = "test_messages_edition2023_csharp_proto",
     srcs = ["test_messages_edition2023.proto"],
 )
 
-java_proto_library(
-    name = "test_messages_edition2023_java_proto",
-    deps = [":test_messages_edition2023_proto"],
+proto_library(
+    name = "test_messages_edition2023_proto",
+    srcs = ["test_messages_edition2023.proto"],
+    visibility = ["//visibility:public"],
 )
 
 java_lite_proto_library(
@@ -36,15 +31,25 @@ java_lite_proto_library(
     deps = [":test_messages_edition2023_proto"],
 )
 
+java_proto_library(
+    name = "test_messages_edition2023_java_proto",
+    deps = [":test_messages_edition2023_proto"],
+)
+
+cc_proto_library(
+    name = "test_messages_edition2023_cc_proto",
+    deps = [":test_messages_edition2023_proto"],
+)
+
 internal_py_proto_library(
-    name = "test_messages_edition2023_py_proto",
-    srcs = ["test_messages_edition2023.proto"],
+    name = "test_messages_edition2023_py_pb2",
+    srcs = [":test_messages_edition2023.proto"],
     srcs_version = "PY2AND3",
 )
 
 internal_objc_proto_library(
     name = "test_messages_edition2023_objc_proto",
-    srcs = ["test_messages_edition2023.proto"],
+    srcs = [":test_messages_edition2023.proto"],
 )
 
 internal_ruby_proto_library(

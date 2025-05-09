@@ -5,19 +5,20 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-# Conformance testing for Protobuf.
+# Protobuf conformance tests.
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
-load("@rules_java//java:java_binary.bzl", "java_binary")
-load(
-    "@rules_pkg//pkg:mappings.bzl",
-    "pkg_filegroup",
-    "pkg_files",
-    "strip_prefix",
-)
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_java//java:defs.bzl", "java_binary")
+load("@rules_python//python:py_binary.bzl", "py_binary")
 load("@rules_ruby//ruby:defs.bzl", "rb_binary")
-load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
+load(
+    "//:protobuf.bzl",
+    "internal_csharp_proto_library",
+    "internal_objc_proto_library",
+    "internal_php_proto_library",
+    "internal_py_proto_library",
+    "internal_ruby_proto_library",
+)
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
@@ -332,7 +333,7 @@ py_binary(
     deps = [
         ":conformance_py_proto",
         "//:protobuf_python",
-        "//conformance/test_protos:test_messages_edition2023_py_proto",
+        "//conformance/test_protos:test_messages_edition2023_py_pb2",
         "//editions:test_messages_proto2_editions_py_pb2",
         "//editions:test_messages_proto3_editions_py_pb2",
         "//python:_message",  # Make upb visible if we need it.
@@ -446,30 +447,4 @@ filegroup(
     name = "all_files",
     srcs = glob(["**/*"]),
     visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
-)
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob(
-        ["**/*"],
-        exclude = [
-            # Handled by dist_scripts:
-            "bazel_conformance_test_runner.sh",
-
-            # The following are not in autotools dist:
-            "autoload.php",
-            "failure_list_jruby.txt",
-            "update_failure_list.py",
-        ],
-    ),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
-pkg_filegroup(
-    name = "all_dist_files",
-    srcs = [
-        ":dist_files",
-    ],
-    visibility = ["//pkg:__pkg__"],
 )
