@@ -19,4 +19,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 /google/data/ro/teams/tetralight/bin/bisect -low 0 -high 128 \
-  "blaze test --//third_party/upb:fasttable_enabled=True --host_per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE=\$X $@"
+  "blaze test --//third_party/upb:fasttable_enabled=True \
+  --per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE=\$X \
+  --host_per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE=\$X \
+  $@"

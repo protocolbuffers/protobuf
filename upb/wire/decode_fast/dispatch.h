@@ -10,10 +10,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/message/message.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
-#include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
 
@@ -33,6 +34,35 @@
   /* fprintf(stderr, m); */                               \
   /*__builtin_trap(); */                                  \
   return _upb_FastDecoder_DecodeGeneric(d, ptr, msg, table, hasbits, 0);
+
+UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
+  uint16_t tag;
+  memcpy(&tag, ptr, 2);
+  return tag;
+}
+
+UPB_INLINE
+const char* _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
+                                         upb_Message* msg, intptr_t table,
+                                         uint64_t hasbits, uint64_t tag) {
+  const upb_MiniTable* table_p = decode_totablep(table);
+  uint8_t mask = table;
+  size_t ofs = tag & mask;
+  UPB_ASSUME((ofs & 0xf8) == ofs);
+
+#ifdef __cplusplus
+  // Unreachable, since this header is only used from C, but when the header
+  // module is compiled for C++ we need to avoid a compilation error.
+  UPB_UNREACHABLE();
+  UPB_UNUSED(table_p);
+  _upb_FastTable_Entry* ent = NULL;
+#else
+  const _upb_FastTable_Entry* ent = &table_p->UPB_PRIVATE(fasttable)[ofs >> 3];
+#endif
+
+  UPB_MUSTTAIL return ent->field_parser(d, ptr, msg, table, hasbits,
+                                        ent->field_data ^ tag);
+}
 
 UPB_NOINLINE
 static const char* fastdecode_isdonefallback(UPB_PARSE_PARAMS) {

@@ -62,7 +62,12 @@ cc_library(
         "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_table:internal",
-    ],
+    ] + select({
+        "//upb:fasttable_enabled_setting": [
+            "//upb/wire/decode_fast:dispatch",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(

@@ -20,7 +20,6 @@ cc_library(
     name = "field_parsers",
     srcs = [
         "cardinality.h",
-        "dispatch.h",
         "field_fixed.c",
         "field_generic.c",
         "field_message.c",
@@ -33,12 +32,29 @@ cc_library(
     deps = [
         ":combinations",
         ":data",
+        ":dispatch",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
         "//upb:mini_table",
         "//upb:port",
         "//upb/message:types",
+        "//upb/mini_table:internal",
+        "//upb/wire:decoder",
+        "//upb/wire:eps_copy_input_stream",
+    ],
+)
+
+cc_library(
+    name = "dispatch",
+    hdrs = ["dispatch.h"],
+    copts = FASTTABLE_COPTS,
+    visibility = ["//upb/wire:__pkg__"],
+    deps = [
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb/mini_table:internal",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
     ],
@@ -51,6 +67,7 @@ cc_library(
     copts = FASTTABLE_COPTS,
     visibility = [
         "//pkg:__pkg__",
+        "//upb/mini_descriptor:__pkg__",
         "//upb_generator/minitable:__pkg__",
     ],
     deps = [
@@ -104,7 +121,10 @@ cc_library(
     srcs = ["function_array.c"],
     hdrs = ["function_array.h"],
     copts = FASTTABLE_COPTS,
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/mini_descriptor:__pkg__",
+    ],
     deps = [
         ":combinations",
         ":field_parsers",

@@ -35,7 +35,6 @@
   F(__VA_ARGS__, ZigZag64)           \
   F(__VA_ARGS__, Fixed32)            \
   F(__VA_ARGS__, Fixed64)            \
-  F(__VA_ARGS__, ClosedEnum)         \
   F(__VA_ARGS__, String)             \
   F(__VA_ARGS__, Bytes)              \
   F(__VA_ARGS__, Message)
@@ -91,7 +90,6 @@ UPB_INLINE int upb_DecodeFast_ValueBytes(upb_DecodeFast_Type type) {
     case kUpb_DecodeFast_Varint32:
     case kUpb_DecodeFast_ZigZag32:
     case kUpb_DecodeFast_Fixed32:
-    case kUpb_DecodeFast_ClosedEnum:
       return 4;
     case kUpb_DecodeFast_Varint64:
     case kUpb_DecodeFast_ZigZag64:

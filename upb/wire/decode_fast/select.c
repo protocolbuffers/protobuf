@@ -97,13 +97,8 @@ static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
                                         upb_DecodeFast_Type* out_type) {
   upb_FieldType type = upb_MiniTableField_Type(field);
 
-  if (type == kUpb_FieldType_Group) {
+  if (type == kUpb_FieldType_Group || upb_MiniTableField_IsClosedEnum(field)) {
     return false;  // Currently not supported.
-  }
-
-  if (upb_MiniTableField_IsClosedEnum(field)) {
-    *out_type = kUpb_DecodeFast_ClosedEnum;
-    return true;
   }
 
   static const int8_t types[] = {
@@ -194,8 +189,10 @@ static bool upb_DecodeFast_IsDisabled(uint32_t function_idx) {
 #endif
   uint32_t type = upb_DecodeFast_GetType(function_idx);
 
-  // Not supported yet.
-  return type == kUpb_DecodeFast_ClosedEnum;
+  // Doesn't support unlinked message fields.
+  if (type == kUpb_DecodeFast_Message) return true;
+
+  return false;
 }
 
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
@@ -230,7 +227,7 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
     }
   }
 
-  return upb_RoundUpToPowerOfTwo(max + 1);
+  return max == 0 ? 0 : upb_RoundUpToPowerOfTwo(max + 1);
 }
 
 uint8_t upb_DecodeFast_GetTableMask(int table_size) {
