@@ -3,7 +3,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import com.google.protos.proto2_unittest.UnittestProto.TestAllExtensions;
+import protobuf_unittest.UnittestProto.TestAllExtensions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
