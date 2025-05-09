@@ -477,7 +477,7 @@ class _Printer(object):
           # TODO: refactor and optimize if this becomes an issue.
           entry_submsg = value.GetEntryClass()(key=key, value=value[key])
           self.PrintField(field, entry_submsg)
-      elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+      elif field.is_repeated:
         if (self.use_short_repeated_primitives
             and field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE
             and field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_STRING):
@@ -557,7 +557,8 @@ class _Printer(object):
         out.write('[')
         if (field.containing_type.GetOptions().message_set_wire_format and
             field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-            field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL):
+            not field.is_required and
+            not field.is_repeated):
           out.write(field.message_type.full_name)
         else:
           out.write(field.full_name)
@@ -998,7 +999,7 @@ class _Parser(object):
                                  field.full_name)
         merger = self._MergeScalarField
 
-      if (field.label == descriptor.FieldDescriptor.LABEL_REPEATED and
+      if (field.is_repeated and
           tokenizer.TryConsume('[')):
         # Short repeated format, e.g. "foo: [1, 2, 3]"
         if not tokenizer.TryConsume(']'):
@@ -1061,7 +1062,7 @@ class _Parser(object):
       tokenizer.Consume('{')
       end_token = '}'
 
-    if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if field.is_repeated:
       if field.is_extension:
         sub_message = message.Extensions[field].add()
       elif is_map_entry:
@@ -1143,7 +1144,7 @@ class _Parser(object):
     else:
       raise RuntimeError('Unknown field type %d' % field.type)
 
-    if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if field.is_repeated:
       if field.is_extension:
         message.Extensions[field].append(value)
       else:
