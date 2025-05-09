@@ -882,6 +882,36 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
   return "";
 }
 
+absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type) {
+  switch (type) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return "Int32";
+    case FieldDescriptor::CPPTYPE_INT64:
+      return "Int64";
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return "UInt32";
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return "UInt64";
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return "Double";
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return "Float";
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return "Bool";
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return "Enum";
+    case FieldDescriptor::CPPTYPE_STRING:
+      return "String";
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return "Message";
+
+      // No default because we want the compiler to complain if any new
+      // types are added.
+  }
+  ABSL_LOG(FATAL) << "Can't get here.";
+  return "";
+}
+
 std::string Int32ToString(int number) {
   if (number == std::numeric_limits<int32_t>::min()) {
     // This needs to be special-cased, see explanation here:
@@ -1307,6 +1337,17 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
                            const Options& options) {
   return false;
 }
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+bool IsEligibleForV2Batching(const FieldDescriptor* field) {
+  // Non-message fields whose numbers fit into 2B should be considered for
+  // batching although the actual batching depends on the current batching, the
+  // payload size, etc.
+  return field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE &&
+         !field->is_map() &&
+         field->number() < std::numeric_limits<uint16_t>::max();
+}
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
   for (int i = 0; i < file->message_type_count(); ++i) {
