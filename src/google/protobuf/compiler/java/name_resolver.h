@@ -45,7 +45,7 @@ class PROTOC_EXPORT ClassNameResolver {
   // Gets the unqualified outer class name for the file.
   std::string GetFileClassName(const FileDescriptor* file, bool immutable);
   std::string GetFileClassName(const FileDescriptor* file, bool immutable,
-                               bool kotlin);
+                               bool kotlin, bool proto1gen = false);
   // Gets the unqualified immutable outer class name of a file.
   std::string GetFileImmutableClassName(const FileDescriptor* file);
   // Gets the unqualified default immutable outer class name of a file

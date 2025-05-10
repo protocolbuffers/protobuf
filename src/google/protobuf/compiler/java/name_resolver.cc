@@ -174,7 +174,8 @@ std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
 }
 
 std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
-                                                bool immutable, bool kotlin) {
+                                                bool immutable, bool kotlin,
+                                                bool proto1gen) {
   if (kotlin) {
     return absl::StrCat(GetFileImmutableClassName(file), "Kt");
   } else if (immutable) {
