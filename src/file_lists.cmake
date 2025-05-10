@@ -1348,6 +1348,37 @@ set(upb_test_util_files
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.h
 )
 
+# @//pkg:conformance_cpp
+set(conformance_testee_srcs
+  ${protobuf_SOURCE_DIR}/conformance/conformance_cpp.cc
+)
+
+# @//pkg:conformance_cpp
+set(conformance_testee_hdrs
+
+)
+
+# @//pkg:conformance_runner
+set(conformance_runner_srcs
+  ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.cc
+  ${protobuf_SOURCE_DIR}/conformance/conformance_test.cc
+  ${protobuf_SOURCE_DIR}/conformance/conformance_test_main.cc
+  ${protobuf_SOURCE_DIR}/conformance/conformance_test_runner.cc
+  ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.cc
+  ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner.cc
+  ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
+)
+
+# @//pkg:conformance_runner
+set(conformance_runner_hdrs
+  ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.h
+  ${protobuf_SOURCE_DIR}/conformance/conformance_test.h
+  ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.h
+  ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner.h
+  ${protobuf_SOURCE_DIR}/conformance/test_runner.h
+  ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
+)
+
 # @//upb:test_protos
 set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.proto
