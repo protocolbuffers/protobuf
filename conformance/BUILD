@@ -7,7 +7,8 @@
 
 # Protobuf conformance tests.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "objc_library")
 load("@rules_java//java:defs.bzl", "java_binary")
 load("@rules_python//python:py_binary.bzl", "py_binary")
 load("@rules_ruby//ruby:defs.bzl", "rb_binary")
@@ -55,14 +56,15 @@ cc_library(
     srcs = [
         "conformance_test.cc",
         "conformance_test_runner.cc",
-        "failure_list_trie_node.cc",
     ],
     hdrs = [
         "conformance_test.h",
-        "failure_list_trie_node.h",
     ],
     deps = [
         ":conformance_cc_proto",
+        ":failure_list_trie_node",
+        ":fork_pipe_runner",
+        ":test_runner",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
         "//src/google/protobuf:endian",
@@ -74,7 +76,6 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
-        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -89,11 +90,23 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "failure_list_trie_node",
+    srcs = ["failure_list_trie_node.cc"],
+    hdrs = ["failure_list_trie_node.h"],
+    deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
 cc_test(
     name = "failure_list_trie_node_test",
     srcs = ["failure_list_trie_node_test.cc"],
     deps = [
-        ":conformance_test_lib",
+        ":failure_list_trie_node",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
@@ -156,6 +169,24 @@ cc_library(
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/log:die_if_null",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "test_runner",
+    hdrs = ["test_runner.h"],
+)
+
+cc_library(
+    name = "fork_pipe_runner",
+    srcs = ["fork_pipe_runner.cc"],
+    hdrs = ["fork_pipe_runner.h"],
+    deps = [
+        ":conformance_cc_proto",
+        ":test_runner",
+        "//src/google/protobuf:endian",
+        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings:str_format",
     ],
 )
@@ -268,7 +299,10 @@ cc_binary(
     name = "conformance_cpp",
     testonly = 1,
     srcs = ["conformance_cpp.cc"],
-    visibility = ["//src:__subpackages__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//src:__subpackages__",
+    ],
     deps = [
         ":conformance_cc_proto",
         "//:protobuf",

@@ -150,7 +150,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17
+          - flags: -Dprotobuf_BUILD_EXAMPLES=ON -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_CONFORMANCE=ON
           - name: Ninja
             flags: -G Ninja -DCMAKE_CXX_STANDARD=17
             continuous-only: true

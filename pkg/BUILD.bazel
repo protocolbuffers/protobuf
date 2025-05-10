@@ -128,6 +128,9 @@ gen_file_lists(
         ":lite_test_util": "lite_test_util",
         ":test_util": "test_util",
         "//upb:test_util": "upb_test_util",
+        # Conformance tests
+        ":conformance_cpp": "conformance_testee",
+        ":conformance_runner": "conformance_runner",
         # Tests and test-only protos:
         "//upb:test_protos": "upb_test_protos",
         "//upb:test_srcs": "upb_test",
@@ -275,6 +278,22 @@ cc_dist_library(
     deps = [
         "//upb_generator/reflection:protoc-gen-upbdefs",
     ],
+)
+
+cc_dist_library(
+    name = "conformance_cpp",
+    testonly = 1,
+    dist_deps = [":protobuf"],
+    tags = ["manual"],
+    deps = ["//conformance:conformance_cpp"],
+)
+
+cc_dist_library(
+    name = "conformance_runner",
+    testonly = 1,
+    dist_deps = [":protobuf"],
+    tags = ["manual"],
+    deps = ["//conformance:conformance_test_runner"],
 )
 
 cc_dist_library(
