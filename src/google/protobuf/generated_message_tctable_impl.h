@@ -1032,7 +1032,12 @@ class PROTOBUF_EXPORT TcParser final {
                                      const TcParseTableBase::FieldEntry*);
   static int FieldNumber(const TcParseTableBase* table,
                          const TcParseTableBase::FieldEntry*);
-  static bool ChangeOneof(const TcParseTableBase* table,
+  static void InitOneof(const TcParseTableBase* table,
+                        const TcParseTableBase* inner_table,
+                        const TcParseTableBase::FieldEntry& entry,
+                        MessageLite* msg);
+  static void ChangeOneof(const TcParseTableBase* table,
+                          const TcParseTableBase* inner_table,
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
                           MessageLite* msg);
