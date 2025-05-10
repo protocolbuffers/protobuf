@@ -19,10 +19,8 @@
 #include <istream>
 #include <ostream>
 #include <string>
-#include <typeinfo>
 #include <utility>
 
-#include "absl/base/config.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -720,6 +718,7 @@ absl::Cord MessageLite::SerializePartialAsCord() const {
   if (!AppendPartialToString(&output)) output.Clear();
   return output;
 }
+
 
 namespace internal {
 
