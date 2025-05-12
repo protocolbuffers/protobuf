@@ -182,7 +182,7 @@ proto_library(
     attrs = {
         "deps": attr.label_list(
             aspects = [cc_proto_aspect],
-            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
             allow_files = False,
             doc = """
 The list of <a href="protocol-buffer.html#proto_library"><code>proto_library</code></a>
