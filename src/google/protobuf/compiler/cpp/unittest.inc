@@ -380,11 +380,11 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyFrom) {
   UNITTEST::TestAllTypes message1, message2;
 
   TestUtil::SetAllFields(&message1);
-  message2.CopyFrom(message1);
+  message2 = message1;
   TestUtil::ExpectAllFieldsSet(message2);
 
   // Copying from self should be a no-op.
-  message2.CopyFrom(message2);
+  message2 = message2;
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
@@ -820,7 +820,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestOptimizedForSize) {
   UNITTEST::TestOptimizedForSize message, message2;
   message.set_i(1);
   message.mutable_msg()->set_c(2);
-  message2.CopyFrom(message);
+  message2 = message;
   EXPECT_EQ(1, message2.i());
   EXPECT_EQ(2, message2.msg().c());
 }
@@ -1763,12 +1763,12 @@ TEST_F(OneofTest, CopyFrom) {
   message1.set_foo_enum(UNITTEST::TestOneof2::BAR);
   EXPECT_TRUE(message1.has_foo_enum());
 
-  message2.CopyFrom(message1);
+  message2 = message1;
   EXPECT_TRUE(message2.has_foo_enum());
   EXPECT_EQ(message2.foo_enum(), UNITTEST::TestOneof2::BAR);
 
   // Copying from self should be a no-op.
-  message2.CopyFrom(message2);
+  message2 = message2;
   EXPECT_TRUE(message2.has_foo_enum());
   EXPECT_EQ(message2.foo_enum(), UNITTEST::TestOneof2::BAR);
 }
