@@ -104,13 +104,13 @@ void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothLazy) {
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry registry(arena);
   TestConcurrentExtensionAccess(registry);
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceOneLazyOneEager) {
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry r1(arena);
   r1.AddExtension(theme);
   TestConcurrentExtensionAccess(r1);
@@ -120,7 +120,7 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceOneLazyOneEager) {
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry registry(arena);
   registry.AddExtension(theme);
   registry.AddExtension(ThemeExtension::theme_extension);
@@ -128,7 +128,7 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
 }
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceGlobalInstance) {
-  upb::Arena arena;
+  hpb::Arena arena;
   TestConcurrentExtensionAccess(hpb::ExtensionRegistry::generated_registry());
 }
 
