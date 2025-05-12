@@ -21,15 +21,15 @@ namespace hpb::internal::backend::upb {
 
 template <typename T>
 typename T::Proxy CreateMessage(Arena& arena) {
-  return PrivateAccess::CreateMessage<T>(arena.ptr());
+  return PrivateAccess::CreateMessage<T>(interop::upb::UnwrapArena(arena));
 }
 
 template <typename T>
 typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
   return internal::PrivateAccess::Proxy<T>(
       internal::DeepClone(interop::upb::GetMessage(message), T::minitable(),
-                          arena.ptr()),
-      arena.ptr());
+                          interop::upb::UnwrapArena(arena)),
+      interop::upb::UnwrapArena(arena));
 }
 
 template <typename T>
@@ -51,7 +51,7 @@ template <typename T>
 absl::StatusOr<absl::string_view> Serialize(PtrOrRaw<T> message, Arena& arena) {
   return hpb::internal::Serialize(interop::upb::GetMessage(message),
                                   interop::upb::GetMiniTable(message),
-                                  arena.ptr(), 0);
+                                  interop::upb::UnwrapArena(arena), 0);
 }
 
 }  // namespace hpb::internal::backend::upb
