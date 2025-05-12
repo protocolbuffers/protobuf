@@ -72,6 +72,14 @@ std::string ResolveKeyword(absl::string_view name) {
   return std::string(name);
 }
 
+// Escapes Python keywords for use as plain identifiers by appending an underscore.
+std::string EscapeKeyword(absl::string_view name) {
+  if (IsPythonKeyword(name)) {
+    return absl::StrCat(name, "_");
+  }
+  return std::string(name);
+}
+
 std::string GetFileName(const FileDescriptor* file_des,
                         absl::string_view suffix) {
   std::string module_name = ModuleName(file_des->name());
