@@ -1431,6 +1431,39 @@ class MessageTest(unittest.TestCase):
         'TestAllTypes.NestedMessage', nested.__class__.__qualname__
     )
 
+  def testAssignBoolToEnum(self, message_module):
+    # TODO: change warning into error in 2026 Q1
+    # with self.assertRaises(TypeError):
+    with warnings.catch_warnings(record=True) as w:
+      m = message_module.TestAllTypes(optional_nested_enum=True)
+      self.assertIn('bool', str(w[0].message))
+
+    m = message_module.TestAllTypes(optional_nested_enum=2)
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_nested_enum = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.optional_nested_enum, 1)
+
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_nested_enum = 2
+      self.assertFalse(w)
+
+  def testBoolToRepeatedEnum(self, message_module):
+    with warnings.catch_warnings(record=True) as w:
+      m = message_module.TestAllTypes(repeated_nested_enum=[True])
+      self.assertIn('bool', str(w[0].message))
+
+    m = message_module.TestAllTypes()
+    with warnings.catch_warnings(record=True) as w:
+      m.repeated_nested_enum.append(True)
+      self.assertIn('bool', str(w[0].message))
+
+  def testBoolToOneofEnum(self, message_module):
+    m = unittest_pb2.TestOneof2()
+    with warnings.catch_warnings(record=True) as w:
+      m.foo_enum = True
+      self.assertIn('bool', str(w[0].message))
+
 
 @testing_refleaks.TestCase
 class TestRecursiveGroup(unittest.TestCase):

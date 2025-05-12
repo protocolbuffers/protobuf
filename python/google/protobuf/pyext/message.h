@@ -301,6 +301,17 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
     return err;                                  \
   }
 
+// TODO: raise error in 2026 Q1 release
+// FormatTypeError(arg, "enum, int");
+#define PROTOBUF_CHECK_ENUM_WITH_BOOL(arg, field_des)                 \
+  if (!strcmp(Py_TYPE(arg)->tp_name, "bool")) {                       \
+    std::string error_msg = absl::StrCat(                             \
+        field_des->full_name(),                                       \
+        ": Wrongly assign bool to enum field. This "                  \
+        "will be rejected after 2026 Q1, please fix it before 2026"); \
+    PyErr_WarnEx(PyExc_DeprecationWarning, error_msg.c_str(), 3);     \
+  }
+
 #define FULL_MODULE_NAME "google.protobuf.pyext._message"
 
 void FormatTypeError(PyObject* arg, const char* expected_types);
