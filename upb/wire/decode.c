@@ -965,43 +965,15 @@ UPB_NOINLINE const upb_MiniTableField* _upb_Decoder_FindExtensionField(
   return &upb_Decoder_FieldNotFoundField;
 }
 
-static const upb_MiniTableField* _upb_Decoder_FindField(
-    upb_Decoder* d, const upb_MiniTable* t, uint32_t field_number,
-    uint32_t* last_field_index, int wire_type) {
+static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
+                                                        const upb_MiniTable* t,
+                                                        uint32_t field_number,
+                                                        int wire_type) {
   if (t == NULL) return &upb_Decoder_FieldNotFoundField;
 
-  uint32_t idx = ((uint32_t)field_number) - 1;  // 0 wraps to UINT32_MAX
-  if (idx < t->UPB_PRIVATE(dense_below)) {
-    // Fastest case: index into dense fields, and don't update last_field_index.
-    return &t->UPB_PRIVATE(fields)[idx];
-  }
-
-  uint32_t field_count = t->UPB_PRIVATE(field_count);
-  if (t->UPB_PRIVATE(dense_below) < field_count) {
-    // Linear search non-dense fields. Resume scanning from last_field_index
-    // since fields are usually in order.
-    idx = *last_field_index;
-    uint32_t candidate;
-    do {
-      candidate = t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number);
-      if (candidate == field_number) {
-        goto found;
-      }
-    } while (++idx < field_count);
-
-    if (UPB_LIKELY(field_number > candidate)) {
-      // The field number we encountered is larger than any of our known fields,
-      // so it's likely that subsequent ones will be too.
-      *last_field_index = idx - 1;
-    } else {
-      // Fields not in tag order - scan from beginning
-      for (idx = t->UPB_PRIVATE(dense_below); idx < *last_field_index; idx++) {
-        if (t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number) {
-          goto found;
-        }
-      }
-    }
-  }
+  const upb_MiniTableField* field =
+      upb_MiniTable_FindFieldByNumber(t, field_number);
+  if (field) return field;
 
   if (d->extreg && t->UPB_PRIVATE(ext)) {
     return _upb_Decoder_FindExtensionField(d, t, field_number,
@@ -1009,11 +981,6 @@ static const upb_MiniTableField* _upb_Decoder_FindField(
   }
 
   return &upb_Decoder_FieldNotFoundField;  // Unknown field.
-
-found:
-  UPB_ASSERT(t->UPB_PRIVATE(fields)[idx].UPB_PRIVATE(number) == field_number);
-  *last_field_index = idx;
-  return &t->UPB_PRIVATE(fields)[idx];
 }
 
 static int _upb_Decoder_GetVarintOp(const upb_MiniTableField* field) {
@@ -1318,8 +1285,6 @@ UPB_NOINLINE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout) {
-  uint32_t last_field_index = 0;
-
 #if UPB_FASTTABLE
   // The first time we want to skip fast dispatch, because we may have just been
   // invoked by the fast parser to handle a case that it bailed on.
@@ -1358,8 +1323,7 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
       return ptr;
     }
 
-    field = _upb_Decoder_FindField(d, layout, field_number, &last_field_index,
-                                   wire_type);
+    field = _upb_Decoder_FindField(d, layout, field_number, wire_type);
     ptr = _upb_Decoder_DecodeWireValue(d, ptr, layout, field, wire_type, &val,
                                        &op);
 

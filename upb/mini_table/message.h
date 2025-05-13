@@ -23,7 +23,7 @@ typedef struct upb_MiniTable upb_MiniTable;
 extern "C" {
 #endif
 
-UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
+UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* m, uint32_t number);
 
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
