@@ -1,11 +1,18 @@
 #include "google/protobuf/compiler/cpp/field_chunk.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
+
+// must be last
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -15,16 +22,15 @@ namespace cpp {
 namespace {
 
 int GetHasWordIdx(const FieldDescriptor* field,
-                  const std::vector<int>& has_bit_indices) {
+                  absl::Span<const int> has_bit_indices) {
   return has_bit_indices[static_cast<size_t>(field->index())] / 32;
 }
 
 // Returns the (common) hasbit index offset. Callers must guarantee "fields" is
 // not empty. Debug-check fails if it sees different hasbit index offset in
 // "fields".
-int GetCommonHasbitIndexOffset(
-    const std::vector<const FieldDescriptor*>& fields,
-    const std::vector<int>& has_bit_indices) {
+int GetCommonHasbitIndexOffset(absl::Span<const FieldDescriptor*> fields,
+                               absl::Span<const int> has_bit_indices) {
   ABSL_CHECK(!fields.empty());
 
   int word_idx = GetHasWordIdx(fields.front(), has_bit_indices);
@@ -36,14 +42,15 @@ int GetCommonHasbitIndexOffset(
 
 // Checks if chunks in [it, end) share hasbit index offset.
 void CheckSameHasbitIndexOffset(ChunkIterator it, ChunkIterator end,
-                                const std::vector<int>& has_bit_indices) {
+                                absl::Span<const int> has_bit_indices) {
   ABSL_CHECK(it != end);
   int prev_offset = -1;
   for (; it != end; ++it) {
     // Skip empty chunks (likely due to extraction).
     if (it->fields.empty()) continue;
 
-    int offset = GetCommonHasbitIndexOffset(it->fields, has_bit_indices);
+    int offset =
+        GetCommonHasbitIndexOffset(absl::MakeSpan(it->fields), has_bit_indices);
     ABSL_CHECK(prev_offset == -1 || prev_offset == offset);
     prev_offset = offset;
   }
@@ -56,6 +63,11 @@ void CheckSameHasbitIndexOffset(ChunkIterator it, ChunkIterator end,
 // masked to tell if any thing in "fields" is present.
 uint32_t GenChunkMask(const std::vector<const FieldDescriptor*>& fields,
                       const std::vector<int>& has_bit_indices) {
+  return GenChunkMask(absl::MakeSpan(fields), absl::MakeSpan(has_bit_indices));
+}
+
+uint32_t GenChunkMask(absl::Span<const FieldDescriptor* const> fields,
+                      absl::Span<const int> has_bit_indices) {
   if (fields.empty()) return 0u;
 
   int first_index_offset = GetHasWordIdx(fields.front(), has_bit_indices);
@@ -76,7 +88,7 @@ uint32_t GenChunkMask(ChunkIterator it, ChunkIterator end,
                       const std::vector<int>& has_bit_indices) {
   ABSL_CHECK(it != end);
 
-  CheckSameHasbitIndexOffset(it, end, has_bit_indices);
+  CheckSameHasbitIndexOffset(it, end, absl::MakeSpan(has_bit_indices));
 
   uint32_t chunk_mask = 0u;
   for (; it != end; ++it) {
@@ -87,7 +99,10 @@ uint32_t GenChunkMask(ChunkIterator it, ChunkIterator end,
   return chunk_mask;
 }
 
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

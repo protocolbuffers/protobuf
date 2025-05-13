@@ -16,11 +16,11 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -30,6 +30,9 @@
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
+
+// must be last
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -146,6 +149,7 @@ class MessageGenerator {
   };
   NewOpRequirements GetNewOp(io::Printer* arena_emitter) const;
 
+
   // Helpers for GenerateSerializeWithCachedSizes().
   //
   // cached_has_bit_index maintains that:
@@ -254,5 +258,7 @@ class MessageGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__

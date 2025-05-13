@@ -37,6 +37,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -506,7 +507,7 @@ static int popcnt(uint32_t n) {
 
 // Returns true if it emits conditional check against hasbit words. This is
 // useful to skip multiple fields that are unlikely present based on profile
-// (go/pdproto).
+// (go/pdproto). Assumes that each chunk is limited to one has "byte".
 bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
                             const Options& options,
                             const std::vector<int>& has_bit_indices,
@@ -1400,6 +1401,7 @@ void MessageGenerator::EmitUpdateByteSizeV2ForNumerics(
             total_size += absl::popcount(cached_has_bits & $mask$) * $size$;
           )cc");
 }
+
 
 void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
   p->Emit("// $classname$\n\n");
@@ -2539,62 +2541,62 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   GenerateSwap(p);
   p->Emit("\n");
 
-  p->Emit(
-      {{"annotate_accessor_definition",
-        [&] {
-          if (!options_.annotate_accessor) return;
-          for (auto f : FieldRange(descriptor_)) {
-            p->Emit({{"field", FieldName(f)}},
-                    R"cc(
-                      volatile bool $classname$::$field$_AccessedNoStrip;
-                    )cc");
-          }
-        }},
-       {"get_metadata",
-        [&] {
-          if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
-          // Same as the base class, but it avoids virtual dispatch.
-          p->Emit(R"cc(
-            $pb$::Metadata $classname$::GetMetadata() const {
-              return $superclass$::GetMetadataImpl(GetClassData()->full());
-            }
+  p->Emit({{"annotate_accessor_definition",
+            [&] {
+              if (!options_.annotate_accessor) return;
+              for (auto f : FieldRange(descriptor_)) {
+                p->Emit({{"field", FieldName(f)}},
+                        R"cc(
+                          volatile bool $classname$::$field$_AccessedNoStrip;
+                        )cc");
+              }
+            }},
+           {"get_metadata",
+            [&] {
+              if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
+              // Same as the base class, but it avoids virtual dispatch.
+              p->Emit(R"cc(
+                $pb$::Metadata $classname$::GetMetadata() const {
+                  return $superclass$::GetMetadataImpl(GetClassData()->full());
+                }
+              )cc");
+            }},
+           {"post_loop_handler",
+            [&] {
+              if (!NeedsPostLoopHandler(descriptor_, options_)) return;
+              p->Emit({{"required",
+                        [&] {
+                        }}},
+                      R"cc(
+                        const char* $nullable$ $classname$::PostLoopHandler(
+                            MessageLite* $nonnull$ msg,
+                            const char* $nullable$ ptr,
+                            ::_pbi::ParseContext* $nonnull$ ctx) {
+                          $classname$* _this = static_cast<$classname$*>(msg);
+                          $annotate_deserialize$;
+                          $required$;
+                          return ptr;
+                        }
+                      )cc");
+            }},
+           {"message_set_definition",
+            [&] {
+            }},
+           {"tracker_decl",
+            [&] {
+              if (!HasTracker(descriptor_, options_)) return;
+              p->Emit(R"cc(
+                $pb$::AccessListener<$classtype$> $classname$::$tracker$(
+                    &FullMessageName);
+              )cc");
+            }}},
+          R"cc(
+            $annotate_accessor_definition$;
+            $get_metadata$;
+            $post_loop_handler$;
+            $message_set_definition$;
+            $tracker_decl$;
           )cc");
-        }},
-       {"post_loop_handler",
-        [&] {
-          if (!NeedsPostLoopHandler(descriptor_, options_)) return;
-          p->Emit({{"required",
-                    [&] {
-                    }}},
-                  R"cc(
-                    const char* $nullable$ $classname$::PostLoopHandler(
-                        MessageLite* $nonnull$ msg, const char* $nullable$ ptr,
-                        ::_pbi::ParseContext* $nonnull$ ctx) {
-                      $classname$* _this = static_cast<$classname$*>(msg);
-                      $annotate_deserialize$;
-                      $required$;
-                      return ptr;
-                    }
-                  )cc");
-        }},
-       {"message_set_definition",
-        [&] {
-        }},
-       {"tracker_decl",
-        [&] {
-          if (!HasTracker(descriptor_, options_)) return;
-          p->Emit(R"cc(
-            $pb$::AccessListener<$classtype$> $classname$::$tracker$(
-                &FullMessageName);
-          )cc");
-        }}},
-      R"cc(
-        $annotate_accessor_definition$;
-        $get_metadata$;
-        $post_loop_handler$;
-        $message_set_definition$;
-        $tracker_decl$;
-      )cc");
 }
 
 size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
@@ -5247,51 +5249,51 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                   fields.size() > 1 && HasWordIndex(fields[0]) != kNoHasbit &&
                   !IsLikelyPresent(fields.back(), options_);
               DebugAssertUniformLikelyPresence(fields, options_);
-              p->Emit(
-                  {{"update_byte_size_for_chunk",
-                    [&] {
-                      // Go back and emit checks for each of the fields we
-                      // processed.
-                      for (const auto* field : fields) {
-                        EmitUpdateByteSizeForField(field, p,
-                                                   cached_has_word_index);
-                      }
-                    }},
-                   {"may_update_cached_has_word_index",
-                    [&] {
-                      if (!check_has_byte) return;
-                      update_cached_has_bits(fields);
-                    }},
-                   {"check_if_chunk_present",
-                    [&] {
-                      if (!check_has_byte) {
-                        return;
-                      }
+              p->Emit({{"update_byte_size_for_chunk",
+                        [&] {
+                          // Go back and emit checks for each of the fields we
+                          // processed.
+                          for (const auto* field : fields) {
+                            EmitUpdateByteSizeForField(field, p,
+                                                       cached_has_word_index);
+                          }
+                        }},
+                       {"may_update_cached_has_word_index",
+                        [&] {
+                          if (!check_has_byte) return;
+                          update_cached_has_bits(fields);
+                        }},
+                       {"check_if_chunk_present",
+                        [&] {
+                          if (!check_has_byte) {
+                            return;
+                          }
 
-                      // Emit an if() that will let us skip the whole chunk
-                      // if none are set.
-                      uint32_t chunk_mask =
-                          GenChunkMask(fields, has_bit_indices_);
+                          // Emit an if() that will let us skip the whole chunk
+                          // if none are set.
+                          uint32_t chunk_mask =
+                              GenChunkMask(fields, has_bit_indices_);
 
-                      // Check (up to) 8 has_bits at a time if we have more
-                      // than one field in this chunk.  Due to field layout
-                      // ordering, we may check _has_bits_[last_chunk * 8 /
-                      // 32] multiple times.
-                      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-                      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+                          // Check (up to) 8 has_bits at a time if we have more
+                          // than one field in this chunk.  Due to field layout
+                          // ordering, we may check _has_bits_[last_chunk * 8 /
+                          // 32] multiple times.
+                          ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+                          ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
-                      p->Emit({{"condition",
+                          p->Emit(
+                              {{"condition",
                                 GenerateConditionMaybeWithProbabilityForGroup(
                                     chunk_mask, fields, options_)}},
                               "if ($condition$)");
-                    }}},
-                  R"cc(
-                    $may_update_cached_has_word_index$;
-                    $check_if_chunk_present$ {
-                      //~ Force newline.
-                      $update_byte_size_for_chunk$;
-                    }
-                  )cc");
+                        }}},
+                      R"cc(
+                        $may_update_cached_has_word_index$;
+                        $check_if_chunk_present$ {
+                          //~ Force newline.
+                          $update_byte_size_for_chunk$;
+                        }
+                      )cc");
 
               // To next chunk.
               ++it;

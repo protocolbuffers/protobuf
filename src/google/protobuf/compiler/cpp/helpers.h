@@ -517,6 +517,7 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
 // Returns true if a field can be batched.
 bool IsEligibleForV2Batching(const FieldDescriptor* field);
+bool HasFieldEligibleForV2Batching(const Descriptor* descriptor);
 #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 // Does this file have generated parsing, serialization, and other

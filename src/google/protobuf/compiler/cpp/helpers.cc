@@ -1347,6 +1347,13 @@ bool IsEligibleForV2Batching(const FieldDescriptor* field) {
          !field->is_map() &&
          field->number() < std::numeric_limits<uint16_t>::max();
 }
+
+bool HasFieldEligibleForV2Batching(const Descriptor* descriptor) {
+  for (const auto& field : FieldRange(descriptor)) {
+    if (IsEligibleForV2Batching(field)) return true;
+  }
+  return false;
+}
 #endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
