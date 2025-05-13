@@ -12,6 +12,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/hpb/context.h"
@@ -52,7 +54,37 @@ void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
 
 void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
-    abort();
+    EmitFileWarning(file, ctx);
+    const auto msgs = SortedMessages(file);
+    for (auto message : msgs) {
+      ctx.Emit({{"type", QualifiedClassName(message)},
+                {"class_name", ClassName(message)},
+                {"namespace", absl::StrCat(absl::StrReplaceAll(file->package(),
+                                                               {{".", "::"}}),
+                                           "::protos")}},
+               R"cc(
+                 // message stubs
+                 namespace $namespace$ {
+
+                 class $class_name$ {
+                  public:
+                   using CProxy = bool;
+                   using Proxy = bool;
+                   using Access = bool;
+
+                   $class_name$() = default;
+
+                   $type$* msg() const { return msg_; }
+
+                  private:
+                   $class_name$($type$* msg) : msg_(msg) {}
+
+                   $type$* msg_;
+                 };
+                 }  // namespace $namespace$
+               )cc");
+    }
+    return;
   }
   EmitFileWarning(file, ctx);
   ctx.EmitLegacy(
@@ -120,7 +152,8 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
 // Writes a .hpb.cc source file.
 void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
-    abort();
+    ctx.Emit("// Placeholder hpb C++ source stub");
+    return;
   }
   EmitFileWarning(file, ctx);
 
