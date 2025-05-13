@@ -670,7 +670,13 @@ def GroupDecoder(field_number, is_repeated, is_packed, key, new_default):
         if value is None:
           value = field_dict.setdefault(key, new_default(message))
         # Read sub-message.
+        current_depth += 1
+        if current_depth > _recursion_limit:
+          raise _DecodeError(
+              'Error parsing message: too many levels of nesting.'
+          )
         pos = value.add()._InternalParse(buffer, pos, end, current_depth)
+        current_depth -= 1
         # Read end tag.
         new_pos = pos+end_tag_len
         if buffer[pos:new_pos] != end_tag_bytes or new_pos > end:
@@ -689,7 +695,11 @@ def GroupDecoder(field_number, is_repeated, is_packed, key, new_default):
       if value is None:
         value = field_dict.setdefault(key, new_default(message))
       # Read sub-message.
+      current_depth += 1
+      if current_depth > _recursion_limit:
+        raise _DecodeError('Error parsing message: too many levels of nesting.')
       pos = value._InternalParse(buffer, pos, end, current_depth)
+      current_depth -= 1
       # Read end tag.
       new_pos = pos+end_tag_len
       if buffer[pos:new_pos] != end_tag_bytes or new_pos > end:
@@ -722,6 +732,11 @@ def MessageDecoder(field_number, is_repeated, is_packed, key, new_default):
         if new_pos > end:
           raise _DecodeError('Truncated message.')
         # Read sub-message.
+        current_depth += 1
+        if current_depth > _recursion_limit:
+          raise _DecodeError(
+              'Error parsing message: too many levels of nesting.'
+          )
         if (
             value.add()._InternalParse(buffer, pos, new_pos, current_depth)
             != new_pos
@@ -729,6 +744,7 @@ def MessageDecoder(field_number, is_repeated, is_packed, key, new_default):
           # The only reason _InternalParse would return early is if it
           # encountered an end-group tag.
           raise _DecodeError('Unexpected end-group tag.')
+        current_depth -= 1
         # Predict that the next tag is another copy of the same repeated field.
         pos = new_pos + tag_len
         if buffer[new_pos:pos] != tag_bytes or new_pos == end:
@@ -748,10 +764,14 @@ def MessageDecoder(field_number, is_repeated, is_packed, key, new_default):
       if new_pos > end:
         raise _DecodeError('Truncated message.')
       # Read sub-message.
+      current_depth += 1
+      if current_depth > _recursion_limit:
+        raise _DecodeError('Error parsing message: too many levels of nesting.')
       if value._InternalParse(buffer, pos, new_pos, current_depth) != new_pos:
         # The only reason _InternalParse would return early is if it encountered
         # an end-group tag.
         raise _DecodeError('Unexpected end-group tag.')
+      current_depth -= 1
       return new_pos
 
     return DecodeField
@@ -992,6 +1012,15 @@ def _SkipGroup(buffer, pos, end):
     pos = new_pos
 
 
+DEFAULT_RECURSION_LIMIT = 100
+_recursion_limit = DEFAULT_RECURSION_LIMIT
+
+
+def SetRecursionLimit(new_limit):
+  global _recursion_limit
+  _recursion_limit = new_limit
+
+
 def _DecodeUnknownFieldSet(buffer, pos, end_pos=None, current_depth=0):
   """Decode UnknownFieldSet.  Returns the UnknownFieldSet and new position."""
 
@@ -1025,7 +1054,17 @@ def _DecodeUnknownField(
     data = buffer[pos:pos+size].tobytes()
     pos += size
   elif wire_type == wire_format.WIRETYPE_START_GROUP:
-    (data, pos) = _DecodeUnknownFieldSet(buffer, pos, None, current_depth)
+    end_tag_bytes = encoder.TagBytes(
+        field_number, wire_format.WIRETYPE_END_GROUP
+    )
+    current_depth += 1
+    if current_depth >= _recursion_limit:
+      raise _DecodeError('Error parsing message: too many levels of nesting.')
+    data, pos = _DecodeUnknownFieldSet(buffer, pos, None, current_depth)
+    current_depth -= 1
+    # Check end tag.
+    if buffer[pos - len(end_tag_bytes) : pos] != end_tag_bytes:
+      raise _DecodeError('Missing group end tag.')
   elif wire_type == wire_format.WIRETYPE_END_GROUP:
     return (0, -1)
   else:
