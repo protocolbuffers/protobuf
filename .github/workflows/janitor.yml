@@ -75,6 +75,7 @@ jobs:
           stale-pr-label: 'inactive'
           exempt-issue-labels: 'help wanted'
           exempt-issue-labels: 'keep open'
+          labels-to-add-when-unstale: 'untriaged'
           days-before-stale: 90
           days-before-close: 14
           operations-per-run: 100
