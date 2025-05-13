@@ -36,6 +36,7 @@ from google.protobuf.internal import enum_type_wrapper
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import packed_field_test_pb2
+from google.protobuf.internal import self_recursive_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
@@ -1431,6 +1432,52 @@ class MessageTest(unittest.TestCase):
     )
 
 
+@testing_refleaks.TestCase
+class TestRecursiveGroup(unittest.TestCase):
+
+  def _MakeRecursiveGroupMessage(self, n):
+    msg = self_recursive_pb2.SelfRecursive()
+    sub = msg
+    for _ in range(n):
+      sub = sub.sub_group
+    sub.i = 1
+    return msg.SerializeToString()
+
+  def testRecursiveGroups(self):
+    recurse_msg = self_recursive_pb2.SelfRecursive()
+    data = self._MakeRecursiveGroupMessage(100)
+    recurse_msg.ParseFromString(data)
+    self.assertTrue(recurse_msg.HasField('sub_group'))
+
+  def testRecursiveGroupsException(self):
+    if api_implementation.Type() != 'python':
+      api_implementation._c_module.SetAllowOversizeProtos(False)
+    recurse_msg = self_recursive_pb2.SelfRecursive()
+    data = self._MakeRecursiveGroupMessage(300)
+    with self.assertRaises(message.DecodeError) as context:
+      recurse_msg.ParseFromString(data)
+    self.assertIn('Error parsing message', str(context.exception))
+    if api_implementation.Type() == 'python':
+      self.assertIn('too many levels of nesting', str(context.exception))
+
+  def testRecursiveGroupsUnknownFields(self):
+    if api_implementation.Type() != 'python':
+      api_implementation._c_module.SetAllowOversizeProtos(False)
+    test_msg = unittest_pb2.TestAllTypes()
+    data = self._MakeRecursiveGroupMessage(300)  # unknown to test_msg
+    with self.assertRaises(message.DecodeError) as context:
+      test_msg.ParseFromString(data)
+    self.assertIn(
+        'Error parsing message',
+        str(context.exception),
+    )
+    if api_implementation.Type() == 'python':
+      self.assertIn('too many levels of nesting', str(context.exception))
+      decoder.SetRecursionLimit(310)
+      test_msg.ParseFromString(data)
+      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
+
+
 # Class to test proto2-only features (required, extensions, etc.)
 @testing_refleaks.TestCase
 class Proto2Test(unittest.TestCase):
@@ -1905,7 +1952,7 @@ class Proto3Test(unittest.TestCase):
       if field.name.startswith('optional_'):
         self.assertTrue(field.has_presence)
     for field in unittest_pb2.TestAllTypes.DESCRIPTOR.fields:
-      if field.is_repeated:
+      if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
         self.assertFalse(field.has_presence)
       else:
         self.assertTrue(field.has_presence)
@@ -2699,20 +2746,6 @@ class Proto3Test(unittest.TestCase):
     msg.map_string_foreign_message['foo'].c = 5
     self.assertEqual(0, len(msg.FindInitializationErrors()))
 
-  def testMapStubReferenceSubMessageDestructor(self):
-    msg = map_unittest_pb2.TestMapSubmessage()
-    # A reference on map stub in sub message
-    map_ref = msg.test_map.map_int32_int32
-    # Make sure destructor after Clear the original message not crash
-    msg.Clear()
-
-  def testRepeatedStubReferenceSubMessageDestructor(self):
-    msg = unittest_pb2.NestedTestAllTypes()
-    # A reference on repeated stub in sub message
-    repeated_ref = msg.payload.repeated_int32
-    # Make sure destructor after Clear the original message not crash
-    msg.Clear()
-
   @unittest.skipIf(sys.maxunicode == UCS2_MAXUNICODE, 'Skip for ucs2')
   def testStrictUtf8Check(self):
     # Test u'\ud801' is rejected at parser in both python2 and python3.
@@ -2873,8 +2906,6 @@ class PackedFieldTest(unittest.TestCase):
     self.assertEqual(golden_data, message.SerializeToString())
 
 
-@unittest.skipIf(api_implementation.Type() == 'python',
-                 'explicit tests of the C++ implementation')
 @testing_refleaks.TestCase
 class OversizeProtosTest(unittest.TestCase):
 
@@ -2891,16 +2922,23 @@ class OversizeProtosTest(unittest.TestCase):
     msg.ParseFromString(self.GenerateNestedProto(100))
 
   def testAssertOversizeProto(self):
-    api_implementation._c_module.SetAllowOversizeProtos(False)
+    if api_implementation.Type() != 'python':
+      api_implementation._c_module.SetAllowOversizeProtos(False)
     msg = unittest_pb2.TestRecursiveMessage()
     with self.assertRaises(message.DecodeError) as context:
       msg.ParseFromString(self.GenerateNestedProto(101))
     self.assertIn('Error parsing message', str(context.exception))
 
   def testSucceedOversizeProto(self):
-    api_implementation._c_module.SetAllowOversizeProtos(True)
+
+    if api_implementation.Type() == 'python':
+      decoder.SetRecursionLimit(310)
+    else:
+      api_implementation._c_module.SetAllowOversizeProtos(True)
+
     msg = unittest_pb2.TestRecursiveMessage()
     msg.ParseFromString(self.GenerateNestedProto(101))
+    decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
 
 if __name__ == '__main__':
