@@ -87,25 +87,24 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
     return;
   }
   EmitFileWarning(file, ctx);
-  ctx.EmitLegacy(
-      R"cc(
-#ifndef $0_HPB_PROTO_H_
-#define $0_HPB_PROTO_H_
+  ctx.Emit({{"filename", ToPreproc(file->name())}},
+           R"cc(
+#ifndef $filename$_HPB_PROTO_H_
+#define $filename$_HPB_PROTO_H_
 
 #include "google/protobuf/hpb/repeated_field.h"
 
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-      )cc",
-      ToPreproc(file->name()));
+           )cc");
 
   // Import headers for proto public dependencies.
   for (int i = 0; i < file->public_dependency_count(); i++) {
     if (i == 0) {
       ctx.Emit("// Public Imports.\n");
     }
-    ctx.EmitLegacy("#include \"$0\"\n",
-                   CppHeaderFilename(file->public_dependency(i)));
+    ctx.Emit({{"header", CppHeaderFilename(file->public_dependency(i))}},
+             "#include \"$header$\"\n");
     if (i == file->public_dependency_count() - 1) {
       ctx.Emit("\n");
     }
@@ -146,7 +145,8 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
   ctx.Emit("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
-  ctx.EmitLegacy("#endif  /* $0_HPB_PROTO_H_ */\n", ToPreproc(file->name()));
+  ctx.Emit({{"filename", ToPreproc(file->name())}},
+           "#endif  /* $filename$_HPB_PROTO_H_ */\n");
 }
 
 // Writes a .hpb.cc source file.
@@ -157,14 +157,13 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
   }
   EmitFileWarning(file, ctx);
 
-  ctx.EmitLegacy(
-      R"cc(
+  ctx.Emit({{"header", CppHeaderFilename(file)}},
+           R"cc(
 #include <stddef.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "$0"
-      )cc",
-      CppHeaderFilename(file));
+#include "$header$"
+           )cc");
 
   for (int i = 0; i < file->dependency_count(); i++) {
     if (ctx.options().strip_feature_includes &&
@@ -172,9 +171,10 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
       // Strip feature imports for editions codegen tests.
       continue;
     }
-    ctx.EmitLegacy("#include \"$0\"\n", CppHeaderFilename(file->dependency(i)));
+    ctx.Emit({{"header", CppHeaderFilename(file->dependency(i))}},
+             "#include \"$header$\"\n");
   }
-  ctx.EmitLegacy("#include \"upb/port/def.inc\"\n");
+  ctx.Emit("#include \"upb/port/def.inc\"\n");
 
   WrapNamespace(file, ctx, [&]() { WriteMessageImplementations(file, ctx); });
 
@@ -217,7 +217,8 @@ void WriteTypedefForwardingHeader(
 void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
                                     Context& ctx) {
   // Import forward-declaration of types defined in this file.
-  ctx.EmitLegacy("#include \"$0\"\n", UpbCFilename(file));
+  ctx.Emit({{"upb_filename", UpbCFilename(file)}},
+           "#include \"$upb_filename$\"\n");
   WriteForwardDecls(file, ctx);
   // Import forward-declaration of types in dependencies.
   for (int i = 0; i < file->dependency_count(); ++i) {
