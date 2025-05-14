@@ -2641,11 +2641,11 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
   } else if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     if (field_descriptor->message_type()->well_known_type() !=
         Descriptor::WELLKNOWNTYPE_UNSPECIFIED) {
-      PyObject* sub_message = GetFieldValue(self, field_descriptor);
-      if (PyObject_HasAttrString(sub_message, "_internal_assign")) {
+      ScopedPyObjectPtr sub_message(GetFieldValue(self, field_descriptor));
+      if (PyObject_HasAttrString(sub_message.get(), "_internal_assign")) {
         AssureWritable(self);
-        ScopedPyObjectPtr ok(
-            PyObject_CallMethod(sub_message, "_internal_assign", "O", value));
+        ScopedPyObjectPtr ok(PyObject_CallMethod(
+            sub_message.get(), "_internal_assign", "O", value));
         if (ok.get() == nullptr) {
           return -1;
         }

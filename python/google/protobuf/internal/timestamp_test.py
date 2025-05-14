@@ -12,11 +12,13 @@ import datetime
 import unittest
 
 from google.protobuf import timestamp
+from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import well_known_types_test_pb2
 
 from google.protobuf import timestamp_pb2
 
 
+@testing_refleaks.TestCase
 class TimestampTest(unittest.TestCase):
 
   def test_timestamp_integer_conversion(self):

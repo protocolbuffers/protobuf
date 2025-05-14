@@ -992,10 +992,12 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
       if (PyObject_HasAttrString(sub_message, "_internal_assign")) {
         PyObject* ok =
             PyObject_CallMethod(sub_message, "_internal_assign", "O", value);
+        Py_DECREF(sub_message);
         if (!ok) return -1;
         Py_DECREF(ok);
         return 0;
       }
+      Py_DECREF(sub_message);
     }
     PyErr_Format(exc,
                  "Assignment not allowed to message "
