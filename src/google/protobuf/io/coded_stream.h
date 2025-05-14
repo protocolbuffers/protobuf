@@ -785,6 +785,12 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
                                               ptr);
   }
 
+  template <int kElementSize>
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteRawNumericArrayLittleEndian(
+      const void* data, int size, uint8_t* ptr) {
+    return WriteRawLittleEndian<kElementSize>(data, size, ptr);
+  }
+
   // Returns true if there was an underlying I/O error since this object was
   // created.
   bool HadError() const { return had_error_; }
