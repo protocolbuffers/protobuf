@@ -369,6 +369,7 @@ cc_test(
 cc_test(
     name = "test",
     srcs = ["test.cc"],
+    args = ["--fuzztest_stack_limit_kb=256"],
     deps = [
         ":internal",
         ":message",
