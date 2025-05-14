@@ -128,11 +128,11 @@ class MessageCreator {
         func_(func) {}
 
   // Template for testing.
-  template <bool test_call = false, typename MessageLite>
+  template <typename MessageLite>
   MessageLite* New(const MessageLite* prototype_for_func,
                    const MessageLite* prototype_for_copy, Arena* arena) const;
 
-  template <bool test_call = false, typename MessageLite>
+  template <typename MessageLite>
   MessageLite* PlacementNew(const MessageLite* prototype_for_func,
                             const MessageLite* prototype_for_copy, void* mem,
                             Arena* arena) const;
@@ -1244,19 +1244,15 @@ T* OnShutdownDelete(T* p) {
   return p;
 }
 
-template <bool test_call, typename MessageLite>
+template <typename MessageLite>
 PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, void* mem, Arena* arena) const {
   ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) % alignment_, 0u);
   const Tag as_tag = tag();
-  // When the feature is not enabled we skip the `as_tag` check since it is
-  // unnecessary. Except for testing, where we want to test the copy logic even
-  // when we can't use it for real messages.
-  constexpr bool kMustBeFunc = !test_call && !internal::EnableCustomNew();
   static_assert(kFunc < 0 && !(kZeroInit < 0) && !(kMemcpy < 0),
                 "Only kFunc must be the only negative value");
-  if (ABSL_PREDICT_FALSE(kMustBeFunc || (int8_t)as_tag < 0)) {
+  if (ABSL_PREDICT_FALSE(static_cast<int8_t>(as_tag) < 0)) {
     PROTOBUF_DEBUG_COUNTER("MessageCreator.Func").Inc();
     return static_cast<MessageLite*>(func_(prototype_for_func, mem, arena));
   }
@@ -1345,15 +1341,15 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
   return Launder(reinterpret_cast<MessageLite*>(mem));
 }
 
-template <bool test_call, typename MessageLite>
+template <typename MessageLite>
 PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
     const MessageLite* prototype_for_func,
     const MessageLite* prototype_for_copy, Arena* arena) const {
-  return PlacementNew<test_call>(prototype_for_func, prototype_for_copy,
-                                 arena != nullptr
-                                     ? arena->AllocateAligned(allocation_size_)
-                                     : ::operator new(allocation_size_),
-                                 arena);
+  return PlacementNew(prototype_for_func, prototype_for_copy,
+                      arena != nullptr
+                          ? arena->AllocateAligned(allocation_size_)
+                          : ::operator new(allocation_size_),
+                      arena);
 }
 
 }  // namespace internal

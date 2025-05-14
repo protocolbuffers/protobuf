@@ -26,6 +26,7 @@
 #include <limits>
 #include <memory>
 #include <new>  // IWYU pragma: keep
+#include <optional>
 #include <sstream>
 #include <string>
 #include <tuple>
