@@ -16,6 +16,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
@@ -288,6 +289,7 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
                                     this_._internal_$name$());
   )cc");
 }
+
 
 class RepeatedPrimitive final : public FieldGeneratorBase {
  public:

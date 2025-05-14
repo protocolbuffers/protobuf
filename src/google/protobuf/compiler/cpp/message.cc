@@ -1355,7 +1355,6 @@ void MessageGenerator::MaybeEmitUpdateCachedHasbits(
           )cc");
 }
 
-template <bool kIsV2>
 void MessageGenerator::EmitUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
@@ -1364,7 +1363,9 @@ void MessageGenerator::EmitUpdateByteSizeForField(
        {"update_cached_has_bits",
         [&] { MaybeEmitUpdateCachedHasbits(field, p, cached_has_word_index); }},
        {"check_and_update_byte_size_for_field",
-        [&]() { EmitCheckAndUpdateByteSizeForField<kIsV2>(field, p); }}},
+        [&]() {
+          EmitCheckAndUpdateByteSizeForField</*kIsV2=*/false>(field, p);
+        }}},
       R"cc(
         $comment$;
         $update_cached_has_bits$;
@@ -5412,6 +5413,47 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateByteSizeV2(io::Printer* p) {
+}
+
+void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
+                                                  io::Printer* p) const {
+  absl::AnyInvocable<void()> emit_body = [&] {
+  };
+  if (!HasHasbit(field)) {
+    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+                             /*with_enclosing_braces_always=*/true);
+    return;
+  }
+
+  if (field->options().weak()) {
+    p->Emit({{"emit_body", [&] { emit_body(); }}},
+            R"cc(
+              if (has_$name$()) {
+                $emit_body$;
+              }
+            )cc");
+    return;
+  }
+
+  int has_bit_index = has_bit_indices_[field->index()];
+  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                             has_bit_index, field, options_)},
+           {"check_nondefault_and_emit_body",
+            [&] {
+              // Note that it's possible that the field has explicit presence.
+              // In that case, nondefault check will not be emitted but
+              // emit_body will still be emitted.
+              MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+                                       /*with_enclosing_braces_always=*/false);
+            }}},
+          R"cc(
+            if ($condition$) {
+              $check_nondefault_and_emit_body$;
+            }
+          )cc");
+}
+
+void MessageGenerator::GenerateSerializeV2(io::Printer* p) {
 }
 
 bool MessageGenerator::NeedsIsInitialized() {

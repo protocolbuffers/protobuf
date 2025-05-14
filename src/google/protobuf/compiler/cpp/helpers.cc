@@ -1339,6 +1339,12 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
 }
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+bool ShouldGenerateV2Code(const Descriptor* descriptor,
+                          const Options& options) {
+  return !options.opensource_runtime && !options.bootstrap &&
+         !HasSimpleBaseClass(descriptor, options);
+}
+
 bool IsEligibleForV2Batching(const FieldDescriptor* field) {
   // Non-message fields whose numbers fit into 2B should be considered for
   // batching although the actual batching depends on the current batching, the
