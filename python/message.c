@@ -11,6 +11,7 @@
 #include "python/descriptor.h"
 #include "python/extension_dict.h"
 #include "python/map.h"
+#include "python/protobuf.h"
 #include "python/repeated.h"
 #include "upb/base/string_view.h"
 #include "upb/message/compare.h"
@@ -45,12 +46,6 @@ typedef struct {
   size_t type_basicsize;       // sizeof(PyHeapTypeObject)
   traverseproc type_traverse;  // PyTypeObject.tp_traverse
   inquiry type_clear;          // PyTypeObject.tp_clear
-
-  // While we can refer to PY_VERSION_HEX in the limited API, this will give us
-  // the version of Python we were compiled against, which may be different
-  // than the version we are dynamically linked against.  Here we want the
-  // version that is actually running in this process.
-  long python_version_hex;  // PY_VERSION_HEX
 } PyUpb_CPythonBits;
 
 // A global containing the values for this process.
@@ -144,7 +139,6 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
 
   sys = PyImport_ImportModule("sys");
   hex_version = PyObject_GetAttrString(sys, "hexversion");
-  bits->python_version_hex = PyLong_AsLong(hex_version);
   ret = true;
 
 err:
@@ -836,18 +830,7 @@ static void PyUpb_Message_Dealloc(PyObject* _self) {
   }
 
   Py_DECREF(self->arena);
-
-  // We do not use PyUpb_Dealloc() here because Message is a base type and for
-  // base types there is a bug we have to work around in this case (see below).
-  PyTypeObject* tp = Py_TYPE(self);
-  freefunc tp_free = PyType_GetSlot(tp, Py_tp_free);
-  tp_free(self);
-
-  if (cpython_bits.python_version_hex >= 0x03080000) {
-    // Prior to Python 3.8 there is a bug where deallocating the type here would
-    // lead to a double-decref: https://bugs.python.org/issue37879
-    Py_DECREF(tp);
-  }
+  PyUpb_Dealloc(self);
 }
 
 PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
