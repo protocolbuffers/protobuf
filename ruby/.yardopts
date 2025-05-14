@@ -1,2 +1,4 @@
 --no-private
-lib/doc/*.rb
+lib/stubs/*.rb
+lib/google/protobuf/well_known_types.rb
+lib/google/protobuf.rb

@@ -423,7 +423,7 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
  * ruby-doc: AbstractMessage
  *
  * The {AbstractMessage} class is the parent class for all Protobuf messages, and is generated
-     from C code.
+ * from C code.
  *
  * For any field whose name does not conflict with a built-in method, an
  * accessor is provided with the same name as the field, and a setter is
