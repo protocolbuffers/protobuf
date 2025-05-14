@@ -1089,7 +1089,17 @@ public class RubyMessage extends RubyObject {
         }
         break;
       case MESSAGE:
-        val = ((RubyMessage) value).build(context, depth + 1, recursionLimit);
+        RubyMessage msg;
+        if (value instanceof RubyHash) {
+          RubyClass typeClass =
+              (RubyClass)
+                  ((RubyDescriptor) getDescriptorForField(context, fieldDescriptor))
+                      .msgclass(context);
+          msg = (RubyMessage) typeClass.newInstance(context, value);
+        } else {
+          msg = (RubyMessage) value;
+        }
+        val = msg.build(context, depth + 1, recursionLimit);
         break;
       case ENUM:
         EnumDescriptor enumDescriptor = fieldDescriptor.getEnumType();
