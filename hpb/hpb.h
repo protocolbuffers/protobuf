@@ -16,17 +16,14 @@
 #include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/internal/template_help.h"
+#include "google/protobuf/hpb/multibackend.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/status.h"
-
-#define HPB_INTERNAL_BACKEND_UPB 1
-#define HPB_INTERNAL_BACKEND_CPP 2
 
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 #include "google/protobuf/hpb/backend/upb/interop.h"
 #include "google/protobuf/hpb/backend/upb/upb.h"
 #include "upb/wire/decode.h"
-
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
 #include "google/protobuf/hpb/backend/cpp/cpp.h"
 #else
