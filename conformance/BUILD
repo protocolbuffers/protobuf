@@ -8,6 +8,7 @@
 # Protobuf conformance tests.
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "objc_library")
 load("@rules_java//java:defs.bzl", "java_binary")
 load("@rules_python//python:py_binary.bzl", "py_binary")
@@ -130,6 +131,7 @@ cc_library(
     srcs = ["binary_json_conformance_suite.cc"],
     hdrs = ["binary_json_conformance_suite.h"],
     deps = [
+        ":binary_wireformat",
         ":conformance_cc_proto",
         ":conformance_test_lib",
         "//:test_messages_proto2_cc_proto",
@@ -188,6 +190,30 @@ cc_library(
         "//src/google/protobuf:endian",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "binary_wireformat",
+    testonly = 1,
+    srcs = ["binary_wireformat.cc"],
+    hdrs = ["binary_wireformat.h"],
+    deps = [
+        "//src/google/protobuf:endian",
+        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "binary_wireformat_test",
+    srcs = ["binary_wireformat_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
