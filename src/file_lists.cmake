@@ -1361,6 +1361,7 @@ set(conformance_testee_hdrs
 # @//pkg:conformance_runner
 set(conformance_runner_srcs
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.cc
+  ${protobuf_SOURCE_DIR}/conformance/binary_wireformat.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_main.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_runner.cc
@@ -1372,6 +1373,7 @@ set(conformance_runner_srcs
 # @//pkg:conformance_runner
 set(conformance_runner_hdrs
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.h
+  ${protobuf_SOURCE_DIR}/conformance/binary_wireformat.h
   ${protobuf_SOURCE_DIR}/conformance/conformance_test.h
   ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.h
   ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner.h
