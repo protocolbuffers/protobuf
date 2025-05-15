@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -330,9 +331,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           + " security vulnerability:"
           + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
 
-  private static final SynchronizedSet<String> loggedPre22TypeNames
+  private static final Set<String> loggedPre22TypeNames
       = Collections.synchronizedSet(new HashSet<String>());
-  static void warnPre22Gencode() {
+  void warnPre22Gencode() {
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
