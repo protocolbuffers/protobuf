@@ -2041,7 +2041,10 @@ public class GeneratedMessageTest {
           return null;
         }
     }
-    var msg = new TestMessage1();
+
+    class TestMessage2 extends TestMessage1 {}
+
+    TestMessage1 msg = new TestMessage1();
     msg.makeExtensionsImmutable();
     List<LogRecord> logs = logHandler.getStoredLogRecords();
     assertThat(logs).hasSize(1);
@@ -2054,6 +2057,14 @@ public class GeneratedMessageTest {
     // Subsequent calls for the same type do not log again.
     msg.makeExtensionsImmutable();
     assertThat(logs).hasSize(1);
+
+    // A call on a second type does log for that type.
+    TestMessage2 msg2 = new TestMessage2();
+    msg2.makeExtensionsImmutable();
+    assertThat(logs).hasSize(2);
+    // And not again (only once per type).
+    msg2.makeExtensionsImmutable();
+    assertThat(logs).hasSize(2);
   }
 
   @Test
