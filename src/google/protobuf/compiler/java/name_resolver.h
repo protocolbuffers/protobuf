@@ -17,6 +17,7 @@
 // Must be last.
 #include "google/protobuf/port_def.inc"
 
+
 namespace google {
 namespace protobuf {
 class Descriptor;
@@ -135,6 +136,7 @@ class PROTOC_EXPORT ClassNameResolver {
 
   template <typename Descriptor>
   std::string GetJavaClassPackage(const Descriptor& descriptor, bool immutable);
+
 
   // Caches the result to provide better performance.
   absl::flat_hash_map<const FileDescriptor*, std::string>
