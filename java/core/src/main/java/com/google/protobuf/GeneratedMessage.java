@@ -337,6 +337,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
+    String messageName = messageClass.getName();
     String vulnerabilityMessage =
           "Vulnerable protobuf generated type in use: " + messageName + "\n" +
           PRE22_GENCODE_VULNERABILITY_MESSAGE;
@@ -345,7 +346,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       throw new UnsupportedOperationException(vulnerabilityMessage);
     }
 
-    String messageName = messageClass.getName();
     if (!loggedPre22TypeNames.add(messageName)) {
       return;
     }
