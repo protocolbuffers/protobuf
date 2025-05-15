@@ -336,7 +336,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
-    String messageType = getClass().getName();
+    String messageName = getClass().getName();
     if (loggedPre22TypeNames.contains(messageName)) {
       return;
     }
