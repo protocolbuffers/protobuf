@@ -330,16 +330,17 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           + " security vulnerability:"
           + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
 
+  private static final SynchronizedSet<String> loggedPre22TypeNames
+      = Collections.synchronizedSet(new HashSet<String>());
   static void warnPre22Gencode() {
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
-    static SynchronizedSet<String> alreadyLogged = Collections.synchronizedSet(new HashSet<String>());
     String messageType = getClass().getName();
-    if (alreadyLogged.contains(messageName)) {
+    if (loggedPre22TypeNames.contains(messageName)) {
       return;
     }
-    alreadyLogged.add(messageName);
+    loggedPre22TypeNames.add(messageName);
 
     UnsupportedOperationException exception =
         new UnsupportedOperationException(
