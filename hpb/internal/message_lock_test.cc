@@ -11,17 +11,15 @@
 #include <mutex>
 #include <string>
 #include <thread>
-#include <vector>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
+#include "google/protobuf/hpb/arena.h"
 #include "google/protobuf/hpb/extension.h"
 #include "google/protobuf/hpb/hpb.h"
 #include "upb/mem/arena.hpp"
-#include "upb/mini_table/extension.h"
 
 #ifndef ASSERT_OK
 #define ASSERT_OK(x) ASSERT_TRUE(x.ok())
@@ -44,7 +42,7 @@ std::string GenerateTestData() {
   extension2.set_ext_name("theme_extension");
   ABSL_CHECK_OK(
       ::hpb::SetExtension(&model, ThemeExtension::theme_extension, extension2));
-  ::upb::Arena arena;
+  hpb::Arena arena;
   auto bytes = ::hpb::Serialize(&model, arena);
   ABSL_CHECK_OK(bytes);
   return std::string(bytes->data(), bytes->size());
@@ -76,7 +74,7 @@ void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
     EXPECT_EQ((*ext)->ext_name(), "theme_extension");
   };
   const auto test_serialize = [&] {
-    ::upb::Arena arena;
+    hpb::Arena arena;
     EXPECT_OK(::hpb::Serialize(&parsed_model, arena));
   };
   const auto test_copy_constructor = [&] {

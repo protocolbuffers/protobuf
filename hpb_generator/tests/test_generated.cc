@@ -6,12 +6,9 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <cstdint>
-#include <iterator>
 #include <limits>
 #include <memory>
-#include <utility>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
@@ -26,7 +23,6 @@
 #include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/ptr.h"
 #include "google/protobuf/hpb/requires.h"
-#include "upb/mem/arena.hpp"
 
 namespace {
 
@@ -412,7 +408,7 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
 TEST(CppGeneratedCode, SerializeUsingArena) {
   TestModel model;
   model.set_str1("Hello World");
-  ::upb::Arena arena;
+  hpb::Arena arena;
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
@@ -420,10 +416,10 @@ TEST(CppGeneratedCode, SerializeUsingArena) {
 }
 
 TEST(CppGeneratedCode, SerializeProxyUsingArena) {
-  ::upb::Arena message_arena;
+  hpb::Arena message_arena;
   TestModel::Proxy model_proxy = ::hpb::CreateMessage<TestModel>(message_arena);
   model_proxy.set_str1("Hello World");
-  ::upb::Arena arena;
+  hpb::Arena arena;
   absl::StatusOr<absl::string_view> bytes =
       ::hpb::Serialize(&model_proxy, arena);
   EXPECT_EQ(true, bytes.ok());
@@ -434,8 +430,8 @@ TEST(CppGeneratedCode, SerializeProxyUsingArena) {
 TEST(CppGeneratedCode, SerializeNestedMessageUsingArena) {
   TestModel model;
   model.mutable_recursive_child()->set_str1("Hello World");
-  ::upb::Arena arena;
-  ::hpb::Ptr<const TestModel> child = model.recursive_child();
+  hpb::Arena arena;
+  hpb::Ptr<const TestModel> child = model.recursive_child();
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(child, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
@@ -452,14 +448,14 @@ TEST(CppGeneratedCode, NameCollisions) {
 
 TEST(CppGeneratedCode, SharedPointer) {
   std::shared_ptr<TestModel> model = std::make_shared<TestModel>();
-  ::upb::Arena arena;
+  hpb::Arena arena;
   auto bytes = ::hpb::Serialize(model.get(), arena);
   EXPECT_TRUE(::hpb::Parse(model.get(), bytes.value()));
 }
 
 TEST(CppGeneratedCode, UniquePointer) {
   auto model = std::make_unique<TestModel>();
-  ::upb::Arena arena;
+  hpb::Arena arena;
   auto bytes = ::hpb::Serialize(model.get(), arena);
   EXPECT_TRUE(::hpb::Parse(model.get(), bytes.value()));
 }

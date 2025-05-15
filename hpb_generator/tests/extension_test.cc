@@ -17,6 +17,7 @@
 #include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
 #include "google/protobuf/hpb/arena.h"
+#include "google/protobuf/hpb/hpb.h"
 #include "google/protobuf/hpb/requires.h"
 
 namespace {
@@ -427,8 +428,8 @@ TEST(CppGeneratedCode, Parse) {
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
   EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
-  ::upb::Arena arena;
-  auto bytes = ::hpb::Serialize(&model, arena);
+  hpb::Arena arena;
+  auto bytes = hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model = ::hpb::Parse<TestModel>(bytes.value()).value();
   EXPECT_EQ("Test123", parsed_model.str1());
@@ -441,7 +442,7 @@ TEST(CppGeneratedCode, ParseIntoPtrToModel) {
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
   EXPECT_EQ(true, ::hpb::SetExtension(&model, theme, extension1).ok());
-  ::upb::Arena arena;
+  hpb::Arena arena;
   auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   ::hpb::Ptr<TestModel> parsed_model = ::hpb::CreateMessage<TestModel>(arena);
@@ -461,7 +462,7 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
   EXPECT_EQ(true, ::hpb::SetExtension(&model, ThemeExtension::theme_extension,
                                       extension1)
                       .ok());
-  ::upb::Arena arena;
+  hpb::Arena arena;
   auto bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
 
