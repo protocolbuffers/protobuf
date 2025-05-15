@@ -2063,10 +2063,10 @@ public class GeneratedMessageTest {
     // A call on a second type does log for that type.
     TestMessage2 msg2 = new TestMessage2();
     msg2.makeExtensionsImmutable();
-    assertThat(logs).hasSize(2);
+    assertThat(logHandler.getStoredLogRecords()).hasSize(2);
     // And not again (only once per type).
     msg2.makeExtensionsImmutable();
-    assertThat(logs).hasSize(2);
+    assertThat(logHandler.getStoredLogRecords()).hasSize(2);
   }
 
   @Test
@@ -2078,12 +2078,12 @@ public class GeneratedMessageTest {
     List<LogRecord> logs = logHandler.getStoredLogRecords();
     assertThat(logs).hasSize(1);
     String message = logs.get(0).getMessage();
-    assertThat(message).contains("Vulnerable Protobuf Generated type in use: com.google.protobuf.TestAllExtensions");
+    assertThat(message).contains("Vulnerable Protobuf Generated type in use: protobuf_unittest.UnittestProto$TestAllExtensions");
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
 
     // Subsequent calls for the same type do not log again.
     msg.makeExtensionsImmutable();
-    assertThat(logs).hasSize(1);
+    assertThat(logHandler.getStoredLogRecords()).hasSize(1);
   }
 }
