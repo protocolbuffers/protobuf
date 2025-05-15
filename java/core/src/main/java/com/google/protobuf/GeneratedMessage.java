@@ -333,11 +333,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
   private static final Set<String> loggedPre22TypeNames
       = Collections.synchronizedSet(new HashSet<String>());
-  void warnPre22Gencode() {
+  static void warnPre22Gencode(Class<T> messageClass) {
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
-    String messageName = getClass().getName();
+    String messageName = messageClass.getName();
     if (loggedPre22TypeNames.contains(messageName)) {
       return;
     }
@@ -356,7 +356,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
   /** Used by parsing constructors in generated classes. */
   protected void makeExtensionsImmutable() {
-    warnPre22Gencode();
+    warnPre22Gencode(getClass());
   }
 
   /**
@@ -946,7 +946,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Used by parsing constructors in generated classes. */
     @Override
     protected void makeExtensionsImmutable() {
-      warnPre22Gencode();
+      warnPre22Gencode(getClass());
       extensions.makeImmutable();
     }
 
