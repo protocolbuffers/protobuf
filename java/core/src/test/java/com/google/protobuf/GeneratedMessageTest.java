@@ -2050,7 +2050,9 @@ public class GeneratedMessageTest {
     assertThat(logs).hasSize(1);
     String message = logs.get(0).getMessage();
     // The generated type
-    assertThat(message).contains("Vulnerable Protobuf Generated type in use: com.google.protobuf.GeneratedMessageTest.TestMessage1");
+    assertThat(message).contains(
+        "Vulnerable Protobuf Generated type in use: " +
+        "com.google.protobuf.GeneratedMessageTest$1TestMessage1");
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
 
