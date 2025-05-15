@@ -21,9 +21,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -329,21 +331,30 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           + " security vulnerability:"
           + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
 
-  static void warnPre22Gencode() {
+  private static final Set<String> loggedPre22TypeNames
+      = Collections.synchronizedSet(new HashSet<String>());
+  static void warnPre22Gencode(Class<?> messageClass) {
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
-    UnsupportedOperationException exception =
-        new UnsupportedOperationException(PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    String messageName = messageClass.getName();
+    String vulnerabilityMessage =
+          "Vulnerable protobuf generated type in use: " + messageName + "\n" +
+          PRE22_GENCODE_VULNERABILITY_MESSAGE;
+
     if (System.getProperty(PRE22_GENCODE_ERROR_PROPERTY) != null) {
-      throw exception;
+      throw new UnsupportedOperationException(vulnerabilityMessage);
     }
-    logger.warning(exception.toString());
+
+    if (!loggedPre22TypeNames.add(messageName)) {
+      return;
+    }
+    logger.warning(vulnerabilityMessage);
   }
 
   /** Used by parsing constructors in generated classes. */
   protected void makeExtensionsImmutable() {
-    warnPre22Gencode();
+    warnPre22Gencode(getClass());
   }
 
   /**
@@ -933,7 +944,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Used by parsing constructors in generated classes. */
     @Override
     protected void makeExtensionsImmutable() {
-      warnPre22Gencode();
+      warnPre22Gencode(getClass());
       extensions.makeImmutable();
     }
 
