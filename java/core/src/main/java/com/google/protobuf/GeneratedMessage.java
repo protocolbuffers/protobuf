@@ -333,7 +333,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
   private static final Set<String> loggedPre22TypeNames
       = Collections.synchronizedSet(new HashSet<String>());
-  static void warnPre22Gencode(Class<T> messageClass) {
+  static void warnPre22Gencode(Class<?> messageClass) {
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
