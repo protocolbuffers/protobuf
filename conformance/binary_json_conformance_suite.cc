@@ -3258,6 +3258,9 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalTimestamp": "0001-01-01T00:00:00z"})");
   ExpectParseFailureForJson("TimestampJsonInputLowercaseT", REQUIRED,
                             R"({"optionalTimestamp": "0001-01-01t00:00:00Z"})");
+  ExpectParseFailureForJson(
+      "TimestampWithMissingColonInOffset", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T08:00:01+0800"})");
   ExpectSerializeFailureForJson("TimestampProtoInputTooSmall", REQUIRED,
                                 "optional_timestamp: {seconds: -62135596801}");
   ExpectSerializeFailureForJson("TimestampProtoInputTooLarge", REQUIRED,

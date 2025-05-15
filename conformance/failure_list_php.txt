@@ -32,3 +32,4 @@ Required.*.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
 Required.*.ProtobufInput.ValidDataScalar.FLOAT[2].JsonOutput
 Required.*.JsonInput.Int32FieldQuotedExponentialValue.*     # Failed to parse input or produce output.
 Required.*.JsonInput.AnyWithNoType.*
+Required.*.JsonInput.TimestampWithMissingColonInOffset # Should have failed to parse, but didn't.
