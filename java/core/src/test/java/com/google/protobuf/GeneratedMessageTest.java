@@ -2058,7 +2058,7 @@ public class GeneratedMessageTest {
 
     // Subsequent calls for the same type do not log again.
     msg.makeExtensionsImmutable();
-    assertThat(logs).hasSize(1);
+    assertThat(logHandler.getStoredLogRecords()).hasSize(1);
 
     // A call on a second type does log for that type.
     TestMessage2 msg2 = new TestMessage2();
