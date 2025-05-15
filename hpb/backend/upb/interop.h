@@ -61,6 +61,11 @@ upb_Arena* GetArena(T* message) {
   return internal::PrivateAccess::GetInternalArena(message);
 }
 
+template <typename T>
+upb_Arena* UnwrapArena(T&& arena) {
+  return internal::PrivateAccess::GetInternalUPBArena(std::forward<T>(arena));
+}
+
 /**
  * Creates a const Handle to a upb message.
  *
