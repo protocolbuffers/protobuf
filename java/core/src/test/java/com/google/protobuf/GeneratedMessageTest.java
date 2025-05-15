@@ -2051,7 +2051,7 @@ public class GeneratedMessageTest {
     String message = logs.get(0).getMessage();
     // The generated type
     assertThat(message).contains(
-        "Vulnerable Protobuf Generated type in use: " +
+        "Vulnerable protobuf generated type in use: " +
         "com.google.protobuf.GeneratedMessageTest$1TestMessage1");
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
@@ -2078,7 +2078,9 @@ public class GeneratedMessageTest {
     List<LogRecord> logs = logHandler.getStoredLogRecords();
     assertThat(logs).hasSize(1);
     String message = logs.get(0).getMessage();
-    assertThat(message).contains("Vulnerable Protobuf Generated type in use: protobuf_unittest.UnittestProto$TestAllExtensions");
+    assertThat(message).contains(
+      "Vulnerable protobuf generated type in use: " +
+      "protobuf_unittest.UnittestProto$TestAllExtensions");
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
 
