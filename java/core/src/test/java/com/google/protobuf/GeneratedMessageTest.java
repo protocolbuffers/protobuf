@@ -2015,39 +2015,45 @@ public class GeneratedMessageTest {
   @Test
   public void generatedMessage_makeExtensionsImmutableShouldLog() {
     TestUtil.TestLogHandler logHandler = setupLogger();
-    GeneratedMessageV3 msg =
-        new GeneratedMessageV3() {
-          @Override
-          protected FieldAccessorTable internalGetFieldAccessorTable() {
-            return null;
-          }
+    class TestMessage1 extends GeneratedMessageV3 {
+        @Override
+        protected FieldAccessorTable internalGetFieldAccessorTable() {
+          return null;
+        }
 
-          @Override
-          protected Message.Builder newBuilderForType(BuilderParent parent) {
-            return null;
-          }
+        @Override
+        protected Message.Builder newBuilderForType(BuilderParent parent) {
+          return null;
+        }
 
-          @Override
-          public Message.Builder newBuilderForType() {
-            return null;
-          }
+        @Override
+        public Message.Builder newBuilderForType() {
+          return null;
+        }
 
-          @Override
-          public Message.Builder toBuilder() {
-            return null;
-          }
+        @Override
+        public Message.Builder toBuilder() {
+          return null;
+        }
 
-          @Override
-          public Message getDefaultInstanceForType() {
-            return null;
-          }
-        };
+        @Override
+        public Message getDefaultInstanceForType() {
+          return null;
+        }
+    }
+    var msg = new TestMessage1();
     msg.makeExtensionsImmutable();
     List<LogRecord> logs = logHandler.getStoredLogRecords();
     assertThat(logs).hasSize(1);
     String message = logs.get(0).getMessage();
+    // The generated type
+    assertThat(message).contains("Vulnerable Protobuf Generated type in use: com.google.protobuf.GeneratedMessageTest.TestMessage1");
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
+
+    // Subsequent calls for the same type do not log again.
+    msg.makeExtensionsImmutable();
+    assertThat(logs).hasSize(1);
   }
 
   @Test
@@ -2059,7 +2065,12 @@ public class GeneratedMessageTest {
     List<LogRecord> logs = logHandler.getStoredLogRecords();
     assertThat(logs).hasSize(1);
     String message = logs.get(0).getMessage();
+    assertThat(message).contains("Vulnerable Protobuf Generated type in use: com.google.protobuf.TestAllExtensions");
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
     assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
+
+    // Subsequent calls for the same type do not log again.
+    msg.makeExtensionsImmutable();
+    assertThat(logs).hasSize(1);
   }
 }

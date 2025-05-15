@@ -333,8 +333,18 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
       return;
     }
+    static SynchronizedSet<String> alreadyLogged = Collections.synchronizedSet(new HashSet<String>());
+    String messageType = getClass().getName();
+    if (alreadyLogged.contains(messageName)) {
+      return;
+    }
+    alreadyLogged.add(messageName);
+
     UnsupportedOperationException exception =
-        new UnsupportedOperationException(PRE22_GENCODE_VULNERABILITY_MESSAGE);
+        new UnsupportedOperationException(
+          "Vulnerable Protobuf Generated type in use: " + messageName + "\n" +
+          PRE22_GENCODE_VULNERABILITY_MESSAGE);
+
     if (System.getProperty(PRE22_GENCODE_ERROR_PROPERTY) != null) {
       throw exception;
     }
