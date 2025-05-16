@@ -18,6 +18,7 @@
 #include <string>
 #include <utility>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -28,6 +29,7 @@
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "failure_list_trie_node.h"
+#include "test_runner.h"
 #include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/message.h"
