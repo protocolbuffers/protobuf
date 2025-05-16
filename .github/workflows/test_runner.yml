@@ -11,9 +11,9 @@ name: Tests
 
 on:
   # continuous
-  schedule:
-    # Run every hour
-    - cron: "0 * * * *"
+ # schedule:
+ #   # Run every hour
+ #   - cron: "0 * * * *"
 
   # postsubmit
   push:
