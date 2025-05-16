@@ -692,6 +692,7 @@ void SingularString::GenerateSerializeWithCachedSizesToArray(
           )cc");
 }
 
+
 void SingularString::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   if (is_inlined()) {
@@ -974,6 +975,7 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
             }
           )cc");
 }
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(

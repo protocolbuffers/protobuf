@@ -595,6 +595,7 @@ void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
   }
 }
 
+
 class RepeatedStringView : public FieldGeneratorBase {
  public:
   RepeatedStringView(const FieldDescriptor* field, const Options& opts,
@@ -820,6 +821,8 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
             }
           )cc");
 }
+
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSingularStringViewGenerator(
