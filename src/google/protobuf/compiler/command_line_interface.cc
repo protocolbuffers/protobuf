@@ -121,8 +121,11 @@ using google::protobuf::io::win32::setmode;
 using google::protobuf::io::win32::write;
 #endif
 
-static const char* kDefaultDirectDependenciesViolationMsg =
+constexpr absl::string_view kDefaultDirectDependenciesViolationMsg =
     "File is imported but not declared in --direct_dependencies: %s";
+
+constexpr absl::string_view kDefaultOptionDependenciesViolationMsg =
+    "File is option imported but not declared in --option_dependencies: %s";
 
 // Returns true if the text begins with a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".
@@ -958,7 +961,9 @@ const char* const CommandLineInterface::kPathSeparator = ":";
 
 CommandLineInterface::CommandLineInterface()
     : direct_dependencies_violation_msg_(
-          kDefaultDirectDependenciesViolationMsg) {}
+          kDefaultDirectDependenciesViolationMsg),
+      option_dependencies_violation_msg_(
+          kDefaultOptionDependenciesViolationMsg) {}
 
 CommandLineInterface::~CommandLineInterface() = default;
 
@@ -1645,6 +1650,26 @@ bool CommandLineInterface::ParseInputFiles(
         break;
       }
     }
+
+    // Enforce --option_dependencies.
+    if (option_dependencies_explicitly_set_) {
+      bool indirect_option_imports = false;
+      for (int i = 0; i < parsed_file->option_dependency_count(); ++i) {
+        if (option_dependencies_.find(parsed_file->option_dependency_name(i)) ==
+            option_dependencies_.end()) {
+          indirect_option_imports = true;
+          std::cerr << parsed_file->name() << ": "
+                    << absl::StrReplaceAll(
+                           option_dependencies_violation_msg_,
+                           {{"%s", parsed_file->option_dependency_name(i)}})
+                    << std::endl;
+        }
+      }
+      if (indirect_option_imports) {
+        result = false;
+        break;
+      }
+    }
   }
   descriptor_pool->ClearDirectInputFiles();
   return result;
@@ -1657,7 +1682,11 @@ void CommandLineInterface::Clear() {
   proto_path_.clear();
   input_files_.clear();
   direct_dependencies_.clear();
-  direct_dependencies_violation_msg_ = kDefaultDirectDependenciesViolationMsg;
+  direct_dependencies_violation_msg_ =
+      std::string(kDefaultDirectDependenciesViolationMsg);
+  option_dependencies_.clear();
+  option_dependencies_violation_msg_ =
+      std::string(kDefaultOptionDependenciesViolationMsg);
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_in_names_.clear();
@@ -2139,7 +2168,23 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
   } else if (name == "--direct_dependencies_violation_msg") {
     direct_dependencies_violation_msg_ = value;
+  } else if (name == "--option_dependencies") {
+    if (option_dependencies_explicitly_set_) {
+      std::cerr << name
+                << " may only be passed once. To specify multiple "
+                   "option dependencies, pass them all as a single "
+                   "parameter separated by ':'."
+                << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
 
+    option_dependencies_explicitly_set_ = true;
+    std::vector<std::string> direct =
+        absl::StrSplit(value, ':', absl::SkipEmpty());
+    ABSL_DCHECK(option_dependencies_.empty());
+    option_dependencies_.insert(direct.begin(), direct.end());
+  } else if (name == "--option_dependencies_violation_msg") {
+    option_dependencies_violation_msg_ = value;
   } else if (name == "--descriptor_set_in") {
     if (!descriptor_set_in_names_.empty()) {
       std::cerr << name
@@ -2520,7 +2565,13 @@ Parse PROTO_FILES and generate output based on the options given:
                               are counted as occupied fields numbers.
   --enable_codegen_trace      Enables tracing which parts of protoc are
                               responsible for what codegen output. Not supported
-                              by all backends or on all platforms.)";
+                              by all backends or on all platforms.
+  --direct_dependencies       A colon delimited list of imports that are
+                              allowed to be used in "import"
+                              declarations, when explictily provided.
+  --option_dependencies       A colon delimited list of imports that are
+                              allowed to be used in "import option"
+                              declarations, when explicitly provided.)";
   std::cout << R"(
   --notices                   Show notice file and exit.)";
   if (!plugin_prefix_.empty()) {

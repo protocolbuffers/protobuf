@@ -130,11 +130,9 @@ void CommandLineInterfaceTester::ExpectNoErrors() {
 void CommandLineInterfaceTester::ExpectErrorText(
     absl::string_view expected_text) {
   EXPECT_NE(0, return_code_);
-  EXPECT_THAT(captured_stderr_,
-              HasSubstr(absl::StrReplaceAll(expected_text,
-                                            {{"$tmpdir", temp_directory_}})));
+  EXPECT_EQ(captured_stderr_,
+            absl::StrReplaceAll(expected_text, {{"$tmpdir", temp_directory_}}));
 }
-
 void CommandLineInterfaceTester::ExpectErrorSubstring(
     absl::string_view expected_substring) {
   EXPECT_NE(0, return_code_);
