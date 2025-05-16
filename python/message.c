@@ -453,13 +453,16 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
     const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
     if (upb_MessageDef_WellKnownType(msgdef) == kUpb_WellKnown_Struct) {
       ok = PyObject_CallMethod(submsg, "_internal_assign", "O", value);
-      if (!ok && PyDict_Size(value) == 1 &&
-          PyDict_Contains(value, PyUnicode_FromString("fields"))) {
-        // Fall back to init as normal message field.
-        PyErr_Clear();
-        PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)submsg);
-        Py_DECREF(tmp);
-        ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
+      if (!ok && PyDict_Size(value) == 1) {
+        PyObject* fields_str = PyUnicode_FromString("fields");
+        if (PyDict_Contains(value, fields_str)) {
+          // Fall back to init as normal message field.
+          PyErr_Clear();
+          PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)submsg);
+          Py_DECREF(tmp);
+          ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
+        }
+        Py_DECREF(fields_str);
       }
     } else {
       ok = PyUpb_Message_InitAttributes(submsg, NULL, value) >= 0;
@@ -1110,7 +1113,9 @@ static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
       PyUpb_Message* self = (void*)_self;
       if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
       PyObject* items = PyObject_CallMethod(_self, "items", NULL);
-      return PyBool_FromLong(PySequence_Contains(items, arg));
+      int ret = PySequence_Contains(items, arg);
+      Py_DECREF(items);
+      return PyBool_FromLong(ret);
     }
     default:
       // For other messages, check with HasField.

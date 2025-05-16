@@ -1124,14 +1124,16 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             Descriptor::WELLKNOWNTYPE_STRUCT) {
           ScopedPyObjectPtr ok(PyObject_CallMethod(
               reinterpret_cast<PyObject*>(cmessage), "update", "O", value));
-          if (ok.get() == nullptr && PyDict_Size(value) == 1 &&
-              PyDict_Contains(value, PyUnicode_FromString("fields"))) {
-            // Fallback to init as normal message field.
-            PyErr_Clear();
-            PyObject* tmp = Clear(cmessage);
-            Py_DECREF(tmp);
-            if (InitAttributes(cmessage, nullptr, value) < 0) {
-              return -1;
+          if (ok.get() == nullptr && PyDict_Size(value) == 1) {
+            ScopedPyObjectPtr fields_str(PyUnicode_FromString("fields"));
+            if (PyDict_Contains(value, fields_str.get())) {
+              // Fallback to init as normal message field.
+              PyErr_Clear();
+              PyObject* tmp = Clear(cmessage);
+              Py_DECREF(tmp);
+              if (InitAttributes(cmessage, nullptr, value) < 0) {
+                return -1;
+              }
             }
           }
         } else {
@@ -2391,21 +2393,19 @@ PyObject* Contains(CMessage* self, PyObject* arg) {
       const Reflection* reflection = message->GetReflection();
       const FieldDescriptor* map_field = descriptor->FindFieldByName("fields");
       const FieldDescriptor* key_field = map_field->message_type()->map_key();
-      PyObject* py_string = CheckString(arg, key_field);
-      if (!py_string) {
+      ScopedPyObjectPtr py_string(CheckString(arg, key_field));
+      if (py_string.get() == nullptr) {
         PyErr_SetString(PyExc_TypeError,
                         "The key passed to Struct message must be a str.");
         return nullptr;
       }
       char* value;
       Py_ssize_t value_len;
-      if (PyBytes_AsStringAndSize(py_string, &value, &value_len) < 0) {
-        Py_DECREF(py_string);
+      if (PyBytes_AsStringAndSize(py_string.get(), &value, &value_len) < 0) {
         Py_RETURN_FALSE;
       }
       std::string key_str;
       key_str.assign(value, value_len);
-      Py_DECREF(py_string);
 
       MapKey map_key;
       map_key.SetStringValue(key_str);
@@ -2414,9 +2414,9 @@ PyObject* Contains(CMessage* self, PyObject* arg) {
     }
     case Descriptor::WELLKNOWNTYPE_LISTVALUE: {
       // For WKT ListValue, check if the key is in the items.
-      PyObject* items = PyObject_CallMethod(reinterpret_cast<PyObject*>(self),
-                                            "items", nullptr);
-      return PyBool_FromLong(PySequence_Contains(items, arg));
+      ScopedPyObjectPtr items(PyObject_CallMethod(
+          reinterpret_cast<PyObject*>(self), "items", nullptr));
+      return PyBool_FromLong(PySequence_Contains(items.get(), arg));
     }
     default:
       // For other messages, check with HasField.
