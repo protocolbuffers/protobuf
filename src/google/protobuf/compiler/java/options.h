@@ -26,7 +26,8 @@ struct Options {
         enforce_lite(false),
         annotate_code(false),
         strip_nonfunctional_codegen(false),
-        jvm_dsl(true) {}
+        jvm_dsl(true),
+        has_or_builder(jvm_dsl) {}
 
   bool generate_immutable_code;
   bool generate_mutable_code;
@@ -50,6 +51,10 @@ struct Options {
   // If true, generate JVM-specific DSL code.  This defaults to true for
   // compatibility with the old behavior.
   bool jvm_dsl;
+
+  // If true, there's a parent OrBuilder type that can be used to avoid
+  // generating methods on both the separate message and builder types.
+  bool has_or_builder;
 };
 
 }  // namespace java
