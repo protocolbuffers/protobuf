@@ -35,12 +35,18 @@ _DEFAULT_COPTS.extend([
 UPB_DEFAULT_CPPOPTS = select({
     "//upb:windows": [],
     "//conditions:default": _DEFAULT_CPPOPTS,
+}) + select({
+    "//conditions:default": [],
 })
 
 UPB_DEFAULT_COPTS = select({
     "//upb:windows": [],
-    "//upb:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
     "//conditions:default": _DEFAULT_COPTS,
+}) + select({
+    "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
+    "//conditions:default": [],
+}) + select({
+    "//conditions:default": [],
 })
 
 runfiles_init = """\
