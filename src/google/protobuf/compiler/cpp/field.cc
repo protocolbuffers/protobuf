@@ -58,6 +58,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"field_", FieldMemberName(field, split)},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
       {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
+      {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
       Sub("PrepareSplitMessageForWrite",
           split ? "PrepareSplitMessageForWrite();" : "")

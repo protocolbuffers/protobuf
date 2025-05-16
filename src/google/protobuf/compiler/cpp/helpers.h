@@ -1144,6 +1144,8 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
                                   absl::string_view parameters);
 
+bool IsStrictUtf8String(const FieldDescriptor* field, const Options& options);
+
 inline bool ShouldGenerateExternSpecializations(const Options& options) {
   // For OSS we omit the specializations to reduce codegen size.
   // Some compilers can't handle that much input in a single translation unit.
