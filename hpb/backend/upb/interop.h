@@ -17,6 +17,7 @@
 #include "google/protobuf/hpb/ptr.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
+#include "upb/mem/arena.hpp"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 
@@ -64,6 +65,11 @@ upb_Arena* GetArena(T* message) {
 template <typename T>
 upb_Arena* UnwrapArena(T&& arena) {
   return internal::PrivateAccess::GetInternalUPBArena(std::forward<T>(arena));
+}
+
+template <typename T>
+::upb::Arena& GetArenaHandle(T&& arena) {
+  return internal::PrivateAccess::GetArenaHandle(std::forward<T>(arena));
 }
 
 /**
