@@ -178,6 +178,7 @@ cc_library(
 cc_library(
     name = "test_runner",
     hdrs = ["test_runner.h"],
+    visibility = ["//src/google/protobuf:__pkg__"],
 )
 
 cc_library(
