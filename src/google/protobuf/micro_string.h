@@ -16,6 +16,7 @@
 #include "google/protobuf/arena.h"
 
 // must be last:
+#include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
