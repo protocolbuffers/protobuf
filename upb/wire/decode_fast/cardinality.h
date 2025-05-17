@@ -96,6 +96,7 @@ fastdecode_nextret fastdecode_nextrepeated(upb_Decoder* d, void* dst,
     }
   } else {
     fastdecode_commitarr(dst, farr, valbytes);
+    d->message_is_done = true;
     ret.next = FD_NEXT_ATLIMIT;
   }
 

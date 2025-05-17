@@ -11,5 +11,5 @@ const char* _upb_FastDecoder_DecodeGeneric(struct upb_Decoder* d,
                                            uint64_t data) {
   (void)data;
   upb_DecodeFast_SetHasbits(msg, hasbits);
-  return _upb_Decoder_DecodeMessage(d, ptr, msg, decode_totablep(table));
+  return ptr;
 }
