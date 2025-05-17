@@ -360,6 +360,34 @@ TEST_P(LengthPrefixedTest, Check) {
   EXPECT_EQ(LengthPrefixed(param.value), Wire(param.expected));
 }
 
+TEST_F(LengthPrefixedTest, Nested) {
+  EXPECT_EQ(LengthPrefixed(Wire("foo")), Wire("\003foo"));
+}
+
+TEST(PackedTest, Empty) {
+  EXPECT_EQ(Packed(Varint<int>, std::vector<int>{}),
+            Wire(absl::string_view("\0", 1)));
+}
+
+TEST(PackedTest, OneFixed32) {
+  EXPECT_EQ(Packed(Fixed32<int>, {9}),
+            Wire(absl::string_view("\001\011\000\000\000", 5)));
+}
+
+TEST(PackedTest, Varints) {
+  EXPECT_EQ(Packed(Varint<int>, {9, 8}), Wire("\002\011\010"));
+}
+
+TEST(PackedTest, SInt32s) {
+  EXPECT_EQ(Packed(SInt32, {0, 1, -1}),
+            Wire(absl::string_view("\003\000\002\001", 4)));
+}
+
+TEST(PackedTest, Container) {
+  std::vector<int> v = {9, 8};
+  EXPECT_EQ(Packed(Varint<int>, v), Wire("\002\011\010"));
+}
+
 TEST(FieldTest, VarintField) { EXPECT_EQ(VarintField(9, 1), Wire("\110\001")); }
 
 TEST(FieldTest, LongVarintField) {
@@ -397,8 +425,22 @@ TEST(FieldTest, LengthPrefixedField) {
   EXPECT_EQ(LengthPrefixedField(9, "foo"), Wire("\112\003foo"));
 }
 
+TEST(FieldTest, LengthPrefixedFieldNested) {
+  EXPECT_EQ(LengthPrefixedField(9, Wire("foo")), Wire("\112\003foo"));
+}
+
 TEST(FieldTest, DelimitedField) {
-  EXPECT_EQ(DelimitedField(9, "foo"), Wire("\113foo\114"));
+  EXPECT_EQ(DelimitedField(9, Wire("foo")), Wire("\113foo\114"));
+}
+
+TEST(FieldTest, PackedField) {
+  EXPECT_EQ(PackedField(9, Varint<int>, {1, 2, 3}),
+            Wire("\112\003\001\002\003"));
+}
+
+TEST(FieldTest, PackedFieldContainer) {
+  std::vector<int> v = {1, 2, 3};
+  EXPECT_EQ(PackedField(9, Varint<int>, v), Wire("\112\003\001\002\003"));
 }
 
 }  // namespace

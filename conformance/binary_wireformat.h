@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <initializer_list>
 #include <ostream>
 #include <string>
 #include <type_traits>
@@ -43,6 +44,7 @@ class Wire {
   Wire& operator=(Wire&& other) = default;
 
   bool operator==(const Wire& other) const { return buf_ == other.buf_; }
+  bool operator!=(const Wire& other) const { return !(*this == other); }
   absl::string_view data() const { return buf_; }
   std::string str() && { return std::move(buf_); }
   size_t size() const { return buf_.size(); }
@@ -154,7 +156,34 @@ Wire Float(float f);
 Wire Double(double d);
 
 // Encodes a string with a length prefix.
+// e.g. LengthPrefixed("foo") for string data
+// e.g. LengthPrefixed(Wire(...)) for sub-message data
 Wire LengthPrefixed(absl::string_view data);
+inline Wire LengthPrefixed(const Wire& data) {
+  return LengthPrefixed(data.data());
+}
+
+// Encodes packed repeated data.
+// e.g. Packed(Varint<int>, {1, 2, 3})
+namespace internal {
+template <typename Func, typename Container>
+Wire PackedImpl(Func func, Container&& container) {
+  std::string buf(Varint(container.size()).str());
+  for (auto x : container) {
+    absl::StrAppend(&buf, func(x).str());
+  }
+  return Wire(buf);
+}
+}  // namespace internal
+
+template <typename Func, typename T>
+Wire Packed(Func func, std::initializer_list<T>&& container) {
+  return internal::PackedImpl(func, std::move(container));
+}
+template <typename Func, typename Container>
+Wire Packed(Func func, Container&& container) {
+  return internal::PackedImpl(func, std::forward<Container>(container));
+}
 
 // Overloads to avoid forcing sign/size conversion warnings on call-sites.
 template <typename T>
@@ -213,12 +242,24 @@ inline Wire FloatField(uint32_t fieldnum, float value) {
 inline Wire DoubleField(uint32_t fieldnum, double value) {
   return Wire(Tag(fieldnum, WireType::kFixed64), Double(value));
 }
-inline Wire LengthPrefixedField(uint32_t fieldnum, absl::string_view content) {
+template <typename Func, typename T>
+Wire PackedField(uint32_t fieldnum, Func func,
+                 std::initializer_list<T>&& container) {
+  return Wire(Tag(fieldnum, WireType::kLengthPrefixed),
+              Packed(func, std::move(container)));
+}
+template <typename Func, typename Container>
+Wire PackedField(uint32_t fieldnum, Func func, Container container) {
+  return Wire(Tag(fieldnum, WireType::kLengthPrefixed),
+              Packed(func, std::forward<Container>(container)));
+}
+template <typename T>
+inline Wire LengthPrefixedField(uint32_t fieldnum, T content) {
   return Wire(Tag(fieldnum, WireType::kLengthPrefixed),
               LengthPrefixed(content));
 }
-inline Wire DelimitedField(uint32_t fieldnum, absl::string_view content) {
-  return Wire(Tag(fieldnum, WireType::kStartGroup), content,
+inline Wire DelimitedField(uint32_t fieldnum, const Wire& content) {
+  return Wire(Tag(fieldnum, WireType::kStartGroup), content.data(),
               Tag(fieldnum, WireType::kEndGroup));
 }
 

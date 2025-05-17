@@ -108,7 +108,8 @@ std::string field(uint32_t fieldnum, char wire_type, std::string content) {
 }
 
 std::string group(uint32_t fieldnum, std::string content) {
-  return google::protobuf::conformance::DelimitedField(fieldnum, std::move(content))
+  return google::protobuf::conformance::DelimitedField(fieldnum,
+                                             google::protobuf::conformance::Wire(content))
       .str();
 }
 
