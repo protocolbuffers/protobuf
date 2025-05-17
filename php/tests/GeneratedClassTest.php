@@ -130,6 +130,34 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(0, $deprecationCount);
     }
 
+    public function testDeprecatedFieldSetterThrowsWarning()
+    {
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if (false !== strpos($errstr, ' is deprecated.')) {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
+
+        // does not throw warning
+        $message = new TestMessage();
+        $message->setDeprecatedInt32(1);
+        $message->setDeprecatedOptionalInt32(1);
+        $message->setDeprecatedInt32ValueUnwrapped(1); // wrapped field
+        $message->setDeprecatedInt32Value(new \Google\Protobuf\Int32Value(['value' => 1])); // wrapped field
+        $message->setDeprecatedOneofInt32(1); // oneof field
+        $message->setDeprecatedRepeatedInt32([1]); // repeated field
+        $message->setDeprecatedMapInt32Int32([1 => 1]); // map field
+        $message->setDeprecatedAny(new \Google\Protobuf\Any(['type_url' => 'foo', 'value' => 'bar'])); // any field
+        $message->setDeprecatedMessage(new TestMessage()); // message field
+        $message->setDeprecatedEnum(1); // enum field
+
+        restore_error_handler();
+
+        $this->assertEquals(9, $deprecationCount);
+    }
+
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
     {
         $message = new TestMessage([
