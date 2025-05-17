@@ -146,9 +146,15 @@ absl::Status ValidateNestInFileClassFeature(const EnumDescriptor& descriptor);
 // Returns true if the generated class for the type is nested in the generated
 // proto file Java class.
 // `immutable` should be set to true if we're generating for the immutable API.
-bool NestedInFileClass(const Descriptor& descriptor, bool immutable);
+// `proto1_codegen` should be set to true if we're generating for the proto1
+// API (i.e. functions are called from proto1 code generator); in the case of
+// when `java_enable_dual_generate_mutable_api` is true, `IsProto1Api` returns
+// false even if `java_api_version==1` and generating proto1 java.
+bool NestedInFileClass(const Descriptor& descriptor, bool immutable,
+                       bool proto1_codegen = false);
 bool NestedInFileClass(const EnumDescriptor& descriptor, bool immutable);
-bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable);
+bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable,
+                       bool proto1_codegen = false);
 
 // Returns true if `descriptor` will be written to its own .java file.
 // `immutable` should be set to true if we're generating for the immutable API.
