@@ -149,8 +149,11 @@ def _generate_upb_protos(ctx, generator, proto_info, feature_configuration):
 def _generate_name(ctx, generator):
     return ctx.rule.attr.name + "." + generator
 
+def _get_proto_deps(ctx):
+    return [dep for dep in ctx.rule.attr.deps if ProtoInfo in dep]
+
 def _get_dep_cc_infos(target, ctx, generator, cc_provider, dep_cc_provider):
-    rule_deps = ctx.rule.attr.deps
+    rule_deps = _get_proto_deps(ctx)
     dep_ccinfos = [dep[cc_provider].cc_info for dep in rule_deps]
     if dep_cc_provider:
         # This gives access to our direct sibling.  eg. foo.upb.h can #include "foo.upb_minitable.h"
@@ -233,7 +236,7 @@ def upb_proto_aspect_impl(
         # This target doesn't declare any sources, reexport all its deps instead.
         # This is known as an "alias library":
         # https://bazel.build/versions/6.4.0/reference/be/protocol-buffer#proto_library.srcs
-        files = _merge_generated_srcs([dep[file_provider].srcs for dep in ctx.rule.attr.deps])
+        files = _merge_generated_srcs([dep[file_provider].srcs for dep in _get_proto_deps(ctx)])
         wrapped_cc_info = cc_provider(
             cc_info = cc_common.merge_cc_infos(direct_cc_infos = dep_ccinfos),
         )
