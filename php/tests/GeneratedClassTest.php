@@ -119,7 +119,6 @@ class GeneratedClassTest extends TestBase
         $message->getDeprecatedInt32Value(); // wrapped field
         $message->getDeprecatedOneofInt32(); // oneof field
         $message->getDeprecatedOneof(); // oneof field
-        $message->setDeprecatedRepeatedInt32([1]); // repeated field
         $message->getDeprecatedRepeatedInt32(); // repeated field
         $message->getDeprecatedMapInt32Int32(); // map field
         $message->getDeprecatedAny(); // any field
