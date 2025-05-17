@@ -7,7 +7,6 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
-load("//bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
@@ -347,9 +346,8 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         is_upb,
     )
 
-    if is_upb:
-        thunks_cc_info = target[UpbMinitableCcInfo].cc_info
-    else:
+    dep_variant_info_for_native_gencode = []
+    if not is_upb:
         dep_cc_infos = []
         for dep in proto_deps:
             dep_cc_infos.append(dep[CcInfo])
@@ -363,6 +361,8 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             cc_infos = [target[CcInfo]] + [dep[CcInfo] for dep in ctx.attr._cpp_thunks_deps] + dep_cc_infos,
         ) for thunk in cc_thunks_gencode])
 
+        dep_variant_info_for_native_gencode = [DepVariantInfo(cc_info = thunks_cc_info)]
+
     runtime = proto_lang_toolchain.runtime
     dep_variant_info_for_runtime = DepVariantInfo(
         crate_info = runtime[CrateInfo] if CrateInfo in runtime else None,
@@ -371,14 +371,12 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         build_info = None,
     )
 
-    dep_variant_info_for_native_gencode = DepVariantInfo(cc_info = thunks_cc_info)
-
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
         src = entry_point_rs_output,
         extra_srcs = rs_gencode,
-        deps = [dep_variant_info_for_runtime, dep_variant_info_for_native_gencode] + dep_variant_infos,
+        deps = [dep_variant_info_for_runtime] + dep_variant_info_for_native_gencode + dep_variant_infos,
         runtime = runtime,
     )
     return [RustProtoInfo(
@@ -396,7 +394,7 @@ def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps"],
-        requires = ([upb_minitable_proto_library_aspect] if is_upb else [cc_proto_aspect]),
+        requires = ([] if is_upb else [cc_proto_aspect]),
         attrs = {
             "_collect_cc_coverage": attr.label(
                 default = Label("@rules_rust//util:collect_coverage"),

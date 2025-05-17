@@ -536,10 +536,7 @@ static bool _upb_MessageDef_ValidateUtf8(const upb_MessageDef* m) {
 static uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
   uint64_t out = 0;
 
-  if (UPB_DESC(FeatureSet_repeated_field_encoding(m->resolved_features)) ==
-      UPB_DESC(FeatureSet_PACKED)) {
-    out |= kUpb_MessageModifier_DefaultIsPacked;
-  }
+  out |= kUpb_MessageModifier_DefaultIsPacked;
 
   if (_upb_MessageDef_ValidateUtf8(m)) {
     out |= kUpb_MessageModifier_ValidateUtf8;

@@ -45,6 +45,8 @@ class PROTOC_EXPORT SCCAnalyzer {
   explicit SCCAnalyzer() : index_(0) {}
   SCCAnalyzer(const SCCAnalyzer&) = delete;
   SCCAnalyzer& operator=(const SCCAnalyzer&) = delete;
+  SCCAnalyzer(SCCAnalyzer&&) = default;
+  SCCAnalyzer& operator=(SCCAnalyzer&&) = default;
 
   const SCC* GetSCC(const Descriptor* descriptor) {
     auto it = cache_.find(descriptor);

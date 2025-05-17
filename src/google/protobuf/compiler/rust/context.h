@@ -18,6 +18,7 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -113,6 +114,10 @@ class Context {
     return Context(opts_, rust_generator_context_, printer, modules_);
   }
 
+  const SCC& GetSCC(const Descriptor& descriptor) {
+    return *scc_analyzer_.GetSCC(&descriptor);
+  }
+
   // Forwards to Emit(), which will likely be called all the time.
   void Emit(absl::string_view format,
             io::Printer::SourceLocation loc =
@@ -165,10 +170,22 @@ class Context {
   size_t GetModuleDepth() const { return modules_.size(); }
 
  private:
+  struct DepsGenerator {
+    std::vector<const Descriptor*> operator()(const Descriptor* desc) const {
+      std::vector<const Descriptor*> deps;
+      for (int i = 0; i < desc->field_count(); i++) {
+        if (desc->field(i)->message_type()) {
+          deps.push_back(desc->field(i)->message_type());
+        }
+      }
+      return deps;
+    }
+  };
   const Options* opts_;
   const RustGeneratorContext* rust_generator_context_;
   io::Printer* printer_;
   std::vector<std::string> modules_;
+  SCCAnalyzer<DepsGenerator> scc_analyzer_;
 };
 
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const FileDescriptor& file);
