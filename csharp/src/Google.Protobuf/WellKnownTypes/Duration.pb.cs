@@ -146,6 +146,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Duration(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      seconds_ = 0L;
+      nanos_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "seconds" field.</summary>
     public const int SecondsFieldNumber = 1;
     private long seconds_;

@@ -115,6 +115,23 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Api(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      methods_.Clear();
+      options_.Clear();
+      version_ = "";
+      if (sourceContext_ != null) {
+        sourceContext_.Clear();
+      }
+      mixins_.Clear();
+      syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
@@ -553,6 +570,21 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Method Clone() {
       return new Method(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      requestTypeUrl_ = "";
+      requestStreaming_ = false;
+      responseTypeUrl_ = "";
+      responseStreaming_ = false;
+      options_.Clear();
+      syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>
@@ -1058,6 +1090,16 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Mixin Clone() {
       return new Mixin(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      root_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>

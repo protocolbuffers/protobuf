@@ -111,6 +111,19 @@ namespace Google.Protobuf.Compiler {
       return new Version(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      major_ = 0;
+      minor_ = 0;
+      patch_ = 0;
+      suffix_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "major" field.</summary>
     public const int MajorFieldNumber = 1;
     private readonly static int MajorDefaultValue = 0;
@@ -485,6 +498,21 @@ namespace Google.Protobuf.Compiler {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public CodeGeneratorRequest Clone() {
       return new CodeGeneratorRequest(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      fileToGenerate_.Clear();
+      parameter_ = "";
+      protoFile_.Clear();
+      sourceFileDescriptors_.Clear();
+      if (compilerVersion_ != null) {
+        compilerVersion_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "file_to_generate" field.</summary>
@@ -863,6 +891,20 @@ namespace Google.Protobuf.Compiler {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public CodeGeneratorResponse Clone() {
       return new CodeGeneratorResponse(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      error_ = "";
+      supportedFeatures_ = 0UL;
+      minimumEdition_ = 0;
+      maximumEdition_ = 0;
+      file_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "error" field.</summary>
@@ -1297,6 +1339,20 @@ namespace Google.Protobuf.Compiler {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public File Clone() {
           return new File(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          name_ = "";
+          insertionPoint_ = "";
+          content_ = "";
+          if (generatedCodeInfo_ != null) {
+            generatedCodeInfo_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "name" field.</summary>
