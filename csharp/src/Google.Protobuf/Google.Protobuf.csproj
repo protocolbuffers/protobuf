@@ -23,9 +23,11 @@
     <!-- Include PDB in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <IsTrimmable>true</IsTrimmable>
+    <!--<IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))">true</IsTrimmable>-->
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
     <!-- Disable warnings about AOT and trimming features on older targets, e.g. netstandard2.0.
          For now, continue to apply these features to these targets because some packages don't have a target that supports them -->
-    <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210</NoWarn>	  
+    <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210;NETSDK1212</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
