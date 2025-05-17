@@ -41,9 +41,12 @@ internal sealed partial class FeatureSetDescriptor
         var featureSetDefaults = FeatureSetDefaults.Parser.ParseFrom(Convert.FromBase64String(DefaultsBase64));
         var ret = new Dictionary<Edition, FeatureSetDescriptor>();
 
-        // Note: Enum.GetValues<TEnum> isn't available until .NET 5. It's not worth making this conditional
-        // based on that.
-        var supportedEditions = ((Edition[]) Enum.GetValues(typeof(Edition)))
+        var supportedEditions =
+#if NET5_0_OR_GREATER
+            Enum.GetValues<Edition>()
+#else
+            ((Edition[])Enum.GetValues(typeof(Edition)))
+#endif
             .OrderBy(x => x)
             .Where(e => e >= featureSetDefaults.MinimumEdition && e <= featureSetDefaults.MaximumEdition);
 
