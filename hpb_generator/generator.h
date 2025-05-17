@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_PROTOC_GEN_HPB_LIB_H__
-#define GOOGLE_PROTOBUF_COMPILER_HPB_PROTOC_GEN_HPB_LIB_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_HPB_GENERATOR_H__
 
 #include <cstdint>
 #include <string>
@@ -40,4 +40,4 @@ class Generator : public protoc::CodeGenerator {
 }  // namespace protobuf
 }  // namespace google::hpb_generator
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_PROTOC_GEN_HPB_LIB_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GENERATOR_H__
