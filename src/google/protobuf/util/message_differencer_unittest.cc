@@ -220,6 +220,17 @@ TEST(MessageDifferencerTest, BasicPartialEqualityTestNoPresenceForceCompare) {
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
 }
 
+TEST(MessageDifferencerTest, EqualitySameMessageTest) {
+  // Create the testing proto
+  unittest::TestAllTypes msg1;
+
+  TestUtil::SetAllFields(&msg1);
+
+  // Compare
+  util::MessageDifferencer differencer;
+  EXPECT_TRUE(differencer.Compare(msg1, msg1));
+}
+
 TEST(MessageDifferencerTest, PartialEqualityTestExtraField) {
   // Create the testing protos
   unittest::TestAllTypes msg1;
