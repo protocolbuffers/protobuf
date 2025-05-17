@@ -4268,7 +4268,6 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
           enum_type()->is_closed());
 }
 
-ABSL_DEPRECATED("Use !is_required() && !is_repeated() instead.")
 bool FieldDescriptor::has_optional_keyword() const {
   return proto3_optional_ ||
          (file()->edition() == Edition::EDITION_PROTO2 && !is_required() &&

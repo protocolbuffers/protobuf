@@ -1126,6 +1126,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   // Returns true if this field was syntactically written with "optional" in the
   // .proto file. Excludes singular proto3 fields that do not have a label.
+  ABSL_DEPRECATED("Use has_presence() instead.")
   bool has_optional_keyword() const;
 
   // Get the merged features that apply to this field.  These are specified in
