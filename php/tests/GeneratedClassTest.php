@@ -119,6 +119,7 @@ class GeneratedClassTest extends TestBase
         $message->getDeprecatedInt32Value(); // wrapped field
         $message->getDeprecatedOneofInt32(); // oneof field
         $message->getDeprecatedOneof(); // oneof field
+        $message->setDeprecatedRepeatedInt32([1]); // repeated field
         $message->getDeprecatedRepeatedInt32(); // repeated field
         $message->getDeprecatedMapInt32Int32(); // map field
         $message->getDeprecatedAny(); // any field
@@ -130,7 +131,7 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(0, $deprecationCount);
     }
 
-    public function testDeprecatedFieldSetterThrowsWarning()
+    public function testDeprecatedFieldSetterDoesNotThrowWarningForRepeatedAndMapFieldsWithEmptyArrays()
     {
         // temporarily change error handler to capture the deprecated errors
         $deprecationCount = 0;
@@ -140,22 +141,15 @@ class GeneratedClassTest extends TestBase
             }
         }, E_USER_DEPRECATED);
 
-        // does not throw warning
+
+        // This behavior exists because otherwise the deprecation is thrown on serializeToJsonString
         $message = new TestMessage();
-        $message->setDeprecatedInt32(1);
-        $message->setDeprecatedOptionalInt32(1);
-        $message->setDeprecatedInt32ValueUnwrapped(1); // wrapped field
-        $message->setDeprecatedInt32Value(new \Google\Protobuf\Int32Value(['value' => 1])); // wrapped field
-        $message->setDeprecatedOneofInt32(1); // oneof field
-        $message->setDeprecatedRepeatedInt32([1]); // repeated field
-        $message->setDeprecatedMapInt32Int32([1 => 1]); // map field
-        $message->setDeprecatedAny(new \Google\Protobuf\Any(['type_url' => 'foo', 'value' => 'bar'])); // any field
-        $message->setDeprecatedMessage(new TestMessage()); // message field
-        $message->setDeprecatedEnum(1); // enum field
+        $message->setDeprecatedRepeatedInt32([]); // repeated field
+        $message->setDeprecatedMapInt32Int32([]); // map field
 
         restore_error_handler();
 
-        $this->assertEquals(9, $deprecationCount);
+        $this->assertEquals(2, $deprecationCount);
     }
 
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
