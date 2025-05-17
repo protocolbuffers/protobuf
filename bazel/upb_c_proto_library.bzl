@@ -35,9 +35,6 @@ upb_c_proto_library_aspect = aspect(
         "_upb_toolchain": attr.label(
             default = Label("//upb_generator/c:toolchain"),
         ),
-        "_cc_toolchain": attr.label(
-            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
-        ),
     },
     implementation = _upb_c_proto_library_aspect_impl,
     requires = [upb_minitable_proto_library_aspect],
