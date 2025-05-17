@@ -221,7 +221,7 @@ std::string DefaultForField(const FieldDescriptor* field) {
 
 std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
   if (field->is_repeated()) {
-    return absl::StrCat("$this->", field->name(), "->count() !== 0");
+    return absl::StrCat("count($this->", field->name(), ") !== 0");
   }
   if (field->real_containing_oneof() != nullptr) {
     return absl::StrCat("$this->hasOneof(", field->number(), ")");
@@ -749,7 +749,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
 
   if (field->options().deprecated() &&
       (field->is_map() || field->is_repeated())) {
-    printer->Print("if ($arr->count() !== 0) {\n    ^deprecation_trigger^}\n",
+    printer->Print("if (count($arr) !== 0) {\n    ^deprecation_trigger^}\n",
                    "deprecation_trigger", deprecation_trigger);
   }
 
