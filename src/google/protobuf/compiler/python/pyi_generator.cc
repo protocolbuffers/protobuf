@@ -38,9 +38,25 @@ PyiGenerator::PyiGenerator() : file_(nullptr) {}
 
 PyiGenerator::~PyiGenerator() = default;
 
+/// Similar to NamePrefixedWithNestedTypes but for pyi files.
+template <typename DescriptorT>
+static std::string EscapeNestedKeyword(const DescriptorT& descriptor,
+                                       absl::string_view separator) {
+  std::string name = std::string(descriptor.name());
+  const Descriptor* parent = descriptor.containing_type();
+  if (parent != nullptr) {
+    std::string prefix = EscapeNestedKeyword(*parent, separator);
+    return absl::StrCat(prefix, separator, EscapeKeyword(name));
+  }
+  if (separator == ".") {
+    name = EscapeKeyword(name);
+  }
+  return name;
+}
+
 template <typename DescriptorT>
 std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
-  std::string name = NamePrefixedWithNestedTypes(descriptor, ".");
+  std::string name = EscapeNestedKeyword(descriptor, ".");
   if (descriptor.file() != file_) {
     std::string module_alias;
     const absl::string_view filename = descriptor.file()->name();
@@ -304,7 +320,7 @@ void PyiGenerator::Annotate(const std::string& label,
 }
 
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
-  const absl::string_view enum_name = enum_descriptor.name();
+  const auto enum_name = EscapeKeyword(enum_descriptor.name());
   printer_->Print(
       "class $enum_name$(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):\n"
       "    __slots__ = ()\n",
@@ -321,14 +337,13 @@ void PyiGenerator::PrintEnumValues(const EnumDescriptor& enum_descriptor,
   std::string module_enum_name = ModuleLevelName(enum_descriptor);
   for (int j = 0; j < enum_descriptor.value_count(); ++j) {
     const EnumValueDescriptor* value_descriptor = enum_descriptor.value(j);
+    const auto safe_name = EscapeKeyword(value_descriptor->name());
     if (is_classvar) {
       printer_->Print("$name$: _ClassVar[$module_enum_name$]\n", "name",
-                      value_descriptor->name(), "module_enum_name",
-                      module_enum_name);
+                      safe_name, "module_enum_name", module_enum_name);
     } else {
-      printer_->Print("$name$: $module_enum_name$\n", "name",
-                      value_descriptor->name(), "module_enum_name",
-                      module_enum_name);
+      printer_->Print("$name$: $module_enum_name$\n", "name", safe_name,
+                      "module_enum_name", module_enum_name);
     }
     Annotate("name", value_descriptor);
   }
@@ -411,7 +426,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   if (!is_nested) {
     printer_->Print("\n");
   }
-  const absl::string_view class_name = message_descriptor.name();
+  const auto class_name = EscapeKeyword(message_descriptor.name());
   std::string extra_base;
   // A well-known type needs to inherit from its corresponding base class in
   // net/proto2/python/internal/well_known_types.
