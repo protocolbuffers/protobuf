@@ -179,9 +179,9 @@ class MapTypeCard {
 
  private:
   uint8_t tag_;
-  bool is_signed_ : 1;
-  bool is_zigzag_ : 1;
-  bool is_utf8_ : 1;
+  uint8_t is_signed_ : 1;
+  uint8_t is_zigzag_ : 1;
+  uint8_t is_utf8_ : 1;
 };
 
 // Make the map entry type card for a specified field type.
