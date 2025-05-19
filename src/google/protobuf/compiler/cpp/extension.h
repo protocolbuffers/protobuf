@@ -76,10 +76,13 @@ class PROTOC_EXPORT ExtensionGenerator {
   bool IsScoped() const;
 
  private:
+  std::string DefaultStr() const;
+
   const FieldDescriptor* descriptor_;
   std::string type_traits_;
   Options options_;
   MessageSCCAnalyzer* scc_analyzer_;
+  bool is_extern_;
 
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
