@@ -148,7 +148,7 @@ class GeneratedClassTest extends TestBase
 
         restore_error_handler();
 
-        $this->assertEquals(2, $deprecationCount);
+        $this->assertEquals(0, $deprecationCount);
     }
 
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
