@@ -395,7 +395,7 @@ PHP_METHOD(FieldDescriptor, getNumber) {
  * Returns the label of this field as an integer.
  */
 PHP_METHOD(FieldDescriptor, getLabel) {
-  zend_error(E_USER_WARNING,
+  zend_error(E_USER_DEPRECATED,
              "getLabel is deprecated. Use isRequired or isRepeated instead.\n");
   FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
   RETURN_LONG(upb_FieldDef_Label(intern->fielddef));
