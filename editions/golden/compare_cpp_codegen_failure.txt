@@ -49,8 +49,8 @@
 -  // optional int32 int32_field = 1;
 +  // int32 int32_field = 1;
    if ((cached_has_bits & 0x00000001U) != 0) {
-     target = builder.WriteInt32(
-         1, this_._internal_int32_field(), target, stream);
+     target = builder.WriteInt32(target, stream, 1,
+                                             this_._internal_int32_field());
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 @@ @@
