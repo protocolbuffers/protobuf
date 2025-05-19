@@ -848,6 +848,12 @@ TEST_P(MicroStringPrevTest, SetInChunksWithExistingState) {
   EXPECT_EQ(str_.Get(), "CHUNK");
 }
 
+TEST_P(MicroStringPrevTest, SetInChunksWithExistingStateAfterClear) {
+  str_.Clear();
+  str_.SetInChunks(3, arena(), [](auto append) { append("BAR"); });
+  EXPECT_EQ(str_.Get(), "BAR");
+}
+
 TEST_P(MicroStringPrevTest, SetInChunksKeepsSizeValidEvenIfWeDontWriteAll) {
   // Here we say 5 bytes, but only append 4.
   // The final size should still be 4.

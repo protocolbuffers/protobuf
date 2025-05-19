@@ -491,11 +491,13 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
 
   const auto do_micro = [&](MicroRep* r) {
     ABSL_DCHECK_LE(size, r->capacity);
+    r->Unpoison();
     r->ChangeSize(invoke_setter(r->data()));
   };
 
   const auto do_owned = [&](LargeRep* r) {
     ABSL_DCHECK_LE(size, r->capacity);
+    r->Unpoison();
     r->ChangeSize(invoke_setter(r->owned_head()));
   };
 
