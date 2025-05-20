@@ -11,8 +11,10 @@
 import io
 import unittest
 
+from google.protobuf import message
 from google.protobuf.internal import decoder
 from google.protobuf.internal import testing_refleaks
+from google.protobuf.internal import wire_format
 
 
 _INPUT_BYTES = b'\x84r\x12'
@@ -51,6 +53,18 @@ class DecoderTest(unittest.TestCase):
     input_io = io.BytesIO(b'')
     size = decoder._DecodeVarint(input_io)
     self.assertEqual(size, None)
+
+  def test_decode_unknown_group_field_too_many_levels(self):
+    data = memoryview(b'\023' * 5_000_000)
+    self.assertRaisesRegex(
+        message.DecodeError,
+        'Error parsing message',
+        decoder._DecodeUnknownField,
+        data,
+        1,
+        wire_format.WIRETYPE_START_GROUP,
+        1
+    )
 
 
 if __name__ == '__main__':
