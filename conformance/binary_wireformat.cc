@@ -40,14 +40,14 @@ size_t vencode64(uint64_t val, int over_encoded_bytes, char* buf) {
 Wire MakeFixed32(void* data) {
   uint32_t data_le;
   std::memcpy(&data_le, data, 4);
-  data_le = internal::little_endian::FromHost(data_le);
+  data_le = ::google::protobuf::internal::little_endian::FromHost(data_le);
   return Wire(std::string(reinterpret_cast<char*>(&data_le), 4));
 }
 
 Wire MakeFixed64(void* data) {
   uint64_t data_le;
   std::memcpy(&data_le, data, 8);
-  data_le = internal::little_endian::FromHost(data_le);
+  data_le = ::google::protobuf::internal::little_endian::FromHost(data_le);
   return Wire(std::string(reinterpret_cast<char*>(&data_le), 8));
 }
 
@@ -68,10 +68,10 @@ Wire LongVarint(uint64_t x, int extra) {
 }
 
 Wire SInt32(int32_t x) {
-  return Varint(internal::WireFormatLite::ZigZagEncode32(x));
+  return Varint(::google::protobuf::internal::WireFormatLite::ZigZagEncode32(x));
 }
 Wire SInt64(int64_t x) {
-  return Varint(internal::WireFormatLite::ZigZagEncode64(x));
+  return Varint(::google::protobuf::internal::WireFormatLite::ZigZagEncode64(x));
 }
 
 Wire Fixed32(uint32_t x) { return MakeFixed32(&x); }

@@ -107,8 +107,9 @@ std::string field(uint32_t fieldnum, char wire_type, std::string content) {
   return absl::StrCat(tag(fieldnum, wire_type), content);
 }
 
-std::string group(uint32_t fieldnum, std::string content) {
-  return google::protobuf::conformance::DelimitedField(fieldnum, std::move(content))
+std::string group(uint32_t fieldnum, absl::string_view content) {
+  return google::protobuf::conformance::DelimitedField(fieldnum,
+                                             google::protobuf::conformance::Wire(content))
       .str();
 }
 

@@ -121,6 +121,7 @@ cc_test(
 test_suite(
     name = "conformance_framework_tests",
     tests = [
+        "binary_wireformat_test",
         "failure_list_trie_node_test",
     ],
 )
