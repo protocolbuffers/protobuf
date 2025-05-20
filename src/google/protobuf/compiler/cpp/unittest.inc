@@ -38,6 +38,7 @@
 #endif
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
