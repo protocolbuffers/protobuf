@@ -144,6 +144,7 @@ class SingularMessage : public FieldGeneratorBase {
   bool has_hasbit_;
 };
 
+
 void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   auto vars = AnnotatedAccessors(
       field_, {"", "set_allocated_", "unsafe_arena_set_allocated_",
