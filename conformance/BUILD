@@ -123,6 +123,7 @@ test_suite(
     tests = [
         "binary_wireformat_test",
         "failure_list_trie_node_test",
+        "test_manager_test",
     ],
 )
 
@@ -206,6 +207,42 @@ cc_library(
         "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
         "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "test_manager",
+    testonly = True,
+    srcs = ["test_manager.cc"],
+    hdrs = ["test_manager.h"],
+    deps = [
+        ":conformance_cc_proto",
+        ":failure_list_trie_node",
+        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "test_manager_test",
+    srcs = ["test_manager_test.cc"],
+    deps = [
+        ":test_manager",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
