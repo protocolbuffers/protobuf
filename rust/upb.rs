@@ -592,7 +592,7 @@ pub trait UpbTypeConversions: Proxied {
     /// - `msg` must be the correct variant for `Self`.
     /// - `msg` pointers must point to memory valid for `'msg` lifetime.
     #[allow(unused_variables)]
-    unsafe fn from_message_mut<'msg>(msg: *mut upb_Message, arena: &'msg Arena) -> Mut<'msg, Self>
+    unsafe fn from_message_mut<'msg>(msg: RawMessage, arena: &'msg Arena) -> Mut<'msg, Self>
     where
         Self: Message,
     {
@@ -794,11 +794,10 @@ where
                 <Key as UpbTypeConversions>::to_message_value(key),
             )
         };
-        if val.is_null() {
-            return None;
-        }
         // SAFETY: The lifetime of the MapMut is guaranteed to outlive the returned Mut.
-        Some(unsafe { <Self as UpbTypeConversions>::from_message_mut(val, map.arena(Private)) })
+        NonNull::new(val).map(|msg| unsafe {
+            <Self as UpbTypeConversions>::from_message_mut(msg, map.arena(Private))
+        })
     }
 
     fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {

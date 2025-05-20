@@ -674,11 +674,11 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
                             .expect("expected present message value in map"))
                 }
 
-                unsafe fn from_message_mut<'msg>(msg: *mut $pbr$::upb_Message, arena: &'msg $pbr$::Arena)
+                unsafe fn from_message_mut<'msg>(msg: $pbr$::RawMessage, arena: &'msg $pbr$::Arena)
                     -> $Msg$Mut<'msg> {
                     $Msg$Mut {
                       inner: unsafe {
-                        $pbr$::MutatorMessageRef::from_raw_parts(std::ptr::NonNull::new(msg).expect("expected present message value in map"), arena)
+                        $pbr$::MutatorMessageRef::from_raw_parts(msg, arena)
                       }
                     }
                 }
