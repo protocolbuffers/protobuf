@@ -1056,7 +1056,10 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::v2::TableDriven;
   friend class internal::v2::TableDrivenMessage;
   friend class internal::v2::TableDrivenParse;
-  friend internal::MessageCreator;
+  friend class internal::MessageCreator;
+  friend class internal::RepeatedPtrFieldBase;
+  template <typename Type>
+  friend class internal::GenericTypeHandler;
 
   template <typename Type>
   friend class Arena::InternalHelper;
@@ -1064,6 +1067,14 @@ class PROTOBUF_EXPORT MessageLite {
   friend auto internal::GetClassData(const MessageLite& msg);
 
   void LogInitializationErrorMessage() const;
+
+  // If `this` and `other` are the exact same class as represented by `data`,
+  // then merges from `other` into `this`. Otherwise, CHECK-fails in debug
+  // builds or causes UB in release builds (probably a crash). This is faster
+  // than `CheckTypeAndMergeFrom()` and should be preferred by friended internal
+  // callers that have the right `ClassData` handy.
+  void MergeFromWithClassData(const MessageLite& other,
+                              const internal::ClassData* data);
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 
