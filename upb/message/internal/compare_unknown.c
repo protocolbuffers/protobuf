@@ -178,7 +178,7 @@ static void upb_CombineUnknownFields(upb_UnknownField_Context* ctx,
         break;
       }
       case kUpb_WireType_StartGroup:
-        if (--ctx->depth == 0) {
+        if (--ctx->depth < 0) {
           ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
           UPB_LONGJMP(ctx->err, 1);
         }

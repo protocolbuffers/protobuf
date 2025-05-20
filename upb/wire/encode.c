@@ -700,6 +700,10 @@ static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
   return encoder->status;
 }
 
+static uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
+  return options >> 16;
+}
+
 uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options) {
   uint16_t max_depth = upb_EncodeOptions_GetMaxDepth(options);
   return max_depth ? max_depth : kUpb_WireFormat_DefaultDepthLimit;

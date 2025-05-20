@@ -187,5 +187,5 @@ TEST(CompareTest, MaxDepth) {
       CompareUnknownWithMaxDepth(
           {{1, Group({{2, Group({{3, Fixed32(456)}, {4, Fixed64(123)}})}})}},
           {{1, Group({{2, Group({{4, Fixed64(123)}, {3, Fixed32(456)}})}})}},
-          2));
+          1));
 }
