@@ -144,7 +144,6 @@ class SingularMessage : public FieldGeneratorBase {
   bool has_hasbit_;
 };
 
-
 void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   auto vars = AnnotatedAccessors(
       field_, {"", "set_allocated_", "unsafe_arena_set_allocated_",
@@ -410,6 +409,7 @@ void SingularMessage::GenerateByteSize(io::Printer* p) const {
                   $pbi$::WireFormatLite::$declared_type$Size(*this_.$field_$);
   )cc");
 }
+
 
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
@@ -1020,6 +1020,7 @@ void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
         }
       )cc");
 }
+
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
