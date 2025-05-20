@@ -130,6 +130,27 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(0, $deprecationCount);
     }
 
+    public function testDeprecatedFieldSetterDoesNotThrowWarningForRepeatedAndMapFieldsWithEmptyArrays()
+    {
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if (false !== strpos($errstr, ' is deprecated.')) {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
+
+
+        // This behavior exists because otherwise the deprecation is thrown on serializeToJsonString
+        $message = new TestMessage();
+        $message->setDeprecatedRepeatedInt32([]); // repeated field
+        $message->setDeprecatedMapInt32Int32([]); // map field
+
+        restore_error_handler();
+
+        $this->assertEquals(0, $deprecationCount);
+    }
+
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
     {
         $message = new TestMessage([
