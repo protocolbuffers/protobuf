@@ -32,9 +32,7 @@ function(protobuf_configure_target target)
         # Allow big object
         target_compile_options("${target}" PRIVATE /bigobj)
     endif ()
-    if (protobuf_UNICODE)
-        target_compile_definitions("${target}" PRIVATE -DUNICODE -D_UNICODE)
-    endif ()
+    target_compile_definitions("${target}" PRIVATE -DUNICODE -D_UNICODE)
     target_compile_definitions("${target}" PRIVATE -DGOOGLE_PROTOBUF_CMAKE_BUILD)
 
     if (protobuf_DISABLE_RTTI)
