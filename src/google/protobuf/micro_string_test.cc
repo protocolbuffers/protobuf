@@ -319,19 +319,25 @@ TEST(MicroStringTest, CapacityIsRoundedUpOnHeap) {
 }
 
 TEST(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
-  Arena arena;
-  MicroString str;
+  const auto get_capacity_for_size = [&](size_t size) {
+    MicroString str;
+    std::string input = std::string(size, 'x');
+    str.Set(input, nullptr);
+    EXPECT_EQ(str.Get(), input);
+    size_t cap = str.Capacity();
+    str.Destroy();
+    return cap;
+  };
 
-  std::string input = std::string(200, 'x');
-  str.Set(input, &arena);
-  EXPECT_EQ(str.Capacity(), 208 - kMicroRepSize);
-  EXPECT_EQ(str.Get(), input);
+  EXPECT_EQ(get_capacity_for_size(200), 208 - kMicroRepSize);
 
-  input = std::string(255, 'x');
-  str.Set(input, &arena);
-  // It caps at 255 even though the allocated block is larger.
-  EXPECT_EQ(str.Capacity(), 255);
-  EXPECT_EQ(str.Get(), input);
+  // These are in the boundary
+  EXPECT_EQ(get_capacity_for_size(253), 256 - kMicroRepSize);
+  // This is the maximum capacity for MicroRep
+  EXPECT_EQ(get_capacity_for_size(254), 256 - kMicroRepSize);
+
+  // This one jumps to LargeRep
+  EXPECT_GE(get_capacity_for_size(255), 256);
 }
 
 TEST(MicroStringTest, PoisonsTheUnusedCapacity) {

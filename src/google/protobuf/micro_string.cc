@@ -113,10 +113,13 @@ MicroString::MicroRep* MicroString::AllocateMicroRep(size_t size,
   MicroRep* h;
   size_t capacity = size;
   if (arena == nullptr) {
-    const internal::SizedPtr alloc = internal::AllocateAtLeast(
-        ArenaAlignDefault::Ceil(MicroRepSize(capacity)));
+    size_t requested_size = ArenaAlignDefault::Ceil(MicroRepSize(capacity));
+    const internal::SizedPtr alloc = internal::AllocateAtLeast(requested_size);
     // Maybe we rounded up too much.
     capacity = std::min(kMaxMicroRepCapacity, alloc.n - sizeof(MicroRep));
+    // Verify that the size we are going to free later is at least what we asked
+    // for.
+    ABSL_DCHECK_LE(requested_size, MicroRepSize(capacity));
     h = reinterpret_cast<MicroRep*>(alloc.p);
   } else {
     capacity =

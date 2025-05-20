@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_MICRO_STRING_H__
 #define GOOGLE_PROTOBUF_MICRO_STRING_H__
 
+#include <cstddef>
 #include <cstdint>
 
 #include "absl/base/config.h"
@@ -97,12 +98,34 @@ class PROTOBUF_EXPORT MicroString {
     }
   };
 
+  struct MicroRep {
+    uint8_t size;
+    uint8_t capacity;
+
+    char* data() { return reinterpret_cast<char*>(this + 1); }
+    const char* data() const { return reinterpret_cast<const char*>(this + 1); }
+    absl::string_view view() const { return {data(), size}; }
+
+    void SetInitialSize(uint8_t size) {
+      PoisonMemoryRegion(data() + size, capacity - size);
+      this->size = size;
+    }
+
+    void Unpoison() { UnpoisonMemoryRegion(data(), capacity); }
+
+    void ChangeSize(uint8_t new_size) {
+      PoisonMemoryRegion(data() + new_size, capacity - new_size);
+      UnpoisonMemoryRegion(data(), new_size);
+      size = new_size;
+    }
+  };
+
  public:
   // We don't allow extra capacity in big-endian because it is harder to manage
   // the pointer to the MicroString "base".
   static constexpr bool kAllowExtraCapacity = IsLittleEndian();
   static constexpr size_t kInlineCapacity = sizeof(uintptr_t) - 1;
-  static constexpr size_t kMaxMicroRepCapacity = 255;
+  static constexpr size_t kMaxMicroRepCapacity = 256 - sizeof(MicroRep);
 
   // Empty string.
   constexpr MicroString() : rep_() {}
@@ -311,27 +334,6 @@ class PROTOBUF_EXPORT MicroString {
     return cap >= kOwned ? kOwned : static_cast<LargeRepKind>(cap);
   }
 
-  struct MicroRep {
-    uint8_t size;
-    uint8_t capacity;
-
-    char* data() { return reinterpret_cast<char*>(this + 1); }
-    const char* data() const { return reinterpret_cast<const char*>(this + 1); }
-    absl::string_view view() const { return {data(), size}; }
-
-    void SetInitialSize(uint8_t size) {
-      PoisonMemoryRegion(data() + size, capacity - size);
-      this->size = size;
-    }
-
-    void Unpoison() { UnpoisonMemoryRegion(data(), capacity); }
-
-    void ChangeSize(uint8_t new_size) {
-      PoisonMemoryRegion(data() + new_size, capacity - new_size);
-      UnpoisonMemoryRegion(data(), new_size);
-      size = new_size;
-    }
-  };
   // Micro-optimization: by using kIsMicroRepTag as 2, the MicroRep `rep_`
   // pointer (with the tag) is already pointing into the data buffer.
   static_assert(sizeof(MicroRep) == kIsMicroRepTag);
