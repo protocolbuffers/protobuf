@@ -29,11 +29,25 @@ build_configs = {
   }
 }
 
+default_cflags = "-O3 -DNDEBUG -fvisibility=hidden"
+
+unknown_config = <<~UNKNOWN_CONFIG
+  ERROR: Unknown PROTOBUF_CONFIG value: #{config}
+
+  Valid options are: #{build_configs.keys.join(", ")}
+UNKNOWN_CONFIG
+
 if build_configs[config]
   additional_c_flags = build_configs[config][:cflags]
   $LDFLAGS += " #{build_configs[config][:ldflags]}" if build_configs[config][:ldflags]
+elsif config.nil?
+  additional_c_flags = default_cflags
+elsif config.empty?
+  warn "PROTOBUF_CONFIG has been set to an empty string, using default CFLAGS: #{default_cflags}"
+  additional_c_flags = default_cflags
 else
-  additional_c_flags = "-O3 -DNDEBUG -fvisibility=hidden"
+  warn unknown_config
+  exit 1
 end
 
 if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/ || RUBY_PLATFORM =~ /freebsd/
