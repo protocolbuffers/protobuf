@@ -254,9 +254,9 @@ TEST(ExtensionSetTest, CopyFrom) {
   unittest::TestAllExtensions message1, message2;
 
   TestUtil::SetAllExtensions(&message1);
-  message2.CopyFrom(message1);
+  message2 = message1;
   TestUtil::ExpectAllExtensionsSet(message2);
-  message2.CopyFrom(message1);  // exercise copy when fields already exist
+  message2 = message1;  // exercise copy when fields already exist
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
@@ -264,9 +264,9 @@ TEST(ExtensionSetTest, CopyFromPacked) {
   unittest::TestPackedExtensions message1, message2;
 
   TestUtil::SetPackedExtensions(&message1);
-  message2.CopyFrom(message1);
+  message2 = message1;
   TestUtil::ExpectPackedExtensionsSet(message2);
-  message2.CopyFrom(message1);  // exercise copy when fields already exist
+  message2 = message1;  // exercise copy when fields already exist
   TestUtil::ExpectPackedExtensionsSet(message2);
 }
 
@@ -810,8 +810,8 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     const int base_size = message.SpaceUsedLong();
     unittest::ForeignMessage foreign;
     foreign.set_c(42);
-    message.MutableExtension(unittest::optional_foreign_message_extension)
-        ->CopyFrom(foreign);
+    *message.MutableExtension(unittest::optional_foreign_message_extension) =
+        foreign;
     int min_expected_size = base_size + foreign.SpaceUsedLong();
     EXPECT_LE(min_expected_size, message.SpaceUsedLong());
   }
