@@ -4954,7 +4954,7 @@ static void upb_CombineUnknownFields(upb_UnknownField_Context* ctx,
         break;
       }
       case kUpb_WireType_StartGroup:
-        if (--ctx->depth == 0) {
+        if (--ctx->depth < 0) {
           ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
           UPB_LONGJMP(ctx->err, 1);
         }
@@ -8210,6 +8210,10 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
   return decoder->status;
 }
 
+static uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
+  return options >> 16;
+}
+
 uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options) {
   uint16_t max_depth = upb_DecodeOptions_GetMaxDepth(options);
   return max_depth ? max_depth : kUpb_WireFormat_DefaultDepthLimit;
@@ -8966,6 +8970,10 @@ static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
 
   _upb_mapsorter_destroy(&encoder->sorter);
   return encoder->status;
+}
+
+static uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
+  return options >> 16;
 }
 
 uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options) {
