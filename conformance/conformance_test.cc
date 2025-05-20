@@ -553,7 +553,6 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
   }
 
   std::string serialized_request;
-  std::string serialized_response;
   request.SerializeToString(&serialized_request);
 
   uint32_t len = internal::little_endian::FromHost(
@@ -597,7 +596,8 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
 
   response->set_protobuf_payload(serialized_request);
 
-  runner_->RunTest(test_name, len, serialized_request, &serialized_response);
+  std::string serialized_response =
+      runner_->RunTest(test_name, serialized_request);
 
   if (!response->ParseFromString(serialized_response)) {
     response->Clear();

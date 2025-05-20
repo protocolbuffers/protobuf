@@ -252,7 +252,7 @@ int RunConformanceTests(int argc, char *argv[],
     suite->SetTestee(program);
     suite->SetIsolated(isolated);
 
-    ForkPipeRunner runner(program, program_args, performance);
+    ForkPipeRunner runner(program, program_args);
 
     std::string output;
     all_ok = all_ok && suite->RunSuite(&runner, &output, failure_list_filename,

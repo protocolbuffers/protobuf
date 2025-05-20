@@ -178,6 +178,7 @@ cc_library(
 cc_library(
     name = "test_runner",
     hdrs = ["test_runner.h"],
+    deps = ["@abseil-cpp//absl/strings:string_view"],
 )
 
 cc_library(
@@ -190,6 +191,8 @@ cc_library(
         "//src/google/protobuf:endian",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 

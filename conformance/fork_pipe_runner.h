@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "conformance/conformance.pb.h"
 #include "test_runner.h"
 
@@ -23,21 +25,19 @@ namespace protobuf {
 // over a pipe.
 class ForkPipeRunner : public ConformanceTestRunner {
  public:
-  ForkPipeRunner(const std::string& executable,
-                 const std::vector<std::string>& executable_args,
-                 bool performance)
+  ForkPipeRunner(absl::string_view executable,
+                 absl::Span<const std::string> executable_args)
       : child_pid_(-1),
         executable_(executable),
-        executable_args_(executable_args),
-        performance_(performance) {}
+        executable_args_(executable_args.begin(), executable_args.end()) {}
 
   explicit ForkPipeRunner(const std::string& executable)
       : child_pid_(-1), executable_(executable) {}
 
   ~ForkPipeRunner() override = default;
 
-  void RunTest(const std::string& test_name, uint32_t len,
-               const std::string& request, std::string* response) override;
+  std::string RunTest(absl::string_view test_name,
+                      absl::string_view request) override;
 
  private:
   void SpawnTestProgram();
@@ -51,7 +51,6 @@ class ForkPipeRunner : public ConformanceTestRunner {
   pid_t child_pid_;
   std::string executable_;
   const std::vector<std::string> executable_args_;
-  bool performance_;
   std::string current_test_name_;
 };
 

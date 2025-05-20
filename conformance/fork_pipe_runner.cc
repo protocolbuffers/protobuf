@@ -39,17 +39,19 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <chrono>  // NOLINT(build/c++11)
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <future>
+#include <future>  // NOLINT(build/c++11)
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/endian.h"
 
@@ -64,17 +66,20 @@
 namespace google {
 namespace protobuf {
 
-void ForkPipeRunner::RunTest(const std::string &test_name, uint32_t len,
-                             const std::string &request,
-                             std::string *response) {
+std::string ForkPipeRunner::RunTest(absl::string_view test_name,
+                                    absl::string_view request) {
   if (child_pid_ < 0) {
     SpawnTestProgram();
   }
-  current_test_name_ = test_name;
+  current_test_name_ = std::string(test_name);
+
+  uint32_t len =
+      internal::little_endian::FromHost(static_cast<uint32_t>(request.size()));
 
   CheckedWrite(write_fd_, &len, sizeof(uint32_t));
-  CheckedWrite(write_fd_, request.c_str(), request.size());
+  CheckedWrite(write_fd_, request.data(), request.size());
 
+  std::string response;
   if (!TryRead(read_fd_, &len, sizeof(uint32_t))) {
     // We failed to read from the child, assume a crash and try to reap.
     ABSL_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
@@ -102,13 +107,14 @@ void ForkPipeRunner::RunTest(const std::string &test_name, uint32_t len,
     ABSL_LOG(INFO) << error_msg;
     child_pid_ = -1;
 
-    response_obj.SerializeToString(response);
-    return;
+    response_obj.SerializeToString(&response);
+    return response;
   }
 
   len = internal::little_endian::ToHost(len);
-  response->resize(len);
-  CheckedRead(read_fd_, (void *)response->c_str(), len);
+  response.resize(len);
+  CheckedRead(read_fd_, (void *)response.c_str(), len);
+  return response;
 }
 
 // TODO: make this work on Windows, instead of using these
@@ -195,30 +201,25 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
           return read(fd, (char *)buf + ofs, len);
         },
         fd, buf, ofs, len);
-    std::future_status status;
-    if (performance_) {
-      status = future.wait_for(std::chrono::seconds(5));
-      if (status == std::future_status::timeout) {
-        ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
-        kill(child_pid_, SIGQUIT);
-        // TODO: Only log in flag-guarded mode, since reading output
-        // from SIGQUIT is slow and verbose.
-        std::vector<char> err;
-        err.resize(5000);
-        ssize_t err_bytes_read;
-        size_t err_ofs = 0;
-        do {
-          err_bytes_read =
-              read(fd, (void *)&err[err_ofs], err.size() - err_ofs);
-          err_ofs += err_bytes_read;
-        } while (err_bytes_read > 0 && err_ofs < err.size());
-        ABSL_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n"
-                        << &err[0];
-        return false;
-      }
-    } else {
-      future.wait();
+    std::future_status status = future.wait_for(std::chrono::seconds(30));
+    if (status == std::future_status::timeout) {
+      ABSL_LOG(ERROR) << current_test_name_ << ": timeout from test program";
+      kill(child_pid_, SIGQUIT);
+      // TODO: Only log in flag-guarded mode, since reading output
+      // from SIGQUIT is slow and verbose.
+      std::vector<char> err;
+      err.resize(5000);
+      ssize_t err_bytes_read;
+      size_t err_ofs = 0;
+      do {
+        err_bytes_read = read(fd, (void *)&err[err_ofs], err.size() - err_ofs);
+        err_ofs += static_cast<size_t>(err_bytes_read);
+      } while (err_bytes_read > 0 && err_ofs < err.size());
+      ABSL_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n"
+                      << &err[0];
+      return false;
     }
+
     ssize_t bytes_read = future.get();
     if (bytes_read == 0) {
       ABSL_LOG(ERROR) << current_test_name_
@@ -231,8 +232,8 @@ bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
       return false;
     }
 
-    len -= bytes_read;
-    ofs += bytes_read;
+    len -= static_cast<size_t>(bytes_read);
+    ofs += static_cast<size_t>(bytes_read);
   }
 
   return true;

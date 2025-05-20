@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <string>
 
+#include "absl/strings/string_view.h"
+
 namespace google {
 namespace protobuf {
 
@@ -21,14 +23,14 @@ class ConformanceTestRunner {
 
   // Call to run a single conformance test.
   //
-  // "len" is the byte length of a serialized conformance.ConformanceRequest.
+  // "test_name" is the name of the test to run.
   // "input" is a serialized conformance.ConformanceRequest.
-  // "output" should be set to a serialized conformance.ConformanceResponse.
+  // The returned string should be a serialized conformance.ConformanceResponse.
   //
   // If there is any error in running the test itself, set "runtime_error" in
   // the response.
-  virtual void RunTest(const std::string& test_name, uint32_t len,
-                       const std::string& input, std::string* output) = 0;
+  virtual std::string RunTest(absl::string_view test_name,
+                              absl::string_view input) = 0;
 };
 
 }  // namespace protobuf
