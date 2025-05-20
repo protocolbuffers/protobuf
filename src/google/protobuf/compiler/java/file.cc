@@ -23,7 +23,6 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/context.h"
-#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -275,17 +274,6 @@ bool FileGenerator::Validate(std::string* error) {
       absl::StrAppend(error, status.message());
     }
   });
-
-  if (JavaGenerator::GetEdition(*file_) >= Edition::EDITION_2024) {
-    if (file_->options().has_java_multiple_files()) {
-      absl::StrAppend(
-          error,
-          "The file option `java_multiple_files` is not supported in "
-          "editions 2024 and above, which defaults to the feature value of"
-          " `nest_in_file_class = NO` (equivalent to "
-          "`java_multiple_files = true`).");
-    }
-  }
 
   return error->empty();
 }

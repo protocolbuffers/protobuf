@@ -321,23 +321,6 @@ TEST_F(JavaGeneratorTest, LargeOpenEnumAllowedEdition2024) {
 
   ExpectNoErrors();
 }
-
-TEST_F(JavaGeneratorTest, JavaMultipleFilesEdition2024Invalid) {
-  CreateTempFile("foo.proto",
-                 R"schema(
-    edition = "2024";
-    option java_multiple_files = true;
-    message Bar {}
-    )schema");
-
-  RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto "
-      "--experimental_editions");
-
-  ExpectErrorSubstring(
-      "`java_multiple_files` is not supported in editions 2024 and above");
-}
-
 TEST_F(JavaGeneratorTest, LargeEnumDisallowedEdition2023) {
   CreateTempFile("foo.proto",
                  R"schema(
