@@ -70,6 +70,7 @@ typedef struct {
   int options;
   int depth;
   _upb_mapsorter sorter;
+  UPB_PRIVATE(upb_Arena_BackAlloc) alloc;
 } upb_encstate;
 
 static size_t upb_roundup_pow2(size_t bytes) {
@@ -88,24 +89,27 @@ UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
 
 UPB_NOINLINE
 static char* encode_growbuffer(char* ptr, upb_encstate* e, size_t bytes) {
-  size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
-  size_t new_size = upb_roundup_pow2(needed_size);
-  char* new_buf =
-      upb_Arena_Realloc(e->arena, (void*)e->buf, old_size, new_size);
+  if (!e->alloc.start) {
+    e->alloc =
+        UPB_PRIVATE(upb_Arena_TakeRemainingInBlock)(e->arena, needed_size);
+  }
+  if (!e->alloc.start || e->alloc.len < needed_size) {
+    size_t new_size = upb_roundup_pow2(needed_size);
+    size_t old_size = e->buf ? e->limit - e->buf : 0;
 
-  if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    UPB_PRIVATE(upb_Arena_BackAlloc)
+    alloc = UPB_PRIVATE(upb_Arena_ReallocBack)(e->arena, e->alloc, old_size,
+                                               new_size);
 
-  // We want previous data at the end, realloc() put it at the beginning.
-  // TODO: This is somewhat inefficient since we are copying twice.
-  // Maybe create a realloc() that copies to the end of the new buffer?
-  if (old_size > 0) {
-    memmove(new_buf + new_size - old_size, new_buf, old_size);
+    if (!alloc.start) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+
+    e->alloc = alloc;
   }
 
-  e->buf = new_buf;
-  e->limit = new_buf + new_size;
-  return new_buf + new_size - needed_size;
+  e->buf = e->alloc.start;
+  e->limit = e->buf + e->alloc.len;
+  return e->alloc.start + e->alloc.len - needed_size;
 }
 
 /* Call to ensure that at least `bytes` bytes are available for writing at
@@ -155,6 +159,70 @@ static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
   return start;
 }
 
+// Need gnu extended inline asm
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
+#define UPB_ARM64_ASM
+#endif
+
+#ifdef UPB_ARM64_ASM
+UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
+                                                  uint64_t val) {
+  ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
+  uint64_t clz;
+  __asm__("clz %[cnt], %[val]\n" : [cnt] "=r"(clz) : [val] "r"(val));
+
+  // Calculate how many bytes of the possible 10 bytes we will *not* encode,
+  // because they are part of a zero prefix. For the number 300, it would use 2
+  // bytes encoded, so the number of bytes to skip would be 8. Adding 7 to the
+  // clz input ensures that we're rounding up.
+  // LINT.IfChange
+  uint32_t skip = (((uint32_t)clz + 7) * 9) >> 6;
+  // LINT.ThenChange(../message/test.cc)
+
+  ptr += skip;
+  uint64_t addr, mask;
+  __asm__ volatile(
+      "adr %[addr], 0f\n"
+      // Each arm64 instruction encodes to 4 bytes, and it takes two
+      // intructions to process each byte of output, so we branch ahead by
+      //  (4 + 4) * skip to avoid the remaining bytes.
+      "add %[addr], %[addr], %[cnt], lsl #3\n"
+      "mov %w[mask], #0x80\n"
+      "br %[addr]\n"
+      "0:\n"
+      // We don't need addr any more, but we've got the register for our whole
+      // assembly block so we'll use it as scratch to store the shift+masked
+      // values before storing them.
+      // The following stores are unsigned offset stores:
+      // strb Wt, [Xn, #imm]
+      "orr %[addr], %[mask], %[val], lsr #56\n"
+      "strb %w[addr], [%[ptr], #8]\n"
+      "orr %[addr], %[mask], %[val], lsr #49\n"
+      "strb %w[addr], [%[ptr], #7]\n"
+      "orr %[addr], %[mask], %[val], lsr #42\n"
+      "strb %w[addr], [%[ptr], #6]\n"
+      "orr %[addr], %[mask], %[val], lsr #35\n"
+      "strb %w[addr], [%[ptr], #5]\n"
+      "orr %[addr], %[mask], %[val], lsr #28\n"
+      "strb %w[addr], [%[ptr], #4]\n"
+      "orr %w[addr], %w[mask], %w[val], lsr #21\n"
+      "strb %w[addr], [%[ptr], #3]\n"
+      "orr %w[addr], %w[mask], %w[val], lsr #14\n"
+      "strb %w[addr], [%[ptr], #2]\n"
+      "orr %w[addr], %w[mask], %w[val], lsr #7\n"
+      "strb %w[addr], [%[ptr], #1]\n"
+      "orr %w[addr], %w[val], #0x80\n"
+      "strb %w[addr], [%[ptr]]\n"
+      : [addr] "=&r"(addr), [mask] "=&r"(mask)
+      : [val] "r"(val), [ptr] "r"(ptr), [cnt] "r"((uint64_t)skip)
+      : "memory");
+  // Encode the final byte after the continuation bytes.
+  uint32_t continuations = UPB_PB_VARINT_MAX_LEN - 1 - skip;
+  ptr[continuations] = val >> (7 * continuations);
+  return ptr;
+}
+#endif
+
 UPB_FORCEINLINE
 char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
   if (val < 128 && ptr != e->buf) {
@@ -162,7 +230,11 @@ char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
     *ptr = val;
     return ptr;
   } else {
+#ifdef UPB_ARM64_ASM
+    return encode_longvarint_arm64(ptr, e, val);
+#else
     return encode_longvarint(ptr, e, val);
+#endif
   }
 }
 
@@ -716,7 +788,7 @@ static upb_EncodeStatus upb_Encoder_Encode(char* ptr,
     *buf = NULL;
     *size = 0;
   }
-
+  UPB_PRIVATE(upb_Arena_FinishBackAlloc)(encoder->arena, encoder->alloc, *size);
   _upb_mapsorter_destroy(&encoder->sorter);
   return encoder->status;
 }
@@ -742,6 +814,7 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
   e.limit = NULL;
   e.depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
   e.options = options;
+  e.alloc = (UPB_PRIVATE(upb_Arena_BackAlloc)){};
   _upb_mapsorter_init(&e.sorter);
 
   return upb_Encoder_Encode(NULL, &e, msg, l, buf, size, prepend_len);
