@@ -16,8 +16,11 @@
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
 #include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
@@ -149,7 +152,8 @@ class PROTOBUF_EXPORT TextFormat {
     };
 
    public:
-    virtual ~BaseTextGenerator();
+    BaseTextGenerator() = default;
+    virtual ~BaseTextGenerator() = default;
 
     virtual void Indent() {}
     virtual void Outdent() {}
@@ -187,10 +191,10 @@ class PROTOBUF_EXPORT TextFormat {
   // to be printed in a different way and register it at the Printer.
   class PROTOBUF_EXPORT FastFieldValuePrinter {
    public:
-    FastFieldValuePrinter();
+    FastFieldValuePrinter() = default;
     FastFieldValuePrinter(const FastFieldValuePrinter&) = delete;
     FastFieldValuePrinter& operator=(const FastFieldValuePrinter&) = delete;
-    virtual ~FastFieldValuePrinter();
+    virtual ~FastFieldValuePrinter() = default;
     virtual void PrintBool(bool val, BaseTextGenerator* generator) const;
     virtual void PrintInt32(int32_t val, BaseTextGenerator* generator) const;
     virtual void PrintUInt32(uint32_t val, BaseTextGenerator* generator) const;
@@ -231,10 +235,10 @@ class PROTOBUF_EXPORT TextFormat {
   // Deprecated: please use FastFieldValuePrinter instead.
   class PROTOBUF_EXPORT FieldValuePrinter {
    public:
-    FieldValuePrinter();
+    FieldValuePrinter() = default;
     FieldValuePrinter(const FieldValuePrinter&) = delete;
     FieldValuePrinter& operator=(const FieldValuePrinter&) = delete;
-    virtual ~FieldValuePrinter();
+    virtual ~FieldValuePrinter() = default;
     virtual std::string PrintBool(bool val) const;
     virtual std::string PrintInt32(int32_t val) const;
     virtual std::string PrintUInt32(uint32_t val) const;
@@ -261,10 +265,10 @@ class PROTOBUF_EXPORT TextFormat {
 
   class PROTOBUF_EXPORT MessagePrinter {
    public:
-    MessagePrinter() {}
+    MessagePrinter() = default;
     MessagePrinter(const MessagePrinter&) = delete;
     MessagePrinter& operator=(const MessagePrinter&) = delete;
-    virtual ~MessagePrinter() {}
+    virtual ~MessagePrinter() = default;
     virtual void Print(const Message& message, bool single_line_mode,
                        BaseTextGenerator* generator) const = 0;
   };
@@ -273,7 +277,8 @@ class PROTOBUF_EXPORT TextFormat {
   // referenced in Any messages.
   class PROTOBUF_EXPORT Finder {
    public:
-    virtual ~Finder();
+    Finder() = default;
+    virtual ~Finder() = default;
 
     // Try to find an extension of *message by fully-qualified field
     // name.  Returns nullptr if no extension is known for this name or number.
@@ -307,6 +312,8 @@ class PROTOBUF_EXPORT TextFormat {
   class PROTOBUF_EXPORT Printer {
    public:
     Printer();
+    Printer(Printer&&) = default;
+    Printer& operator=(Printer&&) = default;
 
     // Like TextFormat::Print
     bool Print(const Message& message, io::ZeroCopyOutputStream* output) const;
@@ -676,7 +683,8 @@ class PROTOBUF_EXPORT TextFormat {
   class PROTOBUF_EXPORT Parser {
    public:
     Parser();
-    ~Parser();
+    Parser(const Parser&) = default;
+    Parser& operator=(const Parser&) = default;
 
     // Like TextFormat::Parse().
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
