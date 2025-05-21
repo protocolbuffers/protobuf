@@ -441,6 +441,9 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
   upb_Atomic_Init(&a->body.space_allocated, actual_block_size);
   a->body.blocks = NULL;
   a->body.upb_alloc_cleanup = NULL;
+#ifndef __STDC_NO_THREADS__
+  a->head.tid = 0;
+#endif
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
 
   _upb_Arena_AddBlock(&a->head, mem, first_block_overhead, actual_block_size);
@@ -479,6 +482,9 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->body.block_alloc = _upb_Arena_MakeBlockAlloc(alloc, 1);
   a->head.UPB_PRIVATE(ptr) = (void*)UPB_ALIGN_MALLOC((uintptr_t)(a + 1));
   a->head.UPB_PRIVATE(end) = UPB_PTR_AT(mem, n, char);
+#ifndef __STDC_NO_THREADS__
+  a->head.tid = 0;
+#endif
   UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(&a->body));
 #ifdef UPB_TRACING_ENABLED
   upb_Arena_LogInit(&a->head, n);
