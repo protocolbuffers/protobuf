@@ -260,7 +260,7 @@ void WriteModelPublicDeclaration(
 
         $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
           msg_ = ($1*)msg;
-          arena_ = owned_arena_.ptr();
+          arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
           upb_Arena_Fuse(arena_, arena);
         }
         ::hpb::Arena owned_arena_;
@@ -398,15 +398,15 @@ void WriteMessageImplementation(
     ctx.EmitLegacy(
         R"cc(
           $0::$0() : $0Access() {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = $1_new(arena_);
           }
           $0::$0(const $0& from) : $0Access() {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
           }
           $0::$0(const CProxy& from) : $0Access() {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(
                 ::hpb::interop::upb::GetMessage(&from), &$2, arena_);
           }
@@ -416,12 +416,12 @@ void WriteMessageImplementation(
             msg_ = ($1*)::hpb::interop::upb::GetMessage(&m);
           }
           $0& $0::operator=(const $3& from) {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
             return *this;
           }
           $0& $0::operator=(const CProxy& from) {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(
                 ::hpb::interop::upb::GetMessage(&from), &$2, arena_);
             return *this;
