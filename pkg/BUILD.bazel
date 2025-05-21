@@ -262,6 +262,7 @@ cc_dist_library(
     name = "protoc-gen-upb",
     dist_deps = [
         ":upb",
+        ":protobuf",
     ],
     tags = ["manual"],
     deps = [
@@ -273,6 +274,7 @@ cc_dist_library(
     name = "protoc-gen-upbdefs",
     dist_deps = [
         ":upb",
+        ":protobuf",
     ],
     tags = ["manual"],
     deps = [
