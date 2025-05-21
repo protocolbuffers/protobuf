@@ -34,7 +34,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -3826,10 +3826,9 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   {
     // This only happens once per proto file. So a global mutex to serialize
     // calls to AddDescriptors.
-    static absl::Mutex mu{absl::kConstInit};
-    mu.Lock();
+    static std::mutex mu{absl::kConstInit};
+    std::lock_guard<std::mutex> lk(mu);
     AddDescriptors(table);
-    mu.Unlock();
   }
   if (eager) {
     // Normally we do not want to eagerly build descriptors of our deps.

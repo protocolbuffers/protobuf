@@ -65,7 +65,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/any.h"
@@ -1551,7 +1551,7 @@ class FileDescriptorTables {
 
   // Mutex to protect the unknown-enum-value map due to dynamic
   // EnumValueDescriptor creation on unknown values.
-  mutable absl::Mutex unknown_enum_values_mu_;
+  mutable std::mutex unknown_enum_values_mu_;
 };
 
 namespace internal {
@@ -1982,7 +1982,7 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
   DescriptorPool::DeferredValidation deferred_validation(pool);
   Symbol result;
   {
-    absl::MutexLockMaybe lock(pool->mutex_);
+    std::lock_guard<std::mutex> Maybe lock(pool->mutex_);
     if (pool->fallback_database_ != nullptr) {
       known_bad_symbols_.clear();
       known_bad_files_.clear();
@@ -2159,7 +2159,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
 
     {
       // Must lock the pool because we will do allocations in the shared arena.
-      absl::MutexLockMaybe l2(pool->mutex_);
+      std::lock_guard<std::mutex>Maybe l2(pool->mutex_);
       alloc.FinalizePlanning(tables);
     }
     EnumValueDescriptor* result = alloc.AllocateArray<EnumValueDescriptor>(1);
@@ -2379,7 +2379,7 @@ DescriptorPool::DescriptorPool()
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
-    : mutex_(new absl::Mutex),
+    : mutex_(new std::mutex),
       fallback_database_(fallback_database),
       default_error_collector_(error_collector),
       underlay_(nullptr),
@@ -2445,7 +2445,7 @@ bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
 void DescriptorPool::ClearDirectInputFiles() { direct_input_files_.clear(); }
 
 bool DescriptorPool::InternalIsFileLoaded(absl::string_view filename) const {
-  absl::MutexLockMaybe lock(mutex_);
+  std::lock_guard<std::mutex>Maybe lock(mutex_);
   return tables_->FindFile(filename) != nullptr;
 }
 
@@ -2515,7 +2515,7 @@ void DescriptorPool::InternalAddGeneratedFile(
   // Therefore, when we parse one, we have to be very careful to avoid using
   // any descriptor-based operations, since this might cause infinite recursion
   // or deadlock.
-  absl::MutexLockMaybe lock(internal_generated_pool()->mutex_);
+  std::lock_guard<std::mutex>Maybe lock(internal_generated_pool()->mutex_);
   ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
 }
 
@@ -2531,7 +2531,7 @@ const FileDescriptor* DescriptorPool::FindFileByName(
   DeferredValidation deferred_validation(this);
   const FileDescriptor* result = nullptr;
   {
-    absl::MutexLockMaybe lock(mutex_);
+    std::lock_guard<std::mutex>Maybe lock(mutex_);
     if (fallback_database_ != nullptr) {
       tables_->known_bad_symbols_.clear();
       tables_->known_bad_files_.clear();
@@ -2557,7 +2557,7 @@ const FileDescriptor* DescriptorPool::FindFileContainingSymbol(
   const FileDescriptor* file_result = nullptr;
   DeferredValidation deferred_validation(this);
   {
-    absl::MutexLockMaybe lock(mutex_);
+    std::lock_guard<std::mutex>Maybe lock(mutex_);
     if (fallback_database_ != nullptr) {
       tables_->known_bad_symbols_.clear();
       tables_->known_bad_files_.clear();
@@ -2646,7 +2646,7 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
   const FieldDescriptor* result = nullptr;
   DeferredValidation deferred_validation(this);
   {
-    absl::MutexLockMaybe lock(mutex_);
+    std::lock_guard<std::mutex>Maybe lock(mutex_);
     if (fallback_database_ != nullptr) {
       tables_->known_bad_symbols_.clear();
       tables_->known_bad_files_.clear();
@@ -2721,7 +2721,7 @@ void DescriptorPool::FindAllExtensions(
   DeferredValidation deferred_validation(this);
   std::vector<const FieldDescriptor*> extensions;
   {
-    absl::MutexLockMaybe lock(mutex_);
+    std::lock_guard<std::mutex>Maybe lock(mutex_);
     if (fallback_database_ != nullptr) {
       tables_->known_bad_symbols_.clear();
       tables_->known_bad_files_.clear();
@@ -5316,7 +5316,7 @@ Symbol DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
     const DescriptorPool* pool, const absl::string_view name, bool build_it) {
   // If we are looking at an underlay, we must lock its mutex_, since we are
   // accessing the underlay's tables_ directly.
-  absl::MutexLockMaybe lock((pool == pool_) ? nullptr : pool->mutex_);
+  std::lock_guard<std::mutex>Maybe lock((pool == pool_) ? nullptr : pool->mutex_);
 
   Symbol result = pool->tables_->FindSymbol(name);
   if (result.IsNull() && pool->underlay_ != nullptr) {
@@ -5509,7 +5509,7 @@ static bool ValidateQualifiedName(absl::string_view name) {
 
 Symbol DescriptorPool::NewPlaceholder(absl::string_view name,
                                       PlaceholderType placeholder_type) const {
-  absl::MutexLockMaybe lock(mutex_);
+  std::lock_guard<std::mutex>Maybe lock(mutex_);
   return NewPlaceholderWithMutexHeld(name, placeholder_type);
 }
 
@@ -5641,7 +5641,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
 
 FileDescriptor* DescriptorPool::NewPlaceholderFile(
     const absl::string_view name) const {
-  absl::MutexLockMaybe lock(mutex_);
+  std::lock_guard<std::mutex>Maybe lock(mutex_);
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<std::string>(1);

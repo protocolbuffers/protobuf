@@ -23,7 +23,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -426,7 +425,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     explicit ReflectionPayload(Arena* arena) : repeated_field(arena) {}
     RepeatedPtrField<Message> repeated_field;
 
-    absl::Mutex mutex;  // The thread to synchronize map and repeated
+    std::mutex mutex;  // The thread to synchronize map and repeated
                         // field needs to get lock first;
     std::atomic<State> state{STATE_MODIFIED_MAP};
   };

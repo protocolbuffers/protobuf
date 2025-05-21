@@ -237,7 +237,7 @@ bool Generator::Generate(const FileDescriptor* file,
   // TODO:  The proper thing to do would be to allocate any state on
   //   the stack and use that, so that the Generator class itself does not need
   //   to have any mutable members.  Then it is implicitly thread-safe.
-  absl::MutexLock lock(&mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   file_ = file;
 
   std::string filename = GetFileName(file, ".py");

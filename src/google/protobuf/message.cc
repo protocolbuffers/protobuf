@@ -29,7 +29,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -321,7 +321,7 @@ class GeneratedMessageFactory final : public MessageFactory {
       files_;
   DynamicMessageFactory dropped_defaults_factory_;
 
-  absl::Mutex mutex_;
+  std::mutex mutex_;
   class MessagePtr {
    public:
     MessagePtr() : value_() {}

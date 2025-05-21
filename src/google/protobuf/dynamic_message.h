@@ -23,7 +23,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
@@ -121,7 +121,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 
   struct TypeInfo;
   absl::flat_hash_map<const Descriptor*, const TypeInfo*> prototypes_;
-  mutable absl::Mutex prototypes_mutex_;
+  mutable std::mutex prototypes_mutex_;
 
   friend class DynamicMessage;
   const Message* PROTOBUF_NONNULL

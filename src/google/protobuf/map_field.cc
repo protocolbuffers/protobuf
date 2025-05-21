@@ -10,12 +10,12 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <mutex>
 #include <string>
 #include <type_traits>
 
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
-#include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map.h"
@@ -235,7 +235,7 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
   size_t size = 0;
   if (auto* p = maybe_payload()) {
-    absl::MutexLock lock(&p->mutex);
+    std::lock_guard<std::mutex> lock(p->mutex);
     // Measure the map under the lock, because there could be some repeated
     // field data that might be sync'd back into the map.
     size = GetMapRaw().SpaceUsedExcludingSelfLong();
@@ -285,7 +285,7 @@ const RepeatedPtrFieldBase& MapFieldBase::SyncRepeatedFieldWithMap(
     }
 
     {
-      absl::MutexLock lock(&p->mutex);
+      std::lock_guard<std::mutex> lock(p->mutex);
       // Double check state, because another thread may have seen the same
       // state and done the synchronization before the current thread.
       if (p->state.load(std::memory_order_relaxed) == STATE_MODIFIED_MAP) {
@@ -391,7 +391,7 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
   if (state() == STATE_MODIFIED_REPEATED) {
     auto& p = payload();
     {
-      absl::MutexLock lock(&p.mutex);
+      std::lock_guard<std::mutex> lock(p.mutex);
       // Double check state, because another thread may have seen the same state
       // and done the synchronization before the current thread.
       if (p.state.load(std::memory_order_relaxed) == STATE_MODIFIED_REPEATED) {

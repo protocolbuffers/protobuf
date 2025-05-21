@@ -13,8 +13,6 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_format.h"
-#include "absl/synchronization/barrier.h"
-#include "absl/synchronization/blocking_counter.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"

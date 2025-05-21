@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -185,7 +185,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_, printer_ and file_descriptor_serialized_.
-  mutable absl::Mutex mutex_;
+  mutable std::mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable FileDescriptorProto proto_;   // Set in Generate().  Under mutex_.
   mutable std::string file_descriptor_serialized_;

@@ -17,7 +17,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
@@ -89,7 +89,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_, printer_, and import_map_.
-  mutable absl::Mutex mutex_;
+  mutable std::mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable io::Printer* printer_;        // Set in Generate().  Under mutex_.
   mutable bool strip_nonfunctional_codegen_ = false;  // Set in Generate().

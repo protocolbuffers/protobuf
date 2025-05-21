@@ -18,7 +18,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
@@ -144,7 +144,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   ThreadSafeArenaStatsHandle arena_stats_;
 
   // Adding a new chunk to head_ must be protected by mutex_.
-  absl::Mutex mutex_;
+  std::mutex mutex_;
   // Pointer to a linked list of SerialArenaChunk.
   std::atomic<SerialArenaChunk*> head_{nullptr};
 
