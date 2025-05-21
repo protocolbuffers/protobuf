@@ -15,7 +15,6 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -462,14 +461,14 @@ void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 std::unique_ptr<FieldGeneratorBase> MakeSingularCordGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordFieldGenerator>(desc, options, scc);
+  return std::make_unique<CordFieldGenerator>(desc, options, scc);
 }
 
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<CordOneofFieldGenerator>(desc, options, scc);
+  return std::make_unique<CordOneofFieldGenerator>(desc, options, scc);
 }
 
 }  // namespace cpp

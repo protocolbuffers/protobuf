@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -1046,19 +1045,19 @@ bool RepeatedMessage::NeedsIsInitialized() const { return has_required_; }
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularMessage>(desc, options, scc);
+  return std::make_unique<SingularMessage>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedMessageGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedMessage>(desc, options, scc);
+  return std::make_unique<RepeatedMessage>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeOneofMessageGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<OneofMessage>(desc, options, scc);
+  return std::make_unique<OneofMessage>(desc, options, scc);
 }
 
 }  // namespace cpp
