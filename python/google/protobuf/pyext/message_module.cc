@@ -34,29 +34,9 @@ namespace {
 
 class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
  public:
-  ProtoAPIDescriptorDatabase() {
-    PyObject* descriptor_pool =
-        PyImport_ImportModule("google.protobuf.descriptor_pool");
-    if (descriptor_pool == nullptr) {
-      ABSL_LOG(ERROR)
-          << "Failed to import google.protobuf.descriptor_pool module.";
-    }
+  ProtoAPIDescriptorDatabase(PyObject* py_pool) : pool_(py_pool) {};
 
-    pool_ = PyObject_CallMethod(descriptor_pool, "Default", nullptr);
-    if (pool_ == nullptr) {
-      ABSL_LOG(ERROR) << "Failed to get python Default pool.";
-    }
-    Py_DECREF(descriptor_pool);
-  };
-
-  ~ProtoAPIDescriptorDatabase() {
-    // Objects of this class are meant to be `static`ally initialized and
-    // never destroyed. This is a commonly used approach, because the order
-    // in which destructors of static objects run is unpredictable. In
-    // particular, it is possible that the Python interpreter may have been
-    // finalized already.
-    ABSL_DLOG(ERROR) << "MEANT TO BE UNREACHABLE.";
-  };
+  ~ProtoAPIDescriptorDatabase() {};
 
   bool FindFileByName(StringViewArg filename,
                       google::protobuf::FileDescriptorProto* output) override {
@@ -112,52 +92,150 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
   PyObject* pool_;
 };
 
+struct DescriptorPoolState {
+  // clang-format off
+  PyObject_HEAD
+
+  std::unique_ptr<google::protobuf::DescriptorPool> pool;
+  std::unique_ptr<ProtoAPIDescriptorDatabase> database;
+};
+
+void DeallocDescriptorPoolState (DescriptorPoolState* self) {
+  self->database.reset();
+  self->pool.reset();
+  Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+PyTypeObject PyDescriptorPoolState_Type = {
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".DescriptorPoolState",       //  tp_name
+    sizeof(DescriptorPoolState),  //  tp_basicsize
+    0,                            //  tp_itemsize
+    (destructor)DeallocDescriptorPoolState,   //  tp_dealloc
+    0,                            //  tp_vectorcall_offset
+    nullptr,                      //  tp_getattr
+    nullptr,                      //  tp_setattr
+    nullptr,                      //  tp_compare
+    nullptr,                      //  tp_repr
+    nullptr,                      //  tp_as_number
+    nullptr,                      //  tp_as_sequence
+    nullptr,                      //  tp_as_mapping
+    PyObject_HashNotImplemented,  //  tp_hash
+    nullptr,                      //  tp_call
+    nullptr,                      //  tp_str
+    nullptr,                      //  tp_getattro
+    nullptr,                      //  tp_setattro
+    nullptr,                      //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,           //  tp_flags
+    "DescriptorPoolState",        //  tp_doc
+};
+
+PyObject* PyDescriptorPoolState_New(PyObject* pyfile_pool) {
+  PyObject* pypool_state = PyType_GenericAlloc(&PyDescriptorPoolState_Type, 0);
+  if (pypool_state == nullptr) {
+    PyErr_SetString(PyExc_MemoryError,
+                    "Fail to new PyDescriptorPoolState_Type");
+    return nullptr;
+  }
+  DescriptorPoolState* pool_state =
+      reinterpret_cast<DescriptorPoolState*>(pypool_state);
+  pool_state->database =
+      std::make_unique<ProtoAPIDescriptorDatabase>(pyfile_pool);
+  pool_state->pool =
+      std::make_unique<google::protobuf::DescriptorPool>(pool_state->database.get());
+  return pypool_state;
+}
+
+PyObject* InitAndGetPoolMap() {
+#if PY_VERSION_HEX >= 0x030C0000
+  // Returns a WeakKeyDictionary. The key will be a python pool and
+  // the value will be PyDescriptorPoolState_Type.
+  // PyDescriptorPoolState_Type should be ready for the usage.
+  if (PyType_Ready(&PyDescriptorPoolState_Type) < 0) {
+    return nullptr;
+  }
+  PyObject* weakref = PyImport_ImportModule("weakref");
+  PyObject* pypool_map =
+      PyObject_CallMethod(weakref, "WeakKeyDictionary", NULL);
+  Py_DECREF(weakref);
+  return pypool_map;
+#else
+  return PyDict_New();
+#endif
+}
+
 absl::StatusOr<const google::protobuf::Descriptor*> FindMessageDescriptor(
     PyObject* pyfile, const char* descriptor_full_name) {
-  static auto* database = new ProtoAPIDescriptorDatabase();
-  static auto* pool = new google::protobuf::DescriptorPool(database);
-  PyObject* pyfile_name = PyObject_GetAttrString(pyfile, "name");
+  static PyObject* pypool_map = InitAndGetPoolMap();
+  if (pypool_map == nullptr) {
+    return absl::InternalError("Fail to create pypool_map");
+  }
+  PyObject* pyfile_name = nullptr;
+  PyObject* pyfile_pool = nullptr;
+  PyObject* pypool_state = nullptr;
+  google::protobuf::DescriptorPool* pool;
+  DescriptorPoolState* pool_state;
+  const char* pyfile_name_char_ptr;
+  const google::protobuf::FileDescriptor* file_descriptor;
+  absl::StatusOr<const google::protobuf::Descriptor*> ret;
+
+  pyfile_name = PyObject_GetAttrString(pyfile, "name");
   if (pyfile_name == nullptr) {
-    return absl::InvalidArgumentError("FileDescriptor has no attribute 'name'");
+    ret = absl::InvalidArgumentError("FileDescriptor has no attribute 'name'");
+    goto err;
   }
-  PyObject* pyfile_pool = PyObject_GetAttrString(pyfile, "pool");
+  pyfile_pool = PyObject_GetAttrString(pyfile, "pool");
   if (pyfile_pool == nullptr) {
-    Py_DECREF(pyfile_name);
-    return absl::InvalidArgumentError("FileDescriptor has no attribute 'pool'");
+    ret = absl::InvalidArgumentError("FileDescriptor has no attribute 'pool'");
+    goto err;
   }
-  // Check the file descriptor is from generated pool.
-  bool is_from_generated_pool = database->pool() == pyfile_pool;
-  Py_DECREF(pyfile_pool);
-  const char* pyfile_name_char_ptr = PyUnicode_AsUTF8(pyfile_name);
+
+  pypool_state = PyObject_GetItem(pypool_map, pyfile_pool);
+  if (pypool_state == nullptr) {
+    if (PyErr_ExceptionMatches(PyExc_KeyError)) {
+      // Ignore the KeyError
+      PyErr_Clear();
+    }
+    PyErr_Print();
+    pypool_state = PyDescriptorPoolState_New(pyfile_pool);
+    if (pypool_state == nullptr) {
+      ret = absl::InternalError("Fail to create PyDescriptorPoolState_Type");
+      goto err;
+    }
+    if (PyObject_SetItem(pypool_map, pyfile_pool, pypool_state) < 0) {
+      ret = absl::InternalError(
+          "Fail to insert PyDescriptorPoolState_Type into pypool_map");
+      goto err;
+    }
+  }
+  pool_state = reinterpret_cast<DescriptorPoolState*>(pypool_state);
+  pool = pool_state->pool.get();
+  pyfile_name_char_ptr = PyUnicode_AsUTF8(pyfile_name);
   if (pyfile_name_char_ptr == nullptr) {
-    Py_DECREF(pyfile_name);
-    return absl::InvalidArgumentError(
+    ret = absl::InvalidArgumentError(
         "FileDescriptor 'name' PyUnicode_AsUTF8() failure.");
+    goto err;
   }
-  if (!is_from_generated_pool) {
-    std::string error_msg = absl::StrCat(pyfile_name_char_ptr,
-                                         " is not from generated pool");
-    Py_DECREF(pyfile_name);
-    return absl::InvalidArgumentError(error_msg);
-  }
-  const google::protobuf::FileDescriptor* file_descriptor =
-      pool->FindFileByName(pyfile_name_char_ptr);
-  Py_DECREF(pyfile_name);
+  file_descriptor = pool->FindFileByName(pyfile_name_char_ptr);
   if (file_descriptor == nullptr) {
-    // Already checked the file is from generated pool above, this
-    // error should never be reached.
+    // This error should never be reached.
     ABSL_DLOG(ERROR) << "MEANT TO BE UNREACHABLE.";
     std::string error_msg = absl::StrCat("Fail to find/build file ",
                                          pyfile_name_char_ptr);
-    return absl::InternalError(error_msg);
+    ret = absl::InternalError(error_msg);
+    goto err;
   }
 
-  const google::protobuf::Descriptor* descriptor =
-      pool->FindMessageTypeByName(descriptor_full_name);
-  if (descriptor == nullptr) {
-    return absl::InternalError("Fail to find descriptor by name.");
+  ret = pool->FindMessageTypeByName(descriptor_full_name);
+  if (ret.value() == nullptr) {
+    ret = absl::InternalError("Fail to find descriptor by name.");
   }
-  return descriptor;
+
+err:
+  Py_XDECREF(pyfile_name);
+  Py_XDECREF(pyfile_pool);
+  Py_XDECREF(pypool_state);
+  return ret;
 }
 
 google::protobuf::DynamicMessageFactory* GetFactory() {
@@ -199,8 +277,8 @@ absl::StatusOr<google::protobuf::Message*> CreateNewMessage(PyObject* py_msg) {
   }
   auto d = FindMessageDescriptor(pyfile, descriptor_full_name);
   Py_DECREF(pyfile);
-  RETURN_IF_ERROR(d.status());
   Py_DECREF(fn);
+  RETURN_IF_ERROR(d.status());
   return GetFactory()->GetPrototype(*d)->New();
 }
 
