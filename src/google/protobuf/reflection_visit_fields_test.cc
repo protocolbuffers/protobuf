@@ -27,8 +27,6 @@ namespace protobuf {
 namespace internal {
 namespace {
 
-#ifdef __cpp_if_constexpr
-
 using ::proto2_unittest::NestedTestAllTypes;
 using ::proto2_unittest::TestAllExtensions;
 using ::proto2_unittest::TestAllTypes;
@@ -464,8 +462,6 @@ TEST(ReflectionVisitTest, VisitMapAfterMutableRepeated) {
   EXPECT_THAT(key_val_pairs, testing::UnorderedElementsAre(
                                  testing::Pair(0, 200), testing::Pair(1, 200)));
 }
-
-#endif  // __cpp_if_constexpr
 
 }  // namespace
 }  // namespace internal

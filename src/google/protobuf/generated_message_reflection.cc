@@ -1369,7 +1369,6 @@ void Reflection::MaybePoisonAfterClear(Message& root) const {
   bool heap_alloc = root.GetArena() == nullptr;
   std::vector<MemBlock> nodes;
 
-#ifdef __cpp_if_constexpr
   nodes.emplace_back(root);
 
   std::queue<Message*> queue;
@@ -1389,7 +1388,6 @@ void Reflection::MaybePoisonAfterClear(Message& root) const {
       queue.push(&msg);
     });
   }
-#endif
 
   root.Clear();
 

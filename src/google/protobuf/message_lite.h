@@ -888,12 +888,7 @@ class PROTOBUF_EXPORT MessageLite {
   }
   template <typename T>
   static constexpr internal::MessageCreator GetNewImpl() {
-#if defined(__cpp_if_constexpr)
     if constexpr (internal::EnableCustomNewFor<T>()) {
-#else
-    // Equally valid code, but might be more work for the compiler
-    if (internal::EnableCustomNewFor<T>()) {
-#endif
       return T::InternalNewImpl_();
     } else {
       return internal::MessageCreator(&T::PlacementNew_, sizeof(T), alignof(T));
