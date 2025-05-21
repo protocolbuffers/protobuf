@@ -632,7 +632,7 @@ class PROTOBUF_EXPORT Reflection final {
     friend class Reflection;
 
     absl::string_view CopyFromCord(const absl::Cord& cord) {
-      if (std::optional<absl::string_view> flat = cord.TryFlat()) {
+      if (auto flat = cord.TryFlat()) {
         return *flat;
       }
       if (!buffer_) {

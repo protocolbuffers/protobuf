@@ -434,7 +434,7 @@ struct SourceWrapper<absl::Cord> {
   template <bool alias>
   bool MergeInto(MessageLite* msg, const internal::TcParseTableBase* tc_table,
                  MessageLite::ParseFlags parse_flags) const {
-    std::optional<absl::string_view> flat = cord->TryFlat();
+    auto flat = cord->TryFlat();
     if (flat && flat->size() <= ParseContext::kMaxCordBytesToCopy) {
       return MergeFromImpl<alias>(*flat, msg, tc_table, parse_flags);
     } else {
