@@ -543,6 +543,7 @@ bool MessageDifferencer::Compare(const Message& message1,
   bool result = false;
   // Setup the internal reporter if need be.
   if (output_string_) {
+    LOG(WARNING) << "debug output_string_";
     io::StringOutputStream output_stream(output_string_);
     StreamReporter reporter(&output_stream);
     reporter.SetMessages(message1, message2);
@@ -550,8 +551,10 @@ bool MessageDifferencer::Compare(const Message& message1,
     result = Compare(message1, message2, false, &parent_fields);
     reporter_ = nullptr;
   } else {
+    LOG(WARNING) << "debug not output_string_";
     result = Compare(message1, message2, false, &parent_fields);
   }
+  LOG(WARNING) << "debug result: " << result;
   return result;
 }
 
@@ -645,7 +648,7 @@ bool MessageDifferencer::Compare(const Message& message1,
       RetrieveFields(message1, true);
   std::vector<const FieldDescriptor*> message2_fields =
       RetrieveFields(message2, false);
-
+  LOG(WARNING) << "debug end";
   return CompareRequestedFieldsUsingSettings(message1, message2, unpacked_any,
                                              message1_fields, message2_fields,
                                              parent_fields) &&
@@ -689,7 +692,9 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
     const std::vector<const FieldDescriptor*>& message2_fields,
     std::vector<SpecificField>* parent_fields) {
   if (scope_ == FULL) {
+    LOG(WARNING) << "debug full";
     if (message_field_comparison_ == EQUIVALENT) {
+      LOG(WARNING) << "debug equivalent";
       // We need to merge the field lists of both messages (i.e.
       // we are merely checking for a difference in field values,
       // rather than the addition or deletion of fields).
@@ -699,13 +704,16 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
                                        fields_union, fields_union,
                                        parent_fields);
     } else {
+      LOG(WARNING) << "debug not equivalent";
       // Simple equality comparison, use the unaltered field lists.
       return CompareWithFieldsInternal(message1, message2, unpacked_any,
                                        message1_fields, message2_fields,
                                        parent_fields);
     }
   } else {
+    LOG(WARNING) << "debug not full";
     if (message_field_comparison_ == EQUIVALENT) {
+      LOG(WARNING) << "debug equivalent123";
       // We use the list of fields for message1 for both messages when
       // comparing.  This way, extra fields in message2 are ignored,
       // and missing fields in message2 use their default value.
@@ -713,6 +721,7 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
                                        message1_fields, message1_fields,
                                        parent_fields);
     } else {
+      LOG(WARNING) << "debug not equivalent123";
       // We need to consider the full list of fields for message1
       // but only the intersection for message2.  This way, any fields
       // only present in message2 will be ignored, but any fields only
