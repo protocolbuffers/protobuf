@@ -1,3 +1,4 @@
 protoc
 protoc-gen-upb
+protoc-gen-upb_minitable
 protoc-gen-upbdefs

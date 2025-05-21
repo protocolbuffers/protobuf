@@ -14,22 +14,17 @@ load(
 )
 
 _stages = ["_stage0", "_stage1", ""]
+_protoc = "//src/google/protobuf/compiler:protoc_minimal"
 
-_protoc = "//:protoc_stage0"
-
-_extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
+_extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
-    # TODO: b/396430482 - Remove protoc from bootstrap visibility.
-    "//src/google/protobuf/compiler:__pkg__",
-    "//src/google/protobuf/compiler/rust:__pkg__",
     "//third_party/upb/github:__pkg__",
     "//upb_generator:__subpackages__",
     "//upb/reflection:__pkg__",
     "//upb:__pkg__",  # For the amalgamations.
     "//python/dist:__pkg__",  # For the Python source package.
-    "//:__pkg__",  # For protoc
 ]
 
 def _stage_visibility(stage, visibility):
