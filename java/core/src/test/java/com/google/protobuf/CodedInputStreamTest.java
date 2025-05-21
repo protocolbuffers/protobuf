@@ -679,7 +679,7 @@ public class CodedInputStreamTest {
     }
   }
 
-  /*
+  /**
    * @return A serialized big message.
    */
   private static byte[] getBigSerializedMessage() {
