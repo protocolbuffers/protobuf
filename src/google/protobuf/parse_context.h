@@ -279,6 +279,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // call Done for further checks.
   bool DataAvailable(const char* ptr) { return ptr < limit_end_; }
 
+
  protected:
   // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
