@@ -890,7 +890,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       case BOOL:
         return CodedOutputStream.computeBoolSizeNoTag((Boolean) value);
       case GROUP:
-        return CodedOutputStream.computeGroupSizeNoTag((MessageLite) value);
+        return ((MessageLite) value).getSerializedSize();
       case BYTES:
         if (value instanceof ByteString) {
           return CodedOutputStream.computeBytesSizeNoTag((ByteString) value);
