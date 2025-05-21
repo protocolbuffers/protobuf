@@ -1030,7 +1030,6 @@ def _DecodeUnknownField(buffer, pos, wire_type, current_depth=0):
     data = buffer[pos:pos+size].tobytes()
     pos += size
   elif wire_type == wire_format.WIRETYPE_START_GROUP:
-    print("MMP " + str(current_depth))
     current_depth += 1
     if current_depth >= _recursion_limit:
       raise _DecodeError('Error parsing message: too many levels of nesting.')
