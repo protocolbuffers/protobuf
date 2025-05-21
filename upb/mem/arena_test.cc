@@ -106,6 +106,26 @@ static void* size_checking_allocfunc(upb_alloc* alloc, void* ptr,
   return result;
 }
 
+TEST(ArenaTest, ShinkLastAfterReallocHwasanRegression) {
+  upb_Arena_SetMaxBlockSize(UPB_MALLOC_ALIGN);
+  absl::Cleanup reset_max_block_size = [] {
+    upb_Arena_SetMaxBlockSize(UPB_PRIVATE(kUpbDefaultMaxBlockSize));
+  };
+
+  upb_Arena* arena = upb_Arena_Init(nullptr, 1000, &upb_alloc_global);
+  (void)upb_Arena_Malloc(arena, 1);
+  // Will force a full-size block since the initial allocated block has tons of
+  // free space and the max block size is tiny
+  void* to_realloc = upb_Arena_Malloc(arena, 2000);
+  // Realloc will retag to invalidate to_realloc
+  void* to_shrink = upb_Arena_Realloc(arena, to_realloc, 2000, 2000);
+#if UPB_HWASAN
+  EXPECT_NE(to_realloc, to_shrink);
+#endif
+  upb_Arena_ShrinkLast(arena, to_shrink, 2000, 1);
+  upb_Arena_Free(arena);
+}
+
 TEST(ArenaTest, SizedFree) {
   absl::flat_hash_map<void*, Size> sizes;
   SizeTracker alloc;

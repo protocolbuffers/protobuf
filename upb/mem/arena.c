@@ -862,6 +862,7 @@ bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {
   block = block->next;
   if (block == NULL) return false;
   char* start = UPB_PTR_AT(block, kUpb_MemblockReserve, char);
-  return ptr == start && UPB_PRIVATE(_upb_Arena_AllocSpan)(oldsize) ==
-                             block->size_or_hint - kUpb_MemblockReserve;
+  return UPB_PRIVATE(upb_Xsan_PtrEq)(ptr, start) &&
+         UPB_PRIVATE(_upb_Arena_AllocSpan)(oldsize) ==
+             block->size_or_hint - kUpb_MemblockReserve;
 }
