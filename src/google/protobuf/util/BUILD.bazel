@@ -104,7 +104,6 @@ cc_test(
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/functional:bind_front",
         "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -127,7 +126,6 @@ cc_library(
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/log:die_if_null",
-        "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings",
     ],
 )
