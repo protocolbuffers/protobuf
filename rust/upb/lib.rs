@@ -19,7 +19,7 @@ pub use array::{
 };
 
 mod associated_mini_table;
-pub use associated_mini_table::AssociatedMiniTable;
+pub use associated_mini_table::{AssociatedMiniTable, AssociatedMiniTableEnum};
 
 mod ctype;
 pub use ctype::CType;
@@ -41,8 +41,9 @@ pub use message_value::{upb_MessageValue, upb_MutableMessageValue};
 
 mod mini_table;
 pub use mini_table::{
-    upb_MiniTable, upb_MiniTableField, upb_MiniTable_FindFieldByNumber,
-    upb_MiniTable_GetFieldByIndex, upb_MiniTable_SubMessage, RawMiniTable, RawMiniTableField,
+    upb_MiniTable, upb_MiniTableEnum, upb_MiniTableEnum_Build, upb_MiniTableField,
+    upb_MiniTable_Build, upb_MiniTable_FindFieldByNumber, upb_MiniTable_GetFieldByIndex,
+    upb_MiniTable_Link, upb_MiniTable_SubMessage, upb_Status, RawMiniTable, RawMiniTableField,
 };
 
 mod opaque_pointee;

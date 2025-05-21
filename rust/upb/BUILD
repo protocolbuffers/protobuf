@@ -52,6 +52,7 @@ cc_library(
         "//upb:message",
         "//upb:message_compare",
         "//upb:message_copy",
+        "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/text:debug",
     ],

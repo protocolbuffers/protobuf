@@ -11,13 +11,14 @@
 #define UPB_BUILD_API
 
 // go/keep-sorted start
-#include "upb/mem/arena.h"           // IWYU pragma: keep
-#include "upb/message/accessors.h"   // IWYU pragma: keep
-#include "upb/message/array.h"       // IWYU pragma: keep
-#include "upb/message/compare.h"     // IWYU pragma: keep
-#include "upb/message/copy.h"        // IWYU pragma: keep
-#include "upb/message/map.h"         // IWYU pragma: keep
-#include "upb/message/merge.h"       // IWYU pragma: keep
-#include "upb/mini_table/message.h"  // IWYU pragma: keep
-#include "upb/text/debug_string.h"   // IWYU pragma: keep
+#include "upb/mem/arena.h"               // IWYU pragma: keep
+#include "upb/message/accessors.h"       // IWYU pragma: keep
+#include "upb/message/array.h"           // IWYU pragma: keep
+#include "upb/message/compare.h"         // IWYU pragma: keep
+#include "upb/message/copy.h"            // IWYU pragma: keep
+#include "upb/message/map.h"             // IWYU pragma: keep
+#include "upb/message/merge.h"           // IWYU pragma: keep
+#include "upb/mini_descriptor/decode.h"  // IWYU pragma: keep
+#include "upb/mini_table/message.h"      // IWYU pragma: keep
+#include "upb/text/debug_string.h"       // IWYU pragma: keep
 // go/keep-sorted end

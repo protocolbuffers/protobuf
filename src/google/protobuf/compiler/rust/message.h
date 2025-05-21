@@ -14,6 +14,7 @@
 #include "google/protobuf/compiler/rust/accessors/accessors.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/descriptor.h"
+#include "upb/reflection/def.hpp"
 
 namespace google {
 namespace protobuf {
@@ -21,7 +22,7 @@ namespace compiler {
 namespace rust {
 
 // Generates code for a particular message in `.pb.rs`.
-void GenerateRs(Context& ctx, const Descriptor& msg);
+void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool);
 
 // Generates code for a particular message in `.pb.thunk.cc`.
 void GenerateThunksCc(Context& ctx, const Descriptor& msg);

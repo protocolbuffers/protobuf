@@ -33,6 +33,18 @@ pub type RawRepeatedField = upb::RawArray;
 pub type RawMap = upb::RawMap;
 pub type PtrAndLen = upb::StringView;
 
+// This struct represents a raw minitable pointer. We need it to be Send and Sync so that we can
+// store it in a static OnceLock for lazy initialization of minitables. It should not be used for
+// any other purpose.
+pub struct MiniTablePtr(pub *mut upb_MiniTable);
+unsafe impl Send for MiniTablePtr {}
+unsafe impl Sync for MiniTablePtr {}
+
+// Same as above, but for enum minitables.
+pub struct MiniTableEnumPtr(pub *const upb_MiniTableEnum);
+unsafe impl Send for MiniTableEnumPtr {}
+unsafe impl Sync for MiniTableEnumPtr {}
+
 impl From<&ProtoStr> for PtrAndLen {
     fn from(s: &ProtoStr) -> Self {
         let bytes = s.as_bytes();
@@ -59,6 +71,12 @@ impl ScratchSpace {
         static ZEROED_BLOCK: ScratchSpace = ScratchSpace([0; UPB_SCRATCH_SPACE_BYTES]);
         NonNull::from(&ZEROED_BLOCK).cast()
     }
+}
+
+thread_local! {
+    // We need to avoid dropping this Arena, because we use it to build mini tables that
+    // effectively have 'static lifetimes.
+    pub static THREAD_LOCAL_ARENA: ManuallyDrop<Arena> = ManuallyDrop::new(Arena::new());
 }
 
 #[doc(hidden)]

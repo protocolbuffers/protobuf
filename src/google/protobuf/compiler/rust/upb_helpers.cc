@@ -4,6 +4,9 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/minitable/names.h"
 
@@ -14,6 +17,10 @@ namespace rust {
 
 std::string UpbMiniTableName(const Descriptor& msg) {
   return upb::generator::MiniTableMessageVarName(msg.full_name());
+}
+
+std::string QualifiedUpbMiniTableName(Context& ctx, const Descriptor& msg) {
+  return absl::StrCat(RustModule(ctx, msg), UpbMiniTableName(msg));
 }
 
 uint32_t UpbMiniTableFieldIndex(const FieldDescriptor& field) {

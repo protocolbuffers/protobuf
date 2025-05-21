@@ -222,7 +222,10 @@ bootstrap_cc_library(
     srcs = [
         "main.cc",
     ],
-    bootstrap_deps = ["//upb_generator/minitable:generator"],
+    bootstrap_deps = [
+        "//src/google/protobuf/compiler/rust:rust",
+        "//upb_generator/minitable:generator",
+    ],
     copts = COPTS,
     visibility = [
         "//:__pkg__",
@@ -242,7 +245,6 @@ bootstrap_cc_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
-        "//src/google/protobuf/compiler/rust",
         "@abseil-cpp//absl/log:initialize",
     ],
 )

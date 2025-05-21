@@ -7,6 +7,11 @@
 
 #include "google/protobuf/compiler/rust/message.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <vector>
+
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
@@ -19,7 +24,11 @@
 #include "google/protobuf/compiler/rust/naming.h"
 #include "google/protobuf/compiler/rust/oneof.h"
 #include "google/protobuf/compiler/rust/upb_helpers.h"
+#include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
+#include "upb/mini_descriptor/link.h"
+#include "upb/mini_table/field.h"
+#include "upb/reflection/def.hpp"
 
 namespace google {
 namespace protobuf {
@@ -73,8 +82,7 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
       return;
 
     case Kernel::kUpb:
-      ctx.Emit({{"minitable", UpbMiniTableName(msg)}},
-               R"rs(
+      ctx.Emit(R"rs(
         // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
         let encoded = unsafe {
           $pbr$::wire::encode(self.raw_msg(),
@@ -264,45 +272,134 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
-  if (ctx.opts().kernel == Kernel::kUpb) {
-    ctx.Emit({{"minitable", UpbMiniTableName(msg)}}, R"rs(
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$ {
-        #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          // This is unsafe only for Rust 1.80 and below and thus can be dropped
-          // once our MSRV is 1.81+
-          #[allow(unused_unsafe)]
-          unsafe {
-            $std$::ptr::addr_of!($minitable$)
+// Generates code for linking the message's minitable to its dependencies.
+void UpbMiniTableLinking(Context& ctx, const Descriptor& msg,
+                         upb::MessageDefPtr upb_msg, const SCC& scc) {
+  std::vector<const upb_MiniTableField*> subs;
+  subs.resize(static_cast<size_t>(msg.field_count()));
+  uint32_t counts = upb_MiniTable_GetSubList(upb_msg.mini_table(), subs.data());
+  size_t message_count = counts >> 16;
+  size_t enum_count = static_cast<uint16_t>(counts);
+  ctx.Emit(
+      {{"submessages",
+        [&] {
+          for (size_t i = 0; i < message_count; ++i) {
+            const Descriptor& m =
+                *msg.FindFieldByNumber(
+                        static_cast<int>(upb_MiniTableField_Number(subs[i])))
+                     ->message_type();
+            if (scc.Contains(m)) {
+              ctx.Emit({{"minitable_symbol_name",
+                         QualifiedUpbMiniTableName(ctx, m)}},
+                       "$minitable_symbol_name$.0,\n");
+            } else {
+              ctx.Emit({{"name", RsTypePath(ctx, m)}},
+                       "<$name$ as "
+                       "$pbr$::AssociatedMiniTable>::mini_table(),\n");
+            }
           }
-        }
-      }
+        }},
+       {"subenums",
+        [&] {
+          for (size_t i = message_count; i < message_count + enum_count; ++i) {
+            const EnumDescriptor* m =
+                msg.FindFieldByNumber(
+                       static_cast<int>(upb_MiniTableField_Number(subs[i])))
+                    ->enum_type();
+            ctx.Emit({{"name", RsTypePath(ctx, *m)}},
+                     "<$name$ as "
+                     "$pbr$::AssociatedMiniTableEnum>::"
+                     "mini_table(),\n");
+          }
+        }},
+       {"minitable_symbol_name", QualifiedUpbMiniTableName(ctx, msg)}},
+      R"rs(
+      let submessages = [
+        $submessages$
+      ];
+      let subenums = [
+        $subenums$
+      ];
+      assert!($pbr$::upb_MiniTable_Link(
+          $minitable_symbol_name$.0,
+          submessages.as_ptr() as *const *const $pbr$::upb_MiniTable,
+          submessages.len(), subenums.as_ptr(), subenums.len()));
+  )rs");
+}
 
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
-        #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          // This is unsafe only for Rust 1.80 and below and thus can be dropped
-          // once our MSRV is 1.81+
-          #[allow(unused_unsafe)]
-          unsafe {
-            $std$::ptr::addr_of!($minitable$)
+void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
+                                   const upb::DefPool& pool) {
+  if (!ctx.is_upb()) {
+    return;
+  }
+  ctx.Emit(
+      {{"name", RsSafeName(msg.name())},
+       {"mini_table_impl",
+        [&] {
+          const SCC& scc = ctx.GetSCC(msg);
+          if (scc.GetRepresentative() == &msg) {
+            for (const Descriptor* d : scc.descriptors) {
+              std::string mini_descriptor =
+                  pool.FindMessageByName(d->full_name().data())
+                      .MiniDescriptorEncode();
+              ctx.Emit({{"name", RsTypePath(ctx, *d)},
+                        {"minitable_symbol_name",
+                         QualifiedUpbMiniTableName(ctx, *d)},
+                        {"mini_descriptor", mini_descriptor},
+                        {"mini_descriptor_length", mini_descriptor.size()}},
+                       R"rs(
+                       $minitable_symbol_name$.0 =
+                           $pbr$::upb_MiniTable_Build(
+                               "$mini_descriptor$".as_ptr(),
+                               $mini_descriptor_length$,
+                               $pbr$::THREAD_LOCAL_ARENA.with(|a| a.raw()),
+                               $std$::ptr::null_mut());
+              )rs");
+            }
+            for (const Descriptor* d : scc.descriptors) {
+              UpbMiniTableLinking(
+                  ctx, *d, pool.FindMessageByName(d->full_name().data()), scc);
+            }
+          } else {
+            ctx.Emit(
+                {{"representative", RsTypePath(ctx, *scc.GetRepresentative())}},
+                "<$representative$ as "
+                "$pbr$::AssociatedMiniTable>::mini_table();\n");
           }
-        }
-      }
-
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
-        #[inline(always)]
+        }},
+       {"minitable_symbol_name", QualifiedUpbMiniTableName(ctx, msg)}},
+      // We currently synchronize the minitable initialization using a
+      // OnceLock, but we could instead use CAS if we ever want to make this
+      // lock-free.
+      R"rs(
+      unsafe impl $pbr$::AssociatedMiniTable for $name$ {
         fn mini_table() -> *const $pbr$::upb_MiniTable {
-          // This is unsafe only for Rust 1.80 and below and thus can be dropped
-          // once our MSRV is 1.81+
-          #[allow(unused_unsafe)]
-          unsafe {
-            $std$::ptr::addr_of!($minitable$)
-          }
+          static ONCE_LOCK: $std$::sync::OnceLock<$pbr$::MiniTablePtr> =
+              $std$::sync::OnceLock::new();
+          ONCE_LOCK.get_or_init(|| unsafe {
+            $mini_table_impl$
+            $pbr$::MiniTablePtr($minitable_symbol_name$.0)
+          }).0
         }
       }
     )rs");
+
+  if (!msg.options().map_entry()) {
+    ctx.Emit(R"rs(
+        unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
+          #[inline(always)]
+          fn mini_table() -> *const $pbr$::upb_MiniTable {
+            <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
+          }
+        }
+
+        unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
+          #[inline(always)]
+          fn mini_table() -> *const $pbr$::upb_MiniTable {
+            <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
+          }
+        }
+      )rs");
   }
 }
 
@@ -699,11 +796,36 @@ void GenerateDefaultInstanceImpl(Context& ctx, const Descriptor& msg) {
 
 }  // namespace
 
-void GenerateRs(Context& ctx, const Descriptor& msg) {
-  if (msg.map_key() != nullptr) {
-    // Don't generate code for synthetic MapEntry messages.
+void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
+  if (ctx.is_upb()) {
+    ctx.Emit({{"minitable_symbol_name", UpbMiniTableName(msg)}},
+             R"rs(
+        // This variable must not be referenced except by protobuf generated
+        // code.
+        pub(crate) static mut $minitable_symbol_name$: $pbr$::MiniTablePtr =
+            $pbr$::MiniTablePtr($std$::ptr::null_mut());
+    )rs");
+  }
+
+  if (msg.options().map_entry()) {
+    if (ctx.is_upb()) {
+      // Map entry messages are an implementation detail, so we restrict their
+      // visibility. The only reason we generate anything for them at all is
+      // that it is useful to have map entries implement the
+      // AssociatedMiniTable trait.
+      ctx.Emit({{"Msg", RsSafeName(msg.name())},
+                {"upb_generated_message_trait_impls",
+                 [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }}},
+               R"rs(
+          pub(super) struct $Msg$;
+
+          $upb_generated_message_trait_impls$
+      )rs");
+    }
     return;
   }
+
+  upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name().data());
   ctx.Emit(
       {
           {"Msg", RsSafeName(msg.name())},
@@ -747,13 +869,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
                  {{"nested_msgs",
                    [&] {
                      for (int i = 0; i < msg.nested_type_count(); ++i) {
-                       GenerateRs(ctx, *msg.nested_type(i));
+                       GenerateRs(ctx, *msg.nested_type(i), pool);
                      }
                    }},
                   {"nested_enums",
                    [&] {
                      for (int i = 0; i < msg.enum_type_count(); ++i) {
-                       GenerateEnumDefinition(ctx, *msg.enum_type(i));
+                       GenerateEnumDefinition(ctx, *msg.enum_type(i),
+                                              upb_msg.enum_type(i));
                      }
                    }},
                   {"oneofs",
@@ -812,7 +935,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
            }},
           {"into_proxied_impl", [&] { IntoProxiedForMessage(ctx, msg); }},
           {"upb_generated_message_trait_impls",
-           [&] { UpbGeneratedMessageTraitImpls(ctx, msg); }},
+           [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }},
           {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
           {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
           {"unwrap_upb",
@@ -1219,16 +1342,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg) {
           $oneof_externs$
         }
     )rs");
-  } else {
-    ctx.Emit({{"minitable_symbol_name", UpbMiniTableName(msg)}},
-             R"rs(
-          extern "C" {
-            /// Opaque static extern for this message's MiniTable, generated
-            /// by the upb C MiniTable codegen. The only valid way to
-            /// reference this static is with `std::ptr::addr_of!(..)`.
-            static $minitable_symbol_name$: $pbr$::upb_MiniTable;
-          }
-      )rs");
   }
 
   ctx.printer().PrintRaw("\n");

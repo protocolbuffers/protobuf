@@ -116,10 +116,6 @@ def _rust_upb_aspect_test_impl(ctx):
     # The action needs to produce a .rlib artifact (sometimes .rmeta as well, not tested here).
     asserts.true(env, rustc_action.outputs.to_list()[0].path.endswith(".rlib"))
 
-    # The aspect needs to provide CcInfo that passes UPB gencode to the eventual linking.
-    _find_linker_input(target_under_test[RustProtoInfo], "child.upb_minitable")
-    _find_linker_input(target_under_test[RustProtoInfo], "parent.upb_minitable")
-
     return analysistest.end(env)
 
 rust_upb_aspect_test = analysistest.make(_rust_upb_aspect_test_impl)

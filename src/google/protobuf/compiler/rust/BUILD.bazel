@@ -11,11 +11,21 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load(
+    "//upb_generator:bootstrap_compiler.bzl",
+    "bootstrap_cc_library",
+)
 
-cc_library(
+bootstrap_cc_library(
     name = "rust",
     srcs = ["generator.cc"],
     hdrs = ["generator.h"],
+    bootstrap_deps = [
+        ":enum",
+        ":message",
+        "//upb/reflection:reflection",
+        "//upb_generator:plugin",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
@@ -25,8 +35,6 @@ cc_library(
     deps = [
         ":context",
         ":crate_mapping",
-        ":enum",
-        ":message",
         ":naming",
         ":relative_path",
         "//src/google/protobuf",
@@ -36,6 +44,7 @@ cc_library(
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
+        "//upb/mem",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_map",
@@ -83,22 +92,28 @@ cc_test(
     ],
 )
 
-cc_library(
+bootstrap_cc_library(
     name = "message",
     srcs = ["message.cc"],
     hdrs = ["message.h"],
+    bootstrap_deps = [
+        ":enum",
+        "//upb/reflection:reflection",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
         ":context",
-        ":enum",
         ":naming",
         ":oneof",
         ":upb_helpers",
         "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf/compiler/cpp:names_internal",
         "//src/google/protobuf/compiler/rust/accessors",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
@@ -130,10 +145,13 @@ cc_library(
     ],
 )
 
-cc_library(
+bootstrap_cc_library(
     name = "enum",
     srcs = ["enum.cc"],
     hdrs = ["enum.h"],
+    bootstrap_deps = [
+        "//upb/reflection:reflection",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
@@ -260,8 +278,11 @@ cc_library(
         "//src/google/protobuf/compiler/rust:__subpackages__",
     ],
     deps = [
+        ":context",
+        ":naming",
         "//src/google/protobuf",
         "//upb_generator/minitable:names",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
     ],
 )
