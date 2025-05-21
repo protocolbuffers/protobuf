@@ -398,6 +398,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
  protected:
   friend class MapFieldBase;
   friend class TcParser;
+  friend class v2::TableDrivenParse;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
@@ -697,6 +698,7 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
   friend class v2::TableDriven;
+  friend class v2::TableDrivenParse;
 
   Key* GetKey(NodeBase* node) const {
     return UntypedMapBase::GetKey<Key>(node);
