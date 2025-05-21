@@ -202,6 +202,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
   return total_size;
 }
 
+
 size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }

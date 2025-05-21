@@ -393,6 +393,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   size_t MaybeComputeUnknownFieldsSize(
       size_t total_size, const internal::CachedSize* cached_size) const;
 
+
   // Reflection based version for reflection based types.
   static absl::string_view GetTypeNameImpl(const internal::ClassData* data);
   static void MergeImpl(MessageLite& to, const MessageLite& from);
