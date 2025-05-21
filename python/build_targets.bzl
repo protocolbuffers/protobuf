@@ -336,6 +336,12 @@ def build_targets(name):
     )
 
     internal_py_test(
+        name = "decoder_test",
+        srcs = ["google/protobuf/internal/decoder_test.py"],
+        data = ["//src/google/protobuf:testdata"],
+    )
+
+    internal_py_test(
         name = "proto_builder_test",
         srcs = ["google/protobuf/internal/proto_builder_test.py"],
     )
