@@ -9,12 +9,12 @@
 #define GOOGLE_PROTOBUF_CONFORMANCE_FAILURE_LIST_TRIE_NODE_H__
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 
 namespace google {
 namespace protobuf {
@@ -52,8 +52,8 @@ class FailureListTrieNode {
   absl::Status Insert(absl::string_view test_name);
 
   // Returns what it matched to if it matched anything, otherwise returns
-  // absl::nullopt
-  absl::optional<std::string> WalkDownMatch(absl::string_view test_name);
+  // std::nullopt
+  std::optional<std::string> WalkDownMatch(absl::string_view test_name);
 
  private:
   std::string data_;

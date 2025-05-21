@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <variant>
@@ -25,7 +26,6 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -215,7 +215,7 @@ class UntypedMessage final {
   explicit UntypedMessage(const ResolverPool::Message* desc) : desc_(desc) {}
 
   absl::Status Decode(io::CodedInputStream& stream,
-                      absl::optional<int32_t> current_group = absl::nullopt);
+                      std::optional<int32_t> current_group = std::nullopt);
 
   absl::Status DecodeVarint(io::CodedInputStream& stream,
                             const ResolverPool::Field& field);

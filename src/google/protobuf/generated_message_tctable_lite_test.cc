@@ -5,18 +5,19 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <optional>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -28,7 +29,6 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
-
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -54,11 +54,12 @@ TcFieldData Xor2SerializedBytes(TcFieldData tfd, const char* ptr) {
   return tfd;
 }
 
-absl::optional<const char*> fallback_ptr_received;
-absl::optional<uint64_t> fallback_hasbits_received;
-absl::optional<uint64_t> fallback_tag_received;
+std::optional<const char*> fallback_ptr_received;
+std::optional<uint64_t> fallback_hasbits_received;
+std::optional<uint64_t> fallback_tag_received;
 PROTOBUF_CC const char* FastParserGaveUp(
-    ::google::protobuf::MessageLite*, const char* ptr, ::google::protobuf::internal::ParseContext*,
+    ::google::protobuf::MessageLite*, const char* ptr,
+    ::google::protobuf::internal::ParseContext*,
     ::google::protobuf::internal::TcFieldData data,
     const ::google::protobuf::internal::TcParseTableBase*, uint64_t hasbits) {
   fallback_ptr_received = ptr;
@@ -201,9 +202,9 @@ TEST(FastVarints, NameHere) {
             fn = &TcParser::FastV64S1;
             break;
         }
-        fallback_ptr_received = absl::nullopt;
-        fallback_hasbits_received = absl::nullopt;
-        fallback_tag_received = absl::nullopt;
+        fallback_ptr_received = std::nullopt;
+        fallback_hasbits_received = std::nullopt;
+        fallback_tag_received = std::nullopt;
         end_ptr = fn(reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
                      Xor2SerializedBytes(parse_table.fast_entries[0].bits, ptr),
                      &parse_table.header, /*hasbits=*/0);
@@ -984,7 +985,6 @@ TEST(GeneratedMessageTctableLiteTest,
   proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }
-
 
 }  // namespace internal
 }  // namespace protobuf

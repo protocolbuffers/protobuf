@@ -13,9 +13,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -35,11 +35,11 @@ enum TransformValidation : uint16_t;
 PROTOBUF_EXPORT uint32_t
 GetRecodedTagForFastParsing(const FieldDescriptor* field);
 
-PROTOBUF_EXPORT absl::optional<uint32_t> GetEndGroupTag(
+PROTOBUF_EXPORT std::optional<uint32_t> GetEndGroupTag(
     const Descriptor* descriptor);
 
 PROTOBUF_EXPORT uint32_t
-FastParseTableSize(size_t num_fields, absl::optional<uint32_t> end_group_tag);
+FastParseTableSize(size_t num_fields, std::optional<uint32_t> end_group_tag);
 
 PROTOBUF_EXPORT bool IsFieldTypeEligibleForFastParsing(
     const FieldDescriptor* field);

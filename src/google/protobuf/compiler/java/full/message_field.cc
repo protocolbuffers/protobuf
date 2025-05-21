@@ -187,7 +187,7 @@ void ImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
     const char* trailing_code,
-    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
+    std::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
   printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");
@@ -856,7 +856,7 @@ void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
     const char* trailing_code,
-    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
+    std::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
   printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");

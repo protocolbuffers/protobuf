@@ -66,7 +66,7 @@
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
-#include "absl/types/optional.h"
+#include <optional>
 #include "absl/types/span.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/cpp_edition_defaults.h"
@@ -4497,7 +4497,7 @@ class DescriptorBuilder {
   DescriptorPool::DeferredValidation& deferred_validation_;
   DescriptorPool::ErrorCollector* error_collector_;
 
-  absl::optional<FeatureResolver> feature_resolver_ = absl::nullopt;
+  std::optional<FeatureResolver> feature_resolver_ = std::nullopt;
 
   // As we build descriptors we store copies of the options messages in
   // them. We put pointers to those copies in this vector, as we build, so we
@@ -8921,7 +8921,7 @@ void DescriptorBuilder::ValidateOptions(
 namespace {
 // Validates that a fully-qualified symbol for extension declaration must
 // have a leading dot and valid identifiers.
-absl::optional<std::string> ValidateSymbolForDeclaration(
+std::optional<std::string> ValidateSymbolForDeclaration(
     absl::string_view symbol) {
   if (!absl::StartsWith(symbol, ".")) {
     return absl::StrCat("\"", symbol,
@@ -8931,7 +8931,7 @@ absl::optional<std::string> ValidateSymbolForDeclaration(
   if (!ValidateQualifiedName(symbol)) {
     return absl::StrCat("\"", symbol, "\" contains invalid identifiers.");
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 }  // namespace
 
@@ -8985,7 +8985,7 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
             });
         return;
       }
-      absl::optional<std::string> err =
+      std::optional<std::string> err =
           ValidateSymbolForDeclaration(declaration.full_name());
       if (err.has_value()) {
         AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
