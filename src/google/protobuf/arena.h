@@ -65,6 +65,10 @@ class ReflectionTester;  // defined in test_util.h
 
 namespace internal {
 
+namespace v2 {
+class TableDrivenParse;
+}
+
 struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
 class LazyField;             // defined in lazy_field.h
@@ -625,6 +629,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class internal::LazyField;         // For DefaultConstruct.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
+  friend class internal::v2::TableDrivenParse;  // For parser performance
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;
