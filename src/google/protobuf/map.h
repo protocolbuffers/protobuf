@@ -292,6 +292,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   struct TypeInfo {
     // Equivalent to `sizeof(Node)` in the derived type.
     uint16_t node_size;
+    uint16_t kv_size() const { return node_size - sizeof(NodeBase*); }
     // Equivalent to `offsetof(Node, kv.second)` in the derived type.
     uint8_t value_offset;
     uint8_t key_type : 4;
@@ -398,6 +399,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
  protected:
   friend class MapFieldBase;
   friend class TcParser;
+  friend class v2::TableDrivenParse;
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
@@ -697,6 +699,7 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
   friend class v2::TableDriven;
+  friend class v2::TableDrivenParse;
 
   Key* GetKey(NodeBase* node) const {
     return UntypedMapBase::GetKey<Key>(node);
