@@ -333,7 +333,7 @@ public class TextFormatTest {
             .addRepeatedBytes(bytes("\0\001\007\b\f\n\r\t\013\\\'\"\u00fe"))
             .build();
 
-    assertThat(message.toString()).isEqualTo(CANONICAL_EXOTIC_TEXT);
+    assertThat(TextFormat.printer().printToString(message)).isEqualTo(CANONICAL_EXOTIC_TEXT);
   }
 
   @Test
@@ -345,7 +345,7 @@ public class TextFormatTest {
             .setOptionalNestedEnum(NestedEnum.BAZ)
             .build();
     TestProto3Optional.Builder message2 = TestProto3Optional.newBuilder();
-    TextFormat.merge(message.toString(), message2);
+    TextFormat.merge(TextFormat.printer().printToString(message), message2);
 
     assertThat(message2.hasOptionalInt32()).isTrue();
     assertThat(message2.hasOptionalInt64()).isTrue();
@@ -367,7 +367,7 @@ public class TextFormatTest {
                 TestMessageSetExtension2.newBuilder().setStr("foo").build())
             .build();
 
-    assertThat(messageSet.toString()).isEqualTo(MESSAGE_SET_TEXT);
+    assertThat(TextFormat.printer().printToString(messageSet)).isEqualTo(MESSAGE_SET_TEXT);
   }
 
   // =================================================================
@@ -387,31 +387,36 @@ public class TextFormatTest {
   @Test
   public void testMergeInitialized() throws Exception {
     TestRequired.Builder builder = TestRequired.newBuilder();
-    TextFormat.merge(TEST_REQUIRED_INITIALIZED.toString(), builder);
-    assertThat(builder.buildPartial().toString()).isEqualTo(TEST_REQUIRED_INITIALIZED.toString());
+    TextFormat.merge(TextFormat.printer().printToString(TEST_REQUIRED_INITIALIZED), builder);
+    assertThat(TextFormat.printer().printToString(builder.buildPartial()))
+        .isEqualTo(TextFormat.printer().printToString(TEST_REQUIRED_INITIALIZED));
     assertThat(builder.isInitialized()).isTrue();
   }
 
   @Test
   public void testParseInitialized() throws Exception {
     TestRequired parsed =
-        TextFormat.parse(TEST_REQUIRED_INITIALIZED.toString(), TestRequired.class);
-    assertThat(parsed.toString()).isEqualTo(TEST_REQUIRED_INITIALIZED.toString());
+        TextFormat.parse(
+            TextFormat.printer().printToString(TEST_REQUIRED_INITIALIZED), TestRequired.class);
+    assertThat(TextFormat.printer().printToString(parsed))
+        .isEqualTo(TextFormat.printer().printToString(TEST_REQUIRED_INITIALIZED));
     assertThat(parsed.isInitialized()).isTrue();
   }
 
   @Test
   public void testMergeUninitialized() throws Exception {
     TestRequired.Builder builder = TestRequired.newBuilder();
-    TextFormat.merge(TEST_REQUIRED_UNINITIALIZED.toString(), builder);
-    assertThat(builder.buildPartial().toString()).isEqualTo(TEST_REQUIRED_UNINITIALIZED.toString());
+    TextFormat.merge(TextFormat.printer().printToString(TEST_REQUIRED_UNINITIALIZED), builder);
+    assertThat(TextFormat.printer().printToString(builder.buildPartial()))
+        .isEqualTo(TextFormat.printer().printToString(TEST_REQUIRED_UNINITIALIZED));
     assertThat(builder.isInitialized()).isFalse();
   }
 
   @Test
   public void testParseUninitialized() throws Exception {
     try {
-      TextFormat.parse(TEST_REQUIRED_UNINITIALIZED.toString(), TestRequired.class);
+      TextFormat.parse(
+          TextFormat.printer().printToString(TEST_REQUIRED_UNINITIALIZED), TestRequired.class);
       assertWithMessage("Expected UninitializedMessageException.").fail();
     } catch (UninitializedMessageException e) {
       assertThat(e).hasMessageThat().isEqualTo("Message missing required fields: b, c");
@@ -474,10 +479,11 @@ public class TextFormatTest {
     // Test merge().
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(original, builder);
-    assertThat(builder.build().toString()).isEqualTo(canonical);
+    assertThat(TextFormat.printer().printToString(builder.build())).isEqualTo(canonical);
 
     // Test parse().
-    assertThat(TextFormat.parse(original, TestAllTypes.class).toString()).isEqualTo(canonical);
+    assertThat(TextFormat.printer().printToString(TextFormat.parse(original, TestAllTypes.class)))
+        .isEqualTo(canonical);
   }
 
   @Test
@@ -487,8 +493,10 @@ public class TextFormatTest {
 
     // Too lazy to check things individually.  Don't try to debug this
     // if testPrintExotic() is failing.
-    assertThat(builder.build().toString()).isEqualTo(CANONICAL_EXOTIC_TEXT);
-    assertThat(TextFormat.parse(EXOTIC_TEXT, TestAllTypes.class).toString())
+    assertThat(TextFormat.printer().printToString(builder.build()))
+        .isEqualTo(CANONICAL_EXOTIC_TEXT);
+    assertThat(
+            TextFormat.printer().printToString(TextFormat.parse(EXOTIC_TEXT, TestAllTypes.class)))
         .isEqualTo(CANONICAL_EXOTIC_TEXT);
   }
 
@@ -1276,7 +1284,7 @@ public class TextFormatTest {
             + "repeated_bool: true\n";
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TextFormat.merge(goodText, builder);
-    assertThat(builder.build().toString()).isEqualTo(goodTextCanonical);
+    assertThat(TextFormat.printer().printToString(builder.build())).isEqualTo(goodTextCanonical);
 
     try {
       TestAllTypes.Builder badBuilder = TestAllTypes.newBuilder();
@@ -1897,7 +1905,7 @@ public class TextFormatTest {
             + "}\n";
     TestMap msg = TextFormat.parse(input, TestMap.class);
     int i1 = msg.getInt32ToInt32FieldMap().get(1);
-    TestMap msg2 = TextFormat.parse(msg.toString(), TestMap.class);
+    TestMap msg2 = TextFormat.parse(TextFormat.printer().printToString(msg), TestMap.class);
     int i2 = msg2.getInt32ToInt32FieldMap().get(1);
     assertThat(i1).isEqualTo(i2);
   }

@@ -66,7 +66,7 @@ public class MessageTest {
   public void testMergeFrom() throws Exception {
     TestAllTypes result = TestAllTypes.newBuilder(MERGE_DEST).mergeFrom(MERGE_SOURCE).build();
 
-    assertThat(result.toString()).isEqualTo(MERGE_RESULT_TEXT);
+    assertThat(TextFormat.printer().printToString(result)).isEqualTo(MERGE_RESULT_TEXT);
   }
 
   /**
@@ -80,7 +80,7 @@ public class MessageTest {
             .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
             .build();
 
-    assertThat(result.toString()).isEqualTo(MERGE_RESULT_TEXT);
+    assertThat(TextFormat.printer().printToString(result)).isEqualTo(MERGE_RESULT_TEXT);
   }
 
   /** Test merging two DynamicMessages. */
@@ -91,7 +91,7 @@ public class MessageTest {
             .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
             .build();
 
-    assertThat(result.toString()).isEqualTo(MERGE_RESULT_TEXT);
+    assertThat(TextFormat.printer().printToString(result)).isEqualTo(MERGE_RESULT_TEXT);
   }
 
   // =================================================================
