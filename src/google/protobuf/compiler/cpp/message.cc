@@ -4878,8 +4878,20 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     const FieldDescriptor* field_ = nullptr;
   };
 
-  std::vector<const FieldDescriptor*> ordered_fields =
-      SortFieldsByNumber(descriptor_);
+  std::vector<const FieldDescriptor*> ordered_fields = optimized_order_;
+  std::vector<const FieldDescriptor*> non_layout_optimized_fields;
+  for (const auto* field : FieldRange(descriptor_)) {
+    if (!IsLayoutOptimized(field, options_)) {
+      non_layout_optimized_fields.push_back(field);
+    }
+  }
+  std::sort(non_layout_optimized_fields.begin(),
+            non_layout_optimized_fields.end(), FieldOrderingByNumber());
+  ordered_fields.insert(ordered_fields.end(),
+                        non_layout_optimized_fields.begin(),
+                        non_layout_optimized_fields.end());
+  // std::vector<const FieldDescriptor*> ordered_fields =
+  //     SortFieldsByNumber(descriptor_);
 
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   sorted_extensions.reserve(descriptor_->extension_range_count());

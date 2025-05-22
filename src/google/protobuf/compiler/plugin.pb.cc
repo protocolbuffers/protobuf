@@ -228,27 +228,27 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
-    "\n%google/protobuf/compiler/plugin.proto\022"
-    "\030google.protobuf.compiler\032 google/protob"
-    "uf/descriptor.proto\"F\n\007Version\022\r\n\005major\030"
-    "\001 \001(\005\022\r\n\005minor\030\002 \001(\005\022\r\n\005patch\030\003 \001(\005\022\016\n\006s"
-    "uffix\030\004 \001(\t\"\201\002\n\024CodeGeneratorRequest\022\030\n\020"
-    "file_to_generate\030\001 \003(\t\022\021\n\tparameter\030\002 \001("
-    "\t\0228\n\nproto_file\030\017 \003(\0132$.google.protobuf."
-    "FileDescriptorProto\022E\n\027source_file_descr"
-    "iptors\030\021 \003(\0132$.google.protobuf.FileDescr"
-    "iptorProto\022;\n\020compiler_version\030\003 \001(\0132!.g"
-    "oogle.protobuf.compiler.Version\"\222\003\n\025Code"
-    "GeneratorResponse\022\r\n\005error\030\001 \001(\t\022\032\n\022supp"
-    "orted_features\030\002 \001(\004\022\027\n\017minimum_edition\030"
-    "\003 \001(\005\022\027\n\017maximum_edition\030\004 \001(\005\022B\n\004file\030\017"
-    " \003(\01324.google.protobuf.compiler.CodeGene"
-    "ratorResponse.File\032\177\n\004File\022\014\n\004name\030\001 \001(\t"
-    "\022\027\n\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001"
-    "(\t\022\?\n\023generated_code_info\030\020 \001(\0132\".google"
-    ".protobuf.GeneratedCodeInfo\"W\n\007Feature\022\020"
-    "\n\014FEATURE_NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTIO"
-    "NAL\020\001\022\035\n\031FEATURE_SUPPORTS_EDITIONS\020\002Br\n\034"
+    "\032 google/protobuf/descriptor.proto\"F\022\r\n\005"
+    "major\030\001 \001(\005\022\r\n\005minor\030\002 \001(\005\022\r\n\005patch\030\003 \001("
+    "\005\022\016\n\006suffix\030\004 \001(\t\n\007Version\"\201\002\022\030\n\020file_to"
+    "_generate\030\001 \003(\t\022\021\n\tparameter\030\002 \001(\t\0228\n\npr"
+    "oto_file2$.google.protobuf.FileDescripto"
+    "rProto\030\017 \003(\013\022E\n\027source_file_descriptors2"
+    "$.google.protobuf.FileDescriptorProto\030\021 "
+    "\003(\013\022;\n\020compiler_version2!.google.protobu"
+    "f.compiler.Version\030\003 \001(\013\n\024CodeGeneratorR"
+    "equest\"\222\003\022\r\n\005error\030\001 \001(\t\022\032\n\022supported_fe"
+    "atures\030\002 \001(\004\022\027\n\017minimum_edition\030\003 \001(\005\022\027\n"
+    "\017maximum_edition\030\004 \001(\005\022B\n\004file24.google."
+    "protobuf.compiler.CodeGeneratorResponse."
+    "File\030\017 \003(\013\032\177\022\014\n\004name\030\001 \001(\t\022\027\n\017insertion_"
+    "point\030\002 \001(\t\022\017\n\007content\030\017 \001(\t\022\?\n\023generate"
+    "d_code_info2\".google.protobuf.GeneratedC"
+    "odeInfo\030\020 \001(\013\n\004File\"W\022\020\n\014FEATURE_NONE\020\000\022"
+    "\033\n\027FEATURE_PROTO3_OPTIONAL\020\001\022\035\n\031FEATURE_"
+    "SUPPORTS_EDITIONS\020\002\n\007Feature\n\025CodeGenera"
+    "torResponse\n%google/protobuf/compiler/pl"
+    "ugin.proto\022\030google.protobuf.compilerBr\n\034"
     "com.google.protobuf.compilerB\014PluginProt"
     "osZ)google.golang.org/protobuf/types/plu"
     "ginpb\252\002\030Google.Protobuf.Compiler"
@@ -489,6 +489,14 @@ PROTOBUF_NOINLINE void Version::Clear() {
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
+  // optional string suffix = 4;
+  if ((cached_has_bits & 0x00000001U) != 0) {
+    const ::std::string& _s = this_._internal_suffix();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.Version.suffix");
+    target = stream->WriteStringMaybeAliased(4, _s, target);
+  }
+
   // optional int32 major = 1;
   if ((cached_has_bits & 0x00000002U) != 0) {
     target =
@@ -508,14 +516,6 @@ PROTOBUF_NOINLINE void Version::Clear() {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
             stream, this_._internal_patch(), target);
-  }
-
-  // optional string suffix = 4;
-  if ((cached_has_bits & 0x00000001U) != 0) {
-    const ::std::string& _s = this_._internal_suffix();
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
-                                "google.protobuf.compiler.Version.suffix");
-    target = stream->WriteStringMaybeAliased(4, _s, target);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -877,22 +877,6 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
     target = stream->WriteString(1, s, target);
   }
 
-  cached_has_bits = this_._impl_._has_bits_[0];
-  // optional string parameter = 2;
-  if ((cached_has_bits & 0x00000001U) != 0) {
-    const ::std::string& _s = this_._internal_parameter();
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
-                                "google.protobuf.compiler.CodeGeneratorRequest.parameter");
-    target = stream->WriteStringMaybeAliased(2, _s, target);
-  }
-
-  // optional .google.protobuf.compiler.Version compiler_version = 3;
-  if ((cached_has_bits & 0x00000002U) != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        3, *this_._impl_.compiler_version_, this_._impl_.compiler_version_->GetCachedSize(), target,
-        stream);
-  }
-
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   for (unsigned i = 0, n = static_cast<unsigned>(
                            this_._internal_proto_file_size());
@@ -913,6 +897,22 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
         ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
             17, repfield, repfield.GetCachedSize(),
             target, stream);
+  }
+
+  cached_has_bits = this_._impl_._has_bits_[0];
+  // optional string parameter = 2;
+  if ((cached_has_bits & 0x00000001U) != 0) {
+    const ::std::string& _s = this_._internal_parameter();
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(_s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormat::SERIALIZE,
+                                "google.protobuf.compiler.CodeGeneratorRequest.parameter");
+    target = stream->WriteStringMaybeAliased(2, _s, target);
+  }
+
+  // optional .google.protobuf.compiler.Version compiler_version = 3;
+  if ((cached_has_bits & 0x00000002U) != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+        3, *this_._impl_.compiler_version_, this_._impl_.compiler_version_->GetCachedSize(), target,
+        stream);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -1635,6 +1635,17 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this_._internal_file_size());
+       i < n; i++) {
+    const auto& repfield = this_._internal_file().Get(i);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            15, repfield, repfield.GetCachedSize(),
+            target, stream);
+  }
+
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional string error = 1;
   if ((cached_has_bits & 0x00000001U) != 0) {
@@ -1663,17 +1674,6 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() {
     target =
         ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<4>(
             stream, this_._internal_maximum_edition(), target);
-  }
-
-  // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  for (unsigned i = 0, n = static_cast<unsigned>(
-                           this_._internal_file_size());
-       i < n; i++) {
-    const auto& repfield = this_._internal_file().Get(i);
-    target =
-        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-            15, repfield, repfield.GetCachedSize(),
-            target, stream);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {

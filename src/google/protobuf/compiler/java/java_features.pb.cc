@@ -107,36 +107,36 @@ static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
-    "\n1google/protobuf/compiler/java/java_fea"
-    "tures.proto\022\002pb\032 google/protobuf/descrip"
-    "tor.proto\"\203\010\n\014JavaFeatures\022\376\001\n\022legacy_cl"
-    "osed_enum\030\001 \001(\010B\341\001\210\001\001\230\001\004\230\001\001\242\001\t\022\004true\030\204\007\242"
-    "\001\n\022\005false\030\347\007\262\001\273\001\010\350\007\020\350\007\032\262\001The legacy clos"
-    "ed enum behavior in Java is deprecated a"
-    "nd is scheduled to be removed in edition"
-    " 2025.  See http://protobuf.dev/programm"
-    "ing-guides/enum/#java for more informati"
-    "on.\022\237\002\n\017utf8_validation\030\002 \001(\0162\037.pb.JavaF"
-    "eatures.Utf8ValidationB\344\001\210\001\001\230\001\004\230\001\001\242\001\014\022\007D"
-    "EFAULT\030\204\007\262\001\310\001\010\350\007\020\351\007\032\277\001The Java-specific "
-    "utf8 validation feature is deprecated an"
-    "d is scheduled to be removed in edition "
-    "2025.  Utf8 validation behavior should u"
-    "se the global cross-language utf8_valida"
-    "tion feature.\0220\n\nlarge_enum\030\003 \001(\010B\034\210\001\001\230\001"
-    "\006\230\001\001\242\001\n\022\005false\030\204\007\262\001\003\010\351\007\022Q\n\037use_old_outer"
-    "_classname_default\030\004 \001(\010B(\210\001\001\230\001\001\242\001\t\022\004tru"
-    "e\030\204\007\242\001\n\022\005false\030\351\007\262\001\006\010\351\007 \351\007\022\177\n\022nest_in_fi"
-    "le_class\030\005 \001(\01627.pb.JavaFeatures.NestInF"
-    "ileClassFeature.NestInFileClassB*\210\001\002\230\001\003\230"
-    "\001\006\230\001\010\242\001\013\022\006LEGACY\030\204\007\242\001\007\022\002NO\030\351\007\262\001\003\010\351\007\032|\n\026N"
-    "estInFileClassFeature\"X\n\017NestInFileClass"
-    "\022\036\n\032NEST_IN_FILE_CLASS_UNKNOWN\020\000\022\006\n\002NO\020\001"
-    "\022\007\n\003YES\020\002\022\024\n\006LEGACY\020\003\032\010\"\006\010\351\007 \351\007J\010\010\001\020\200\200\200\200"
-    "\002\"F\n\016Utf8Validation\022\033\n\027UTF8_VALIDATION_U"
-    "NKNOWN\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006VERIFY\020\002J\004\010\006\020\007:"
-    "<\n\004java\022\033.google.protobuf.FeatureSet\030\351\007 "
-    "\001(\0132\020.pb.JavaFeaturesB(\n\023com.google.prot"
+    "\032 google/protobuf/descriptor.proto\"\203\010\022\376\001"
+    "\n\022legacy_closed_enumB\341\001\230\001\004\230\001\001\242\001\t\022\004true\030\204"
+    "\007\242\001\n\022\005false\030\347\007\262\001\273\001\032\262\001The legacy closed e"
+    "num behavior in Java is deprecated and i"
+    "s scheduled to be removed in edition 202"
+    "5.  See http://protobuf.dev/programming-"
+    "guides/enum/#java for more information.\010"
+    "\350\007\020\350\007\210\001\001\030\001 \001(\010\022\237\002\n\017utf8_validation2\037.pb."
+    "JavaFeatures.Utf8ValidationB\344\001\230\001\004\230\001\001\242\001\014\022"
+    "\007DEFAULT\030\204\007\262\001\310\001\032\277\001The Java-specific utf8"
+    " validation feature is deprecated and is"
+    " scheduled to be removed in edition 2025"
+    ".  Utf8 validation behavior should use t"
+    "he global cross-language utf8_validation"
+    " feature.\010\350\007\020\351\007\210\001\001\030\002 \001(\016\0220\n\nlarge_enumB\034"
+    "\230\001\006\230\001\001\242\001\n\022\005false\030\204\007\262\001\003\010\351\007\210\001\001\030\003 \001(\010\022Q\n\037us"
+    "e_old_outer_classname_defaultB(\230\001\001\242\001\t\022\004t"
+    "rue\030\204\007\242\001\n\022\005false\030\351\007\262\001\006\010\351\007 \351\007\210\001\001\030\004 \001(\010\022\177\n"
+    "\022nest_in_file_class27.pb.JavaFeatures.Ne"
+    "stInFileClassFeature.NestInFileClassB*\230\001"
+    "\003\230\001\006\230\001\010\242\001\013\022\006LEGACY\030\204\007\242\001\007\022\002NO\030\351\007\262\001\003\010\351\007\210\001\002"
+    "\030\005 \001(\016\032|\"X\022\036\n\032NEST_IN_FILE_CLASS_UNKNOWN"
+    "\020\000\022\006\n\002NO\020\001\022\007\n\003YES\020\002\022\024\n\006LEGACY\032\010\"\006\010\351\007 \351\007\020"
+    "\003\n\017NestInFileClassJ\010\010\001\020\200\200\200\200\002\n\026NestInFile"
+    "ClassFeature\"F\022\033\n\027UTF8_VALIDATION_UNKNOW"
+    "N\020\000\022\013\n\007DEFAULT\020\001\022\n\n\006VERIFY\020\002\n\016Utf8Valida"
+    "tionJ\004\010\006\020\007\n\014JavaFeatures:<\n\004java\022\033.googl"
+    "e.protobuf.FeatureSet2\020.pb.JavaFeatures\030"
+    "\351\007 \001(\013\n1google/protobuf/compiler/java/ja"
+    "va_features.proto\022\002pbB(\n\023com.google.prot"
     "obufB\021JavaFeaturesProto"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
@@ -471,18 +471,18 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000002U) != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        1, this_._internal_legacy_closed_enum(), target);
-  }
-
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   if ((cached_has_bits & 0x00000001U) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         2, this_._internal_utf8_validation(), target);
+  }
+
+  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  if ((cached_has_bits & 0x00000002U) != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(
+        1, this_._internal_legacy_closed_enum(), target);
   }
 
   // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
