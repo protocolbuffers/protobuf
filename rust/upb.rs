@@ -7,10 +7,11 @@
 
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
-use crate::__internal::{Enum, Private, SealedInternal};
+use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    AsView, IntoProxied, Map, MapIter, MapMut, MapView, Message, MessageViewInterop, Mut,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use std::mem::{size_of, ManuallyDrop, MaybeUninit};
@@ -871,5 +872,22 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
         upb::MapInsertStatus::Inserted => true,
         upb::MapInsertStatus::Replaced => false,
         upb::MapInsertStatus::OutOfMemory => panic!("map arena is out of memory"),
+    }
+}
+
+impl<T> MatcherEq for T
+where
+    Self: AssociatedMiniTable + AsView + Debug,
+    for<'a> View<'a, <Self as AsView>::Proxied>: MessageViewInterop<'a>,
+{
+    fn matches(&self, o: &Self) -> bool {
+        unsafe {
+            upb_Message_IsEqual(
+                NonNull::new_unchecked(self.as_view().__unstable_as_raw_message() as *mut _),
+                NonNull::new_unchecked(o.as_view().__unstable_as_raw_message() as *mut _),
+                Self::mini_table(),
+                0,
+            )
+        }
     }
 }

@@ -7,10 +7,11 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Enum, Private};
+use crate::__internal::{Enum, MatcherEq, Private};
 use crate::{
-    IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    AsView, IntoProxied, Map, MapIter, MapMut, MapView, Message, MessageViewInterop, Mut,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -1275,6 +1276,21 @@ fn protobytes_into_cppstdstring(val: ProtoBytes) -> CppStdString {
 // call.
 fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
     unsafe { val.as_ref() }
+}
+
+impl<T> MatcherEq for T
+where
+    Self: AsView + Debug,
+    for<'a> View<'a, <Self as AsView>::Proxied>: MessageViewInterop<'a>,
+{
+    fn matches(&self, o: &Self) -> bool {
+        unsafe {
+            raw_message_equals(
+                NonNull::new_unchecked(self.as_view().__unstable_as_raw_message() as *mut _),
+                NonNull::new_unchecked(o.as_view().__unstable_as_raw_message() as *mut _),
+            )
+        }
+    }
 }
 
 #[cfg(test)]
