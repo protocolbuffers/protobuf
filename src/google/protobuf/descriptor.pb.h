@@ -7575,11 +7575,11 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   void _internal_set_lazy(bool value);
 
   public:
-  // optional bool weak = 10 [default = false];
-  bool has_weak() const;
-  void clear_weak() ;
-  bool weak() const;
-  void set_weak(bool value);
+  // optional bool weak = 10 [default = false, deprecated = true];
+  [[deprecated]]  bool has_weak() const;
+  [[deprecated]]  void clear_weak() ;
+  [[deprecated]] bool weak() const;
+  [[deprecated]] void set_weak(bool value);
 
   private:
   bool _internal_weak() const;
@@ -18569,7 +18569,7 @@ inline void FieldOptions::_internal_set_deprecated(bool value) {
   _impl_.deprecated_ = value;
 }
 
-// optional bool weak = 10 [default = false];
+// optional bool weak = 10 [default = false, deprecated = true];
 inline bool FieldOptions::has_weak() const {
   bool value = (_impl_._has_bits_[0] & 0x00000040U) != 0;
   return value;

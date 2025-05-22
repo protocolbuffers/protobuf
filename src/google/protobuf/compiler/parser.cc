@@ -2508,13 +2508,13 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
   DO(Consume("import"));
   std::string import_file;
   if (LookingAt("option")) {
+    if (edition_ < Edition::EDITION_2024) {
+      RecordError("option import is not supported before edition 2024.");
+    }
     LocationRecorder option_import_location(
         root_location, FileDescriptorProto::kOptionDependencyFieldNumber,
         option_dependency->size());
     option_import_location.StartAt(import_start);
-    if (edition_ < Edition::EDITION_2024) {
-      RecordError("option import is not supported before edition 2024.");
-    }
     DO(Consume("option"));
     DO(ConsumeString(&import_file,
                      "Expected a string naming the file to import."));
@@ -2542,6 +2542,11 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
     DO(Consume("public"));
     *public_dependency->Add() = dependency->size();
   } else if (LookingAt("weak")) {
+    if (edition_ >= Edition::EDITION_2024) {
+      RecordError(
+          "weak import is not supported in edition 2024 and above. Consider "
+          "using option import instead.");
+    }
     LocationRecorder weak_location(
         root_location, FileDescriptorProto::kWeakDependencyFieldNumber,
         weak_dependency->size());

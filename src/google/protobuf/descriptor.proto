@@ -753,8 +753,9 @@ message FieldOptions {
   // is a formalization for deprecating fields.
   optional bool deprecated = 3 [default = false];
 
+  // DEPRECATED. DO NOT USE!
   // For Google-internal migration only. Do not use.
-  optional bool weak = 10 [default = false];
+  optional bool weak = 10 [default = false, deprecated = true];
 
   // Indicate that the field value should not be printed out when using debug
   // formats, e.g. when the field contains sensitive credentials.

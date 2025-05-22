@@ -675,6 +675,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
 
   file_descriptor_proto = file_descriptor_set.add_file();
   file_descriptor_proto->set_name("import_custom_unknown_options.proto");
+  file_descriptor_proto->set_edition(google::protobuf::Edition::EDITION_2024);
   file_descriptor_proto->add_option_dependency("custom_options.proto");
   // Add custom message option to unknown field. This custom option is
   // not known in generated pool, thus option will be in unknown fields.
@@ -688,7 +689,8 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
 
   Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
       "--descriptor_set_in=$tmpdir/foo.bin "
-      "import_custom_unknown_options.proto");
+      "import_custom_unknown_options.proto "
+      "--experimental_editions");
 
   // TODO: Fix this test. This test case only happens when
   // CommandLineInterface::Run() is used instead of invoke protoc combined

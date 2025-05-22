@@ -287,6 +287,7 @@ class FileDescriptorTest : public testing::Test {
     //   // in "bar.proto"
     //   import "foo.proto";
     //   import option "custom_option.proto";
+    //   edition = "2024";
     //   package bar_package;
     //   message BarMessage { extensions 1; }
     //   enum BarEnum {BAR_ENUM_VALUE = 1;}
@@ -316,10 +317,13 @@ class FileDescriptorTest : public testing::Test {
     FileDescriptorProto bar_file;
     bar_file.set_name("bar.proto");
     bar_file.set_package("bar_package");
+    bar_file.set_edition(google::protobuf::Edition::EDITION_2024);
     bar_file.add_dependency("foo.proto");
     bar_file.add_option_dependency("custom_option.proto");
     AddExtensionRange(AddMessage(&bar_file, "BarMessage"), 1, 2);
-    AddEnumValue(AddEnum(&bar_file, "BarEnum"), "BAR_ENUM_VALUE", 1);
+    EnumDescriptorProto* bar_enum = AddEnum(&bar_file, "BarEnum");
+    AddEnumValue(bar_enum, "BAR_ENUM_UNKNOWN", 0);
+    AddEnumValue(bar_enum, "BAR_ENUM_VALUE", 1);
     AddService(&bar_file, "BarService");
     AddExtension(&bar_file, "bar_package.BarMessage", "bar_extension", 1,
                  FieldDescriptorProto::LABEL_OPTIONAL,
@@ -360,8 +364,8 @@ class FileDescriptorTest : public testing::Test {
     bar_message_ = bar_file_->message_type(0);
     ASSERT_EQ(1, bar_file_->enum_type_count());
     bar_enum_ = bar_file_->enum_type(0);
-    ASSERT_EQ(1, bar_enum_->value_count());
-    bar_enum_value_ = bar_enum_->value(0);
+    ASSERT_EQ(2, bar_enum_->value_count());
+    bar_enum_value_ = bar_enum_->value(1);
     ASSERT_EQ(1, bar_file_->service_count());
     bar_service_ = bar_file_->service(0);
     ASSERT_EQ(1, bar_file_->extension_count());
@@ -4115,6 +4119,7 @@ TEST(CustomOptions, OptionsFromOptionDependency) {
 
   ASSERT_TRUE(TextFormat::ParseFromString(
       R"pb(name: "custom_options_import.proto"
+           edition: EDITION_2024
            package: "proto2_unittest"
            option_dependency: "google/protobuf/unittest_custom_options.proto"
            options {
@@ -4208,6 +4213,7 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
+      "edition: EDITION_2024 "
       "package: \"proto2_unittest\" "
       "option_dependency: "
       "\"google/protobuf/unittest_custom_options.proto\" "
@@ -4293,6 +4299,7 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
+      "edition: EDITION_2024 "
       "package: \"proto2_unittest\" "
       "option_dependency: "
       "\"google/protobuf/unittest_custom_options.proto\" "
@@ -4381,6 +4388,7 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
   //   }
   ASSERT_TRUE(TextFormat::ParseFromString(
       "name: \"custom_options_import.proto\" "
+      "edition: EDITION_2024 "
       "package: \"proto2_unittest\" "
       "option_dependency: "
       "\"google/protobuf/unittest_custom_options.proto\" "
@@ -4542,6 +4550,7 @@ TEST(CustomOptions, UnusedOptionImportError) {
   ASSERT_TRUE(TextFormat::ParseFromString(
       R"pb(
         name: "custom_options_import.proto"
+        edition: EDITION_2024
         package: "proto2_unittest"
         option_dependency: "google/protobuf/unittest_custom_options.proto"
       )pb",
@@ -6222,6 +6231,30 @@ TEST_F(ImportOptionValidationErrorTest,
       "necessary import.\n");
 }
 
+TEST_F(ImportOptionValidationErrorTest,
+       InvalidOptionDependencyBeforeEdition2024) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFile("bar.proto",
+                    R"schema(
+      syntax = "proto2";
+      import "google/protobuf/descriptor.proto";
+      enum Bar {
+        BAR = 1;
+      }
+      extend google.protobuf.FieldOptions {
+        optional Bar bar = 5000;
+      })schema");
+
+  BuildFileWithErrors(
+      R"pb(
+        name: 'foo.proto'
+        edition: EDITION_2023
+        option_dependency: "bar.proto"
+      )pb",
+      "foo.proto: option: IMPORT: option imports are not supported before "
+      "edition 2024.\n");
+}
+
 
 TEST_F(ValidationErrorTest, SearchMostLocalFirst) {
   // The following should produce an error that Bar.Baz is resolved but
@@ -6363,6 +6396,7 @@ TEST_F(ValidationErrorTest,
   BuildFile(
       R"pb(
         name: "baz.proto"
+        edition: EDITION_2024
         package: "foo"
         option_dependency: "bar.proto"
         options {

@@ -2203,6 +2203,16 @@ TEST_F(ParseErrorTest, OptionImportBefore2024) {
       "2:15: option import is not supported before edition 2024.\n");
 }
 
+TEST_F(ParseErrorTest, WeakImportAfter2024) {
+  ExpectHasErrors(
+      R"schema(
+        edition = "2024";
+        import weak "foo.proto";
+      )schema",
+      "2:15: weak import is not supported in edition 2024 and above. Consider "
+      "using option import instead.\n");
+}
+
 // ===================================================================
 // Test that errors detected by DescriptorPool correctly report line and
 // column numbers.  We have one test for every call to RecordLocation() in
@@ -3553,17 +3563,16 @@ class SourceInfoTest : public ParserTest {
 
 TEST_F(SourceInfoTest, BasicFileDecls) {
   EXPECT_TRUE(
-      Parse("$a$edition = \"2024\";$i$\n"
+      Parse("$a$edition = \"2023\";$i$\n"
             "$b$package foo.bar;$c$\n"
             "$d$import \"baz.proto\";$e$\n"
             "$f$import\"qux.proto\";$h$\n"
             "$j$import $k$public$l$ \"bar.proto\";$m$\n"
             "$n$import $o$weak$p$ \"bar.proto\";$q$\n"
-            "$r$import option \"bar.proto\";$s$\n"
             "\n"
             "// comment ignored\n"));
 
-  EXPECT_TRUE(HasSpan('a', 's', file_));
+  EXPECT_TRUE(HasSpan('a', 'q', file_));
   EXPECT_TRUE(HasSpan('b', 'c', file_, "package"));
   EXPECT_TRUE(HasSpan('d', 'e', file_, "dependency", 0));
   EXPECT_TRUE(HasSpan('f', 'h', file_, "dependency", 1));
@@ -3571,7 +3580,27 @@ TEST_F(SourceInfoTest, BasicFileDecls) {
   EXPECT_TRUE(HasSpan('k', 'l', file_, "public_dependency", 0));
   EXPECT_TRUE(HasSpan('n', 'q', file_, "dependency", 3));
   EXPECT_TRUE(HasSpan('o', 'p', file_, "weak_dependency", 0));
-  EXPECT_TRUE(HasSpan('r', 's', file_, "option_dependency", 0));
+  EXPECT_TRUE(HasSpan('a', 'i', file_, "syntax"));
+}
+
+TEST_F(SourceInfoTest, BasicFileDecls_Edition2024) {
+  EXPECT_TRUE(
+      Parse("$a$edition = \"2024\";$i$\n"
+            "$b$package foo.bar;$c$\n"
+            "$d$import \"baz.proto\";$e$\n"
+            "$f$import\"qux.proto\";$h$\n"
+            "$j$import $k$public$l$ \"bar.proto\";$m$\n"
+            "$n$import option \"bar.proto\";$o$\n"
+            "\n"
+            "// comment ignored\n"));
+
+  EXPECT_TRUE(HasSpan('a', 'o', file_));
+  EXPECT_TRUE(HasSpan('b', 'c', file_, "package"));
+  EXPECT_TRUE(HasSpan('d', 'e', file_, "dependency", 0));
+  EXPECT_TRUE(HasSpan('f', 'h', file_, "dependency", 1));
+  EXPECT_TRUE(HasSpan('j', 'm', file_, "dependency", 2));
+  EXPECT_TRUE(HasSpan('k', 'l', file_, "public_dependency", 0));
+  EXPECT_TRUE(HasSpan('n', 'o', file_, "option_dependency", 0));
   EXPECT_TRUE(HasSpan('a', 'i', file_, "syntax"));
 }
 

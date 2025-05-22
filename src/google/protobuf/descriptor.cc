@@ -5389,7 +5389,7 @@ Symbol DescriptorBuilder::FindSymbol(const absl::string_view name,
       if (dep != nullptr && IsInPackage(dep, name)) return result;
     }
     for (const auto* dep : option_dependencies_) {
-      // Note:  An dependency may be nullptr if it was not found or had errors.
+      // Note:  A dependency may be nullptr if it was not found or had errors.
       if (dep != nullptr && IsInPackage(dep, name)) return result;
     }
   }
@@ -8489,6 +8489,12 @@ void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
     ValidateProto3(file, proto);
   }
 
+  if (file->edition() < Edition::EDITION_2024 &&
+      file->option_dependency_count() > 0) {
+    AddError("option", proto, DescriptorPool::ErrorCollector::IMPORT,
+             "option imports are not supported before edition 2024.");
+  }
+
   if (file->edition() >= Edition::EDITION_2024) {
     if (file->options().has_java_multiple_files()) {
       AddError(file->name(), proto, DescriptorPool::ErrorCollector::OPTION_NAME,
@@ -8496,6 +8502,10 @@ void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
                "editions 2024 and above, which defaults to the feature value of"
                " `nest_in_file_class = NO` (equivalent to "
                "`java_multiple_files = true`).");
+    }
+    if (file->weak_dependency_count() > 0) {
+      AddError("weak", proto, DescriptorPool::ErrorCollector::IMPORT,
+               "weak imports are not allowed under edition 2024 and beyond.");
     }
   }
 }
