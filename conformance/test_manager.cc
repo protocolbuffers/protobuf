@@ -4,7 +4,6 @@
 #include <cctype>
 #include <cstddef>
 #include <fstream>
-#include <optional>
 #include <string>
 #include <vector>
 

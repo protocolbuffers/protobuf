@@ -12,13 +12,13 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <optional>
 #include <vector>
 
 #include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -315,7 +315,7 @@ bool IsFieldEligibleForFastParsing(
 }
 
 void PopulateFastFields(
-    absl::optional<uint32_t> end_group_tag,
+    std::optional<uint32_t> end_group_tag,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
     const TailCallTableInfo::MessageOptions& message_options,
     absl::Span<const TailCallTableInfo::FieldOptions> fields,
@@ -716,9 +716,9 @@ uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field) {
       internal::WireFormat::MakeTag(field));
 }
 
-absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
+std::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
   auto* parent = descriptor->containing_type();
-  if (parent == nullptr) return absl::nullopt;
+  if (parent == nullptr) return std::nullopt;
   for (int i = 0; i < parent->field_count(); ++i) {
     auto* field = parent->field(i);
     if (field->type() == field->TYPE_GROUP &&
@@ -727,11 +727,11 @@ absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
                                      WireFormatLite::WIRETYPE_END_GROUP);
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 uint32_t FastParseTableSize(size_t num_fields,
-                            absl::optional<uint32_t> end_group_tag) {
+                            std::optional<uint32_t> end_group_tag) {
   return end_group_tag.has_value()
              ? TcParseTableBase::kMaxFastFields
              : std::max(size_t{1}, std::min(TcParseTableBase::kMaxFastFields,

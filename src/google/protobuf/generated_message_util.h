@@ -21,8 +21,10 @@
 #include <atomic>
 #include <climits>
 #include <cstddef>
+#include <cstdint>
 #include <initializer_list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -33,7 +35,6 @@
 #include "absl/base/casts.h"
 #include "absl/base/optimization.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/implicit_weak_message.h"
@@ -378,13 +379,13 @@ inline void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string
   dest.Add(std::move(value));
 }
 
-constexpr absl::optional<uintptr_t> EncodePlacementArenaOffsets(
+constexpr std::optional<uintptr_t> EncodePlacementArenaOffsets(
     std::initializer_list<size_t> offsets) {
   uintptr_t arena_bits = 0;
   for (size_t offset : offsets) {
     offset /= sizeof(Arena*);
     if (offset >= sizeof(arena_bits) * 8) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     arena_bits |= uintptr_t{1} << offset;
   }

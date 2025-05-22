@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -25,7 +26,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/json/internal/lexer.h"
@@ -144,11 +144,11 @@ struct Proto2Descriptor {
 
   static absl::string_view TypeName(const Desc& d) { return d.full_name(); }
 
-  static absl::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
+  static std::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
     if (const auto* field = d.FindFieldByNumber(number)) {
       return field;
     }
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   static Field MustHaveField(const Desc& d, int32_t number,
@@ -166,8 +166,8 @@ struct Proto2Descriptor {
     return *f;
   }
 
-  static absl::optional<Field> FieldByName(const Desc& d,
-                                           absl::string_view name) {
+  static std::optional<Field> FieldByName(const Desc& d,
+                                          absl::string_view name) {
     if (const auto* field = d.FindFieldByCamelcaseName(name)) {
       return field;
     }
@@ -183,7 +183,7 @@ struct Proto2Descriptor {
       }
     }
 
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   static Field KeyField(const Desc& d) { return d.map_key(); }
@@ -194,11 +194,11 @@ struct Proto2Descriptor {
 
   static Field FieldByIndex(const Desc& d, size_t idx) { return d.field(idx); }
 
-  static absl::optional<Field> ExtensionByName(const Desc& d,
-                                               absl::string_view name) {
+  static std::optional<Field> ExtensionByName(const Desc& d,
+                                              absl::string_view name) {
     auto* field = d.file()->pool()->FindExtensionByName(name);
     if (field == nullptr) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     return field;
   }
@@ -327,9 +327,9 @@ struct Proto3Type {
   /// Functions for working with descriptors. ///
   static absl::string_view TypeName(const Desc& d) { return d.proto().name(); }
 
-  static absl::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
+  static std::optional<Field> FieldByNumber(const Desc& d, int32_t number) {
     const auto* f = d.FindField(number);
-    return f == nullptr ? absl::nullopt : absl::make_optional(f);
+    return f == nullptr ? std::nullopt : std::make_optional(f);
   }
 
   static Field MustHaveField(const Desc& d, int32_t number,
@@ -347,10 +347,10 @@ struct Proto3Type {
     return *f;
   }
 
-  static absl::optional<Field> FieldByName(const Desc& d,
-                                           absl::string_view name) {
+  static std::optional<Field> FieldByName(const Desc& d,
+                                          absl::string_view name) {
     const auto* f = d.FindField(name);
-    return f == nullptr ? absl::nullopt : absl::make_optional(f);
+    return f == nullptr ? std::nullopt : std::make_optional(f);
   }
 
   static Field KeyField(const Desc& d) { return &d.FieldsByIndex()[0]; }
@@ -363,11 +363,11 @@ struct Proto3Type {
     return &d.FieldsByIndex()[idx];
   }
 
-  static absl::optional<Field> ExtensionByName(const Desc& d,
-                                               absl::string_view name) {
+  static std::optional<Field> ExtensionByName(const Desc& d,
+                                              absl::string_view name) {
     // type.proto cannot represent extensions, so this function always
     // fails.
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   /// Functions for introspecting fields. ///

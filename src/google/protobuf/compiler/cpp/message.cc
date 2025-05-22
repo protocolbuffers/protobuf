@@ -121,8 +121,8 @@ void DebugAssertUniformLikelyPresence(
 // _has_bits_ array, with has_array_index indicating which element of the array
 // to use.
 std::string GenerateConditionMaybeWithProbability(
-    uint32_t mask, absl::optional<float> probability, bool use_cached_has_bits,
-    absl::optional<int> has_array_index) {
+    uint32_t mask, std::optional<float> probability, bool use_cached_has_bits,
+    std::optional<int> has_array_index) {
   std::string condition;
   if (use_cached_has_bits) {
     condition = absl::StrFormat("(cached_has_bits & 0x%08xU) != 0", mask);
@@ -146,7 +146,7 @@ std::string GenerateConditionMaybeWithProbabilityForField(
   return GenerateConditionMaybeWithProbability(
       1u << (has_bit_index % 32), prob,
       /*use_cached_has_bits*/ true,
-      /*has_array_index*/ absl::nullopt);
+      /*has_array_index*/ std::nullopt);
 }
 
 std::string GenerateConditionMaybeWithProbabilityForGroup(
@@ -156,7 +156,7 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
   return GenerateConditionMaybeWithProbability(
       mask, prob,
       /*use_cached_has_bits*/ true,
-      /*has_array_index*/ absl::nullopt);
+      /*has_array_index*/ std::nullopt);
 }
 
 void PrintPresenceCheck(const FieldDescriptor* field,
@@ -5516,14 +5516,14 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
                // XXX REMOVE? XXX
                const auto needs_verifier =
                    !f.NeedsIsInitialized()
-                       ? absl::make_optional(p->WithSubstitutionListener(
+                       ? std::make_optional(p->WithSubstitutionListener(
                              [&](auto label, auto loc) {
                                ABSL_LOG(FATAL)
                                    << "Field generated output but is marked as "
                                       "!NeedsIsInitialized"
                                    << field->full_name();
                              }))
-                       : absl::nullopt;
+                       : std::nullopt;
                f.GenerateIsInitialized(p);
              }
            }},

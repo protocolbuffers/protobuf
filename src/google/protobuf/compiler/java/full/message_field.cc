@@ -11,6 +11,7 @@
 
 #include "google/protobuf/compiler/java/full/message_field.h"
 
+#include <optional>
 #include <string>
 
 #include "absl/log/absl_check.h"
@@ -185,7 +186,7 @@ void ImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
     const char* trailing_code,
-    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
+    std::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
   printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");
@@ -854,7 +855,7 @@ void RepeatedImmutableMessageFieldGenerator::PrintNestedBuilderFunction(
     io::Printer* printer, const char* method_prototype,
     const char* regular_case, const char* nested_builder_case,
     const char* trailing_code,
-    absl::optional<io::AnnotationCollector::Semantic> semantic) const {
+    std::optional<io::AnnotationCollector::Semantic> semantic) const {
   printer->Print(variables_, method_prototype);
   printer->Annotate("{", "}", descriptor_, semantic);
   printer->Print(" {\n");

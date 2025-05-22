@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,7 +31,6 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 
 namespace google {
@@ -38,16 +38,16 @@ namespace protobuf {
 namespace io {
 namespace {
 template <typename T>
-absl::optional<T> LookupInFrameStack(
+std::optional<T> LookupInFrameStack(
     absl::string_view var,
-    absl::Span<std::function<absl::optional<T>(absl::string_view)>> frames) {
+    absl::Span<std::function<std::optional<T>(absl::string_view)>> frames) {
   for (size_t i = frames.size(); i >= 1; --i) {
     auto val = frames[i - 1](var);
     if (val.has_value()) {
       return val;
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 }  // namespace
 
@@ -352,13 +352,13 @@ void Printer::Emit(absl::Span<const Sub> vars, absl::string_view format,
   PrintImpl(format, {}, opts);
 }
 
-absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
+std::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
     absl::string_view varname, PrintOptions opts) {
   auto it = substitutions_.find(varname);
   if (!Validate(it != substitutions_.end(), opts, [varname] {
         return absl::StrCat("undefined variable in annotation: ", varname);
       })) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::pair<size_t, size_t> range = it->second;
@@ -367,7 +367,7 @@ absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
             "variable used for annotation used multiple times: %s (%d..%d)",
             varname, range.first, range.second);
       })) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return range;
@@ -377,7 +377,7 @@ void Printer::Annotate(absl::string_view begin_varname,
                        absl::string_view end_varname,
                        absl::string_view file_path,
                        const std::vector<int>& path,
-                       absl::optional<AnnotationCollector::Semantic> semantic) {
+                       std::optional<AnnotationCollector::Semantic> semantic) {
   if (options_.annotation_collector == nullptr) {
     return;
   }
@@ -469,7 +469,7 @@ void Printer::IndentIfAtStart() {
   at_start_of_line_ = false;
 }
 
-void Printer::PrintCodegenTrace(absl::optional<SourceLocation> loc) {
+void Printer::PrintCodegenTrace(std::optional<SourceLocation> loc) {
   if (!options_.enable_codegen_trace.value_or(false) || !loc.has_value()) {
     return;
   }
@@ -670,7 +670,7 @@ void Printer::PrintImpl(absl::string_view format,
             continue;
           }
 
-          absl::optional<AnnotationRecord> record =
+          std::optional<AnnotationRecord> record =
               LookupInFrameStack(var, absl::MakeSpan(annotation_lookups_));
 
           if (!Validate(record.has_value(), opts, [var] {
@@ -690,8 +690,8 @@ void Printer::PrintImpl(absl::string_view format,
         continue;
       }
 
-      absl::optional<ValueView> sub;
-      absl::optional<AnnotationRecord> same_name_record;
+      std::optional<ValueView> sub;
+      std::optional<AnnotationRecord> same_name_record;
       if (opts.allow_digit_substitutions && absl::ascii_isdigit(var[0])) {
         if (!Validate(var.size() == 1u, opts,
                       "expected single-digit variable")) {

@@ -308,7 +308,6 @@ cc_library(
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
     ],
 )

@@ -11,9 +11,9 @@
 
 #include "google/protobuf/io/printer.h"
 
+#include <optional>
 #include <ostream>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -23,7 +23,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
@@ -49,7 +48,7 @@ class PrinterTest : public testing::Test {
   }
 
   std::string out_;
-  absl::optional<StringOutputStream> stream_{&out_};
+  std::optional<StringOutputStream> stream_{&out_};
 };
 
 TEST_F(PrinterTest, EmptyPrinter) {
@@ -169,7 +168,7 @@ class FakeAnnotationCollector : public AnnotationCollector {
 
   void AddAnnotation(size_t begin_offset, size_t end_offset,
                      const std::string& file_path, const std::vector<int>& path,
-                     absl::optional<Semantic> semantic) override {
+                     std::optional<Semantic> semantic) override {
     annotations_.emplace_back(
         Record{begin_offset, end_offset, file_path, path, semantic});
   }
@@ -191,7 +190,7 @@ class FakeAnnotationCollector : public AnnotationCollector {
     size_t end = 0;
     std::string file_path;
     std::vector<int> path;
-    absl::optional<Semantic> semantic;
+    std::optional<Semantic> semantic;
 
     friend std::ostream& operator<<(std::ostream& out, const Record& record) {
       return out << "Record{" << record.start << ", " << record.end << ", \""
@@ -208,10 +207,10 @@ class FakeAnnotationCollector : public AnnotationCollector {
 };
 
 template <typename Start, typename End, typename FilePath, typename Path,
-          typename Semantic = absl::optional<AnnotationCollector::Semantic>>
+          typename Semantic = std::optional<AnnotationCollector::Semantic>>
 testing::Matcher<FakeAnnotationCollector::Record> Annotation(
     Start start, End end, FilePath file_path, Path path,
-    Semantic semantic = absl::nullopt) {
+    Semantic semantic = std::nullopt) {
   return AllOf(
       Field("start", &FakeAnnotationCollector::Record::start, start),
       Field("end", &FakeAnnotationCollector::Record::end, end),

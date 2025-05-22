@@ -17,6 +17,7 @@
 #include <limits>
 #include <memory>
 #include <new>
+#include <optional>
 #include <queue>
 #include <string>
 #include <type_traits>
@@ -41,7 +42,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -1072,22 +1072,22 @@ bool IsLikelyPresent(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
-absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
-                                             const Options& options) {
-  return absl::nullopt;
+std::optional<float> GetPresenceProbability(const FieldDescriptor* field,
+                                            const Options& options) {
+  return std::nullopt;
 }
 
-absl::optional<float> GetFieldGroupPresenceProbability(
+std::optional<float> GetFieldGroupPresenceProbability(
     const std::vector<const FieldDescriptor*>& fields, const Options& options) {
   ABSL_DCHECK(!fields.empty());
-  if (!IsProfileDriven(options)) return absl::nullopt;
+  if (!IsProfileDriven(options)) return std::nullopt;
 
   double all_absent_probability = 1.0;
 
   for (const auto* field : fields) {
-    absl::optional<float> probability = GetPresenceProbability(field, options);
+    std::optional<float> probability = GetPresenceProbability(field, options);
     if (!probability) {
-      return absl::nullopt;
+      return std::nullopt;
     }
     all_absent_probability *= 1.0 - *probability;
   }
@@ -2155,7 +2155,7 @@ bool HasMessageFieldOrExtension(const Descriptor* desc) {
 
 std::vector<io::Printer::Sub> AnnotatedAccessors(
     const FieldDescriptor* field, absl::Span<const absl::string_view> prefixes,
-    absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic) {
+    std::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic) {
   auto field_name = FieldName(field);
 
   std::vector<io::Printer::Sub> vars;

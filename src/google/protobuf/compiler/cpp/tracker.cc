@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/cpp/tracker.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -35,11 +35,11 @@ constexpr absl::string_view kTypeTraits = "_proto_TypeTraits";
 
 struct Call {
   Call(absl::string_view var, absl::string_view call) : var(var), call(call) {}
-  Call(absl::optional<int> field_index, absl::string_view var,
+  Call(std::optional<int> field_index, absl::string_view var,
        absl::string_view call)
       : var(var), call(call), field_index(field_index) {}
 
-  Call This(absl::optional<absl::string_view> thiz) && {
+  Call This(std::optional<absl::string_view> thiz) && {
     this->thiz = thiz;
     return std::move(*this);
   }
@@ -57,15 +57,16 @@ struct Call {
 
   absl::string_view var;
   absl::string_view call;
-  absl::optional<int> field_index;
-  absl::optional<absl::string_view> thiz = "this";
+  std::optional<int> field_index;
+  std::optional<absl::string_view> thiz = "this";
   std::vector<std::string> args;
   bool suppressed = false;
 };
 
-std::vector<Sub> GenerateTrackerCalls(
-    const Options& opts, const Descriptor* message,
-    absl::optional<std::string> alt_annotation, absl::Span<const Call> calls) {
+std::vector<Sub> GenerateTrackerCalls(const Options& opts,
+                                      const Descriptor* message,
+                                      std::optional<std::string> alt_annotation,
+                                      absl::Span<const Call> calls) {
   bool enable_tracking = HasTracker(message, opts);
   const auto& forbidden =
       opts.field_listener_options.forbidden_field_listener_events;
@@ -152,7 +153,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
   };
 
   return GenerateTrackerCalls(
-      opts, message, absl::nullopt,
+      opts, message, std::nullopt,
       {
           Call("serialize", "OnSerialize").This("&this_"),
           Call("deserialize", "OnDeserialize").This("_this"),
@@ -160,7 +161,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
           // need to annotate all reflective calls on our own, however, as this
           // is a cause for side effects, i.e. reading values dynamically, we
           // want the users know that dynamic access can happen.
-          Call("reflection", "OnGetMetadata").This(absl::nullopt),
+          Call("reflection", "OnGetMetadata").This(std::nullopt),
           Call("bytesize", "OnByteSize").This("&this_"),
           Call("mergefrom", "OnMergeFrom").This("_this").Arg("&from"),
           Call("unknown_fields", "OnUnknownFields"),

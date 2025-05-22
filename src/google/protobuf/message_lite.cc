@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <cstring>
 #include <istream>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -29,7 +30,6 @@
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -434,7 +434,7 @@ struct SourceWrapper<absl::Cord> {
   template <bool alias>
   bool MergeInto(MessageLite* msg, const internal::TcParseTableBase* tc_table,
                  MessageLite::ParseFlags parse_flags) const {
-    absl::optional<absl::string_view> flat = cord->TryFlat();
+    auto flat = cord->TryFlat();
     if (flat && flat->size() <= ParseContext::kMaxCordBytesToCopy) {
       return MergeFromImpl<alias>(*flat, msg, tc_table, parse_flags);
     } else {

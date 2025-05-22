@@ -13,6 +13,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
 #include <iterator>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -23,7 +24,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -374,14 +374,14 @@ PROTOC_EXPORT bool IsRarelyPresent(const FieldDescriptor* field,
 // Returns true if `field` is likely to be present based on PDProto profile.
 bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
-absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
-                                             const Options& options);
+std::optional<float> GetPresenceProbability(const FieldDescriptor* field,
+                                            const Options& options);
 
 // GetFieldGroupPresenceProbability computes presence probability for a group of
 // fields. It uses the absence probability (easier to compute)
 // (1 - p1) * (1 - p2) * ... * (1 - pn), and in the end the aggregate presence
 // probability can be expressed as (1 - all_absent_probability).
-absl::optional<float> GetFieldGroupPresenceProbability(
+std::optional<float> GetFieldGroupPresenceProbability(
     const std::vector<const FieldDescriptor*>& fields, const Options& options);
 
 bool IsStringInliningEnabled(const Options& options);
@@ -1201,8 +1201,8 @@ bool HasMessageFieldOrExtension(const Descriptor* desc);
 // be annotated with `field`.
 std::vector<io::Printer::Sub> AnnotatedAccessors(
     const FieldDescriptor* field, absl::Span<const absl::string_view> prefixes,
-    absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic =
-        absl::nullopt);
+    std::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic =
+        std::nullopt);
 
 // Check whether `file` represents the .proto file FileDescriptorProto and
 // friends. This file needs special handling because it must be usable during

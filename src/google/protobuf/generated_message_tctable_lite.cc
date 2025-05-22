@@ -12,6 +12,7 @@
 #include <limits>
 #include <new>  // IWYU pragma: keep for operator new
 #include <numeric>
+#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -23,7 +24,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -348,14 +348,14 @@ int TcParser::FieldNumber(const TcParseTableBase* table,
   // But it is fine because we are only using this for debug check messages.
   size_t need_to_skip = entry - table->field_entries_begin();
   const auto visit_bitmap = [&](uint32_t field_bitmap,
-                                int base_field_number) -> absl::optional<int> {
+                                int base_field_number) -> std::optional<int> {
     for (; field_bitmap != 0; field_bitmap &= field_bitmap - 1) {
       if (need_to_skip == 0) {
         return absl::countr_zero(field_bitmap) + base_field_number;
       }
       --need_to_skip;
     }
-    return absl::nullopt;
+    return std::nullopt;
   };
   if (auto number = visit_bitmap(~table->skipmap32, 1)) {
     return *number;
