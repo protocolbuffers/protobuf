@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <random>
@@ -28,7 +29,10 @@
 
 #include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
@@ -1711,8 +1715,6 @@ class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
 
 // ===========================================================================
 // Implementation of the default Finder for extensions.
-TextFormat::Finder::~Finder() {}
-
 const FieldDescriptor* TextFormat::Finder::FindExtension(
     Message* message, const std::string& name) const {
   return DefaultFinderFindExtension(message, name);
@@ -1749,8 +1751,6 @@ TextFormat::Parser::Parser()
       allow_relaxed_whitespace_(false),
       allow_singular_overwrites_(false),
       recursion_limit_(std::numeric_limits<int>::max()) {}
-
-TextFormat::Parser::~Parser() {}
 
 namespace {
 
@@ -1876,8 +1876,6 @@ bool TextFormat::Parser::ParseFieldValueFromString(absl::string_view input,
 
 // ===========================================================================
 
-TextFormat::BaseTextGenerator::~BaseTextGenerator() {}
-
 namespace {
 
 // A BaseTextGenerator that writes to a string.
@@ -1898,8 +1896,6 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
 // The default implementation for FieldValuePrinter. We just delegate the
 // implementation to the default FastFieldValuePrinter to avoid duplicating the
 // logic.
-TextFormat::FieldValuePrinter::FieldValuePrinter() {}
-TextFormat::FieldValuePrinter::~FieldValuePrinter() {}
 
 #define FORWARD_IMPL(fn, ...)            \
   StringBaseTextGenerator generator;     \
@@ -1958,8 +1954,6 @@ std::string TextFormat::FieldValuePrinter::PrintMessageEnd(
 }
 #undef FORWARD_IMPL
 
-TextFormat::FastFieldValuePrinter::FastFieldValuePrinter() {}
-TextFormat::FastFieldValuePrinter::~FastFieldValuePrinter() {}
 void TextFormat::FastFieldValuePrinter::PrintBool(
     bool val, BaseTextGenerator* generator) const {
   if (val) {
