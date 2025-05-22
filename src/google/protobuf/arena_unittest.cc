@@ -516,7 +516,6 @@ TEST(ArenaTest, GetConstructTypeWorks) {
   EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<int, const int&>()));
 }
 
-#ifdef __cpp_if_constexpr
 class DispatcherTestProto : public Message {
  public:
   using InternalArenaConstructable_ = void;
@@ -602,7 +601,6 @@ TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
   Arena::Create<DispatcherTestProto>(nullptr, 1);
   EXPECT_EQ(hook_called, "fallback");
 }
-#endif  // __cpp_if_constexpr
 
 TEST(ArenaTest, Parsing) {
   TestAllTypes original;

@@ -72,8 +72,6 @@ class iterator_range {
   IteratorT begin_iterator_, end_iterator_;
 };
 
-#ifdef __cpp_if_constexpr
-
 
 template <bool is_oneof>
 struct DynamicFieldInfoHelper {
@@ -1424,8 +1422,6 @@ struct MapDynamicFieldInfo {
   const FieldDescriptor* value;
   const MapFieldBase& const_map_field;
 };
-
-#endif  // __cpp_if_constexpr
 
 }  // namespace internal
 }  // namespace protobuf
