@@ -53,8 +53,6 @@ void SetEnumVariables(
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->enum_type());
-  (*variables)["mutable_type"] =
-      name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["default_number"] =

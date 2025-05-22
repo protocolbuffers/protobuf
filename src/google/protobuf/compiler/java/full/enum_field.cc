@@ -48,8 +48,6 @@ void SetEnumVariables(
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->enum_type());
-  (*variables)["mutable_type"] =
-      name_resolver->GetMutableClassName(descriptor->enum_type());
 
   std::string name = (*variables)["name"];
   (*variables)["name_make_immutable"] = absl::StrCat(name, "_.makeImmutable()");

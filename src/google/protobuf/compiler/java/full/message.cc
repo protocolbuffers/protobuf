@@ -1167,40 +1167,6 @@ void ImmutableMessageGenerator::GenerateInitializers(io::Printer* printer) {
   }
 }
 
-// ===================================================================
-void ImmutableMessageGenerator::GenerateMutableCopy(io::Printer* printer) {
-  printer->Print(
-      "protected com.google.protobuf.MutableMessage\n"
-      "    internalMutableDefault() {\n"
-      "  return MutableDefaultLoader.get();\n"
-      "}\n"
-      "\n"
-      "private static final class MutableDefaultLoader {\n"
-      "  private static final java.lang.Object defaultOrRuntimeException;\n"
-      "  static {\n"
-      "    java.lang.Object local;\n"
-      "    try {\n"
-      "      local = internalMutableDefault(\"$mutable_name$\");\n"
-      "    } catch (java.lang.RuntimeException e) {\n"
-      "      local = e;\n"
-      "    }\n"
-      "    defaultOrRuntimeException = local;\n"
-      "  }\n"
-      "\n"
-      "  private MutableDefaultLoader() {}\n"
-      "\n"
-      "  public static com.google.protobuf.MutableMessage get() {\n"
-      "    if (defaultOrRuntimeException\n"
-      "         instanceof java.lang.RuntimeException) {\n"
-      "      throw (java.lang.RuntimeException) defaultOrRuntimeException;\n"
-      "    }\n"
-      "    return\n"
-      "        (com.google.protobuf.MutableMessage) "
-      "defaultOrRuntimeException;\n"
-      "  }\n"
-      "}\n",
-      "mutable_name", name_resolver_->GetJavaMutableClassName(descriptor_));
-}
 
 void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
   printer->Print(

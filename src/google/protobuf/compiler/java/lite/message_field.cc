@@ -44,8 +44,6 @@ void SetMessageVariables(
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
-  (*variables)["mutable_type"] =
-      name_resolver->GetMutableClassName(descriptor->message_type());
   (*variables)["group_or_message"] =
       (GetType(descriptor) == FieldDescriptor::TYPE_GROUP) ? "Group"
                                                            : "Message";
