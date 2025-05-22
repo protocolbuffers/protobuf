@@ -10,8 +10,19 @@ public final class DebugFormat {
 
   private final boolean isSingleLine;
 
+  private final TextFormat.Printer.FieldReporterLevel fieldReporterLevel;
+
   private DebugFormat(boolean singleLine) {
     isSingleLine = singleLine;
+    fieldReporterLevel =
+        singleLine
+            ? TextFormat.Printer.FieldReporterLevel.DEBUG_SINGLE_LINE
+            : TextFormat.Printer.FieldReporterLevel.DEBUG_MULTILINE;
+  }
+
+  private TextFormat.Printer getPrinter() {
+    return TextFormat.debugFormatPrinter()
+        .emittingSingleLine(this.isSingleLine);
   }
 
   public static DebugFormat singleLine() {
@@ -23,31 +34,15 @@ public final class DebugFormat {
   }
 
   public String toString(MessageOrBuilder message) {
-    if (!this.isSingleLine) {
-      return TextFormat.debugFormatPrinter()
-          .printToString(message, TextFormat.Printer.FieldReporterLevel.DEBUG_MULTILINE);
-    }
-    return TextFormat.debugFormatPrinter()
-        .emittingSingleLine(this.isSingleLine)
-        .printToString(message, TextFormat.Printer.FieldReporterLevel.DEBUG_SINGLE_LINE);
+    return getPrinter().printToString(message, fieldReporterLevel);
   }
 
   public String toString(FieldDescriptor field, Object value) {
-    if (!this.isSingleLine) {
-      return TextFormat.debugFormatPrinter().printFieldToString(field, value);
-    }
-    return TextFormat.debugFormatPrinter()
-        .emittingSingleLine(this.isSingleLine)
-        .printFieldToString(field, value);
+    return getPrinter().printFieldToString(field, value);
   }
 
   public String toString(UnknownFieldSet fields) {
-    if (!this.isSingleLine) {
-      return TextFormat.debugFormatPrinter().printToString(fields);
-    }
-    return TextFormat.debugFormatPrinter()
-        .emittingSingleLine(this.isSingleLine)
-        .printToString(fields);
+    return getPrinter().printToString(fields);
   }
 
   public Object lazyToString(MessageOrBuilder message) {
