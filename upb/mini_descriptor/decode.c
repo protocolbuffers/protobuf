@@ -59,6 +59,11 @@
 // Stores the field number of the present value of the oneof
 #define kUpb_OneOf_CaseFieldRep (kUpb_FieldRep_4Byte)
 
+// The maximum field number that can be encoded on the wire.
+// Note that this limit does not apply to MessageSet, which can have field
+// numbers up to INT32_MAX.
+#define kUpb_MaxFieldNumber ((1 << 29) - 1)
+
 typedef struct {
   // Index of the corresponding field. The field's offset will be the index of
   // the next field in a linked list.
@@ -473,7 +478,12 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
       upb_MiniTableField* field = fields;
       *field_count += 1;
       fields = (char*)fields + field_size;
-      field->UPB_PRIVATE(number) = ++last_field_number;
+      uint32_t number = ++last_field_number;
+      if (number == 0 || (number > kUpb_MaxFieldNumber && !d->is_extension)) {
+        upb_MdDecoder_ErrorJmp(&d->base, "Invalid field number: %" PRIu32,
+                               number);
+      }
+      field->UPB_PRIVATE(number) = number;
       last_field = field;
       upb_MiniTable_SetField(d, ch, field, msg_modifiers, sub_counts);
     } else if (kUpb_EncodedValue_MinModifier <= ch &&
