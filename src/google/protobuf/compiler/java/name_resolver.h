@@ -51,13 +51,14 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetFileImmutableClassName(const FileDescriptor* file);
   // Gets the unqualified default immutable outer class name of a file
   // (converted from the proto file's name).
-  std::string GetFileDefaultImmutableClassName(const FileDescriptor* file);
+  static std::string GetFileDefaultImmutableClassName(
+      const FileDescriptor* file);
 
   // Check whether there is any type defined in the proto file that has
   // the given class name.
-  bool HasConflictingClassName(const FileDescriptor* file,
-                               absl::string_view classname,
-                               NameEquality equality_mode);
+  static bool HasConflictingClassName(const FileDescriptor* file,
+                                      absl::string_view classname,
+                                      NameEquality equality_mode);
 
   // Gets the name of the outer class that holds descriptor information.
   // Descriptors are shared between immutable messages and mutable messages.
@@ -127,10 +128,6 @@ class PROTOC_EXPORT ClassNameResolver {
   template <typename Descriptor>
   std::string GetJavaClassPackage(const Descriptor& descriptor, bool immutable);
 
-
-  // Caches the result to provide better performance.
-  absl::flat_hash_map<const FileDescriptor*, std::string>
-      file_immutable_outer_class_names_;
 };
 
 }  // namespace java

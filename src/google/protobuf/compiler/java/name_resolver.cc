@@ -133,6 +133,25 @@ bool MessageHasConflictingClassName(const Descriptor* message,
 
 }  // namespace
 
+class MemoizeProjection {
+ public:
+  template <typename Desc, typename Func>
+  const auto& operator()(const Desc* descriptor, Func func) {
+    return DescriptorPool::MemoizeProjection(descriptor, func);
+  }
+};
+
+bool ComputeNeedsOuterClassSuffix(const FileDescriptor* file) {
+  if (!UseOldFileClassNameDefault(file)) return false;
+  return ClassNameResolver::HasConflictingClassName(
+      file, ClassNameResolver::GetFileDefaultImmutableClassName(file),
+      NameEquality::EXACT_EQUAL);
+}
+
+bool NeedsOuterClassSuffix(const FileDescriptor* file) {
+  return MemoizeProjection()(file, ComputeNeedsOuterClassSuffix);
+}
+
 std::string ClassNameResolver::GetFileDefaultImmutableClassName(
     const FileDescriptor* file) {
   std::string basename;
@@ -149,22 +168,18 @@ std::string ClassNameResolver::GetFileDefaultImmutableClassName(
 
 std::string ClassNameResolver::GetFileImmutableClassName(
     const FileDescriptor* file) {
-  std::string& class_name = file_immutable_outer_class_names_[file];
-  if (class_name.empty()) {
-    if (file->options().has_java_outer_classname()) {
-      class_name = file->options().java_outer_classname();
-    } else {
-      class_name = GetFileDefaultImmutableClassName(file);
-
-      // This disambiguation logic is deprecated and only enabled when using
-      // the old default scheme.
-      if (UseOldFileClassNameDefault(file) &&
-          HasConflictingClassName(file, class_name,
-                                  NameEquality::EXACT_EQUAL)) {
-        class_name += kOuterClassNameSuffix;
-      }
-    }
+  if (file->options().has_java_outer_classname()) {
+    return file->options().java_outer_classname();
   }
+
+  std::string class_name = GetFileDefaultImmutableClassName(file);
+
+  // This disambiguation logic is deprecated and only enabled when using
+  // the old default scheme.
+  if (NeedsOuterClassSuffix(file)) {
+    absl::StrAppend(&class_name, kOuterClassNameSuffix);
+  }
+
   return class_name;
 }
 
