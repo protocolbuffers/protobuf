@@ -231,6 +231,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRINTF(str, first_vararg)
 #endif
 
+#if defined(__clang__)
+#define UPB_NODEREF __attribute__((noderef))
+#else
+#define UPB_NODEREF
+#endif
+
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 
@@ -8350,7 +8356,9 @@ typedef struct {
   upb_EncodeStatus status;
   jmp_buf err;
   upb_Arena* arena;
-  char *buf, *limit;
+  // These should only be used for arithmetic and reallocation to allow full
+  // aliasing analysis on the ptr argument.
+  const char UPB_NODEREF *buf, *limit;
   int options;
   int depth;
   _upb_mapsorter sorter;
@@ -8375,7 +8383,8 @@ static char* encode_growbuffer(char* ptr, upb_encstate* e, size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
   size_t new_size = upb_roundup_pow2(needed_size);
-  char* new_buf = upb_Arena_Realloc(e->arena, e->buf, old_size, new_size);
+  char* new_buf =
+      upb_Arena_Realloc(e->arena, (void*)e->buf, old_size, new_size);
 
   if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
 
@@ -17268,6 +17277,7 @@ google_protobuf_ServiceDescriptorProto* upb_ServiceDef_ToProto(const upb_Service
 #undef UPB_NOINLINE
 #undef UPB_NORETURN
 #undef UPB_PRINTF
+#undef UPB_NODEREF
 #undef UPB_MAX
 #undef UPB_MIN
 #undef UPB_UNUSED
