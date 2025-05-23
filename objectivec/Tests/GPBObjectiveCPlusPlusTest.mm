@@ -24,11 +24,6 @@
 // Sanity check the conditions of the test within the Xcode project.
 #if !__cplusplus
 #error This isn't compiled as Objective C++?
-#elif __cplusplus >= 201103L
-// If this trips, it means the Xcode default might have change (or someone
-// edited the testing project) and it might be time to revisit the GPB_ENUM
-// define in GPBBootstrap.h.
-#warning Did the Xcode default for C++ spec change?
 #endif
 
 // Dummy XCTest.

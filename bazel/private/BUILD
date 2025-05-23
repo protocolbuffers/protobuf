@@ -207,6 +207,7 @@ filegroup(
         "BUILD",
         ":native_bool_flag_bzl",
         "//bazel:for_bazel_tests",
+        "//bazel/flags:protoc_cc_lib",
         "//bazel/private/toolchains:for_bazel_tests",
     ],
     visibility = ["//visibility:public"],
