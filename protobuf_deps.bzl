@@ -53,6 +53,16 @@ def _github_archive(repo, commit, **kwargs):
 def protobuf_deps():
     """Loads common dependencies needed to compile the protobuf library."""
 
+    # Pin rules_proto since Bazel 7 otherwise depends on rules_proto 5.3.0-21.7 which is missing
+    # @rules_proto//proto:toolchain_type used by Bazel.
+    # 6.0.0 would at least require users to add `register_toolchains` for rules_proto
+    # TODO: Remove once Bazel 7 is no longer supported.
+    if not native.existing_rule("rules_proto"):
+        http_archive(
+            name = "rules_proto",
+            strip_prefix = "rules_proto-7.1.0",
+            url = "https://github.com/bazelbuild/rules_proto/releases/download/7.1.0/rules_proto-7.1.0.tar.gz",
+        )
     if not native.existing_rule("bazel_features"):
         http_archive(
             name = "bazel_features",

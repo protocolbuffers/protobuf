@@ -67,7 +67,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: examples
+          bazel-cache: examples-${{ matrix.bazelversion }}-${{ matrix.bzlmod }}-${{ matrix.toolchain_resolution }}
           version: ${{ matrix.bazelversion }}
           bash: >
             cd examples;
