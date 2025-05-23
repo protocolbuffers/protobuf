@@ -68,6 +68,7 @@ typedef struct {
   int options;
   int depth;
   _upb_mapsorter sorter;
+  UPB_PRIVATE(upb_Arena_BackAlloc) alloc;
 } upb_encstate;
 
 static size_t upb_roundup_pow2(size_t bytes) {
@@ -86,23 +87,26 @@ UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
 
 UPB_NOINLINE
 static void encode_growbuffer(upb_encstate* e, size_t bytes) {
-  size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - e->ptr);
-  size_t new_size = upb_roundup_pow2(needed_size);
-  char* new_buf = upb_Arena_Realloc(e->arena, e->buf, old_size, new_size);
+  if (!e->alloc.start) {
+    e->alloc =
+        UPB_PRIVATE(upb_Arena_TakeRemainingInBlock)(e->arena, needed_size);
+  }
+  if (!e->alloc.start || e->alloc.len < needed_size) {
+    size_t new_size = upb_roundup_pow2(needed_size);
 
-  if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    UPB_PRIVATE(upb_Arena_BackAlloc)
+    alloc = UPB_PRIVATE(upb_Arena_ReallocBack)(
+        e->arena, e->alloc, e->buf ? e->limit - e->buf : 0, new_size);
 
-  // We want previous data at the end, realloc() put it at the beginning.
-  // TODO: This is somewhat inefficient since we are copying twice.
-  // Maybe create a realloc() that copies to the end of the new buffer?
-  if (old_size > 0) {
-    memmove(new_buf + new_size - old_size, new_buf, old_size);
+    if (!alloc.start) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+
+    e->alloc = alloc;
   }
 
-  e->buf = new_buf;
-  e->limit = new_buf + new_size;
-  e->ptr = new_buf + new_size - needed_size;
+  e->buf = e->alloc.start;
+  e->limit = e->buf + e->alloc.len;
+  e->ptr = e->limit - needed_size;
 }
 
 /* Call to ensure that at least "bytes" bytes are available for writing at
@@ -687,7 +691,7 @@ static upb_EncodeStatus upb_Encoder_Encode(upb_encstate* const encoder,
     *buf = NULL;
     *size = 0;
   }
-
+  UPB_PRIVATE(upb_Arena_FinishBackAlloc)(encoder->arena, encoder->alloc, *size);
   _upb_mapsorter_destroy(&encoder->sorter);
   return encoder->status;
 }
@@ -714,6 +718,7 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
   e.ptr = NULL;
   e.depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
   e.options = options;
+  e.alloc = (UPB_PRIVATE(upb_Arena_BackAlloc)){};
   _upb_mapsorter_init(&e.sorter);
 
   return upb_Encoder_Encode(&e, msg, l, buf, size, prepend_len);

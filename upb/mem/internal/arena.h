@@ -22,7 +22,7 @@
 //
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
-#define UPB_ARENA_SIZE_HACK (9 + (UPB_XSAN_STRUCT_SIZE * 2))
+#define UPB_ARENA_SIZE_HACK (10 + (UPB_XSAN_STRUCT_SIZE * 2))
 
 // LINT.IfChange(upb_Arena)
 
@@ -147,6 +147,49 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
   UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, oldsize);
   return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
 }
+
+/* Allocates memory from the back of the arena. */
+typedef struct UPB_PRIVATE(upb_Arena_BackAlloc) {
+  char* start;
+  size_t len;
+  void* standalone_block;
+} UPB_PRIVATE(upb_Arena_BackAlloc);
+
+UPB_PRIVATE(upb_Arena_BackAlloc)
+UPB_PRIVATE(upb_Arena_ReallocBack)(struct upb_Arena* a,
+                                   UPB_PRIVATE(upb_Arena_BackAlloc) alloc,
+                                   size_t oldsize, size_t size);
+
+UPB_API_INLINE UPB_PRIVATE(upb_Arena_BackAlloc)
+    UPB_PRIVATE(upb_Arena_TakeRemainingInBlock)(struct upb_Arena* a,
+                                                size_t size) {
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+
+  size_t span = size + UPB_PRIVATE(kUpb_Asan_GuardSize);
+
+  size_t available = a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr);
+  if (available >= span) {
+    void* start = a->UPB_ONLYBITS(ptr);
+    size_t len = available - UPB_PRIVATE(kUpb_Asan_GuardSize);
+#if UPB_HWASAN
+    len = UPB_ALIGN_DOWN(len, UPB_MALLOC_ALIGN);
+#endif
+    start = UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), start, len);
+    // The arena block is full!
+    a->UPB_ONLYBITS(end) = a->UPB_ONLYBITS(ptr);
+
+    return (UPB_PRIVATE(upb_Arena_BackAlloc)){
+        .start = (char*)start,
+        .len = len,
+    };
+  }
+  return (UPB_PRIVATE(upb_Arena_BackAlloc)){};
+}
+
+void UPB_PRIVATE(upb_Arena_FinishBackAlloc)(struct upb_Arena* a,
+                                            UPB_PRIVATE(upb_Arena_BackAlloc)
+                                                alloc,
+                                            size_t size);
 
 #ifdef __cplusplus
 } /* extern "C" */
