@@ -490,9 +490,11 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 1);
   while (ai != NULL) {
     UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(ai));
-    // Load first since arena itself is likely from one of its blocks.
+    // Load first since arena itself is likely from one of its blocks. Relaxed
+    // order is safe because fused arena ordering is provided by the reference
+    // count, and fuse is not permitted to race with the final decrement.
     upb_ArenaInternal* next_arena =
-        (upb_ArenaInternal*)upb_Atomic_Load(&ai->next, memory_order_acquire);
+        (upb_ArenaInternal*)upb_Atomic_Load(&ai->next, memory_order_relaxed);
     // Freeing may have memory barriers that confuse tsan, so assert immediately
     // after load here
     if (next_arena) {
