@@ -277,15 +277,15 @@ TEST_F(IoTest, ArrayIo) {
   const int kBufferSize = 256;
   uint8_t buffer[kBufferSize];
 
-  for (int i = 0; i < kBlockSizeCount; i++) {
-    for (int j = 0; j < kBlockSizeCount; j++) {
+  for (int kBlockSize : kBlockSizes) {
+    for (int j : kBlockSizes) {
       int size;
       {
-        ArrayOutputStream output(buffer, kBufferSize, kBlockSizes[i]);
+        ArrayOutputStream output(buffer, kBufferSize, kBlockSize);
         size = WriteStuff(&output);
       }
       {
-        ArrayInputStream input(buffer, size, kBlockSizes[j]);
+        ArrayInputStream input(buffer, size, j);
         ReadStuff(&input);
       }
     }
@@ -301,10 +301,10 @@ TEST_F(IoTest, TwoSessionWrite) {
   uint8_t* buffer = new uint8_t[kBufferSize];
   char* temp_buffer = new char[40];
 
-  for (int i = 0; i < kBlockSizeCount; i++) {
-    for (int j = 0; j < kBlockSizeCount; j++) {
+  for (int kBlockSize : kBlockSizes) {
+    for (int j : kBlockSizes) {
       ArrayOutputStream* output =
-          new ArrayOutputStream(buffer, kBufferSize, kBlockSizes[i]);
+          new ArrayOutputStream(buffer, kBufferSize, kBlockSize);
       CodedOutputStream* coded_output = new CodedOutputStream(output);
       coded_output->WriteVarint32(strlen(strA));
       coded_output->WriteRaw(strA, strlen(strA));
@@ -312,7 +312,7 @@ TEST_F(IoTest, TwoSessionWrite) {
       int64_t pos = output->ByteCount();
       delete output;
       output = new ArrayOutputStream(buffer + pos, kBufferSize - pos,
-                                     kBlockSizes[i]);
+                                     kBlockSize);
       coded_output = new CodedOutputStream(output);
       coded_output->WriteVarint32(strlen(strB));
       coded_output->WriteRaw(strB, strlen(strB));
@@ -321,7 +321,7 @@ TEST_F(IoTest, TwoSessionWrite) {
       delete output;
 
       ArrayInputStream* input =
-          new ArrayInputStream(buffer, size, kBlockSizes[j]);
+          new ArrayInputStream(buffer, size, j);
       CodedInputStream* coded_input = new CodedInputStream(input);
       uint32_t insize;
       EXPECT_TRUE(coded_input->ReadVarint32(&insize));
@@ -879,8 +879,7 @@ TEST_F(IoTest, FragmentedCordInput) {
     WriteStuff(&output);
   }
 
-  for (int i = 0; i < kBlockSizeCount; i++) {
-    int block_size = kBlockSizes[i];
+  for (int block_size : kBlockSizes) {
     if (block_size < 0) {
       // Skip the -1 case.
       continue;
@@ -1406,15 +1405,15 @@ TEST_F(IoTest, FileIo) {
   std::string filename =
       absl::StrCat(::testing::TempDir(), "/zero_copy_stream_test_file");
 
-  for (int i = 0; i < kBlockSizeCount; i++) {
-    for (int j = 0; j < kBlockSizeCount; j++) {
+  for (int kBlockSize : kBlockSizes) {
+    for (int j : kBlockSizes) {
       // Make a temporary file.
       int file =
           open(filename.c_str(), O_RDWR | O_CREAT | O_TRUNC | O_BINARY, 0777);
       ASSERT_GE(file, 0);
 
       {
-        FileOutputStream output(file, kBlockSizes[i]);
+        FileOutputStream output(file, kBlockSize);
         WriteStuff(&output);
         EXPECT_EQ(0, output.GetErrno());
       }
@@ -1423,7 +1422,7 @@ TEST_F(IoTest, FileIo) {
       ASSERT_NE(lseek(file, 0, SEEK_SET), (off_t)-1);
 
       {
-        FileInputStream input(file, kBlockSizes[j]);
+        FileInputStream input(file, j);
         ReadStuff(&input);
         EXPECT_EQ(0, input.GetErrno());
       }
@@ -1438,8 +1437,8 @@ TEST_F(IoTest, FileIo) {
 // non blocking mode, then starts reading it. The writing thread starts writing
 // 100ms after that.
 TEST_F(IoTest, NonBlockingFileIo) {
-  for (int i = 0; i < kBlockSizeCount; i++) {
-    for (int j = 0; j < kBlockSizeCount; j++) {
+  for (int kBlockSize : kBlockSizes) {
+    for (int j : kBlockSizes) {
       int fd[2];
       // On Linux we could use pipe2 to make the pipe non-blocking in one step,
       // but we instead use pipe and fcntl because pipe2 is not available on
@@ -1453,16 +1452,16 @@ TEST_F(IoTest, NonBlockingFileIo) {
 
       bool done_reading = false;
 
-      std::thread write_thread([this, fd, &go_write, i]() {
+      std::thread write_thread([this, fd, &go_write, &kBlockSize]() {
         go_write.Lock();
         go_write.Unlock();
-        FileOutputStream output(fd[1], kBlockSizes[i]);
+        FileOutputStream output(fd[1], kBlockSize);
         WriteStuff(&output);
         EXPECT_EQ(0, output.GetErrno());
       });
 
-      std::thread read_thread([this, fd, &done_reading, j]() {
-        FileInputStream input(fd[0], kBlockSizes[j]);
+      std::thread read_thread([this, fd, &done_reading, &j]() {
+        FileInputStream input(fd[0], j);
         ReadStuff(&input, false /* read_eof */);
         done_reading = true;
         close(fd[0]);
@@ -1485,13 +1484,13 @@ TEST_F(IoTest, NonBlockingFileIo) {
 TEST_F(IoTest, BlockingFileIoWithTimeout) {
   int fd[2];
 
-  for (int i = 0; i < kBlockSizeCount; i++) {
+  for (int kBlockSize : kBlockSizes) {
     ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, fd), 0);
     struct timeval tv {
       .tv_sec = 0, .tv_usec = 5000
     };
     ASSERT_EQ(setsockopt(fd[0], SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)), 0);
-    FileInputStream input(fd[0], kBlockSizes[i]);
+    FileInputStream input(fd[0], kBlockSize);
     uint8_t byte;
     EXPECT_EQ(ReadFromInput(&input, &byte, 1), 0);
     EXPECT_EQ(EAGAIN, input.GetErrno());
@@ -1605,21 +1604,21 @@ TEST_F(IoTest, FileWriteError) {
 TEST_F(IoTest, PipeIo) {
   int files[2];
 
-  for (int i = 0; i < kBlockSizeCount; i++) {
-    for (int j = 0; j < kBlockSizeCount; j++) {
+  for (int kBlockSize : kBlockSizes) {
+    for (int j : kBlockSizes) {
       // Need to create a new pipe each time because ReadStuff() expects
       // to see EOF at the end.
       ASSERT_EQ(pipe(files), 0);
 
       {
-        FileOutputStream output(files[1], kBlockSizes[i]);
+        FileOutputStream output(files[1], kBlockSize);
         WriteStuff(&output);
         EXPECT_EQ(0, output.GetErrno());
       }
       close(files[1]);  // Send EOF.
 
       {
-        FileInputStream input(files[0], kBlockSizes[j]);
+        FileInputStream input(files[0], j);
         ReadStuff(&input);
         EXPECT_EQ(0, input.GetErrno());
       }
@@ -1630,19 +1629,19 @@ TEST_F(IoTest, PipeIo) {
 
 // Test using C++ iostreams.
 TEST_F(IoTest, IostreamIo) {
-  for (int i = 0; i < kBlockSizeCount; i++) {
-    for (int j = 0; j < kBlockSizeCount; j++) {
+  for (int kBlockSize : kBlockSizes) {
+    for (int j : kBlockSizes) {
       {
         std::stringstream stream;
 
         {
-          OstreamOutputStream output(&stream, kBlockSizes[i]);
+          OstreamOutputStream output(&stream, kBlockSize);
           WriteStuff(&output);
           EXPECT_FALSE(stream.fail());
         }
 
         {
-          IstreamInputStream input(&stream, kBlockSizes[j]);
+          IstreamInputStream input(&stream, j);
           ReadStuff(&input);
           EXPECT_TRUE(stream.eof());
         }
@@ -1652,13 +1651,13 @@ TEST_F(IoTest, IostreamIo) {
         std::stringstream stream;
 
         {
-          OstreamOutputStream output(&stream, kBlockSizes[i]);
+          OstreamOutputStream output(&stream, kBlockSize);
           WriteStuffLarge(&output);
           EXPECT_FALSE(stream.fail());
         }
 
         {
-          IstreamInputStream input(&stream, kBlockSizes[j]);
+          IstreamInputStream input(&stream, j);
           ReadStuffLarge(&input);
           EXPECT_TRUE(stream.eof());
         }

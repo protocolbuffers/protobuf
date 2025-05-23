@@ -162,8 +162,8 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     std::unique_ptr<io::ZeroCopyOutputStream> srclist_raw_output(
         context->Open(file_options.output_list_file));
     io::Printer srclist_printer(srclist_raw_output.get(), '$');
-    for (int i = 0; i < all_files.size(); i++) {
-      srclist_printer.Print("$filename$\n", "filename", all_files[i]);
+    for (const auto & all_file : all_files) {
+      srclist_printer.Print("$filename$\n", "filename", all_file);
     }
   }
 
@@ -173,9 +173,9 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
     std::unique_ptr<io::ZeroCopyOutputStream> annotation_list_raw_output(
         context->Open(file_options.annotation_list_file));
     io::Printer annotation_list_printer(annotation_list_raw_output.get(), '$');
-    for (int i = 0; i < all_annotations.size(); i++) {
+    for (const auto & all_annotation : all_annotations) {
       annotation_list_printer.Print("$filename$\n", "filename",
-                                    all_annotations[i]);
+                                    all_annotation);
     }
   }
 

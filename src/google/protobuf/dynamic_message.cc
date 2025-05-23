@@ -862,8 +862,8 @@ DynamicMessageFactory::DynamicMessageFactory(
     : pool_(pool), delegate_to_generated_factory_(false) {}
 
 DynamicMessageFactory::~DynamicMessageFactory() {
-  for (auto iter = prototypes_.begin(); iter != prototypes_.end(); ++iter) {
-    delete iter->second;
+  for (auto & prototype : prototypes_) {
+    delete prototype.second;
   }
 }
 

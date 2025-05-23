@@ -609,9 +609,9 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
   ASSERT_GE(debug_strings.size(), 3);
 
   DescriptorPool pool;
-  for (size_t i = 0; i < debug_strings.size(); ++i) {
-    const absl::string_view name = debug_strings[i].first;
-    const std::string& content = debug_strings[i].second;
+  for (auto & debug_string : debug_strings) {
+    const absl::string_view name = debug_string.first;
+    const std::string& content = debug_string.second;
     io::ArrayInputStream input_stream(content.data(), content.size());
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);

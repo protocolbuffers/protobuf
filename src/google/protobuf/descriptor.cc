@@ -6587,10 +6587,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   // extensions defined in this file may have features attached to them.
   if (!had_errors_) {
     OptionInterpreter option_interpreter(this);
-    for (std::vector<OptionsToInterpret>::iterator iter =
-             options_to_interpret_.begin();
-         iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretNonExtensionOptions(&(*iter));
+    for (auto & iter : options_to_interpret_) {
+      option_interpreter.InterpretNonExtensionOptions(&iter);
     }
 
     // Handle feature resolution.  This must occur after option interpretation,
@@ -6624,10 +6622,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     // Interpret any remaining uninterpreted options gathered into
     // options_to_interpret_ during descriptor building.  Cross-linking has made
     // extension options known, so all interpretations should now succeed.
-    for (std::vector<OptionsToInterpret>::iterator iter =
-             options_to_interpret_.begin();
-         iter != options_to_interpret_.end(); ++iter) {
-      option_interpreter.InterpretOptionExtensions(&(*iter));
+    for (auto & iter : options_to_interpret_) {
+      option_interpreter.InterpretOptionExtensions(&iter);
     }
     options_to_interpret_.clear();
     if (info != nullptr) {
@@ -9756,9 +9752,8 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     SourceCodeInfo_Location* replacement = new_locs.Add();
     *replacement = *loc;
     replacement->clear_path();
-    for (std::vector<int>::iterator rit = entry->second.begin();
-         rit != entry->second.end(); rit++) {
-      replacement->add_path(*rit);
+    for (int & rit : entry->second) {
+      replacement->add_path(rit);
     }
   }
 

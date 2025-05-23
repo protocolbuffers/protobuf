@@ -90,8 +90,8 @@ bool ObjectiveCGenerator::GenerateAll(
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
-  for (size_t i = 0; i < options.size(); i++) {
-    if (options[i].first == "expected_prefixes_path") {
+  for (auto & option : options) {
+    if (option.first == "expected_prefixes_path") {
       // Path to find a file containing the expected prefixes
       // (objc_class_prefix "PREFIX") for proto packages (package NAME). The
       // generator will then issue warnings/errors if in the proto files being
@@ -108,17 +108,17 @@ bool ObjectiveCGenerator::GenerateAll(
       //
       // There is no validation that the prefixes are good prefixes, it is
       // assumed that they are when you create the file.
-      validation_options.expected_prefixes_path = options[i].second;
-    } else if (options[i].first == "expected_prefixes_suppressions") {
+      validation_options.expected_prefixes_path = option.second;
+    } else if (option.first == "expected_prefixes_suppressions") {
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
       for (absl::string_view split_piece :
-           absl::StrSplit(options[i].second, ';', absl::SkipEmpty())) {
+           absl::StrSplit(option.second, ';', absl::SkipEmpty())) {
         validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
       }
-    } else if (options[i].first == "prefixes_must_be_registered") {
+    } else if (option.first == "prefixes_must_be_registered") {
       // If objc prefix file option value must be registered to be used. This
       // option has no meaning if an "expected_prefixes_path" isn't set. The
       // available options are:
@@ -126,27 +126,27 @@ bool ObjectiveCGenerator::GenerateAll(
       //   "yes": They must be registered and an error will be raised if a files
       //     tried to use a prefix that isn't registered.
       // Default is "no".
-      if (!StringToBool(options[i].second,
+      if (!StringToBool(option.second,
                         &validation_options.prefixes_must_be_registered)) {
         *error = absl::StrCat(
             "error: Unknown value for prefixes_must_be_registered: ",
-            options[i].second);
+            option.second);
         return false;
       }
-    } else if (options[i].first == "require_prefixes") {
+    } else if (option.first == "require_prefixes") {
       // If every file must have an objc prefix file option to be used. The
       // available options are:
       //   "no": Files can be generated without the prefix option.
       //   "yes": Files must have the objc prefix option, and an error will be
       //     raised if a files doesn't have one.
       // Default is "no".
-      if (!StringToBool(options[i].second,
+      if (!StringToBool(option.second,
                         &validation_options.require_prefixes)) {
         *error = absl::StrCat("error: Unknown value for require_prefixes: ",
-                              options[i].second);
+                              option.second);
         return false;
       }
-    } else if (options[i].first == "generate_for_named_framework") {
+    } else if (option.first == "generate_for_named_framework") {
       // The name of the framework that protos are being generated for. This
       // will cause the #import statements to be framework based using this
       // name (i.e. - "#import <NAME/proto.pbobjc.h>).
@@ -155,8 +155,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // named_framework_to_proto_path_mappings_path, then this is effectively
       // the "default" framework name used for everything that wasn't mapped by
       // the mapping file.
-      generation_options.generate_for_named_framework = options[i].second;
-    } else if (options[i].first ==
+      generation_options.generate_for_named_framework = option.second;
+    } else if (option.first ==
                "named_framework_to_proto_path_mappings_path") {
       // Path to find a file containing the list of framework names and proto
       // files. The generator uses this to decide if a proto file
@@ -179,15 +179,15 @@ bool ObjectiveCGenerator::GenerateAll(
       // with generate_for_named_framework, or the relative path to it's include
       // path otherwise.
       generation_options.named_framework_to_proto_path_mappings_path =
-          options[i].second;
-    } else if (options[i].first == "runtime_import_prefix") {
+          option.second;
+    } else if (option.first == "runtime_import_prefix") {
       // Path to use as a prefix on #imports of runtime provided headers in the
       // generated files. When integrating ObjC protos into a build system,
       // this can be used to avoid having to add the runtime directory to the
       // header search path since the generate #import will be more complete.
       generation_options.runtime_import_prefix =
-          std::string(absl::StripSuffix(options[i].second, "/"));
-    } else if (options[i].first == "package_to_prefix_mappings_path") {
+          std::string(absl::StripSuffix(option.second, "/"));
+    } else if (option.first == "package_to_prefix_mappings_path") {
       // Path to use for when loading the objc class prefix mappings to use.
       // The `objc_class_prefix` file option is always honored first if one is
       // present. This option also has precedent over the use_package_as_prefix
@@ -202,22 +202,22 @@ bool ObjectiveCGenerator::GenerateAll(
       //     entry can be made as "no_package:PATH=prefix", where PATH is the
       //     path for the .proto file.
       //
-      SetPackageToPrefixMappingsPath(options[i].second);
-    } else if (options[i].first == "use_package_as_prefix") {
+      SetPackageToPrefixMappingsPath(option.second);
+    } else if (option.first == "use_package_as_prefix") {
       // Controls how the symbols should be prefixed to avoid symbols
       // collisions. The objc_class_prefix file option is always honored, this
       // is just what to do if that isn't set. The available options are:
       //   "no": Not prefixed (the existing mode).
       //   "yes": Make a prefix out of the proto package.
       bool value = false;
-      if (StringToBool(options[i].second, &value)) {
+      if (StringToBool(option.second, &value)) {
         SetUseProtoPackageAsDefaultPrefix(value);
       } else {
         *error = absl::StrCat("error: Unknown use_package_as_prefix: ",
-                              options[i].second);
+                              option.second);
         return false;
       }
-    } else if (options[i].first == "proto_package_prefix_exceptions_path") {
+    } else if (option.first == "proto_package_prefix_exceptions_path") {
       // Path to find a file containing the list of proto package names that are
       // exceptions when use_package_as_prefix is enabled. This can be used to
       // migrate packages one at a time to use_package_as_prefix since there
@@ -228,32 +228,32 @@ bool ObjectiveCGenerator::GenerateAll(
       //   - Comments start with "#".
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "some.proto.package # comment")
-      SetProtoPackagePrefixExceptionList(options[i].second);
-    } else if (options[i].first == "package_as_prefix_forced_prefix") {
+      SetProtoPackagePrefixExceptionList(option.second);
+    } else if (option.first == "package_as_prefix_forced_prefix") {
       // String to use as the prefix when deriving a prefix from the package
       // name. So this only applies when use_package_as_prefix is also used.
-      SetForcedPackagePrefix(options[i].second);
-    } else if (options[i].first == "headers_use_forward_declarations") {
-      if (!StringToBool(options[i].second,
+      SetForcedPackagePrefix(option.second);
+    } else if (option.first == "headers_use_forward_declarations") {
+      if (!StringToBool(option.second,
                         &generation_options.headers_use_forward_declarations)) {
         *error = absl::StrCat(
             "error: Unknown value for headers_use_forward_declarations: ",
-            options[i].second);
+            option.second);
         return false;
       }
-    } else if (options[i].first == "strip_custom_options") {
+    } else if (option.first == "strip_custom_options") {
       // Controls if extensions that define custom options are included the
       // generated code. Since ObjC protos does not capture these descriptor
       // options, there normally isn't a need for these extensions. Docs on
       // custom options:
       //   https://protobuf.dev/programming-guides/proto2/#customoptions
-      if (!StringToBool(options[i].second,
+      if (!StringToBool(option.second,
                         &generation_options.strip_custom_options)) {
         *error = absl::StrCat("error: Unknown value for strip_custom_options: ",
-                              options[i].second);
+                              option.second);
         return false;
       }
-    } else if (options[i].first == "generate_minimal_imports") {
+    } else if (option.first == "generate_minimal_imports") {
       // Controls if minimal imports should be generated from a files imports.
       // Since custom options require imports, they current cause generated
       // imports even though there is nothing captured in the generated code,
@@ -261,14 +261,14 @@ bool ObjectiveCGenerator::GenerateAll(
       // could break code in complex cases where code uses types via long
       // import chains with public imports mixed through the way, as things
       // that aren't really needed for the local usages could be pruned.
-      if (!StringToBool(options[i].second,
+      if (!StringToBool(option.second,
                         &generation_options.generate_minimal_imports)) {
         *error =
             absl::StrCat("error: Unknown value for generate_minimal_imports: ",
-                         options[i].second);
+                         option.second);
         return false;
       }
-    } else if (options[i].first == "experimental_multi_source_generation") {
+    } else if (option.first == "experimental_multi_source_generation") {
       // This is an experimental option, and could be removed or change at any
       // time; it is not documented in the README.md for that reason.
       //
@@ -277,30 +277,30 @@ bool ObjectiveCGenerator::GenerateAll(
       // compiling/linking with `-ObjC` as then only linker visible needs should
       // be pulled into the builds.
       if (!StringToBool(
-              options[i].second,
+              option.second,
               &generation_options.experimental_multi_source_generation)) {
         *error = absl::StrCat(
             "error: Unknown value for experimental_multi_source_generation: ",
-            options[i].second);
+            option.second);
         return false;
       }
-    } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
+    } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       if (!StringToBool(
-              options[i].second,
+              option.second,
               &generation_options.experimental_strip_nonfunctional_codegen)) {
         *error = absl::StrCat(
             "error: Unknown value for "
             "experimental_strip_nonfunctional_codegen: ",
-            options[i].second);
+            option.second);
         return false;
       }
-    } else if (options[i].first == "annotation_pragma_name") {
-      generation_options.annotation_pragma_name = options[i].second;
-    } else if (options[i].first == "annotation_guard_name") {
-      generation_options.annotation_guard_name = options[i].second;
+    } else if (option.first == "annotation_pragma_name") {
+      generation_options.annotation_pragma_name = option.second;
+    } else if (option.first == "annotation_guard_name") {
+      generation_options.annotation_guard_name = option.second;
     } else {
       *error =
-          absl::StrCat("error: Unknown generator option: ", options[i].first);
+          absl::StrCat("error: Unknown generator option: ", option.first);
       return false;
     }
   }

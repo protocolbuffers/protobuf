@@ -782,8 +782,7 @@ void MapReflectionTester::RemoveLastMapsViaReflection(Message* message) {
 
   std::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
-  for (size_t i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
+  for (const auto& field : output) {
     if (!field->is_repeated()) continue;
     reflection->RemoveLast(message, field);
   }
@@ -794,8 +793,7 @@ void MapReflectionTester::ReleaseLastMapsViaReflection(Message* message) {
 
   std::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
-  for (size_t i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
+  for (const auto& field : output) {
     if (!field->is_repeated()) continue;
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
 
@@ -810,8 +808,7 @@ void MapReflectionTester::SwapMapsViaReflection(Message* message) {
   const Reflection* reflection = message->GetReflection();
   std::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
-  for (size_t i = 0; i < output.size(); ++i) {
-    const FieldDescriptor* field = output[i];
+  for (const auto& field : output) {
     if (!field->is_repeated()) continue;
     reflection->SwapElements(message, field, 0, 1);
   }

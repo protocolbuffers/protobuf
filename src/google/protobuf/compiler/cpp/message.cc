@@ -2795,9 +2795,9 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
         "1,\n");
   } else if (!has_bit_indices_.empty()) {
     entries += has_bit_indices_.size();
-    for (size_t i = 0; i < has_bit_indices_.size(); ++i) {
+    for (int has_bit_indice : has_bit_indices_) {
       const std::string index =
-          has_bit_indices_[i] >= 0 ? absl::StrCat(has_bit_indices_[i]) : "~0u";
+          has_bit_indice >= 0 ? absl::StrCat(has_bit_indice) : "~0u";
       format("$1$,\n", index);
     }
   }

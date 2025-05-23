@@ -934,8 +934,8 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
   }
   // Calculate how much space we need.
   int indent_size = 0;
-  for (size_t i = 0; i < data_.size(); ++i) {
-    if (data_[i] == '\n') indent_size += indent_.size();
+  for (char i : data_) {
+    if (i == '\n') indent_size += indent_.size();
   }
 
   // Make a hole for it.
@@ -1454,8 +1454,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
   // Generate output.
   if (mode_ == MODE_COMPILE) {
-    for (size_t i = 0; i < output_directives_.size(); ++i) {
-      std::string output_location = output_directives_[i].output_location;
+    for (auto & output_directive : output_directives_) {
+      std::string output_location = output_directive.output_location;
       if (!absl::EndsWith(output_location, ".zip") &&
           !absl::EndsWith(output_location, ".jar") &&
           !absl::EndsWith(output_location, ".srcjar")) {
@@ -1469,7 +1469,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         generator = std::make_unique<GeneratorContextImpl>(parsed_files);
       }
 
-      if (!GenerateOutput(parsed_files, output_directives_[i],
+      if (!GenerateOutput(parsed_files, output_directive,
                           generator.get())) {
         return 1;
       }
@@ -1541,8 +1541,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   if (mode_ == MODE_PRINT) {
     switch (print_mode_) {
       case PRINT_FREE_FIELDS:
-        for (size_t i = 0; i < parsed_files.size(); ++i) {
-          const FileDescriptor* fd = parsed_files[i];
+        for (auto fd : parsed_files) {
           for (int j = 0; j < fd->message_type_count(); ++j) {
             PrintFreeFieldNumbers(fd->message_type(j));
           }
@@ -1565,8 +1564,8 @@ bool CommandLineInterface::InitializeDiskSourceTree(
   AddDefaultProtoPaths(&proto_path_);
 
   // Set up the source tree.
-  for (size_t i = 0; i < proto_path_.size(); ++i) {
-    source_tree->MapPath(proto_path_[i].first, proto_path_[i].second);
+  for (auto & i : proto_path_) {
+    source_tree->MapPath(i.first, i.second);
   }
 
   // Map input files to virtual paths if possible.
@@ -2220,17 +2219,17 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     std::vector<std::string> parts =
         absl::StrSplit(value, absl::ByAnyChar(separator), absl::SkipEmpty());
 
-    for (size_t i = 0; i < parts.size(); ++i) {
+    for (const auto & part : parts) {
       std::string virtual_path;
       std::string disk_path;
 
-      std::string::size_type equals_pos = parts[i].find_first_of('=');
+      std::string::size_type equals_pos = part.find_first_of('=');
       if (equals_pos == std::string::npos) {
         virtual_path = "";
-        disk_path = parts[i];
+        disk_path = part;
       } else {
-        virtual_path = parts[i].substr(0, equals_pos);
-        disk_path = parts[i].substr(equals_pos + 1);
+        virtual_path = part.substr(0, equals_pos);
+        disk_path = part.substr(equals_pos + 1);
       }
 
       if (disk_path.empty()) {
@@ -2244,12 +2243,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       // Make sure disk path exists, warn otherwise.
       if (access(disk_path.c_str(), F_OK) < 0) {
         // Try the original path; it may have just happened to have a '=' in it.
-        if (access(parts[i].c_str(), F_OK) < 0) {
+        if (access(part.c_str(), F_OK) < 0) {
           std::cerr << disk_path << ": warning: directory does not exist."
                     << std::endl;
         } else {
           virtual_path = "";
-          disk_path = parts[i];
+          disk_path = part;
         }
       }
 
@@ -2861,8 +2860,8 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   FileDescriptorSet file_set;
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
-  for (size_t i = 0; i < parsed_files.size(); ++i) {
-    GetTransitiveDependencies(parsed_files[i], &already_seen,
+  for (auto parsed_file : parsed_files) {
+    GetTransitiveDependencies(parsed_file, &already_seen,
                               file_set.mutable_file());
   }
 
@@ -2872,8 +2871,8 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     GeneratorContextImpl* directory = pair.second.get();
     std::vector<std::string> relative_output_filenames;
     directory->GetOutputFilenames(&relative_output_filenames);
-    for (size_t i = 0; i < relative_output_filenames.size(); ++i) {
-      std::string output_filename = location + relative_output_filenames[i];
+    for (const auto & relative_output_filename : relative_output_filenames) {
+      std::string output_filename = location + relative_output_filename;
       if (output_filename.compare(0, 2, "./") == 0) {
         output_filename = output_filename.substr(2);
       }
@@ -3209,8 +3208,7 @@ bool CommandLineInterface::WriteDescriptorSet(
     // in GetTransitiveDependencies.
     absl::flat_hash_set<const FileDescriptor*> to_output;
     to_output.insert(parsed_files.begin(), parsed_files.end());
-    for (size_t i = 0; i < parsed_files.size(); ++i) {
-      const FileDescriptor* file = parsed_files[i];
+    for (auto file : parsed_files) {
       for (int j = 0; j < file->dependency_count(); j++) {
         const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
@@ -3233,8 +3231,8 @@ bool CommandLineInterface::WriteDescriptorSet(
   options.include_json_name = true;
   options.include_source_code_info = source_info_in_descriptor_set_;
   options.retain_options = retain_options_in_descriptor_set_;
-  for (size_t i = 0; i < parsed_files.size(); ++i) {
-    GetTransitiveDependencies(parsed_files[i], &already_seen,
+  for (auto parsed_file : parsed_files) {
+    GetTransitiveDependencies(parsed_file, &already_seen,
                               file_set.mutable_file(), options);
   }
 
@@ -3452,8 +3450,8 @@ void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
   std::vector<const Descriptor*> nested_messages;
   GatherOccupiedFieldRanges(descriptor, &ranges, &nested_messages);
 
-  for (size_t i = 0; i < nested_messages.size(); ++i) {
-    PrintFreeFieldNumbers(nested_messages[i]);
+  for (auto & nested_message : nested_messages) {
+    PrintFreeFieldNumbers(nested_message);
   }
   FormatFreeFieldNumbers(descriptor->full_name(), ranges);
 }

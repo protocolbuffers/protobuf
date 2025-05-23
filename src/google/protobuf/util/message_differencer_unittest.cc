@@ -81,8 +81,8 @@ const FieldDescriptor* GetFieldDescriptor(const Message& message,
       absl::StrSplit(field_name, '.', absl::SkipEmpty());
   const Descriptor* descriptor = message.GetDescriptor();
   const FieldDescriptor* field = nullptr;
-  for (int i = 0; i < field_path.size(); i++) {
-    field = descriptor->FindFieldByName(field_path[i]);
+  for (const auto & i : field_path) {
+    field = descriptor->FindFieldByName(i);
     descriptor = field->message_type();
   }
   return field;
@@ -1419,9 +1419,9 @@ TEST(MessageDifferencerTest, SpecifiedFieldsDetectsDifferencesTest) {
 
   std::vector<const FieldDescriptor*> compare_fields;
   // Only compare the repeated field descriptors.
-  for (int i = 0; i < fields1.size(); ++i) {
-    if (fields1[i]->is_repeated()) {
-      compare_fields.push_back(fields1[i]);
+  for (auto & field : fields1) {
+    if (field->is_repeated()) {
+      compare_fields.push_back(field);
     }
   }
 
@@ -2376,12 +2376,12 @@ class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
                  const std::vector<util::MessageDifferencer::SpecificField>&
                      parent_fields) override {
     std::string name = "";
-    for (size_t i = 0; i < parent_fields.size(); ++i) {
-      absl::StrAppend(&name, parent_fields[i].field->name(), ".");
+    for (const auto & parent_field : parent_fields) {
+      absl::StrAppend(&name, parent_field.field->name(), ".");
     }
     absl::StrAppend(&name, field->name());
-    for (size_t i = 0; i < ABSL_ARRAYSIZE(kIgnoredFields); ++i) {
-      if (name == kIgnoredFields[i]) {
+    for (auto kIgnoredField : kIgnoredFields) {
+      if (name == kIgnoredField) {
         return true;
       }
     }

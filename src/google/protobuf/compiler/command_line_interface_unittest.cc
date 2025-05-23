@@ -5241,9 +5241,9 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   std::string StripCR(const std::string& text) {
     std::string result;
 
-    for (size_t i = 0; i < text.size(); ++i) {
-      if (text[i] != '\r') {
-        result.push_back(text[i]);
+    for (char i : text) {
+      if (i != '\r') {
+        result.push_back(i);
       }
     }
 

@@ -49,9 +49,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
   // in the markdown. Note that we can't remove leading or trailing whitespace
   // as *that's* relevant in markdown too. (We don't skip "just whitespace"
   // lines, either.)
-  for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end();
-       ++it) {
-    std::string line = *it;
+  for (auto line : lines) {
     if (line.empty()) {
       last_was_empty = true;
     } else {

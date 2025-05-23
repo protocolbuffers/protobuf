@@ -1099,7 +1099,7 @@ TEST(RepeatedField, ExtractSubrange) {
 
         // Create a catcher array and call ExtractSubrange.
         int32_t catcher[10];
-        for (int i = 0; i < 10; ++i) catcher[i] = -1;
+        for (int & i : catcher) i = -1;
         field.ExtractSubrange(start, num, catcher);
 
         // Does the resulting array have the right size?

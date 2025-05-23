@@ -1129,7 +1129,7 @@ TEST(RepeatedPtrFieldTest, ExtractSubrange) {
 
           // Create a catcher array and call ExtractSubrange.
           std::string* catcher[10];
-          for (int i = 0; i < 10; ++i) catcher[i] = nullptr;
+          for (auto & i : catcher) i = nullptr;
           field.ExtractSubrange(start, num, catcher);
 
           // Does the resulting array have the right size?

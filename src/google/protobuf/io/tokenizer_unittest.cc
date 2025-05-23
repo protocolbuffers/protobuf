@@ -590,9 +590,9 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
   tokenizer.set_comment_style(Tokenizer::SH_COMMENT_STYLE);
 
   // Advance through tokens and check that they are parsed as expected.
-  for (int i = 0; i < ABSL_ARRAYSIZE(kTokens); i++) {
+  for (auto kToken : kTokens) {
     EXPECT_TRUE(tokenizer.Next());
-    EXPECT_EQ(tokenizer.current().text, kTokens[i]);
+    EXPECT_EQ(tokenizer.current().text, kToken);
   }
 
   // There should be no more input.

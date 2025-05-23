@@ -41,8 +41,8 @@ namespace php {
 
 bool IsReservedName(absl::string_view name) {
   std::string lower = absl::AsciiStrToLower(name);
-  for (int i = 0; i < kReservedNamesSize; i++) {
-    if (lower == kReservedNames[i]) {
+  for (auto kReservedName : kReservedNames) {
+    if (lower == kReservedName) {
       return true;
     }
   }

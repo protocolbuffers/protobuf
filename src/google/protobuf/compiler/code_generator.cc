@@ -43,8 +43,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
   // Default implementation is just to call the per file method, and prefix any
   // error string with the file to provide context.
   bool succeeded = true;
-  for (size_t i = 0; i < files.size(); i++) {
-    const FileDescriptor* file = files[i];
+  for (auto file : files) {
     succeeded = Generate(file, parameter, generator_context, error);
     if (!succeeded && error && error->empty()) {
       *error =

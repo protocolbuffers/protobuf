@@ -569,8 +569,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
 
   printer->Print("java.lang.String info =\n");
   std::string line;
-  for (size_t i = 0; i < chars.size(); i++) {
-    uint16_t code = chars[i];
+  for (unsigned short code : chars) {
     EscapeUtf16ToString(code, &line);
     if (line.size() >= 80) {
       printer->Print("    \"$string$\" +\n", "string", line);

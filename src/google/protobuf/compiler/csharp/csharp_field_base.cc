@@ -303,8 +303,8 @@ bool FieldGeneratorBase::has_default_value() {
 }
 
 bool AllPrintableAscii(absl::string_view text) {
-  for(int i = 0; i < text.size(); i++) {
-    if (text[i] < 0x20 || text[i] > 0x7e) {
+  for(char i : text) {
+    if (i < 0x20 || i > 0x7e) {
       return false;
     }
   }
