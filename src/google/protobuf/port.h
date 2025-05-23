@@ -32,7 +32,6 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
-#include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
 
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
