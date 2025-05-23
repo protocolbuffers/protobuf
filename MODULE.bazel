@@ -46,6 +46,14 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "1.0.0")
 
+# Pin to rules_proto to 7.1.0 to avoid toolchain incompatibilities when
+# --incompatible_enable_proto_toolchain_resolution=true in Bazel 7.
+# rules_proto 7.0.2 from deps incorrectly rules_proto's toolchain_type but protobuf's toolchain, but
+# 7.1.0 uses protobuf's toolchain and toolchain_type.
+# TODO: Restore to dev_dependency once Bazel 7 is dropped.
+# rules_proto is needed for @com_google_protobuf_v25 used in //compatibility/... tests
+bazel_dep(name = "rules_proto", version = "7.1.0")
+
 bazel_dep(name = "rules_rust", version = "0.56.0", dev_dependency = True)
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
 
@@ -82,6 +90,7 @@ ruby.toolchain(
     version = "system",
 )
 use_repo(ruby, "ruby")
+
 ruby.bundle_fetch(
     name = "protobuf_bundle",
     gem_checksums = {
@@ -226,9 +235,6 @@ bazel_dep(
 # For clang-cl configuration
 cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
 use_repo(cc_configure, "local_config_cc")
-
-# rules_proto are needed for @com_google_protobuf_v25 used in //compatibility/... tests
-bazel_dep(name = "rules_proto", version = "7.0.2", dev_dependency = True)
 
 # For the Lua upb implementation
 bazel_dep(name = "lua", version = "5.4.6", dev_dependency = True)
