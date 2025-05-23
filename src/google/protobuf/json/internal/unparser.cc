@@ -100,7 +100,7 @@ bool RoundTripsThroughDouble(Int x) {
   // Thus, we have to go through ldexp.
   double min = 0;
   double max_plus_one = std::ldexp(1.0, sizeof(Int) * 8);
-  if (std::is_signed<Int>::value) {
+  if (std::is_signed_v<Int>) {
     max_plus_one /= 2;
     min = -max_plus_one;
   }

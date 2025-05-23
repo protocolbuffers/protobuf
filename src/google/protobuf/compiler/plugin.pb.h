@@ -109,8 +109,8 @@ inline constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CodeGeneratorResponse_Feature_descriptor();
 template <typename T>
 const ::std::string& CodeGeneratorResponse_Feature_Name(T value) {
-  static_assert(::std::is_same<T, CodeGeneratorResponse_Feature>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, CodeGeneratorResponse_Feature> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Feature_Name().");
   return CodeGeneratorResponse_Feature_Name(static_cast<CodeGeneratorResponse_Feature>(value));
 }

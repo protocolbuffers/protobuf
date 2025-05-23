@@ -1681,8 +1681,8 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                       using InternalArenaConstructable_ = void;
                       using DestructorSkippable_ = void;
                     };
-                    static_assert(::std::is_trivially_copy_constructible<Split>::value);
-                    static_assert(::std::is_trivially_destructible<Split>::value);
+                    static_assert(::std::is_trivially_copy_constructible_v<Split>);
+                    static_assert(::std::is_trivially_destructible_v<Split>);
                     Split* $nonnull$ _split_;
                   )cc");
         }},
@@ -1820,16 +1820,16 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                           $nonnull$ value_field);
                   template <
                       typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
+                      class = typename std::enable_if_t<!std::is_convertible_v<
+                          T, const $pb$::Message&>>>
                   bool PackFrom(const T& message) {
                     return $pbi$::InternalPackFrom<T>(
                         message, mutable_type_url(), _internal_mutable_value());
                   }
                   template <
                       typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
+                      class = typename std::enable_if_t<!std::is_convertible_v<
+                          T, const $pb$::Message&>>>
                   bool PackFrom(const T& message,
                                 ::absl::string_view type_url_prefix) {
                     return $pbi$::InternalPackFrom<T>(
@@ -1838,8 +1838,8 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                   }
                   template <
                       typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
+                      class = typename std::enable_if_t<!std::is_convertible_v<
+                          T, const $pb$::Message&>>>
                   bool UnpackTo(T* $nonnull$ message) const {
                     return $pbi$::InternalUnpackTo<T>(
                         _internal_type_url(), _internal_value(), message);

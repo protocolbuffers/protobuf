@@ -221,8 +221,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   // directly. Because this includes $Enum$, it must be a callback.
   auto write_assert = [&] {
     p->Emit(R"cc(
-      static_assert(::std::is_same<T, $Msg_Enum$>::value ||
-                        ::std::is_integral<T>::value,
+      static_assert(::std::is_same_v<T, $Msg_Enum$> ||
+                        ::std::is_integral_v<T>,
                     "Incorrect type passed to $Enum$_Name().");
     )cc");
   };

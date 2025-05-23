@@ -547,7 +547,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
-using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
+using LazyEagerVerifyFnRef = std::remove_pointer_t<LazyEagerVerifyFnType>&;
 
 
 // ParseContext holds all data that is global to the entire parse. Most
@@ -737,7 +737,7 @@ T UnalignedLoad(const char* p) {
   return res;
 }
 template <typename T, typename Void,
-          typename = std::enable_if_t<std::is_same<Void, void>::value>>
+          typename = std::enable_if_t<std::is_same_v<Void, void>>>
 T UnalignedLoad(const Void* p) {
   return UnalignedLoad<T>(reinterpret_cast<const char*>(p));
 }
