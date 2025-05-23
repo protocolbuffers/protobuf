@@ -53,20 +53,6 @@ static const upb_MiniTable* _upb_Encoder_GetSubMiniTable(
   return *subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
 }
 
-#define UPB_PB_VARINT_MAX_LEN 10
-
-UPB_NOINLINE
-static size_t encode_varint64(uint64_t val, char* buf) {
-  size_t i = 0;
-  do {
-    uint8_t byte = val & 0x7fU;
-    val >>= 7;
-    if (val) byte |= 0x80U;
-    buf[i++] = byte;
-  } while (val);
-  return i;
-}
-
 static uint32_t encode_zz32(int32_t n) {
   return ((uint32_t)n << 1) ^ (n >> 31);
 }
@@ -148,15 +134,21 @@ static void encode_fixed32(upb_encstate* e, uint32_t val) {
   encode_bytes(e, &val, sizeof(uint32_t));
 }
 
+#define UPB_PB_VARINT_MAX_LEN 10
+
 UPB_NOINLINE
 static void encode_longvarint(upb_encstate* e, uint64_t val) {
-  size_t len;
-  char* start;
-
   encode_reserve(e, UPB_PB_VARINT_MAX_LEN);
-  len = encode_varint64(val, e->ptr);
-  start = e->ptr + UPB_PB_VARINT_MAX_LEN - len;
-  memmove(start, e->ptr, len);
+  char* ptr = e->ptr;
+  size_t len = 0;
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    ptr[len++] = byte;
+  } while (val);
+  char* start = ptr + UPB_PB_VARINT_MAX_LEN - len;
+  memmove(start, ptr, len);
   e->ptr = start;
 }
 
