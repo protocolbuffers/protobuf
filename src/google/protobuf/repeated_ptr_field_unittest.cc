@@ -51,20 +51,20 @@ using ::testing::Le;
 
 TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   using It = RepeatedPtrField<std::string>::pointer_iterator;
-  static_assert(std::is_same<It::value_type, std::string*>::value, "");
-  static_assert(std::is_same<It::reference, std::string*&>::value, "");
-  static_assert(std::is_same<It::pointer, std::string**>::value, "");
-  static_assert(std::is_same<It::difference_type, std::ptrdiff_t>::value, "");
-  static_assert(std::is_same<It::iterator_category,
-                             std::random_access_iterator_tag>::value,
+  static_assert(std::is_same_v<It::value_type, std::string*>, "");
+  static_assert(std::is_same_v<It::reference, std::string*&>, "");
+  static_assert(std::is_same_v<It::pointer, std::string**>, "");
+  static_assert(std::is_same_v<It::difference_type, std::ptrdiff_t>, "");
+  static_assert(std::is_same_v<It::iterator_category,
+                             std::random_access_iterator_tag>,
                 "");
 #if __cplusplus >= 202002L
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");
 #else
-  static_assert(std::is_same<It::iterator_concept,
-                             std::random_access_iterator_tag>::value,
+  static_assert(std::is_same_v<It::iterator_concept,
+                             std::random_access_iterator_tag>,
                 "");
 #endif
 }
@@ -85,22 +85,22 @@ TEST(RepeatedPtrOverPtrsIteratorTest, ToAddress) {
 
 TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
   using It = RepeatedPtrField<std::string>::const_pointer_iterator;
-  static_assert(std::is_same<It::value_type, const std::string*>::value, "");
-  static_assert(std::is_same<It::reference, const std::string* const&>::value,
+  static_assert(std::is_same_v<It::value_type, const std::string*>, "");
+  static_assert(std::is_same_v<It::reference, const std::string* const&>,
                 "");
-  static_assert(std::is_same<It::pointer, const std::string* const*>::value,
+  static_assert(std::is_same_v<It::pointer, const std::string* const*>,
                 "");
-  static_assert(std::is_same<It::difference_type, std::ptrdiff_t>::value, "");
-  static_assert(std::is_same<It::iterator_category,
-                             std::random_access_iterator_tag>::value,
+  static_assert(std::is_same_v<It::difference_type, std::ptrdiff_t>, "");
+  static_assert(std::is_same_v<It::iterator_category,
+                             std::random_access_iterator_tag>,
                 "");
 #if __cplusplus >= 202002L
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");
 #else
-  static_assert(std::is_same<It::iterator_concept,
-                             std::random_access_iterator_tag>::value,
+  static_assert(std::is_same_v<It::iterator_concept,
+                             std::random_access_iterator_tag>,
                 "");
 #endif
 }

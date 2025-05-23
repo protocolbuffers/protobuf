@@ -153,7 +153,7 @@ class JsonWriter {
   auto Write(Ts... args) ->
       // This bit of SFINAE avoids this function being called with one argument,
       // so the other overloads of Write() can be picked up instead.
-      typename std::enable_if<sizeof...(Ts) != 1, void>::type {
+      std::enable_if_t<sizeof...(Ts) != 1, void> {
     Each(std::make_tuple(args...), [this](auto x) { this->Write(x); });
   }
 
