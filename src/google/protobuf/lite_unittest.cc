@@ -167,7 +167,7 @@ class LiteTest : public ::testing::Test {};
 struct TypedTestName {
   template <typename T>
   static std::string GetName(int /*i*/) {
-    return std::is_same<T, absl::Cord>::value ? "Cord" : "String";
+    return std::is_same_v<T, absl::Cord> ? "Cord" : "String";
   }
 };
 

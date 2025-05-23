@@ -682,7 +682,7 @@ TEST(RepeatedField, AddRange7) {
   int ints[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
   absl::Span<const int> span(ints);
   auto p = span.begin();
-  static_assert(std::is_convertible<decltype(p), const int*>::value, "");
+  static_assert(std::is_convertible_v<decltype(p), const int*>, "");
   RepeatedField<int> me;
   me.Add(span.begin(), span.end());
 

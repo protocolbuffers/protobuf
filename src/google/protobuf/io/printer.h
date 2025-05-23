@@ -536,11 +536,11 @@ class PROTOBUF_EXPORT Printer {
   // Returns an RAII object that pops the lookup frame.
   template <
       typename Map = absl::flat_hash_map<absl::string_view, absl::string_view>,
-      typename = std::enable_if_t<!std::is_pointer<Map>::value>,
+      typename = std::enable_if_t<!std::is_pointer_v<Map>>,
       // Prefer the more specific span impl if this could be turned into
       // a span.
       typename = std::enable_if_t<
-          !std::is_convertible<Map, absl::Span<const Sub>>::value>>
+          !std::is_convertible_v<Map, absl::Span<const Sub>>>>
   auto WithVars(Map&& vars);
 
   // Pushes a new variable lookup frame that stores `vars` by value.
@@ -952,7 +952,7 @@ struct Printer::AnnotationRecord {
 
   template <
       typename String,
-      std::enable_if_t<std::is_convertible<const String&, std::string>::value,
+      std::enable_if_t<std::is_convertible_v<const String&, std::string>,
                        int> = 0>
   AnnotationRecord(  // NOLINT(google-explicit-constructor)
       const String& file_path,
@@ -962,7 +962,7 @@ struct Printer::AnnotationRecord {
   template <typename Desc,
             // This SFINAE clause excludes char* from matching this
             // constructor.
-            std::enable_if_t<std::is_class<Desc>::value, int> = 0>
+            std::enable_if_t<std::is_class_v<Desc>, int> = 0>
   AnnotationRecord(  // NOLINT(google-explicit-constructor)
       const Desc* desc,
       std::optional<AnnotationCollector::Semantic> semantic = std::nullopt)

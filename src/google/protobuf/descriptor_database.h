@@ -132,8 +132,8 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   bool FindAllMessageNames(std::vector<std::string>* PROTOBUF_NONNULL output);
 
  private:
-  static_assert(std::is_same<StringViewArg, absl::string_view>::value ||
-                    std::is_same<StringViewArg, const std::string&>::value,
+  static_assert(std::is_same_v<StringViewArg, absl::string_view> ||
+                    std::is_same_v<StringViewArg, const std::string&>,
                 "StringViewArg must be either "
                 "absl::string_view or const std::string&");
 };

@@ -319,8 +319,8 @@ inline constexpr int ExtensionRangeOptions_VerificationState_VerificationState_A
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL ExtensionRangeOptions_VerificationState_descriptor();
 template <typename T>
 const ::std::string& ExtensionRangeOptions_VerificationState_Name(T value) {
-  static_assert(::std::is_same<T, ExtensionRangeOptions_VerificationState>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, ExtensionRangeOptions_VerificationState> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to VerificationState_Name().");
   return ExtensionRangeOptions_VerificationState_Name(static_cast<ExtensionRangeOptions_VerificationState>(value));
 }
@@ -367,8 +367,8 @@ inline constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Type_descriptor();
 template <typename T>
 const ::std::string& FieldDescriptorProto_Type_Name(T value) {
-  static_assert(::std::is_same<T, FieldDescriptorProto_Type>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FieldDescriptorProto_Type> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Type_Name().");
   return FieldDescriptorProto_Type_Name(static_cast<FieldDescriptorProto_Type>(value));
 }
@@ -400,8 +400,8 @@ inline constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Label_descriptor();
 template <typename T>
 const ::std::string& FieldDescriptorProto_Label_Name(T value) {
-  static_assert(::std::is_same<T, FieldDescriptorProto_Label>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FieldDescriptorProto_Label> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Label_Name().");
   return FieldDescriptorProto_Label_Name(static_cast<FieldDescriptorProto_Label>(value));
 }
@@ -433,8 +433,8 @@ inline constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FileOptions_OptimizeMode_descriptor();
 template <typename T>
 const ::std::string& FileOptions_OptimizeMode_Name(T value) {
-  static_assert(::std::is_same<T, FileOptions_OptimizeMode>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FileOptions_OptimizeMode> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to OptimizeMode_Name().");
   return FileOptions_OptimizeMode_Name(static_cast<FileOptions_OptimizeMode>(value));
 }
@@ -466,8 +466,8 @@ inline constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_CType_descriptor();
 template <typename T>
 const ::std::string& FieldOptions_CType_Name(T value) {
-  static_assert(::std::is_same<T, FieldOptions_CType>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FieldOptions_CType> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to CType_Name().");
   return FieldOptions_CType_Name(static_cast<FieldOptions_CType>(value));
 }
@@ -499,8 +499,8 @@ inline constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_JSType_descriptor();
 template <typename T>
 const ::std::string& FieldOptions_JSType_Name(T value) {
-  static_assert(::std::is_same<T, FieldOptions_JSType>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FieldOptions_JSType> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to JSType_Name().");
   return FieldOptions_JSType_Name(static_cast<FieldOptions_JSType>(value));
 }
@@ -532,8 +532,8 @@ inline constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionRetention_descriptor();
 template <typename T>
 const ::std::string& FieldOptions_OptionRetention_Name(T value) {
-  static_assert(::std::is_same<T, FieldOptions_OptionRetention>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FieldOptions_OptionRetention> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to OptionRetention_Name().");
   return FieldOptions_OptionRetention_Name(static_cast<FieldOptions_OptionRetention>(value));
 }
@@ -572,8 +572,8 @@ inline constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionTargetType_descriptor();
 template <typename T>
 const ::std::string& FieldOptions_OptionTargetType_Name(T value) {
-  static_assert(::std::is_same<T, FieldOptions_OptionTargetType>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FieldOptions_OptionTargetType> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to OptionTargetType_Name().");
   return FieldOptions_OptionTargetType_Name(static_cast<FieldOptions_OptionTargetType>(value));
 }
@@ -605,8 +605,8 @@ inline constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE =
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL MethodOptions_IdempotencyLevel_descriptor();
 template <typename T>
 const ::std::string& MethodOptions_IdempotencyLevel_Name(T value) {
-  static_assert(::std::is_same<T, MethodOptions_IdempotencyLevel>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, MethodOptions_IdempotencyLevel> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to IdempotencyLevel_Name().");
   return MethodOptions_IdempotencyLevel_Name(static_cast<MethodOptions_IdempotencyLevel>(value));
 }
@@ -640,8 +640,8 @@ inline constexpr int FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Defaul
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_VisibilityFeature_DefaultSymbolVisibility>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_VisibilityFeature_DefaultSymbolVisibility> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to DefaultSymbolVisibility_Name().");
   return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(static_cast<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(value));
 }
@@ -674,8 +674,8 @@ inline constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_FieldPresence_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_FieldPresence_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_FieldPresence>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_FieldPresence> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to FieldPresence_Name().");
   return FeatureSet_FieldPresence_Name(static_cast<FeatureSet_FieldPresence>(value));
 }
@@ -707,8 +707,8 @@ inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnumType_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_EnumType_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_EnumType>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_EnumType> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to EnumType_Name().");
   return FeatureSet_EnumType_Name(static_cast<FeatureSet_EnumType>(value));
 }
@@ -740,8 +740,8 @@ inline constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRA
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_RepeatedFieldEncoding_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_RepeatedFieldEncoding_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_RepeatedFieldEncoding>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_RepeatedFieldEncoding> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to RepeatedFieldEncoding_Name().");
   return FeatureSet_RepeatedFieldEncoding_Name(static_cast<FeatureSet_RepeatedFieldEncoding>(value));
 }
@@ -773,8 +773,8 @@ inline constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_Utf8Validation_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_Utf8Validation_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_Utf8Validation>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_Utf8Validation> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Utf8Validation_Name().");
   return FeatureSet_Utf8Validation_Name(static_cast<FeatureSet_Utf8Validation>(value));
 }
@@ -806,8 +806,8 @@ inline constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_MessageEncoding_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_MessageEncoding_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_MessageEncoding>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_MessageEncoding> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to MessageEncoding_Name().");
   return FeatureSet_MessageEncoding_Name(static_cast<FeatureSet_MessageEncoding>(value));
 }
@@ -839,8 +839,8 @@ inline constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_JsonFormat_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_JsonFormat_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_JsonFormat>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_JsonFormat> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to JsonFormat_Name().");
   return FeatureSet_JsonFormat_Name(static_cast<FeatureSet_JsonFormat>(value));
 }
@@ -872,8 +872,8 @@ inline constexpr int FeatureSet_EnforceNamingStyle_EnforceNamingStyle_ARRAYSIZE 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnforceNamingStyle_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_EnforceNamingStyle_Name(T value) {
-  static_assert(::std::is_same<T, FeatureSet_EnforceNamingStyle>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, FeatureSet_EnforceNamingStyle> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to EnforceNamingStyle_Name().");
   return FeatureSet_EnforceNamingStyle_Name(static_cast<FeatureSet_EnforceNamingStyle>(value));
 }
@@ -905,8 +905,8 @@ inline constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation_Semantic_descriptor();
 template <typename T>
 const ::std::string& GeneratedCodeInfo_Annotation_Semantic_Name(T value) {
-  static_assert(::std::is_same<T, GeneratedCodeInfo_Annotation_Semantic>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, GeneratedCodeInfo_Annotation_Semantic> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Semantic_Name().");
   return GeneratedCodeInfo_Annotation_Semantic_Name(static_cast<GeneratedCodeInfo_Annotation_Semantic>(value));
 }
@@ -946,8 +946,8 @@ inline bool Edition_IsValid(int value) {
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Edition_descriptor();
 template <typename T>
 const ::std::string& Edition_Name(T value) {
-  static_assert(::std::is_same<T, Edition>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, Edition> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Edition_Name().");
   return ::google::protobuf::internal::NameOfEnum(Edition_descriptor(), value);
 }
@@ -974,8 +974,8 @@ inline constexpr int SymbolVisibility_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL SymbolVisibility_descriptor();
 template <typename T>
 const ::std::string& SymbolVisibility_Name(T value) {
-  static_assert(::std::is_same<T, SymbolVisibility>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, SymbolVisibility> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to SymbolVisibility_Name().");
   return SymbolVisibility_Name(static_cast<SymbolVisibility>(value));
 }

@@ -47,7 +47,7 @@ class MutableRepeatedFieldRef;
 // RepeatedFieldRef definition for non-message types.
 template <typename T>
 class RepeatedFieldRef<
-    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
+    T, std::enable_if_t<!std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
@@ -84,7 +84,7 @@ class RepeatedFieldRef<
 // MutableRepeatedFieldRef definition for non-message types.
 template <typename T>
 class MutableRepeatedFieldRef<
-    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
+    T, std::enable_if_t<!std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -136,7 +136,7 @@ class MutableRepeatedFieldRef<
 // RepeatedFieldRef definition for message types.
 template <typename T>
 class RepeatedFieldRef<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+    T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
@@ -196,7 +196,7 @@ class RepeatedFieldRef<
 // MutableRepeatedFieldRef definition for message types.
 template <typename T>
 class MutableRepeatedFieldRef<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+    T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -494,7 +494,7 @@ DEFINE_PRIMITIVE(BOOL, bool)
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<PrimitiveTraits<T>::is_primitive>::type> {
+    T, std::enable_if_t<PrimitiveTraits<T>::is_primitive>> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef T AccessorValueType;
@@ -509,7 +509,7 @@ struct RefTypeTraits<
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<is_proto_enum<T>::value>::type> {
+    T, std::enable_if_t<is_proto_enum<T>::value>> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   // We use int32_t for repeated enums in RepeatedFieldAccessor.
@@ -525,7 +525,7 @@ struct RefTypeTraits<
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<std::is_same<std::string, T>::value>::type> {
+    T, std::enable_if_t<std::is_same_v<std::string, T>>> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef std::string AccessorValueType;
@@ -551,7 +551,7 @@ struct MessageDescriptorGetter<Message> {
 
 template <typename T>
 struct RefTypeTraits<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+    T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef Message AccessorValueType;

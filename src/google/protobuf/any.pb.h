@@ -152,16 +152,16 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
           PROTOBUF_NONNULL value_field);
   template <
       typename T,
-      class = typename std::enable_if<!std::is_convertible<
-          T, const ::google::protobuf::Message&>::value>::type>
+      class = std::enable_if_t<!std::is_convertible_v<
+          T, const ::google::protobuf::Message&>>>
   bool PackFrom(const T& message) {
     return ::google::protobuf::internal::InternalPackFrom<T>(
         message, mutable_type_url(), _internal_mutable_value());
   }
   template <
       typename T,
-      class = typename std::enable_if<!std::is_convertible<
-          T, const ::google::protobuf::Message&>::value>::type>
+      class = std::enable_if_t<!std::is_convertible_v<
+          T, const ::google::protobuf::Message&>>>
   bool PackFrom(const T& message,
                 ::absl::string_view type_url_prefix) {
     return ::google::protobuf::internal::InternalPackFrom<T>(
@@ -170,8 +170,8 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   }
   template <
       typename T,
-      class = typename std::enable_if<!std::is_convertible<
-          T, const ::google::protobuf::Message&>::value>::type>
+      class = std::enable_if_t<!std::is_convertible_v<
+          T, const ::google::protobuf::Message&>>>
   bool UnpackTo(T* PROTOBUF_NONNULL message) const {
     return ::google::protobuf::internal::InternalUnpackTo<T>(
         _internal_type_url(), _internal_value(), message);

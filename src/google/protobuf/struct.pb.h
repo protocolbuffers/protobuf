@@ -105,8 +105,8 @@ inline constexpr int NullValue_ARRAYSIZE = 0 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL NullValue_descriptor();
 template <typename T>
 const ::std::string& NullValue_Name(T value) {
-  static_assert(::std::is_same<T, NullValue>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, NullValue> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to NullValue_Name().");
   return NullValue_Name(static_cast<NullValue>(value));
 }

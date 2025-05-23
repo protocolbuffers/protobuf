@@ -249,13 +249,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");
-  static_assert(!std::is_const<Element>::value,
+  static_assert(!std::is_const_v<Element>,
                 "We do not support const value types.");
-  static_assert(!std::is_volatile<Element>::value,
+  static_assert(!std::is_volatile_v<Element>,
                 "We do not support volatile value types.");
-  static_assert(!std::is_pointer<Element>::value,
+  static_assert(!std::is_pointer_v<Element>,
                 "We do not support pointer value types.");
-  static_assert(!std::is_reference<Element>::value,
+  static_assert(!std::is_reference_v<Element>,
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
@@ -287,8 +287,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   explicit RepeatedField(Arena* arena);
 
   template <typename Iter,
-            typename = typename std::enable_if<std::is_constructible<
-                Element, decltype(*std::declval<Iter>())>::value>::type>
+            typename = std::enable_if_t<std::is_constructible_v<
+                Element, decltype(*std::declval<Iter>())>>>
   RepeatedField(Iter begin, Iter end);
 
   // Arena enabled constructors: for internal use only.
@@ -535,7 +535,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   // Destroys all elements in [begin, end).
   // This function does nothing if `Element` is trivial.
   static void Destroy(const Element* begin, const Element* end) {
-    if (!std::is_trivial<Element>::value) {
+    if (!std::is_trivial_v<Element>) {
       std::for_each(begin, end, [&](const Element& e) { e.~Element(); });
     }
   }
@@ -968,9 +968,9 @@ inline void RepeatedField<Element>::AddInputIterator(Iter begin, Iter end) {
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
-  if (std::is_base_of<
+  if (std::is_base_of_v<
           std::forward_iterator_tag,
-          typename std::iterator_traits<Iter>::iterator_category>::value) {
+          typename std::iterator_traits<Iter>::iterator_category>) {
     AddForwardIterator(begin, end);
   } else {
     AddInputIterator(begin, end);
@@ -1245,7 +1245,7 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
     Element* pnew = static_cast<Element*>(new_rep->elements());
     Element* pold = elements(was_soo);
     // TODO: add absl::is_trivially_relocatable<Element>
-    if (std::is_trivial<Element>::value) {
+    if (std::is_trivial_v<Element>) {
       memcpy(static_cast<void*>(pnew), pold, old_size * sizeof(Element));
     } else {
       for (Element* end = pnew + old_size; pnew != end; ++pnew, ++pold) {
@@ -1314,7 +1314,7 @@ template <typename Element>
 class RepeatedIterator {
  private:
   using traits =
-      std::iterator_traits<typename std::remove_const<Element>::type*>;
+      std::iterator_traits<std::remove_const_t<Element>*>;
 
  public:
   // Note: value_type is never cv-qualified.
@@ -1330,8 +1330,8 @@ class RepeatedIterator {
   // Allows "upcasting" from RepeatedIterator<T**> to
   // RepeatedIterator<const T*const*>.
   template <typename OtherElement,
-            typename std::enable_if<std::is_convertible<
-                OtherElement*, pointer>::value>::type* = nullptr>
+            std::enable_if_t<std::is_convertible_v<
+                OtherElement*, pointer>>* = nullptr>
   constexpr RepeatedIterator(
       const RepeatedIterator<OtherElement>& other) noexcept
       : it_(other.it_) {}

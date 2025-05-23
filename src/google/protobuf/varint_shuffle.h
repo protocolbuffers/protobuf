@@ -52,8 +52,8 @@ template <typename VarintType, int limit = 10>
 PROTOBUF_ALWAYS_INLINE const char* ShiftMixParseVarint(const char* p,
                                                        int64_t& res1) {
   using Signed = std::make_signed_t<VarintType>;
-  constexpr bool kIs64BitVarint = std::is_same<Signed, int64_t>::value;
-  constexpr bool kIs32BitVarint = std::is_same<Signed, int32_t>::value;
+  constexpr bool kIs64BitVarint = std::is_same_v<Signed, int64_t>;
+  constexpr bool kIs32BitVarint = std::is_same_v<Signed, int32_t>;
   static_assert(kIs64BitVarint || kIs32BitVarint, "");
 
   // The algorithm relies on sign extension for each byte to set all high bits
