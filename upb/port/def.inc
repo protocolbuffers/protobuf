@@ -179,6 +179,29 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
+
+#if defined(__GLIBC__)
+#include <malloc.h>
+#define UPB_MALLOC_USABLE_SIZE(ptr) malloc_usable_size(ptr)
+#elif defined(__APPLE__)
+#include <malloc/malloc.h>
+#define UPB_MALLOC_USABLE_SIZE(ptr) malloc_size(ptr)
+#elif defined(_WIN32)
+#define UPB_MALLOC_USABLE_SIZE(ptr) _msize(ptr)
+#endif
+
+#if defined(__ANDROID__) && defined(UPB_MALLOC_USABLE_SIZE)
+
+// Android is very similar to normal Linux so this check prevents accidentally
+// enabling redundant usable size queries if more feature test checks are added
+#error malloc_usable_size always reports requested size on Android
+#endif
+
+#if defined(__APPLE__)
+#include <malloc/malloc.h>
+#define UPB_MALLOC_GOOD_SIZE(size) malloc_good_size(size)
+#endif
+
 #ifdef __clang__
 #define UPB_ALIGN_OF(type) _Alignof(type)
 #else
