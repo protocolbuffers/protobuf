@@ -235,6 +235,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRINTF(str, first_vararg)
 #endif
 
+#if defined(__clang__)
+#define UPB_NODEREF __attribute__((noderef))
+#else
+#define UPB_NODEREF
+#endif
+
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
 #define UPB_MIN(x, y) ((x) < (y) ? (x) : (y))
 

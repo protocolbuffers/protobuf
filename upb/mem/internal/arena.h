@@ -28,7 +28,7 @@
 
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
-  char* UPB_ONLYBITS(end);
+  const UPB_NODEREF char* UPB_ONLYBITS(end);
   UPB_XSAN_MEMBER
 };
 
