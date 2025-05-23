@@ -116,11 +116,7 @@ bool AtLeastOneAnnotationMatchesSubstring(
     const std::vector<const GeneratedCodeInfo::Annotation*>& annotations,
     const std::string& expected_text,
     std::optional<GeneratedCodeInfo::Annotation::Semantic> semantic) {
-  for (std::vector<const GeneratedCodeInfo::Annotation*>::const_iterator
-           i = annotations.begin(),
-           e = annotations.end();
-       i != e; ++i) {
-    const GeneratedCodeInfo::Annotation* annotation = *i;
+  for (auto annotation : annotations) {
     uint32_t begin = annotation->begin();
     uint32_t end = annotation->end();
     if (end < begin || end > file_content.size()) {
