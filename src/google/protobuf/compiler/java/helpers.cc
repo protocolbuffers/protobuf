@@ -945,7 +945,6 @@ inline bool NestInFileClass(const Descriptor& descriptor) {
 
 // Returns whether the type should be nested in the file class for the given
 // descriptor, depending on different Protobuf Java API versions.
-// TODO: b/372482046 - Implement `nest_in_file_class` feature for mutable API.
 template <typename Descriptor>
 bool NestInFileClass(const Descriptor& descriptor, bool immutable) {
   (void)immutable;
@@ -990,6 +989,7 @@ bool NestedInFileClass(const EnumDescriptor& descriptor, bool immutable) {
 bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable) {
   return NestInFileClass(descriptor, immutable);
 }
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
