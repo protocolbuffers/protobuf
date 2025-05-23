@@ -36,7 +36,6 @@
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
-#include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_enum_util.h"
