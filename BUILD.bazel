@@ -556,6 +556,9 @@ proto_lang_toolchain(
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
+    plugin = "//src/google/protobuf/compiler/cpp:protoc-gen-cpp",
+    plugin_format_flag = "--plugin=protoc-gen-cpp=%s",
+    protoc_minimal_do_not_use = "//src/google/protobuf/compiler:protoc_minimal",
     runtime = "//src/google/protobuf",
     visibility = ["//visibility:public"],
 )
