@@ -27,6 +27,8 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
+        # Bazel < 7.3.0 depends on rules_proto version that doesn't have @rules_proto//proto:toolchain_type target used by Bazel
+        # https://github.com/bazelbuild/bazel/blob/a82541b93897216ec9c0ab48eaa8fd95c2995864/src/main/starlark/builtins_bzl/common/proto/proto_semantics.bzl#L20
         bazelversion: [ '7.1.2', '8.0.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution: [ "", "--incompatible_enable_proto_toolchain_resolution=true" ]
@@ -67,7 +69,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: examples
+          bazel-cache: examples-${{ matrix.bazelversion }}-${{ matrix.bzlmod }}-${{ matrix.toolchain_resolution }}
           version: ${{ matrix.bazelversion }}
           bash: >
             cd examples;
