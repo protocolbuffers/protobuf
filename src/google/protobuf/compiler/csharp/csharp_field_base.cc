@@ -8,13 +8,16 @@
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
-#include <sstream>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
+#include "google/protobuf/compiler/csharp/csharp_source_generator_base.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -24,6 +27,7 @@
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
+#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
