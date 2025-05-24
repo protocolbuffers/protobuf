@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -981,13 +980,13 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
 std::unique_ptr<FieldGeneratorBase> MakeSinguarStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularString>(desc, options, scc);
+  return std::make_unique<SingularString>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedStringGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedString>(desc, options, scc);
+  return std::make_unique<RepeatedString>(desc, options, scc);
 }
 
 }  // namespace cpp
