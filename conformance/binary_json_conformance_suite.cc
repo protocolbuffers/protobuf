@@ -2289,17 +2289,17 @@ void BinaryAndJsonConformanceSuiteImpl<
   // Duplicated field names are not allowed.
   ExpectParseFailureForJson("FieldNameDuplicate", RECOMMENDED,
                             R"({
-        "optionalNestedMessage": {a: 1},
+        "optionalNestedMessage": {"a": 1},
         "optionalNestedMessage": {}
       })");
   ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing1", RECOMMENDED,
                             R"({
-        "optional_nested_message": {a: 1},
+        "optional_nested_message": {"a": 1},
         "optionalNestedMessage": {}
       })");
   ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing2", RECOMMENDED,
                             R"({
-        "optionalNestedMessage": {a: 1},
+        "optionalNestedMessage": {"a": 1},
         "optional_nested_message": {}
       })");
   // Serializers should use lowerCamelCase by default.
@@ -2652,7 +2652,7 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("DoubleFieldTooSmall", REQUIRED,
                             R"({"optionalDouble": -1.89769e+308})");
   ExpectParseFailureForJson("DoubleFieldTooLarge", REQUIRED,
-                            R"({"optionalDouble": +1.89769e+308})");
+                            R"({"optionalDouble": 1.89769e+308})");
 
   // Parsers should reject empty string values.
   ExpectParseFailureForJson("DoubleFieldEmptyString", REQUIRED,
