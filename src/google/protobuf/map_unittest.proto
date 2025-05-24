@@ -7,8 +7,6 @@
 
 syntax = "proto3";
 
-option cc_enable_arenas = true;
-
 import "google/protobuf/unittest.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
@@ -37,6 +35,8 @@ message TestMap {
   map<int32, ForeignMessage> map_int32_foreign_message = 17;
   map<string, ForeignMessage> map_string_foreign_message = 18;
   map<int32, TestAllTypes> map_int32_all_types = 19;
+  map<string, int32> map_string_int32 = 20;
+  map<int32, string> map_int32_string = 21;
 }
 
 message TestMapWithMessages {
