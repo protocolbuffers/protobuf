@@ -7,11 +7,14 @@
 
 #include "google/protobuf/implicit_weak_message.h"
 
+#include <string>
+
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 
 // Must be included last.
+#include "google/protobuf/port.h"
 #include "google/protobuf/port_def.inc"
 
 // Since we could be merging Translation units, we must check if this was done
