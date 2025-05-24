@@ -57,63 +57,63 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
     }
   } else {
     switch (extension.type) {
-#define HANDLE_VARINT_TYPE(UPPERCASE, CPP_CAMELCASE)                        \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    uint64_t value;                                                         \
-    ptr = VarintParse(ptr, &value);                                         \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
-    if (extension.is_repeated) {                                            \
-      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
-                         extension.is_packed, value, extension.descriptor); \
-    } else {                                                                \
-      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
-                         extension.descriptor);                             \
-    }                                                                       \
+#define HANDLE_VARINT_TYPE(UPPERCASE, CPPTYPE)                        \
+  case WireFormatLite::TYPE_##UPPERCASE: {                            \
+    uint64_t value;                                                   \
+    ptr = VarintParse(ptr, &value);                                   \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                              \
+    if (extension.is_repeated) {                                      \
+      Add<CPPTYPE>(number, WireFormatLite::TYPE_##UPPERCASE,          \
+                   extension.is_packed, value, extension.descriptor); \
+    } else {                                                          \
+      Set<CPPTYPE>(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
+                   extension.descriptor);                             \
+    }                                                                 \
   } break
 
-      HANDLE_VARINT_TYPE(INT32, Int32);
-      HANDLE_VARINT_TYPE(INT64, Int64);
-      HANDLE_VARINT_TYPE(UINT32, UInt32);
-      HANDLE_VARINT_TYPE(UINT64, UInt64);
-      HANDLE_VARINT_TYPE(BOOL, Bool);
+      HANDLE_VARINT_TYPE(INT32, int32_t);
+      HANDLE_VARINT_TYPE(INT64, int64_t);
+      HANDLE_VARINT_TYPE(UINT32, uint32_t);
+      HANDLE_VARINT_TYPE(UINT64, uint64_t);
+      HANDLE_VARINT_TYPE(BOOL, bool);
 #undef HANDLE_VARINT_TYPE
-#define HANDLE_SVARINT_TYPE(UPPERCASE, CPP_CAMELCASE, SIZE)                 \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    uint64_t val;                                                           \
-    ptr = VarintParse(ptr, &val);                                           \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
-    auto value = WireFormatLite::ZigZagDecode##SIZE(val);                   \
-    if (extension.is_repeated) {                                            \
-      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
-                         extension.is_packed, value, extension.descriptor); \
-    } else {                                                                \
-      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
-                         extension.descriptor);                             \
-    }                                                                       \
+#define HANDLE_SVARINT_TYPE(UPPERCASE, Type, SIZE)                             \
+  case WireFormatLite::TYPE_##UPPERCASE: {                                     \
+    uint64_t val;                                                              \
+    ptr = VarintParse(ptr, &val);                                              \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                       \
+    auto value = WireFormatLite::ZigZagDecode##SIZE(val);                      \
+    if (extension.is_repeated) {                                               \
+      Add<Type>(number, WireFormatLite::TYPE_##UPPERCASE, extension.is_packed, \
+                value, extension.descriptor);                                  \
+    } else {                                                                   \
+      Set<Type>(number, WireFormatLite::TYPE_##UPPERCASE, value,               \
+                extension.descriptor);                                         \
+    }                                                                          \
   } break
 
-      HANDLE_SVARINT_TYPE(SINT32, Int32, 32);
-      HANDLE_SVARINT_TYPE(SINT64, Int64, 64);
+      HANDLE_SVARINT_TYPE(SINT32, int32_t, 32);
+      HANDLE_SVARINT_TYPE(SINT64, int64_t, 64);
 #undef HANDLE_SVARINT_TYPE
-#define HANDLE_FIXED_TYPE(UPPERCASE, CPP_CAMELCASE, CPPTYPE)                \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
-    auto value = UnalignedLoad<CPPTYPE>(ptr);                               \
-    ptr += sizeof(CPPTYPE);                                                 \
-    if (extension.is_repeated) {                                            \
-      Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
-                         extension.is_packed, value, extension.descriptor); \
-    } else {                                                                \
-      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
-                         extension.descriptor);                             \
-    }                                                                       \
+#define HANDLE_FIXED_TYPE(UPPERCASE, CPPTYPE)                         \
+  case WireFormatLite::TYPE_##UPPERCASE: {                            \
+    auto value = UnalignedLoad<CPPTYPE>(ptr);                         \
+    ptr += sizeof(CPPTYPE);                                           \
+    if (extension.is_repeated) {                                      \
+      Add<CPPTYPE>(number, WireFormatLite::TYPE_##UPPERCASE,          \
+                   extension.is_packed, value, extension.descriptor); \
+    } else {                                                          \
+      Set<CPPTYPE>(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
+                   extension.descriptor);                             \
+    }                                                                 \
   } break
 
-      HANDLE_FIXED_TYPE(FIXED32, UInt32, uint32_t);
-      HANDLE_FIXED_TYPE(FIXED64, UInt64, uint64_t);
-      HANDLE_FIXED_TYPE(SFIXED32, Int32, int32_t);
-      HANDLE_FIXED_TYPE(SFIXED64, Int64, int64_t);
-      HANDLE_FIXED_TYPE(FLOAT, Float, float);
-      HANDLE_FIXED_TYPE(DOUBLE, Double, double);
+      HANDLE_FIXED_TYPE(FIXED32, uint32_t);
+      HANDLE_FIXED_TYPE(FIXED64, uint64_t);
+      HANDLE_FIXED_TYPE(SFIXED32, int32_t);
+      HANDLE_FIXED_TYPE(SFIXED64, int64_t);
+      HANDLE_FIXED_TYPE(FLOAT, float);
+      HANDLE_FIXED_TYPE(DOUBLE, double);
 #undef HANDLE_FIXED_TYPE
 
       case WireFormatLite::TYPE_ENUM: {
@@ -125,11 +125,11 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         if (!extension.enum_validity_check.IsValid(value)) {
           WriteVarint(number, value, metadata->mutable_unknown_fields<T>());
         } else if (extension.is_repeated) {
-          AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,
-                  extension.descriptor);
+          Add<int>(number, WireFormatLite::TYPE_ENUM, extension.is_packed,
+                   value, extension.descriptor);
         } else {
-          SetEnum(number, WireFormatLite::TYPE_ENUM, value,
-                  extension.descriptor);
+          Set<int>(number, WireFormatLite::TYPE_ENUM, value,
+                   extension.descriptor);
         }
         break;
       }

@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <initializer_list>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
@@ -309,16 +310,30 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // singular fields -------------------------------------------------
 
-  int32_t GetInt32(int number, int32_t default_value) const;
-  int64_t GetInt64(int number, int64_t default_value) const;
-  uint32_t GetUInt32(int number, uint32_t default_value) const;
-  uint64_t GetUInt64(int number, uint64_t default_value) const;
-  float GetFloat(int number, float default_value) const;
-  double GetDouble(int number, double default_value) const;
-  bool GetBool(int number, bool default_value) const;
-  int GetEnum(int number, int default_value) const;
-  const std::string& GetString(int number,
-                               const std::string& default_value) const;
+  template <typename T>
+  const T& Get(int number,
+               const std::enable_if_t<true, T>& default_value) const {
+    const Extension* extension = FindOrNull(number);
+    if (extension == nullptr || extension->is_cleared) {
+      return default_value;
+    } else {
+      return extension->Get<T>();
+    }
+  }
+
+  template <typename T, typename U>
+  void Set(int number, FieldType type, U&& value,
+           const FieldDescriptor* descriptor) {
+    if constexpr (Extension::kUsesPointer<T>) {
+      Extension& extension =
+          FindOrCreate(number, type, false, false, descriptor, CreateImpl<T>);
+      *extension.Mutable<T>() = std::forward<U>(value);
+    } else {
+      FindOrCreate(number, type, false, false, descriptor, nullptr)
+          .Mutable<T>() = std::forward<U>(value);
+    }
+  }
+
   const MessageLite& GetMessage(int number,
                                 const MessageLite& default_value) const;
   const MessageLite& GetMessage(int number, const Descriptor* message_type,
@@ -328,15 +343,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   // the extension lives in the same pool as the descriptor for the containing
   // type.
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
-  void SetInt32(int number, FieldType type, int32_t value, desc);
-  void SetInt64(int number, FieldType type, int64_t value, desc);
-  void SetUInt32(int number, FieldType type, uint32_t value, desc);
-  void SetUInt64(int number, FieldType type, uint64_t value, desc);
-  void SetFloat(int number, FieldType type, float value, desc);
-  void SetDouble(int number, FieldType type, double value, desc);
-  void SetBool(int number, FieldType type, bool value, desc);
-  void SetEnum(int number, FieldType type, int value, desc);
-  void SetString(int number, FieldType type, std::string value, desc);
   std::string* MutableString(int number, FieldType type, desc);
   MessageLite* MutableMessage(int number, FieldType type,
                               const MessageLite& prototype, desc);
@@ -381,39 +387,43 @@ class PROTOBUF_EXPORT ExtensionSet {
   // (E.g.: borg/clients/internal/proto1/proto2_reflection.cc.)
   void* MutableRawRepeatedField(int number);
 
-  int32_t GetRepeatedInt32(int number, int index) const;
-  int64_t GetRepeatedInt64(int number, int index) const;
-  uint32_t GetRepeatedUInt32(int number, int index) const;
-  uint64_t GetRepeatedUInt64(int number, int index) const;
-  float GetRepeatedFloat(int number, int index) const;
-  double GetRepeatedDouble(int number, int index) const;
-  bool GetRepeatedBool(int number, int index) const;
-  int GetRepeatedEnum(int number, int index) const;
-  const std::string& GetRepeatedString(int number, int index) const;
-  const MessageLite& GetRepeatedMessage(int number, int index) const;
+  template <typename T>
+  const T& GetRepeated(int number, int index) const {
+    const Extension* extension = FindOrNull(number);
+    ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+    return extension->Get<RepFor<T>>().Get(index);
+  }
 
-  void SetRepeatedInt32(int number, int index, int32_t value);
-  void SetRepeatedInt64(int number, int index, int64_t value);
-  void SetRepeatedUInt32(int number, int index, uint32_t value);
-  void SetRepeatedUInt64(int number, int index, uint64_t value);
-  void SetRepeatedFloat(int number, int index, float value);
-  void SetRepeatedDouble(int number, int index, double value);
-  void SetRepeatedBool(int number, int index, bool value);
-  void SetRepeatedEnum(int number, int index, int value);
-  void SetRepeatedString(int number, int index, std::string value);
+  template <typename T, typename U>
+  void SetRepeated(int number, int index, U&& value) {
+    Extension* extension = FindOrNull(number);
+    ABSL_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+    (*extension->Mutable<RepFor<T>>())[index] = std::forward<U>(value);
+  }
+
+  template <typename T>
+  auto& Add(int number, FieldType type, const FieldDescriptor* descriptor) {
+    static_assert(std::is_class_v<T>);
+    Extension& ext = FindOrCreate(number, type, true, false, descriptor,
+                                  &CreateImpl<RepFor<T>>);
+    return *ext.Mutable<RepFor<T>>()->Add();
+  }
+
+  template <typename T>
+  void Add(int number, FieldType type, bool packed, T value,
+           const FieldDescriptor* descriptor) {
+    static_assert(std::is_arithmetic_v<T>,
+                  "Only arithmetic types take `packed`");
+    Extension& ext = FindOrCreate(number, type, true, packed, descriptor,
+                                  &CreateImpl<RepFor<T>>);
+    ext.Mutable<RepFor<T>>()->Add(value);
+  }
+
+  const MessageLite& GetRepeatedMessage(int number, int index) const;
   std::string* MutableRepeatedString(int number, int index);
   MessageLite* MutableRepeatedMessage(int number, int index);
 
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
-  void AddInt32(int number, FieldType type, bool packed, int32_t value, desc);
-  void AddInt64(int number, FieldType type, bool packed, int64_t value, desc);
-  void AddUInt32(int number, FieldType type, bool packed, uint32_t value, desc);
-  void AddUInt64(int number, FieldType type, bool packed, uint64_t value, desc);
-  void AddFloat(int number, FieldType type, bool packed, float value, desc);
-  void AddDouble(int number, FieldType type, bool packed, double value, desc);
-  void AddBool(int number, FieldType type, bool packed, bool value, desc);
-  void AddEnum(int number, FieldType type, bool packed, int value, desc);
-  void AddString(int number, FieldType type, std::string value, desc);
   std::string* AddString(int number, FieldType type, desc);
   MessageLite* AddMessage(int number, FieldType type,
                           const MessageLite& prototype, desc);
@@ -584,24 +594,13 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   friend void internal::InitializeLazyExtensionSet();
 
-  static bool FieldTypeIsPointer(FieldType type);
+  // The repeated field type for T.
+  template <typename T>
+  using RepFor = std::conditional_t<std::is_arithmetic_v<T>,
+                                    RepeatedField<std::decay_t<T>>,
+                                    RepeatedPtrField<std::decay_t<T>>>;
 
-  const int32_t& GetRefInt32(int number, const int32_t& default_value) const;
-  const int64_t& GetRefInt64(int number, const int64_t& default_value) const;
-  const uint32_t& GetRefUInt32(int number, const uint32_t& default_value) const;
-  const uint64_t& GetRefUInt64(int number, const uint64_t& default_value) const;
-  const float& GetRefFloat(int number, const float& default_value) const;
-  const double& GetRefDouble(int number, const double& default_value) const;
-  const bool& GetRefBool(int number, const bool& default_value) const;
-  const int& GetRefEnum(int number, const int& default_value) const;
-  const int32_t& GetRefRepeatedInt32(int number, int index) const;
-  const int64_t& GetRefRepeatedInt64(int number, int index) const;
-  const uint32_t& GetRefRepeatedUInt32(int number, int index) const;
-  const uint64_t& GetRefRepeatedUInt64(int number, int index) const;
-  const float& GetRefRepeatedFloat(int number, int index) const;
-  const double& GetRefRepeatedDouble(int number, int index) const;
-  const bool& GetRefRepeatedBool(int number, int index) const;
-  const int& GetRefRepeatedEnum(int number, int index) const;
+  static bool FieldTypeIsPointer(FieldType type);
 
   size_t GetMessageByteSizeLong(int number) const;
   uint8_t* InternalSerializeMessage(int number, const MessageLite* prototype,
@@ -727,7 +726,7 @@ class PROTOBUF_EXPORT ExtensionSet {
       ABSL_DCHECK_EQ(is_pointer, is_repeated || FieldTypeIsPointer(type));
       // We don't want to prefetch invalid/null pointers so if there isn't a
       // pointer to prefetch, then return `this`.
-      return is_pointer ? absl::bit_cast<const void*>(ptr) : this;
+      return is_pointer ? raw_ptr() : this;
     }
 
     // The order of these fields packs Extension into 24 bytes when using 8
@@ -747,7 +746,6 @@ class PROTOBUF_EXPORT ExtensionSet {
       RepeatedField<float>* repeated_float_value;
       RepeatedField<double>* repeated_double_value;
       RepeatedField<bool>* repeated_bool_value;
-      RepeatedField<int>* repeated_enum_value;
       RepeatedPtrField<std::string>* repeated_string_value;
       RepeatedPtrField<MessageLite>* repeated_message_value;
     };
@@ -760,9 +758,66 @@ class PROTOBUF_EXPORT ExtensionSet {
       float float_value;
       double double_value;
       bool bool_value;
-      int enum_value;
       Pointer ptr;
     };
+
+    template <typename T>
+    static inline constexpr auto kUnionMember = std::get<T Extension::*>(
+        std::tuple{&Extension::int32_t_value, &Extension::int64_t_value,
+                   &Extension::uint32_t_value, &Extension::uint64_t_value,
+                   &Extension::float_value, &Extension::double_value,
+                   &Extension::bool_value});
+
+    template <typename T>
+    static inline constexpr auto kPtrUnionMember =
+        std::get<T Pointer::*>(std::tuple{
+            // we omit message fields because those have custom behavior.
+            &Pointer::string_value, &Pointer::repeated_int32_t_value,
+            &Pointer::repeated_int64_t_value, &Pointer::repeated_uint32_t_value,
+            &Pointer::repeated_uint64_t_value, &Pointer::repeated_float_value,
+            &Pointer::repeated_double_value, &Pointer::repeated_bool_value,
+            &Pointer::repeated_string_value, &Pointer::repeated_message_value});
+
+    void* raw_ptr() const { return absl::bit_cast<void*>(ptr); }
+
+    template <typename T>
+    static inline constexpr bool kUsesPointer = !std::is_arithmetic_v<T>;
+
+    template <typename T>
+    void VerifyType() const {
+      ABSL_DCHECK_EQ(is_repeated || FieldTypeIsPointer(type), kUsesPointer<T>);
+      constexpr auto expected_cpp_type = WireFormatLite::CppTypeFor<T>();
+      ABSL_DCHECK_EQ(
+          +expected_cpp_type,
+          +(type == WireFormatLite::TYPE_ENUM
+                ? WireFormatLite::CPPTYPE_INT32
+                : WireFormatLite::FieldTypeToCppType(
+                      static_cast<WireFormatLite::FieldType>(type))));
+    }
+
+    // Returns a reference to the union member for T.
+    // For pointer-stored types, follow the pointer.
+    template <typename T>
+    const T& Get() const {
+      VerifyType<T>();
+      if constexpr (kUsesPointer<T>) {
+        return *(ptr.*kPtrUnionMember<T*>);
+      } else {
+        return this->*kUnionMember<T>;
+      }
+    }
+
+    // Returns a reference to the union member for T.
+    // For pointer-stored types, return a reference to the pointer.
+    template <typename T>
+    auto& Mutable() {
+      VerifyType<T>();
+      if constexpr (kUsesPointer<T>) {
+        return ptr.*kPtrUnionMember<T*>;
+      } else {
+        return this->*kUnionMember<T>;
+      }
+    }
 
     FieldType type;
     bool is_repeated;
@@ -1051,6 +1106,19 @@ class PROTOBUF_EXPORT ExtensionSet {
   // it does not exist.
   Extension* MaybeNewRepeatedExtension(const FieldDescriptor* descriptor);
 
+  // If the extension exists, return it. Otherwise, create it first.
+  // If `pointer_creator` is not null, it is called on creation.
+  Extension& FindOrCreate(int number, FieldType type, bool repeated,
+                          bool packed, const FieldDescriptor* descriptor,
+                          Extension& (*pointer_creator)(Extension& ext,
+                                                        Arena* arena));
+
+  template <typename T>
+  static Extension& CreateImpl(Extension& ext, Arena* arena) {
+    ext.Mutable<T>() = Arena::Create<T>(arena);
+    return ext;
+  }
+
   bool FindExtension(int wire_type, uint32_t field, const MessageLite* extendee,
                      const internal::ParseContext* /*ctx*/,
                      ExtensionInfo* extension, bool* was_packed_on_wire) {
@@ -1143,21 +1211,6 @@ class PROTOBUF_EXPORT ExtensionSet {
 constexpr ExtensionSet::ExtensionSet(Arena* arena)
     : arena_(arena), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
 
-// These are just for convenience...
-inline void ExtensionSet::SetString(int number, FieldType type,
-                                    std::string value,
-                                    const FieldDescriptor* descriptor) {
-  MutableString(number, type, descriptor)->assign(std::move(value));
-}
-inline void ExtensionSet::SetRepeatedString(int number, int index,
-                                            std::string value) {
-  MutableRepeatedString(number, index)->assign(std::move(value));
-}
-inline void ExtensionSet::AddString(int number, FieldType type,
-                                    std::string value,
-                                    const FieldDescriptor* descriptor) {
-  AddString(number, type, descriptor)->assign(std::move(value));
-}
 // ===================================================================
 // Glue for generated extension accessors
 
@@ -1230,12 +1283,18 @@ class PrimitiveTypeTraits {
   static constexpr bool kLifetimeBound = false;
 
   static inline ConstType Get(int number, const ExtensionSet& set,
-                              ConstType default_value);
+                              ConstType default_value) {
+    return set.Get<Type>(number, default_value);
+  }
 
   static inline const ConstType* GetPtr(int number, const ExtensionSet& set,
-                                        const ConstType& default_value);
+                                        const ConstType& default_value) {
+    return &set.Get<Type>(number, default_value);
+  }
   static inline void Set(int number, FieldType field_type, ConstType value,
-                         ExtensionSet* set);
+                         ExtensionSet* set) {
+    set->Set<Type>(number, field_type, value, nullptr);
+  }
 };
 
 template <typename Type>
@@ -1250,14 +1309,22 @@ class RepeatedPrimitiveTypeTraits {
 
   typedef RepeatedField<Type> RepeatedFieldType;
 
-  static inline Type Get(int number, const ExtensionSet& set, int index);
+  static inline Type Get(int number, const ExtensionSet& set, int index) {
+    return set.GetRepeated<Type>(number, index);
+  }
   static inline const Type* GetPtr(int number, const ExtensionSet& set,
-                                   int index);
+                                   int index) {
+    return &set.GetRepeated<Type>(number, index);
+  }
   static inline const RepeatedField<ConstType>* GetRepeatedPtr(
       int number, const ExtensionSet& set);
-  static inline void Set(int number, int index, Type value, ExtensionSet* set);
+  static inline void Set(int number, int index, Type value, ExtensionSet* set) {
+    set->SetRepeated<Type>(number, index, value);
+  }
   static inline void Add(int number, FieldType field_type, bool is_packed,
-                         Type value, ExtensionSet* set);
+                         Type value, ExtensionSet* set) {
+    set->Add<Type>(number, field_type, is_packed, value, nullptr);
+  }
 
   static inline const RepeatedField<ConstType>& GetRepeated(
       int number, const ExtensionSet& set);
@@ -1284,43 +1351,6 @@ class PROTOBUF_EXPORT RepeatedPrimitiveDefaults {
 };
 
 #define PROTOBUF_DEFINE_PRIMITIVE_TYPE(TYPE, METHOD)                           \
-  template <>                                                                  \
-  inline TYPE PrimitiveTypeTraits<TYPE>::Get(                                  \
-      int number, const ExtensionSet& set, TYPE default_value) {               \
-    return set.Get##METHOD(number, default_value);                             \
-  }                                                                            \
-  template <>                                                                  \
-  inline const TYPE* PrimitiveTypeTraits<TYPE>::GetPtr(                        \
-      int number, const ExtensionSet& set, const TYPE& default_value) {        \
-    return &set.GetRef##METHOD(number, default_value);                         \
-  }                                                                            \
-  template <>                                                                  \
-  inline void PrimitiveTypeTraits<TYPE>::Set(int number, FieldType field_type, \
-                                             TYPE value, ExtensionSet* set) {  \
-    set->Set##METHOD(number, field_type, value, nullptr);                      \
-  }                                                                            \
-                                                                               \
-  template <>                                                                  \
-  inline TYPE RepeatedPrimitiveTypeTraits<TYPE>::Get(                          \
-      int number, const ExtensionSet& set, int index) {                        \
-    return set.GetRepeated##METHOD(number, index);                             \
-  }                                                                            \
-  template <>                                                                  \
-  inline const TYPE* RepeatedPrimitiveTypeTraits<TYPE>::GetPtr(                \
-      int number, const ExtensionSet& set, int index) {                        \
-    return &set.GetRefRepeated##METHOD(number, index);                         \
-  }                                                                            \
-  template <>                                                                  \
-  inline void RepeatedPrimitiveTypeTraits<TYPE>::Set(                          \
-      int number, int index, TYPE value, ExtensionSet* set) {                  \
-    set->SetRepeated##METHOD(number, index, value);                            \
-  }                                                                            \
-  template <>                                                                  \
-  inline void RepeatedPrimitiveTypeTraits<TYPE>::Add(                          \
-      int number, FieldType field_type, bool is_packed, TYPE value,            \
-      ExtensionSet* set) {                                                     \
-    set->Add##METHOD(number, field_type, is_packed, value, nullptr);           \
-  }                                                                            \
   template <>                                                                  \
   inline const RepeatedField<TYPE>*                                            \
   RepeatedPrimitiveTypeTraits<TYPE>::GetDefaultRepeatedField() {               \
@@ -1373,7 +1403,7 @@ class PROTOBUF_EXPORT StringTypeTraits {
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
                                        ConstType default_value) {
-    return set.GetString(number, default_value);
+    return set.Get<std::string>(number, default_value);
   }
   static inline const std::string* GetPtr(int number, const ExtensionSet& set,
                                           ConstType default_value) {
@@ -1381,7 +1411,7 @@ class PROTOBUF_EXPORT StringTypeTraits {
   }
   static inline void Set(int number, FieldType field_type,
                          const std::string& value, ExtensionSet* set) {
-    set->SetString(number, field_type, value, nullptr);
+    set->Set<std::string>(number, field_type, value, nullptr);
   }
   static inline std::string* Mutable(int number, FieldType field_type,
                                      ExtensionSet* set) {
@@ -1402,7 +1432,7 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
 
   static inline const std::string& Get(int number, const ExtensionSet& set,
                                        int index) {
-    return set.GetRepeatedString(number, index);
+    return set.GetRepeated<std::string>(number, index);
   }
   static inline const std::string* GetPtr(int number, const ExtensionSet& set,
                                           int index) {
@@ -1414,19 +1444,20 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
   }
   static inline void Set(int number, int index, const std::string& value,
                          ExtensionSet* set) {
-    set->SetRepeatedString(number, index, value);
+    set->SetRepeated<std::string>(number, index, value);
   }
   static inline std::string* Mutable(int number, int index, ExtensionSet* set) {
     return set->MutableRepeatedString(number, index);
   }
   static inline void Add(int number, FieldType field_type, bool /*is_packed*/,
                          const std::string& value, ExtensionSet* set) {
-    set->AddString(number, field_type, value, nullptr);
+    set->Add<std::string>(number, field_type, nullptr) = value;
   }
   static inline std::string* Add(int number, FieldType field_type,
                                  ExtensionSet* set) {
-    return set->AddString(number, field_type, nullptr);
+    return &set->Add<std::string>(number, field_type, nullptr);
   }
+
   static inline const RepeatedPtrField<std::string>& GetRepeated(
       int number, const ExtensionSet& set) {
     return *reinterpret_cast<const RepeatedPtrField<std::string>*>(
@@ -1463,18 +1494,17 @@ class EnumTypeTraits {
 
   static inline ConstType Get(int number, const ExtensionSet& set,
                               ConstType default_value) {
-    return static_cast<Type>(set.GetEnum(number, default_value));
+    return static_cast<Type>(set.Get<int>(number, default_value));
   }
   static inline const ConstType* GetPtr(int number, const ExtensionSet& set,
                                         const ConstType& default_value) {
-    return reinterpret_cast<const Type*>(
-        &set.GetRefEnum(number, default_value));
+    return reinterpret_cast<const Type*>(&set.Get<int>(number, default_value));
   }
   static inline void Set(int number, FieldType field_type, ConstType value,
                          ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
-    set->SetEnum(number, field_type, value, nullptr);
+    set->Set<int>(number, field_type, value, nullptr);
   }
 };
 
@@ -1491,24 +1521,23 @@ class RepeatedEnumTypeTraits {
   typedef RepeatedField<Type> RepeatedFieldType;
 
   static inline ConstType Get(int number, const ExtensionSet& set, int index) {
-    return static_cast<Type>(set.GetRepeatedEnum(number, index));
+    return static_cast<Type>(set.GetRepeated<int>(number, index));
   }
   static inline const ConstType* GetPtr(int number, const ExtensionSet& set,
                                         int index) {
-    return reinterpret_cast<const Type*>(
-        &set.GetRefRepeatedEnum(number, index));
+    return reinterpret_cast<const Type*>(&set.GetRepeated<int>(number, index));
   }
   static inline void Set(int number, int index, ConstType value,
                          ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
-    set->SetRepeatedEnum(number, index, value);
+    set->SetRepeated<int>(number, index, value);
   }
   static inline void Add(int number, FieldType field_type, bool is_packed,
                          ConstType value, ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
-    set->AddEnum(number, field_type, is_packed, value, nullptr);
+    set->Add<int>(number, field_type, is_packed, value, nullptr);
   }
   static inline const RepeatedField<Type>& GetRepeated(
       int number, const ExtensionSet& set) {

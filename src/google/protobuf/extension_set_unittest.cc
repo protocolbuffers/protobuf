@@ -1464,4 +1464,11 @@ TEST(ExtensionSetTest, Descriptor) {
 }  // namespace protobuf
 }  // namespace google
 
+auto CodegenGetExtensionInt32(
+    const google::protobuf::unittest::TestAllExtensions& message) {
+  return message.GetExtension(google::protobuf::unittest::optional_int32_extension);
+}
+static int odr [[maybe_unused]] =
+    (::google::protobuf::internal::StrongPointer(&CodegenGetExtensionInt32), 0);
+
 #include "google/protobuf/port_undef.inc"
