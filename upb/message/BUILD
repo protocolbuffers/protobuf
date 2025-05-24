@@ -299,6 +299,7 @@ cc_test(
         "//upb:wire_reader",
         "//upb/base:internal",
         "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/wire/test_util:wire_message",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
