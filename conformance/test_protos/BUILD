@@ -23,6 +23,7 @@ internal_csharp_proto_library(
 proto_library(
     name = "test_messages_edition2023_proto",
     srcs = ["test_messages_edition2023.proto"],
+    visibility = ["//net/proto2/util/converter/internal/conformance:__pkg__"],
     visibility = ["//visibility:public"],
 )
 
