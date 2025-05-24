@@ -350,15 +350,7 @@ cc_binary(
     copts = COPTS,
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib_stage1"],
-)
-
-cc_binary(
-    name = "protoc_stage0",
-    copts = COPTS,
-    linkopts = LINK_OPTS,
-    visibility = ["//:__subpackages__"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib_stage0"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
 cc_binary(
@@ -373,7 +365,7 @@ cc_binary(
     }),
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf/compiler:protoc_lib_stage1"],
+    deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
 
 ################################################################################
@@ -556,6 +548,8 @@ proto_lang_toolchain(
         "//:descriptor_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
+    plugin = "//src/google/protobuf/compiler/cpp:protoc-gen-cpp",
+    plugin_format_flag = "--plugin=protoc-gen-cpp=%s",
     runtime = "//src/google/protobuf",
     visibility = ["//visibility:public"],
 )

@@ -347,7 +347,7 @@ lang_proto_library that is not in one of the listed packages.""",
             cfg = "exec",
             executable = True,
             allow_files = True,
-            default = configuration_field("proto", "proto_compiler"),
+            default = "//src/google/protobuf/compiler:protoc_minimal",
         ),
     }),  # buildifier: disable=attr-licenses (attribute called licenses)
     fragments = [
