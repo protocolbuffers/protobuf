@@ -270,7 +270,7 @@ pkg_filegroup(
     name = "rust_protobuf_src_dir",
     srcs = [
         ":rust_protobuf_src",
-        "//rust/upb:rust_protobuf_upb_src",
+        "//rust/upb:src",
     ],
     prefix = "src",
     visibility = ["//rust/release_crates:__subpackages__"],

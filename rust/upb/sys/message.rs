@@ -5,11 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use super::arena::RawArena;
+use super::array::RawArray;
+use super::extension_registry::upb_ExtensionRegistry;
+use super::map::RawMap;
+use super::mini_table::{upb_MiniTable, upb_MiniTableField};
 use super::opaque_pointee::opaque_pointee;
-use super::{
-    upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, RawArray, RawMap,
-    StringView,
-};
+use super::string_view::StringView;
 use core::ptr::NonNull;
 
 opaque_pointee!(upb_Message);

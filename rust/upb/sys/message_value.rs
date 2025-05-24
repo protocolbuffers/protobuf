@@ -5,7 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::{RawArray, RawMap, RawMessage, StringView};
+use super::array::RawArray;
+use super::map::RawMap;
+use super::message::RawMessage;
+use super::string_view::StringView;
 
 // Transcribed from google3/third_party/upb/upb/message/value.h
 #[repr(C)]

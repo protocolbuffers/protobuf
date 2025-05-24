@@ -5,8 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use super::arena::RawArena;
+use super::ctype::CType;
+use super::message::upb_Message;
+use super::message_value::upb_MessageValue;
 use super::opaque_pointee::opaque_pointee;
-use super::{upb_Message, upb_MessageValue, CType, RawArena};
 use core::ptr::NonNull;
 
 opaque_pointee!(upb_Map);
@@ -50,7 +53,7 @@ extern "C" {
 
 #[cfg(test)]
 mod tests {
-    use super::super::Arena;
+    use super::super::test_helpers::TestArena;
     use super::*;
     use googletest::gtest;
 
@@ -71,7 +74,7 @@ mod tests {
     fn map_ffi_test() {
         // SAFETY: FFI unit test uses C API under expected patterns.
         unsafe {
-            let arena = Arena::new();
+            let arena = TestArena::new();
             let raw_arena = arena.raw();
             let map = upb_Map_New(raw_arena, CType::Bool, CType::Double);
             assert_eq!(upb_Map_Size(map), 0);
