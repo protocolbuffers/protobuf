@@ -160,8 +160,6 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
         ctx.actions.write(descriptor_set, "")
         return
 
-    dependencies_descriptor_sets = depset(transitive = [dep.transitive_descriptor_sets for dep in deps])
-
     args = ctx.actions.args()
 
     if ctx.attr._experimental_proto_descriptor_sets_include_source_info[BuildSettingInfo].value:
@@ -227,7 +225,6 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
         proto_info,
         proto_lang_toolchain_info,
         generated_files = [descriptor_set],
-        additional_inputs = dependencies_descriptor_sets,
         additional_args = args,
     )
 
