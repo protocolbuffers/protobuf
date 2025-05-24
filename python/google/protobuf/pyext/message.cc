@@ -2284,6 +2284,16 @@ int InternalSetNonOneofScalar(Message* message,
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      if (!strcmp(Py_TYPE(arg)->tp_name, "bool")) {
+        // TODO: raise error in 2026 Q1 release
+        // FormatTypeError(arg, "enum, int");
+        // return -1;
+        PyErr_WarnFormat(
+            PyExc_DeprecationWarning, 3,
+            "Wrongly assign bool to enum field %s. This "
+            "will be rejected after 2026 Q1, please fix it before 2026",
+            field_descriptor->full_name());
+      }
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetEnumValue(message, field_descriptor, value);
       } else {
