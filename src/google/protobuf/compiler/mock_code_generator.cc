@@ -58,8 +58,8 @@ std::string CommaSeparatedList(
     const std::vector<const FileDescriptor*>& all_files) {
   std::vector<absl::string_view> names;
   names.reserve(all_files.size());
-  for (size_t i = 0; i < all_files.size(); i++) {
-    names.push_back(all_files[i]->name());
+  for (auto all_file : all_files) {
+    names.push_back(all_file->name());
   }
   return absl::StrJoin(names, ",");
 }
@@ -129,8 +129,8 @@ void MockCodeGenerator::ExpectGenerated(
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  for (size_t i = 0; i < lines.size(); i++) {
-    absl::StrAppend(&lines[i], "\n");
+  for (auto & line : lines) {
+    absl::StrAppend(&line, "\n");
   }
 
   std::vector<std::string> insertion_list;
@@ -294,7 +294,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                           insert_endlines ? "insert_endlines=" : "insert="),
         ',', absl::SkipEmpty());
 
-    for (size_t i = 0; i < insert_into.size(); i++) {
+    for (const auto & i : insert_into) {
       {
         google::protobuf::GeneratedCodeInfo info;
         std::string content =
@@ -310,7 +310,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
         }
         std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->OpenForInsertWithGeneratedCodeInfo(
-                GetOutputFileName(insert_into[i], file),
+                GetOutputFileName(i, file),
                 std::string(kFirstInsertionPointName), info));
         io::Printer printer(output.get(), '$');
         printer.PrintRaw(content);
@@ -335,7 +335,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
         }
         std::unique_ptr<io::ZeroCopyOutputStream> output(
             context->OpenForInsertWithGeneratedCodeInfo(
-                GetOutputFileName(insert_into[i], file),
+                GetOutputFileName(i, file),
                 std::string(kSecondInsertionPointName), info));
         io::Printer printer(output.get(), '$');
         printer.PrintRaw(content);
