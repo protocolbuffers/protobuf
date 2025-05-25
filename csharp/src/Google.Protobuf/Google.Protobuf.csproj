@@ -25,15 +25,15 @@
     <IsTrimmable>true</IsTrimmable>
     <!-- Disable warnings about AOT and trimming features on older targets, e.g. netstandard2.0.
          For now, continue to apply these features to these targets because some packages don't have a target that supports them -->
-    <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210</NoWarn>	  
+    <NoWarn>$(NoWarn);NETSDK1195;NETSDK1210</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING</DefineConstants>
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SUPPORT_GENERIC_SIZEOF</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net50' ">
-    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SIMD</DefineConstants>
+    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_FAST_STRING;GOOGLE_PROTOBUF_SUPPORT_GENERIC_SIZEOF;GOOGLE_PROTOBUF_SIMD</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
