@@ -372,7 +372,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
- protected:
+ public:
   int BytesAvailable(const char* ptr) const {
     ABSL_DCHECK_NE(ptr, nullptr);
     ptrdiff_t available = buffer_end_ + kSlopBytes - ptr;
