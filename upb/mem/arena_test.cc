@@ -81,6 +81,7 @@ struct SizeTracker {
   upb_alloc alloc;
   upb_alloc* delegate_alloc;
   absl::flat_hash_map<void*, Size>* sizes;
+  bool use_actual_size;
 };
 
 static_assert(std::is_standard_layout<SizeTracker>());
@@ -93,8 +94,9 @@ static void* size_checking_allocfunc(upb_alloc* alloc, void* ptr,
   if (actual_size == nullptr) {
     actual_size = &actual_size_tmp;
   }
-  void* result =
-      size_alloc->delegate_alloc->func(alloc, ptr, oldsize, size, actual_size);
+  void* result = size_alloc->delegate_alloc->func(
+      alloc, ptr, oldsize, size,
+      size_alloc->use_actual_size ? actual_size : nullptr);
   if (ptr != nullptr) {
     Size& size_ref = size_alloc->sizes->at(ptr);
     UPB_ASSERT(size_ref.requested == oldsize || size_ref.allocated == oldsize);
@@ -132,6 +134,7 @@ TEST(ArenaTest, SizedFree) {
   alloc.alloc.func = size_checking_allocfunc;
   alloc.delegate_alloc = &upb_alloc_global;
   alloc.sizes = &sizes;
+  alloc.use_actual_size = true;
 
   char initial_block[1000];
 
@@ -195,6 +198,7 @@ TEST(ArenaTest, SizeHint) {
   alloc.alloc.func = size_checking_allocfunc;
   alloc.delegate_alloc = &upb_alloc_global;
   alloc.sizes = &sizes;
+  alloc.use_actual_size = true;
 
   upb_Arena* arena = upb_Arena_Init(nullptr, 2459, &alloc.alloc);
   EXPECT_EQ(sizes.size(), 1);
@@ -211,13 +215,18 @@ class OverheadTest {
   OverheadTest(const OverheadTest&) = delete;
   OverheadTest& operator=(const OverheadTest&) = delete;
 
-  explicit OverheadTest(size_t first = 0, size_t max_block_size = 0) {
+  explicit OverheadTest(size_t first = 0, size_t max_block_size = 0,
+                        // This makes these tests less accurate, but otherwise
+                        // they're too dependent on the details of which malloc
+                        // is in use and its sizes for buckets/arenas/etc.
+                        bool use_actual_size = false) {
     if (max_block_size) {
       upb_Arena_SetMaxBlockSize(max_block_size);
     }
     alloc_.alloc.func = size_checking_allocfunc;
     alloc_.delegate_alloc = &upb_alloc_global;
     alloc_.sizes = &sizes_;
+    alloc_.use_actual_size = use_actual_size;
     arena_ = upb_Arena_Init(nullptr, first, &alloc_.alloc);
     arena_alloced_ = 0;
     arena_alloc_count_ = 0;
