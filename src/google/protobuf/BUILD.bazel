@@ -1600,9 +1600,7 @@ cc_library(
     hdrs = ["test_textproto.h"],
     strip_include_prefix = "/src",
     visibility = [
-        "//editions:__pkg__",
-        "//pkg:__pkg__",
-        "//src/google/protobuf:__subpackages__",
+        "//:__subpackages__",
     ],
     deps = [
         ":protobuf",

@@ -57,7 +57,7 @@ TEST(TesteeTest, BinaryToBinary) {
               RequestEquals(R"pb(
                 protobuf_payload: "wire"
                 requested_output_format: PROTOBUF
-                message_type: "protobuf_test_messages.google.protobuf.TestAllTypesProto2"
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
                 test_category: BINARY_TEST
               )pb")))
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
@@ -83,7 +83,7 @@ TEST(TesteeTest, TextToText) {
               RequestEquals(R"pb(
                 text_payload: "text"
                 requested_output_format: TEXT_FORMAT
-                message_type: "protobuf_test_messages.google.protobuf.TestAllTypesProto2"
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
                 test_category: TEXT_FORMAT_TEST
               )pb")))
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
@@ -109,7 +109,7 @@ TEST(TesteeTest, TextPrintUnknownFields) {
               RequestEquals(R"pb(
                 protobuf_payload: "wire"
                 requested_output_format: TEXT_FORMAT
-                message_type: "protobuf_test_messages.google.protobuf.TestAllTypesProto2"
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
                 test_category: BINARY_TEST
                 print_unknown_fields: true
               )pb")))
@@ -136,7 +136,7 @@ TEST(TesteeTest, JsonToJson) {
       RunTest("Required.Proto2.JsonInput.foo.JsonOutput", RequestEquals(R"pb(
                 json_payload: "json"
                 requested_output_format: JSON
-                message_type: "protobuf_test_messages.google.protobuf.TestAllTypesProto2"
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
                 test_category: JSON_TEST
               )pb")))
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
@@ -161,7 +161,7 @@ TEST(TesteeTest, JsonIgnoreUnknownParsing) {
               RequestEquals(R"pb(
                 json_payload: "json"
                 requested_output_format: PROTOBUF
-                message_type: "protobuf_test_messages.google.protobuf.TestAllTypesProto2"
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
                 test_category: JSON_IGNORE_UNKNOWN_PARSING_TEST
               )pb")))
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
@@ -187,7 +187,7 @@ TEST(TesteeTest, InvalidResponse) {
               RequestEquals(R"pb(
                 protobuf_payload: "wire"
                 requested_output_format: PROTOBUF
-                message_type: "protobuf_test_messages.google.protobuf.TestAllTypesProto2"
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
                 test_category: BINARY_TEST
               )pb")))
       .WillOnce(Return(std::string("\004")));
@@ -216,7 +216,7 @@ TEST(TesteeTest, DuplicateTestName) {
               RequestEquals(R"pb(
                 protobuf_payload: "wire"
                 requested_output_format: PROTOBUF
-                message_type: "protobuf_test_messages.google.protobuf.TestAllTypesProto2"
+                message_type: "protobuf_test_messages.proto2.TestAllTypesProto2"
                 test_category: BINARY_TEST
               )pb")))
       .WillRepeatedly(Return(std::string("\004")));

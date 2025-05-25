@@ -121,7 +121,9 @@ test_suite(
     tests = [
         "binary_wireformat_test",
         "failure_list_trie_node_test",
+        "naming_test",
         "test_manager_test",
+        "testee_test",
     ],
 )
 
