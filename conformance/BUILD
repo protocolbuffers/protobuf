@@ -228,6 +228,70 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "naming",
+    hdrs = ["naming.h"],
+    deps = [
+        ":conformance_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "naming_test",
+    srcs = ["naming_test.cc"],
+    deps = [
+        ":naming",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//editions:test_messages_proto2_editions_cc_proto",
+        "//editions:test_messages_proto3_editions_cc_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "testee",
+    testonly = True,
+    srcs = ["testee.cc"],
+    hdrs = ["testee.h"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":naming",
+        ":test_runner",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "testee_test",
+    srcs = ["testee_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":test_runner",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "test_manager_test",
     srcs = ["test_manager_test.cc"],
