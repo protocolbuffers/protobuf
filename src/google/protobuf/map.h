@@ -402,7 +402,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
   friend class RustMapHelper;
-  friend class v2::TableDrivenMessage;
 
   // Calls `f(type_t)` where `type_t` is an unspecified type that has a `::type`
   // typedef in it representing the dynamic type of key/value of the node.
@@ -696,7 +695,6 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
-  friend class v2::TableDriven;
 
   Key* GetKey(NodeBase* node) const {
     return UntypedMapBase::GetKey<Key>(node);
@@ -1548,7 +1546,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;
   friend class internal::RustMapHelper;
-  friend class internal::v2::TableDriven;
 };
 
 namespace internal {
