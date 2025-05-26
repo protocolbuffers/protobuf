@@ -124,8 +124,7 @@ class MessageGenerator {
   void GenerateAnnotationDecl(io::Printer* p);
   void GenerateSerializeWithCachedSizes(io::Printer* p);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p);
-  void GenerateSerializeWithCachedSizesBody(io::Printer* p);
-  void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
+  void GenerateSerializeWithCachedSizesBody(io::Printer* p, bool in_order);
   void GenerateByteSize(io::Printer* p);
   void GenerateByteSizeV2(io::Printer* p);
   void GenerateSerializeV2(io::Printer* p);

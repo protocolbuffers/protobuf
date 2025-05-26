@@ -4704,20 +4704,18 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
           {"debug_cond", ShouldSerializeInOrder(descriptor_, options_)
                              ? "1"
                              : "defined(NDEBUG)"},
-          {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
-          {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
+          {"in_order",
+           [&] { GenerateSerializeWithCachedSizesBody(p, /*in_order=*/true); }},
+          {"optimized_order",
+           [&] {
+             GenerateSerializeWithCachedSizesBody(p, /*in_order=*/false);
+           }},
           {"ifdef",
            [&] {
              if (ShouldSerializeInOrder(descriptor_, options_)) {
-               p->Emit("$ndebug$");
+               p->Emit("$in_order$");
              } else {
-               p->Emit(R"cc(
-#ifdef NDEBUG
-                 $ndebug$;
-#else   // NDEBUG
-                 $debug$;
-#endif  // !NDEBUG
-               )cc");
+               p->Emit("$optimized_order$");
              }
            }},
       },
@@ -4742,7 +4740,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
       )cc");
 }
 
-void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
+void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p,
+                                                            bool in_order) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
   // If there are multiple fields in a row from the same oneof then we
   // coalesce them and emit a switch statement.  This is more efficient
@@ -4878,8 +4877,23 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     const FieldDescriptor* field_ = nullptr;
   };
 
-  std::vector<const FieldDescriptor*> ordered_fields =
-      SortFieldsByNumber(descriptor_);
+  std::vector<const FieldDescriptor*> ordered_fields;
+  if (in_order) {
+    ordered_fields = SortFieldsByNumber(descriptor_);
+  } else {
+    ordered_fields = optimized_order_;
+    std::vector<const FieldDescriptor*> non_layout_optimized_fields;
+    for (const auto* field : FieldRange(descriptor_)) {
+      if (!IsLayoutOptimized(field, options_)) {
+        non_layout_optimized_fields.push_back(field);
+      }
+    }
+    std::sort(non_layout_optimized_fields.begin(),
+              non_layout_optimized_fields.end(), FieldOrderingByNumber());
+    ordered_fields.insert(ordered_fields.end(),
+                          non_layout_optimized_fields.begin(),
+                          non_layout_optimized_fields.end());
+  }
 
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   sorted_extensions.reserve(descriptor_->extension_range_count());
@@ -4953,101 +4967,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
         (void)cached_has_bits;
 
         $handle_lazy_fields$;
-        if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
-          $handle_unknown_fields$;
-        }
-      )cc");
-}
-
-void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
-    io::Printer* p) {
-  std::vector<const FieldDescriptor*> ordered_fields =
-      SortFieldsByNumber(descriptor_);
-
-  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-  sorted_extensions.reserve(descriptor_->extension_range_count());
-  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
-    sorted_extensions.push_back(descriptor_->extension_range(i));
-  }
-  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-            ExtensionRangeSorter());
-
-  int num_fields = ordered_fields.size() + sorted_extensions.size();
-  constexpr int kLargePrime = 1000003;
-  ABSL_CHECK_LT(num_fields, kLargePrime)
-      << "Prime offset must be greater than the number of fields to ensure "
-         "those are coprime.";
-  p->Emit(
-      {
-          {"last_field", num_fields - 1},
-          {"field_writer",
-           [&] {
-             if (num_weak_fields_ == 0) return;
-             p->Emit(R"cc(
-               ::_pbi::WeakFieldMap::FieldWriter field_writer(
-                   this_.$weak_field_map$);
-             )cc");
-           }},
-          {"ordered_cases",
-           [&] {
-             size_t index = 0;
-             for (const auto* f : ordered_fields) {
-               p->Emit({{"index", index++},
-                        {"body", [&] { GenerateSerializeOneField(p, f, -1); }}},
-                       R"cc(
-                         case $index$: {
-                           $body$;
-                           break;
-                         }
-                       )cc");
-             }
-           }},
-          {"extension_cases",
-           [&] {
-             size_t index = ordered_fields.size();
-             for (const auto* r : sorted_extensions) {
-               p->Emit({{"index", index++},
-                        {"body",
-                         [&] {
-                           GenerateSerializeOneExtensionRange(
-                               p, r->start_number(), r->end_number());
-                         }}},
-                       R"cc(
-                         case $index$: {
-                           $body$;
-                           break;
-                         }
-                       )cc");
-             }
-           }},
-          {"handle_unknown_fields",
-           [&] {
-             if (UseUnknownFieldSet(descriptor_->file(), options_)) {
-               p->Emit(R"cc(
-                 target =
-                     ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
-                         this_.$unknown_fields$, target, stream);
-               )cc");
-             } else {
-               p->Emit(R"cc(
-                 target = stream->WriteRaw(
-                     this_.$unknown_fields$.data(),
-                     static_cast<int>(this_.$unknown_fields$.size()), target);
-               )cc");
-             }
-           }},
-      },
-      R"cc(
-        $field_writer$;
-        for (int i = $last_field$; i >= 0; i--) {
-          switch (i) {
-            $ordered_cases$;
-            $extension_cases$;
-            default: {
-              $DCHK$(false) << "Unexpected index: " << i;
-            }
-          }
-        }
         if (ABSL_PREDICT_FALSE(this_.$have_unknown_fields$)) {
           $handle_unknown_fields$;
         }
