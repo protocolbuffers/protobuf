@@ -30,6 +30,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/log/globals.h"
 #include "absl/status/status.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/tools/analyze_profile_proto.h"
 #include "google/protobuf/descriptor.h"
 
@@ -49,12 +50,52 @@ ABSL_FLAG(bool, aggregate_analysis, false,
           "print the aggregated analysis.");
 ABSL_FLAG(std::string, out_file, "",
           "If set, will write the output to the given file instead of stdout.");
+ABSL_FLAG(std::string, error_file, "",
+          "If set, will write proto parsing errors to the given file instead "
+          "of stderr. This is useful when processing a large number of input "
+          "files, especially with high --parallelism (becase stderr can become "
+          "a bottleneck).");
 ABSL_FLAG(bool, sort_output_by_file_name, false,
           "If set, will sort the per-file output by the file name. Note that "
           "this will delay writing to the output file until all the files are "
           "processed.");
 ABSL_FLAG(int, parallelism, NumCPUs(),
           "Number of threads to use to process proto profiles in parallel.");
+
+namespace google::protobuf::compiler::tools {
+
+class ErrorSink : public DescriptorPool::ErrorCollector {
+ public:
+  explicit ErrorSink(std::string_view filename)
+      : stream_{filename.empty() ? std::cerr : file_stream_} {
+    if (!filename.empty()) {
+      file_stream_.open(filename, std::ios_base::out | std::ios_base::trunc);
+      ABSL_QCHECK(file_stream_.is_open())
+          << "Failed to open file: " << filename;
+    }
+  }
+
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
+    stream_ << "ERROR in " << filename << ": " << element_name << ": "
+            << message << "\n";
+  }
+
+  void RecordWarning(absl::string_view filename, absl::string_view element_name,
+                     const Message* descriptor, ErrorLocation location,
+                     absl::string_view message) override {
+    stream_ << "WARNING in " << filename << ": " << element_name << ": "
+            << message << "\n";
+  }
+
+ private:
+  std::ofstream file_stream_;
+  std::ostream& stream_;
+};
+
+}  // namespace protobuf
+}  // namespace google::compiler::tools
 
 int main(int argc, char* argv[]) {
   using google::protobuf::compiler::tools::AnalyzeAndAggregateProfileProtosToText;
@@ -81,7 +122,12 @@ int main(int argc, char* argv[]) {
     stream = &out_file_stream;
   }
 
-  google::protobuf::DescriptorPool pool(google::protobuf::util::globaldb::global());
+  const std::string error_file = absl::GetFlag(FLAGS_error_file);
+  ABSL_LOG_IF(WARNING, !error_file.empty())
+      << "Will write proto parsing errors to file (bypassing log): "
+      << error_file;
+  google::protobuf::compiler::tools::ErrorSink error_sink(error_file);
+  google::protobuf::DescriptorPool pool(google::protobuf::util::globaldb::global(), &error_sink);
   const AnalyzeProfileProtoOptions options = {
       .print_unused_threshold = absl::GetFlag(FLAGS_print_unused_threshold),
       .print_optimized = absl::GetFlag(FLAGS_print_optimized),
