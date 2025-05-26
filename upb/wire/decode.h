@@ -94,6 +94,11 @@ enum {
    * as non-UTF-8 proto3 string fields.
    */
   kUpb_DecodeOption_AlwaysValidateUtf8 = 8,
+
+  /* EXPERIMENTAL:
+   *
+   * If set, the fasttable decoder will not be used. */
+  kUpb_DecodeOption_DisableFastTable = 16,
 };
 // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
 

@@ -187,12 +187,7 @@ static bool upb_DecodeFast_IsDisabled(uint32_t function_idx) {
     return true;
   }
 #endif
-  uint32_t type = upb_DecodeFast_GetType(function_idx);
-
-  // Doesn't support unlinked message fields.
-  if (type == kUpb_DecodeFast_Message) return true;
-
-  return false;
+  return true;
 }
 
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,

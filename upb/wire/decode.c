@@ -1345,7 +1345,8 @@ const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
   }
 
 #if UPB_FASTTABLE
-  if (mt && mt->UPB_PRIVATE(table_mask) != (unsigned char)-1) {
+  if (mt && mt->UPB_PRIVATE(table_mask) != (unsigned char)-1 &&
+      !(d->options & kUpb_DecodeOption_DisableFastTable)) {
     uint16_t tag = _upb_FastDecoder_LoadTag(ptr);
     intptr_t table = decode_totable(mt);
     ptr = _upb_FastDecoder_TagDispatch(d, ptr, msg, table, 0, tag);
