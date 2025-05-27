@@ -42,8 +42,8 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
+#include "absl/base/macros.h"
 #include "absl/base/optimization.h"
-#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/any_invocable.h"
 #include "absl/functional/function_ref.h"
@@ -932,7 +932,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   bool is_required() const;
   bool is_repeated() const;  // Whether or not the field is repeated/map field.
 
-  ABSL_DEPRECATED("Use !is_required() && !is_repeated() instead.")
+  ABSL_DEPRECATE_AND_INLINE()
   bool is_optional() const;  // Use !is_required() && !is_repeated() instead.
 
   bool is_packable() const;  // shorthand for is_repeated() &&
@@ -2943,7 +2943,7 @@ inline FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
 }
 
 inline bool FieldDescriptor::is_optional() const {
-  return static_cast<Label>(label_) == LABEL_OPTIONAL;
+  return !is_repeated() && !is_required();
 }
 
 inline bool FieldDescriptor::is_repeated() const {
