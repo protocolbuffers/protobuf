@@ -78,8 +78,9 @@ MultiFileErrorCollector::~MultiFileErrorCollector() = default;
 class SourceTreeDescriptorDatabase::SingleFileErrorCollector
     : public io::ErrorCollector {
  public:
-  SingleFileErrorCollector(const std::string& filename,
-                           MultiFileErrorCollector* multi_file_error_collector)
+  SingleFileErrorCollector(
+      const std::string& filename,
+      MultiFileErrorCollector* multi_file_error_collector)
       : filename_(filename),
         multi_file_error_collector_(multi_file_error_collector),
         had_errors_(false) {}
