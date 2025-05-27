@@ -386,7 +386,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
       HANDLE_TYPE(FLOAT, float);
       HANDLE_TYPE(DOUBLE, double);
       HANDLE_TYPE(BOOL, bool);
-      HANDLE_TYPE(ENUM, enum);
+      HANDLE_TYPE(ENUM, int32_t);
       HANDLE_TYPE(STRING, string);
 #undef HANDLE_TYPE
 

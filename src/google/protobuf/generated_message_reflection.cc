@@ -1828,72 +1828,72 @@ void Reflection::ListFields(const Message& message,
 // -------------------------------------------------------------------
 
 #undef DEFINE_PRIMITIVE_ACCESSORS
-#define DEFINE_PRIMITIVE_ACCESSORS(TYPENAME, TYPE, PASSTYPE, CPPTYPE)          \
-  PASSTYPE Reflection::Get##TYPENAME(const Message& message,                   \
-                                     const FieldDescriptor* field) const {     \
+#define DEFINE_PRIMITIVE_ACCESSORS(TYPENAME, TYPE, CPPTYPE)                    \
+  TYPE Reflection::Get##TYPENAME(const Message& message,                       \
+                                 const FieldDescriptor* field) const {         \
     USAGE_CHECK_ALL(Get##TYPENAME, SINGULAR, CPPTYPE);                         \
     if (field->is_extension()) {                                               \
-      return GetExtensionSet(message).Get##TYPENAME(                           \
-          field->number(), field->default_value_##PASSTYPE());                 \
+      return GetExtensionSet(message).Get<TYPE>(                               \
+          field->number(), field->default_value_##TYPE());                     \
     } else if (schema_.InRealOneof(field) && !HasOneofField(message, field)) { \
-      return field->default_value_##PASSTYPE();                                \
+      return field->default_value_##TYPE();                                    \
     } else {                                                                   \
       return GetField<TYPE>(message, field);                                   \
     }                                                                          \
   }                                                                            \
                                                                                \
   void Reflection::Set##TYPENAME(                                              \
-      Message* message, const FieldDescriptor* field, PASSTYPE value) const {  \
+      Message* message, const FieldDescriptor* field, TYPE value) const {      \
     USAGE_MUTABLE_CHECK_ALL(Set##TYPENAME, SINGULAR, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
-      return MutableExtensionSet(message)->Set##TYPENAME(                      \
+      return MutableExtensionSet(message)->Set<TYPE>(                          \
           field->number(), field->type(), value, field);                       \
     } else {                                                                   \
       SetField<TYPE>(message, field, value);                                   \
     }                                                                          \
   }                                                                            \
                                                                                \
-  PASSTYPE Reflection::GetRepeated##TYPENAME(                                  \
+  TYPE Reflection::GetRepeated##TYPENAME(                                      \
       const Message& message, const FieldDescriptor* field, int index) const { \
     USAGE_CHECK_ALL(GetRepeated##TYPENAME, REPEATED, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
-      return GetExtensionSet(message).GetRepeated##TYPENAME(field->number(),   \
-                                                            index);            \
+      return GetExtensionSet(message).GetRepeated<TYPE>(field->number(),       \
+                                                        index);                \
     } else {                                                                   \
       return GetRepeatedField<TYPE>(message, field, index);                    \
     }                                                                          \
   }                                                                            \
                                                                                \
-  void Reflection::SetRepeated##TYPENAME(Message* message,                     \
-                                         const FieldDescriptor* field,         \
-                                         int index, PASSTYPE value) const {    \
+  void Reflection::SetRepeated##TYPENAME(                                      \
+      Message* message, const FieldDescriptor* field, int index, TYPE value)   \
+      const {                                                                  \
     USAGE_MUTABLE_CHECK_ALL(SetRepeated##TYPENAME, REPEATED, CPPTYPE);         \
     if (field->is_extension()) {                                               \
-      MutableExtensionSet(message)->SetRepeated##TYPENAME(field->number(),     \
-                                                          index, value);       \
+      MutableExtensionSet(message)->SetRepeated<TYPE>(field->number(), index,  \
+                                                      value);                  \
     } else {                                                                   \
       SetRepeatedField<TYPE>(message, field, index, value);                    \
     }                                                                          \
   }                                                                            \
                                                                                \
   void Reflection::Add##TYPENAME(                                              \
-      Message* message, const FieldDescriptor* field, PASSTYPE value) const {  \
+      Message* message, const FieldDescriptor* field, TYPE value) const {      \
     USAGE_MUTABLE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
-      MutableExtensionSet(message)->Add##TYPENAME(                             \
+      MutableExtensionSet(message)->Add<TYPE>(                                 \
           field->number(), field->type(), field->is_packed(), value, field);   \
     } else {                                                                   \
       AddField<TYPE>(message, field, value);                                   \
     }                                                                          \
   }
 
-DEFINE_PRIMITIVE_ACCESSORS(Int32, int32_t, int32_t, INT32)
-DEFINE_PRIMITIVE_ACCESSORS(Int64, int64_t, int64_t, INT64)
-DEFINE_PRIMITIVE_ACCESSORS(UInt32, uint32_t, uint32_t, UINT32)
-DEFINE_PRIMITIVE_ACCESSORS(UInt64, uint64_t, uint64_t, UINT64)
-DEFINE_PRIMITIVE_ACCESSORS(Float, float, float, FLOAT)
-DEFINE_PRIMITIVE_ACCESSORS(Double, double, double, DOUBLE)
-DEFINE_PRIMITIVE_ACCESSORS(Bool, bool, bool, BOOL)
+DEFINE_PRIMITIVE_ACCESSORS(Int32, int32_t, INT32)
+DEFINE_PRIMITIVE_ACCESSORS(Int64, int64_t, INT64)
+DEFINE_PRIMITIVE_ACCESSORS(UInt32, uint32_t, UINT32)
+DEFINE_PRIMITIVE_ACCESSORS(UInt64, uint64_t, UINT64)
+DEFINE_PRIMITIVE_ACCESSORS(Float, float, FLOAT)
+DEFINE_PRIMITIVE_ACCESSORS(Double, double, DOUBLE)
+DEFINE_PRIMITIVE_ACCESSORS(Bool, bool, BOOL)
 #undef DEFINE_PRIMITIVE_ACCESSORS
 
 // -------------------------------------------------------------------
@@ -1902,7 +1902,7 @@ std::string Reflection::GetString(const Message& message,
                                   const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetString, SINGULAR, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(
+    return GetExtensionSet(message).Get<std::string>(
         field->number(), internal::DefaultValueStringAsString(field));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
@@ -1937,7 +1937,7 @@ const std::string& Reflection::GetStringReference(const Message& message,
   (void)scratch;  // Parameter is used by Google-internal code.
   USAGE_CHECK_ALL(GetStringReference, SINGULAR, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(
+    return GetExtensionSet(message).Get<std::string>(
         field->number(), internal::DefaultValueStringAsString(field));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
@@ -1973,7 +1973,7 @@ absl::Cord Reflection::GetCord(const Message& message,
                                const FieldDescriptor* field) const {
   USAGE_CHECK_ALL(GetCord, SINGULAR, STRING);
   if (field->is_extension()) {
-    return absl::Cord(GetExtensionSet(message).GetString(
+    return absl::Cord(GetExtensionSet(message).Get<std::string>(
         field->number(), internal::DefaultValueStringAsString(field)));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
@@ -2007,7 +2007,7 @@ absl::string_view Reflection::GetStringViewImpl(const Message& message,
                                                 const FieldDescriptor* field,
                                                 ScratchSpace* scratch) const {
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetString(
+    return GetExtensionSet(message).Get<std::string>(
         field->number(), internal::DefaultValueStringAsString(field));
   }
   if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
@@ -2040,7 +2040,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
   USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
   if (field->is_extension()) {
-    return MutableExtensionSet(message)->SetString(
+    return MutableExtensionSet(message)->Set<std::string>(
         field->number(), field->type(), std::move(value), field);
   } else {
     switch (field->cpp_string_type()) {
@@ -2154,7 +2154,8 @@ std::string Reflection::GetRepeatedString(const Message& message,
                                           int index) const {
   USAGE_CHECK_ALL(GetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
+    return GetExtensionSet(message).GetRepeated<std::string>(field->number(),
+                                                             index);
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2173,7 +2174,8 @@ const std::string& Reflection::GetRepeatedStringReference(
   (void)scratch;  // Parameter is used by Google-internal code.
   USAGE_CHECK_ALL(GetRepeatedStringReference, REPEATED, STRING);
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
+    return GetExtensionSet(message).GetRepeated<std::string>(field->number(),
+                                                             index);
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2193,7 +2195,8 @@ absl::string_view Reflection::GetRepeatedStringViewImpl(
     const Message& message, const FieldDescriptor* field, int index,
     ScratchSpace* scratch) const {
   if (field->is_extension()) {
-    return GetExtensionSet(message).GetRepeatedString(field->number(), index);
+    return GetExtensionSet(message).GetRepeated<std::string>(field->number(),
+                                                             index);
   }
 
   switch (field->cpp_string_type()) {
@@ -2222,8 +2225,8 @@ void Reflection::SetRepeatedString(Message* message,
                                    std::string value) const {
   USAGE_MUTABLE_CHECK_ALL(SetRepeatedString, REPEATED, STRING);
   if (field->is_extension()) {
-    MutableExtensionSet(message)->SetRepeatedString(field->number(), index,
-                                                    std::move(value));
+    MutableExtensionSet(message)->SetRepeated<std::string>(
+        field->number(), index, std::move(value));
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2243,11 +2246,11 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
   USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
-    MutableExtensionSet(message)->AddString(field->number(),
-                                            field->requires_utf8_validation()
-                                                ? FieldDescriptor::TYPE_STRING
-                                                : FieldDescriptor::TYPE_BYTES,
-                                            std::move(value), field);
+    MutableExtensionSet(message)->Add<std::string>(
+        field->number(),
+        field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
+                                          : FieldDescriptor::TYPE_BYTES,
+        field) = std::move(value);
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2277,7 +2280,7 @@ int Reflection::GetEnumValue(const Message& message,
 
   int32_t value;
   if (field->is_extension()) {
-    value = GetExtensionSet(message).GetEnum(
+    value = GetExtensionSet(message).Get<int>(
         field->number(), field->default_value_enum()->number());
   } else if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
     value = field->default_value_enum()->number();
@@ -2314,8 +2317,8 @@ void Reflection::SetEnumValueInternal(Message* message,
                                       const FieldDescriptor* field,
                                       int value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->SetEnum(field->number(), field->type(), value,
-                                          field);
+    MutableExtensionSet(message)->Set<int>(field->number(), field->type(),
+                                           value, field);
   } else {
     SetField<int>(message, field, value);
   }
@@ -2335,7 +2338,7 @@ int Reflection::GetRepeatedEnumValue(const Message& message,
 
   int value;
   if (field->is_extension()) {
-    value = GetExtensionSet(message).GetRepeatedEnum(field->number(), index);
+    value = GetExtensionSet(message).GetRepeated<int>(field->number(), index);
   } else {
     value = GetRepeatedField<int>(message, field, index);
   }
@@ -2371,8 +2374,8 @@ void Reflection::SetRepeatedEnumValueInternal(Message* message,
                                               const FieldDescriptor* field,
                                               int index, int value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->SetRepeatedEnum(field->number(), index,
-                                                  value);
+    MutableExtensionSet(message)->SetRepeated<int>(field->number(), index,
+                                                   value);
   } else {
     SetRepeatedField<int>(message, field, index, value);
   }
@@ -2405,8 +2408,8 @@ void Reflection::AddEnumValueInternal(Message* message,
                                       const FieldDescriptor* field,
                                       int value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->AddEnum(field->number(), field->type(),
-                                          field->is_packed(), value, field);
+    MutableExtensionSet(message)->Add<int>(field->number(), field->type(),
+                                           field->is_packed(), value, field);
   } else {
     AddField<int>(message, field, value);
   }

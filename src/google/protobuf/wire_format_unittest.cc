@@ -16,6 +16,9 @@
 #include <string>
 
 #include "absl/base/casts.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
@@ -186,6 +189,33 @@ TEST(WireFormatTest, MaxFieldNumber) {
   // Make sure the max field number constant is accurate.
   EXPECT_EQ((1 << (32 - WireFormatLite::kTagTypeBits)) - 1,
             FieldDescriptor::kMaxNumber);
+}
+
+TEST(WireFormatTest, CppTypeForWorksForAllSupportedTypes) {
+  using WFL = WireFormatLite;
+  EXPECT_EQ(WFL::CppTypeFor<int32_t>(), WFL::CPPTYPE_INT32);
+  EXPECT_EQ(WFL::CppTypeFor<int64_t>(), WFL::CPPTYPE_INT64);
+  EXPECT_EQ(WFL::CppTypeFor<uint32_t>(), WFL::CPPTYPE_UINT32);
+  EXPECT_EQ(WFL::CppTypeFor<uint64_t>(), WFL::CPPTYPE_UINT64);
+  EXPECT_EQ(WFL::CppTypeFor<float>(), WFL::CPPTYPE_FLOAT);
+  EXPECT_EQ(WFL::CppTypeFor<double>(), WFL::CPPTYPE_DOUBLE);
+  EXPECT_EQ(WFL::CppTypeFor<bool>(), WFL::CPPTYPE_BOOL);
+  EXPECT_EQ(WFL::CppTypeFor<proto2_unittest::TestAllTypes::NestedEnum>(),
+            WFL::CPPTYPE_ENUM);
+  EXPECT_EQ(WFL::CppTypeFor<std::string>(), WFL::CPPTYPE_STRING);
+  EXPECT_EQ(WFL::CppTypeFor<absl::Cord>(), WFL::CPPTYPE_STRING);
+  EXPECT_EQ(WFL::CppTypeFor<absl::string_view>(), WFL::CPPTYPE_STRING);
+  EXPECT_EQ(WFL::CppTypeFor<google::protobuf::MessageLite>(), WFL::CPPTYPE_MESSAGE);
+  EXPECT_EQ(WFL::CppTypeFor<proto2_unittest::TestAllTypes>(),
+            WFL::CPPTYPE_MESSAGE);
+
+  // And repeated too
+  EXPECT_EQ(WFL::CppTypeFor<RepeatedField<int32_t>>(), WFL::CPPTYPE_INT32);
+  EXPECT_EQ(WFL::CppTypeFor<RepeatedField<double>>(), WFL::CPPTYPE_DOUBLE);
+  EXPECT_EQ(WFL::CppTypeFor<RepeatedPtrField<std::string>>(),
+            WFL::CPPTYPE_STRING);
+  EXPECT_EQ(WFL::CppTypeFor<RepeatedPtrField<proto2_unittest::TestAllTypes>>(),
+            WFL::CPPTYPE_MESSAGE);
 }
 
 

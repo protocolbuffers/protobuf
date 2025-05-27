@@ -631,6 +631,11 @@ PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
 PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
 
+// Like C++20's std::type_identity_t, usually used to alter type deduction in
+// templates.
+template <typename T>
+using type_identity_t = std::enable_if_t<true, T>;
+
 template <typename T>
 constexpr T* Launder(T* p) {
 #if defined(__cpp_lib_launder) && __cpp_lib_launder >= 201606L
