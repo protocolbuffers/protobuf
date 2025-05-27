@@ -173,23 +173,6 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTableField* field,
                                  tag, out_data);
 }
 
-// Returns true if we should disable fast decode for this function_idx.  This is
-// useful for field types that are known not to work yet.  It is also useful for
-// bisecting a test failure to find which function(s) are broken.
-//
-// This function only applies to field types that have been assigned a function
-// index.  Some field types (eg. groups) do not even have a function index at
-// the moment, and so will be rejected by upb_DecodeFast_TryFillEntry() before
-// we even get here.
-static bool upb_DecodeFast_IsDisabled(uint32_t function_idx) {
-#ifdef UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE
-  if (function_idx > UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE) {
-    return true;
-  }
-#endif
-  return true;
-}
-
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
                                         upb_DecodeFast_TableEntry* entry) {
@@ -199,7 +182,10 @@ static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
   return upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size) &&
          upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
                                          &entry->function_idx) &&
-         !upb_DecodeFast_IsDisabled(entry->function_idx) &&
+         UPB_DECODEFAST_ISENABLED(
+             upb_DecodeFast_GetType(entry->function_idx),
+             upb_DecodeFast_GetCardinality(entry->function_idx),
+             upb_DecodeFast_GetTagSize(entry->function_idx)) &&
          upb_DecodeFast_GetFunctionData(field, tag, &entry->function_data);
 }
 
