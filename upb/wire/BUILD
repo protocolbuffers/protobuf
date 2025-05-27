@@ -71,18 +71,25 @@ cc_library(
 )
 
 cc_library(
+    name = "reader_internal",
+    hdrs = ["internal/reader.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//upb:__pkg__"],
+    deps = ["//upb:port"],
+)
+
+cc_library(
     name = "reader",
-    srcs = [
-        "internal/reader.h",
-        "reader.c",
-    ],
+    srcs = ["reader.c"],
     hdrs = [
         "reader.h",
         "types.h",
     ],
+    copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":eps_copy_input_stream",
+        ":reader_internal",
         "//upb:port",
         "//upb/base:internal",
     ],
