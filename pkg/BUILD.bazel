@@ -127,7 +127,7 @@ gen_file_lists(
         ":common_test": "common_test",
         ":lite_test_util": "lite_test_util",
         ":test_util": "test_util",
-        "//upb:test_util": "upb_test_util",
+        ":upb_test_util": "upb_test_util",
         # Conformance tests
         ":conformance_cpp": "conformance_testee",
         ":conformance_runner": "conformance_runner",
@@ -296,6 +296,19 @@ cc_dist_library(
     dist_deps = [":protobuf"],
     tags = ["manual"],
     deps = ["//conformance:conformance_test_runner"],
+)
+
+cc_dist_library(
+    name = "upb_test_util",
+    testonly = 1,
+    dist_deps = [
+        ":protobuf",
+        ":upb",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//upb:test_util",
+    ],
 )
 
 cc_dist_library(

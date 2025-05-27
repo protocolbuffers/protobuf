@@ -228,7 +228,8 @@ if (protobuf_BUILD_LIBUPB)
   add_executable(upb-test
     ${upb_test_files}
     ${upb_test_proto_genfiles}
-    ${upb_test_util_files})
+    ${upb_test_util_hdrs}
+    ${upb_test_util_srcs})
 
   target_link_libraries(upb-test
     ${protobuf_LIB_PROTOBUF}
@@ -259,7 +260,7 @@ file(GLOB_RECURSE _local_upb_hdrs
 
 # Exclude test library headers.
 list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
-  ${compiler_test_utils_hdrs} ${upb_test_util_files} ${libprotoc_hdrs})
+  ${compiler_test_utils_hdrs} ${upb_test_util_hdrs} ${libprotoc_hdrs})
 foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
   list(REMOVE_ITEM _local_upb_hdrs ${_hdr})

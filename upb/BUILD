@@ -423,11 +423,13 @@ filegroup(
     visibility = ["//pkg:__pkg__"],
 )
 
-filegroup(
+cc_library(
     name = "test_util",
-    srcs = [
-        "//upb/test:test_util",
-        "//upb/util:test_util",
-    ],
+    testonly = True,
     visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//upb/test:fuzz_util",
+        "//upb/test:parse_text_proto",
+        "//upb/util:def_to_proto_test_lib",
+    ],
 )
