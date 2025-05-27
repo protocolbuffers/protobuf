@@ -70,8 +70,8 @@ if _implementation_type not in ('python', 'cpp', 'upb'):
                    'supported. Please set to \'python\', \'cpp\' or '
                    '\'upb\'.'.format(_implementation_type))
 
-if 'PyPy' in sys.version and _implementation_type == 'cpp':
-  warnings.warn('PyPy does not work yet with cpp protocol buffers. '
+if sys.implementation.name in ('pypy', 'graalpy') and _implementation_type == 'cpp':
+  warnings.warn('PyPy and GraalPy do not work yet with cpp protocol buffers. '
                 'Falling back to the python implementation.')
   _implementation_type = 'python'
 
