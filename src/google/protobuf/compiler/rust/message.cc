@@ -817,6 +817,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                 {"upb_generated_message_trait_impls",
                  [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }}},
                R"rs(
+          #[allow(dead_code)]
           pub(super) struct $Msg$;
 
           $upb_generated_message_trait_impls$
