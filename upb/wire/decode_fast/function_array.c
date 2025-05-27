@@ -16,15 +16,16 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define ADDR_OF_FUNC(card, type, size) \
-  &UPB_DECODEFAST_FUNCNAME(card, type, size),
+#define ADDR_OF_FUNC(type, card, size)                                     \
+  UPB_DECODEFAST_ISENABLED(kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
+                           kUpb_DecodeFast_##size)                         \
+  ? &UPB_DECODEFAST_FUNCNAME(type, card, size) : _upb_FastDecoder_DecodeGeneric,
 
 static _upb_FieldParser* funcs[] = {UPB_DECODEFAST_FUNCTIONS(ADDR_OF_FUNC)};
 
 #undef ADDR_OF_FUNC
 
 _upb_FieldParser* upb_DecodeFast_GetFunctionPointer(uint32_t function_idx) {
-  if (function_idx == UINT32_MAX) return _upb_FastDecoder_DecodeGeneric;
   UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(funcs));
   return funcs[function_idx];
 }

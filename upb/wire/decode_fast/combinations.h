@@ -128,13 +128,10 @@ UPB_INLINE bool upb_DecodeFast_IsZigZag(upb_DecodeFast_Type type) {
 // The canonical index of a given function.  This must be kept in sync with the
 // ordering above, such that this index selects the same function as the
 // corresponding UPB_DECODEFAST_FUNCNAME() macro.
-UPB_INLINE uint32_t upb_DecodeFast_FunctionIdx(upb_DecodeFast_Type type,
-                                               upb_DecodeFast_Cardinality card,
-                                               upb_DecodeFast_TagSize size) {
-  return ((uint32_t)type * kUpb_DecodeFast_CardinalityCount *
-          kUpb_DecodeFast_TagSizeCount) +
-         ((uint32_t)card * kUpb_DecodeFast_TagSizeCount) + (uint32_t)size;
-}
+#define UPB_DECODEFAST_FUNCTION_IDX(type, card, size)   \
+  (((uint32_t)type * kUpb_DecodeFast_CardinalityCount * \
+    kUpb_DecodeFast_TagSizeCount) +                     \
+   ((uint32_t)card * kUpb_DecodeFast_TagSizeCount) + (uint32_t)size)
 
 // Functions to decompose a function index into its constituent parts.
 UPB_INLINE upb_DecodeFast_TagSize
@@ -158,6 +155,25 @@ UPB_INLINE upb_DecodeFast_Type upb_DecodeFast_GetType(uint32_t function_idx) {
 // The canonical function name for a given cardinality, type, and tag size.
 #define UPB_DECODEFAST_FUNCNAME(type, card, size) \
   upb_DecodeFast_##type##_##card##_##size
+
+// Returns true if we should disable fast decode for this function_idx.  This is
+// useful for field types that are known not to work yet.  It is also useful for
+// bisecting a test failure to find which function(s) are broken.
+//
+// This must be a macro because it must evaluate to a compile-time constant,
+// since we use it when initializing the fastdecode function array.
+//
+// This function only applies to field types that have been assigned a function
+// index.  Some field types (eg. groups) do not even have a function index at
+// the moment, and so will be rejected by upb_DecodeFast_TryFillEntry() before
+// we even get here.
+#ifdef UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE
+#define UPB_DECODEFAST_ISENABLED(type, card, size) \
+  (UPB_DECODEFAST_FUNCION_IDX(type, card, size) <= \
+   UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE)
+#else
+#define UPB_DECODEFAST_ISENABLED(type, card, size) false
+#endif
 
 #include "upb/port/undef.inc"
 
