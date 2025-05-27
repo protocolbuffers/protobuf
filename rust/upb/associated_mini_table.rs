@@ -5,8 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::upb_MiniTable;
-use super::upb_MiniTableEnum;
+use super::sys::mini_table::mini_table::{upb_MiniTable, upb_MiniTableEnum};
 
 /// A trait for types which have an associated MiniTable (e.g. generated
 /// messages, and their mut and view proxy types).

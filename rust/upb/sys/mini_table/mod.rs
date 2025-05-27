@@ -5,8 +5,5 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::opaque_pointee::opaque_pointee;
-use core::ptr::NonNull;
-
-opaque_pointee!(upb_ExtensionRegistry);
-pub type RawExtensionRegistry = NonNull<upb_ExtensionRegistry>;
+pub mod extension_registry;
+pub mod mini_table;

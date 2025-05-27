@@ -5,12 +5,18 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::opaque_pointee::opaque_pointee;
-use super::{
-    upb_ExtensionRegistry, upb_MiniTable, upb_MiniTableField, RawArena, RawArray, RawMap,
-    StringView,
-};
+mod sys {
+    pub use super::super::super::*;
+}
+
 use core::ptr::NonNull;
+use sys::base::string_view::StringView;
+use sys::mem::arena::RawArena;
+use sys::message::array::RawArray;
+use sys::message::map::RawMap;
+use sys::mini_table::extension_registry::upb_ExtensionRegistry;
+use sys::mini_table::mini_table::{upb_MiniTable, upb_MiniTableField};
+use sys::opaque_pointee::opaque_pointee;
 
 opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;

@@ -5,20 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::opaque_pointee::opaque_pointee;
+use super::sys::mem::arena as sys_arena;
 use core::cell::UnsafeCell;
 use core::marker::PhantomData;
-use core::mem::{align_of, align_of_val, size_of_val, MaybeUninit};
-use core::ptr::{self, NonNull};
+use core::mem::{align_of_val, size_of_val, MaybeUninit};
+use core::ptr;
 use core::slice;
 
-opaque_pointee!(upb_Arena);
-pub type RawArena = NonNull<upb_Arena>;
-
-/// See `upb/port/def.inc`.
-const UPB_MALLOC_ALIGN: usize = 8;
-const _CHECK_UPB_MALLOC_ALIGN_AT_LEAST_POINTER_ALIGNED: () =
-    assert!(UPB_MALLOC_ALIGN >= align_of::<*const ()>());
+pub type RawArena = sys_arena::RawArena;
 
 /// A wrapper over a `upb_Arena`.
 ///
@@ -60,7 +54,7 @@ impl Arena {
         // - `upb_Arena_New` is assumed to be implemented correctly and always sound to
         //   call; if it returned a non-null pointer, it is a valid arena.
         unsafe {
-            let Some(raw) = upb_Arena_New() else { arena_new_failed() };
+            let Some(raw) = sys_arena::upb_Arena_New() else { arena_new_failed() };
             Self { raw, _not_sync: PhantomData }
         }
     }
@@ -87,9 +81,9 @@ impl Arena {
     #[allow(clippy::mut_from_ref)]
     #[inline]
     pub unsafe fn alloc(&self, size: usize, align: usize) -> Option<&mut [MaybeUninit<u8>]> {
-        debug_assert!(align <= UPB_MALLOC_ALIGN);
+        debug_assert!(align <= sys_arena::UPB_MALLOC_ALIGN);
         // SAFETY: `self.raw` is a valid UPB arena
-        let ptr = unsafe { upb_Arena_Malloc(self.raw, size) };
+        let ptr = unsafe { sys_arena::upb_Arena_Malloc(self.raw, size) };
 
         if ptr.is_null() {
             None
@@ -108,7 +102,7 @@ impl Arena {
     #[allow(clippy::mut_from_ref)]
     #[inline]
     pub fn checked_alloc(&self, size: usize, align: usize) -> Option<&mut [MaybeUninit<u8>]> {
-        assert!(align <= UPB_MALLOC_ALIGN);
+        assert!(align <= sys_arena::UPB_MALLOC_ALIGN);
         // SAFETY: align <= UPB_MALLOC_ALIGN asserted.
         unsafe { self.alloc(size, align) }
     }
@@ -167,7 +161,7 @@ impl Arena {
     /// long as either `self` or `other` has not been dropped.
     pub fn fuse(&self, other: &Arena) {
         // SAFETY: `self.raw()` and `other.raw()` are both valid UPB arenas.
-        let success = unsafe { upb_Arena_Fuse(self.raw(), other.raw()) };
+        let success = unsafe { sys_arena::upb_Arena_Fuse(self.raw(), other.raw()) };
         if !success {
             // Fusing can fail if any of the arenas has an initial block i.e. the arena is
             // backed by a preallocated chunk of memory that it doesn't own and thus cannot
@@ -188,43 +182,15 @@ impl Drop for Arena {
     #[inline]
     fn drop(&mut self) {
         unsafe {
-            upb_Arena_Free(self.raw);
+            sys_arena::upb_Arena_Free(self.raw);
         }
     }
-}
-
-extern "C" {
-    // `Option<NonNull<T: Sized>>` is ABI-compatible with `*mut T`
-    fn upb_Arena_New() -> Option<RawArena>;
-    fn upb_Arena_Free(arena: RawArena);
-    fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
-    fn upb_Arena_Fuse(arena1: RawArena, arena2: RawArena) -> bool;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use googletest::gtest;
-
-    #[gtest]
-    fn assert_arena_linked() {
-        use crate::assert_linked;
-        assert_linked!(upb_Arena_New);
-        assert_linked!(upb_Arena_Free);
-        assert_linked!(upb_Arena_Malloc);
-        assert_linked!(upb_Arena_Fuse);
-    }
-
-    #[gtest]
-    fn raw_ffi_test() {
-        // SAFETY: FFI unit test uses C API under expected patterns.
-        unsafe {
-            let arena = upb_Arena_New().unwrap();
-            let bytes = upb_Arena_Malloc(arena, 3);
-            *bytes.add(2) = 7;
-            upb_Arena_Free(arena);
-        }
-    }
 
     #[gtest]
     fn test_arena_new_and_free() {
