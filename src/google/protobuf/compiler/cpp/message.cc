@@ -4701,9 +4701,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
 
   p->Emit(
       {
-          {"debug_cond", ShouldSerializeInOrder(descriptor_, options_)
-                             ? "1"
-                             : "defined(NDEBUG)"},
           {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
           {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
           {"ifdef",
