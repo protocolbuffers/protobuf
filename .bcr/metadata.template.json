@@ -70,6 +70,12 @@
       "do_not_notify": true
     },
     {
+      "email": "sangki@google.com",
+      "github": "jguamie",
+      "name": "John Lee",
+      "do_not_notify": true
+    },
+    {
       "email": "sbenza@google.com",
       "github": "sbenzaquen",
       "name": "Samuel Benzaquen",
