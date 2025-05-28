@@ -575,6 +575,14 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
 }
 
 bool CheckAndGetBool(PyObject* arg, bool* value) {
+  if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.bool")) {
+    int is_true = PyObject_IsTrue(arg);
+    if (is_true < 0) {
+      return false;
+    }
+    *value = static_cast<bool>(is_true);
+    return true;
+  }
   long long_value = PyLong_AsLong(arg);  // NOLINT
   if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
       (long_value == -1 && PyErr_Occurred())) {

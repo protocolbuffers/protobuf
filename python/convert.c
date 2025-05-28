@@ -226,7 +226,11 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
       return !PyErr_Occurred();
     case kUpb_CType_Bool:
       if (!PyBool_Check(obj) && PyUpb_IsNumpyNdarray(obj, f)) return false;
-      val->bool_val = PyLong_AsLong(obj);
+      if (!strcmp(Py_TYPE(obj)->tp_name, "numpy.bool")) {
+        val->bool_val = PyObject_IsTrue(obj);
+      } else {
+        val->bool_val = PyLong_AsLong(obj);
+      }
       return !PyErr_Occurred();
     case kUpb_CType_Bytes: {
       char* ptr;

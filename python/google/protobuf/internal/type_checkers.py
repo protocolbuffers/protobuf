@@ -113,6 +113,11 @@ class BoolValueChecker(object):
   """Type checker used for bool fields."""
 
   def CheckValue(self, proposed_value):
+    if (
+        type(proposed_value).__module__ == 'numpy'
+        and type(proposed_value).__name__ == 'bool'
+    ):
+      return bool(proposed_value)
     if not hasattr(proposed_value, '__index__') or (
         type(proposed_value).__module__ == 'numpy' and
         type(proposed_value).__name__ == 'ndarray'):
