@@ -178,6 +178,16 @@ static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_EnumDef* e,
     val->int32_val = upb_EnumValueDef_Number(ev);
     return true;
   } else {
+    if (!strcmp(Py_TYPE(obj)->tp_name, "bool")) {
+      // TODO: raise error in 2026 Q1 release
+      // PyErr_Format(PyExc_TypeError, "assign bool to enum is not acceptable");
+      // return false;
+      PyErr_WarnFormat(
+          PyExc_DeprecationWarning, 3,
+          "Wrongly assign bool to enum field %s. This "
+          "will be rejected after 2026 Q1, please fix it before 2026",
+          upb_EnumDef_FullName(e));
+    }
     int32_t i32;
     if (!PyUpb_GetInt32(obj, &i32)) return false;
     if (upb_EnumDef_IsClosed(e) && !upb_EnumDef_CheckNumber(e, i32)) {

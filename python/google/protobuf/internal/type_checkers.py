@@ -22,13 +22,14 @@ TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import struct
 import numbers
+import struct
+import warnings
 
+from google.protobuf import descriptor
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import wire_format
-from google.protobuf import descriptor
 
 _FieldDescriptor = descriptor.FieldDescriptor
 
@@ -67,10 +68,9 @@ def GetTypeChecker(field):
     return UnicodeValueChecker()
   if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
     if field.enum_type.is_closed:
-      return EnumValueChecker(field.enum_type)
+      return ClosedEnumValueChecker(field.enum_type)
     else:
-      # When open enums are supported, any int32 can be assigned.
-      return _VALUE_CHECKERS[_FieldDescriptor.CPPTYPE_INT32]
+      return OpenEnumValueChecker(field.enum_type)
   return _VALUE_CHECKERS[field.cpp_type]
 
 
@@ -150,7 +150,7 @@ class IntValueChecker(object):
     return 0
 
 
-class EnumValueChecker(object):
+class ClosedEnumValueChecker(object):
 
   """Checker used for enum fields.  Performs type-check and range check."""
 
@@ -158,6 +158,19 @@ class EnumValueChecker(object):
     self._enum_type = enum_type
 
   def CheckValue(self, proposed_value):
+    if type(proposed_value) == bool:
+      message = (
+          '%.1024r has type %s, but expected one of: %s. This warning '
+          'will turn into error in 2026 Q1, please fix it before 2026'
+          % (
+              proposed_value,
+              type(proposed_value),
+              (int,),
+          )
+      )
+      # raise TypeError(message)
+      warnings.warn(message)
+
     if not isinstance(proposed_value, numbers.Integral):
       message = ('%.1024r has type %s, but expected one of: %s' %
                  (proposed_value, type(proposed_value), (int,)))
@@ -168,6 +181,41 @@ class EnumValueChecker(object):
 
   def DefaultValue(self):
     return self._enum_type.values[0].number
+
+
+class OpenEnumValueChecker(object):
+  """Checker used for open enum fields.  Performs type-check."""
+
+  def __init__(self, enum_type):
+    self._enum_type = enum_type
+
+  def CheckValue(self, proposed_value):
+    if type(proposed_value) == bool:
+      message = (
+          '%.1024r has type %s, but expected one of: %s. This warning '
+          'will turn into error in 2026 Q1, please fix it before 2026'
+          % (
+              proposed_value,
+              type(proposed_value),
+              (int,),
+          )
+      )
+      warnings.warn(message)
+
+    if not isinstance(proposed_value, numbers.Integral):
+      message = '%.1024r has type %s, but expected one of: %s' % (
+          proposed_value,
+          type(proposed_value),
+          (int,),
+      )
+      raise TypeError(message)
+    # When open enums are supported, any int32 can be assigned.
+    if not -2147483648 <= int(proposed_value) <= 2147483647:
+      raise ValueError('Value out of range: %d' % proposed_value)
+    return int(proposed_value)
+
+  def DefaultValue(self):
+    return 0
 
 
 class UnicodeValueChecker(object):
