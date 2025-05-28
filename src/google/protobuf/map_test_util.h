@@ -131,6 +131,9 @@ void MapTestUtil::SetMapFields(TestMap* message) {
   (*message->mutable_map_int32_bytes())[0] = long_string();
   (*message->mutable_map_int32_enum())[0] = MapEnum_BAR<TestMap>();
   (*message->mutable_map_int32_foreign_message())[0].set_c(0);
+  (*message->mutable_map_int32_all_types())[0].set_optional_int32(0);
+  (*message->mutable_map_int32_string())[0] = long_string();
+  (*message->mutable_map_string_int32())[long_string()] = 0;
 
   // Add second element
   (*message->mutable_map_int32_int32())[1] = 1;
@@ -150,6 +153,9 @@ void MapTestUtil::SetMapFields(TestMap* message) {
   (*message->mutable_map_int32_bytes())[1] = long_string_2();
   (*message->mutable_map_int32_enum())[1] = MapEnum_BAZ<TestMap>();
   (*message->mutable_map_int32_foreign_message())[1].set_c(1);
+  (*message->mutable_map_int32_all_types())[1].set_optional_int32(1);
+  (*message->mutable_map_int32_string())[1] = long_string_2();
+  (*message->mutable_map_string_int32())[long_string_2()] = 1;
 }
 
 template <typename TestArenaMap>
@@ -214,6 +220,9 @@ void MapTestUtil::SetMapFieldsInitialized(TestMap* message) {
   (*message->mutable_map_int32_bytes())[0];
   (*message->mutable_map_int32_enum())[0];
   (*message->mutable_map_int32_foreign_message())[0];
+  (*message->mutable_map_int32_all_types())[0];
+  (*message->mutable_map_int32_string())[0];
+  (*message->mutable_map_string_int32())[0];
 }
 
 template <typename TestMap>
@@ -235,6 +244,9 @@ void MapTestUtil::ModifyMapFields(TestMap* message) {
   (*message->mutable_map_int32_bytes())[1] = "2";
   (*message->mutable_map_int32_enum())[1] = MapEnum_FOO<TestMap>();
   (*message->mutable_map_int32_foreign_message())[1].set_c(2);
+  (*message->mutable_map_int32_all_types())[1].set_optional_int32(2);
+  (*message->mutable_map_int32_string())[1] = "2";
+  (*message->mutable_map_string_int32())[long_string_2()] = 2;
 }
 
 template <typename TestMap>
@@ -256,6 +268,9 @@ void MapTestUtil::ExpectClear(const TestMap& message) {
   EXPECT_EQ(0, message.map_int32_bytes().size());
   EXPECT_EQ(0, message.map_int32_enum().size());
   EXPECT_EQ(0, message.map_int32_foreign_message().size());
+  EXPECT_EQ(0, message.map_int32_all_types().size());
+  EXPECT_EQ(0, message.map_int32_string().size());
+  EXPECT_EQ(0, message.map_string_int32().size());
 }
 
 template <typename TestMap>
@@ -277,6 +292,9 @@ void MapTestUtil::ExpectMapFieldsSet(const TestMap& message) {
   ASSERT_EQ(2, message.map_int32_bytes().size());
   ASSERT_EQ(2, message.map_int32_enum().size());
   ASSERT_EQ(2, message.map_int32_foreign_message().size());
+  EXPECT_EQ(2, message.map_int32_all_types().size());
+  EXPECT_EQ(2, message.map_int32_string().size());
+  EXPECT_EQ(2, message.map_string_int32().size());
 
   EXPECT_EQ(0, message.map_int32_int32().at(0));
   EXPECT_EQ(0, message.map_int64_int64().at(0));
@@ -295,6 +313,9 @@ void MapTestUtil::ExpectMapFieldsSet(const TestMap& message) {
   EXPECT_EQ(long_string(), message.map_int32_bytes().at(0));
   EXPECT_EQ(MapEnum_BAR<TestMap>(), message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).c());
+  EXPECT_EQ(0, message.map_int32_all_types().at(0).optional_int32());
+  EXPECT_EQ(long_string(), message.map_int32_string().at(0));
+  EXPECT_EQ(0, message.map_string_int32().at(long_string()));
 
   EXPECT_EQ(1, message.map_int32_int32().at(1));
   EXPECT_EQ(1, message.map_int64_int64().at(1));
@@ -313,6 +334,9 @@ void MapTestUtil::ExpectMapFieldsSet(const TestMap& message) {
   EXPECT_EQ(long_string_2(), message.map_int32_bytes().at(1));
   EXPECT_EQ(MapEnum_BAZ<TestMap>(), message.map_int32_enum().at(1));
   EXPECT_EQ(1, message.map_int32_foreign_message().at(1).c());
+  EXPECT_EQ(1, message.map_int32_all_types().at(1).optional_int32());
+  EXPECT_EQ(long_string_2(), message.map_int32_string().at(1));
+  EXPECT_EQ(1, message.map_string_int32().at(long_string_2()));
 }
 
 template <typename TestArenaMap>
@@ -391,6 +415,9 @@ void MapTestUtil::ExpectMapFieldsSetInitialized(const TestMap& message) {
   EXPECT_EQ(1, message.map_int32_bytes().size());
   EXPECT_EQ(1, message.map_int32_enum().size());
   EXPECT_EQ(1, message.map_int32_foreign_message().size());
+  EXPECT_EQ(1, message.map_int32_all_types().size());
+  EXPECT_EQ(1, message.map_int32_string().size());
+  EXPECT_EQ(1, message.map_string_int32().size());
 
   EXPECT_EQ(0, message.map_int32_int32().at(0));
   EXPECT_EQ(0, message.map_int64_int64().at(0));
@@ -409,6 +436,9 @@ void MapTestUtil::ExpectMapFieldsSetInitialized(const TestMap& message) {
   EXPECT_EQ("", message.map_int32_bytes().at(0));
   EXPECT_EQ(MapEnum_FOO<TestMap>(), message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).ByteSizeLong());
+  EXPECT_EQ(0, message.map_int32_all_types().at(0).optional_int32());
+  EXPECT_EQ("", message.map_int32_string().size());
+  EXPECT_EQ(0, message.map_string_int32().at(long_string()));
 }
 
 template <typename TestMap>
@@ -433,6 +463,9 @@ void MapTestUtil::ExpectMapFieldsModified(const TestMap& message) {
   EXPECT_EQ(2, message.map_int32_bytes().size());
   EXPECT_EQ(2, message.map_int32_enum().size());
   EXPECT_EQ(2, message.map_int32_foreign_message().size());
+  EXPECT_EQ(2, message.map_int32_all_types().size());
+  EXPECT_EQ(2, message.map_int32_string().size());
+  EXPECT_EQ(2, message.map_string_int32().size());
 
   EXPECT_EQ(0, message.map_int32_int32().at(0));
   EXPECT_EQ(0, message.map_int64_int64().at(0));
@@ -451,6 +484,9 @@ void MapTestUtil::ExpectMapFieldsModified(const TestMap& message) {
   EXPECT_EQ(long_string(), message.map_int32_bytes().at(0));
   EXPECT_EQ(MapEnum_BAR<TestMap>(), message.map_int32_enum().at(0));
   EXPECT_EQ(0, message.map_int32_foreign_message().at(0).c());
+  EXPECT_EQ(0, message.map_int32_all_types().at(0).optional_int32());
+  EXPECT_EQ("", message.map_int32_string().size());
+  EXPECT_EQ(0, message.map_string_int32().at(long_string()));
 
   // Actually verify the second (modified) elements now.
   EXPECT_EQ(2, message.map_int32_int32().at(1));
@@ -470,6 +506,9 @@ void MapTestUtil::ExpectMapFieldsModified(const TestMap& message) {
   EXPECT_EQ("2", message.map_int32_bytes().at(1));
   EXPECT_EQ(MapEnum_FOO<TestMap>(), message.map_int32_enum().at(1));
   EXPECT_EQ(2, message.map_int32_foreign_message().at(1).c());
+  EXPECT_EQ(2, message.map_int32_all_types().at(0).optional_int32());
+  EXPECT_EQ("2", message.map_int32_string().size());
+  EXPECT_EQ(2, message.map_string_int32().at(long_string()));
 }
 
 template <typename TestMap>
@@ -520,6 +559,15 @@ void MapTestUtil::ExpectMapsSize(const TestMap& message, int size) {
       size,
       message.GetReflection()->FieldSize(
           message, descriptor->FindFieldByName("map_int32_foreign_message")));
+  EXPECT_EQ(size,
+            message.GetReflection()->FieldSize(
+                message, descriptor->FindFieldByName("map_int32_all_types")));
+  EXPECT_EQ(size,
+            message.GetReflection()->FieldSize(
+                message, descriptor->FindFieldByName("map_int32_string")));
+  EXPECT_EQ(size,
+            message.GetReflection()->FieldSize(
+                message, descriptor->FindFieldByName("map_string_int32")));
 }
 
 template <typename TestMap>
@@ -563,6 +611,12 @@ std::vector<const Message*> MapTestUtil::GetMapEntries(const TestMap& message,
   result.push_back(&message.GetReflection()->GetRepeatedMessage(
       message, descriptor->FindFieldByName("map_int32_foreign_message"),
       index));
+  result.push_back(&message.GetReflection()->GetRepeatedMessage(
+      message, descriptor->FindFieldByName("map_int32_all_types"), index));
+  result.push_back(&message.GetReflection()->GetRepeatedMessage(
+      message, descriptor->FindFieldByName("map_int32_string"), index));
+  result.push_back(&message.GetReflection()->GetRepeatedMessage(
+      message, descriptor->FindFieldByName("map_string_int32"), index));
 
   return result;
 }
@@ -607,6 +661,12 @@ std::vector<const Message*> MapTestUtil::GetMapEntriesFromRelease(
       message, descriptor->FindFieldByName("map_int32_enum")));
   result.push_back(message->GetReflection()->ReleaseLast(
       message, descriptor->FindFieldByName("map_int32_foreign_message")));
+  result.push_back(message->GetReflection()->ReleaseLast(
+      message, descriptor->FindFieldByName("map_int32_all_types")));
+  result.push_back(message->GetReflection()->ReleaseLast(
+      message, descriptor->FindFieldByName("map_int32_string")));
+  result.push_back(message->GetReflection()->ReleaseLast(
+      message, descriptor->FindFieldByName("map_string_int32")));
 
   return result;
 }
