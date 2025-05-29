@@ -407,8 +407,7 @@ void MessageDifferencer::TreatAsMap(const FieldDescriptor* field,
       << key->full_name()
       << " must be a direct subfield within the repeated field "
       << field->full_name() << ", not " << key->containing_type()->full_name();
-  ABSL_CHECK(repeated_field_comparisons_.find(field) ==
-             repeated_field_comparisons_.end())
+  ABSL_CHECK(!repeated_field_comparisons_.contains(field))
       << "Cannot treat the same field as both "
       << repeated_field_comparisons_[field]
       << " and MAP. Field name is: " << field->full_name();
@@ -455,8 +454,7 @@ void MessageDifferencer::TreatAsMapWithMultipleFieldPathsAsKey(
       }
     }
   }
-  ABSL_CHECK(repeated_field_comparisons_.find(field) ==
-             repeated_field_comparisons_.end())
+  ABSL_CHECK(!repeated_field_comparisons_.contains(field))
       << "Cannot treat the same field as both "
       << repeated_field_comparisons_[field]
       << " and MAP. Field name is: " << field->full_name();
@@ -470,8 +468,7 @@ void MessageDifferencer::TreatAsMapUsingKeyComparator(
     const FieldDescriptor* field, const MapKeyComparator* key_comparator) {
   ABSL_CHECK(field->is_repeated())
       << "Field must be repeated: " << field->full_name();
-  ABSL_CHECK(repeated_field_comparisons_.find(field) ==
-             repeated_field_comparisons_.end())
+  ABSL_CHECK(!repeated_field_comparisons_.contains(field))
       << "Cannot treat the same field as both "
       << repeated_field_comparisons_[field]
       << " and MAP. Field name is: " << field->full_name();
@@ -1083,8 +1080,7 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
     DefaultFieldComparator* comparator) {
   ABSL_DCHECK_EQ(nullptr, reporter_);
   ABSL_DCHECK(map_field->is_map());
-  ABSL_DCHECK(map_field_key_comparator_.find(map_field) ==
-              map_field_key_comparator_.end());
+  ABSL_DCHECK(!map_field_key_comparator_.contains(map_field));
   ABSL_DCHECK_EQ(repeated_field_comparison_, AS_LIST);
   const Reflection* reflection1 = message1.GetReflection();
   const Reflection* reflection2 = message2.GetReflection();
@@ -1188,8 +1184,7 @@ bool MessageDifferencer::CompareMapField(
       // TODO: Add support for reporter
       reporter_ == nullptr &&
       // Users didn't set custom map field key comparator
-      map_field_key_comparator_.find(repeated_field) ==
-          map_field_key_comparator_.end() &&
+      !map_field_key_comparator_.contains(repeated_field) &&
       // Users didn't set repeated field comparison
       repeated_field_comparison_ == AS_LIST &&
       // Users didn't set their own FieldComparator implementation
@@ -1445,8 +1440,7 @@ bool MessageDifferencer::CheckPathChanged(
 
 bool MessageDifferencer::IsTreatedAsSet(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
-  if (repeated_field_comparisons_.find(field) !=
-      repeated_field_comparisons_.end()) {
+  if (repeated_field_comparisons_.contains(field)) {
     return repeated_field_comparisons_[field] == AS_SET;
   }
   return GetMapKeyComparator(field) == nullptr &&
@@ -1455,8 +1449,7 @@ bool MessageDifferencer::IsTreatedAsSet(const FieldDescriptor* field) {
 
 bool MessageDifferencer::IsTreatedAsSmartSet(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
-  if (repeated_field_comparisons_.find(field) !=
-      repeated_field_comparisons_.end()) {
+  if (repeated_field_comparisons_.contains(field)) {
     return repeated_field_comparisons_[field] == AS_SMART_SET;
   }
   return GetMapKeyComparator(field) == nullptr &&
@@ -1465,8 +1458,7 @@ bool MessageDifferencer::IsTreatedAsSmartSet(const FieldDescriptor* field) {
 
 bool MessageDifferencer::IsTreatedAsSmartList(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
-  if (repeated_field_comparisons_.find(field) !=
-      repeated_field_comparisons_.end()) {
+  if (repeated_field_comparisons_.contains(field)) {
     return repeated_field_comparisons_[field] == AS_SMART_LIST;
   }
   return GetMapKeyComparator(field) == nullptr &&
@@ -1482,7 +1474,7 @@ bool MessageDifferencer::IsIgnored(
     const Message& message1, const Message& message2,
     const FieldDescriptor* field,
     const std::vector<SpecificField>& parent_fields) {
-  if (ignored_fields_.find(field) != ignored_fields_.end()) {
+  if (ignored_fields_.contains(field)) {
     return true;
   }
   for (const auto& criteria : ignore_criteria_) {
