@@ -434,6 +434,8 @@ cc_library(
         "//upb/test:fuzz_util",
         "//upb/test:parse_text_proto",
         "//upb/util:def_to_proto_test_lib",
+        "//upb/wire/test_util:field_types",
+        "//upb/wire/test_util:make_mini_table",
         "//upb/wire/test_util:wire_message",
     ],
 )

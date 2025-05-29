@@ -26,6 +26,13 @@ namespace test {
 
 namespace {
 
+using ::upb::test::wire_types::Delimited;
+using ::upb::test::wire_types::Fixed32;
+using ::upb::test::wire_types::Fixed64;
+using ::upb::test::wire_types::Group;
+using ::upb::test::wire_types::Varint;
+using ::upb::test::wire_types::WireMessage;
+
 upb_UnknownCompareResult CompareUnknownWithMaxDepth(
     WireMessage uf1, WireMessage uf2, int max_depth, int min_tag_length = 1,
     int min_val_varint_length = 1) {

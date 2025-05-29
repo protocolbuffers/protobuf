@@ -15,7 +15,7 @@ load(
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -51,6 +51,20 @@ cc_library(
         "//upb/base:internal",
         "//upb/hash",
         "//upb/mini_table:internal",
+    ],
+)
+
+cc_library(
+    name = "message_cc",
+    hdrs = [
+        "accessors.hpp",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//upb:__subpackages__"],
+    deps = [
+        ":message",
+        "//upb:base",
+        "//upb:mini_table",
     ],
 )
 

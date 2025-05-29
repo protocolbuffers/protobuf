@@ -99,7 +99,10 @@ cc_library(
     name = "combinations",
     hdrs = ["combinations.h"],
     copts = FASTTABLE_COPTS,
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/wire:__subpackages__",
+    ],
     deps = [
         "//upb:mini_table",
         "//upb:port",
@@ -110,7 +113,10 @@ cc_library(
     name = "data",
     hdrs = ["data.h"],
     copts = FASTTABLE_COPTS,
-    visibility = ["//upb:__pkg__"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/wire:__pkg__",
+    ],
     deps = [
         "//upb:port",
     ],

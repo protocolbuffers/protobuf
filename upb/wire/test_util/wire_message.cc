@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "upb/wire/test_util/wire_message.h"
 
 #include <cstddef>
@@ -12,6 +19,14 @@
 
 namespace upb {
 namespace test {
+
+using wire_types::Delimited;
+using wire_types::Fixed32;
+using wire_types::Fixed64;
+using wire_types::Group;
+using wire_types::Varint;
+using wire_types::WireField;
+using wire_types::WireMessage;
 
 static void EncodeVarint(uint64_t val, int varint_length, std::string* str) {
   uint64_t v = val;

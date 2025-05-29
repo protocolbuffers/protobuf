@@ -23,6 +23,7 @@
 
 namespace upb {
 namespace test {
+namespace wire_types {
 
 struct WireField;
 
@@ -49,16 +50,20 @@ struct Group {
   WireMessage val;
 };
 
+using WireValue = std::variant<Varint, Delimited, Fixed64, Fixed32, Group>;
+
 struct WireField {
   uint32_t field_number;
-  std::variant<Varint, Delimited, Fixed64, Fixed32, Group> value;
+  WireValue value;
 };
 
 inline Group::Group(std::initializer_list<WireField> _val) : val(_val) {}
 
+}  // namespace wire_types
+
 // Converts a WireMessage to a binary payload, with normal varints of the
 // shortest possible length.
-std::string ToBinaryPayload(const WireMessage& msg);
+std::string ToBinaryPayload(const wire_types::WireMessage& msg);
 
 // Converts a WireMessage to a binary payload, forcing varints to be at least
 // min_tag_length bytes long for tags and min_val_varint_length bytes long for
@@ -67,7 +72,7 @@ std::string ToBinaryPayload(const WireMessage& msg);
 // Note that this function will let you construct a payload that is not valid
 // wire format.  Tags may only be 5 bytes long, and values may only be 10 bytes
 // long, but you can pass values larger than this to test invalid payloads.
-std::string ToBinaryPayloadWithLongVarints(const WireMessage& msg,
+std::string ToBinaryPayloadWithLongVarints(const wire_types::WireMessage& msg,
                                            int min_tag_length,
                                            int min_val_varint_length);
 

@@ -8,6 +8,45 @@
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
+    name = "make_mini_table",
+    testonly = True,
+    srcs = ["make_mini_table.cc"],
+    hdrs = ["make_mini_table.h"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb:__subpackages__",
+    ],
+    deps = [
+        "//upb:base",
+        "//upb:mem",
+        "//upb:mini_descriptor",
+        "//upb:mini_table",
+        "//upb/mini_descriptor:internal",
+        "//upb/wire/decode_fast:combinations",
+        "@abseil-cpp//absl/log",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+)
+
+cc_library(
+    name = "field_types",
+    testonly = True,
+    hdrs = ["field_types.h"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb:__subpackages__",
+    ],
+    deps = [
+        ":wire_message",
+        "//upb:base",
+        "//upb/wire/decode_fast:combinations",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "wire_message",
     testonly = True,
     srcs = ["wire_message.cc"],
@@ -20,5 +59,6 @@ cc_library(
         "//upb:wire_reader",
         "//upb/base:internal",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
