@@ -7,11 +7,11 @@
 
 // Rust Protobuf runtime using the C++ kernel.
 
-use crate::__internal::{Enum, MatcherEq, Private};
+use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    AsView, IntoProxied, Map, MapIter, MapMut, MapView, Message, MessageViewInterop, Mut,
-    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, View,
+    AsView, IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, ProtoBytes, ProtoStr,
+    ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut,
+    RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -1276,16 +1276,30 @@ fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
     unsafe { val.as_ref() }
 }
 
+/// Internal-only trait to support blanket impls that need const access to raw messages
+/// on codegen. Should never be used by application code.
+#[doc(hidden)]
+pub unsafe trait CppGetRawMessage: SealedInternal {
+    fn get_raw_message(&self, _private: Private) -> RawMessage;
+}
+
+/// Internal-only trait to support blanket impls that need mutable access to raw messages
+/// on codegen. Must not be implemented on View proxies. Should never be used by application code.
+#[doc(hidden)]
+pub unsafe trait CppGetRawMessageMut: SealedInternal {
+    fn get_raw_message_mut(&mut self, _private: Private) -> RawMessage;
+}
+
 impl<T> MatcherEq for T
 where
     Self: AsView + Debug,
-    for<'a> View<'a, <Self as AsView>::Proxied>: MessageViewInterop<'a>,
+    for<'a> View<'a, <Self as AsView>::Proxied>: CppGetRawMessage,
 {
     fn matches(&self, o: &Self) -> bool {
         unsafe {
             raw_message_equals(
-                NonNull::new_unchecked(self.as_view().__unstable_as_raw_message() as *mut _),
-                NonNull::new_unchecked(o.as_view().__unstable_as_raw_message() as *mut _),
+                self.as_view().get_raw_message(Private),
+                o.as_view().get_raw_message(Private),
             )
         }
     }
