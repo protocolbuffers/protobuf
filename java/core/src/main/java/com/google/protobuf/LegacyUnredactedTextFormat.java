@@ -1,5 +1,10 @@
 package com.google.protobuf;
 
+import static java.util.Arrays.stream;
+
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 /**
  * The legacy APIs preserve the existing toString() behavior (output TextFormat), which allows us to
  * migrate toString callers that expect TextFormat output off toString. Eventually, we will make
@@ -63,5 +68,31 @@ public final class LegacyUnredactedTextFormat {
   public static String legacyUnredactedStringValueOf(
           Object object) {
     return (object == null) ? String.valueOf(object) : legacyUnredactedToString(object);
+  }
+
+  /**
+   * Like legacyUnredactedToString, but for an Iterable. This is a useful shortcut for callers that
+   * operate on an Iterable of objects.
+   */
+  public static Iterable<String> legacyUnredactedToStringList(
+          Iterable<?> iterable) {
+    return iterable == null
+        ? null
+        : StreamSupport.stream(iterable.spliterator(), false)
+            .map(LegacyUnredactedTextFormat::legacyUnredactedStringValueOf)
+            .collect(Collectors.toList());
+  }
+
+  /**
+   * Like legacyUnredactedToString, but for an Object[]. This is a useful shortcut for callers that
+   * operate on an Object[] of objects.
+   */
+  public static String[] legacyUnredactedToStringArray(
+          Object[] objects) {
+    return objects == null
+        ? null
+        : stream(objects)
+            .map(LegacyUnredactedTextFormat::legacyUnredactedStringValueOf)
+            .toArray(String[]::new);
   }
 }

@@ -60,4 +60,22 @@ public final class UnredactedDebugFormatForTest {
           Object object) {
     return LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(object);
   }
+
+  /**
+   * Like unredactedToString, but for an Iterable. This is a useful shortcut for callers that
+   * operate on an Iterable of objects.
+   */
+  public static Iterable<String> unredactedToStringList(
+          Iterable<?> iterable) {
+    return LegacyUnredactedTextFormat.legacyUnredactedToStringList(iterable);
+  }
+
+  /**
+   * Like unredactedToString, but for an Object[]. This is a useful shortcut for callers that
+   * operate on an Object[] of objects.
+   */
+  public static String[] unredactedToStringArray(
+          Object[] objects) {
+    return LegacyUnredactedTextFormat.legacyUnredactedToStringArray(objects);
+  }
 }
