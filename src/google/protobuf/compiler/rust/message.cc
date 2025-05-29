@@ -128,16 +128,9 @@ void MessageMutClearAndParse(Context& ctx, const Descriptor& msg,
                            : "proto2_rust_Message_parse_dont_enforce_required";
       ctx.Emit({{"parse_function", parse_function}},
                R"rs(
-          let success = unsafe {
-            // SAFETY: `data.as_ptr()` is valid to read for `data.len()`.
-            let data = $pbr$::SerializedData::from_raw_parts(
-              $NonNull$::new(data.as_ptr() as *mut _).unwrap(),
-              data.len(),
-            );
-
-            $pbr$::$parse_function$(self.raw_msg(), data)
-          };
-          success.then_some(()).ok_or($pb$::ParseError)
+          unsafe {
+            $pbr$::$parse_function$(self.raw_msg(), data.into())
+          }.then_some(()).ok_or($pb$::ParseError)
         )rs");
       return;
     }
