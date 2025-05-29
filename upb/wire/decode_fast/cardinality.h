@@ -168,4 +168,70 @@ bool fastdecode_flippacked(uint64_t* data, int tagbytes) {
     RETURN_GENERIC("packed check tag mismatch\n");          \
   }
 
+// --- New cardinality functions ---
+
+// Old functions will be removed once the new ones are in use.
+//
+// The new functions start from the premise that we should never hit an arena
+// fallback path from the fasttable parser.
+//
+// We also use the new calling convention where we return an integer indicating
+// the next function to call.  This is to work around musttail limitations
+// without forcing all fasttable code to be in macros.
+
+typedef struct {
+  void* dst;  // For all fields, where to write the data.
+} upb_DecodeFastField;
+
+UPB_FORCEINLINE
+bool upb_DecodeFast_MaskedTagIsZero(uint16_t data,
+                                    upb_DecodeFast_TagSize tagsize) {
+  if (tagsize == kUpb_DecodeFast_Tag1Byte) {
+    return (data & 0xff) == 0;
+  } else {
+    return data == 0;
+  }
+}
+
+UPB_FORCEINLINE
+bool upb_DecodeFast_CheckTag(uint16_t data, upb_DecodeFast_TagSize tagsize,
+                             upb_DecodeFastNext* next) {
+  // The dispatch sequence xors the actual tag with the expected tag, so
+  // if the masked tag is zero, we know that the tag is valid.
+  if (!upb_DecodeFast_MaskedTagIsZero(data, tagsize)) {
+    *next = kUpb_DecodeFastNext_FallbackToMiniTable;
+    return false;
+  }
+  return true;
+}
+
+UPB_FORCEINLINE
+bool Upb_DecodeFast_GetField(upb_Decoder* d, const char* ptr, upb_Message* msg,
+                             uint64_t data, uint64_t* hasbits,
+                             upb_DecodeFastNext* ret,
+                             upb_DecodeFastField* field,
+                             upb_DecodeFast_Type type,
+                             upb_DecodeFast_Cardinality card) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  switch (card) {
+    case kUpb_DecodeFast_Scalar: {
+      // Set hasbit and return pointer to scalar field.
+      field->dst = UPB_PTR_AT(msg, upb_DecodeFastData_GetOffset(data), char);
+      uint8_t hasbit_index = upb_DecodeFastData_GetPresence(data);
+      *hasbits |= 1ull << hasbit_index;
+      return true;
+    }
+    case kUpb_DecodeFast_Oneof: {
+      field->dst = UPB_PTR_AT(msg, upb_DecodeFastData_GetOffset(data), char);
+      uint16_t case_ofs = upb_DecodeFastData_GetCaseOffset(data);
+      uint32_t* oneof_case = UPB_PTR_AT(msg, case_ofs, uint32_t);
+      uint8_t field_number = upb_DecodeFastData_GetPresence(data);
+      *oneof_case = field_number;
+      return true;
+    }
+    default:
+      UPB_UNREACHABLE();
+  }
+}
+
 #endif  // UPB_WIRE_DECODE_FAST_FIELD_CARDINALITY_H_

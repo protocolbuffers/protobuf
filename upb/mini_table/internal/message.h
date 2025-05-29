@@ -64,9 +64,9 @@ struct upb_MiniTable {
   const char* UPB_PRIVATE(full_name);
 #endif
 
-#ifndef __cplusplus
-  // Flexible array member is not supported in C++, but luckily C++ doesn't need
-  // to read or write the member.
+#if UPB_FASTTABLE || !defined(__cplusplus)
+  // Flexible array member is not supported in C++, but it is an extension in
+  // every compiler that supports UPB_FASTTABLE.
   _upb_FastTable_Entry UPB_PRIVATE(fasttable)[];
 #endif
 };

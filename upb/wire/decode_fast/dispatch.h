@@ -60,6 +60,7 @@ const char* _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
   const _upb_FastTable_Entry* ent = &table_p->UPB_PRIVATE(fasttable)[ofs >> 3];
 #endif
 
+  _upb_Decoder_Trace(d, 'D');
   UPB_MUSTTAIL return ent->field_parser(d, ptr, msg, table, hasbits,
                                         ent->field_data ^ tag);
 }
@@ -170,6 +171,36 @@ void upb_DecodeFast_SetHasbits(upb_Message* msg, uint64_t hasbits) {
   // TODO: Can we use `=` instead of` |=`?
   *(uint32_t*)&msg[1] |= hasbits;
 }
+
+typedef enum {
+  // Call the dispatch function using musttail.
+  kUpb_DecodeFastNext_TailCallDispatch = 0,
+
+  // Return from the function with no tail call. This is used either to signal
+  // a fallback to the mini table or the end of the message if
+  // d->message_is_done is true.
+  kUpb_DecodeFastNext_Return = 1,
+
+  kUpb_DecodeFastNext_Error = 2,
+
+  // Alias for clarity in the code.
+  kUpb_DecodeFastNext_FallbackToMiniTable = kUpb_DecodeFastNext_Return,
+} upb_DecodeFastNext;
+
+const char* upb_DecodeFast_IsDoneFallback(UPB_PARSE_PARAMS);
+
+#define UPB_DECODEFAST_NEXT(next)                                           \
+  if (UPB_UNLIKELY(next != kUpb_DecodeFastNext_TailCallDispatch)) {         \
+    switch (next) {                                                         \
+      case kUpb_DecodeFastNext_Return:                                      \
+        UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
+      case kUpb_DecodeFastNext_Error:                                       \
+        return _upb_FastDecoder_ErrorJmp2(d);                               \
+      default:                                                              \
+        UPB_UNREACHABLE();                                                  \
+    }                                                                       \
+  }                                                                         \
+  UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
 #include "upb/port/undef.inc"
 

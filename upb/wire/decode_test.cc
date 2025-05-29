@@ -14,6 +14,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/accessors.hpp"
@@ -50,7 +51,17 @@ class FieldTypeTest : public testing::Test {};
 
 TYPED_TEST_SUITE(FieldTypeTest, FieldTypes);
 
+std::string ExpectedSingleFieldTrace(const upb_MiniTable* mt,
+                                     const upb_MiniTableField* field) {
+#ifdef NDEBUG
+  return "";
+#else
+  return MiniTable::HasFastTableEntry(mt, field) ? "DF" : "M";
+#endif
+}
+
 TYPED_TEST(FieldTypeTest, DecodeOptionalMaxValue) {
+  char trace_buf[64];
   using Value = typename TypeParam::Value;
   Value value;
   if constexpr (std::is_same_v<Value, std::string>) {
@@ -66,13 +77,16 @@ TYPED_TEST(FieldTypeTest, DecodeOptionalMaxValue) {
   upb_Message* msg = upb_Message_New(mt, arena.ptr());
   std::string payload = ToBinaryPayload(
       wire_types::WireMessage{{1, TypeParam::WireValue(value)}});
-  upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg, mt,
-                                       nullptr, 0, arena.ptr());
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
   EXPECT_EQ(GetOptionalField<Value>(msg, mt, 1), value);
+  EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
 TYPED_TEST(FieldTypeTest, DecodeOptionalMinValue) {
+  char trace_buf[64];
   using Value = typename TypeParam::Value;
   Value value;
   if constexpr (!std::is_same_v<Value, std::string>) {
@@ -84,13 +98,16 @@ TYPED_TEST(FieldTypeTest, DecodeOptionalMinValue) {
   upb_Message* msg = upb_Message_New(mt, arena.ptr());
   std::string payload = ToBinaryPayload(
       wire_types::WireMessage{{1, TypeParam::WireValue(value)}});
-  upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg, mt,
-                                       nullptr, 0, arena.ptr());
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
   EXPECT_EQ(GetOptionalField<Value>(msg, mt, 1), value);
+  EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
 TYPED_TEST(FieldTypeTest, DecodeOneofMaxValue) {
+  char trace_buf[64];
   using Value = typename TypeParam::Value;
   Value value;
   if constexpr (std::is_same_v<Value, std::string>) {
@@ -106,10 +123,12 @@ TYPED_TEST(FieldTypeTest, DecodeOneofMaxValue) {
   upb_Message* msg = upb_Message_New(mt, arena.ptr());
   std::string payload = ToBinaryPayload(
       wire_types::WireMessage{{1, TypeParam::WireValue(value)}});
-  upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg, mt,
-                                       nullptr, 0, arena.ptr());
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          arena.ptr(), trace_buf, sizeof(trace_buf));
   ASSERT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
   EXPECT_EQ(GetOptionalField<Value>(msg, mt, 1), value);
+  EXPECT_EQ(absl::string_view(trace_buf), ExpectedSingleFieldTrace(mt, field));
 }
 
 }  // namespace

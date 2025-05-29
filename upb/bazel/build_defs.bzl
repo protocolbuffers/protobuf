@@ -36,6 +36,9 @@ UPB_DEFAULT_CPPOPTS = select({
     "//upb:windows": [],
     "//conditions:default": _DEFAULT_CPPOPTS,
 }) + select({
+    "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
+    "//conditions:default": [],
+}) + select({
     "//conditions:default": [],
 })
 

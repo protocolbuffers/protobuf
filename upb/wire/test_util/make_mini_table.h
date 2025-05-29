@@ -29,6 +29,9 @@ class MiniTable {
                                 Field::kFastType, cardinality, arena);
   }
 
+  static bool HasFastTableEntry(const upb_MiniTable* mt,
+                                const upb_MiniTableField* field);
+
  private:
   static std::pair<const upb_MiniTable*, const upb_MiniTableField*>
   MakeSingleFieldTable(int field_number, upb_FieldType type,

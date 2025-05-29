@@ -115,7 +115,7 @@ cc_library(
     copts = FASTTABLE_COPTS,
     visibility = [
         "//upb:__pkg__",
-        "//upb/wire:__pkg__",
+        "//upb/wire:__subpackages__",
     ],
     deps = [
         "//upb:port",

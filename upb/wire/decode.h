@@ -148,6 +148,12 @@ UPB_API upb_DecodeStatus upb_DecodeLengthPrefixed(
     const upb_MiniTable* mt, const upb_ExtensionRegistry* extreg, int options,
     upb_Arena* arena);
 
+// For testing: decode with tracing.
+UPB_API upb_DecodeStatus upb_DecodeWithTrace(
+    const char* buf, size_t size, upb_Message* msg, const upb_MiniTable* mt,
+    const upb_ExtensionRegistry* extreg, int options, upb_Arena* arena,
+    char* trace_buf, size_t trace_size);
+
 // Utility function for wrapper languages to get an error string from a
 // upb_DecodeStatus.
 UPB_API const char* upb_DecodeStatus_String(upb_DecodeStatus status);

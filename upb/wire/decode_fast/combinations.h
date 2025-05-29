@@ -167,12 +167,18 @@ UPB_INLINE upb_DecodeFast_Type upb_DecodeFast_GetType(uint32_t function_idx) {
 // index.  Some field types (eg. groups) do not even have a function index at
 // the moment, and so will be rejected by upb_DecodeFast_TryFillEntry() before
 // we even get here.
+#define UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size)            \
+  ((type == kUpb_DecodeFast_Fixed32 || type == kUpb_DecodeFast_Fixed64) && \
+   (card == kUpb_DecodeFast_Scalar || card == kUpb_DecodeFast_Oneof))
+
 #ifdef UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE
-#define UPB_DECODEFAST_ISENABLED(type, card, size) \
-  (UPB_DECODEFAST_FUNCION_IDX(type, card, size) <= \
-   UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE)
+#define UPB_DECODEFAST_ISENABLED(type, card, size)            \
+  (UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size) && \
+   (UPB_DECODEFAST_FUNCION_IDX(type, card, size) <=           \
+    UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE))
 #else
-#define UPB_DECODEFAST_ISENABLED(type, card, size) false
+#define UPB_DECODEFAST_ISENABLED(type, card, size) \
+  UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size)
 #endif
 
 #include "upb/port/undef.inc"

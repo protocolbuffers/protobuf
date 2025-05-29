@@ -126,9 +126,7 @@ UPB_NORETURN static void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
   UPB_LONGJMP(d->err, 1);
 }
 
-const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, int status) {
-  UPB_ASSERT(status != kUpb_DecodeStatus_Ok);
-  d->status = status;
+const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
   UPB_LONGJMP(d->err, 1);
   return NULL;
 }
@@ -1333,7 +1331,9 @@ const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
     return _upb_Decoder_EndMessage(d, ptr);
   }
 
-  return _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type);
+  ptr = _upb_Decoder_DecodeFieldData(d, ptr, msg, mt, field_number, wire_type);
+  _upb_Decoder_Trace(d, 'M');
+  return ptr;
 }
 
 UPB_FORCEINLINE
@@ -1351,6 +1351,7 @@ const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
     intptr_t table = decode_totable(mt);
     ptr = _upb_FastDecoder_TagDispatch(d, ptr, msg, table, 0, tag);
     if (d->message_is_done) return ptr;
+    _upb_Decoder_Trace(d, '<');
   }
 #endif
 
@@ -1401,9 +1402,7 @@ static upb_DecodeStatus upb_Decoder_Decode(upb_Decoder* const decoder,
     UPB_ASSERT(decoder->status != kUpb_DecodeStatus_Ok);
   }
 
-  UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &decoder->arena);
-
-  return decoder->status;
+  return upb_Decoder_Destroy(decoder, arena);
 }
 
 static uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
@@ -1421,24 +1420,20 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
                             upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Decoder decoder;
+  buf = upb_Decoder_Init(&decoder, buf, size, extreg, options, arena, NULL, 0);
 
-  upb_EpsCopyInputStream_Init(&decoder.input, &buf, size,
-                              options & kUpb_DecodeOption_AliasString);
+  return upb_Decoder_Decode(&decoder, buf, msg, mt, arena);
+}
 
-  decoder.extreg = extreg;
-  decoder.depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
-  decoder.end_group = DECODE_NOGROUP;
-  decoder.options = (uint16_t)options;
-  decoder.missing_required = false;
-  decoder.status = kUpb_DecodeStatus_Ok;
-  decoder.message_is_done = false;
-
-  // Violating the encapsulation of the arena for performance reasons.
-  // This is a temporary arena that we swap into and swap out of when we are
-  // done.  The temporary arena only needs to be able to handle allocation,
-  // not fuse or free, so it does not need many of the members to be initialized
-  // (particularly parent_or_count).
-  UPB_PRIVATE(_upb_Arena_SwapIn)(&decoder.arena, arena);
+upb_DecodeStatus upb_DecodeWithTrace(const char* buf, size_t size,
+                                     upb_Message* msg, const upb_MiniTable* mt,
+                                     const upb_ExtensionRegistry* extreg,
+                                     int options, upb_Arena* arena,
+                                     char* trace_buf, size_t trace_size) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  upb_Decoder decoder;
+  buf = upb_Decoder_Init(&decoder, buf, size, extreg, options, arena, trace_buf,
+                         trace_size);
 
   return upb_Decoder_Decode(&decoder, buf, msg, mt, arena);
 }

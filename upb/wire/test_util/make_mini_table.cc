@@ -20,6 +20,11 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
+#include "upb/wire/decode_fast/data.h"
+#include "upb/wire/reader.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 namespace upb {
 namespace test {
@@ -69,12 +74,35 @@ MiniTable::MakeSingleFieldTable(int field_number, upb_FieldType type,
 #if UPB_FASTTABLE
   if (field_number < (1 << 11)) {
     ABSL_CHECK_EQ(HasFastTableEntry(table, field),
-                  UPB_DECODEFAST_ISENABLED(Field::kFastType, cardinality,
+                  UPB_DECODEFAST_ISENABLED(fast_type, cardinality,
                                            kUpb_DecodeFast_Tag1Byte))
-        << Field::kName;
+        << "fast type: " << fast_type << ", cardinality: " << cardinality;
   }
 #endif
   return std::make_pair(table, upb_MiniTable_GetFieldByIndex(table, 0));
+}
+
+bool MiniTable::HasFastTableEntry(const upb_MiniTable* mt,
+                                  const upb_MiniTableField* field) {
+#if UPB_FASTTABLE
+  int n = (int8_t)mt->UPB_PRIVATE(table_mask) + 1;
+  for (int i = 0; i < n; ++i) {
+    const _upb_FastTable_Entry* entry = &mt->UPB_PRIVATE(fasttable)[i];
+    uint16_t encoded_tag = upb_DecodeFastData_GetExpectedTag(entry->field_data);
+    uint32_t tag;
+    char buf[16];
+    memset(buf, 0, sizeof(buf));
+    memcpy(buf, &encoded_tag, sizeof(encoded_tag));
+    const char* end = upb_WireReader_ReadTag(buf, &tag);
+    ABSL_CHECK(end == buf + 1 || end == buf + 2);
+    if (tag >> 3 == field->UPB_PRIVATE(number)) {
+      return true;
+    }
+  }
+  return false;
+#else
+  return false;
+#endif
 }
 
 }  // namespace test
