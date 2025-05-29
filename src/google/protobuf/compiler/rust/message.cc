@@ -323,22 +323,6 @@ void UpbMiniTableLinking(Context& ctx, const Descriptor& msg,
 void CppGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
   ctx.Emit(R"rs(
-    unsafe impl $pbr$::CppGetRawMessage for $Msg$ {
-      fn get_raw_message(&self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-        self.inner.msg
-      }
-    }
-    unsafe impl $pbr$::CppGetRawMessageMut for $Msg$ {
-      fn get_raw_message_mut(&mut self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-        self.inner.msg
-      }
-    }
-
-    unsafe impl $pbr$::CppGetRawMessage for $Msg$Mut<'_> {
-      fn get_raw_message(&self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-        self.inner.msg()
-      }
-    }
     unsafe impl $pbr$::CppGetRawMessageMut for $Msg$Mut<'_> {
       fn get_raw_message_mut(&mut self, _private: $pbi$::Private) -> $pbr$::RawMessage {
         self.inner.msg()
@@ -426,22 +410,6 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
         }
       }
 
-      unsafe impl $pbr$::UpbGetRawMessage for $Msg$ {
-        fn get_raw_message(&self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-          self.inner.msg
-        }
-      }
-      unsafe impl $pbr$::UpbGetRawMessageMut for $Msg$ {
-        fn get_raw_message_mut(&mut self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-          self.inner.msg
-        }
-      }
-
-      unsafe impl $pbr$::UpbGetRawMessage for $Msg$Mut<'_> {
-        fn get_raw_message(&self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-          self.inner.msg()
-        }
-      }
       unsafe impl $pbr$::UpbGetRawMessageMut for $Msg$Mut<'_> {
         fn get_raw_message_mut(&mut self, _private: $pbi$::Private) -> $pbr$::RawMessage {
           self.inner.msg()
