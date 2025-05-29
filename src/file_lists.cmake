@@ -1076,6 +1076,7 @@ set(test_util_hdrs
 # @//pkg:upb_test_util
 set(upb_test_util_srcs
   ${protobuf_SOURCE_DIR}/upb/test/fuzz_util.cc
+  ${protobuf_SOURCE_DIR}/upb/wire/test_util/make_mini_table.cc
   ${protobuf_SOURCE_DIR}/upb/wire/test_util/wire_message.cc
 )
 
@@ -1084,6 +1085,8 @@ set(upb_test_util_hdrs
   ${protobuf_SOURCE_DIR}/upb/test/fuzz_util.h
   ${protobuf_SOURCE_DIR}/upb/test/parse_text_proto.h
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.h
+  ${protobuf_SOURCE_DIR}/upb/wire/test_util/field_types.h
+  ${protobuf_SOURCE_DIR}/upb/wire/test_util/make_mini_table.h
   ${protobuf_SOURCE_DIR}/upb/wire/test_util/wire_message.h
 )
 
@@ -1177,6 +1180,7 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_test.cc
   ${protobuf_SOURCE_DIR}/upb/util/required_fields_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/byte_size_test.cc
+  ${protobuf_SOURCE_DIR}/upb/wire/decode_test.cc
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream_test.cc
 )
 
