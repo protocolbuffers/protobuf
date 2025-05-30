@@ -18,7 +18,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/hpb.h"
+#include "google/protobuf/hpb/arena.h"
+#include "google/protobuf/hpb/backend/upb/interop.h"
 #include "upb/message/array.h"
 
 using ::testing::ElementsAre;
@@ -49,13 +50,13 @@ struct IteratorTestPeer {
 
   template <typename T>
   static StringRef<T> MakeStringRefProxy(upb_Array* arr, hpb::Arena& arena) {
-    return StringRef<T>({arr, arena.ptr(), 0});
+    return StringRef<T>({arr, hpb::interop::upb::UnwrapArena(arena), 0});
   }
 
   template <typename T>
   static StringIterator<T> MakeStringIterator(upb_Array* arr,
                                               hpb::Arena& arena) {
-    return StringIterator<T>({arr, arena.ptr()});
+    return StringIterator<T>({arr, hpb::interop::upb::UnwrapArena(arena)});
   }
 };
 
@@ -229,18 +230,20 @@ TEST(ScalarIteratorTest, IteratorBasedAlgorithmsWork) {
 }
 
 const char* CloneString(hpb::Arena& arena, absl::string_view str) {
-  char* data = (char*)upb_Arena_Malloc(arena.ptr(), str.size());
+  char* data = (char*)upb_Arena_Malloc(hpb::interop::upb::UnwrapArena(arena),
+                                       str.size());
   memcpy(data, str.data(), str.size());
   return data;
 }
 upb_Array* MakeStringArray(hpb::Arena& arena,
                            const std::vector<std::string>& input) {
-  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_String);
+  upb_Array* arr =
+      upb_Array_New(hpb::interop::upb::UnwrapArena(arena), kUpb_CType_String);
   for (absl::string_view str : input) {
     upb_MessageValue message_value;
     message_value.str_val =
         upb_StringView_FromDataAndSize(CloneString(arena, str), str.size());
-    upb_Array_Append(arr, message_value, arena.ptr());
+    upb_Array_Append(arr, message_value, hpb::interop::upb::UnwrapArena(arena));
   }
   return arr;
 }
