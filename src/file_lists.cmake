@@ -491,7 +491,6 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/upb_generator/common.cc
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
-  ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.cc
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.cc
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.cc
@@ -633,7 +632,6 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/common.h
   ${protobuf_SOURCE_DIR}/upb_generator/common/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
-  ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.h
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.h
   ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
@@ -900,6 +898,41 @@ set(protoc-gen-upbdefs_hdrs
   ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
   ${protobuf_SOURCE_DIR}/upb_generator/plugin_bootstrap.h
   ${protobuf_SOURCE_DIR}/upb_generator/reflection/names.h
+)
+
+# @//pkg:protoc-gen-upb_minitable
+set(protoc-gen-upb_minitable_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/common.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/common/names.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/main.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.cc
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin.cc
+)
+
+# @//pkg:protoc-gen-upb_minitable
+set(protoc-gen-upb_minitable_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/code_generator_lite.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
+  ${protobuf_SOURCE_DIR}/upb_generator/common.h
+  ${protobuf_SOURCE_DIR}/upb_generator/common/names.h
+  ${protobuf_SOURCE_DIR}/upb_generator/file_layout.h
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/generator.h
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/names.h
+  ${protobuf_SOURCE_DIR}/upb_generator/minitable/names_internal.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin.h
+  ${protobuf_SOURCE_DIR}/upb_generator/plugin_bootstrap.h
 )
 
 # @//src/google/protobuf:well_known_type_protos
