@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/internal/endian.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
@@ -929,8 +930,14 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
-    return static_cast<map_index_t>(absl::HashOf(k, table_) &
-                                    (num_buckets_ - 1));
+    // We use the product of hash and table pointer in order to have random
+    // iteration order. We use byteswap because multiplication concentrates
+    // entropy into the high bits.
+    // Note: we only need 32-bits of hash so it may make sense to use a 32-bit
+    // hash function - potentially depending on CRC32 instead of multiply.
+    return static_cast<map_index_t>(
+        absl::gbswap_64(absl::HashOf(k) * reinterpret_cast<uintptr_t>(table_)) &
+        (num_buckets_ - 1));
   }
 };
 
