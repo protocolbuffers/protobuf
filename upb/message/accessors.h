@@ -215,6 +215,10 @@ UPB_API_INLINE bool upb_Message_SetExtension(upb_Message* msg,
                                              const upb_MiniTableExtension* e,
                                              const void* value, upb_Arena* a);
 
+UPB_API_INLINE bool upb_Message_SetExtensionMessage(
+    struct upb_Message* msg, const upb_MiniTableExtension* e,
+    struct upb_Message* value, upb_Arena* a);
+
 UPB_API_INLINE bool upb_Message_SetExtensionBool(
     struct upb_Message* msg, const upb_MiniTableExtension* e, bool value,
     upb_Arena* a);
