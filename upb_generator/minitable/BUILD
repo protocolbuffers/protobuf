@@ -26,20 +26,13 @@ bootstrap_cc_library(
         "//upb_generator:file_layout",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:reflection",
-        "//upb_generator:plugin",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = [
-        "//pkg:__pkg__",
-        "//src/google/protobuf/compiler:__pkg__",
-    ],
     deps = [
         ":names",
         ":names_internal",
-        "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
-        "//src/google/protobuf/compiler:plugin",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
@@ -103,6 +96,7 @@ bootstrap_cc_binary(
     visibility = [
         "//editions/codegen_tests:__pkg__",
         "//net/proto2/contrib/protoc_explorer:__pkg__",
+        "//pkg:__pkg__",
         "//rust:__subpackages__",
         "//third_party/prototiller/transformer:__pkg__",
     ],

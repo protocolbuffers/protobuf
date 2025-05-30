@@ -224,7 +224,6 @@ bootstrap_cc_library(
     ],
     bootstrap_deps = [
         "//src/google/protobuf/compiler/rust:rust",
-        "//upb_generator/minitable:generator",
     ],
     copts = COPTS,
     visibility = [

@@ -7,9 +7,5 @@ description = "Code generator for Rust Protocol Buffers bindings"
 license = "BSD-3-Clause"
 rust-version = "1.79"
 
-
-[dependencies]
-cc = "1.1.6"
-
 [dev-dependencies]
 googletest = "0.13.0"
