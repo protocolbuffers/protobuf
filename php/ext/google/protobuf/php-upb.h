@@ -15514,7 +15514,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->message_is_done = false;
 #ifndef NDEBUG
   d->trace_ptr = trace_buf;
-  d->trace_end = trace_buf + trace_size;
+  d->trace_end = UPB_PTRADD(trace_buf, trace_size);
 #endif
   if (trace_buf) *trace_buf = 0;  // Null-terminate.
 
