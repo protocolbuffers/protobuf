@@ -39,6 +39,11 @@ namespace Google.Protobuf
         int CalculateSize();
 
         /// <summary>
+        /// Clear current message.
+        /// </summary>
+        void Clear();
+
+        /// <summary>
         /// Descriptor for this message. All instances are expected to return the same descriptor,
         /// and for generated types this will be an explicitly-implemented member, returning the
         /// same value as the static property declared on the type.
