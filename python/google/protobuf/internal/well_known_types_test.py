@@ -10,6 +10,7 @@
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 import collections.abc as collections_abc
+import dataclasses
 import datetime
 import unittest
 
@@ -38,6 +39,14 @@ except ImportError:
   _TZ_JAPAN = datetime.timezone(datetime.timedelta(hours=9), 'Japan')
   _TZ_PACIFIC = datetime.timezone(datetime.timedelta(hours=-8), 'US/Pacific')
   has_zoneinfo = False
+
+
+@dataclasses.dataclass
+class _DataclassForTest:
+  """Helper dataclass for testing dataclass conversion to Struct."""
+
+  a: int
+  b: str
 
 
 class TimeUtilTestBase(parameterized.TestCase):
@@ -959,6 +968,7 @@ class StructTest(unittest.TestCase):
         'empty_struct': {},
         'empty_list': [],
         'tuple': ((3, 2), ()),
+        'dataclass': _DataclassForTest(a=1, b='abc'),
     }
     struct.update(dictionary)
     self.assertEqual(5, struct['key1'])
@@ -978,6 +988,7 @@ class StructTest(unittest.TestCase):
     self.assertEqual([], list(empty_list.items()))
     empty_struct = struct['empty_struct']
     self.assertEqual({}, dict(empty_struct.fields))
+    self.assertEqual({'a': 1, 'b': 'abc'}, struct['dataclass'])
 
     # According to documentation: "When parsing from the wire or when merging,
     # if there are duplicate map keys the last key seen is used".
