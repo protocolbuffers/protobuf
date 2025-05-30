@@ -9,9 +9,9 @@
 
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    AsMut, AsView, IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut, MutProxied,
-    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, View,
+    AsMut, AsView, Clear, ClearAndParse, IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut,
+    MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
+    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -1326,6 +1326,31 @@ where
                 o.as_view().get_raw_message(Private),
             )
         }
+    }
+}
+
+impl<T: CppGetRawMessageMut> Clear for T {
+    fn clear(&mut self) {
+        unsafe { proto2_rust_Message_clear(self.get_raw_message_mut(Private)) }
+    }
+}
+
+impl<T: CppGetRawMessageMut> ClearAndParse for T {
+    fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), ParseError> {
+        unsafe { proto2_rust_Message_parse(self.get_raw_message_mut(Private), data.into()) }
+            .then_some(())
+            .ok_or(ParseError)
+    }
+
+    fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> Result<(), ParseError> {
+        unsafe {
+            proto2_rust_Message_parse_dont_enforce_required(
+                self.get_raw_message_mut(Private),
+                data.into(),
+            )
+        }
+        .then_some(())
+        .ok_or(ParseError)
     }
 }
 

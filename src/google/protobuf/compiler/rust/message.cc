@@ -98,76 +98,6 @@ void MessageSerialize(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageMutClear(Context& ctx, const Descriptor& msg) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit({},
-               R"rs(
-          unsafe { $pbr$::proto2_rust_Message_clear(self.raw_msg()) }
-        )rs");
-      return;
-    case Kernel::kUpb:
-      ctx.Emit(
-          R"rs(
-          unsafe {
-            $pbr$::upb_Message_Clear(
-                self.raw_msg(),
-                <Self as $pbr$::AssociatedMiniTable>::mini_table())
-          }
-        )rs");
-      return;
-  }
-}
-
-void MessageMutClearAndParse(Context& ctx, const Descriptor& msg,
-                             bool enforce_required) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp: {
-      absl::string_view parse_function =
-          enforce_required ? "proto2_rust_Message_parse"
-                           : "proto2_rust_Message_parse_dont_enforce_required";
-      ctx.Emit({{"parse_function", parse_function}},
-               R"rs(
-          unsafe {
-            $pbr$::$parse_function$(self.raw_msg(), data.into())
-          }.then_some(()).ok_or($pb$::ParseError)
-        )rs");
-      return;
-    }
-
-    case Kernel::kUpb: {
-      absl::string_view decode_options =
-          enforce_required ? "$pbr$::wire::decode_options::CHECK_REQUIRED"
-                           : "0";
-      ctx.Emit({{"decode_options",
-                 [&ctx, decode_options] { ctx.Emit(decode_options); }}},
-               R"rs(
-        $pb$::Clear::clear(self);
-
-        // SAFETY:
-        // - `data.as_ptr()` is valid to read for `data.len()`
-        // - `mini_table` is the one used to construct `msg.raw_msg()`
-        // - `msg.arena().raw()` is held for the same lifetime as `msg`.
-        let status = unsafe {
-          $pbr$::wire::decode_with_options(
-              data,
-              self.raw_msg(),
-              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-              self.arena(),
-              $decode_options$)
-        };
-        match status {
-          Ok(_) => Ok(()),
-          Err(_) => Err($pb$::ParseError),
-        }
-      )rs");
-      return;
-    }
-  }
-
-  ABSL_LOG(FATAL) << "unreachable";
-}
-
 void MessageDebug(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -396,6 +326,12 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
     return;
   }
   ctx.Emit(R"rs(
+      unsafe impl $pbr$::UpbGetArena for $Msg$ {
+        fn get_arena(&mut self, _private: $pbi$::Private) -> &$pbr$::Arena {
+          &self.inner.arena
+        }
+      }
+
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
         #[inline(always)]
         fn mini_table() -> *const $pbr$::upb_MiniTable {
@@ -413,6 +349,11 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
       unsafe impl $pbr$::UpbGetRawMessageMut for $Msg$Mut<'_> {
         fn get_raw_message_mut(&mut self, _private: $pbi$::Private) -> $pbr$::RawMessage {
           self.inner.msg()
+        }
+      }
+      unsafe impl $pbr$::UpbGetArena for $Msg$Mut<'_> {
+        fn get_arena(&mut self, _private: $pbi$::Private) -> &$pbr$::Arena {
+          self.inner.arena()
         }
       }
 
@@ -853,15 +794,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           {"Msg", RsSafeName(msg.name())},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
-          {"MsgMut::clear", [&] { MessageMutClear(ctx, msg); }},
-          {"MsgMut::clear_and_parse",
-           [&] {
-             MessageMutClearAndParse(ctx, msg, /*enforce_required=*/true);
-           }},
-          {"MsgMut::clear_and_parse_dont_enforce_required",
-           [&] {
-             MessageMutClearAndParse(ctx, msg, /*enforce_required=*/false);
-           }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
           {"MsgMut::take_copy_merge_from",
@@ -1037,25 +969,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
         }
 
-        impl $pb$::Clear for $Msg$ {
-          fn clear(&mut self) {
-            let mut m = self.as_mut();
-            $pb$::Clear::clear(&mut m)
-          }
-        }
-
-        impl $pb$::ClearAndParse for $Msg$ {
-          fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
-            let mut m = self.as_mut();
-            $pb$::ClearAndParse::clear_and_parse(&mut m, data)
-          }
-
-          fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
-            let mut m = self.as_mut();
-            $pb$::ClearAndParse::clear_and_parse_dont_enforce_required(&mut m, data)
-          }
-        }
-
         // SAFETY:
         // - `$Msg$` is `Sync` because it does not implement interior mutability.
         //    Neither does `$Msg$Mut`.
@@ -1178,22 +1091,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         impl $pb$::Serialize for $Msg$Mut<'_> {
           fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
             $pb$::AsView::as_view(self).serialize()
-          }
-        }
-
-        impl $pb$::Clear for $Msg$Mut<'_> {
-          fn clear(&mut self) {
-            $MsgMut::clear$
-          }
-        }
-
-        impl $pb$::ClearAndParse for $Msg$Mut<'_> {
-          fn clear_and_parse(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
-            $MsgMut::clear_and_parse$
-          }
-
-          fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> $Result$<(), $pb$::ParseError> {
-            $MsgMut::clear_and_parse_dont_enforce_required$
           }
         }
 
