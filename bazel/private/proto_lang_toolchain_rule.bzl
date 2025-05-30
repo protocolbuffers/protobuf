@@ -71,7 +71,7 @@ consult their documentation.
 tune your Java compiler.
 
 <p>There's no compiler. The proto-compiler is taken from the proto_library rule we attach to. It is
-passed as a command-line flag to Blaze.
+passed as a command-line flag to Bazel.
 Several features require a proto-compiler to be invoked on the proto_library rule itself.
 It's beneficial to enforce the compiler that LANG_proto_library uses is the same as the one
 <code>proto_library</code> does.
