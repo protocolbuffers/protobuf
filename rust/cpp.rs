@@ -343,11 +343,24 @@ extern "C" {
 
 pub type RawMapIter = UntypedMapIterator;
 
-/// The raw contents of every generated message.
 #[derive(Debug)]
 #[doc(hidden)]
-pub struct MessageInner {
-    pub msg: RawMessage,
+#[repr(transparent)]
+pub struct OwnedMessageInner<T> {
+    msg: RawMessage,
+    _phantom: PhantomData<T>,
+}
+
+impl<T: Message> OwnedMessageInner<T> {
+    /// # Safety
+    /// - 'msg' must point to a message of type `T` and outlive `Self`.
+    pub unsafe fn wrap_raw(msg: RawMessage) -> Self {
+        OwnedMessageInner { msg, _phantom: PhantomData }
+    }
+
+    pub fn msg(&self) -> RawMessage {
+        self.msg
+    }
 }
 
 /// Mutators that point to their original message use this to do so.
@@ -364,26 +377,35 @@ pub struct MessageInner {
 ///   must be different fields, and not be in the same oneof. As such, a `Mut`
 ///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
 ///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
-#[derive(Clone, Copy, Debug)]
+#[derive(Debug)]
 #[doc(hidden)]
-pub struct MutatorMessageRef<'msg> {
+#[repr(transparent)]
+pub struct MessageMutInner<'msg, T> {
     msg: RawMessage,
-    _phantom: PhantomData<&'msg mut ()>,
+    _phantom: PhantomData<(&'msg mut (), T)>,
 }
-impl<'msg> MutatorMessageRef<'msg> {
+
+impl<'msg, T: Message> Clone for MessageMutInner<'msg, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+impl<'msg, T: Message> Copy for MessageMutInner<'msg, T> {}
+
+impl<'msg, T: Message> MessageMutInner<'msg, T> {
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
-    pub fn new(msg: &'msg mut MessageInner) -> Self {
-        MutatorMessageRef { msg: msg.msg, _phantom: PhantomData }
+    pub fn mut_of_owned(msg: &'msg mut OwnedMessageInner<T>) -> Self {
+        MessageMutInner { msg: msg.msg, _phantom: PhantomData }
     }
 
     /// # Safety
-    /// - The underlying pointer must be sound and live for the lifetime 'msg.
+    /// - The underlying pointer must be mutable, of type `T` and live for the lifetime 'msg.
     pub unsafe fn wrap_raw(raw: RawMessage) -> Self {
-        MutatorMessageRef { msg: raw, _phantom: PhantomData }
+        MessageMutInner { msg: raw, _phantom: PhantomData }
     }
 
-    pub fn from_parent(
-        _parent_msg: MutatorMessageRef<'msg>,
+    pub fn from_parent<ParentT: Message>(
+        _parent_msg: MessageMutInner<'msg, ParentT>,
         message_field_ptr: RawMessage,
     ) -> Self {
         Self { msg: message_field_ptr, _phantom: PhantomData }
@@ -392,9 +414,40 @@ impl<'msg> MutatorMessageRef<'msg> {
     pub fn msg(&self) -> RawMessage {
         self.msg
     }
+}
 
-    pub fn from_raw_msg(msg: &RawMessage) -> Self {
-        Self { msg: *msg, _phantom: PhantomData }
+#[derive(Debug)]
+#[doc(hidden)]
+#[repr(transparent)]
+pub struct MessageViewInner<'msg, T> {
+    msg: RawMessage,
+    _phantom: PhantomData<(&'msg (), T)>,
+}
+
+impl<'msg, T: Message> Clone for MessageViewInner<'msg, T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+impl<'msg, T: Message> Copy for MessageViewInner<'msg, T> {}
+
+impl<'msg, T: Message> MessageViewInner<'msg, T> {
+    /// # Safety
+    /// - The underlying pointer must of type `T` and live for the lifetime 'msg.
+    pub unsafe fn wrap_raw(msg: RawMessage) -> Self {
+        MessageViewInner { msg, _phantom: PhantomData }
+    }
+
+    pub fn view_of_owned(msg: &'msg OwnedMessageInner<T>) -> Self {
+        MessageViewInner { msg: msg.msg, _phantom: PhantomData }
+    }
+
+    pub fn view_of_mut(msg: MessageMutInner<'msg, T>) -> Self {
+        MessageViewInner { msg: msg.msg, _phantom: PhantomData }
+    }
+
+    pub fn msg(&self) -> RawMessage {
+        self.msg
     }
 }
 
