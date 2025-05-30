@@ -180,7 +180,7 @@ struct ArenaInitialized {
 
 template <typename To, typename From>
 void AssertDownCast(From* from) {
-  static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
+  static_assert(std::is_base_of_v<From, To>, "illegal DownCast");
 
   // Check that this function is not used to downcast message types.
   // For those we should use {Down,Dynamic}CastTo{Message,Generated}.
