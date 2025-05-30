@@ -61,6 +61,7 @@ def _py_proto_aspect_impl(target, ctx):
     api_deps = [proto_lang_toolchain_info.runtime]
 
     generated_sources = []
+    generated_stubs = []
     proto_info = target[ProtoInfo]
     proto_root = proto_info.proto_source_root
     if proto_info.direct_sources:
@@ -69,6 +70,14 @@ def _py_proto_aspect_impl(target, ctx):
             actions = ctx.actions,
             proto_info = proto_info,
             extension = "_pb2.py",
+            name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
+        )
+
+        # Generate pyi files
+        generated_stubs = proto_common.declare_generated_files(
+            actions = ctx.actions,
+            proto_info = proto_info,
+            extension = "_pb2.pyi",
             name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
         )
 
@@ -84,16 +93,21 @@ def _py_proto_aspect_impl(target, ctx):
         else:
             proto_root = ctx.workspace_name + "/" + proto_root
 
+        additional_args = ctx.actions.args()
+        if generated_stubs:
+            additional_args.add(plugin_output, format="--pyi_out=%s")
+
         proto_common.compile(
             actions = ctx.actions,
             proto_info = proto_info,
             proto_lang_toolchain_info = proto_lang_toolchain_info,
-            generated_files = generated_sources,
+            generated_files = generated_sources + generated_stubs,
             plugin_output = plugin_output,
+            additional_args = additional_args,
         )
 
     # Generated sources == Python sources
-    python_sources = generated_sources
+    python_sources = generated_sources + generated_stubs
 
     deps = _filter_provider(_PyProtoInfo, getattr(_proto_library, "deps", []))
     runfiles_from_proto_deps = depset(
