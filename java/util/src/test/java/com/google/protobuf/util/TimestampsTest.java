@@ -158,10 +158,30 @@ public class TimestampsTest {
         .isEqualTo("1969-12-31T16:00:00.010Z");
     assertThat(Timestamps.toString(Timestamps.parse("1970-01-01T00:00:00.010-08:00")))
         .isEqualTo("1970-01-01T08:00:00.010Z");
+
     assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010+08:00")))
         .isEqualTo("1969-12-31T16:00:00.010Z");
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010+0800")))
+        .isEqualTo("1969-12-31T16:00:00.010Z");
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010+08")))
+        .isEqualTo("1969-12-31T16:00:00.010Z");
+
     assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010-08:00")))
         .isEqualTo("1970-01-01T08:00:00.010Z");
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010-0800")))
+        .isEqualTo("1970-01-01T08:00:00.010Z");
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010-08")))
+        .isEqualTo("1970-01-01T08:00:00.010Z");
+
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010+08:25")))
+        .isEqualTo("1969-12-31T15:35:00.010Z");
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010+0825")))
+        .isEqualTo("1969-12-31T15:35:00.010Z");
+
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010-08:25")))
+        .isEqualTo("1970-01-01T08:25:00.010Z");
+    assertThat(Timestamps.toString(Timestamps.parseUnchecked("1970-01-01T00:00:00.010-0825")))
+        .isEqualTo("1970-01-01T08:25:00.010Z");
   }
 
   private volatile boolean stopParsingThreads = false;
@@ -335,7 +355,7 @@ public class TimestampsTest {
   @GwtIncompatible("ParseException is not supported in Xplat")
   @J2ObjCIncompatible
   public void testTimestampInvalidOffset() {
-    assertParseFails("1970-01-01T00:00:00+0000");
+    assertParseFails("1970-01-01T00:00:00+zyz");
   }
 
   @Test
