@@ -859,3 +859,19 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
   }
 }
+
+/* Tests some somewhat tricky math used in size calculations while encoding */
+TEST(MessageTest, SkippedVarintSize) {
+  for (uint32_t clz = 0; clz <= 64; clz++) {
+    // Optimized math used in encoding
+    uint32_t skip = ((clz + 7) * 9) >> 6;
+    // traditional varint size calculation
+    uint64_t val = clz == 64 ? 0 : (~uint64_t{0} >> clz);
+    uint32_t count = 0;
+    do {
+      count++;
+      val >>= 7;
+    } while (val);
+    EXPECT_EQ(skip, 10 - count);
+  }
+}
