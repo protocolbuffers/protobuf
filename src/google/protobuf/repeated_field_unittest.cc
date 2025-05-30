@@ -100,11 +100,14 @@ TEST(RepeatedField, ConstInit) {
 // Test operations on a small RepeatedField.
 TEST(RepeatedField, Small) {
   RepeatedField<int> field;
+  const auto& field_const = field;
 
   EXPECT_TRUE(field.empty());
   EXPECT_EQ(field.size(), 0);
 
   field.Add(5);
+  EXPECT_EQ(field.back(), 5);
+  EXPECT_EQ(field_const.back(), 5);
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 1);
@@ -112,6 +115,8 @@ TEST(RepeatedField, Small) {
   EXPECT_EQ(field.at(0), 5);
 
   field.Add(42);
+  EXPECT_EQ(field.back(), 42);
+  EXPECT_EQ(field_const.back(), 42);
 
   EXPECT_FALSE(field.empty());
   EXPECT_EQ(field.size(), 2);
