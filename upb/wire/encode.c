@@ -155,6 +155,62 @@ static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
   return start;
 }
 
+// Need gnu extended inline asm
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
+UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
+                                                  uint64_t val) {
+  ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
+  ptr += UPB_PB_VARINT_MAX_LEN - 1;
+  uint64_t clz;
+  __asm__("clz %[cnt], %[val]\n" : [cnt] "=r"(clz) : [val] "r"(val));
+
+  // Approximates dividing by 7 by multiplying by 9/64 to get encoded varint
+  // length, minus one (since we treat the least significant byte specially)
+  uint32_t size = ((64 * 9) - ((uint32_t)clz * 9)) >> 6;
+  // Store the final byte specially, since it doesn't have the continuation bit
+  // set.
+  *ptr = val >> (7 * size);
+  ptr -= size;
+  // We'll skip all the bytes that would just be encoded as zeros.
+  size = UPB_PB_VARINT_MAX_LEN - 1 - size;
+  uint64_t addr, scratch;
+  __asm__ volatile(
+      "adr %[addr], 0f\n"
+      // Each arm64 instruction encodes to 4 bytes, and it takes two
+      // intructions to process each byte of output, so we branch ahead by
+      //  (4 + 4) * skip to avoid the remaining bytes.
+      "add %[addr], %[addr], %[cnt], lsl #3\n"
+      // Set the continuation bit - bfxil preserves existing bits, so extracting
+      // the 7 bits we need plus the always-set continuation bit produces the
+      // byte value we need to store in one instruction.
+      "mov %w[scratch], #0x80\n"
+      "br %[addr]\n"
+      "0:\n"
+      "bfxil %[scratch], %[val], #56, #7\n"
+      "strb %w[scratch], [%[ptr], #8]\n"
+      "bfxil %[scratch], %[val], #49, #7\n"
+      "strb %w[scratch], [%[ptr], #7]\n"
+      "bfxil %[scratch], %[val], #42, #7\n"
+      "strb %w[scratch], [%[ptr], #6]\n"
+      "bfxil %[scratch], %[val], #35, #7\n"
+      "strb %w[scratch], [%[ptr], #5]\n"
+      "bfxil %[scratch], %[val], #28, #7\n"
+      "strb %w[scratch], [%[ptr], #4]\n"
+      "bfxil %[scratch], %[val], #21, #7\n"
+      "strb %w[scratch], [%[ptr], #3]\n"
+      "bfxil %[scratch], %[val], #14, #7\n"
+      "strb %w[scratch], [%[ptr], #2]\n"
+      "bfxil %[scratch], %[val], #7, #7\n"
+      "strb %w[scratch], [%[ptr], #1]\n"
+      "orr %w[scratch], %w[val], #0x80\n"
+      "strb %w[scratch], [%[ptr]]\n"
+      : [addr] "=&r"(addr), [scratch] "=&r"(scratch)
+      : [val] "r"(val), [ptr] "r"(ptr), [cnt] "r"((uint64_t)size)
+      : "memory");
+  return ptr;
+}
+#endif
+
 UPB_FORCEINLINE
 char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
   if (val < 128 && ptr != e->buf) {
@@ -162,7 +218,11 @@ char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
     *ptr = val;
     return ptr;
   } else {
+#if defined(__aarch64__)
+    return encode_longvarint_arm64(ptr, e, val);
+#else
     return encode_longvarint(ptr, e, val);
+#endif
   }
 }
 
