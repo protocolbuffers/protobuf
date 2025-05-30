@@ -346,6 +346,7 @@ pub type RawMapIter = UntypedMapIterator;
 /// The raw contents of every generated message.
 #[derive(Debug)]
 #[doc(hidden)]
+#[repr(transparent)]
 pub struct MessageInner {
     pub msg: RawMessage,
 }
