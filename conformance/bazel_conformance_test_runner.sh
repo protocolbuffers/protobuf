@@ -63,4 +63,6 @@ if [ -n "$MAXIMUM_EDITION" ]; then
   args+=(--maximum_edition $MAXIMUM_EDITION)
 fi
 
+args+=(--output_dir $(realpath $(mktemp -d)))
+
 $conformance_test_runner "${args[@]}" $conformance_testee
