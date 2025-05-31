@@ -51,7 +51,7 @@ static const char* fastdecode_verifyutf8(upb_Decoder* d, const char* ptr,
   if (!_upb_Decoder_VerifyUtf8Inline(dst->data, dst->size)) {
     _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_BadUtf8);
   }
-  UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
 }
 
 #define FASTDECODE_LONGSTRING(d, ptr, msg, table, hasbits, dst, validate_utf8) \
@@ -76,7 +76,7 @@ static const char* fastdecode_verifyutf8(upb_Decoder* d, const char* ptr,
     data = (uint64_t)dst;                                                      \
     UPB_MUSTTAIL return fastdecode_verifyutf8(UPB_PARSE_ARGS);                 \
   } else {                                                                     \
-    UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);                   \
+    UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);               \
   }
 
 UPB_NOINLINE
@@ -180,7 +180,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
     UPB_MUSTTAIL return fastdecode_verifyutf8(UPB_PARSE_ARGS);                 \
   }                                                                            \
                                                                                \
-  UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);                     \
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);                 \
                                                                                \
   longstr:                                                                     \
   if (card == kUpb_DecodeFast_Repeated) {                                      \
@@ -264,7 +264,7 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
     UPB_MUSTTAIL return fastdecode_verifyutf8(UPB_PARSE_ARGS);                \
   }                                                                           \
                                                                               \
-  UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
 
 /* Generate all combinations:
  * {p,c} x {s,o,r} x {s, b} x {1bt,2bt} */
