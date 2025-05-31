@@ -13,7 +13,6 @@
 #include <cstdint>
 #include <string>
 
-#include "absl/base/optimization.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
