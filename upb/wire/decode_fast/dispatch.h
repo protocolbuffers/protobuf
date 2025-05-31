@@ -66,31 +66,17 @@ const char* _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
 }
 
 UPB_NOINLINE
-static const char* fastdecode_isdonefallback(UPB_PARSE_PARAMS) {
-  int overrun = data;
-  ptr = _upb_EpsCopyInputStream_IsDoneFallbackInline(
-      &d->input, ptr, overrun, _upb_Decoder_BufferFlipCallback);
-  data = _upb_FastDecoder_LoadTag(ptr);
-  UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
-}
+const char* upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS);
 
 UPB_FORCEINLINE
-const char* fastdecode_dispatch(UPB_PARSE_PARAMS) {
+const char* upb_DecodeFast_Dispatch(UPB_PARSE_PARAMS) {
   int overrun;
-  switch (upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun)) {
-    case kUpb_IsDoneStatus_Done: {
-      d->message_is_done = true;
-      ((uint32_t*)msg)[2] |= hasbits;  // Sync hasbits.
-      const upb_MiniTable* m = decode_totablep(table);
-      return UPB_UNLIKELY(m->UPB_PRIVATE(required_count))
-                 ? _upb_Decoder_CheckRequired(d, ptr, msg, m)
-                 : ptr;
-    }
-    case kUpb_IsDoneStatus_NotDone:
-      break;
-    case kUpb_IsDoneStatus_NeedFallback:
-      data = overrun;
-      UPB_MUSTTAIL return fastdecode_isdonefallback(UPB_PARSE_ARGS);
+  upb_IsDoneStatus status =
+      upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun);
+
+  if (UPB_UNLIKELY(status != kUpb_IsDoneStatus_NotDone)) {
+    // End-of-message or end-of-buffer.
+    UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_ARGS);
   }
 
   // Read two bytes of tag data (for a one-byte tag, the high byte is junk).
@@ -187,8 +173,6 @@ typedef enum {
   kUpb_DecodeFastNext_FallbackToMiniTable = kUpb_DecodeFastNext_Return,
 } upb_DecodeFastNext;
 
-const char* upb_DecodeFast_IsDoneFallback(UPB_PARSE_PARAMS);
-
 #define UPB_DECODEFAST_NEXT(next)                                           \
   if (UPB_UNLIKELY(next != kUpb_DecodeFastNext_TailCallDispatch)) {         \
     switch (next) {                                                         \
@@ -200,7 +184,7 @@ const char* upb_DecodeFast_IsDoneFallback(UPB_PARSE_PARAMS);
         UPB_UNREACHABLE();                                                  \
     }                                                                       \
   }                                                                         \
-  UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
 
 #include "upb/port/undef.inc"
 

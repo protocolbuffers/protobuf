@@ -105,7 +105,7 @@ done:
     }                                                                         \
   }                                                                           \
                                                                               \
-  UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
 
 typedef struct {
   uint8_t valbytes;
@@ -157,7 +157,7 @@ const char* fastdecode_topackedvarint(upb_EpsCopyInputStream* e,
     _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);               \
   }                                                                          \
                                                                              \
-  UPB_MUSTTAIL return fastdecode_dispatch(d, ptr, msg, table, hasbits, 0);
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(d, ptr, msg, table, hasbits, 0);
 
 #define FASTDECODE_VARINT(unpacked, packed, card, ...)   \
   if (card == kUpb_DecodeFast_Packed) {                  \
