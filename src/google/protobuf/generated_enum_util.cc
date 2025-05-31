@@ -11,11 +11,14 @@
 #include <cstddef>
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/generated_message_util.h"
 
 // Must be included last.
