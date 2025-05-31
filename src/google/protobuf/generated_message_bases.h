@@ -19,6 +19,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
