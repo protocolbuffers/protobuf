@@ -24,6 +24,9 @@
 
 #include <cstddef>
 #include <string>
+
+#include "absl/status/statusor.h"
+#include "google/protobuf/descriptor.h"
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
