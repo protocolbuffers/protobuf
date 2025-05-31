@@ -12,12 +12,15 @@
 #include "google/protobuf/util/message_differencer.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
 #include <limits>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
@@ -28,10 +31,9 @@
 #include "absl/strings/str_format.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
