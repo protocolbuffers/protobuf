@@ -14,13 +14,20 @@
 #include <limits.h>
 #include <math.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <ostream>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/macros.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/testing/googletest.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include <gtest/gtest.h>
 
 namespace google {

@@ -7,6 +7,7 @@
 
 #include "google/protobuf/io/test_zero_copy_stream.h"
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <string>
