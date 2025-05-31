@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/hpb/gen_extensions.h"
 
+#include <cassert>
 #include <string>
 #include <vector>
 
