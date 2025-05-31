@@ -42,7 +42,7 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
                                 void* ctx) {
   upb_Decoder* d = (upb_Decoder*)e;
   fastdecode_submsgdata* submsg = ctx;
-  ptr = fastdecode_dispatch(d, ptr, submsg->msg, submsg->table, 0, 0);
+  ptr = upb_DecodeFast_Dispatch(d, ptr, submsg->msg, submsg->table, 0, 0);
   UPB_ASSUME(ptr != NULL);
   return ptr;
 }
@@ -116,7 +116,7 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   }                                                                       \
                                                                           \
   d->depth++;                                                             \
-  UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
+  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
 
 #define F(type, card, tagsize)                                                 \
   const char* UPB_DECODEFAST_FUNCNAME(type, card, tagsize)(UPB_PARSE_PARAMS) { \

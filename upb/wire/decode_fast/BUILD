@@ -47,6 +47,7 @@ cc_library(
 
 cc_library(
     name = "dispatch",
+    srcs = ["dispatch.c"],
     hdrs = ["dispatch.h"],
     copts = FASTTABLE_COPTS,
     visibility = ["//upb/wire:__pkg__"],
