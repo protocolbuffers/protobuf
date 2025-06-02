@@ -345,6 +345,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_MUSTTAIL
 #endif
 
+#if UPB_HAS_ATTRIBUTE(preserve_none)
+#define UPB_PRESERVE_NONE __attribute__((preserve_none))
+#else
+#define UPB_PRESERVE_NONE
+#endif
+
 /* This check is not fully robust: it does not require that we have "musttail"
  * support available. We need tail calls to avoid consuming arbitrary amounts
  * of stack space.
@@ -2404,9 +2410,11 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableSub_Message(
 
 struct upb_Decoder;
 struct upb_Message;
-typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
-                                     struct upb_Message* msg, intptr_t table,
-                                     uint64_t hasbits, uint64_t data);
+
+typedef UPB_PRESERVE_NONE const char* _upb_FieldParser(
+    struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
+    intptr_t table, uint64_t hasbits, uint64_t data);
+
 typedef struct {
   uint64_t field_data;
   _upb_FieldParser* field_parser;
