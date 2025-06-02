@@ -350,6 +350,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_MUSTTAIL
 #endif
 
+#if UPB_HAS_ATTRIBUTE(preserve_none)
+#define UPB_PRESERVE_NONE __attribute__((preserve_none))
+#else
+#define UPB_PRESERVE_NONE
+#endif
+
 /* This check is not fully robust: it does not require that we have "musttail"
  * support available. We need tail calls to avoid consuming arbitrary amounts
  * of stack space.

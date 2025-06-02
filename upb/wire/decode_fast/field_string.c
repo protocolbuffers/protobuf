@@ -32,20 +32,18 @@
   UPB_DECODEFAST_FUNCNAME(copy##type, card, tagsize)
 
 // Forward-declare the copy function type.
-#define F(type, card, tagsize)                            \
-  UPB_NOINLINE                                            \
-  static const char* STRING_FUNCNAME(type, card, tagsize, \
-                                     Copy)(UPB_PARSE_PARAMS);
+#define F(type, card, tagsize)                                       \
+  UPB_NOINLINE UPB_PRESERVE_NONE static const char* STRING_FUNCNAME( \
+      type, card, tagsize, Copy)(UPB_PARSE_PARAMS);
 
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, String)
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Bytes)
 
 #undef F
 
-UPB_NOINLINE
-static const char* fastdecode_verifyutf8(upb_Decoder* d, const char* ptr,
-                                         upb_Message* msg, intptr_t table,
-                                         uint64_t hasbits, uint64_t data) {
+UPB_NOINLINE UPB_PRESERVE_NONE static const char* fastdecode_verifyutf8(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_StringView* dst = (upb_StringView*)data;
   if (!_upb_Decoder_VerifyUtf8Inline(dst->data, dst->size)) {
@@ -79,17 +77,14 @@ static const char* fastdecode_verifyutf8(upb_Decoder* d, const char* ptr,
     UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);               \
   }
 
-UPB_NOINLINE
-static const char* fastdecode_longstring_utf8(struct upb_Decoder* d,
-                                              const char* ptr, upb_Message* msg,
-                                              intptr_t table, uint64_t hasbits,
-                                              uint64_t data) {
+UPB_NOINLINE UPB_PRESERVE_NONE static const char* fastdecode_longstring_utf8(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data) {
   upb_StringView* dst = (upb_StringView*)data;
   FASTDECODE_LONGSTRING(d, ptr, msg, table, hasbits, dst, true);
 }
 
-UPB_NOINLINE
-static const char* fastdecode_longstring_noutf8(
+UPB_NOINLINE UPB_PRESERVE_NONE static const char* fastdecode_longstring_noutf8(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
     uint64_t hasbits, uint64_t data) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
@@ -269,19 +264,19 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
 /* Generate all combinations:
  * {p,c} x {s,o,r} x {s, b} x {1bt,2bt} */
 
-#define F(type, card, tagsize)                                            \
-  UPB_NOINLINE                                                            \
-  static const char* STRING_FUNCNAME(type, card, tagsize,                 \
-                                     Copy)(UPB_PARSE_PARAMS) {            \
-    FASTDECODE_COPYSTRING(d, ptr, msg, table, hasbits, data,              \
-                          kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
-                          kUpb_DecodeFast_##tagsize)                      \
-  }                                                                       \
-  const char* STRING_FUNCNAME(type, card, tagsize, )(UPB_PARSE_PARAMS) {  \
-    FASTDECODE_STRING(d, ptr, msg, table, hasbits, data,                  \
-                      kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,     \
-                      kUpb_DecodeFast_##tagsize,                          \
-                      STRING_FUNCNAME(type, card, tagsize, Copy))         \
+#define F(type, card, tagsize)                                                 \
+  UPB_NOINLINE static const char* UPB_PRESERVE_NONE STRING_FUNCNAME(           \
+      type, card, tagsize, Copy)(UPB_PARSE_PARAMS) {                           \
+    FASTDECODE_COPYSTRING(d, ptr, msg, table, hasbits, data,                   \
+                          kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,      \
+                          kUpb_DecodeFast_##tagsize)                           \
+  }                                                                            \
+  const char* UPB_PRESERVE_NONE STRING_FUNCNAME(type, card,                    \
+                                                tagsize, )(UPB_PARSE_PARAMS) { \
+    FASTDECODE_STRING(d, ptr, msg, table, hasbits, data,                       \
+                      kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,          \
+                      kUpb_DecodeFast_##tagsize,                               \
+                      STRING_FUNCNAME(type, card, tagsize, Copy))              \
   }
 
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, String)

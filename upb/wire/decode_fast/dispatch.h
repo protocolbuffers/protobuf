@@ -41,10 +41,9 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
-UPB_INLINE
-const char* _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
-                                         upb_Message* msg, intptr_t table,
-                                         uint64_t hasbits, uint64_t tag) {
+UPB_INLINE UPB_PRESERVE_NONE const char* _upb_FastDecoder_TagDispatch(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t tag) {
   const upb_MiniTable* table_p = decode_totablep(table);
   uint8_t mask = table;
   size_t ofs = tag & mask;
@@ -65,11 +64,11 @@ const char* _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
                                         ent->field_data ^ tag);
 }
 
-UPB_NOINLINE
-const char* upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS);
+UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
+    UPB_PARSE_PARAMS);
 
-UPB_FORCEINLINE
-const char* upb_DecodeFast_Dispatch(UPB_PARSE_PARAMS) {
+UPB_FORCEINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_Dispatch(
+    UPB_PARSE_PARAMS) {
   int overrun;
   upb_IsDoneStatus status =
       upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun);

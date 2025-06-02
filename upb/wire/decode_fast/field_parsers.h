@@ -30,12 +30,14 @@ struct upb_Decoder;
   struct upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
       uint64_t hasbits, uint64_t data
 
-#define F(type, card, size) \
-  const char *UPB_DECODEFAST_FUNCNAME(type, card, size)(PARSE_PARAMS);
+#define F(type, card, size)                                         \
+  UPB_PRESERVE_NONE const char *UPB_DECODEFAST_FUNCNAME(type, card, \
+                                                        size)(PARSE_PARAMS);
 
 UPB_DECODEFAST_FUNCTIONS(F);
 
 // This just uses the regular (non-fast) parser to parse a single field.
+UPB_PRESERVE_NONE
 const char *_upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
 
 #undef F

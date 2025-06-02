@@ -20,9 +20,11 @@
 
 struct upb_Decoder;
 struct upb_Message;
-typedef const char* _upb_FieldParser(struct upb_Decoder* d, const char* ptr,
-                                     struct upb_Message* msg, intptr_t table,
-                                     uint64_t hasbits, uint64_t data);
+
+typedef UPB_PRESERVE_NONE const char* _upb_FieldParser(
+    struct upb_Decoder* d, const char* ptr, struct upb_Message* msg,
+    intptr_t table, uint64_t hasbits, uint64_t data);
+
 typedef struct {
   uint64_t field_data;
   _upb_FieldParser* field_parser;

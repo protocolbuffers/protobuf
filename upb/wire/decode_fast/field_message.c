@@ -118,11 +118,12 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   d->depth++;                                                             \
   UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
 
-#define F(type, card, tagsize)                                                 \
-  const char* UPB_DECODEFAST_FUNCNAME(type, card, tagsize)(UPB_PARSE_PARAMS) { \
-    FASTDECODE_SUBMSG(d, ptr, msg, table, hasbits, data,                       \
-                      kUpb_DecodeFast_##type, kUpb_DecodeFast_##card,          \
-                      kUpb_DecodeFast_##tagsize);                              \
+#define F(type, card, tagsize)                                        \
+  UPB_PRESERVE_NONE const char* UPB_DECODEFAST_FUNCNAME(              \
+      type, card, tagsize)(UPB_PARSE_PARAMS) {                        \
+    FASTDECODE_SUBMSG(d, ptr, msg, table, hasbits, data,              \
+                      kUpb_DecodeFast_##type, kUpb_DecodeFast_##card, \
+                      kUpb_DecodeFast_##tagsize);                     \
   }
 
 UPB_DECODEFAST_CARDINALITIES(UPB_DECODEFAST_TAGSIZES, F, Message)

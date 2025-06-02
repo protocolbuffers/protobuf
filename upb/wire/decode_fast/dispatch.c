@@ -16,8 +16,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-UPB_NOINLINE
-const char* upb_DecodeFast_MessageIsDoneFallback(UPB_PARSE_PARAMS) {
+UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
+    UPB_PARSE_PARAMS) {
   int overrun;
   switch (upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done: {
