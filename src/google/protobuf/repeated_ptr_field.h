@@ -572,6 +572,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
  private:
+  // Tests that need to access private methods.
+  friend class
+      RepeatedPtrFieldTest_UnsafeArenaAddAllocatedReleaseLastOnBaseField_Test;
+
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
