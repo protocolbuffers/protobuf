@@ -112,8 +112,9 @@ upb_minitable_proto_library(
     deps = [":message_benchmark_proto"],
 )
 
-cc_test(
+cc_binary(
     name = "message_benchmark",
+    testonly = 1,
     srcs = ["message_benchmark.cc"],
     deps = [
         ":message_benchmark_upb_minitable_proto",
