@@ -17,6 +17,13 @@ _PyProtoInfo = provider(
             (depset[File]) Files from the transitive closure implicit proto
             dependencies""",
         "transitive_sources": """(depset[File]) The Python sources.""",
+        "direct_pyi_files": """
+            (depset[File]) Type definition files (usually `.pyi` files)
+            for the Python modules provided by this target.""",
+        "transitive_pyi_files": """
+            (depset[File]) The transitive set of type definition files
+            (usually `.pyi` files) for the Python modules for this target
+            and its transitive dependencies.""",
     },
 )
 
@@ -107,7 +114,7 @@ def _py_proto_aspect_impl(target, ctx):
         )
 
     # Generated sources == Python sources
-    python_sources = generated_sources + generated_stubs
+    python_sources = generated_sources
 
     deps = _filter_provider(_PyProtoInfo, getattr(_proto_library, "deps", []))
     runfiles_from_proto_deps = depset(
@@ -117,6 +124,13 @@ def _py_proto_aspect_impl(target, ctx):
     transitive_sources = depset(
         direct = python_sources,
         transitive = [dep.transitive_sources for dep in deps],
+    )
+    direct_pyi_files = depset(
+        direct = generated_stubs,
+    )
+    transitive_pyi_files = depset(
+        direct = generated_stubs,
+        transitive = [dep.transitive_pyi_files for dep in deps],
     )
 
     return [
@@ -133,6 +147,8 @@ def _py_proto_aspect_impl(target, ctx):
             ),
             runfiles_from_proto_deps = runfiles_from_proto_deps,
             transitive_sources = transitive_sources,
+            direct_pyi_files = direct_pyi_files,
+            transitive_pyi_files = transitive_pyi_files,
         ),
     ]
 
@@ -164,6 +180,13 @@ def _py_proto_library_rule(ctx):
     default_outputs = depset(
         transitive = [info.transitive_sources for info in pyproto_infos],
     )
+    direct_pyi_files = []
+    for info in pyproto_infos:
+        direct_pyi_files.extend(info.direct_pyi_files.to_list())
+    transitive_pyi_files = depset(
+        direct = direct_pyi_files,
+        transitive = [info.transitive_pyi_files for info in pyproto_infos],
+    )
 
     return [
         DefaultInfo(
@@ -180,6 +203,8 @@ def _py_proto_library_rule(ctx):
         PyInfo(
             transitive_sources = default_outputs,
             imports = depset(transitive = [info.imports for info in pyproto_infos]),
+            direct_pyi_files = depset(direct = direct_pyi_files),
+            transitive_pyi_files = transitive_pyi_files,
             # Proto always produces 2- and 3- compatible source files
             has_py2_only_sources = False,
             has_py3_only_sources = False,
