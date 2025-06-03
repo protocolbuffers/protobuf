@@ -1871,14 +1871,18 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           // generated for each oneof with an additional *_NOT_SET value.
           for (auto oneof : OneOfRange(descriptor_)) {
             p->Emit(
-                {{"oneof_camel_name",
-                  UnderscoresToCamelCase(oneof->name(), true)},
+                {Sub{"oneof_camel_name",
+                     absl::StrCat(UnderscoresToCamelCase(oneof->name(), true),
+                                  "Case")}
+                     .AnnotatedAs(oneof),
                  {"oneof_field",
                   [&] {
                     for (auto field : FieldRange(oneof)) {
                       p->Emit(
                           {
-                              {"oneof_constant", OneofCaseConstantName(field)},
+                              Sub{"oneof_constant",
+                                  OneofCaseConstantName(field)}
+                                  .AnnotatedAs(field),
                               {"field_number", field->number()},
                           },
                           R"cc(
@@ -1888,7 +1892,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   }},
                  {"upper_oneof_name", absl::AsciiStrToUpper(oneof->name())}},
                 R"cc(
-                  enum $oneof_camel_name$Case {
+                  enum $oneof_camel_name$ {
                     $oneof_field$,
                     $upper_oneof_name$_NOT_SET = 0,
                   };
