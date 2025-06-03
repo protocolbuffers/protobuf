@@ -83,6 +83,7 @@ def bootstrap_cc_binary(name, visibility = [], deps = [], bootstrap_deps = [], *
     for stage in _stages:
         native.cc_binary(
             name = name + stage,
+            malloc = "@bazel_tools//tools/cpp:malloc",
             deps = deps + [dep + stage for dep in bootstrap_deps],
             visibility = _stage_visibility(stage, visibility),
             **kwargs
