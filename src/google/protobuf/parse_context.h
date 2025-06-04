@@ -25,6 +25,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
@@ -205,6 +206,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return AppendStringFallback(ptr, size, s);
   }
 
+  [[nodiscard]] const char* ReadArray(const char* ptr, absl::Span<char> out);
   [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size);
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
@@ -420,6 +422,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
   const char* VerifyUTF8Fallback(const char* ptr, size_t size);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
+  const char* ReadArrayFallback(const char* ptr, absl::Span<char> out);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
   template <bool kExperimentalV2>
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);

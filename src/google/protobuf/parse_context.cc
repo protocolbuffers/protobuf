@@ -21,6 +21,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
@@ -66,7 +67,7 @@ bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
         depth++;
         break;
       }
-      case 4: {                    // end group
+      case 4: {                        // end group
         if (--depth < 0) return true;  // We exit early
         break;
       }
@@ -232,6 +233,24 @@ const char* EpsCopyInputStream::ReadStringFallback(const char* ptr, int size,
   }
   return AppendSize(ptr, size,
                     [str](const char* p, int s) { str->append(p, s); });
+}
+
+const char* EpsCopyInputStream::ReadArray(const char* ptr,
+                                          absl::Span<char> out) {
+  if (CanReadFromPtr(out.size(), ptr)) {
+    memcpy(out.data(), ptr, out.size());
+    return ptr + out.size();
+  }
+  return ReadArrayFallback(ptr, out);
+}
+
+const char* EpsCopyInputStream::ReadArrayFallback(const char* ptr,
+                                                  absl::Span<char> out) {
+  char* dst = out.data();
+  return AppendSize(ptr, out.size(), [&dst](const char* p, int s) {
+    memcpy(dst, p, s);
+    dst += s;
+  });
 }
 
 namespace {
