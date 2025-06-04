@@ -7,6 +7,8 @@
 
 #include "upb/mem/arena.h"
 
+#include <string.h>
+
 #include "upb/port/sanitizers.h"
 
 #ifdef UPB_TRACING_ENABLED
@@ -41,15 +43,21 @@ typedef struct upb_ArenaInternal {
   // block.
   uintptr_t block_alloc;
 
-  // The cleanup for the allocator. This is called after all the blocks are
-  // freed in an arena.
-  upb_AllocCleanupFunc* upb_alloc_cleanup;
-
   // Linked list of blocks to free/cleanup.
   upb_MemBlock* blocks;
 
   // A growing hint of what the *next* block should be sized
   size_t size_hint;
+
+  // All non atomic members used during allocation must be above this point, and
+  // are used by _SwapIn/_SwapOut
+
+  // Total space allocated in blocks, atomic only for SpaceAllocated
+  UPB_ATOMIC(uintptr_t) space_allocated;
+
+  // The cleanup for the allocator. This is called after all the blocks are
+  // freed in an arena.
+  upb_AllocCleanupFunc* upb_alloc_cleanup;
 
   // When multiple arenas are fused together, each arena points to a parent
   // arena (root points to itself). The root tracks how many live arenas
@@ -72,9 +80,6 @@ typedef struct upb_ArenaInternal {
   // - If the low bit is not set, is a pointer to the previous node in the list,
   //   such that a->previous_or_tail->next == a.
   UPB_ATOMIC(uintptr_t) previous_or_tail;
-
-  // Total space allocated in blocks, atomic only for SpaceAllocated
-  UPB_ATOMIC(uintptr_t) space_allocated;
 
   // We use a different UPB_XSAN_MEMBER than the one in upb_Arena because the
   // two are distinct synchronization domains.  The upb_Arena.ptr member is
@@ -830,22 +835,17 @@ upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a) {
 }
 
 void UPB_PRIVATE(_upb_Arena_SwapIn)(upb_Arena* des, const upb_Arena* src) {
+  memcpy(des, src, offsetof(upb_ArenaState, body.space_allocated));
   upb_ArenaInternal* desi = upb_Arena_Internal(des);
   upb_ArenaInternal* srci = upb_Arena_Internal(src);
-
-  *des = *src;
-  desi->block_alloc = srci->block_alloc;
-  desi->blocks = srci->blocks;
-  desi->size_hint = srci->size_hint;
+  uintptr_t new_space_allocated =
+      upb_Atomic_Load(&srci->space_allocated, memory_order_relaxed);
+  upb_Atomic_Store(&desi->space_allocated, new_space_allocated,
+                   memory_order_relaxed);
 }
 
 void UPB_PRIVATE(_upb_Arena_SwapOut)(upb_Arena* des, const upb_Arena* src) {
-  upb_ArenaInternal* desi = upb_Arena_Internal(des);
-  upb_ArenaInternal* srci = upb_Arena_Internal(src);
-
-  *des = *src;
-  desi->blocks = srci->blocks;
-  desi->size_hint = srci->size_hint;
+  UPB_PRIVATE(_upb_Arena_SwapIn)(des, src);
 }
 
 bool _upb_Arena_WasLastAlloc(struct upb_Arena* a, void* ptr, size_t oldsize) {

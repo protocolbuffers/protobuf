@@ -733,7 +733,6 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
   const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
   upb::Arena arena;
   upb_Message* msg = upb_Message_New(table, arena.ptr());
-  memset(msg, 0, sizeof(*msg));
   char region[900];
   memset(region, 0, sizeof(region));
   region[0] = 0x0A;  // Tag number 1
@@ -858,4 +857,24 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Map_IsFrozen(map));
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
   }
+}
+
+TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
+  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  upb::Arena arena(table->UPB_PRIVATE(size));
+
+  uintptr_t space_allocated_before =
+      upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
+  upb_Message* msg = upb_Message_New(table, arena.ptr());
+  char region[300];
+  memset(region, 0, sizeof(region));
+  region[0] = 0x0A;  // Tag number 1
+  region[1] = 0xA9;
+  region[2] = 0x02;
+  upb_DecodeStatus status =
+      upb_Decode(region, sizeof(region), msg, table, nullptr, 0, arena.ptr());
+  EXPECT_EQ(status, kUpb_DecodeStatus_Ok);
+  uintptr_t space_allocated_after =
+      upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
+  EXPECT_GT(space_allocated_after, space_allocated_before + 297);
 }
