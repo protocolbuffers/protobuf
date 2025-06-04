@@ -1533,7 +1533,7 @@ inline const Message* DynamicCastMessage(const MessageLite* from) {
 }
 template <>
 inline const Message* DownCastMessage(const MessageLite* from) {
-  ABSL_DCHECK(DynamicCastMessage<Message>(from) == from)
+  ABSL_DCHECK_EQ(DynamicCastMessage<Message>(from), from)
       << "Cannot downcast " << from->GetTypeName() << " to Message";
   return static_cast<const Message*>(from);
 }
