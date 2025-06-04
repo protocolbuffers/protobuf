@@ -60,6 +60,7 @@ upb_minitable_proto_library_aspect = aspect(
     exec_groups = {
         "proto_compiler": exec_group(),
     },
+    required_providers = [ProtoInfo],
 )
 
 def _upb_minitable_proto_library_rule_impl(ctx):

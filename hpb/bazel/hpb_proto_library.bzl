@@ -103,8 +103,11 @@ def _hpb_proto_rule_impl(ctx):
         cc_info,
     ]
 
+def _get_proto_deps(ctx):
+    return [dep for dep in ctx.rule.attr.deps if ProtoInfo in dep]
+
 def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
-    deps = ctx.rule.attr.deps + ctx.attr._upbprotos
+    deps = _get_proto_deps(ctx) + ctx.attr._upbprotos
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
     dep_ccinfos += [dep[_UpbCcWrappedCcInfo].cc_info for dep in deps if _UpbCcWrappedCcInfo in dep]
@@ -169,6 +172,7 @@ _hpb_proto_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = upb_use_cpp_toolchain(),
+    required_providers = [ProtoInfo],
 )
 
 hpb_proto_library = rule(
