@@ -1351,18 +1351,19 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
                                      upb_Message* msg, const upb_MiniTable* mt,
                                      uint64_t last_field_index, uint64_t data) {
-  if (_upb_Decoder_IsDone(d, &ptr)) {
-    return _upb_Decoder_EndMessage(d, ptr);
-  }
-
-#if UPB_FASTTABLE
+#ifdef UPB_ENABLE_FASTTABLE
   if (mt && mt->UPB_PRIVATE(table_mask) != (unsigned char)-1 &&
       !(d->options & kUpb_DecodeOption_DisableFastTable)) {
-    uint16_t tag = _upb_FastDecoder_LoadTag(ptr);
     intptr_t table = decode_totable(mt);
-    ptr = _upb_FastDecoder_TagDispatch(d, ptr, msg, table, 0, tag);
+    ptr = upb_DecodeFast_Dispatch(d, ptr, msg, table, 0, 0);
     if (d->message_is_done) return ptr;
     _upb_Decoder_Trace(d, '<');
+  } else if (_upb_Decoder_IsDone(d, &ptr)) {
+    return _upb_Decoder_EndMessage(d, ptr);
+  }
+#else
+  if (_upb_Decoder_IsDone(d, &ptr)) {
+    return _upb_Decoder_EndMessage(d, ptr);
   }
 #endif
 

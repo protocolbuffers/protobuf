@@ -10,6 +10,9 @@
 
 #include <stdint.h>
 
+#include "upb/base/internal/log2.h"
+#include "upb/wire/types.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -104,6 +107,35 @@ UPB_INLINE int upb_DecodeFast_ValueBytes(upb_DecodeFast_Type type) {
   }
 }
 
+UPB_INLINE upb_WireType upb_DecodeFast_WireType(upb_DecodeFast_Type type) {
+  switch (type) {
+    case kUpb_DecodeFast_Bool:
+    case kUpb_DecodeFast_Varint32:
+    case kUpb_DecodeFast_Varint64:
+    case kUpb_DecodeFast_ZigZag32:
+    case kUpb_DecodeFast_ZigZag64:
+      return kUpb_WireType_Varint;
+    case kUpb_DecodeFast_Fixed32:
+      return kUpb_WireType_32Bit;
+    case kUpb_DecodeFast_Fixed64:
+      return kUpb_WireType_64Bit;
+    case kUpb_DecodeFast_Message:
+    case kUpb_DecodeFast_String:
+    case kUpb_DecodeFast_Bytes:
+      return kUpb_WireType_Delimited;
+    default:
+      UPB_UNREACHABLE();
+  }
+}
+
+UPB_INLINE int upb_DecodeFast_ValueBytesLg2(upb_DecodeFast_Type type) {
+  return upb_Log2Ceiling(upb_DecodeFast_ValueBytes(type));
+}
+
+UPB_INLINE bool upb_DecodeFast_IsRepeated(upb_DecodeFast_Cardinality card) {
+  return card == kUpb_DecodeFast_Repeated || card == kUpb_DecodeFast_Packed;
+}
+
 UPB_INLINE bool upb_DecodeFast_IsZigZag(upb_DecodeFast_Type type) {
   switch (type) {
     case kUpb_DecodeFast_ZigZag32:
@@ -167,9 +199,8 @@ UPB_INLINE upb_DecodeFast_Type upb_DecodeFast_GetType(uint32_t function_idx) {
 // index.  Some field types (eg. groups) do not even have a function index at
 // the moment, and so will be rejected by upb_DecodeFast_TryFillEntry() before
 // we even get here.
-#define UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size)            \
-  ((type == kUpb_DecodeFast_Fixed32 || type == kUpb_DecodeFast_Fixed64) && \
-   (card == kUpb_DecodeFast_Scalar || card == kUpb_DecodeFast_Oneof))
+#define UPB_DECODEFAST_COMBINATION_IS_ENABLED(type, card, size) \
+  (type == kUpb_DecodeFast_Fixed32 || type == kUpb_DecodeFast_Fixed64)
 
 #ifdef UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE
 #define UPB_DECODEFAST_ISENABLED(type, card, size)            \

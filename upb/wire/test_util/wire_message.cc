@@ -27,6 +27,7 @@ using wire_types::Group;
 using wire_types::Varint;
 using wire_types::WireField;
 using wire_types::WireMessage;
+using wire_types::WireValue;
 
 static void EncodeVarint(uint64_t val, int varint_length, std::string* str) {
   uint64_t v = val;
@@ -54,31 +55,58 @@ static void EncodeTag(const WireField& field, upb_WireType wire_type,
   EncodeVarint(field.field_number << 3 | wire_type, min_tag_length, str);
 }
 
+static upb_WireType WireType(const WireValue& value) {
+  if (std::holds_alternative<Varint>(value)) {
+    return kUpb_WireType_Varint;
+  } else if (std::holds_alternative<Delimited>(value)) {
+    return kUpb_WireType_Delimited;
+  } else if (std::holds_alternative<Fixed64>(value)) {
+    return kUpb_WireType_64Bit;
+  } else if (std::holds_alternative<Fixed32>(value)) {
+    return kUpb_WireType_32Bit;
+  } else if (std::holds_alternative<Group>(value)) {
+    return kUpb_WireType_StartGroup;
+  }
+  ABSL_CHECK(false);
+  return kUpb_WireType_Varint;
+}
+
+std::string ToBinaryPayloadWithLongVarints(const WireValue& value,
+                                           int min_tag_length,
+                                           int min_val_varint_length) {
+  std::string ret;
+  if (const auto* val = std::get_if<Varint>(&value)) {
+    EncodeVarint(val->val, min_val_varint_length, &ret);
+  } else if (const auto* val = std::get_if<Delimited>(&value)) {
+    EncodeVarint(val->val.size(), min_val_varint_length, &ret);
+    ret.append(val->val);
+  } else if (const auto* val = std::get_if<Fixed64>(&value)) {
+    uint64_t swapped = upb_BigEndian64(val->val);
+    ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
+  } else if (const auto* val = std::get_if<Fixed32>(&value)) {
+    uint32_t swapped = upb_BigEndian32(val->val);
+    ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
+  } else if (const auto* val = std::get_if<Group>(&value)) {
+    ret.append(ToBinaryPayloadWithLongVarints(val->val, min_tag_length,
+                                              min_val_varint_length));
+  }
+  return ret;
+}
+
+std::string ToBinaryPayload(const WireValue& value) {
+  return ToBinaryPayloadWithLongVarints(value, 1, 1);
+}
+
 std::string ToBinaryPayloadWithLongVarints(const WireMessage& msg,
                                            int min_tag_length,
                                            int min_val_varint_length) {
   std::string ret;
 
   for (const auto& field : msg) {
-    if (const auto* val = std::get_if<Varint>(&field.value)) {
-      EncodeTag(field, kUpb_WireType_Varint, min_tag_length, &ret);
-      EncodeVarint(val->val, min_val_varint_length, &ret);
-    } else if (const auto* val = std::get_if<Delimited>(&field.value)) {
-      EncodeTag(field, kUpb_WireType_Delimited, min_tag_length, &ret);
-      EncodeVarint(val->val.size(), min_val_varint_length, &ret);
-      ret.append(val->val);
-    } else if (const auto* val = std::get_if<Fixed64>(&field.value)) {
-      EncodeTag(field, kUpb_WireType_64Bit, min_tag_length, &ret);
-      uint64_t swapped = upb_BigEndian64(val->val);
-      ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
-    } else if (const auto* val = std::get_if<Fixed32>(&field.value)) {
-      EncodeTag(field, kUpb_WireType_32Bit, min_tag_length, &ret);
-      uint32_t swapped = upb_BigEndian32(val->val);
-      ret.append(reinterpret_cast<const char*>(&swapped), sizeof(swapped));
-    } else if (const auto* val = std::get_if<Group>(&field.value)) {
-      EncodeTag(field, kUpb_WireType_StartGroup, min_tag_length, &ret);
-      ret.append(ToBinaryPayloadWithLongVarints(val->val, min_tag_length,
-                                                min_val_varint_length));
+    EncodeTag(field, WireType(field.value), min_tag_length, &ret);
+    ret.append(ToBinaryPayloadWithLongVarints(field.value, min_tag_length,
+                                              min_val_varint_length));
+    if (std::holds_alternative<Group>(field.value)) {
       EncodeTag(field, kUpb_WireType_EndGroup, min_tag_length, &ret);
     }
   }

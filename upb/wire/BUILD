@@ -85,7 +85,7 @@ cc_test(
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
         "//upb/wire/test_util:wire_message",
-        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

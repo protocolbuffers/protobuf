@@ -38,8 +38,10 @@ cc_library(
         "//upb:message",
         "//upb:mini_table",
         "//upb:port",
+        "//upb:wire_reader",
+        "//upb/base:internal",
+        "//upb/message:internal",
         "//upb/message:types",
-        "//upb/mini_table:internal",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
     ],
@@ -105,8 +107,9 @@ cc_library(
         "//upb/wire:__subpackages__",
     ],
     deps = [
-        "//upb:mini_table",
         "//upb:port",
+        "//upb:wire_reader",
+        "//upb/base:internal",
     ],
 )
 

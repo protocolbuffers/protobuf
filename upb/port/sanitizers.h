@@ -88,6 +88,14 @@ UPB_INLINE void *UPB_PRIVATE(_upb_Xsan_UnpoisonRegion)(void *addr, size_t size,
 #else
   UPB_UNUSED(size);
   UPB_UNUSED(tag);
+
+  // `addr` is the pointer that will be returned from arena alloc/realloc
+  // functions.  In this code-path we know it must be non-NULL, but the compiler
+  // doesn't know this unless we add a UPB_ASSUME() annotation.
+  //
+  // This will let the optimizer optimize away NULL-checks if it can see that
+  // this path was taken.
+  UPB_ASSUME(addr);
   return addr;
 #endif
 }
