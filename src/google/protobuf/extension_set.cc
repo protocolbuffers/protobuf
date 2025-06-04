@@ -1420,6 +1420,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
   return result;
 }
 
+
 int ExtensionSet::Extension::GetSize() const {
   ABSL_DCHECK(is_repeated);
   switch (cpp_type(type)) {
