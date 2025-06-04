@@ -5997,15 +5997,21 @@ static const char* upb_MtDecoder_ParseModifier(upb_MtDecoder* d,
   return ptr;
 }
 
+static void* upb_MtDecoder_CheckedMalloc(upb_MtDecoder* d, size_t size) {
+  void* ptr = upb_Arena_Malloc(d->arena, size);
+  upb_MdDecoder_CheckOutOfMemory(&d->base, ptr);
+  return ptr;
+}
+
 static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
                                        upb_SubCounts sub_counts) {
   uint32_t total_count = sub_counts.submsg_count + sub_counts.subenum_count;
   size_t subs_bytes = sizeof(*d->table.UPB_PRIVATE(subs)) * total_count;
   size_t ptrs_bytes = sizeof(upb_MiniTable*) * sub_counts.submsg_count;
-  upb_MiniTableSubInternal* subs = upb_Arena_Malloc(d->arena, subs_bytes);
-  const upb_MiniTable** subs_ptrs = upb_Arena_Malloc(d->arena, ptrs_bytes);
-  upb_MdDecoder_CheckOutOfMemory(&d->base, subs);
-  upb_MdDecoder_CheckOutOfMemory(&d->base, subs_ptrs);
+  upb_MiniTableSubInternal* subs =
+      subs_bytes ? upb_MtDecoder_CheckedMalloc(d, subs_bytes) : NULL;
+  const upb_MiniTable** subs_ptrs =
+      ptrs_bytes ? upb_MtDecoder_CheckedMalloc(d, ptrs_bytes) : NULL;
   uint32_t i = 0;
   for (; i < sub_counts.submsg_count; i++) {
     subs_ptrs[i] = UPB_PRIVATE(_upb_MiniTable_Empty)();
@@ -8181,18 +8187,19 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
                                      upb_Message* msg, const upb_MiniTable* mt,
                                      uint64_t last_field_index, uint64_t data) {
-  if (_upb_Decoder_IsDone(d, &ptr)) {
-    return _upb_Decoder_EndMessage(d, ptr);
-  }
-
-#if UPB_FASTTABLE
+#ifdef UPB_ENABLE_FASTTABLE
   if (mt && mt->UPB_PRIVATE(table_mask) != (unsigned char)-1 &&
       !(d->options & kUpb_DecodeOption_DisableFastTable)) {
-    uint16_t tag = _upb_FastDecoder_LoadTag(ptr);
     intptr_t table = decode_totable(mt);
-    ptr = _upb_FastDecoder_TagDispatch(d, ptr, msg, table, 0, tag);
+    ptr = upb_DecodeFast_Dispatch(d, ptr, msg, table, 0, 0);
     if (d->message_is_done) return ptr;
     _upb_Decoder_Trace(d, '<');
+  } else if (_upb_Decoder_IsDone(d, &ptr)) {
+    return _upb_Decoder_EndMessage(d, ptr);
+  }
+#else
+  if (_upb_Decoder_IsDone(d, &ptr)) {
+    return _upb_Decoder_EndMessage(d, ptr);
   }
 #endif
 
