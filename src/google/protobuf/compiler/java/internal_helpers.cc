@@ -177,7 +177,7 @@ void GenerateLarge(
         }},
        {"aliases",
         [&] {
-          for (int i = 0; i < (int)aliases.size(); i++) {
+          for (size_t i = 0; i < aliases.size(); i++) {
             WriteEnumValueDocComment(printer, aliases[i].first,
                                      context->options());
             printer->Emit({{"name", aliases[i].first->name()},
