@@ -153,7 +153,7 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let dst = $Msg$::new();
-            unsafe { $pbr$::proto2_rust_Message_copy_from(dst.inner.msg(), self.inner.msg()) };
+            unsafe { $pbr$::proto2_rust_Message_copy_from(dst.inner.raw(), self.inner.raw()) };
             dst
           }
         }
@@ -171,9 +171,9 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let mut dst = $Msg$::new();
-            let dst_raw = $pbr$::UpbGetRawMessageMut::get_raw_message_mut(&mut dst, $pbi$::Private);
+            let dst_raw = $pbr$::UpbGetMessagePtrMut::get_raw_message_mut(&mut dst, $pbi$::Private);
             let dst_arena = $pbr$::UpbGetArena::get_arena(&mut dst, $pbi$::Private);
-            let src_raw = $pbr$::UpbGetRawMessage::get_raw_message(&self, $pbi$::Private);
+            let src_raw = $pbr$::UpbGetMessagePtr::get_raw_message(&self, $pbi$::Private);
 
             unsafe { $pbr$::upb_Message_DeepCopy(
               dst_raw,
@@ -257,13 +257,13 @@ void CppGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
   ctx.Emit(R"rs(
     unsafe impl $pbr$::CppGetRawMessageMut for $Msg$Mut<'_> {
       fn get_raw_message_mut(&mut self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-        self.inner.msg()
+        self.inner.raw()
       }
     }
 
     unsafe impl $pbr$::CppGetRawMessage for $Msg$View<'_> {
       fn get_raw_message(&self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-        self.inner.msg()
+        self.inner.raw()
       }
     }
   )rs");
@@ -347,21 +347,40 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
           <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
         }
       }
-
-      unsafe impl $pbr$::UpbGetRawMessageMut for $Msg$Mut<'_> {
-        fn get_raw_message_mut(&mut self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-          self.inner.msg()
+      unsafe impl $pbr$::UpbGetMessagePtrMut for $Msg$ {
+        type Msg = $Msg$;
+        fn get_ptr_mut(&mut self, _private: $pbi$::Private) -> $pbr$::MessagePtr<$Msg$> {
+          self.inner.ptr_mut()
         }
       }
+      unsafe impl $pbr$::UpbGetMessagePtr for $Msg$ {
+        type Msg = $Msg$;
+        fn get_ptr(&self, _private: $pbi$::Private) -> $pbr$::MessagePtr<$Msg$> {
+          self.inner.ptr()
+        }
+      }
+      unsafe impl $pbr$::UpbGetMessagePtrMut for $Msg$Mut<'_> {
+        type Msg = $Msg$;
+        fn get_ptr_mut(&mut self, _private: $pbi$::Private) -> $pbr$::MessagePtr<$Msg$> {
+          self.inner.ptr_mut()
+        }
+      }
+      unsafe impl $pbr$::UpbGetMessagePtr for $Msg$Mut<'_> {
+        type Msg = $Msg$;
+        fn get_ptr(&self, _private: $pbi$::Private) -> $pbr$::MessagePtr<$Msg$> {
+          self.inner.ptr()
+        }
+      }
+      unsafe impl $pbr$::UpbGetMessagePtr for $Msg$View<'_> {
+        type Msg = $Msg$;
+        fn get_ptr(&self, _private: $pbi$::Private) -> $pbr$::MessagePtr<$Msg$> {
+          self.inner.ptr()
+        }
+      }
+
       unsafe impl $pbr$::UpbGetArena for $Msg$Mut<'_> {
         fn get_arena(&mut self, _private: $pbi$::Private) -> &$pbr$::Arena {
           self.inner.arena()
-        }
-      }
-
-      unsafe impl $pbr$::UpbGetRawMessage for $Msg$View<'_> {
-        fn get_raw_message(&self, _private: $pbi$::Private) -> $pbr$::RawMessage {
-          self.inner.msg()
         }
       }
     )rs");
@@ -1027,7 +1046,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
 
           fn raw_msg(&self) -> $pbr$::RawMessage {
-            self.inner.msg()
+            self.inner.raw()
           }
 
           pub fn to_owned(&self) -> $Msg$ {
@@ -1114,7 +1133,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
 
           fn raw_msg(&self) -> $pbr$::RawMessage {
-            self.inner.msg()
+            self.inner.raw()
           }
 
           #[doc(hidden)]
@@ -1184,7 +1203,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
 
           fn raw_msg(&self) -> $pbr$::RawMessage {
-            self.inner.msg()
+            self.inner.raw()
           }
 
           #[doc(hidden)]
@@ -1302,7 +1321,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           Self::new($pbi$::Private, inner)
         }
         pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *const $std$::ffi::c_void {
-          self.inner.msg().as_ptr() as *const _
+          self.inner.raw().as_ptr() as *const _
         }
       }
 
@@ -1351,7 +1370,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           Self::new($pbi$::Private, inner)
         }
         fn __unstable_as_raw_message(&self) -> *const $std$::ffi::c_void {
-          self.inner.msg().as_ptr() as *const _
+          self.inner.raw().as_ptr() as *const _
         }
       }
     )rs");
@@ -1375,7 +1394,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           Self::new($pbi$::Private, inner)
         }
         fn __unstable_as_raw_message(&self) -> *const $std$::ffi::c_void {
-          self.inner.msg().as_ptr() as *const _
+          self.inner.raw().as_ptr() as *const _
         }
       }
     )rs");

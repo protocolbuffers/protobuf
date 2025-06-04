@@ -179,7 +179,7 @@ impl PtrAndLen {
     /// Unsafely dereference this slice.
     ///
     /// # Safety
-    /// - `self.ptr` must be dereferencable and immutable for `self.len` bytes
+    /// - `self.ptr` must be dereferenceable and immutable for `self.len` bytes
     ///   for the lifetime `'a`. It can be null or dangling if `self.len == 0`.
     pub unsafe fn as_ref<'a>(self) -> &'a [u8] {
         if self.ptr.is_null() {
@@ -324,21 +324,21 @@ impl From<RustStringRawParts> for String {
 }
 
 extern "C" {
-    fn proto2_rust_utf8_debug_string(msg: RawMessage) -> RustStringRawParts;
+    fn proto2_rust_utf8_debug_string(raw: RawMessage) -> RustStringRawParts;
 }
 
-pub fn debug_string(msg: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+pub fn debug_string(raw: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     // SAFETY:
-    // - `msg` is a valid protobuf message.
-    let dbg_str: String = unsafe { proto2_rust_utf8_debug_string(msg) }.into();
+    // - `raw` is a valid protobuf message.
+    let dbg_str: String = unsafe { proto2_rust_utf8_debug_string(raw) }.into();
     write!(f, "{dbg_str}")
 }
 
 extern "C" {
     /// # Safety
-    /// - `msg1` and `msg2` legally dereferencable MessageLite* pointers.
+    /// - `raw1` and `raw2` legally dereferenceable MessageLite* pointers.
     #[link_name = "proto2_rust_messagelite_equals"]
-    pub fn raw_message_equals(msg1: RawMessage, msg2: RawMessage) -> bool;
+    pub fn raw_message_equals(raw1: RawMessage, raw2: RawMessage) -> bool;
 }
 
 pub type RawMapIter = UntypedMapIterator;
@@ -347,19 +347,19 @@ pub type RawMapIter = UntypedMapIterator;
 #[doc(hidden)]
 #[repr(transparent)]
 pub struct OwnedMessageInner<T> {
-    msg: RawMessage,
+    raw: RawMessage,
     _phantom: PhantomData<T>,
 }
 
 impl<T: Message> OwnedMessageInner<T> {
     /// # Safety
-    /// - 'msg' must point to a message of type `T` and outlive `Self`.
-    pub unsafe fn wrap_raw(msg: RawMessage) -> Self {
-        OwnedMessageInner { msg, _phantom: PhantomData }
+    /// - `raw` must point to a message of type `T` and outlive `Self`.
+    pub unsafe fn wrap_raw(raw: RawMessage) -> Self {
+        OwnedMessageInner { raw, _phantom: PhantomData }
     }
 
-    pub fn msg(&self) -> RawMessage {
-        self.msg
+    pub fn raw(&self) -> RawMessage {
+        self.raw
     }
 }
 
@@ -381,7 +381,7 @@ impl<T: Message> OwnedMessageInner<T> {
 #[doc(hidden)]
 #[repr(transparent)]
 pub struct MessageMutInner<'msg, T> {
-    msg: RawMessage,
+    raw: RawMessage,
     _phantom: PhantomData<(&'msg mut (), T)>,
 }
 
@@ -395,24 +395,24 @@ impl<'msg, T: Message> Copy for MessageMutInner<'msg, T> {}
 impl<'msg, T: Message> MessageMutInner<'msg, T> {
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
     pub fn mut_of_owned(msg: &'msg mut OwnedMessageInner<T>) -> Self {
-        MessageMutInner { msg: msg.msg, _phantom: PhantomData }
+        MessageMutInner { raw: msg.raw, _phantom: PhantomData }
     }
 
     /// # Safety
     /// - The underlying pointer must be mutable, of type `T` and live for the lifetime 'msg.
     pub unsafe fn wrap_raw(raw: RawMessage) -> Self {
-        MessageMutInner { msg: raw, _phantom: PhantomData }
+        MessageMutInner { raw, _phantom: PhantomData }
     }
 
     pub fn from_parent<ParentT: Message>(
         _parent_msg: MessageMutInner<'msg, ParentT>,
         message_field_ptr: RawMessage,
     ) -> Self {
-        Self { msg: message_field_ptr, _phantom: PhantomData }
+        Self { raw: message_field_ptr, _phantom: PhantomData }
     }
 
-    pub fn msg(&self) -> RawMessage {
-        self.msg
+    pub fn raw(&self) -> RawMessage {
+        self.raw
     }
 }
 
@@ -420,7 +420,7 @@ impl<'msg, T: Message> MessageMutInner<'msg, T> {
 #[doc(hidden)]
 #[repr(transparent)]
 pub struct MessageViewInner<'msg, T> {
-    msg: RawMessage,
+    raw: RawMessage,
     _phantom: PhantomData<(&'msg (), T)>,
 }
 
@@ -434,20 +434,20 @@ impl<'msg, T: Message> Copy for MessageViewInner<'msg, T> {}
 impl<'msg, T: Message> MessageViewInner<'msg, T> {
     /// # Safety
     /// - The underlying pointer must of type `T` and live for the lifetime 'msg.
-    pub unsafe fn wrap_raw(msg: RawMessage) -> Self {
-        MessageViewInner { msg, _phantom: PhantomData }
+    pub unsafe fn wrap_raw(raw: RawMessage) -> Self {
+        MessageViewInner { raw, _phantom: PhantomData }
     }
 
     pub fn view_of_owned(msg: &'msg OwnedMessageInner<T>) -> Self {
-        MessageViewInner { msg: msg.msg, _phantom: PhantomData }
+        MessageViewInner { raw: msg.raw, _phantom: PhantomData }
     }
 
     pub fn view_of_mut(msg: MessageMutInner<'msg, T>) -> Self {
-        MessageViewInner { msg: msg.msg, _phantom: PhantomData }
+        MessageViewInner { raw: msg.raw, _phantom: PhantomData }
     }
 
-    pub fn msg(&self) -> RawMessage {
-        self.msg
+    pub fn raw(&self) -> RawMessage {
+        self.raw
     }
 }
 

@@ -138,7 +138,7 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               let s = val.into_proxied($pbi$::Private);
               unsafe {
                 $setter_thunk$(
-                  self.inner.msg(),
+                  self.inner.raw(),
                   s.into_inner($pbi$::Private).into_raw()
                 );
               }
@@ -157,7 +157,7 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                           <Self as $pbr$::AssociatedMiniTable>::mini_table(),
                           $upb_mt_field_index$);
                 $pbr$::upb_Message_SetBaseFieldString(
-                  self.inner.msg(),
+                  self.inner.raw(),
                   f,
                   view);
               }

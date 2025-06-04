@@ -16,8 +16,11 @@ pub use associated_mini_table::{AssociatedMiniTable, AssociatedMiniTableEnum};
 mod text;
 pub use text::debug_string;
 
+mod message;
+pub use message::MessagePtr;
+
 mod mini_table;
-pub use mini_table::MiniTable;
+pub use mini_table::{MiniTable, MiniTableFieldPtr};
 
 mod owned_arena_box;
 pub use owned_arena_box::OwnedArenaBox;

@@ -134,9 +134,9 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                               <Self as $pbr$::AssociatedMiniTable>::mini_table(),
                               $upb_mt_field_index$);
                     $pbr$::upb_Message_SetBaseFieldMessage(
-                      self.inner.msg(),
+                      self.inner.raw(),
                       f,
-                      $pbr$::UpbGetRawMessageMut::get_raw_message_mut(&mut msg, $pbi$::Private));
+                      $pbr$::UpbGetMessagePtrMut::get_raw_message_mut(&mut msg, $pbi$::Private));
                   }
                 )rs");
              } else {
@@ -145,7 +145,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   let mut val = val.into_proxied($pbi$::Private);
                   unsafe {
                     $set_allocated_thunk$(
-                      self.inner.msg(),
+                      self.inner.raw(),
                       $pbr$::CppGetRawMessageMut::get_raw_message_mut(&mut val, $pbi$::Private));
                   }
                   // Prevent the memory from being deallocated. The setter
