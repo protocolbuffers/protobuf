@@ -270,29 +270,63 @@ class WellKnownTest extends TestBase {
 
         $m = new Value();
 
-        $this->assertNull($m->getStructValue());
+        # null_value
+        $this->assertFalse($m->hasNullValue());
 
         $m->setNullValue(NullValue::NULL_VALUE);
-        $this->assertSame(NullValue::NULL_VALUE, $m->getNullValue());
+
+        $this->assertTrue($m->hasNullValue());
         $this->assertSame("null_value", $m->getKind());
+        $this->assertSame(NullValue::NULL_VALUE, $m->getNullValue());
+
+        # number_value
+        $this->assertFalse($m->hasNumberValue());
 
         $m->setNumberValue(1.0);
+
+        $this->assertTrue($m->hasNumberValue());
         $this->assertSame(1.0, $m->getNumberValue());
         $this->assertSame("number_value", $m->getKind());
 
+        # string_value
+        $this->assertFalse($m->hasStringValue());
+
         $m->setStringValue("a");
+
+        $this->assertTrue($m->hasStringValue());
+
         $this->assertSame("a", $m->getStringValue());
         $this->assertSame("string_value", $m->getKind());
 
+        # bool_value
+        $this->assertFalse($m->hasBoolValue());
+
         $m->setBoolValue(true);
+
+        $this->assertTrue($m->hasBoolValue());
+
         $this->assertSame(true, $m->getBoolValue());
         $this->assertSame("bool_value", $m->getKind());
 
+
+        # struct_value
+        $this->assertNull($m->getStructValue());
+        $this->assertFalse($m->hasStructValue());
+
         $m->setStructValue(new Struct());
+
+        $this->assertTrue($m->hasStructValue());
+
         $this->assertFalse(is_null($m->getStructValue()));
         $this->assertSame("struct_value", $m->getKind());
 
+        # list_value
+        $this->assertFalse($m->hasListValue());
+
         $m->setListValue(new ListValue());
+
+        $this->assertTrue($m->hasListValue());
+
         $this->assertFalse(is_null($m->getListValue()));
         $this->assertSame("list_value", $m->getKind());
 

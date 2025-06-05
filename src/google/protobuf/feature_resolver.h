@@ -80,9 +80,15 @@ class PROTOBUF_EXPORT FeatureResolver {
   FeatureSet defaults_;
 };
 
+namespace internal {
+// Gets the default feature set for a given edition.
+absl::StatusOr<FeatureSet> PROTOBUF_EXPORT GetEditionFeatureSetDefaults(
+    Edition edition, const FeatureSetDefaults& defaults);
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
+#include "google/protobuf/port_undef.inc"
+
 #endif  // GOOGLE_PROTOBUF_FEATURE_RESOLVER_H__
 
-#include "google/protobuf/port_undef.inc"

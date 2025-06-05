@@ -840,7 +840,17 @@ namespace Google.Protobuf
         [Test]
         public void Any_NoTypeUrl()
         {
+            // Currently if we're missing the type URL (@type) we return an empty Any message
+            // regardless of other fields. In the future we could potentially fail if there's no
+            // type URL but other fields are present.
             string json = "{ \"foo\": \"bar\" }";
+            Assert.AreEqual(new Any(), Any.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void Any_BadTypeUrl()
+        {
+            string json = "{ \"@type\": \"no-slash\" }";
             Assert.Throws<InvalidProtocolBufferException>(() => Any.Parser.ParseJson(json));
         }
 

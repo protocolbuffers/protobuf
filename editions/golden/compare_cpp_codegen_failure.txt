@@ -12,16 +12,16 @@
    }}, {{
 -    // optional int32 int32_field = 1;
 +    // int32 int32_field = 1;
-     {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0,
-     (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
+     {PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
    }},
+   // no aux_entries
 @@ @@
    (void)cached_has_bits;
  
    cached_has_bits = this_._impl_._has_bits_[0];
 -  // optional int32 int32_field = 1;
 +  // int32 int32_field = 1;
-   if ((cached_has_bits & 0x00000001u) != 0) {
+   if ((cached_has_bits & 0x00000001U) != 0) {
      target =
          ::proto2::internal::WireFormatLite::WriteInt32ToArrayWithField<1>(
 @@ @@
@@ -31,8 +31,26 @@
 -    // optional int32 int32_field = 1;
 +    // int32 int32_field = 1;
      cached_has_bits = this_._impl_._has_bits_[0];
-     if ((cached_has_bits & 0x00000001u) != 0) {
+     if ((cached_has_bits & 0x00000001U) != 0) {
        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+@@ @@
+   (void)helper;
+ 
+   cached_has_bits = this_._impl_._has_bits_[0];
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   if ((cached_has_bits & 0x00000001U) != 0) {
+     helper.AddInt32();
+   }
+@@ @@
+   target = ::_pbi::v2::codegen::WritePoisonHeaderToArray(target, stream);
+ 
+   cached_has_bits = this_._impl_._has_bits_[0];
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   if ((cached_has_bits & 0x00000001U) != 0) {
+     target = builder.WriteInt32(target, stream, 1,
+                                             this_._internal_int32_field());
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 @@ @@
@@ -51,7 +69,7 @@
 -// optional int32 int32_field = 1;
 +// int32 int32_field = 1;
  inline bool SimpleProto3::has_int32_field() const {
-   bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+   bool value = (_impl_._has_bits_[0] & 0x00000001U) != 0;
    return value;
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.h
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h

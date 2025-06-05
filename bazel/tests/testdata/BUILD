@@ -90,6 +90,54 @@ filegroup(
 )
 
 proto_library(
+    name = "simple_proto",
+    srcs = [
+        "A.proto",
+    ],
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+proto_library(
+    name = "allow_exports_proto",
+    srcs = [
+        "A.proto",
+    ],
+    allow_exports = ":allow_everywhere",
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+package_group(
+    name = "allow_everywhere",
+    packages = ["//..."],
+)
+
+proto_library(
+    name = "disallow_exports_proto",
+    srcs = [
+        "A.proto",
+    ],
+    allow_exports = ":disallow_everywhere",
+    tags = [
+        "manual",
+        "nobuilder",
+        "notap",
+    ],
+)
+
+package_group(
+    name = "disallow_everywhere",
+    packages = [],
+)
+
+proto_library(
     name = "mixed",
     srcs = [
         ":descriptors",

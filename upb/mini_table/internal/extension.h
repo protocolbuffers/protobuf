@@ -40,6 +40,11 @@ upb_MiniTableExtension_Number(const struct upb_MiniTableExtension* e) {
   return e->UPB_PRIVATE(field).UPB_ONLYBITS(number);
 }
 
+UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_Extendee(
+    const struct upb_MiniTableExtension* e) {
+  return e->UPB_PRIVATE(extendee);
+}
+
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const struct upb_MiniTableExtension* e) {
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Message) {

@@ -319,19 +319,25 @@ TEST(MicroStringTest, CapacityIsRoundedUpOnHeap) {
 }
 
 TEST(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
-  Arena arena;
-  MicroString str;
+  const auto get_capacity_for_size = [&](size_t size) {
+    MicroString str;
+    std::string input = std::string(size, 'x');
+    str.Set(input, nullptr);
+    EXPECT_EQ(str.Get(), input);
+    size_t cap = str.Capacity();
+    str.Destroy();
+    return cap;
+  };
 
-  std::string input = std::string(200, 'x');
-  str.Set(input, &arena);
-  EXPECT_EQ(str.Capacity(), 208 - kMicroRepSize);
-  EXPECT_EQ(str.Get(), input);
+  EXPECT_EQ(get_capacity_for_size(200), 208 - kMicroRepSize);
 
-  input = std::string(255, 'x');
-  str.Set(input, &arena);
-  // It caps at 255 even though the allocated block is larger.
-  EXPECT_EQ(str.Capacity(), 255);
-  EXPECT_EQ(str.Get(), input);
+  // These are in the boundary
+  EXPECT_EQ(get_capacity_for_size(253), 256 - kMicroRepSize);
+  // This is the maximum capacity for MicroRep
+  EXPECT_EQ(get_capacity_for_size(254), 256 - kMicroRepSize);
+
+  // This one jumps to LargeRep
+  EXPECT_GE(get_capacity_for_size(255), 256);
 }
 
 TEST(MicroStringTest, PoisonsTheUnusedCapacity) {
@@ -848,6 +854,12 @@ TEST_P(MicroStringPrevTest, SetInChunksWithExistingState) {
   EXPECT_EQ(str_.Get(), "CHUNK");
 }
 
+TEST_P(MicroStringPrevTest, SetInChunksWithExistingStateAfterClear) {
+  str_.Clear();
+  str_.SetInChunks(3, arena(), [](auto append) { append("BAR"); });
+  EXPECT_EQ(str_.Get(), "BAR");
+}
+
 TEST_P(MicroStringPrevTest, SetInChunksKeepsSizeValidEvenIfWeDontWriteAll) {
   // Here we say 5 bytes, but only append 4.
   // The final size should still be 4.
@@ -897,6 +909,89 @@ TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
   });
   EXPECT_EQ(str.Get(), total);
   str.Destroy();
+}
+
+TEST(MicroStringTest, DefaultValueInstances) {
+  static constexpr absl::string_view kInput =
+      "This is the input. It is long enough to not fit in inline space.";
+  MicroString str = MicroString::MakeDefaultValuePrototype(kInput);
+  EXPECT_EQ(str.Get(), kInput);
+  // We actually point to the input string data.
+  EXPECT_EQ(static_cast<const void*>(str.Get().data()),
+            static_cast<const void*>(kInput.data()));
+  EXPECT_EQ(0, str.Capacity());
+  EXPECT_EQ(0, str.SpaceUsedExcludingSelfLong());
+
+  MicroString copy(nullptr, str);
+  EXPECT_EQ(copy.Get(), kInput);
+  // The copy is still pointing to the unowned buffer.
+  EXPECT_EQ(static_cast<const void*>(str.Get().data()),
+            static_cast<const void*>(copy.Get().data()));
+  EXPECT_EQ(0, copy.Capacity());
+  EXPECT_EQ(0, copy.SpaceUsedExcludingSelfLong());
+
+  copy.Set("something else", nullptr);
+  EXPECT_EQ(copy.Get(), "something else");
+  EXPECT_NE(static_cast<const void*>(str.Get().data()),
+            static_cast<const void*>(copy.Get().data()));
+  EXPECT_NE(0, copy.Capacity());
+  EXPECT_NE(0, copy.SpaceUsedExcludingSelfLong());
+
+  // Reset to default.
+  copy.ClearToDefault(str, nullptr);
+  EXPECT_EQ(copy.Get(), kInput);
+  EXPECT_EQ(static_cast<const void*>(str.Get().data()),
+            static_cast<const void*>(copy.Get().data()));
+  EXPECT_EQ(0, copy.Capacity());
+  EXPECT_EQ(0, copy.SpaceUsedExcludingSelfLong());
+
+  str.DestroyDefaultValuePrototype();
+}
+
+class MicroStringTestDefaultValueCopy : public testing::Test {
+ protected:
+  static constexpr absl::string_view kInput = "This is the input.";
+  static constexpr absl::string_view kInput2 =
+      "Like kInput, but larger so that kInput can fit on it.";
+
+  MicroStringTestDefaultValueCopy()
+      : str_(MicroString::MakeDefaultValuePrototype(kInput)) {
+    ABSL_CHECK_EQ(str_.Get(), kInput);
+  }
+
+  ~MicroStringTestDefaultValueCopy() override {
+    str_.DestroyDefaultValuePrototype();
+  }
+
+  MicroString str_;
+};
+
+TEST_F(MicroStringTestDefaultValueCopy, ClearingReusesIfArena) {
+  Arena arena;
+  MicroString copy_arena(&arena, str_);
+  copy_arena.Set(kInput2, &arena);
+  ASSERT_EQ(copy_arena.Get(), kInput2);
+  const void* head = copy_arena.Get().data();
+  const size_t used = copy_arena.SpaceUsedExcludingSelfLong();
+  EXPECT_NE(0, used);
+
+  // Reset to default. We reuse the arena memory to avoid leaking it.
+  copy_arena.ClearToDefault(str_, &arena);
+  EXPECT_EQ(copy_arena.Get(), kInput);
+  EXPECT_EQ(static_cast<const void*>(copy_arena.Get().data()), head);
+  EXPECT_EQ(used, copy_arena.SpaceUsedExcludingSelfLong());
+}
+
+TEST_F(MicroStringTestDefaultValueCopy, ClearingFreesIfHeap) {
+  MicroString copy_heap(nullptr, str_);
+  copy_heap.Set(kInput2, nullptr);
+  ASSERT_EQ(copy_heap.Get(), kInput2);
+  EXPECT_NE(0, copy_heap.SpaceUsedExcludingSelfLong());
+
+  // Reset to default. We are freeing the memory.
+  copy_heap.ClearToDefault(str_, nullptr);
+  EXPECT_EQ(copy_heap.Get(), kInput);
+  EXPECT_EQ(0, copy_heap.SpaceUsedExcludingSelfLong());
 }
 
 class MicroStringExtraTest : public testing::Test {

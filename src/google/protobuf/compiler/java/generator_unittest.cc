@@ -103,6 +103,7 @@ TEST_F(JavaGeneratorTest, NestInFileClassFeatureDefaultEdition2024) {
                  R"schema(
       edition = "2024";
       package proto2_unittest;
+      option java_generic_services = true;
       message MessageA {
         int32 unused = 1;
         message NestedMessageA {
@@ -114,8 +115,8 @@ TEST_F(JavaGeneratorTest, NestInFileClassFeatureDefaultEdition2024) {
           FOO_VALUE = 1;
         }
       }
-      message MessageB {
-        int32 unused = 1;
+      service MessageB {
+        rpc Method(MessageA) returns (MessageA) {}
       }
   )schema");
 
@@ -153,8 +154,8 @@ TEST_F(JavaGeneratorTest, NestInFileClassFeatureInNetsedMessageError) {
       "--experimental_editions foo.proto");
 
   ExpectErrorSubstring(
-      "Feature next_in_file_class only applies to top-level types and is not "
-      "allowed to be set on the nexted type: "
+      "Feature pb.java.nest_in_file_class only applies to top-level types and "
+      "is not allowed to be set on the nested type: "
       "proto2_unittest.Message.NestedMessage");
 }
 
@@ -179,8 +180,8 @@ TEST_F(JavaGeneratorTest, NestInFileClassFeatureInNetsedEnumError) {
       "--experimental_editions foo.proto");
 
   ExpectErrorSubstring(
-      "Feature next_in_file_class only applies to top-level types and is not "
-      "allowed to be set on the nexted type: "
+      "Feature pb.java.nest_in_file_class only applies to top-level types and "
+      "is not allowed to be set on the nested type: "
       "proto2_unittest.Message.NestedEnum");
 }
 
@@ -344,7 +345,26 @@ BBB = 1;
       "until edition 2024 and can't be used in edition 2023");
 }
 
+TEST_F(JavaGeneratorTest,
+       InvalidConflictingProtoSuffixedMessageNameEdition2024) {
+  CreateTempFile("test_file_name.proto",
+                 R"schema(
+      edition = "2024";
+      package foo;
+      message TestFileNameProto {
+        int32 field = 1;
+      }
+      )schema");
 
+  RunProtoc(
+      "protocol_compiler --experimental_editions --java_out=$tmpdir "
+      "-I$tmpdir test_file_name.proto");
+
+  ExpectErrorSubstring(
+      "Cannot generate Java output because the file's outer "
+      "class name, \"TestFileNameProto\", matches the name "
+      "of one of the types declared inside it");
+}
 }  // namespace
 }  // namespace java
 }  // namespace compiler

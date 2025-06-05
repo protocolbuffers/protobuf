@@ -25,6 +25,7 @@
 extern "C" {
 #endif
 
+// LINT.IfChange
 enum {
   /* If set, strings and unknown fields will alias the input buffer instead of
    * copying into the arena. */
@@ -93,21 +94,23 @@ enum {
    * as non-UTF-8 proto3 string fields.
    */
   kUpb_DecodeOption_AlwaysValidateUtf8 = 8,
+
+  /* EXPERIMENTAL:
+   *
+   * If set, the fasttable decoder will not be used. */
+  kUpb_DecodeOption_DisableFastTable = 16,
 };
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
-}
-
-UPB_INLINE uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
-  return options >> 16;
 }
 
 uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options);
 
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
-  uint32_t max_depth = upb_DecodeOptions_GetMaxDepth(decode_options);
+  uint32_t max_depth = upb_DecodeOptions_GetEffectiveMaxDepth(decode_options);
   if (max_depth > limit) max_depth = limit;
   return upb_DecodeOptions_MaxDepth(max_depth) | (decode_options & 0xffff);
 }
@@ -144,6 +147,12 @@ UPB_API upb_DecodeStatus upb_DecodeLengthPrefixed(
     const char* buf, size_t size, upb_Message* msg, size_t* num_bytes_read,
     const upb_MiniTable* mt, const upb_ExtensionRegistry* extreg, int options,
     upb_Arena* arena);
+
+// For testing: decode with tracing.
+UPB_API upb_DecodeStatus upb_DecodeWithTrace(
+    const char* buf, size_t size, upb_Message* msg, const upb_MiniTable* mt,
+    const upb_ExtensionRegistry* extreg, int options, upb_Arena* arena,
+    char* trace_buf, size_t trace_size);
 
 // Utility function for wrapper languages to get an error string from a
 // upb_DecodeStatus.

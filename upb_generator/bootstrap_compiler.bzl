@@ -14,18 +14,21 @@ load(
 )
 
 _stages = ["_stage0", "_stage1", ""]
-_protoc = "//:protoc"
+_protoc = "//src/google/protobuf/compiler/release:protoc_minimal"
 
-_extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
+_extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
+    # TODO: b/396430482 - Remove protoc from bootstrap visibility.
     "//src/google/protobuf/compiler:__pkg__",
+    "//src/google/protobuf/compiler/rust:__pkg__",
     "//third_party/upb/github:__pkg__",
     "//upb_generator:__subpackages__",
     "//upb/reflection:__pkg__",
     "//upb:__pkg__",  # For the amalgamations.
     "//python/dist:__pkg__",  # For the Python source package.
+    "//:__pkg__",  # For protoc
 ]
 
 def _stage_visibility(stage, visibility):
@@ -80,6 +83,7 @@ def bootstrap_cc_binary(name, visibility = [], deps = [], bootstrap_deps = [], *
     for stage in _stages:
         native.cc_binary(
             name = name + stage,
+            malloc = "@bazel_tools//tools/cpp:malloc",
             deps = deps + [dep + stage for dep in bootstrap_deps],
             visibility = _stage_visibility(stage, visibility),
             **kwargs

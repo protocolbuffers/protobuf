@@ -8,9 +8,9 @@
 #include "google/protobuf/json/internal/untyped_message.h"
 
 #include <algorithm>
-#include <cfloat>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -25,7 +25,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
@@ -201,7 +200,7 @@ PROTOBUF_NOINLINE static absl::Status MakeTooDeepError() {
 }
 
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
-                                    absl::optional<int32_t> current_group) {
+                                    std::optional<int32_t> current_group) {
   std::vector<int32_t> group_stack;
   while (true) {
     uint32_t tag = stream.ReadTag();
@@ -547,7 +546,7 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
   } else if (auto* extant = std::get_if<std::vector<value_type>>(&slot)) {
     extant->push_back(std::forward<T>(value));
   } else {
-    absl::optional<absl::string_view> name =
+    std::optional<absl::string_view> name =
         google::protobuf::internal::RttiTypeName<value_type>();
     if (!name.has_value()) {
       name = "<unknown>";

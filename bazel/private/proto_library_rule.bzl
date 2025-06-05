@@ -172,8 +172,8 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
     if strict_deps:
         if proto_info.direct_sources:
             strict_importable_sources = depset(
-                direct = proto_info._direct_proto_sources,
-                transitive = [dep._exported_sources for dep in deps],
+                direct = proto_info.direct_sources,
+                transitive = [dep.check_deps_sources for dep in deps],
             )
         else:
             strict_importable_sources = None
@@ -195,7 +195,7 @@ def _write_descriptor_set(ctx, proto_info, deps, exports, descriptor_set):
 
     strict_imports = ctx.attr._strict_public_imports[BuildSettingInfo].value
     if strict_imports:
-        public_import_protos = depset(transitive = [export._exported_sources for export in exports])
+        public_import_protos = depset(transitive = [export.check_deps_sources for export in exports])
         if not public_import_protos:
             # This line is necessary to trigger the check.
             args.add("--allowed_public_imports=")
@@ -347,7 +347,7 @@ lang_proto_library that is not in one of the listed packages.""",
             cfg = "exec",
             executable = True,
             allow_files = True,
-            default = configuration_field("proto", "proto_compiler"),
+            default = "//src/google/protobuf/compiler:protoc_minimal",
         ),
     }),  # buildifier: disable=attr-licenses (attribute called licenses)
     fragments = [

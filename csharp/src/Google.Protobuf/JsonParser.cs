@@ -516,9 +516,13 @@ namespace Google.Protobuf
                 tokens.Add(token);
                 token = tokenizer.Next();
 
+                // If we get to the end of the object and haven't seen a type URL, just return.
+                // (The message will be empty at this point.)
+                // We could potentially make this more conservative, failing if there are
+                // other properties but no type URL.
                 if (tokenizer.ObjectDepth < typeUrlObjectDepth)
                 {
-                    throw new InvalidProtocolBufferException("Any message with no @type");
+                    return;
                 }
             }
 
@@ -530,6 +534,15 @@ namespace Google.Protobuf
             }
             string typeUrl = token.StringValue;
             string typeName = Any.GetTypeName(typeUrl);
+            // If we don't find a slash, GetTypeName returns an empty string. An empty string can
+            // never be a valid type name (whether that was through @type="", @type="blah" or
+            // @type="blah/") so we fail. This is InvalidProtocolBufferException rather than
+            // the InvalidOperationException used below, as it's the data that's invalid rather than
+            // the context in which we're parsing it.
+            if (typeName == "")
+            {
+                throw new InvalidProtocolBufferException("Invalid Any.@type value");
+            }
 
             MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
             if (descriptor == null)

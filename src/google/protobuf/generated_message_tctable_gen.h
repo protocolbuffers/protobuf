@@ -13,9 +13,9 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -32,22 +32,27 @@ namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
 
-uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field);
+PROTOBUF_EXPORT uint32_t
+GetRecodedTagForFastParsing(const FieldDescriptor* field);
 
-absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor);
+PROTOBUF_EXPORT std::optional<uint32_t> GetEndGroupTag(
+    const Descriptor* descriptor);
 
-uint32_t FastParseTableSize(size_t num_fields,
-                            absl::optional<uint32_t> end_group_tag);
+PROTOBUF_EXPORT uint32_t
+FastParseTableSize(size_t num_fields, std::optional<uint32_t> end_group_tag);
 
-bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field);
+PROTOBUF_EXPORT bool IsFieldTypeEligibleForFastParsing(
+    const FieldDescriptor* field);
 
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
+  // The tailcall parser can only update the first 32 hasbits. Fields with
+  // has-bits beyond the first 32 are handled by mini parsing/fallback.
+  static constexpr int kMaxFastFieldHasbitIndex = 31;
+
   struct MessageOptions {
     bool is_lite;
     bool uses_codegen;
-    // TODO: remove this after A/B test is done.
-    bool should_profile_driven_cluster_aux_subtable;
   };
   struct FieldOptions {
     const FieldDescriptor* field;
@@ -56,11 +61,18 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     float presence_probability;
     // kTvEager, kTvLazy, or 0
     field_layout::TransformValidation lazy_opt;
+    // Whether to use the InlinedStringField representation.
+    // This choice comes from the profile data.
+    // If on, inlined_string_index should be set.
+    // Incompatible with `use_micro_string`.
     bool is_string_inlined;
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
     int inlined_string_index;
+    // Whether to use the MicroString representation.
+    // This choice comes from the temporary opt-in data.
+    // Incompatible with `is_string_inlined`.
     bool use_micro_string;
   };
 

@@ -27,8 +27,8 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/map_lite_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
+#include "google/protobuf/map_test_util.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/only_one_enum_test.pb.h"
 #include "google/protobuf/parse_context.h"
@@ -509,11 +509,11 @@ TEST(LiteBasicTest, AllLite15) {
     // Accessors
     proto2_unittest::TestMapLite message;
 
-    MapLiteTestUtil::SetMapFields(&message);
-    MapLiteTestUtil::ExpectMapFieldsSet(message);
+    MapTestUtil::SetMapFields(&message);
+    MapTestUtil::ExpectMapFieldsSet(message);
 
-    MapLiteTestUtil::ModifyMapFields(&message);
-    MapLiteTestUtil::ExpectMapFieldsModified(message);
+    MapTestUtil::ModifyMapFields(&message);
+    MapTestUtil::ExpectMapFieldsModified(message);
   }
 }
 
@@ -522,8 +522,8 @@ TYPED_TEST(LiteTest, AllLite16) {
     // SetMapFieldsInitialized
     proto2_unittest::TestMapLite message;
 
-    MapLiteTestUtil::SetMapFieldsInitialized(&message);
-    MapLiteTestUtil::ExpectMapFieldsSetInitialized(message);
+    MapTestUtil::SetMapFieldsInitialized(&message);
+    MapTestUtil::ExpectMapFieldsSetInitialized(message);
   }
 }
 
@@ -532,9 +532,9 @@ TEST(LiteBasicTest, AllLite17) {
     // Clear
     proto2_unittest::TestMapLite message;
 
-    MapLiteTestUtil::SetMapFields(&message);
+    MapTestUtil::SetMapFields(&message);
     message.Clear();
-    MapLiteTestUtil::ExpectClear(message);
+    MapTestUtil::ExpectClear(message);
   }
 }
 
@@ -553,13 +553,13 @@ TEST(LiteBasicTest, AllLite19) {
     // CopyFrom
     proto2_unittest::TestMapLite message1, message2;
 
-    MapLiteTestUtil::SetMapFields(&message1);
+    MapTestUtil::SetMapFields(&message1);
     message2.CopyFrom(message1);  // NOLINT
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsSet(message2);
 
     // Copying from self should be a no-op.
     message2.CopyFrom(message2);  // NOLINT
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsSet(message2);
   }
 }
 
@@ -584,13 +584,13 @@ TEST(LiteBasicTest, AllLite21) {
     // SwapWithEmpty
     proto2_unittest::TestMapLite message1, message2;
 
-    MapLiteTestUtil::SetMapFields(&message1);
-    MapLiteTestUtil::ExpectMapFieldsSet(message1);
-    MapLiteTestUtil::ExpectClear(message2);
+    MapTestUtil::SetMapFields(&message1);
+    MapTestUtil::ExpectMapFieldsSet(message1);
+    MapTestUtil::ExpectClear(message2);
 
     message1.Swap(&message2);
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
-    MapLiteTestUtil::ExpectClear(message1);
+    MapTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectClear(message1);
   }
 }
 
@@ -599,11 +599,11 @@ TEST(LiteBasicTest, AllLite22) {
     // SwapWithSelf
     proto2_unittest::TestMapLite message;
 
-    MapLiteTestUtil::SetMapFields(&message);
-    MapLiteTestUtil::ExpectMapFieldsSet(message);
+    MapTestUtil::SetMapFields(&message);
+    MapTestUtil::ExpectMapFieldsSet(message);
 
     message.Swap(&message);
-    MapLiteTestUtil::ExpectMapFieldsSet(message);
+    MapTestUtil::ExpectMapFieldsSet(message);
   }
 }
 
@@ -612,13 +612,13 @@ TEST(LiteBasicTest, AllLite23) {
     // SwapWithOther
     proto2_unittest::TestMapLite message1, message2;
 
-    MapLiteTestUtil::SetMapFields(&message1);
-    MapLiteTestUtil::SetMapFields(&message2);
-    MapLiteTestUtil::ModifyMapFields(&message2);
+    MapTestUtil::SetMapFields(&message1);
+    MapTestUtil::SetMapFields(&message2);
+    MapTestUtil::ModifyMapFields(&message2);
 
     message1.Swap(&message2);
-    MapLiteTestUtil::ExpectMapFieldsModified(message1);
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsModified(message1);
+    MapTestUtil::ExpectMapFieldsSet(message2);
   }
 }
 
@@ -626,10 +626,10 @@ TEST(LiteBasicTest, AllLite24) {
   {
     // CopyConstructor
     proto2_unittest::TestMapLite message1;
-    MapLiteTestUtil::SetMapFields(&message1);
+    MapTestUtil::SetMapFields(&message1);
 
     proto2_unittest::TestMapLite message2(message1);
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsSet(message2);
   }
 }
 
@@ -637,15 +637,15 @@ TEST(LiteBasicTest, AllLite25) {
   {
     // CopyAssignmentOperator
     proto2_unittest::TestMapLite message1;
-    MapLiteTestUtil::SetMapFields(&message1);
+    MapTestUtil::SetMapFields(&message1);
 
     proto2_unittest::TestMapLite message2;
     message2 = message1;
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsSet(message2);
 
     // Make sure that self-assignment does something sane.
     message2.operator=(message2);
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsSet(message2);
   }
 }
 
@@ -654,7 +654,7 @@ TEST(LiteBasicTest, AllLite26) {
     // NonEmptyMergeFrom
     proto2_unittest::TestMapLite message1, message2;
 
-    MapLiteTestUtil::SetMapFields(&message1);
+    MapTestUtil::SetMapFields(&message1);
 
     // This field will test merging into an empty spot.
     (*message2.mutable_map_int32_int32())[1] = 1;
@@ -665,7 +665,7 @@ TEST(LiteBasicTest, AllLite26) {
     (*message1.mutable_map_int32_double())[1] = 2;
 
     message1.MergeFrom(message2);
-    MapLiteTestUtil::ExpectMapFieldsSet(message1);
+    MapTestUtil::ExpectMapFieldsSet(message1);
   }
 }
 
@@ -690,14 +690,14 @@ TEST(LiteStringTest, AllLite28) {
     // Test the generated SerializeWithCachedSizesToArray()
     proto2_unittest::TestMapLite message1, message2;
     std::string data;
-    MapLiteTestUtil::SetMapFields(&message1);
+    MapTestUtil::SetMapFields(&message1);
     size_t size = message1.ByteSizeLong();
     data.resize(size);
     ::uint8_t* start = reinterpret_cast<::uint8_t*>(&data[0]);
     ::uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsSet(message2);
   }
 }
 
@@ -705,7 +705,7 @@ TEST(LiteStreamTest, AllLite29) {
   {
     // Test the generated SerializeWithCachedSizes()
     proto2_unittest::TestMapLite message1, message2;
-    MapLiteTestUtil::SetMapFields(&message1);
+    MapTestUtil::SetMapFields(&message1);
     size_t size = message1.ByteSizeLong();
     std::string data;
     data.resize(size);
@@ -718,7 +718,7 @@ TEST(LiteStreamTest, AllLite29) {
       EXPECT_EQ(size, output_stream.ByteCount());
     }
     EXPECT_TRUE(message2.ParseFromString(data));
-    MapLiteTestUtil::ExpectMapFieldsSet(message2);
+    MapTestUtil::ExpectMapFieldsSet(message2);
   }
 }
 

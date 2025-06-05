@@ -30,7 +30,9 @@
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 
 
 // Must be included last.
@@ -38,7 +40,7 @@
 
 namespace google {
 namespace protobuf {
-namespace {
+namespace internal {
 
 using ::proto2_unittest::TestAllTypes;
 using ::proto2_unittest::TestMessageWithManyRepeatedPtrFields;
@@ -380,6 +382,7 @@ TEST(RepeatedPtrFieldTest, AddAndAssignRanges) {
   EXPECT_EQ(field.Get(7), "xyzzy");
 }
 
+
 TEST(RepeatedPtrFieldTest, SwapSmallSmall) {
   RepeatedPtrField<std::string> field1;
   RepeatedPtrField<std::string> field2;
@@ -507,6 +510,33 @@ TEST(RepeatedPtrFieldTest, ReserveDoesntLoseAllocated) {
 }
 
 
+// TODO: Re-evaluate if this is still needed once the bug is fixed.
+TEST(RepeatedPtrFieldTest, AddRvalueToCleared) {
+  // Check that an added rvalue correctly overwrites a cleared SOO element.
+  {
+    RepeatedPtrField<std::string> field;
+    field.Add()->assign("foo");
+    ASSERT_THAT(field, ElementsAre("foo"));
+    field.RemoveLast();
+    ASSERT_EQ(field.size(), 0);
+    field.Add(std::string{"bar"});
+    EXPECT_THAT(field, ElementsAre("bar"));
+  }
+  // Check that an added rvalue correctly overwrites a cleared non-SOO element
+  // in the Rep.
+  {
+    RepeatedPtrField<std::string> field;
+    field.Add()->assign("foo");
+    field.Add()->assign("bar");
+    field.Add()->assign("baz");
+    EXPECT_THAT(field, ElementsAre("foo", "bar", "baz"));
+    field.RemoveLast();
+    EXPECT_THAT(field, ElementsAre("foo", "bar"));
+    field.Add(std::string{"qux"});
+    EXPECT_THAT(field, ElementsAre("foo", "bar", "qux"));
+  }
+}
+
 // Test all code paths in AddAllocated().
 TEST(RepeatedPtrFieldTest, AddAllocated) {
   RepeatedPtrField<std::string> field;
@@ -558,7 +588,7 @@ TEST(RepeatedPtrFieldTest, AddAllocated) {
   EXPECT_EQ(moo, &field.Get(index));
 }
 
-TEST(RepeatedPtrFieldTest, AddMethodsDontAcceptNull) {
+TEST(RepeatedPtrFieldDeathTest, AddMethodsDontAcceptNull) {
 #if !defined(NDEBUG)
   RepeatedPtrField<std::string> field;
   EXPECT_DEATH(field.AddAllocated(nullptr), "nullptr");
@@ -571,6 +601,32 @@ TEST(RepeatedPtrFieldTest, AddAllocatedDifferentArena) {
   Arena arena;
   auto* msg = Arena::Create<TestAllTypes>(&arena);
   field.AddAllocated(msg);
+}
+
+// This test replicates a very specific scenario that used to cause a transient
+// hard-to-debug failure in protoc during development.
+TEST(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
+  using ElemT = TestAllTypes::NestedMessage;
+  using FieldT = RepeatedPtrField<ElemT>;
+  Arena arena;
+  auto* concrete_field = Arena::Create<FieldT>(&arena);
+  ElemT* concrete_elem = concrete_field->Add();
+  concrete_elem->set_bb(123);
+  auto* base_field = reinterpret_cast<RepeatedPtrFieldBase*>(concrete_field);
+  const Message& base_prototype =
+      base_field->Get<GenericTypeHandler<Message>>(0);
+  Message* base_new_elem = base_prototype.New(&arena);
+  ASSERT_NE(base_new_elem, nullptr);
+  ElemT* concrete_new_elem = static_cast<ElemT*>(base_new_elem);
+  concrete_new_elem->set_bb(456);
+  base_field->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
+      base_new_elem);
+  Message* base_new_elem_roundtrip =
+      base_field->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
+  ASSERT_NE(base_new_elem_roundtrip, nullptr);
+  ElemT* concrete_new_elem_roundtrip =
+      static_cast<ElemT*>(base_new_elem_roundtrip);
+  EXPECT_EQ(concrete_new_elem_roundtrip->bb(), 456);
 }
 
 TEST(RepeatedPtrFieldTest, MergeFromString) {
@@ -1111,7 +1167,7 @@ TEST(RepeatedPtrFieldTest, Cleanups) {
 }
 
 
-TEST(RepeatedPtrFieldTest, CheckedGetOrAbortTest) {
+TEST(RepeatedPtrFieldDeathTest, CheckedGetOrAbortTest) {
   RepeatedPtrField<std::string> field;
 
   // Empty container tests.
@@ -1126,7 +1182,7 @@ TEST(RepeatedPtrFieldTest, CheckedGetOrAbortTest) {
   EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 2");
 }
 
-TEST(RepeatedPtrFieldTest, CheckedMutableOrAbortTest) {
+TEST(RepeatedPtrFieldDeathTest, CheckedMutableOrAbortTest) {
   RepeatedPtrField<std::string> field;
 
   // Empty container tests.
@@ -1718,7 +1774,7 @@ TEST_F(RepeatedPtrFieldInsertionIteratorsTest, MoveProtos) {
 }
 
 
-}  // namespace
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 

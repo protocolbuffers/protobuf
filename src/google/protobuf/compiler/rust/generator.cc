@@ -36,6 +36,9 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "upb/mem/arena.hpp"
+#include "upb/reflection/def.hpp"
+#include "upb_generator/plugin.h"
 
 namespace google {
 namespace protobuf {
@@ -235,10 +238,15 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   EmitPublicImports(rust_generator_context, ctx, *file);
 
+  upb::Arena arena;
+  upb::DefPool pool;
+  absl::flat_hash_set<std::string> files_seen;
+  upb::generator::PopulateDefPool(file, &arena, &pool, &files_seen);
+
   for (int i = 0; i < file->message_type_count(); ++i) {
     auto& msg = *file->message_type(i);
 
-    GenerateRs(ctx, msg);
+    GenerateRs(ctx, msg, pool);
     ctx.printer().PrintRaw("\n");
 
     if (ctx.is_cpp()) {
@@ -254,7 +262,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
     auto& enum_ = *file->enum_type(i);
-    GenerateEnumDefinition(ctx, enum_);
+    GenerateEnumDefinition(ctx, enum_,
+                           pool.FindEnumByName(enum_.full_name().data()));
     ctx.printer().PrintRaw("\n");
 
     if (ctx.is_cpp()) {

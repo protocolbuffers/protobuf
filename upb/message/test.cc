@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -19,6 +20,7 @@
 #include "absl/cleanup/cleanup.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.h"
 #include "upb/base/status.hpp"
@@ -28,6 +30,7 @@
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/map.h"
@@ -727,6 +730,61 @@ TEST(MessageTest, MapFieldDeterministicEncoding) {
   EXPECT_EQ(0, memcmp(serialized1, serialized2, size1));
 }
 
+TEST(MessageTest, AdjacentAliasedUnknown) {
+  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  upb::Arena arena;
+  upb_Message* msg = upb_Message_New(table, arena.ptr());
+  char region[900];
+  memset(region, 0, sizeof(region));
+  region[0] = 0x0A;  // Tag number 1
+  region[1] = 0xA9;
+  region[2] = 0x02;
+  region[300] = 0x12;  // Tag number 2
+  region[301] = 0xA9;
+  region[302] = 0x02;
+  region[600] = 0x1A;  // Tag number 3
+  region[601] = 0xA9;
+  region[602] = 0x02;
+  // All adjacent fields should be part of a single unknown field entry
+  {
+    upb_DecodeStatus status =
+        upb_Decode(region, sizeof(region), msg, table, nullptr,
+                   kUpb_DecodeOption_AliasString, arena.ptr());
+    ASSERT_EQ(status, kUpb_DecodeStatus_Ok);
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_StringView data;
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region, data.data);
+    EXPECT_EQ(sizeof(region), data.size);
+    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+  }
+
+  upb_Message_Clear(msg, table);
+
+  // Separate decodes should not produce merged aliases, even with adjacent
+  // entries as we don't know that they're part of the same object
+  {
+    upb_Decode(region, 300, msg, table, nullptr, kUpb_DecodeOption_AliasString,
+               arena.ptr());
+    upb_Decode(region + 300, 300, msg, table, nullptr,
+               kUpb_DecodeOption_AliasString, arena.ptr());
+    upb_Decode(region + 600, 300, msg, table, nullptr,
+               kUpb_DecodeOption_AliasString, arena.ptr());
+    upb_StringView data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region, data.data);
+    EXPECT_EQ(300, data.size);
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region + 300, data.data);
+    EXPECT_EQ(300, data.size);
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region + 600, data.data);
+    EXPECT_EQ(300, data.size);
+    ASSERT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+  }
+}
+
 TEST(MessageTest, Freeze) {
   const upb_MiniTable* m = &upb_0test__TestFreeze_msg_init;
   upb::Arena arena;
@@ -800,4 +858,24 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Map_IsFrozen(map));
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
   }
+}
+
+TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
+  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  upb::Arena arena(table->UPB_PRIVATE(size));
+
+  uintptr_t space_allocated_before =
+      upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
+  upb_Message* msg = upb_Message_New(table, arena.ptr());
+  char region[300];
+  memset(region, 0, sizeof(region));
+  region[0] = 0x0A;  // Tag number 1
+  region[1] = 0xA9;
+  region[2] = 0x02;
+  upb_DecodeStatus status =
+      upb_Decode(region, sizeof(region), msg, table, nullptr, 0, arena.ptr());
+  EXPECT_EQ(status, kUpb_DecodeStatus_Ok);
+  uintptr_t space_allocated_after =
+      upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
+  EXPECT_GT(space_allocated_after, space_allocated_before + 297);
 }

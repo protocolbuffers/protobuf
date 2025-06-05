@@ -36,6 +36,10 @@ class Arena {
   // block.
   bool Fuse(Arena& other) { return upb_Arena_Fuse(ptr(), other.ptr()); }
 
+  bool IsFused(Arena& other) const {
+    return upb_Arena_IsFused(ptr(), other.ptr());
+  }
+
  protected:
   std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> ptr_;
 };

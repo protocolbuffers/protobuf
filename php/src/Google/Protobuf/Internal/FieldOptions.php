@@ -97,9 +97,11 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      */
     protected $deprecated = null;
     /**
+     * DEPRECATED. DO NOT USE!
      * For Google-internal migration only. Do not use.
      *
-     * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool weak = 10 [default = false, deprecated = true];</code>
+     * @deprecated
      */
     protected $weak = null;
     /**
@@ -204,6 +206,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *           for accessors, or it will be completely ignored; in the very least, this
      *           is a formalization for deprecating fields.
      *     @type bool $weak
+     *           DEPRECATED. DO NOT USE!
      *           For Google-internal migration only. Do not use.
      *     @type bool $debug_redact
      *           Indicate that the field value should not be printed out when using debug
@@ -531,35 +534,47 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
+     * DEPRECATED. DO NOT USE!
      * For Google-internal migration only. Do not use.
      *
-     * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool weak = 10 [default = false, deprecated = true];</code>
      * @return bool
+     * @deprecated
      */
     public function getWeak()
     {
+        if (isset($this->weak)) {
+            @trigger_error('weak is deprecated.', E_USER_DEPRECATED);
+        }
         return isset($this->weak) ? $this->weak : false;
     }
 
     public function hasWeak()
     {
+        if (isset($this->weak)) {
+            @trigger_error('weak is deprecated.', E_USER_DEPRECATED);
+        }
         return isset($this->weak);
     }
 
     public function clearWeak()
     {
+        @trigger_error('weak is deprecated.', E_USER_DEPRECATED);
         unset($this->weak);
     }
 
     /**
+     * DEPRECATED. DO NOT USE!
      * For Google-internal migration only. Do not use.
      *
-     * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool weak = 10 [default = false, deprecated = true];</code>
      * @param bool $var
      * @return $this
+     * @deprecated
      */
     public function setWeak($var)
     {
+        @trigger_error('weak is deprecated.', E_USER_DEPRECATED);
         GPBUtil::checkBool($var);
         $this->weak = $var;
 

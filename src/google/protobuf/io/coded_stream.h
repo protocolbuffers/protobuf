@@ -98,6 +98,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/optimization.h"
+
 #if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
 // If MSVC has "/RTCc" set, it will complain about truncating casts at
 // runtime.  This file contains some intentional truncating casts.
@@ -785,6 +787,12 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
                                               ptr);
   }
 
+  template <int kElementSize>
+  PROTOBUF_ALWAYS_INLINE uint8_t* WriteRawNumericArrayLittleEndian(
+      const void* data, int size, uint8_t* ptr) {
+    return WriteRawLittleEndian<kElementSize>(data, size, ptr);
+  }
+
   // Returns true if there was an underlying I/O error since this object was
   // created.
   bool HadError() const { return had_error_; }
@@ -815,6 +823,29 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   int64_t ByteCount(uint8_t* ptr) const;
 
 
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  template <typename ValT, typename CallbackT>
+  uint8_t* WriteNumericArray(uint8_t* ptr, uint32_t count,
+                             CallbackT&& callback) {
+    static_assert(sizeof(ValT) > 1, "Use WriteRaw");
+    static_assert(sizeof(ValT) < kSlopBytes, "");
+
+    int64_t size = count * sizeof(ValT);
+    while (size > 0) {
+      ptr = EnsureSpace(ptr);
+      int64_t chunk_size = std::min<int64_t>(GetSize(ptr), size);
+      int64_t round_down_size = (chunk_size / sizeof(ValT)) * sizeof(ValT);
+      ABSL_DCHECK_GT(round_down_size, 0u);
+
+      callback(ptr, round_down_size);
+
+      size -= round_down_size;
+      ptr += round_down_size;
+    }
+    return ptr;
+  }
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
+
  private:
   uint8_t* end_;
   uint8_t* buffer_end_ = buffer_;
@@ -823,7 +854,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   bool had_error_ = false;
   bool aliasing_enabled_ = false;  // See EnableAliasing().
   bool is_serialization_deterministic_;
-  bool skip_check_consistency = false;
+  bool skip_check_consistency_ = false;
 
   uint8_t* EnsureSpaceFallback(uint8_t* ptr);
   inline uint8_t* Next();

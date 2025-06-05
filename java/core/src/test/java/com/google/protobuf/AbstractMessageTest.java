@@ -458,7 +458,7 @@ public class AbstractMessageTest {
             .mergeFrom(MERGE_SOURCE)
             .build();
 
-    assertThat(result.toString()).isEqualTo(MERGE_RESULT_TEXT);
+    assertThat(TextFormat.printer().printToString(result)).isEqualTo(MERGE_RESULT_TEXT);
   }
 
   // -----------------------------------------------------------------

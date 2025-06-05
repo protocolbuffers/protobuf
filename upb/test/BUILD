@@ -338,6 +338,7 @@ filegroup(
 
 filegroup(
     name = "test_util",
+    testonly = 1,
     srcs = [
         "fuzz_util.cc",
         "fuzz_util.h",

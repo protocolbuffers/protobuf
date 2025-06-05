@@ -14,6 +14,10 @@ endif()
 # Project
 project(protobuf C CXX)
 
+if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD LESS 17)
+  message(FATAL_ERROR "The minimum supported C++ standard is C++ 17")
+endif()
+
 if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   if(CMAKE_PROJECT_NAME STREQUAL "protobuf")
     get_filename_component(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
@@ -86,7 +90,7 @@ if (protobuf_BUILD_SHARED_LIBS)
 endif ()
 
 # Version metadata
-set(protobuf_VERSION_STRING "6.31.0")
+set(protobuf_VERSION_STRING "6.32.0")
 set(protobuf_DESCRIPTION "Protocol Buffers")
 set(protobuf_CONTACT "protobuf@googlegroups.com")
 
@@ -181,12 +185,10 @@ if (protobuf_WITH_ZLIB)
 endif (protobuf_WITH_ZLIB)
 
 # We need to link with libatomic on systems that do not have builtin atomics, or
-# don't have builtin support for 8 byte atomics
+# don't have builtin support for 8 byte atomics (e.g. 32-bit powerpc).
 set(protobuf_LINK_LIBATOMIC false)
 if (NOT MSVC)
   include(CheckCXXSourceCompiles)
-  set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++17)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {
@@ -196,7 +198,6 @@ if (NOT MSVC)
   if (NOT protobuf_HAVE_BUILTIN_ATOMICS)
     set(protobuf_LINK_LIBATOMIC true)
   endif (NOT protobuf_HAVE_BUILTIN_ATOMICS)
-  set(CMAKE_REQUIRED_FLAGS ${OLD_CMAKE_REQUIRED_FLAGS})
 endif (NOT MSVC)
 
 if (protobuf_BUILD_SHARED_LIBS)

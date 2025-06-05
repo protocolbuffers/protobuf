@@ -85,6 +85,7 @@ cc_library(
         "generator.h",
         "internal_helpers.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/java:__subpackages__",

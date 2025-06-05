@@ -56,7 +56,27 @@ public final class UnredactedDebugFormatForTest {
    * may be null, and existing code expects toString() on these objects to contain
    * Message.toString() outputs in TextFormat.
    */
-  public static String unredactedStringValueOf(Object object) {
+  public static String unredactedStringValueOf(
+          Object object) {
     return LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(object);
+  }
+
+  /**
+   * Map each element in an {@code Iterable<T>} to {@code Iterable<String>} using
+   * unredactedStringValueOf. This is a useful shortcut for callers that operate on an Iterable of
+   * objects.
+   */
+  public static Iterable<String> unredactedToStringList(
+          Iterable<?> iterable) {
+    return LegacyUnredactedTextFormat.legacyUnredactedToStringList(iterable);
+  }
+
+  /**
+   * Map each element in an Object[] to String using unredactedStringValueOf. This is a useful
+   * shortcut for callers that operate on an Object[] of objects.
+   */
+  public static String[] unredactedToStringArray(
+          Object[] objects) {
+    return LegacyUnredactedTextFormat.legacyUnredactedToStringArray(objects);
   }
 }

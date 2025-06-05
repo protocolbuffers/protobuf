@@ -32,6 +32,7 @@
 #include "absl/time/time.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.hpp"
+#include "upb/port/sanitizers.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -44,15 +45,15 @@ struct CustomAlloc {
   bool ran_cleanup;
 };
 
-void* CustomAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                      size_t size) {
+void* CustomAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize, size_t size,
+                      size_t* actual_size) {
   CustomAlloc* custom_alloc = reinterpret_cast<CustomAlloc*>(alloc);
   if (size == 0) {
     custom_alloc->counter--;
   } else {
     custom_alloc->counter++;
   }
-  return upb_alloc_global.func(alloc, ptr, oldsize, size);
+  return upb_alloc_global.func(alloc, ptr, oldsize, size, actual_size);
 }
 
 void CustomAllocCleanup(upb_alloc* alloc) {
@@ -71,30 +72,62 @@ TEST(ArenaTest, ArenaWithAllocCleanup) {
   EXPECT_TRUE(alloc.ran_cleanup);
 }
 
+struct Size {
+  size_t requested;
+  size_t allocated;
+};
+
 struct SizeTracker {
   upb_alloc alloc;
   upb_alloc* delegate_alloc;
-  absl::flat_hash_map<void*, size_t>* sizes;
+  absl::flat_hash_map<void*, Size>* sizes;
 };
 
 static_assert(std::is_standard_layout<SizeTracker>());
 
 static void* size_checking_allocfunc(upb_alloc* alloc, void* ptr,
-                                     size_t oldsize, size_t size) {
+                                     size_t oldsize, size_t size,
+                                     size_t* actual_size) {
   SizeTracker* size_alloc = reinterpret_cast<SizeTracker*>(alloc);
-  void* result = size_alloc->delegate_alloc->func(alloc, ptr, oldsize, size);
+  size_t actual_size_tmp = 0;
+  if (actual_size == nullptr) {
+    actual_size = &actual_size_tmp;
+  }
+  void* result =
+      size_alloc->delegate_alloc->func(alloc, ptr, oldsize, size, actual_size);
   if (ptr != nullptr) {
-    UPB_ASSERT(size_alloc->sizes->at(ptr) == oldsize);
+    Size& size_ref = size_alloc->sizes->at(ptr);
+    UPB_ASSERT(size_ref.requested == oldsize || size_ref.allocated == oldsize);
     size_alloc->sizes->erase(ptr);
   }
   if (result != nullptr) {
-    size_alloc->sizes->emplace(result, size);
+    size_alloc->sizes->emplace(result, Size{size, UPB_MAX(size, *actual_size)});
   }
   return result;
 }
 
+TEST(ArenaTest, ShinkLastAfterReallocHwasanRegression) {
+  upb_Arena_SetMaxBlockSize(UPB_MALLOC_ALIGN);
+  absl::Cleanup reset_max_block_size = [] {
+    upb_Arena_SetMaxBlockSize(UPB_PRIVATE(kUpbDefaultMaxBlockSize));
+  };
+
+  upb_Arena* arena = upb_Arena_Init(nullptr, 1000, &upb_alloc_global);
+  (void)upb_Arena_Malloc(arena, 1);
+  // Will force a full-size block since the initial allocated block has tons of
+  // free space and the max block size is tiny
+  void* to_realloc = upb_Arena_Malloc(arena, 2000);
+  // Realloc will retag to invalidate to_realloc
+  void* to_shrink = upb_Arena_Realloc(arena, to_realloc, 2000, 2000);
+#if UPB_HWASAN
+  EXPECT_NE(to_realloc, to_shrink);
+#endif
+  upb_Arena_ShrinkLast(arena, to_shrink, 2000, 1);
+  upb_Arena_Free(arena);
+}
+
 TEST(ArenaTest, SizedFree) {
-  absl::flat_hash_map<void*, size_t> sizes;
+  absl::flat_hash_map<void*, Size> sizes;
   SizeTracker alloc;
   alloc.alloc.func = size_checking_allocfunc;
   alloc.delegate_alloc = &upb_alloc_global;
@@ -126,18 +159,38 @@ TEST(ArenaTest, TryExtend) {
 }
 
 TEST(ArenaTest, ReallocFastPath) {
-  upb_Arena* arena = upb_Arena_Init(nullptr, 4096, &upb_alloc_global);
+  upb_Arena* arena = upb_Arena_Init(nullptr, 1024, &upb_alloc_global);
   void* initial = upb_Arena_Malloc(arena, 512);
   uintptr_t initial_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+
   void* extend = upb_Arena_Realloc(arena, initial, 512, 1024);
-  uintptr_t extend_allocated = upb_Arena_SpaceAllocated(arena, nullptr);
+  EXPECT_EQ(initial_allocated, upb_Arena_SpaceAllocated(arena, nullptr));
+#if UPB_HWASAN
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(initial, extend));
+  EXPECT_NE(initial, extend);
+#else
   EXPECT_EQ(initial, extend);
-  EXPECT_EQ(initial_allocated, extend_allocated);
+#endif
+
+  void* shrunk = upb_Arena_Realloc(arena, extend, 1024, 512);
+  EXPECT_EQ(initial_allocated, upb_Arena_SpaceAllocated(arena, nullptr));
+#if UPB_HWASAN
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(initial, shrunk));
+  EXPECT_NE(initial, shrunk);
+  EXPECT_NE(extend, shrunk);
+#else
+  EXPECT_EQ(initial, shrunk);
+#endif
+
+  EXPECT_NE(nullptr, upb_Arena_Malloc(arena, 256));
+  // Should have allocated into shrunk space
+  EXPECT_EQ(initial_allocated, upb_Arena_SpaceAllocated(arena, nullptr));
+
   upb_Arena_Free(arena);
 }
 
 TEST(ArenaTest, SizeHint) {
-  absl::flat_hash_map<void*, size_t> sizes;
+  absl::flat_hash_map<void*, Size> sizes;
   SizeTracker alloc;
   alloc.alloc.func = size_checking_allocfunc;
   alloc.delegate_alloc = &upb_alloc_global;
@@ -197,7 +250,7 @@ class OverheadTest {
   upb_Arena* arena_;
 
  protected:
-  absl::flat_hash_map<void*, size_t> sizes_;
+  absl::flat_hash_map<void*, Size> sizes_;
   SizeTracker alloc_;
   uintptr_t arena_alloced_;
   uintptr_t arena_alloc_count_;
@@ -266,7 +319,7 @@ TEST(OverheadTest, SmallBlocksLargerThanInitial_many) {
   for (int i = 0; i < 100; i++) {
     test.Alloc(initial_block_size * 2 + 1);
   }
-  if (!UPB_ASAN) {
+  if (!UPB_ASAN && sizeof(upb_Xsan) == 0) {
 #ifdef __ANDROID__
     EXPECT_NEAR(test.WastePct(), 0.09, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.12, 0.025);
@@ -482,7 +535,8 @@ TEST(ArenaTest, FuzzFuseFuseRace) {
 }
 
 static void* checking_global_allocfunc(upb_alloc* alloc, void* ptr,
-                                       size_t oldsize, size_t size) {
+                                       size_t oldsize, size_t size,
+                                       size_t* actual_size) {
   int header_size = std::max(alignof(max_align_t), sizeof(int));
   if (ptr) {
     ptr = UPB_PTR_AT(ptr, -header_size, void);
@@ -713,6 +767,6 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   for (auto& t : threads) t.join();
 }
 
-#endif
+#endif  // UPB_SUPPRESS_MISSING_ATOMICS
 
 }  // namespace

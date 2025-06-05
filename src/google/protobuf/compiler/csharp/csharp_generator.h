@@ -28,7 +28,7 @@ namespace csharp {
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator();
-  ~Generator();
+  ~Generator() override;
   bool Generate(
     const FileDescriptor* file,
     const std::string& parameter,

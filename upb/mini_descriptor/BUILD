@@ -29,7 +29,13 @@ cc_library(
         "//upb/base:internal",
         "//upb/message:types",
         "//upb/mini_table:internal",
-    ],
+    ] + select({
+        "//upb:fasttable_enabled_setting": [
+            "//upb/wire/decode_fast:function_array",
+            "//upb/wire/decode_fast:select",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(

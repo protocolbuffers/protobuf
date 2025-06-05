@@ -8,6 +8,7 @@
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 
+#include <stdint.h>
 #include <string.h>
 
 #include "upb/mem/arena.h"
@@ -31,8 +32,9 @@ typedef struct {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t input_delta;  // Diff between the original input pointer and patch
-  int limit;   // Submessage limit relative to end
-  bool error;  // To distinguish between EOF and error.
+  const char* buffer_start;  // Pointer to the original input buffer
+  int limit;                 // Submessage limit relative to end
+  bool error;                // To distinguish between EOF and error.
   bool aliasing;
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
@@ -56,6 +58,7 @@ typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
 UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
                                             const char** ptr, size_t size,
                                             bool enable_aliasing) {
+  e->buffer_start = *ptr;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
     if (size) memcpy(&e->patch, *ptr, size);
@@ -159,7 +162,7 @@ UPB_INLINE size_t upb_EpsCopyInputStream_BytesAvailable(
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const upb_EpsCopyInputStream* e, const char* ptr, int size) {
   UPB_ASSERT(size >= 0);
-  return ptr - e->end + size <= e->limit;
+  return size <= e->limit - (ptr - e->end);
 }
 
 UPB_INLINE bool _upb_EpsCopyInputStream_CheckSizeAvailable(
@@ -230,7 +233,13 @@ UPB_INLINE bool upb_EpsCopyInputStream_AliasingAvailable(
 // be different if we are currently parsing out of the patch buffer.
 UPB_INLINE const char* upb_EpsCopyInputStream_GetInputPtr(
     upb_EpsCopyInputStream* e, const char* ptr) {
-  return (const char*)(((uintptr_t)ptr) + e->input_delta);
+  // This somewhat silly looking add-and-subtract behavior provides provenance
+  // from the original input buffer's pointer. After optimization it produces
+  // the same assembly as just casting `(uintptr_t)ptr+input_delta`
+  // https://godbolt.org/z/zosG88oPn
+  size_t position =
+      (uintptr_t)ptr + e->input_delta - (uintptr_t)e->buffer_start;
+  return e->buffer_start + position;
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing

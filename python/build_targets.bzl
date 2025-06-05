@@ -495,7 +495,7 @@ def build_targets(name):
         }),
         maximum_edition = "2023",
         testee = "//conformance:conformance_python",
-        text_format_failure_list = "//conformance:text_format_failure_list_python_cpp.txt",
+        text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
     )
 
     conformance_test(
@@ -509,7 +509,7 @@ def build_targets(name):
         }),
         maximum_edition = "2023",
         testee = "//conformance:conformance_python",
-        text_format_failure_list = "//conformance:text_format_failure_list_python_upb.txt",
+        text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
     )
 
     ################################################################################

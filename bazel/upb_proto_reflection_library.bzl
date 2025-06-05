@@ -28,7 +28,7 @@ def _upb_proto_reflection_library_aspect_impl(target, ctx):
 _upb_proto_reflection_library_aspect = aspect(
     attrs = {
         "_copts": attr.label(
-            default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//upb:upb_proto_library_copts",
         ),
         "_upbdefs_toolchain": attr.label(
             default = Label("//upb_generator/reflection:toolchain"),

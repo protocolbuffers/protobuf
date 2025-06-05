@@ -30,6 +30,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
@@ -492,6 +493,18 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       auto p = package(index);
       return absl::StrCat(p, p.empty() ? "" : ".", symbol(index));
     }
+
+    bool IsSubSymbolOf(const DescriptorIndex& index,
+                       absl::string_view super_symbol) const {
+      const auto consume_part = [&](absl::string_view part) {
+        if (!absl::ConsumePrefix(&super_symbol, part)) return false;
+        return super_symbol.empty() || absl::ConsumePrefix(&super_symbol, ".");
+      };
+      if (auto p = package(index); !p.empty()) {
+        if (!consume_part(p)) return false;
+      }
+      return consume_part(symbol(index));
+    }
   };
 
   struct SymbolCompare {
@@ -500,7 +513,6 @@ class EncodedDescriptorDatabase::DescriptorIndex {
     std::string AsString(const SymbolEntry& entry) const {
       return entry.AsString(index);
     }
-    static absl::string_view AsString(absl::string_view str) { return str; }
 
     std::pair<absl::string_view, absl::string_view> GetParts(
         const SymbolEntry& entry) const {
@@ -508,13 +520,8 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       if (package.empty()) return {entry.symbol(index), absl::string_view{}};
       return {package, entry.symbol(index)};
     }
-    std::pair<absl::string_view, absl::string_view> GetParts(
-        absl::string_view str) const {
-      return {str, {}};
-    }
 
-    template <typename T, typename U>
-    bool operator()(const T& lhs, const U& rhs) const {
+    bool operator()(const SymbolEntry& lhs, const SymbolEntry& rhs) const {
       auto lhs_parts = GetParts(lhs);
       auto rhs_parts = GetParts(rhs);
 
@@ -528,6 +535,23 @@ class EncodedDescriptorDatabase::DescriptorIndex {
         return lhs_parts.second < rhs_parts.second;
       }
       return AsString(lhs) < AsString(rhs);
+    }
+
+    bool operator()(absl::string_view lhs, const SymbolEntry& rhs) const {
+      auto p = rhs.package(index);
+      if (!p.empty()) {
+        absl::string_view lhs_part = lhs.substr(0, p.size());
+        lhs.remove_prefix(lhs_part.size());
+        if (int res = lhs_part.compare(p); res != 0) return res < 0;
+        // If compare returned 0 is because we consumed all of `p` and it
+        // matched.
+
+        // Compare the implicit `.`
+        if (lhs.empty() || lhs[0] < '.') return true;
+        if (lhs[0] > '.') return false;
+        lhs.remove_prefix(1);
+      }
+      return lhs < rhs.symbol(index);
     }
   };
   absl::btree_set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
@@ -793,8 +817,7 @@ EncodedDescriptorDatabase::DescriptorIndex::FindSymbolOnlyFlat(
   auto iter =
       FindLastLessOrEqual(&by_symbol_flat_, name, by_symbol_.key_comp());
 
-  return iter != by_symbol_flat_.end() &&
-                 IsSubSymbol(iter->AsString(*this), name)
+  return iter != by_symbol_flat_.end() && iter->IsSubSymbolOf(*this, name)
              ? all_values_[iter->data_offset].value()
              : Value();
 }

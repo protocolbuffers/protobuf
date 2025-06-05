@@ -19,6 +19,5 @@
 
 // Must include after the above macros.
 // clang-format off
-#include "google/protobuf/test_util.inc"
 #include "google/protobuf/repeated_field_reflection_unittest.inc"
 // clang-format on

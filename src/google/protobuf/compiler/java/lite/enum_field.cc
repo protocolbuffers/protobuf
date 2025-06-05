@@ -53,8 +53,6 @@ void SetEnumVariables(
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->enum_type());
-  (*variables)["mutable_type"] =
-      name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["default_number"] =
@@ -198,8 +196,9 @@ void ImmutableEnumFieldLiteGenerator::GenerateMembers(
 
   // Generate private setters for the builder to proxy into.
   if (SupportUnknownEnumValue(descriptor_)) {
-    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
-                                          context_->options());
+    WriteFieldEnumValueAccessorDocComment(
+        printer, descriptor_, SETTER, context_->options(),
+        /* builder = */ false, /* is_private = */ true);
     printer->Print(variables_,
                    "private void set$capitalized_name$Value(int value) {\n"
                    "  $set_has_field_bit_message$"
@@ -374,8 +373,9 @@ void ImmutableEnumOneofFieldLiteGenerator::GenerateMembers(
 
   // Generate private setters for the builder to proxy into.
   if (SupportUnknownEnumValue(descriptor_)) {
-    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
-                                          context_->options());
+    WriteFieldEnumValueAccessorDocComment(
+        printer, descriptor_, SETTER, context_->options(),
+        /* builder = */ false, /* is_private = */ true);
     printer->Print(variables_,
                    "private void set$capitalized_name$Value(int value) {\n"
                    "  $set_oneof_case_message$;\n"
@@ -659,30 +659,33 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateMembers(
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                context_->options(), /* builder */ false,
-                               /* kdoc */ false, /* is_private */ true);
+                               /* is_private */ true);
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $name$_ = emptyIntList();\n"
                  "}\n");
 
   if (SupportUnknownEnumValue(descriptor_)) {
-    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
-                                          context_->options());
+    WriteFieldEnumValueAccessorDocComment(
+        printer, descriptor_, SETTER, context_->options(),
+        /* builder = */ false, /* is_private = */ true);
     printer->Print(variables_,
                    "private void set$capitalized_name$Value(\n"
                    "    int index, int value) {\n"
                    "  ensure$capitalized_name$IsMutable();\n"
                    "  $name$_.setInt(index, value);\n"
                    "}\n");
-    WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_ADDER,
-                                          context_->options());
+    WriteFieldEnumValueAccessorDocComment(
+        printer, descriptor_, LIST_ADDER, context_->options(),
+        /* builder = */ false, /* is_private = */ true);
     printer->Print(variables_,
                    "private void add$capitalized_name$Value(int value) {\n"
                    "  ensure$capitalized_name$IsMutable();\n"
                    "  $name$_.addInt(value);\n"
                    "}\n");
     WriteFieldEnumValueAccessorDocComment(
-        printer, descriptor_, LIST_MULTI_ADDER, context_->options());
+        printer, descriptor_, LIST_MULTI_ADDER, context_->options(),
+        /* builder = */ false, /* is_private = */ true);
     printer->Print(variables_,
                    "private void addAll$capitalized_name$Value(\n"
                    "    java.lang.Iterable<java.lang.Integer> values) {\n"

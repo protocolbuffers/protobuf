@@ -399,7 +399,7 @@ const upb_MiniTable* google__protobuf__SourceCodeInfo_msg_init() {
 
 const upb_MiniTable* google__protobuf__SourceCodeInfo__Location_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$<M<M11aE";
+  static const char* mini_descriptor = "$N<<11aE";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -420,7 +420,7 @@ const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init() {
 
 const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$<M1((4";
+  static const char* mini_descriptor = "$N<1((4";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),

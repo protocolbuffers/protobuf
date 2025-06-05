@@ -246,7 +246,7 @@ def _experimental_filter_sources(proto_info, proto_lang_toolchain_info):
             provided_paths[path] = None
 
     # Filter proto files
-    proto_files = proto_info._direct_proto_sources
+    proto_files = proto_info.direct_sources
     excluded = []
     included = []
     for proto_file in proto_files:

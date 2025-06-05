@@ -11,7 +11,7 @@ _DEFAULT_CPPOPTS = []
 _DEFAULT_COPTS = [
     # this is a compile error in C++ clang and GNU C, but not clang C by default
     "-Werror=incompatible-pointer-types",
-    # GCC does not seem to suppport the no_sanitize attribute in some places
+    # GCC does not seem to support the no_sanitize attribute in some places
     # where we use it.
     "-Wno-error=attributes",
 ]
@@ -35,12 +35,21 @@ _DEFAULT_COPTS.extend([
 UPB_DEFAULT_CPPOPTS = select({
     "//upb:windows": [],
     "//conditions:default": _DEFAULT_CPPOPTS,
+}) + select({
+    "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
+    "//conditions:default": [],
+}) + select({
+    "//conditions:default": [],
 })
 
 UPB_DEFAULT_COPTS = select({
     "//upb:windows": [],
-    "//upb:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
     "//conditions:default": _DEFAULT_COPTS,
+}) + select({
+    "//upb:fasttable_enabled_setting": ["-DUPB_ENABLE_FASTTABLE"],
+    "//conditions:default": [],
+}) + select({
+    "//conditions:default": [],
 })
 
 runfiles_init = """\

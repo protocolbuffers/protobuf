@@ -12,6 +12,7 @@
 #include <limits>
 #include <new>  // IWYU pragma: keep for operator new
 #include <numeric>
+#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -23,7 +24,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -348,14 +348,14 @@ int TcParser::FieldNumber(const TcParseTableBase* table,
   // But it is fine because we are only using this for debug check messages.
   size_t need_to_skip = entry - table->field_entries_begin();
   const auto visit_bitmap = [&](uint32_t field_bitmap,
-                                int base_field_number) -> absl::optional<int> {
+                                int base_field_number) -> std::optional<int> {
     for (; field_bitmap != 0; field_bitmap &= field_bitmap - 1) {
       if (need_to_skip == 0) {
         return absl::countr_zero(field_bitmap) + base_field_number;
       }
       --need_to_skip;
     }
-    return absl::nullopt;
+    return std::nullopt;
   };
   if (auto number = visit_bitmap(~table->skipmap32, 1)) {
     return *number;
@@ -515,8 +515,8 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 
 MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
                                   RepeatedPtrFieldBase& field) {
-  return static_cast<MessageLite*>(field.AddInternal(
-      [table](Arena* arena) { return NewMessage(table, arena); }));
+  return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
+      table->class_data->prototype);
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>
@@ -1529,6 +1529,24 @@ PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
 }
 
 
+PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(
+    MessageLite* /* msg */, const char* ptr, ParseContext* ctx,
+    uint32_t /* aux_idx */, const TcParseTableBase* /* table */,
+    MicroString& field, Arena* arena) {
+  return ctx->ReadMicroString(ptr, field, arena);
+}
+
+PROTOBUF_ALWAYS_INLINE const char* ReadStringNoArena(
+    MessageLite* /* msg */, const char* ptr, ParseContext* ctx,
+    uint32_t /* aux_idx */, const TcParseTableBase* /* table */,
+    MicroString& field) {
+  return ctx->ReadMicroString(ptr, field, nullptr);
+}
+
+PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(const MicroString& field) {
+  return utf8_range::IsStructurallyValid(field.Get());
+}
+
 void EnsureArenaStringIsNotDefault(const MessageLite* msg,
                                    ArenaStringPtr* field) {
   // If we failed here we might have left the string in its IsDefault state, but
@@ -1653,6 +1671,34 @@ const char* TcParser::FastUcS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
+// MicroString variants:
+PROTOBUF_NOINLINE const char* TcParser::FastBmS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString, kNoUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastBmS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString, kNoUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastSmS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString,
+                                          kUtf8ValidateOnly>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastSmS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString,
+                                          kUtf8ValidateOnly>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastUmS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString, kUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastUmS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString, kUtf8>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
 template <typename TagType, typename FieldType, TcParser::Utf8Type utf8>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     PROTOBUF_TC_PARAM_DECL) {
@@ -1751,10 +1797,53 @@ inline void SetHas(const FieldEntry& entry, MessageLite* msg) {
 }
 }  // namespace
 
-// Destroys any existing oneof union member (if necessary). Returns true if the
-// caller is responsible for initializing the object, or false if the field
-// already has the desired case.
-bool TcParser::ChangeOneof(const TcParseTableBase* table,
+void TcParser::InitOneof(const TcParseTableBase* table,
+                         const TcParseTableBase* inner_table,
+                         const TcParseTableBase::FieldEntry& entry,
+                         MessageLite* msg) {
+  uint16_t kind = entry.type_card & field_layout::kFkMask;
+  uint16_t rep = entry.type_card & field_layout::kRepMask;
+  if (kind == field_layout::kFkString) {
+    switch (rep) {
+      case field_layout::kRepAString: {
+        RefAt<ArenaStringPtr>(msg, entry.offset).InitDefault();
+        break;
+      }
+      case field_layout::kRepMString: {
+        RefAt<MicroString>(msg, entry.offset).InitDefault();
+        break;
+      }
+      case field_layout::kRepCord: {
+        absl::Cord* field = Arena::Create<absl::Cord>(msg->GetArena());
+        RefAt<absl::Cord*>(msg, entry.offset) = field;
+        break;
+      }
+      case field_layout::kRepSString:
+      case field_layout::kRepIString:
+      default:
+        internal::Unreachable();
+        return;
+    }
+  } else if (kind == field_layout::kFkMessage) {
+    switch (rep) {
+      case field_layout::kRepMessage:
+      case field_layout::kRepGroup: {
+        auto& field = RefAt<MessageLite*>(msg, entry.offset);
+        field = NewMessage(inner_table, msg->GetArena());
+        break;
+      }
+      default:
+        internal::Unreachable();
+        return;
+    }
+  }
+}
+
+// Destroys any existing oneof union member (if necessary). Initializes the
+// oneof field if the caller is responsible for initializing the object, or does
+// not perform initialization if the field already has the desired case.
+void TcParser::ChangeOneof(const TcParseTableBase* table,
+                           const TcParseTableBase* inner_table,
                            const TcParseTableBase::FieldEntry& entry,
                            uint32_t field_num, ParseContext* ctx,
                            MessageLite* msg) {
@@ -1763,15 +1852,16 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
   uint32_t current_case = *oneof_case;
   *oneof_case = field_num;
 
+  // If the member is already active, then it should be merged. We're done.
+  if (current_case == field_num) return;
+
   if (current_case == 0) {
-    // If the member is empty, we don't have anything to clear. Caller is
-    // responsible for creating a new member object.
-    return true;
+    // If the member is empty, we don't have anything to clear.
+    // We must create a new member object.
+    InitOneof(table, inner_table, entry, msg);
+    return;
   }
-  if (current_case == field_num) {
-    // If the member is already active, then it should be merged. We're done.
-    return false;
-  }
+
   // Look up the value that is already stored, and dispose of it if necessary.
   const FieldEntry* current_entry = FindFieldEntry(table, current_case);
   uint16_t current_kind = current_entry->type_card & field_layout::kFkMask;
@@ -1798,9 +1888,8 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
       case field_layout::kRepSString:
       case field_layout::kRepIString:
       default:
-        ABSL_DLOG(FATAL) << "string rep not handled: "
-                         << (current_rep >> field_layout::kRepShift);
-        return true;
+        internal::Unreachable();
+        return;
     }
   } else if (current_kind == field_layout::kFkMessage) {
     switch (current_rep) {
@@ -1813,12 +1902,11 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
         break;
       }
       default:
-        ABSL_DLOG(FATAL) << "message rep not handled: "
-                         << (current_rep >> field_layout::kRepShift);
-        break;
+        internal::Unreachable();
+        return;
     }
   }
-  return true;
+  InitOneof(table, inner_table, entry, msg);
 }
 
 namespace {
@@ -1879,7 +1967,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (card == field_layout::kFcOneof) {
-    ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+                msg);
   }
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   // Copy the value:
@@ -2031,7 +2120,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+                msg);
   }
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
@@ -2302,11 +2392,11 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 
   // Mark the field as present:
   const bool is_oneof = card == field_layout::kFcOneof;
-  bool need_init = false;
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, /*inner_table=*/nullptr, entry, data.tag() >> 3, ctx,
+                msg);
   }
 
   bool is_valid = false;
@@ -2314,7 +2404,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   switch (rep) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
-      if (need_init) field.InitDefault();
       Arena* arena = msg->GetArena();
       if (arena) {
         ptr = ctx->ReadArenaString(ptr, &field, arena);
@@ -2332,7 +2421,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 
     case field_layout::kRepMString: {
       auto& field = RefAt<MicroString>(base, entry.offset);
-      if (need_init) field.InitDefault();
       ptr = ctx->ReadMicroString(ptr, field, msg->GetArena());
       is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
       break;
@@ -2342,12 +2430,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     case field_layout::kRepCord: {
       absl::Cord* field;
       if (is_oneof) {
-        if (need_init) {
-          field = Arena::Create<absl::Cord>(msg->GetArena());
-          RefAt<absl::Cord*>(msg, entry.offset) = field;
-        } else {
-          field = RefAt<absl::Cord*>(msg, entry.offset);
-        }
+        field = RefAt<absl::Cord*>(msg, entry.offset);
       } else {
         field = &RefAt<absl::Cord>(base, entry.offset);
       }
@@ -2506,21 +2589,21 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     }
   }
 
+  const TcParseTableBase* inner_table =
+      GetTableFromAux(type_card, *table->field_aux(&entry));
+
   const bool is_oneof = card == field_layout::kFcOneof;
-  bool need_init = false;
   if (card == field_layout::kFcOptional) {
     SetHas(entry, msg);
   } else if (is_oneof) {
-    need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
+    ChangeOneof(table, inner_table, entry, data.tag() >> 3, ctx, msg);
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table);
   SyncHasbits(msg, hasbits, table);
-  MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
 
-  const TcParseTableBase* inner_table =
-      GetTableFromAux(type_card, *table->field_aux(&entry));
-  if (need_init || field == nullptr) {
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
+  MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
+  if (field == nullptr) {
     field = NewMessage(inner_table, msg->GetArena());
   }
   const auto inner_loop = [&](const char* ptr) {

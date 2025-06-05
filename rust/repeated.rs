@@ -157,7 +157,7 @@ where
 
     /// Gets the value at `index`.
     ///
-    /// Returns `None` if `index > len`.
+    /// Returns `None` if `index >= len`.
     #[inline]
     pub fn get(&self, index: usize) -> Option<View<T>> {
         self.as_view().get(index)
@@ -165,7 +165,7 @@ where
 
     /// Gets the value at `index`.
     ///
-    /// Returns `None` if `index > len`.
+    /// Returns `None` if `index >= len`.
     #[inline]
     pub fn get_mut<'r>(&'r mut self, index: usize) -> Option<Mut<'msg, T>>
     where
@@ -182,7 +182,7 @@ where
     /// Gets the value at `index` without bounds-checking.
     ///
     /// # Safety
-    /// Undefined behavior if `index >= len`
+    /// Undefined behavior if `index >= len`.
     #[inline]
     pub unsafe fn get_mut_unchecked<'r>(&'r mut self, index: usize) -> Mut<'msg, T>
     where
@@ -196,7 +196,7 @@ where
     /// Gets the value at `index` without bounds-checking.
     ///
     /// # Safety
-    /// Undefined behavior if `index >= len`
+    /// Undefined behavior if `index >= len`.
     #[inline]
     pub unsafe fn get_unchecked(&self, index: usize) -> View<T> {
         // SAFETY: in-bounds as promised
@@ -212,7 +212,7 @@ where
     /// Sets the value at `index` to the value `val`.
     ///
     /// # Panics
-    /// Panics if `index >= len`
+    /// Panics if `index >= len`.
     #[inline]
     pub fn set(&mut self, index: usize, val: impl IntoProxied<T>) {
         let len = self.len();
@@ -225,7 +225,7 @@ where
     /// Sets the value at `index` to the value `val`.
     ///
     /// # Safety
-    /// Undefined behavior if `index >= len`
+    /// Undefined behavior if `index >= len`.
     #[inline]
     pub unsafe fn set_unchecked(&mut self, index: usize, val: impl IntoProxied<T>) {
         unsafe { T::repeated_set_unchecked(self.as_mut(), index, val) }
@@ -356,6 +356,7 @@ pub unsafe trait ProxiedInRepeated: Proxied + SealedInternal {
 }
 
 /// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
+#[derive(Clone)]
 pub struct RepeatedIter<'msg, T> {
     view: RepeatedView<'msg, T>,
     current_index: usize,
@@ -688,8 +689,14 @@ mod tests {
     }
 
     #[gtest]
-    fn test_repeated_iter_into_proxied() {
+    fn test_repeated_iter() {
         let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
         assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
+
+        let mut iter = r.as_view().into_iter();
+        assert_that!(iter.next(), eq(Some(0)));
+        let mut clone = iter.clone();
+        assert_that!(clone.next(), eq(Some(1)));
+        assert_that!(iter.next(), eq(Some(1)));
     }
 }

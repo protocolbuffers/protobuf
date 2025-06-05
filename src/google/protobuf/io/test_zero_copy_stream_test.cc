@@ -8,13 +8,14 @@
 #include "google/protobuf/io/test_zero_copy_stream.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "absl/types/optional.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -26,14 +27,14 @@ using testing::ElementsAre;
 using testing::Eq;
 using testing::Optional;
 
-absl::optional<std::string> CallNext(ZeroCopyInputStream& stream) {
+std::optional<std::string> CallNext(ZeroCopyInputStream& stream) {
   const void* data;
   int size;
   if (stream.Next(&data, &size)) {
     return std::string(static_cast<const char*>(data),
                        static_cast<size_t>(size));
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 std::vector<std::string> ReadLeftoverDoNotConsumeInput(
@@ -90,7 +91,7 @@ TEST(TestZeroCopyInputStreamTest, BackUpGivesBackABuffer) {
   EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
   stream->BackUp(2);
   EXPECT_THAT(CallNext(*stream), Optional(Eq("MN")));
-  EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
+  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
 }
 
 #if GTEST_HAS_DEATH_TEST
@@ -116,7 +117,7 @@ TEST(TestZeroCopyInputStreamTest, BackUpChecksPreconditions) {
   EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
   EXPECT_DEATH(stream->BackUp(8), "count must be within bounds of last buffer");
-  EXPECT_THAT(CallNext(*stream), Eq(absl::nullopt));
+  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
   EXPECT_DEATH(stream->BackUp(0),
                "The last call was not a successful Next\\(\\)");
 }

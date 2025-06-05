@@ -50,8 +50,6 @@ inline FieldMask operator|(FieldMask lhs, FieldMask rhs) {
                                 static_cast<uint32_t>(rhs));
 }
 
-#ifdef __cpp_if_constexpr
-
 template <typename MessageT, typename CallbackFn>
 void VisitFields(MessageT& message, CallbackFn&& func,
                  FieldMask mask = FieldMask::kAll);
@@ -502,8 +500,6 @@ template <typename CallbackFn>
 void VisitMutableMessageFields(Message& message, CallbackFn&& func) {
   ReflectionVisit::VisitMessageFields(message, std::forward<CallbackFn>(func));
 }
-
-#endif  // __cpp_if_constexpr
 
 }  // namespace internal
 }  // namespace protobuf

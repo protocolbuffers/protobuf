@@ -1,5 +1,10 @@
 package com.google.protobuf;
 
+import static java.util.Arrays.stream;
+
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 /**
  * The legacy APIs preserve the existing toString() behavior (output TextFormat), which allows us to
  * migrate toString callers that expect TextFormat output off toString. Eventually, we will make
@@ -60,7 +65,37 @@ public final class LegacyUnredactedTextFormat {
    * may be null, and existing code expects toString() on these objects to contain
    * Message.toString() outputs in TextFormat.
    */
-  public static String legacyUnredactedStringValueOf(Object object) {
+  public static String legacyUnredactedStringValueOf(
+          Object object) {
     return (object == null) ? String.valueOf(object) : legacyUnredactedToString(object);
+  }
+
+  /**
+   * Map each element in an {@code Iterable<T>} to {@code Iterable<String>} using
+   * legacyUnredactedStringValueOf. This is a useful shortcut for callers that operate on an
+   * Iterable of objects.
+   */
+  @Deprecated
+  public static Iterable<String> legacyUnredactedToStringList(
+          Iterable<?> iterable) {
+    return iterable == null
+        ? null
+        : StreamSupport.stream(iterable.spliterator(), false)
+            .map(LegacyUnredactedTextFormat::legacyUnredactedStringValueOf)
+            .collect(Collectors.toList());
+  }
+
+  /**
+   * Map each element in an Object[] to String using legacyUnredactedStringValueOf. This is a useful
+   * shortcut for callers that operate on an Object[] of objects.
+   */
+  @Deprecated
+  public static String[] legacyUnredactedToStringArray(
+          Object[] objects) {
+    return objects == null
+        ? null
+        : stream(objects)
+            .map(LegacyUnredactedTextFormat::legacyUnredactedStringValueOf)
+            .toArray(String[]::new);
   }
 }

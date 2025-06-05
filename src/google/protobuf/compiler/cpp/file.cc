@@ -1614,6 +1614,9 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
     IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
+  if (options_.experimental_use_micro_string) {
+    IncludeFile("third_party/protobuf/micro_string.h", p);
+  }
 
   IncludeFile("third_party/protobuf/runtime_version.h", p);
   int version;
@@ -1653,6 +1656,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (HasGeneratedMethods(file_, options_)) {
     IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
+
 
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
   IncludeFile("third_party/protobuf/metadata_lite.h", p);

@@ -36,6 +36,7 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format.h"
 
@@ -353,7 +354,7 @@ TEST_F(UnknownFieldSetTest, SerializeViaReflection) {
 TEST_F(UnknownFieldSetTest, CopyFrom) {
   unittest::TestEmptyMessage message;
 
-  message.CopyFrom(empty_message_);
+  message = empty_message_;
 
   EXPECT_EQ(empty_message_.DebugString(), message.DebugString());
 }

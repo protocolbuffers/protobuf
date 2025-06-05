@@ -135,6 +135,36 @@ class PROTOBUF_EXPORT WireFormatLite {
     MAX_CPPTYPE = 10,
   };
 
+  template <typename T>
+  static constexpr CppType CppTypeFor() {
+    if constexpr (std::is_same_v<int32_t, T>) {
+      return CPPTYPE_INT32;
+    } else if constexpr (std::is_same_v<int64_t, T>) {
+      return CPPTYPE_INT64;
+    } else if constexpr (std::is_same_v<uint32_t, T>) {
+      return CPPTYPE_UINT32;
+    } else if constexpr (std::is_same_v<uint64_t, T>) {
+      return CPPTYPE_UINT64;
+    } else if constexpr (std::is_same_v<double, T>) {
+      return CPPTYPE_DOUBLE;
+    } else if constexpr (std::is_same_v<float, T>) {
+      return CPPTYPE_FLOAT;
+    } else if constexpr (std::is_same_v<bool, T>) {
+      return CPPTYPE_BOOL;
+    } else if constexpr (std::is_enum_v<T>) {
+      return CPPTYPE_ENUM;
+    } else if constexpr (std::is_base_of_v<MessageLite, T>) {
+      return CPPTYPE_MESSAGE;
+    } else if constexpr (std::is_same_v<std::string, T> ||
+                         std::is_same_v<absl::string_view, T> ||
+                         std::is_same_v<absl::Cord, T>) {
+      return CPPTYPE_STRING;
+    } else {
+      // For repeated fields.
+      return CppTypeFor<typename T::value_type>();
+    }
+  }
+
   // Helper method to get the CppType for a particular Type.
   static CppType FieldTypeToCppType(FieldType type);
 

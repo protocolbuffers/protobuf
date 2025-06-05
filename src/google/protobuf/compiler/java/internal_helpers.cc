@@ -441,7 +441,7 @@ void GenerateLarge(
             return name;
           }
 
-          @Override
+          @java.lang.Override
           public String toString() {
             return name;
           }

@@ -185,11 +185,11 @@ jobs:
           # coverage.
           - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: macos-13, python-version: "3.9", architecture: x64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'binary' }
-          - { os: macos-13, python-version: "3.12", architecture: x64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
-          - { os: macos-13, python-version: "3.12", architecture: x64, type: 'source', continuous-only: true }
-          - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
+          - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'binary' }
+          - { os: macos-13, python-version: "3.13", architecture: x64, type: 'binary' }
+          - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'source'}
+          - { os: macos-13, python-version: "3.9", architecture: x64, type: 'source', continuous-only: true }
+          - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'source'}
           - { os: macos-13, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.

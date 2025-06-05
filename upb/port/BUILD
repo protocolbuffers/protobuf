@@ -13,6 +13,7 @@ cc_library(
     name = "port",
     hdrs = [
         "atomic.h",
+        "sanitizers.h",
         "vsnprintf_compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,

@@ -14,7 +14,7 @@ load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _rule_impl(ctx):
-    provided_proto_sources = depset(transitive = [bp[ProtoInfo]._transitive_proto_sources for bp in ctx.attr.blacklisted_protos]).to_list()
+    provided_proto_sources = depset(transitive = [bp[ProtoInfo].transitive_sources for bp in ctx.attr.blacklisted_protos]).to_list()
 
     flag = ctx.attr.command_line
     if flag.find("$(PLUGIN_OUT)") > -1:

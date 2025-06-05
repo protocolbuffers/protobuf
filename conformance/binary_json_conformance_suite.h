@@ -95,6 +95,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void RunJsonTestsForValue();
   void RunJsonTestsForAny();
   void RunJsonTestsForUnknownEnumStringValues();
+  void RunJsonTestsForReservedFields();
   void RunValidJsonTest(const std::string& test_name, ConformanceLevel level,
                         const std::string& input_json,
                         const std::string& equivalent_text_format);

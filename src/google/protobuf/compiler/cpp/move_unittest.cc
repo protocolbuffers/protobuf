@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 
 #if LANG_CXX11
 #include <type_traits>

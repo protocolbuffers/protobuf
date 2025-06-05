@@ -12,8 +12,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 
-#include <vector>
-
 #include "google/protobuf/compiler/cpp/message_layout_helper.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -34,11 +32,9 @@ class PaddingOptimizer final : public MessageLayoutHelper {
       : MessageLayoutHelper(descriptor) {}
   ~PaddingOptimizer() override = default;
 
-  void OptimizeLayout(std::vector<const FieldDescriptor*>& fields,
-                      const Options& options,
-                      MessageSCCAnalyzer* scc_analyzer) override;
-
  private:
+  bool HasProfiledData() const override { return false; }
+
   FieldHotness GetFieldHotness(
       const FieldDescriptor* field, const Options& options,
       MessageSCCAnalyzer* scc_analyzer) const override {
@@ -46,7 +42,9 @@ class PaddingOptimizer final : public MessageLayoutHelper {
     return kHot;
   }
 
-  FieldGroup SingleFieldGroup(const FieldDescriptor* field) const override;
+  FieldGroup SingleFieldGroup(const FieldDescriptor* field) const override {
+    return FieldGroup(field->number(), field);
+  }
 };
 
 }  // namespace cpp

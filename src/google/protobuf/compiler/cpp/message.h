@@ -16,11 +16,11 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -30,6 +30,9 @@
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
+
+// must be last
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -125,6 +128,7 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* p);
   void GenerateByteSize(io::Printer* p);
   void GenerateByteSizeV2(io::Printer* p);
+  void GenerateSerializeV2(io::Printer* p);
   void GenerateClassData(io::Printer* p);
   void GenerateMapEntryClassDefinition(io::Printer* p);
   void GenerateAnyMethodDefinition(io::Printer* p);
@@ -145,6 +149,7 @@ class MessageGenerator {
     bool needs_to_run_constructor = false;
   };
   NewOpRequirements GetNewOp(io::Printer* arena_emitter) const;
+
 
   // Helpers for GenerateSerializeWithCachedSizes().
   //
@@ -204,7 +209,6 @@ class MessageGenerator {
   template <bool kIsV2 = false>
   void EmitCheckAndUpdateByteSizeForField(const FieldDescriptor* field,
                                           io::Printer* p) const;
-  template <bool kIsV2 = false>
   void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
                                   int& cached_has_word_index) const;
 
@@ -215,6 +219,8 @@ class MessageGenerator {
   void EmitUpdateByteSizeV2ForNumerics(
       size_t field_size, io::Printer* p, int& cached_has_word_index,
       std::vector<const FieldDescriptor*>&& fields) const;
+  void EmitCheckAndSerializeField(const FieldDescriptor* field,
+                                  io::Printer* p) const;
 
   const Descriptor* descriptor_;
   int index_in_file_messages_;
@@ -254,5 +260,7 @@ class MessageGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__

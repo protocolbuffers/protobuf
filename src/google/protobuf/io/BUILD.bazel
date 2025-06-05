@@ -52,7 +52,6 @@ cc_library(
         ":io",
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -61,9 +60,9 @@ cc_test(
     srcs = ["test_zero_copy_stream_test.cc"],
     copts = COPTS,
     deps = [
+        ":io",
         ":test_zero_copy_stream",
         "//src/google/protobuf/stubs",
-        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -117,7 +116,6 @@ cc_library(
         "@abseil-cpp//absl/meta:type_traits",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
-        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -224,7 +222,6 @@ cc_test(
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/synchronization",
-        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

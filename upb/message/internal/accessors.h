@@ -688,6 +688,16 @@ UPB_API_INLINE void upb_Message_SetClosedEnum(struct upb_Message* msg,
 
 // Extension Setters ///////////////////////////////////////////////////////////
 
+UPB_API_INLINE bool upb_Message_SetExtensionMessage(
+    struct upb_Message* msg, const upb_MiniTableExtension* e,
+    struct upb_Message* value, upb_Arena* a) {
+  UPB_ASSERT(value);
+  UPB_ASSUME(upb_MiniTableExtension_CType(e) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(e) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  return upb_Message_SetExtension(msg, e, &value, a);
+}
+
 UPB_API_INLINE bool upb_Message_SetExtensionBool(
     struct upb_Message* msg, const upb_MiniTableExtension* e, bool value,
     upb_Arena* a) {

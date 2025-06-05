@@ -203,6 +203,37 @@ bool PyUpb_IsNumpyNdarray(PyObject* obj, const upb_FieldDef* f) {
   return is_ndarray;
 }
 
+bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
+  PyObject* type_module_obj =
+      PyObject_GetAttrString((PyObject*)Py_TYPE(obj), "__module__");
+  bool is_numpy = !strcmp(PyUpb_GetStrData(type_module_obj), "numpy");
+  Py_DECREF(type_module_obj);
+  if (!is_numpy) {
+    return false;
+  }
+
+  PyObject* type_name_obj =
+      PyObject_GetAttrString((PyObject*)Py_TYPE(obj), "__name__");
+  bool is_bool = !strcmp(PyUpb_GetStrData(type_name_obj), "bool");
+  Py_DECREF(type_name_obj);
+  if (!is_bool) {
+    return false;
+  }
+  return true;
+}
+
+static bool PyUpb_GetBool(PyObject* obj, const upb_FieldDef* f, bool* val) {
+  if (!PyBool_Check(obj)) {
+    if (PyUpb_IsNumpyNdarray(obj, f)) return false;
+    if (PyUpb_IsNumpyBoolScalar(obj)) {
+      *val = PyObject_IsTrue(obj);
+      return !PyErr_Occurred();
+    }
+  }
+  *val = PyLong_AsLong(obj);
+  return !PyErr_Occurred();
+}
+
 bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
                    upb_Arena* arena) {
   switch (upb_FieldDef_CType(f)) {
@@ -225,9 +256,7 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
       val->double_val = PyFloat_AsDouble(obj);
       return !PyErr_Occurred();
     case kUpb_CType_Bool:
-      if (!PyBool_Check(obj) && PyUpb_IsNumpyNdarray(obj, f)) return false;
-      val->bool_val = PyLong_AsLong(obj);
-      return !PyErr_Occurred();
+      return PyUpb_GetBool(obj, f, &val->bool_val);
     case kUpb_CType_Bytes: {
       char* ptr;
       Py_ssize_t size;

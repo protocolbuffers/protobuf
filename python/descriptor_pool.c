@@ -80,6 +80,9 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
+#if PY_VERSION_HEX >= 0x030C0000
+  PyObject_ClearWeakRefs((PyObject*)self);
+#endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
   upb_DefPool_Free(self->symtab);
@@ -721,7 +724,11 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
     PYUPB_MODULE_NAME ".DescriptorPool",
     sizeof(PyUpb_DescriptorPool),
     0,  // tp_itemsize
+#if PY_VERSION_HEX >= 0x030C0000
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_MANAGED_WEAKREF,
+#else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+#endif
     PyUpb_DescriptorPool_Slots,
 };
 

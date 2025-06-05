@@ -72,8 +72,6 @@ class iterator_range {
   IteratorT begin_iterator_, end_iterator_;
 };
 
-#ifdef __cpp_if_constexpr
-
 
 template <bool is_oneof>
 struct DynamicFieldInfoHelper {
@@ -145,7 +143,7 @@ struct DynamicExtensionInfoHelper {
   PROTOBUF_SINGULAR_PRIMITIVE_METHOD(Float, float, float);
   PROTOBUF_SINGULAR_PRIMITIVE_METHOD(Double, double, double);
   PROTOBUF_SINGULAR_PRIMITIVE_METHOD(Bool, bool, bool);
-  PROTOBUF_SINGULAR_PRIMITIVE_METHOD(Enum, int, enum);
+  PROTOBUF_SINGULAR_PRIMITIVE_METHOD(Enum, int, int32_t);
 
 #undef PROTOBUF_SINGULAR_PRIMITIVE_METHOD
 
@@ -168,7 +166,7 @@ struct DynamicExtensionInfoHelper {
   PROTOBUF_REPEATED_FIELD_METHODS(Float, float, float);
   PROTOBUF_REPEATED_FIELD_METHODS(Double, double, double);
   PROTOBUF_REPEATED_FIELD_METHODS(Bool, bool, bool);
-  PROTOBUF_REPEATED_FIELD_METHODS(Enum, int, enum);
+  PROTOBUF_REPEATED_FIELD_METHODS(Enum, int, int32_t);
 
 #undef PROTOBUF_REPEATED_FIELD_METHODS
 
@@ -1424,8 +1422,6 @@ struct MapDynamicFieldInfo {
   const FieldDescriptor* value;
   const MapFieldBase& const_map_field;
 };
-
-#endif  // __cpp_if_constexpr
 
 }  // namespace internal
 }  // namespace protobuf

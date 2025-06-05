@@ -83,7 +83,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 let s = val.into_proxied($pbi$::Private);
                 unsafe {
                   $setter_thunk$(
-                    self.as_mutator_message_ref($pbi$::Private).msg(),
+                    self.inner.raw(),
                     s.into_inner($pbi$::Private).into_raw()
                   );
                 }
@@ -94,10 +94,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 let (view, arena) =
                   s.into_inner($pbi$::Private).into_raw_parts();
 
-                let mm_ref =
-                  self.as_mutator_message_ref($pbi$::Private);
-                let parent_arena = mm_ref.arena();
-
+                let parent_arena = self.inner.arena();
                 parent_arena.fuse(&arena);
 
                 unsafe {
@@ -105,7 +102,7 @@ void SingularString::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                             <Self as $pbr$::AssociatedMiniTable>::mini_table(),
                             $upb_mt_field_index$);
                   $pbr$::upb_Message_SetBaseFieldString(
-                    self.as_mutator_message_ref($pbi$::Private).msg(),
+                    self.inner.raw(),
                     f,
                     view);
                 }

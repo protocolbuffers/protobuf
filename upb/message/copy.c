@@ -288,7 +288,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       upb_StringView* unknown = upb_TaggedAuxPtr_UnknownData(tagged_ptr);
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, unknown->data,
-                                                unknown->size, arena, false)) {
+                                                unknown->size, arena, NULL)) {
         return NULL;
       }
     }

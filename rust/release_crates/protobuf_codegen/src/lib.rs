@@ -118,17 +118,6 @@ impl CodeGen {
             .collect()
     }
 
-    fn expected_generated_c_files(&self) -> Vec<PathBuf> {
-        self.inputs
-            .iter()
-            .map(|input| {
-                let mut input = input.clone();
-                assert!(input.set_extension("upb_minitable.c"));
-                self.output_dir.join(input)
-            })
-            .collect()
-    }
-
     fn generate_crate_mapping_file(&self) -> PathBuf {
         let crate_mapping_path = self.output_dir.join("crate_mapping.txt");
         let mut file = File::create(crate_mapping_path.clone()).unwrap();
@@ -186,8 +175,7 @@ impl CodeGen {
         let crate_mapping_path = self.generate_crate_mapping_file();
 
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
-            .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
-            .arg(format!("--upb_minitable_out={}", self.output_dir.display()));
+            .arg("--rust_opt=experimental-codegen=enabled,kernel=upb");
         for include in &self.includes {
             cmd.arg(format!("--proto_path={}", include.display()));
         }
@@ -201,25 +189,6 @@ impl CodeGen {
         println!("{}", std::str::from_utf8(&output.stdout).unwrap());
         eprintln!("{}", std::str::from_utf8(&output.stderr).unwrap());
         assert!(output.status.success());
-        self.compile_only()
-    }
-
-    /// Builds and links the C code.
-    pub fn compile_only(&self) -> Result<(), String> {
-        let mut cc_build = cc::Build::new();
-        cc_build
-            .include(
-                std::env::var_os("DEP_UPB_INCLUDE")
-                    .expect("DEP_UPB_INCLUDE should have been set, make sure that the Protobuf crate is a dependency"),
-            )
-            .include(self.output_dir.clone())
-            .flag("-std=c99");
-
-        for dep in &self.dependencies {
-            for path in &dep.c_include_paths {
-                cc_build.include(path);
-            }
-        }
 
         for path in &self.expected_generated_rs_files() {
             if !path.exists() {
@@ -227,14 +196,7 @@ impl CodeGen {
             }
             println!("cargo:rerun-if-changed={}", path.display());
         }
-        for path in &self.expected_generated_c_files() {
-            if !path.exists() {
-                return Err(format!("expected generated file {} does not exist", path.display()));
-            }
-            println!("cargo:rerun-if-changed={}", path.display());
-            cc_build.file(path);
-        }
-        cc_build.compile(&format!("{}_upb_gen_code", std::env::var("CARGO_PKG_NAME").unwrap()));
+
         Ok(())
     }
 }

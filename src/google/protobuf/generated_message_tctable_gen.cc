@@ -12,13 +12,13 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
+#include <optional>
 #include <vector>
 
 #include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -149,10 +149,13 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
    : field->is_repeated() ? PROTOBUF_PICK_FUNCTION(fn##R) \
                           : PROTOBUF_PICK_FUNCTION(fn##S))
 
-#define PROTOBUF_PICK_STRING_FUNCTION(fn)                            \
-  (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                              \
-   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)      \
+#define PROTOBUF_PICK_STRING_FUNCTION(fn)                                 \
+  (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
+       ? PROTOBUF_PICK_FUNCTION(fn##cS)                                   \
+   : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
+           options.use_micro_string                                       \
+       ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
+   : options.is_string_inlined ? PROTOBUF_PICK_FUNCTION(fn##iS)           \
                                : PROTOBUF_PICK_REPEATABLE_FUNCTION(fn))
 
   const FieldDescriptor* field = entry.field;
@@ -285,11 +288,7 @@ bool IsFieldEligibleForFastParsing(
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      if (options.use_micro_string &&
-          field->cpp_string_type() == FieldDescriptor::CppStringType::kView) {
-        // TODO: Add fast parsers.
-        return false;
-      } else if (options.is_string_inlined) {
+      if (options.is_string_inlined) {
         ABSL_CHECK(!field->is_repeated());
         // For inlined strings, the donation state index is stored in the
         // `aux_idx` field of the fast parsing info. We need to check the range
@@ -303,9 +302,8 @@ bool IsFieldEligibleForFastParsing(
       break;
   }
 
-  // The tailcall parser can only update the first 32 hasbits. Fields with
-  // has-bits beyond the first 32 are handled by mini parsing/fallback.
-  if (entry.hasbit_idx >= 32) return false;
+  if (entry.hasbit_idx > TailCallTableInfo::kMaxFastFieldHasbitIndex)
+    return false;
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
@@ -317,7 +315,7 @@ bool IsFieldEligibleForFastParsing(
 }
 
 void PopulateFastFields(
-    absl::optional<uint32_t> end_group_tag,
+    std::optional<uint32_t> end_group_tag,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
     const TailCallTableInfo::MessageOptions& message_options,
     absl::Span<const TailCallTableInfo::FieldOptions> fields,
@@ -718,9 +716,9 @@ uint32_t GetRecodedTagForFastParsing(const FieldDescriptor* field) {
       internal::WireFormat::MakeTag(field));
 }
 
-absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
+std::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
   auto* parent = descriptor->containing_type();
-  if (parent == nullptr) return absl::nullopt;
+  if (parent == nullptr) return std::nullopt;
   for (int i = 0; i < parent->field_count(); ++i) {
     auto* field = parent->field(i);
     if (field->type() == field->TYPE_GROUP &&
@@ -729,11 +727,11 @@ absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
                                      WireFormatLite::WIRETYPE_END_GROUP);
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 uint32_t FastParseTableSize(size_t num_fields,
-                            absl::optional<uint32_t> end_group_tag) {
+                            std::optional<uint32_t> end_group_tag) {
   return end_group_tag.has_value()
              ? TcParseTableBase::kMaxFastFields
              : std::max(size_t{1}, std::min(TcParseTableBase::kMaxFastFields,
@@ -790,24 +788,22 @@ TailCallTableInfo::BuildFieldEntries(
     return options.presence_probability >= 0.005;
   };
   size_t num_non_cold_subtables = 0;
-  if (message_options.should_profile_driven_cluster_aux_subtable) {
-    // We found that clustering non-cold subtables to the top of aux_entries
-    // achieves the best load tests results than other strategies (e.g.,
-    // clustering all non-cold entries).
-    const auto is_non_cold_subtable = [&](const FieldOptions& options) {
-      auto* field = options.field;
-      // In the following code where we assign kSubTable to aux entries, only
-      // the following typed fields are supported.
-      return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
-              field->type() == FieldDescriptor::TYPE_GROUP) &&
-             !field->is_map() && !field->options().weak() &&
-             !HasLazyRep(field, options) && !options.is_implicitly_weak &&
-             options.use_direct_tcparser_table && is_non_cold(options);
-    };
-    for (const FieldOptions& options : ordered_fields) {
-      if (is_non_cold_subtable(options)) {
-        num_non_cold_subtables++;
-      }
+  // We found that clustering non-cold subtables to the top of aux_entries
+  // achieves the best load tests results than other strategies (e.g.,
+  // clustering all non-cold entries).
+  const auto is_non_cold_subtable = [&](const FieldOptions& options) {
+    auto* field = options.field;
+    // In the following code where we assign kSubTable to aux entries, only
+    // the following typed fields are supported.
+    return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
+            field->type() == FieldDescriptor::TYPE_GROUP) &&
+           !field->is_map() && !field->options().weak() &&
+           !HasLazyRep(field, options) && !options.is_implicitly_weak &&
+           options.use_direct_tcparser_table && is_non_cold(options);
+  };
+  for (const FieldOptions& options : ordered_fields) {
+    if (is_non_cold_subtable(options)) {
+      num_non_cold_subtables++;
     }
   }
 
@@ -860,8 +856,7 @@ TailCallTableInfo::BuildFieldEntries(
         AuxType type = options.is_implicitly_weak          ? kSubMessageWeak
                        : options.use_direct_tcparser_table ? kSubTable
                                                            : kSubMessage;
-        if (message_options.should_profile_driven_cluster_aux_subtable &&
-            type == kSubTable && is_non_cold(options)) {
+        if (type == kSubTable && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
           entry.aux_idx = subtable_aux_idx;
           ++subtable_aux_idx;
@@ -1017,8 +1012,14 @@ TailCallTableInfo::TailCallTableInfo(
     // Half the table by merging fields.
     num_fast_fields /= 2;
     for (size_t i = 0; i < num_fast_fields; ++i) {
-      if ((important_fields >> i) & 1) continue;
-      fast_fields[i] = fast_fields[i + num_fast_fields];
+      size_t merge_i = i + num_fast_fields;
+      // Overwrite the surviving entries if the discarded half contains an
+      // important field (meaning the surviving entry is not) or the surviving
+      // entry is empty.
+      if (((important_fields >> merge_i) & 1) != 0 ||
+          fast_fields[i].is_empty()) {
+        fast_fields[i] = fast_fields[merge_i];
+      }
     }
     important_fields |= important_fields >> num_fast_fields;
   }

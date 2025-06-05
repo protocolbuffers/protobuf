@@ -98,13 +98,19 @@ class Amalgamator:
     include = parse_include(line)
     if not include:
       return False
-    if not (include.startswith("upb") or include.startswith("google")):
+    if not (
+        include.startswith("upb")
+        or include.startswith("google")
+    ):
       return False
     if include and (include.endswith("port/def.inc") or include.endswith("port/undef.inc")):
       # Skip, we handle this separately
       return True
     if include.endswith("hpp"):
       # Skip, we don't support the amalgamation from C++.
+      return True
+    if "decode_fast" in include:
+      # Skip, we don't support the fasttable parser in the amalgamation.
       return True
     if re.search(r"stage\d/", include):
       return True

@@ -53,6 +53,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -123,6 +124,36 @@ TEST(MESSAGE_TEST_NAME, SerializeHelpers) {
 
   EXPECT_TRUE(message.SerializeAsString() == str1);
 
+}
+
+inline void ExerciseReflectionOps(Message* msg) {
+  std::unique_ptr<Message> other(msg->New()), other2(msg->New());
+  internal::ReflectionOps::Copy(*msg, other.get());
+  internal::ReflectionOps::Clear(msg);
+  msg->GetReflection()->UnsafeArenaSwap(other.get(), other2.get());
+  msg->GetReflection()->Swap(msg, other2.get());
+  EXPECT_NE(0, msg->SpaceUsedLong());
+}
+
+TEST(MESSAGE_TEST_NAME, ReflectionAccessToAllFields) {
+  UNITTEST::TestAllTypes message;
+  UNITTEST::TestAllExtensions all_ext;
+  for (auto* msg :
+       {static_cast<Message*>(&message), static_cast<Message*>(&all_ext)}) {
+    TestUtil::ReflectionTester reflection_tester(msg->GetDescriptor());
+    reflection_tester.ExpectClearViaReflection(*msg);
+    reflection_tester.SetAllFieldsViaReflection(msg);
+    ExerciseReflectionOps(msg);
+    reflection_tester.ExpectAllFieldsSetViaReflection(*msg);
+    internal::ReflectionOps::Clear(msg);
+    reflection_tester.ExpectClearViaReflection(*msg);
+  }
+
+  UNITTEST::TestOneof2 oneof;
+  TestUtil::ReflectionTester::SetOneofViaReflection(&oneof);
+  ExerciseReflectionOps(&oneof);
+  TestUtil::ReflectionTester::ExpectOneofSetViaReflection(oneof);
+  internal::ReflectionOps::Clear(&oneof);
 }
 
 TEST(MESSAGE_TEST_NAME, RoundTrip) {
