@@ -12,7 +12,7 @@ require 'erb'
 
 files = Dir.glob('ext/**/*.c')
 classes = {}
-MethodDefn = Struct.new(:name, :body) do
+MethodDefn = Struct.new(:name, :body, keyword_init: true) do
   def params
     params = body.scan(/@param (\S+) /).map { |p| p[0]}
     defaults = body.scan(/@paramdefault (\S+) (\S+)/).map { |p| [p[0], p[1]]}.to_h
