@@ -12,7 +12,7 @@ echo Building MinGW
 set PATH=C:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\mingw64\bin;%PATH:C:\Program Files\Git\usr\bin;=%
 mkdir build_mingw
 cd build_mingw
-cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% -Dprotobuf_BUILD_TESTS=0 ../cmake
+cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_BUILD_TESTS=0 ../cmake
 mingw32-make -j8 all || goto error
 rem cd %configuration%
 rem tests.exe || goto error
@@ -22,7 +22,7 @@ goto :EOF
 echo Building C++
 mkdir build_msvc
 cd build_msvc
-cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% ../cmake
+cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% ../cmake
 msbuild protobuf.sln /p:Platform=%vcplatform% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" || goto error
 cd %configuration%
 tests.exe || goto error
