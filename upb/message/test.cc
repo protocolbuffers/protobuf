@@ -53,6 +53,7 @@
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
+#include "upb/wire/writer.h"
 
 // Must be last
 #include "upb/port/def.inc"
@@ -857,6 +858,23 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
     ASSERT_TRUE(upb_Map_IsFrozen(map));
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
+  }
+}
+
+/* Tests some somewhat tricky math used in size calculations while encoding */
+TEST(MessageTest, SkippedVarintSize) {
+  for (uint32_t clz = 0; clz <= 64; clz++) {
+    // Optimized math used in encoding
+    uint32_t skip =
+        UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(clz);
+    // traditional varint size calculation
+    uint64_t val = clz == 64 ? 0 : (~uint64_t{0} >> clz);
+    uint32_t count = 0;
+    do {
+      count++;
+      val >>= 7;
+    } while (val);
+    EXPECT_EQ(skip, 10 - count);
   }
 }
 

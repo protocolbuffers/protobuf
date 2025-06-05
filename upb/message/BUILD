@@ -407,6 +407,7 @@ cc_test(
         "//upb/test:fuzz_util",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/text:debug",
+        "//upb/wire:writer",
         "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings",

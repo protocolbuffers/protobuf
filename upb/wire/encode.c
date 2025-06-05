@@ -42,6 +42,7 @@
 #include "upb/mini_table/message.h"
 #include "upb/wire/internal/constants.h"
 #include "upb/wire/types.h"
+#include "upb/wire/writer.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -140,6 +141,64 @@ static char* encode_fixed32(char* ptr, upb_encstate* e, uint32_t val) {
 
 #define UPB_PB_VARINT_MAX_LEN 10
 
+// Need gnu extended inline asm
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
+#define UPB_ARM64_ASM
+#endif
+
+#ifdef UPB_ARM64_ASM
+UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
+                                                  uint64_t val) {
+  ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
+  uint64_t clz;
+  __asm__("clz %[cnt], %[val]\n" : [cnt] "=r"(clz) : [val] "r"(val));
+
+  uint32_t skip =
+      UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(clz);
+
+  ptr += skip;
+  uint64_t addr, mask;
+  __asm__ volatile(
+      "adr %[addr], 0f\n"
+      // Each arm64 instruction encodes to 4 bytes, and it takes two
+      // intructions to process each byte of output, so we branch ahead by
+      //  (4 + 4) * skip to avoid the remaining bytes.
+      "add %[addr], %[addr], %[cnt], lsl #3\n"
+      "mov %w[mask], #0x80\n"
+      "br %[addr]\n"
+      "0:\n"
+      // We don't need addr any more, but we've got the register for our whole
+      // assembly block so we'll use it as scratch to store the shift+masked
+      // values before storing them.
+      // The following stores are unsigned offset stores:
+      // strb Wt, [Xn, #imm]
+      "orr %[addr], %[mask], %[val], lsr #56\n"
+      "strb %w[addr], [%[ptr], #8]\n"
+      "orr %[addr], %[mask], %[val], lsr #49\n"
+      "strb %w[addr], [%[ptr], #7]\n"
+      "orr %[addr], %[mask], %[val], lsr #42\n"
+      "strb %w[addr], [%[ptr], #6]\n"
+      "orr %[addr], %[mask], %[val], lsr #35\n"
+      "strb %w[addr], [%[ptr], #5]\n"
+      "orr %[addr], %[mask], %[val], lsr #28\n"
+      "strb %w[addr], [%[ptr], #4]\n"
+      "orr %w[addr], %w[mask], %w[val], lsr #21\n"
+      "strb %w[addr], [%[ptr], #3]\n"
+      "orr %w[addr], %w[mask], %w[val], lsr #14\n"
+      "strb %w[addr], [%[ptr], #2]\n"
+      "orr %w[addr], %w[mask], %w[val], lsr #7\n"
+      "strb %w[addr], [%[ptr], #1]\n"
+      "orr %w[addr], %w[val], #0x80\n"
+      "strb %w[addr], [%[ptr]]\n"
+      : [addr] "=&r"(addr), [mask] "=&r"(mask)
+      : [val] "r"(val), [ptr] "r"(ptr), [cnt] "r"((uint64_t)skip)
+      : "memory");
+  // Encode the final byte after the continuation bytes.
+  uint32_t continuations = UPB_PB_VARINT_MAX_LEN - 1 - skip;
+  ptr[continuations] = val >> (7 * continuations);
+  return ptr;
+}
+#else
 UPB_NOINLINE
 static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
   ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
@@ -154,6 +213,7 @@ static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
   memmove(start, ptr, len);
   return start;
 }
+#endif
 
 UPB_FORCEINLINE
 char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
@@ -162,7 +222,11 @@ char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
     *ptr = val;
     return ptr;
   } else {
+#ifdef UPB_ARM64_ASM
+    return encode_longvarint_arm64(ptr, e, val);
+#else
     return encode_longvarint(ptr, e, val);
+#endif
   }
 }
 

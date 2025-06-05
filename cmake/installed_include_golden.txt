@@ -228,5 +228,6 @@ upb/wire/encode.h
 upb/wire/eps_copy_input_stream.h
 upb/wire/reader.h
 upb/wire/types.h
+upb/wire/writer.h
 utf8_range.h
 utf8_validity.h

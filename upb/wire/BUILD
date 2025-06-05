@@ -49,6 +49,7 @@ cc_library(
         ":decoder",
         ":eps_copy_input_stream",
         ":reader",
+        ":writer",
         "//third_party/utf8_range",
         "//upb:base",
         "//upb:mem",
@@ -136,6 +137,21 @@ cc_library(
         ":reader_internal",
         "//upb:port",
         "//upb/base:internal",
+    ],
+)
+
+cc_library(
+    name = "writer",
+    hdrs = [
+        "writer.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/message:__pkg__",
+    ],
+    deps = [
+        "//upb:port",
     ],
 )
 
