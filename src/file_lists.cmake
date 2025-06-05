@@ -824,6 +824,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/internal/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/types.h
+  ${protobuf_SOURCE_DIR}/upb/wire/writer.h
 )
 
 # @//pkg:protoc-gen-upb
