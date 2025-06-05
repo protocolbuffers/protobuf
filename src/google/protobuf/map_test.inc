@@ -2448,11 +2448,11 @@ TEST(GeneratedMapFieldTest, CopyFrom) {
   UNITTEST::TestMap message1, message2;
 
   MapTestUtil::SetMapFields(&message1);
-  message2.CopyFrom(message1);
+  message2 = message1;
   MapTestUtil::ExpectMapFieldsSet(message2);
 
   // Copying from self should be a no-op.
-  message2.CopyFrom(message2);
+  message2 = message2;
   MapTestUtil::ExpectMapFieldsSet(message2);
 }
 
@@ -2462,7 +2462,7 @@ TEST(GeneratedMapFieldTest, CopyFromMessageMap) {
   (*message1.mutable_map_int32_message())[0].add_repeated_int32(100);
   (*message2.mutable_map_int32_message())[0].add_repeated_int32(101);
 
-  message1.CopyFrom(message2);
+  message1 = message2;
 
   // Checks repeated field is overwritten.
   EXPECT_EQ(1, message1.map_int32_message().at(0).repeated_int32_size());
