@@ -685,8 +685,8 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
               "didn't match any actual test name.  Remove them from the "
               "failure list by running from the root of your workspace:\n"
               "  bazel run "
-              "//google/protobuf/conformance:update_failure_list -- ",
-              failure_list_filename_, " --remove ", output_dir_,
+              "//conformance:update_failure_list -- $(realpath ",
+              failure_list_filename_, ") --remove ", output_dir_,
               "unmatched.txt"),
           output_dir_, &output_)) {
     ok = false;
@@ -700,8 +700,8 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
               "failure messages do not match.  Remove their match from the "
               "failure list by running from the root of your workspace:\n"
               "  bazel run ",
-              "//google/protobuf/conformance:update_failure_list -- ",
-              failure_list_filename_, " --remove ", output_dir_,
+              "//conformance:update_failure_list -- $(realpath ",
+              failure_list_filename_, ") --remove ", output_dir_,
               "expected_failure_messages.txt"),
           output_dir_, &output_)) {
     ok = false;
@@ -715,8 +715,8 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
               " Remove their match from the failure list by "
               "running from the root of your workspace:\n"
               "  bazel run "
-              "//google/protobuf/conformance:update_failure_list -- ",
-              failure_list_filename_, " --remove ", output_dir_,
+              "//conformance:update_failure_list -- $(realpath ",
+              failure_list_filename_, ") --remove ", output_dir_,
               "succeeding_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
@@ -730,7 +730,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
               "Remove them from the failure list by running from the root of "
               "your workspace:\n"
               "  bazel run "
-              "//google/protobuf/conformance:update_failure_list -- %s "
+              "//conformance:update_failure_list -- $(realpath %s) "
               "--remove %sexceeded_max_matches.txt",
               kMaximumWildcardExpansions, failure_list_filename_, output_dir_),
           output_dir_, &output_)) {
@@ -747,8 +747,8 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
               "suite can succeed.  Add them to the failure list by "
               "running from the root of your workspace:\n"
               "  bazel run "
-              "//google/protobuf/conformance:update_failure_list -- ",
-              failure_list_filename_, " --add ", output_dir_,
+              "//conformance:update_failure_list -- $(realpath ",
+              failure_list_filename_, ") --add ", output_dir_,
               "unexpected_failure_messages.txt"),
           output_dir_, &output_)) {
     ok = false;
@@ -762,8 +762,8 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
               "suite can succeed.  Add them to the failure list by "
               "running from the root of your workspace:\n"
               "  bazel run "
-              "//google/protobuf/conformance:update_failure_list -- ",
-              failure_list_filename_, " --add ", output_dir_,
+              "//conformance:update_failure_list -- $(realpath ",
+              failure_list_filename_, ") --add ", output_dir_,
               "failing_tests.txt"),
           output_dir_, &output_)) {
     ok = false;
