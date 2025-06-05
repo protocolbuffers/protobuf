@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "google/protobuf/descriptor.proto";
+
 option cc_enable_arenas = true;
 option go_package = "google.golang.org/protobuf/types/known/durationpb";
 option java_package = "com.google.protobuf";
@@ -112,4 +114,8 @@ message Duration {
   // of the same sign as the `seconds` field. Must be from -999,999,999
   // to +999,999,999 inclusive.
   int32 nanos = 2;
+}
+
+extend google.protobuf.ExtensionRangeOptions {
+  optional Duration duration_ext = 234672961;
 }
