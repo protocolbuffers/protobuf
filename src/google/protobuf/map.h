@@ -1408,7 +1408,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     return *this;
   }
 
-  void swap(Map& other) {
+  void swap(Map& other) noexcept {
     if (arena() == other.arena()) {
       InternalSwap(&other);
     } else {
