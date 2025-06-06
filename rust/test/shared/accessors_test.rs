@@ -398,7 +398,7 @@ fn test_default_bool_accessors() {
 #[gtest]
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
@@ -411,12 +411,12 @@ fn test_optional_bytes_accessors() {
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
 
     msg.clear_optional_bytes();
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
     msg.set_optional_bytes(b"");
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(true));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 }
@@ -484,7 +484,7 @@ fn test_nonempty_default_bytes_accessors() {
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
 
     msg.set_default_bytes(b"");
-    assert_that!(*msg.default_bytes(), empty());
+    assert_that!(*msg.default_bytes(), is_empty());
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b""[..])));
 
     msg.clear_default_bytes();

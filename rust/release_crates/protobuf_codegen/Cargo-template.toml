@@ -8,4 +8,4 @@ license = "BSD-3-Clause"
 rust-version = "1.79"
 
 [dev-dependencies]
-googletest = "0.13.0"
+googletest = "0.14.2"

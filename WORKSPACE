@@ -271,7 +271,7 @@ crates_repository(
     packages = {
         "googletest": crate.spec(
             git = "https://github.com/google/googletest-rust",
-            rev = "b407f3b5774defb8917d714bfb7af485e117d621",
+            rev = "0db12bb338b9e75884a24493273c6bf4ce0fa5f5",
         ),
         "paste": crate.spec(
             version = ">=1",
