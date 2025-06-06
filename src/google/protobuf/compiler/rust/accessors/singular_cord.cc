@@ -112,11 +112,9 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                } else {
                  ctx.Emit(R"rs(
                 let view = unsafe {
-                  let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                      <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                      $upb_mt_field_index$);
-                  $pbr$::upb_Message_GetString(
-                      self.raw_msg(), f, ($default_value$).into())
+                  self.inner.ptr().get_string_at_index(
+                    $upb_mt_field_index$, ($default_value$).into()
+                  )
                 };
                 $transform_borrowed$
               )rs");
@@ -153,13 +151,10 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               parent_arena.fuse(&arena);
 
               unsafe {
-                let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
-                $pbr$::upb_Message_SetBaseFieldString(
-                  self.inner.raw(),
-                  f,
-                  view);
+                self.inner.ptr_mut().set_base_field_string_at_index(
+                  $upb_mt_field_index$,
+                  view,
+                );
               }
             )rs");
                }

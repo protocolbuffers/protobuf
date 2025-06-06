@@ -5,11 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::mini_table::MiniTableFieldPtr;
-use super::sys::{message::array as sys_array, message::message as sys_msg};
+use super::sys::{
+    message::array as sys_array, message::message as sys_msg, mini_table::mini_table as sys_mt,
+};
 use super::StringView;
 use super::{Arena, AssociatedMiniTable};
 use core::marker::PhantomData;
+use paste::paste;
 
 pub type RawMessage = sys_msg::RawMessage;
 
@@ -32,6 +34,39 @@ impl<T> MessagePtr<T> {
         self.raw
     }
 }
+
+macro_rules! scalar_accessors {
+    ( $ty:ty, $rust_ty_name:ident, $upb_ty_name:ident) => {
+        paste! {
+            impl<T: AssociatedMiniTable> MessagePtr<T> {
+                /// # Safety
+                /// - `self` must be a legally dereferenceable.
+                /// - The field at `index` must be a $ty field.
+                pub unsafe fn [< get_ $rust_ty_name _at_index >] (self, index: u32, default_value: $ty) -> $ty {
+                    let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+                    unsafe { sys_msg::[< upb_Message_Get $upb_ty_name >](self.raw, f, default_value) }
+                }
+
+                /// # Safety
+                /// - `self` must be a legally dereferenceable to a mutable message.
+                /// - The field at `index` must be a $ty field.
+                pub unsafe fn [< set_base_field_ $rust_ty_name _at_index >] (self, index: u32, value: $ty) {
+                    let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+                    unsafe { sys_msg::[< upb_Message_SetBaseField $upb_ty_name >](self.raw, f, value) }
+                }
+            }
+        }
+    };
+}
+
+scalar_accessors!(bool, bool, Bool);
+scalar_accessors!(i32, i32, Int32);
+scalar_accessors!(i64, i64, Int64);
+scalar_accessors!(u32, u32, UInt32);
+scalar_accessors!(u64, u64, UInt64);
+scalar_accessors!(f32, f32, Float);
+scalar_accessors!(f64, f64, Double);
+scalar_accessors!(StringView, string, String);
 
 impl<T: AssociatedMiniTable> MessagePtr<T> {
     /// Constructs a new mutable message pointer.
@@ -71,89 +106,64 @@ impl<T: AssociatedMiniTable> MessagePtr<T> {
 
     /// # Safety
     /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a bool field.
-    pub unsafe fn get_bool(self, f: MiniTableFieldPtr<T>, default_value: bool) -> bool {
-        unsafe { sys_msg::upb_Message_GetBool(self.raw, f.raw, default_value) }
+    /// - `index` must be within bounds of `T::mini_table()`.
+    pub unsafe fn clear_field_at_index(self, index: u32) {
+        let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+        unsafe { sys_msg::upb_Message_ClearBaseField(self.raw, f) }
     }
 
     /// # Safety
     /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a bool field.
-    pub unsafe fn get_i32(self, f: MiniTableFieldPtr<T>, default_value: i32) -> i32 {
-        unsafe { sys_msg::upb_Message_GetInt32(self.raw, f.raw, default_value) }
-    }
-
-    /// # Safety
-    /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a int64 field.
-    pub unsafe fn get_i64(self, f: MiniTableFieldPtr<T>, default_value: i64) -> i64 {
-        unsafe { sys_msg::upb_Message_GetInt64(self.raw, f.raw, default_value) }
-    }
-
-    /// # Safety
-    /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a uint32 field.
-    pub unsafe fn get_u32(self, f: MiniTableFieldPtr<T>, default_value: u32) -> u32 {
-        unsafe { sys_msg::upb_Message_GetUInt32(self.raw, f.raw, default_value) }
-    }
-
-    /// # Safety
-    /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a uint64 field.
-    pub unsafe fn get_u64(self, f: MiniTableFieldPtr<T>, default_value: u64) -> u64 {
-        unsafe { sys_msg::upb_Message_GetUInt64(self.raw, f.raw, default_value) }
-    }
-
-    /// # Safety
-    /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a float field.
-    pub unsafe fn get_f32(self, f: MiniTableFieldPtr<T>, default_value: f32) -> f32 {
-        unsafe { sys_msg::upb_Message_GetFloat(self.raw, f.raw, default_value) }
-    }
-
-    /// # Safety
-    /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a double field.
-    pub unsafe fn get_f64(self, f: MiniTableFieldPtr<T>, default_value: f64) -> f64 {
-        unsafe { sys_msg::upb_Message_GetDouble(self.raw, f.raw, default_value) }
-    }
-
-    /// # Safety
-    /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a string field.
-    pub unsafe fn get_string(
-        self,
-        f: MiniTableFieldPtr<T>,
-        default_value: StringView,
-    ) -> StringView {
-        unsafe { sys_msg::upb_Message_GetString(self.raw, f.raw, default_value) }
+    /// - `index` must be within bounds of `T::mini_table()`.
+    pub unsafe fn has_field_at_index(self, index: u32) -> bool {
+        let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+        unsafe { sys_msg::upb_Message_HasBaseField(self.raw, f) }
     }
 
     /// Returns an constant message pointer, or None if the field is not present.
     ///
     /// # Safety
     /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a message field.
-    pub unsafe fn get_message(self, f: MiniTableFieldPtr<T>) -> Option<MessagePtr<T>> {
-        let raw = unsafe { sys_msg::upb_Message_GetMessage(self.raw, f.raw) };
+    /// - The field at `index` must be a message field.
+    pub unsafe fn get_message_at_index(self, index: u32) -> Option<MessagePtr<T>> {
+        let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+
+        let raw = unsafe { sys_msg::upb_Message_GetMessage(self.raw, f) };
         raw.map(|raw| MessagePtr { raw, _phantom: PhantomData })
+    }
+
+    /// Returns an constant message pointer, or None if the field is not present.
+    ///
+    /// # Safety
+    /// - `self` must be a legally dereferenceable.
+    /// - The field at `index` must be a message field of type `ChildT`.
+    /// - Caller must ensure that `value` outlives `self` (typically by being on the same arena).
+    pub unsafe fn set_base_field_message_at_index<ChildT>(
+        self,
+        index: u32,
+        value: MessagePtr<ChildT>,
+    ) {
+        let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+        unsafe { sys_msg::upb_Message_SetBaseFieldMessage(self.raw, f, value.raw) }
     }
 
     /// Returns a mutable message pointer, creating the field if it is not present.
     ///
     /// # Safety
-    /// - `self` must be a legally deferencable.
-    /// - `f` must be a message field.
-    pub unsafe fn get_or_create_mutable_message(
+    /// - `self` must be a legally deferencable to a mutable message.
+    /// - The field at `index` must be a message field.
+    pub unsafe fn get_or_create_mutable_message_at_index(
         self,
-        f: MiniTableFieldPtr<T>,
+        index: u32,
         arena: &Arena,
     ) -> Option<MessagePtr<T>> {
+        let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+
         let raw = unsafe {
             sys_msg::upb_Message_GetOrCreateMutableMessage(
                 self.raw,
                 T::mini_table(),
-                f.raw,
+                f,
                 arena.raw(),
             )
         };
@@ -164,24 +174,25 @@ impl<T: AssociatedMiniTable> MessagePtr<T> {
     ///
     /// # Safety
     /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a repeated field.
-    pub unsafe fn get_array(self, f: MiniTableFieldPtr<T>) -> Option<sys_array::RawArray> {
-        let raw = unsafe { sys_msg::upb_Message_GetArray(self.raw, f.raw) };
+    /// - The field at `index` must be a repeated field.
+    pub unsafe fn get_array_at_index(self, index: u32) -> Option<sys_array::RawArray> {
+        let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+        let raw = unsafe { sys_msg::upb_Message_GetArray(self.raw, f) };
         raw
     }
 
     /// Returns a mutable pointer to an array. Will only return None if arena allocation fails.
     ///
     /// # Safety
-    /// - `self` must be a legally dereferenceable.
-    /// - `f` must be a repeated field.
-    pub unsafe fn get_or_create_mutable_array(
+    /// - `self` must be a legally dereferenceable to a mutable message.
+    /// - The field at `index` must be a repeated field.
+    pub unsafe fn get_or_create_mutable_array_at_index(
         self,
-        f: MiniTableFieldPtr<T>,
+        index: u32,
         arena: &Arena,
     ) -> Option<sys_array::RawArray> {
-        let raw =
-            unsafe { sys_msg::upb_Message_GetOrCreateMutableArray(self.raw, f.raw, arena.raw()) };
+        let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
+        let raw = unsafe { sys_msg::upb_Message_GetOrCreateMutableArray(self.raw, f, arena.raw()) };
         raw
     }
 }
