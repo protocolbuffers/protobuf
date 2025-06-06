@@ -17,10 +17,12 @@
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 
 // Must be included last.
@@ -155,6 +157,21 @@ void FieldMaskUtil::GetFieldMaskForAllFields(const Descriptor* descriptor,
                                              FieldMask* out) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     out->add_paths(descriptor->field(i)->name());
+  }
+}
+
+void FieldMaskUtil::ExtractFieldMask(const Message& message, FieldMask* out) {
+  const google::protobuf::Descriptor* descriptor = message.GetDescriptor();
+  const google::protobuf::Reflection* reflection = message.GetReflection();
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    const google::protobuf::FieldDescriptor* field = descriptor->field(i);
+    if (field->is_repeated()) {
+      if (reflection->FieldSize(message, field) > 0) {
+        out->add_paths(descriptor->field(i)->name());
+      }
+    } else if (reflection->HasField(message, field)) {
+      out->add_paths(descriptor->field(i)->name());
+    }
   }
 }
 
