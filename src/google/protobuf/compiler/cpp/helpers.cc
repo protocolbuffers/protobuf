@@ -1339,9 +1339,13 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
 }
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+bool IsV2CodegenEnabled(const Options& options) {
+  return !options.opensource_runtime && !options.bootstrap;
+}
+
 bool ShouldGenerateV2Code(const Descriptor* descriptor,
                           const Options& options) {
-  return !options.opensource_runtime && !options.bootstrap &&
+  return IsV2CodegenEnabled(options) &&
          !HasSimpleBaseClass(descriptor, options);
 }
 

@@ -1743,10 +1743,10 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                   }
                   static bool GetAnyFieldDescriptors(
                       const $pb$::Message& message,
-                      const $pb$::FieldDescriptor* $nullable$* $nonnull$
-                          type_url_field,
-                      const $pb$::FieldDescriptor* $nullable$* $nonnull$
-                          value_field);
+                      const $pb$::FieldDescriptor * $nullable$ *
+                          $nonnull$ type_url_field,
+                      const $pb$::FieldDescriptor * $nullable$ *
+                          $nonnull$ value_field);
                   template <
                       typename T,
                       class = typename std::enable_if<!std::is_convertible<
