@@ -146,10 +146,10 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   }
   static bool GetAnyFieldDescriptors(
       const ::google::protobuf::Message& message,
-      const ::google::protobuf::FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL
-          type_url_field,
-      const ::google::protobuf::FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL
-          value_field);
+      const ::google::protobuf::FieldDescriptor * PROTOBUF_NULLABLE *
+          PROTOBUF_NONNULL type_url_field,
+      const ::google::protobuf::FieldDescriptor * PROTOBUF_NULLABLE *
+          PROTOBUF_NONNULL value_field);
   template <
       typename T,
       class = typename std::enable_if<!std::is_convertible<
