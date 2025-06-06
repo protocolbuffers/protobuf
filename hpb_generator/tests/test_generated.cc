@@ -682,7 +682,8 @@ TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaFused) {
 
   hpb::Arena other_arena;
   auto parent2 = hpb::CreateMessage<Parent>(other_arena);
-  arena.Fuse(other_arena);
+  hpb::interop::upb::GetArenaHandle(arena).Fuse(
+      hpb::interop::upb::GetArenaHandle(other_arena));
 
   parent2.set_alias_child(child);
 

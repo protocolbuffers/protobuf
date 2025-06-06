@@ -27,7 +27,11 @@ struct PrivateAccess {
   }
   template <typename T>
   static auto* GetInternalUPBArena(T&& arena) {
-    return arena.ptr();
+    return arena.arena_.ptr();
+  }
+  template <typename T>
+  static auto& GetArenaHandle(T&& arena) {
+    return arena.arena_;
   }
   template <typename T>
   static auto Proxy(upb_Message* p, upb_Arena* arena) {
