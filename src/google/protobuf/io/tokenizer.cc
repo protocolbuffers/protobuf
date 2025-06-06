@@ -67,13 +67,14 @@
 
 #include "google/protobuf/io/tokenizer.h"
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/stubs/common.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
