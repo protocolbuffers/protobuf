@@ -2493,6 +2493,7 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const
   auto& from = static_cast<const FileDescriptorSet&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3134,6 +3135,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3515,6 +3517,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -3797,6 +3800,7 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
   auto& from = static_cast<const DescriptorProto_ReservedRange&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4376,6 +4380,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const :
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -4780,6 +4785,7 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLit
   auto& from = static_cast<const ExtensionRangeOptions_Declaration&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5168,6 +5174,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, c
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -5698,6 +5705,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6039,6 +6047,7 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6316,6 +6325,7 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
   auto& from = static_cast<const EnumDescriptorProto_EnumReservedRange&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -6737,6 +6747,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7083,6 +7094,7 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7436,6 +7448,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, 
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -7836,6 +7849,7 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, c
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -8590,6 +8604,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9075,6 +9090,7 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MessageOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9392,6 +9408,7 @@ void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_
   auto& from = static_cast<const FieldOptions_EditionDefault&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions.EditionDefault)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -9723,6 +9740,7 @@ void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_
   auto& from = static_cast<const FieldOptions_FeatureSupport&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions.FeatureSupport)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10283,6 +10301,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -10664,6 +10683,7 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11047,6 +11067,7 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11464,6 +11485,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const 
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -11838,6 +11860,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -12232,6 +12255,7 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodOptions)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -12537,6 +12561,7 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to
   auto& from = static_cast<const UninterpretedOption_NamePart&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -12960,6 +12985,7 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg, con
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -13510,6 +13536,7 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   auto& from = static_cast<const FeatureSet&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSet)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -13855,6 +13882,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
   ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -14205,6 +14233,7 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg, cons
   auto& from = static_cast<const FeatureSetDefaults&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSetDefaults)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -14605,6 +14634,7 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -14884,6 +14914,7 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
   auto& from = static_cast<const SourceCodeInfo&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -15254,6 +15285,7 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -15529,6 +15561,7 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg, const
   auto& from = static_cast<const GeneratedCodeInfo&>(from_msg);
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
