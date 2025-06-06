@@ -97,6 +97,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* generator_context,
                             std::string* error) const {
+  ABSL_DCHECK_NE(file, nullptr);
+
   std::vector<std::pair<std::string, std::string>> options;
   ParseGeneratorParameter(parameter, &options);
 

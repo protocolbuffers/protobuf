@@ -161,9 +161,9 @@ TEST(BootstrapTest, OptionNotExist) {
   GeneratorContext* generator_context = nullptr;
   std::string parameter = "aaa";
   std::string error;
-  ASSERT_FALSE(generator.Generate(
-      pool.FindFileByName("google/protobuf/descriptor.proto"), parameter,
-      generator_context, &error));
+
+  const FileDescriptor* file = FileDescriptorProto::descriptor()->file();
+  ASSERT_FALSE(generator.Generate(file, parameter, generator_context, &error));
   EXPECT_EQ(error, absl::StrCat("Unknown generator option: ", parameter));
 }
 
