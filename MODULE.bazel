@@ -44,7 +44,7 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "1.1.0")
 
 # Pin to rules_proto to 7.1.0 to avoid toolchain incompatibilities when
 # --incompatible_enable_proto_toolchain_resolution=true in Bazel 7.

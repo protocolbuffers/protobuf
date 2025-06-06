@@ -23,7 +23,7 @@ bazel_dep(name = "platforms", version = "0.0.10")
 bazel_dep(name = "rules_cc", version = "0.0.17")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "1.1.0")
 
 # For clang-cl configuration
 cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
