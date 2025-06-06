@@ -19,6 +19,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import calendar
 import collections.abc
+import dataclasses
 import datetime
 from typing import Union
 import warnings
@@ -526,6 +527,9 @@ def _SetStructValue(struct_value, value):
   elif isinstance(value, (dict, Struct)):
     struct_value.struct_value.Clear()
     struct_value.struct_value.update(value)
+  elif dataclasses.is_dataclass(value):
+    struct_value.struct_value.Clear()
+    struct_value.struct_value.update(dataclasses.asdict(value))
   elif isinstance(value, (list, tuple, ListValue)):
     struct_value.list_value.Clear()
     struct_value.list_value.extend(value)
