@@ -9,9 +9,10 @@
 
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut,
-    MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
-    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
+    MergeFrom, Message, MessageMutInterop, MessageViewInterop, Mut, MutProxied, ParseError,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -1404,6 +1405,52 @@ impl<T: CppGetRawMessageMut> ClearAndParse for T {
         }
         .then_some(())
         .ok_or(ParseError)
+    }
+}
+
+impl<T> TakeFrom for T
+where
+    Self: CopyFrom + AsMut,
+    for<'a> Mut<'a, <Self as AsMut>::MutProxied>: Clear,
+{
+    fn take_from(&mut self, mut src: impl AsMut<MutProxied = Self::Proxied>) {
+        let mut src = src.as_mut();
+        // TODO: b/393559271 - Optimize this copy out.
+        CopyFrom::copy_from(self, AsView::as_view(&src));
+        Clear::clear(&mut src);
+    }
+}
+
+impl<T> CopyFrom for T
+where
+    Self: AsMut,
+    for<'a> View<'a, Self::Proxied>: MessageViewInterop<'a>,
+    for<'a> Mut<'a, Self::Proxied>: MessageMutInterop<'a>,
+{
+    fn copy_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        unsafe {
+            proto2_rust_Message_copy_from(
+                NonNull::new_unchecked(self.as_mut().__unstable_as_raw_message_mut() as *mut _),
+                NonNull::new_unchecked(src.as_view().__unstable_as_raw_message() as *mut _),
+            );
+        }
+    }
+}
+
+impl<T> MergeFrom for T
+where
+    Self: AsMut,
+    for<'a> View<'a, Self::Proxied>: MessageViewInterop<'a>,
+    for<'a> Mut<'a, Self::Proxied>: MessageMutInterop<'a>,
+{
+    fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        // SAFETY: self and src are both valid `T`s.
+        unsafe {
+            proto2_rust_Message_merge_from(
+                NonNull::new_unchecked(self.as_mut().__unstable_as_raw_message_mut() as *mut _),
+                NonNull::new_unchecked(src.as_view().__unstable_as_raw_message() as *mut _),
+            );
+        }
     }
 }
 
