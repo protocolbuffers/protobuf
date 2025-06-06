@@ -8451,8 +8451,9 @@ static char* encode_fixed32(char* ptr, upb_encstate* e, uint32_t val) {
 
 #define UPB_PB_VARINT_MAX_LEN 10
 
-// Need gnu extended inline asm
-#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
+// Need gnu extended inline asm; msan can't instrument stores in inline assembly
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__)) && \
+    !UPB_HAS_FEATURE(memory_sanitizer)
 #define UPB_ARM64_ASM
 #endif
 
