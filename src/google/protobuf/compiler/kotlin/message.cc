@@ -38,6 +38,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       lite_(!java::HasDescriptorMethods(descriptor_->file(),
                                         context->EnforceLite())),
       jvm_dsl_(!lite_ || context->options().jvm_dsl),
+      has_or_builder_(!lite_ || context->options().has_or_builder),
       field_generators_(java::FieldGeneratorMap<FieldGenerator>(descriptor_)) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (java::IsRealOneof(descriptor_->field(i))) {
@@ -196,7 +197,7 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
           "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
           "name", context_->GetFieldGeneratorInfo(field)->name);
     }
-    if (jvm_dsl_) {
+    if (has_or_builder_) {
       // On the JVM, we can use `FooOrBuilder`, and it saves code size to
       // generate only one method instead of two.
       printer->Print(

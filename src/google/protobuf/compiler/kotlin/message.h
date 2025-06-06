@@ -38,6 +38,7 @@ class MessageGenerator {
   absl::btree_map<int, const OneofDescriptor*> oneofs_;
   bool lite_;
   bool jvm_dsl_;
+  bool has_or_builder_;
 
   java::FieldGeneratorMap<FieldGenerator> field_generators_;
 
