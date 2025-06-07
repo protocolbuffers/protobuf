@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -19,23 +20,46 @@ FASTTABLE_COPTS = UPB_DEFAULT_COPTS + select({
     "//conditions:default": [],
 })
 
+bool_flag(
+    name = "debug_trace",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "debug_trace_setting",
+    flag_values = {":debug_trace": "True"},
+)
+
+# Unfortunately field_parsers.h and dispatch.h need to be in the same library because of the
+# bug when calling an __attribute__((preserve_most)) function across a shared library boundary.
 cc_library(
     name = "field_parsers",
     srcs = [
         "cardinality.h",
+        "dispatch.c",
+        "dispatch.h",
         "field_fixed.c",
         "field_generic.c",
         "field_message.c",
         "field_string.c",
         "field_varint.c",
     ],
-    hdrs = ["field_parsers.h"],
+    hdrs = [
+        "dispatch.h",
+        "field_parsers.h",
+    ],
     copts = FASTTABLE_COPTS,
-    visibility = ["//upb:__pkg__"],
+    defines = select({
+        ":debug_trace_setting": ["UPB_TRACE_FASTDECODER=1"],
+        "//conditions:default": [],
+    }),
+    visibility = [
+        "//upb:__pkg__",
+        "//upb/wire:__pkg__",
+    ],
     deps = [
         ":combinations",
         ":data",
-        ":dispatch",
         "//upb/base",
         "//upb/base:internal",
         "//upb/mem",
@@ -43,27 +67,15 @@ cc_library(
         "//upb/message:internal",
         "//upb/message:types",
         "//upb/mini_table",
-        "//upb/port",
-        "//upb/wire:decoder",
-        "//upb/wire:eps_copy_input_stream",
-        "//upb/wire:reader",
-    ],
-)
-
-cc_library(
-    name = "dispatch",
-    srcs = ["dispatch.c"],
-    hdrs = ["dispatch.h"],
-    copts = FASTTABLE_COPTS,
-    visibility = ["//upb/wire:__pkg__"],
-    deps = [
-        "//upb/message",
-        "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
-    ],
+        "//upb/wire:reader",
+    ] + select({
+        ":debug_trace_setting": [":select"],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(

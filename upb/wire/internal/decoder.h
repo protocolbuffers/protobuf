@@ -51,6 +51,7 @@ typedef struct upb_Decoder {
 #ifndef NDEBUG
   const char* debug_tagstart;
   const char* debug_valstart;
+  char* trace_buf;
   char* trace_ptr;
   char* trace_end;
 #endif
@@ -72,6 +73,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->status = kUpb_DecodeStatus_Ok;
   d->message_is_done = false;
 #ifndef NDEBUG
+  d->trace_buf = trace_buf;
   d->trace_ptr = trace_buf;
   d->trace_end = UPB_PTRADD(trace_buf, trace_size);
 #endif
@@ -92,6 +94,32 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
   return d->status;
 }
 
+#ifndef NDEBUG
+UPB_INLINE bool _upb_Decoder_TraceBufferFull(upb_Decoder* d) {
+  return d->trace_ptr == d->trace_end - 1;
+}
+
+UPB_INLINE bool _upb_Decoder_TraceBufferAlmostFull(upb_Decoder* d) {
+  return d->trace_ptr == d->trace_end - 2;
+}
+#endif
+
+UPB_INLINE char* _upb_Decoder_TraceNext(upb_Decoder* d) {
+#ifndef NDEBUG
+  return _upb_Decoder_TraceBufferAlmostFull(d) ? NULL : d->trace_ptr + 1;
+#else
+  return NULL;
+#endif
+}
+
+UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
+#ifndef NDEBUG
+  return d->trace_ptr;
+#else
+  return NULL;
+#endif
+}
+
 // Trace events are used to trace the progress of the decoder.
 // Events:
 //   'D'  Fast dispatch
@@ -102,7 +130,7 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
   if (d->trace_ptr == NULL) return;
-  if (d->trace_ptr == d->trace_end - 1) {
+  if (_upb_Decoder_TraceBufferFull(d)) {
     d->trace_ptr[-1] = 'X';  // Truncated.
     return;
   }
@@ -139,8 +167,9 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        const upb_MiniTable* layout);
 
 UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return upb_EpsCopyInputStream_IsDoneWithCallback(
+  bool ret = upb_EpsCopyInputStream_IsDoneWithCallback(
       &d->input, ptr, &_upb_Decoder_IsDoneFallback);
+  return ret;
 }
 
 UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
