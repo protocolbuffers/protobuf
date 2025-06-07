@@ -663,6 +663,16 @@ struct KeyNode : NodeBase {
   decltype(auto) key() const { return ReadKey<Key>(GetVoidKey()); }
 };
 
+inline map_index_t Hash(absl::string_view k, void* salt) {
+  // Note: we could potentially also use CRC32-based hashing here.
+  return absl::HashOf(k, salt);
+}
+inline map_index_t Hash(uint64_t k, void* salt) {
+  if constexpr (!HasCrc32()) return absl::HashOf(k, salt);
+  uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
+  return Crc32(salt_int, absl::rotr(k, salt_int));
+}
+
 // KeyMapBase is a chaining hash map.
 // The implementation doesn't need the full generality of unordered_map,
 // and it doesn't have it.  More bells and whistles can be added as needed.
@@ -929,8 +939,7 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
-    return static_cast<map_index_t>(absl::HashOf(k, table_) &
-                                    (num_buckets_ - 1));
+    return Hash(k, table_) & (num_buckets_ - 1);
   }
 };
 

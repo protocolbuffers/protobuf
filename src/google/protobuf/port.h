@@ -35,6 +35,12 @@
 #include <sanitizer/asan_interface.h>
 #endif
 
+#if defined(__x86_64__) && defined(__SSE4_2__)
+#include <x86intrin.h>
+#elif defined(__ARM_FEATURE_CRC32)
+#include <arm_acle.h>
+#endif
+
 // must be last
 #include "google/protobuf/port_def.inc"
 
@@ -761,6 +767,25 @@ PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
 #endif
 }
 
+
+#if defined(__x86_64__) && defined(__SSE4_2__)
+
+constexpr bool HasCrc32() { return true; }
+inline uint32_t Crc32(uint32_t crc, uint64_t v) {
+  return static_cast<uint32_t>(_mm_crc32_u64(crc, v));
+}
+
+#elif defined(__ARM_FEATURE_CRC32)
+
+constexpr bool HasCrc32() { return true; }
+inline uint32_t Crc32(uint32_t crc, uint64_t v) { return __crc32cd(crc, v); }
+
+#else
+
+constexpr bool HasCrc32() { return false; }
+inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
+
+#endif
 
 }  // namespace internal
 }  // namespace protobuf
