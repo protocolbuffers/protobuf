@@ -221,6 +221,8 @@ class MessageGenerator {
       std::vector<const FieldDescriptor*>&& fields) const;
   void EmitCheckAndSerializeField(const FieldDescriptor* field,
                                   io::Printer* p) const;
+  template <typename T>
+  void EmitOneofFields(io::Printer* p, const T& emitter) const;
 
   const Descriptor* descriptor_;
   int index_in_file_messages_;
