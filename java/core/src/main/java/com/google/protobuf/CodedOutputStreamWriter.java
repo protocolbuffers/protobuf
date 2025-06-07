@@ -1025,11 +1025,11 @@ final class CodedOutputStreamWriter implements Writer {
     switch (metadata.keyType) {
       case BOOL:
         V value;
-        if ((value = map.get(Boolean.FALSE)) != null) {
+        if ((value = map.get(false)) != null) {
           writeDeterministicBooleanMapEntry(
               fieldNumber, /* key= */ false, value, (MapEntryLite.Metadata<Boolean, V>) metadata);
         }
-        if ((value = map.get(Boolean.TRUE)) != null) {
+        if ((value = map.get(true)) != null) {
           writeDeterministicBooleanMapEntry(
               fieldNumber, /* key= */ true, value, (MapEntryLite.Metadata<Boolean, V>) metadata);
         }
