@@ -3455,13 +3455,17 @@ void* Reflection::RepeatedFieldData(Message* message,
 MapFieldBase* Reflection::MutableMapData(Message* message,
                                          const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
-  return MutableRaw<MapFieldBase>(message, field);
+  auto* map = MutableRaw<MapFieldBase>(message, field);
+  map->MutableAccess();
+  return map;
 }
 
 const MapFieldBase* Reflection::GetMapData(const Message& message,
                                            const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
-  return &(GetRaw<MapFieldBase>(message, field));
+  const auto* map = &(GetRaw<MapFieldBase>(message, field));
+  map->ConstAccess();
+  return map;
 }
 
 template <typename T>
