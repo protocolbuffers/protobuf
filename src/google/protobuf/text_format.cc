@@ -2475,7 +2475,7 @@ class MapFieldPrinterHelper {
                             const FieldDescriptor* field);
   static void CopyKey(const MapKey& key, Message* message,
                       const FieldDescriptor* field_desc);
-  static void CopyValue(const MapValueRef& value, Message* message,
+  static void CopyValue(const MapValueConstRef& value, Message* message,
                         const FieldDescriptor* field_desc);
 };
 
@@ -2502,10 +2502,8 @@ MapEntries MapFieldPrinterHelper::SortMap(const Message& message,
         reflection->GetMessageFactory()->GetPrototype(map_entry_desc);
     all_entries.reserve(reflection->MapSize(message, field));
     owned_entries.reserve(reflection->MapSize(message, field));
-    for (MapIterator iter =
-             reflection->MapBegin(const_cast<Message*>(&message), field);
-         iter != reflection->MapEnd(const_cast<Message*>(&message), field);
-         ++iter) {
+    for (ConstMapIterator iter = reflection->ConstMapBegin(&message, field);
+         iter != reflection->ConstMapEnd(&message, field); ++iter) {
       std::unique_ptr<Message> map_entry_message =
           absl::WrapUnique(prototype->New());
       CopyKey(iter.GetKey(), map_entry_message.get(), map_entry_desc->field(0));
@@ -2553,7 +2551,7 @@ void MapFieldPrinterHelper::CopyKey(const MapKey& key, Message* message,
   }
 }
 
-void MapFieldPrinterHelper::CopyValue(const MapValueRef& value,
+void MapFieldPrinterHelper::CopyValue(const MapValueConstRef& value,
                                       Message* message,
                                       const FieldDescriptor* field_desc) {
   const Reflection* reflection = message->GetReflection();

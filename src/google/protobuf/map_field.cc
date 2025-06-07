@@ -13,7 +13,6 @@
 #include <string>
 #include <type_traits>
 
-#include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
@@ -99,23 +98,6 @@ bool MapFieldBase::DeleteMapValue(const MapKey& map_key) {
 
 void MapFieldBase::ClearMapNoSync() { GetMapRaw().ClearTable(true); }
 
-void MapFieldBase::SetMapIteratorValue(MapIterator* map_iter) const {
-  if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
-
-  const UntypedMapBase& map = *map_iter->iter_.m_;
-  NodeBase* node = map_iter->iter_.node_;
-  auto& key = map_iter->key_;
-  map.VisitKey(node,
-               absl::Overload{
-                   [&](const std::string* v) { key.val_.string_value = *v; },
-                   [&](const auto* v) {
-                     // Memcpy the scalar into the union.
-                     memcpy(static_cast<void*>(&key.val_), v, sizeof(*v));
-                   },
-               });
-  map_iter->value_.SetValue(map.GetVoidValue(node));
-}
-
 bool MapFieldBase::LookupMapValueNoSync(const MapKey& map_key,
                                         MapValueConstRef* val) const {
   auto& map = GetMapRaw();
@@ -142,25 +124,13 @@ void MapFieldBase::MapEnd(MapIterator* map_iter) const {
   map_iter->iter_ = UntypedMapBase::EndIterator();
 }
 
-bool MapFieldBase::EqualIterator(const MapIterator& a,
-                                 const MapIterator& b) const {
-  return a.iter_.Equals(b.iter_);
-}
-
-void MapFieldBase::IncreaseIterator(MapIterator* map_iter) const {
-  map_iter->iter_.PlusPlus();
+void MapFieldBase::ConstMapBegin(ConstMapIterator* map_iter) const {
+  map_iter->iter_ = GetMap().begin();
   SetMapIteratorValue(map_iter);
 }
 
-void MapFieldBase::CopyIterator(MapIterator* this_iter,
-                                const MapIterator& that_iter) const {
-  this_iter->iter_ = that_iter.iter_;
-  this_iter->key_.SetType(that_iter.key_.type());
-  // MapValueRef::type() fails when containing data is null. However, if
-  // this_iter points to MapEnd, data can be null.
-  this_iter->value_.SetType(
-      static_cast<FieldDescriptor::CppType>(that_iter.value_.type_));
-  SetMapIteratorValue(this_iter);
+void MapFieldBase::ConstMapEnd(ConstMapIterator* map_iter) const {
+  map_iter->iter_ = UntypedMapBase::EndIterator();
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
@@ -310,8 +280,8 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
   RepeatedPtrField<Message>& rep = payload().repeated_field;
   rep.Clear();
 
-  MapIterator it(this, descriptor);
-  MapIterator end(this, descriptor);
+  ConstMapIterator it(this, descriptor);
+  ConstMapIterator end(this, descriptor);
 
   it.iter_ = GetMapRaw().begin();
   SetMapIteratorValue(&it);
@@ -345,7 +315,7 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
         Unreachable();
     }
 
-    const MapValueRef& map_val = it.GetValueRef();
+    const MapValueConstRef& map_val = it.GetValueRef();
     switch (val_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
         reflection->SetString(new_entry, val_des,

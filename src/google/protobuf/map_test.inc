@@ -1110,8 +1110,10 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      MapIterator it = reflection_tester.MapBegin(message, field->name());
-      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      ConstMapIterator it =
+          reflection_tester.ConstMapBegin(message, field->name());
+      ConstMapIterator end =
+          reflection_tester.ConstMapEnd(message, field->name());
       // It's unordered, so search for it.
       if (it == end) continue;
       auto next = it;
@@ -1160,8 +1162,10 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      MapIterator it = reflection_tester.MapBegin(message, field->name());
-      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      ConstMapIterator it =
+          reflection_tester.ConstMapBegin(message, field->name());
+      ConstMapIterator end =
+          reflection_tester.ConstMapEnd(message, field->name());
 
       while (it != end) {
         auto next = it;
@@ -1179,8 +1183,10 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   TestMap message;
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
   reflection_tester.SetMapFieldsViaMapReflection(&message);
-  MapIterator it1 = reflection_tester.MapBegin(&message, "map_int32_int32");
-  MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
+  ConstMapIterator it1 =
+      reflection_tester.ConstMapBegin(&message, "map_int32_int32");
+  ConstMapIterator it2 =
+      reflection_tester.ConstMapEnd(&message, "map_int32_int32");
   it2 = it1;
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }

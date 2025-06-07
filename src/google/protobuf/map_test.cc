@@ -11,7 +11,9 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <memory>
+#include <random>
 #include <string>
 #include <type_traits>
 #include <utility>
