@@ -11,6 +11,9 @@ package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "decoder",
+    srcs = [
+        "internal/decoder.c",
+    ],
     hdrs = [
         "decode.h",
         "internal/decoder.h",
@@ -28,6 +31,7 @@ cc_library(
         "//upb:mini_table",
         "//upb:port",
         "//upb/mem:internal",
+        "//upb/message:internal",
         "//upb/mini_table:internal",
     ],
 )

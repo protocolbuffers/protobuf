@@ -112,21 +112,6 @@ UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #endif
 };
 
-/* Error function that will abort decoding with longjmp(). We can't declare this
- * UPB_NORETURN, even though it is appropriate, because if we do then compilers
- * will "helpfully" refuse to tailcall to it
- * (see: https://stackoverflow.com/a/55657013), which will defeat a major goal
- * of our optimizations. That is also why we must declare it in a separate file,
- * otherwise the compiler will see that it calls longjmp() and deduce that it is
- * noreturn. */
-const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
-
-UPB_INLINE
-const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
-  d->status = status;
-  return _upb_FastDecoder_ErrorJmp2(d);
-}
-
 UPB_INLINE
 bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
   return utf8_range_IsValid(ptr, len);
@@ -158,10 +143,13 @@ UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
       &d->input, ptr, &_upb_Decoder_IsDoneFallback);
 }
 
+UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
+                                         upb_DecodeStatus status);
+
 UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
     upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
   upb_Decoder* d = (upb_Decoder*)e;
-  if (!old_end) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   return new_start;
 }
 
