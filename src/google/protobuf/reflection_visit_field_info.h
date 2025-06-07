@@ -1379,16 +1379,12 @@ struct MapDynamicFieldInfo {
   template <typename T, typename Callback>
   static void VisitElementsImpl(T& msg, const Reflection*,
                                 const FieldDescriptor* field,
-                                const MapFieldBase& const_map_field,
-                                Callback&& cb, Rank0) {
-    // Unfortunately, we have to const_cast here because MapIterator only takes
-    // a mutable MapFieldBase pointer. This is still safe because value iterator
-    // is not mutable.
-    MapFieldBase* map_field = const_cast<MapFieldBase*>(&const_map_field);
+                                const MapFieldBase& map_field, Callback&& cb,
+                                Rank0) {
     const Descriptor* descriptor = field->message_type();
-    MapIterator begin(map_field, descriptor), end(map_field, descriptor);
-    const_map_field.MapBegin(&begin);
-    const_map_field.MapEnd(&end);
+    ConstMapIterator begin(&map_field, descriptor), end(&map_field, descriptor);
+    map_field.ConstMapBegin(&begin);
+    map_field.ConstMapEnd(&end);
 
     for (auto it = begin; it != end; ++it) {
       MapDynamicFieldVisitKey(it.GetKey(), it.GetValueRef(), cb);
