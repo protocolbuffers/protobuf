@@ -45,3 +45,8 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
       UPB_UNREACHABLE();
   }
 }
+
+const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
+  UPB_LONGJMP(d->err, 1);
+  return NULL;
+}
