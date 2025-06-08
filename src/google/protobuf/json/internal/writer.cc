@@ -7,8 +7,9 @@
 
 #include "google/protobuf/json/internal/writer.h"
 
+#include <cmath>
+#include <cstddef>
 #include <cstdint>
-#include <initializer_list>
 #include <limits>
 #include <utility>
 
@@ -16,6 +17,9 @@
 #include "absl/log/absl_check.h"
 
 // Must be included last.
+#include "absl/numeric/bits.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
