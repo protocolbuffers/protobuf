@@ -709,6 +709,18 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
   return tmp.first;
 }
 
+template <typename V1Type>
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1) {
+  asm("" : "+r"(value1));
+  return value1;
+}
+
+template <typename V1Type, typename V2Type>
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1, V2Type value2) {
+  asm("" : "+r"(value1) : "r"(value2));
+  return value1;
+}
+
 #if defined(__aarch64__) && !defined(_MSC_VER)
 // Generally, speaking, the ARM-optimized Varint decode algorithm is to extract
 // and concatenate all potentially valid data bits, compute the actual length
@@ -790,17 +802,6 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
 // ```
 // Falsely indicate that the specific value is modified at this location.  This
 // prevents code which depends on this value from being scheduled earlier.
-template <typename V1Type>
-PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1) {
-  asm("" : "+r"(value1));
-  return value1;
-}
-
-template <typename V1Type, typename V2Type>
-PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1, V2Type value2) {
-  asm("" : "+r"(value1) : "r"(value2));
-  return value1;
-}
 
 // Performs a 7 bit UBFX (Unsigned Bit Extract) starting at the indicated bit.
 static PROTOBUF_ALWAYS_INLINE uint64_t Ubfx7(uint64_t data, uint64_t start) {
@@ -976,7 +977,9 @@ template <typename T>
   // should be faster in the general case
 
   // Input is guaranteed atleast 10 bytes
-  uint32_t value = *reinterpret_cast<const uint32_t*>(p);
+  uint32_t value;
+
+  std::memcpy(&value, p, sizeof(value));
 
   // Bit is 0 if continuation bit is not set
   // 1 byte: ?000_000 ?000_000 ?000_000 1000_000
