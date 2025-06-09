@@ -26,13 +26,13 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         "//third_party/utf8_range",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/mem",
         "//upb/mem:internal",
+        "//upb/message",
         "//upb/message:internal",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
+        "//upb/port",
     ],
 )
 
@@ -55,18 +55,18 @@ cc_library(
         ":reader",
         ":writer",
         "//third_party/utf8_range",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/base",
         "//upb/base:internal",
         "//upb/hash",
+        "//upb/mem",
         "//upb/mem:internal",
+        "//upb/message",
         "//upb/message:internal",
         "//upb/message:iterator",
         "//upb/message:types",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
+        "//upb/port",
     ] + select({
         "//upb:fasttable_enabled_setting": [
             "//upb/wire/decode_fast:dispatch",
@@ -81,11 +81,11 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":wire",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/mem",
+        "//upb/message",
         "//upb/message:message_cc",
+        "//upb/mini_table",
+        "//upb/port",
         "//upb/wire/decode_fast:combinations",
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
@@ -103,11 +103,11 @@ cc_binary(
     srcs = ["decode_benchmark.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:wire",
+        ":wire",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_table",
+        "//upb/port",
         "//upb/wire/decode_fast:combinations",
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
@@ -124,7 +124,7 @@ cc_library(
     hdrs = ["internal/reader.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//upb:__pkg__"],
-    deps = ["//upb:port"],
+    deps = ["//upb/port"],
 )
 
 cc_library(
@@ -139,8 +139,8 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         ":reader_internal",
-        "//upb:port",
         "//upb/base:internal",
+        "//upb/port",
     ],
 )
 
@@ -155,7 +155,7 @@ cc_library(
         "//upb/message:__pkg__",
     ],
     deps = [
-        "//upb:port",
+        "//upb/port",
     ],
 )
 
@@ -165,11 +165,11 @@ cc_library(
     hdrs = ["byte_size.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:wire",
+        ":wire",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_table",
+        "//upb/port",
     ],
 )
 
@@ -178,9 +178,9 @@ cc_test(
     srcs = ["byte_size_test.cc"],
     deps = [
         ":byte_size",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:mini_table",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto2_upb_proto",
         "@googletest//:gtest",
@@ -194,8 +194,8 @@ cc_library(
     hdrs = ["eps_copy_input_stream.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:mem",
-        "//upb:port",
+        "//upb/mem",
+        "//upb/port",
     ],
 )
 
@@ -204,7 +204,7 @@ cc_test(
     srcs = ["eps_copy_input_stream_test.cc"],
     deps = [
         ":eps_copy_input_stream",
-        "//upb:mem",
+        "//upb/mem",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

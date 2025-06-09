@@ -77,13 +77,13 @@ cc_library(
         "//upb_generator:__subpackages__",
     ],
     deps = [
-        ":base",
-        ":mem",
-        ":message",
-        ":mini_descriptor",
-        ":mini_table",
-        ":wire",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
         "//upb/message:internal",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/wire",
     ] + select({
         ":fasttable_enabled_setting": [
             "//upb/wire/decode_fast:field_parsers",

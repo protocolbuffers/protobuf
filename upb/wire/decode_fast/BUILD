@@ -33,17 +33,17 @@ cc_library(
         ":combinations",
         ":data",
         ":dispatch",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:wire_reader",
+        "//upb/base",
         "//upb/base:internal",
+        "//upb/mem",
+        "//upb/message",
         "//upb/message:internal",
         "//upb/message:types",
+        "//upb/mini_table",
+        "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:reader",
     ],
 )
 
@@ -54,10 +54,10 @@ cc_library(
     copts = FASTTABLE_COPTS,
     visibility = ["//upb/wire:__pkg__"],
     deps = [
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/message",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
+        "//upb/port",
         "//upb/wire:decoder",
         "//upb/wire:eps_copy_input_stream",
     ],
@@ -76,12 +76,12 @@ cc_library(
     deps = [
         ":combinations",
         ":data",
-        "//upb:base",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:wire_reader",
+        "//upb/base",
         "//upb/base:internal",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/wire:reader",
         "@abseil-cpp//absl/strings",
     ],
 )
@@ -107,9 +107,9 @@ cc_library(
         "//upb/wire:__subpackages__",
     ],
     deps = [
-        "//upb:port",
-        "//upb:wire_reader",
         "//upb/base:internal",
+        "//upb/port",
+        "//upb/wire:reader",
     ],
 )
 
@@ -122,7 +122,7 @@ cc_library(
         "//upb/wire:__subpackages__",
     ],
     deps = [
-        "//upb:port",
+        "//upb/port",
     ],
 )
 
@@ -138,8 +138,8 @@ cc_library(
     deps = [
         ":combinations",
         ":field_parsers",
-        "//upb:port",
         "//upb/mini_table:internal",
+        "//upb/port",
     ],
 )
 

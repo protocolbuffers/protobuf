@@ -163,12 +163,12 @@ cc_test(
     deps = [
         ":descriptor_upb_proto",
         ":internal",
+        ":reflection",
         "//upb:base",
         "//upb:mem",
         "//upb:mini_descriptor",
         "//upb:mini_table",
         "//upb:port",
-        "//upb:reflection",
         "//upb/hash",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
