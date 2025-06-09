@@ -565,9 +565,15 @@ void SingularStringView::GenerateConstexprAggregateInitializer(
       /*decltype($field_$)*/ {nullptr, false},
     )cc");
   } else if (use_micro_string()) {
-    p->Emit(R"cc(
-      /*decltype($field_$)*/ {},
-    )cc");
+    if (EmptyDefault()) {
+      p->Emit(R"cc(
+        /*decltype($field_$)*/ {},
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        /*decltype($field_$)*/ {$classname$::$default_variable_field$},
+      )cc");
+    }
   } else {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {

@@ -152,7 +152,7 @@ class PROTOBUF_EXPORT MicroString {
     // To match the LazyString API.
     auto get() const { return payload.view(); }
   };
-  explicit constexpr MicroString(const UnownedPayload& unowned_input)
+  constexpr MicroString(const UnownedPayload& unowned_input)  // NOLINT
       : rep_(const_cast<char*>(unowned_input.for_tag + kIsLargeRepTag)) {}
 
   // Like the constructor above, but for DynamicMessage where we don't have a
