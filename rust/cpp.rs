@@ -9,9 +9,9 @@
 
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut,
-    MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
-    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
+    MergeFrom, Message, Mut, MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied,
+    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -1404,6 +1404,52 @@ impl<T: CppGetRawMessageMut> ClearAndParse for T {
         }
         .then_some(())
         .ok_or(ParseError)
+    }
+}
+
+impl<T> TakeFrom for T
+where
+    Self: CopyFrom + AsMut,
+    for<'a> Mut<'a, <Self as AsMut>::MutProxied>: Clear,
+{
+    fn take_from(&mut self, mut src: impl AsMut<MutProxied = Self::Proxied>) {
+        let mut src = src.as_mut();
+        // TODO: b/393559271 - Optimize this copy out.
+        CopyFrom::copy_from(self, AsView::as_view(&src));
+        Clear::clear(&mut src);
+    }
+}
+
+impl<T> CopyFrom for T
+where
+    Self: AsMut,
+    for<'a> View<'a, Self::Proxied>: CppGetRawMessage,
+    for<'a> Mut<'a, Self::Proxied>: CppGetRawMessageMut,
+{
+    fn copy_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        unsafe {
+            proto2_rust_Message_copy_from(
+                self.as_mut().get_raw_message_mut(Private),
+                src.as_view().get_raw_message(Private),
+            );
+        }
+    }
+}
+
+impl<T> MergeFrom for T
+where
+    Self: AsMut,
+    for<'a> View<'a, Self::Proxied>: CppGetRawMessage,
+    for<'a> Mut<'a, Self::Proxied>: CppGetRawMessageMut,
+{
+    fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        // SAFETY: self and src are both valid `T`s.
+        unsafe {
+            proto2_rust_Message_merge_from(
+                self.as_mut().get_raw_message_mut(Private),
+                src.as_view().get_raw_message(Private),
+            );
+        }
     }
 }
 

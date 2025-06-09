@@ -9,9 +9,9 @@
 
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    AsView, Clear, ClearAndParse, IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut,
-    ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated,
-    Repeated, RepeatedMut, RepeatedView, View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
+    MergeFrom, Message, Mut, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied,
+    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -1170,5 +1170,57 @@ where
 
     fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, 0)
+    }
+}
+
+impl<T> TakeFrom for T
+where
+    Self: CopyFrom + AsMut,
+    for<'a> Mut<'a, <Self as AsMut>::MutProxied>: Clear,
+{
+    fn take_from(&mut self, mut src: impl AsMut<MutProxied = Self::Proxied>) {
+        let mut src = src.as_mut();
+        // TODO: b/393559271 - Optimize this copy out.
+        CopyFrom::copy_from(self, AsView::as_view(&src));
+        Clear::clear(&mut src);
+    }
+}
+
+impl<T> CopyFrom for T
+where
+    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
+{
+    fn copy_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        // SAFETY: self and src are both valid `T`s associated with
+        // `Self::mini_table()`.
+        unsafe {
+            assert!(upb_Message_DeepCopy(
+                self.get_raw_message(Private),
+                src.as_view().get_raw_message(Private),
+                <Self as AssociatedMiniTable>::mini_table(),
+                self.get_arena(Private).raw()
+            ));
+        }
+    }
+}
+
+impl<T> MergeFrom for T
+where
+    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
+{
+    fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        // SAFETY: self and src are both valid `T`s.
+        unsafe {
+            assert!(upb_Message_MergeFrom(
+                self.get_raw_message(Private),
+                src.as_view().get_raw_message(Private),
+                <Self as AssociatedMiniTable>::mini_table(),
+                // Use a nullptr for the ExtensionRegistry.
+                std::ptr::null(),
+                self.get_arena(Private).raw()
+            ));
+        }
     }
 }
