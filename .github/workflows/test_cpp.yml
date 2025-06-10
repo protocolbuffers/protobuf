@@ -466,17 +466,6 @@ jobs:
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
-          - name: Windows CMake 2019
-            os: windows-2019
-            flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
-              -Dprotobuf_BUILD_SHARED_LIBS=OFF
-              -Dprotobuf_BUILD_EXAMPLES=ON
-            vsversion: '2019'
-            cache-prefix: windows-2019-cmake
-            # windows-2019 has python3.7 installed, which is incompatible with the latest gcloud
-            python-version: '3.9'
-            continuous-only: true
           - name: Windows CMake 32-bit
             os: windows-2022
             flags: >-
@@ -518,17 +507,6 @@ jobs:
         with:
           arch: ${{ matrix.windows-arch || 'x64' }}
           vsversion: ${{ matrix.vsversion }}
-
-      # Workaround for incompatibility between gcloud and windows-2019 runners.
-      - name: Install Python
-        if: ${{ matrix.python-version && (!matrix.continuous-only || inputs.continuous-run) }}
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Use custom python for gcloud
-        if: ${{ matrix.python-version  && (!matrix.continuous-only || inputs.continuous-run) }}
-        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
-        shell: bash
 
       - name: Setup sccache
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
