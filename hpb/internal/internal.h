@@ -26,6 +26,10 @@ struct PrivateAccess {
     return message->arena();
   }
   template <typename T>
+  static auto& GetArenaHandle(T&& arena) {
+    return arena;
+  }
+  template <typename T>
   static auto* GetInternalUPBArena(T&& arena) {
     return arena.ptr();
   }
