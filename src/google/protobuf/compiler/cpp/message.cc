@@ -37,6 +37,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
@@ -611,8 +612,7 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
   return vars;
 }
 
-
-}  // anonymous namespace
+}  // namespace
 
 // ===================================================================
 
