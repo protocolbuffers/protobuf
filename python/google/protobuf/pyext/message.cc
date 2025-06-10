@@ -576,8 +576,20 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
 
 bool CheckAndGetBool(PyObject* arg, bool* value) {
   long long_value = PyLong_AsLong(arg);  // NOLINT
-  if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
-      (long_value == -1 && PyErr_Occurred())) {
+  if (long_value == -1 && PyErr_Occurred()) {
+    // In NumPy 2.3, numpy.bool does not have an __index__ method and cannot
+    // be converted to a long using PyLong_AsLong.
+    if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.bool")) {
+      PyErr_Clear();
+      int is_true = PyObject_IsTrue(arg);
+      if (is_true >= 0) {
+        *value = static_cast<bool>(is_true);
+        return true;
+      }
+    }
+    FormatTypeError(arg, "int, bool");
+    return false;
+  } else if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray")) {
     FormatTypeError(arg, "int, bool");
     return false;
   }
