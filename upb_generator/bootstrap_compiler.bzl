@@ -222,7 +222,7 @@ def bootstrap_upb_proto_library(
         defines = ["UPB_BOOTSTRAP_STAGE=0"],
         deps = [
             "//upb:generated_code_support",
-            "//upb:mini_table",
+            "//upb/mini_table",
         ] + [dep + "_stage0" for dep in deps],
         **kwargs
     )
