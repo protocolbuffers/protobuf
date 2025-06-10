@@ -179,14 +179,14 @@ jobs:
 
           # Windows uses the full API up until Python 3.10, so each of these
           # jobs tests a distinct binary wheel.
-          - { os: windows-2019, python-version: "3.8", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary' }
-          - { os: windows-2019, python-version: "3.8", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary' }
+          - { os: windows-2022, python-version: "3.8", architecture: x86, type: 'binary' }
+          - { os: windows-2022, python-version: "3.9", architecture: x86, type: 'binary' }
+          - { os: windows-2022, python-version: "3.10", architecture: x86, type: 'binary' }
+          - { os: windows-2022, python-version: "3.11", architecture: x86, type: 'binary' }
+          - { os: windows-2022, python-version: "3.8", architecture: x64, type: 'binary' }
+          - { os: windows-2022, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: windows-2022, python-version: "3.10", architecture: x64, type: 'binary' }
+          - { os: windows-2022, python-version: "3.11", architecture: x64, type: 'binary' }
     runs-on: ${{ matrix.os }}
     if: ${{ github.event_name != 'pull_request_target' }}
     defaults:
