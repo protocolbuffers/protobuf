@@ -50,7 +50,7 @@ jobs:
 
   windows:
     name: Windows
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v4
@@ -61,15 +61,6 @@ jobs:
         uses: actions/setup-dotnet@3447fd6a9f9e57506b15f895c5b76d3b197dc7c2 # v3.2.0
         with:
           dotnet-version: '6.0.x'
-
-      # Workaround for incompatibility between gcloud and windows-2019 runners.
-      - name: Install Python
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
-        with:
-          python-version: '3.9'
-      - name: Use custom python for gcloud
-        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
-        shell: bash
 
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bash@v4
