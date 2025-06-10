@@ -28,7 +28,7 @@ check_constant() {
   # Collect version from generator sources.
   local GeneratorVersion=$( \
       cat "${GeneratorSrc}" \
-          | sed -n -e "s:const int32_t ${ConstantName} = \([0-9]*\);:\1:p"
+          | sed -n -e "s:^const int32_t ${ConstantName} = \([0-9]*\);:\1:p"
   )
   if [[ -z "${GeneratorVersion}" ]] ; then
       die "Failed to find ${ConstantName} in the generator source (${GeneratorSrc})."
@@ -37,7 +37,7 @@ check_constant() {
   # Collect version from runtime sources.
   local RuntimeVersion=$( \
       cat "${RuntimeSrc}" \
-          | sed -n -e "s:#define ${ConstantName} \([0-9]*\):\1:p"
+          | sed -n -e "s:^#define ${ConstantName} \([0-9]*\):\1:p"
   )
   if [[ -z "${RuntimeVersion}" ]] ; then
       die "Failed to find ${ConstantName} in the runtime source (${RuntimeSrc})."
