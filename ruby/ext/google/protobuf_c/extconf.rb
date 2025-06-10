@@ -18,9 +18,23 @@ if ENV["LD"]
   RbConfig::CONFIG["LD"] = RbConfig::MAKEFILE_CONFIG["LD"] = ENV["LD"]
 end
 
-debug_enabled = ENV["PROTOBUF_CONFIG"] == "dbg"
+config = ENV["PROTOBUF_CONFIG"]
+build_configs = {
+  "dbg"  => {
+    :cflags => "-O0 -fno-omit-frame-pointer -fvisibility=default -g"
+  },
+  "asan" => {
+    :cflags => "-O0 -fno-omit-frame-pointer -fvisibility=default -g -fsanitize=address",
+    :ldflags => "-fsanitize=address"
+  }
+}
 
-additional_c_flags = debug_enabled ? "-O0 -fno-omit-frame-pointer -fvisibility=default -g" : "-O3 -DNDEBUG -fvisibility=hidden"
+if build_configs[config]
+  additional_c_flags = build_configs[config][:cflags]
+  $LDFLAGS += " #{build_configs[config][:ldflags]}" if build_configs[config][:ldflags]
+else
+  additional_c_flags = "-O3 -DNDEBUG -fvisibility=hidden"
+end
 
 if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/ || RUBY_PLATFORM =~ /freebsd/
   $CFLAGS += " -std=gnu99 -Wall -Wsign-compare -Wno-declaration-after-statement #{additional_c_flags}"

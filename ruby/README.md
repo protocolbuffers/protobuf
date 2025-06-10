@@ -88,13 +88,32 @@ Then build the Gem:
     $ rake clobber_package gem
     $ gem install `ls pkg/google-protobuf-*.gem`
 
+Debugging protobuf_c
+--------------------
+
+### Enabling debug symbols
+
 If you intend to debug the protobuf_c Ruby bindings with `gdb`, you can also
 build a version with debug symbols enabled by setting the `PROTOBUF_CONFIG`
 enviroment variable when you build the native extension:
 
-```
-$ PROTOBUF_CONFIG=dbg rake
-```
+
+    $ PROTOBUF_CONFIG=dbg rake
+
+### Building with ASAN
+
+`PROTOBUF_CONFIG` can also take the value `asan`. In addition to enabling debug
+options this will enable and link against AddressSanitizer in order to debug
+memory errors.
+
+    $ PROTOBUF_CONFIG=asan rake
+
+Because Ruby native extensions are loaded when required using `dlopen`,
+extensions compiled with ASAN will attempt to load the sanitizer too late (after
+`libc`). Therefore to successfully use ASAN you'll need to insert it using the
+environment variable `LD_PRELOAD` (`DYLD_INSERT_LIBRARIES` on macOS).
+
+### Running tests
 
 To run the specs:
 
