@@ -193,16 +193,16 @@ jobs:
           - { os: macos-13, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
-          - { os: windows-2019, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.10", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.13", architecture: x86, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.9", architecture: x64, type: 'binary' }
-          - { os: windows-2019, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.12", architecture: x64, type: 'binary', continuous-only: true }
-          - { os: windows-2019, python-version: "3.13", architecture: x64, type: 'binary' }
+          - { os: windows-2022, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.10", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.13", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: windows-2022, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.12", architecture: x64, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.13", architecture: x64, type: 'binary' }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
