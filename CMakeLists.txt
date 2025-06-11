@@ -18,6 +18,8 @@ if(CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD LESS 17)
   message(FATAL_ERROR "The minimum supported C++ standard is C++ 17")
 endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   if(CMAKE_PROJECT_NAME STREQUAL "protobuf")
     get_filename_component(CMAKE_SOURCE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
