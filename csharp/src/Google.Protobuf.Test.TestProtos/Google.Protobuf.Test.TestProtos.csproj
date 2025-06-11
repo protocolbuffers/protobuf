@@ -7,7 +7,7 @@
     The .NET 8 variant will be generated with NRTs enabled while .NET Framework 4.6.2 and .NET Standard 2.0 won't.
   -->
   <PropertyGroup>
-    <TargetFrameworks>net462;netstandard2.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>

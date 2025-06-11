@@ -82,47 +82,47 @@ $PROTOC -Isrc -I. \
     src/google/protobuf/unittest_legacy_features.proto \
     src/google/protobuf/unittest_proto3_optional.proto \
     src/google/protobuf/unittest_retention.proto
-$PROTOC -Isrc -I. \
-    --experimental_allow_proto3_optional \
-    --experimental_editions \
-    --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos/Nrt \
-    --csharp_opt=enable_nrt,file_extension=.pb.nrt.cs \
-    conformance/test_protos/test_messages_edition2023.proto \
-    csharp/protos/map_unittest_proto3.proto \
-    csharp/protos/unittest_issues.proto \
-    csharp/protos/unittest_custom_options_proto3.proto \
-    csharp/protos/unittest_proto3.proto \
-    csharp/protos/unittest_import_proto3.proto \
-    csharp/protos/unittest_import_public_proto3.proto \
-    csharp/protos/unittest.proto \
-    csharp/protos/unittest_import.proto \
-    csharp/protos/unittest_import_public.proto \
-    csharp/protos/unittest_issue6936_a.proto \
-    csharp/protos/unittest_issue6936_b.proto \
-    csharp/protos/unittest_issue6936_c.proto \
-    csharp/protos/unittest_selfreferential_options.proto \
-    editions/golden/test_messages_proto3_editions.proto \
-    editions/golden/test_messages_proto2_editions.proto \
-    src/google/protobuf/unittest_well_known_types.proto \
-    src/google/protobuf/test_messages_proto3.proto \
-    src/google/protobuf/test_messages_proto2.proto \
-    src/google/protobuf/unittest_features.proto \
-    src/google/protobuf/unittest_legacy_features.proto \
-    src/google/protobuf/unittest_proto3_optional.proto \
-    src/google/protobuf/unittest_retention.proto
+#$PROTOC -Isrc -I. \
+#    --experimental_allow_proto3_optional \
+#    --experimental_editions \
+#    --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos/Nrt \
+#    --csharp_opt=enable_nrt,file_extension=.pb.nrt.cs \
+#    conformance/test_protos/test_messages_edition2023.proto \
+#    csharp/protos/map_unittest_proto3.proto \
+#    csharp/protos/unittest_issues.proto \
+#    csharp/protos/unittest_custom_options_proto3.proto \
+#    csharp/protos/unittest_proto3.proto \
+#    csharp/protos/unittest_import_proto3.proto \
+#    csharp/protos/unittest_import_public_proto3.proto \
+#    csharp/protos/unittest.proto \
+#    csharp/protos/unittest_import.proto \
+#    csharp/protos/unittest_import_public.proto \
+#    csharp/protos/unittest_issue6936_a.proto \
+#    csharp/protos/unittest_issue6936_b.proto \
+#    csharp/protos/unittest_issue6936_c.proto \
+#    csharp/protos/unittest_selfreferential_options.proto \
+#    editions/golden/test_messages_proto3_editions.proto \
+#    editions/golden/test_messages_proto2_editions.proto \
+#    src/google/protobuf/unittest_well_known_types.proto \
+#    src/google/protobuf/test_messages_proto3.proto \
+#    src/google/protobuf/test_messages_proto2.proto \
+#    src/google/protobuf/unittest_features.proto \
+#    src/google/protobuf/unittest_legacy_features.proto \
+#    src/google/protobuf/unittest_proto3_optional.proto \
+#    src/google/protobuf/unittest_retention.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     --csharp_opt=file_extension=.pb.cs \
     examples/addressbook.proto
-$PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook/Nrt \
-    --csharp_opt=enable_nrt,file_extension=.pb.nrt.cs \
-    examples/addressbook.proto
+#$PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook/Nrt \
+#    --csharp_opt=enable_nrt,file_extension=.pb.nrt.cs \
+#    examples/addressbook.proto
 
 # Conformance tests
 $PROTOC -I. --csharp_out=csharp/src/Google.Protobuf.Conformance \
     --csharp_opt=file_extension=.pb.cs \
     conformance/conformance.proto
-$PROTOC -I. --csharp_out=csharp/src/Google.Protobuf.Conformance/Nrt \
-    --csharp_opt=enable_nrt,file_extension=.pb.nrt.cs \
-    conformance/conformance.proto
+#$PROTOC -I. --csharp_out=csharp/src/Google.Protobuf.Conformance/Nrt \
+#    --csharp_opt=enable_nrt,file_extension=.pb.nrt.cs \
+#    conformance/conformance.proto
