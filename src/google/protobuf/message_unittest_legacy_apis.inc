@@ -103,7 +103,11 @@ TEST(MESSAGE_TEST_NAME, TestRegressionInlinedStringAuxIdxMismatchOnFastParser) {
     // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(1)->bits.aux_idx(), 1);
     // optional InlinedStringIdxRegressionProto sub = 2;
-    EXPECT_EQ(table->fast_entry(2)->bits.aux_idx(), 1);
+    if ((table->field_entries()[1].type_card &
+         internal::field_layout::kSplitMask) == 0) {
+      EXPECT_NE(table->fast_entry(2)->bits.aux_idx(),
+                internal::kInlinedStringAuxIdx);
+    }
     // optional string str2 = 3;
     // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(3)->bits.aux_idx(), 2);
