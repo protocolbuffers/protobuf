@@ -1914,15 +1914,15 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
   }
 
   static const auto* bootstrap_mapping =
-      // TODO Replace these with string_view once we remove
-      // StringPiece.
-      new absl::flat_hash_map<absl::string_view, std::string>{
+      new absl::flat_hash_map<absl::string_view, absl::string_view>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
+          {"third_party/protobuf/internal_options",
+           "third_party/protobuf/internal_options_bootstrap"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };
@@ -1931,7 +1931,7 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
     *bootstrap_basename = std::string(basename);
     return false;
   } else {
-    *bootstrap_basename = iter->second;
+    *bootstrap_basename = std::string(iter->second);
     return true;
   }
 }

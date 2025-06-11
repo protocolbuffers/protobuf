@@ -8595,6 +8595,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
 
   ValidateFieldFeatures(field, proto);
 
+
   if (field->file()->edition() >= Edition::EDITION_2024 &&
       field->has_legacy_proto_ctype()) {
     AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
@@ -10708,6 +10709,10 @@ bool IsGroupLike(const FieldDescriptor& field) {
 bool IsLazilyInitializedFile(absl::string_view filename) {
   if (filename == "third_party/protobuf/cpp_features.proto" ||
       filename == "google/protobuf/cpp_features.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/internal_options.proto" ||
+      filename == "google/protobuf/internal_options.proto") {
     return true;
   }
   return filename == "net/proto2/proto/descriptor.proto" ||
