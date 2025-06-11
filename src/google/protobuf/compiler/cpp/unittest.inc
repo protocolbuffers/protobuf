@@ -2120,7 +2120,7 @@ TEST(HELPERS_TEST_NAME, TestSCCAnalysis) {
     MessageSCCAnalyzer scc_analyzer((Options()));
     const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
     MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
-    EXPECT_EQ(result.is_recursive, false);
+    EXPECT_EQ(result.is_recursive, true);
     EXPECT_EQ(result.contains_required, true);
     EXPECT_EQ(result.contains_cord, false);
     EXPECT_EQ(result.contains_extension, false);

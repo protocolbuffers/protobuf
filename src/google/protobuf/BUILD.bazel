@@ -2096,6 +2096,7 @@ cc_test(
     deps = [
         ":cc_test_protos",
         ":protobuf",
+        ":protobuf_lite",
         ":test_util",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
