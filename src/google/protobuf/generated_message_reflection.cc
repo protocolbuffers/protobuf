@@ -2864,6 +2864,23 @@ MapIterator Reflection::MapEnd(Message* message,
   return iter;
 }
 
+ConstMapIterator Reflection::ConstMapBegin(const Message* message,
+                                           const FieldDescriptor* field) const {
+  USAGE_CHECK(IsMapFieldInApi(field), ConstMapBegin,
+              "Field is not a map field.");
+  ConstMapIterator iter(message, field);
+  GetRaw<MapFieldBase>(*message, field).ConstMapBegin(&iter);
+  return iter;
+}
+
+ConstMapIterator Reflection::ConstMapEnd(const Message* message,
+                                         const FieldDescriptor* field) const {
+  USAGE_CHECK(IsMapFieldInApi(field), ConstMapEnd, "Field is not a map field.");
+  ConstMapIterator iter(message, field);
+  GetRaw<MapFieldBase>(*message, field).ConstMapEnd(&iter);
+  return iter;
+}
+
 int Reflection::MapSize(const Message& message,
                         const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), MapSize, "Field is not a map field.");

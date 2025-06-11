@@ -50,6 +50,10 @@ class MapReflectionTester {
                                     absl::string_view field_name, int index);
   MapIterator MapBegin(Message* message, absl::string_view field_name);
   MapIterator MapEnd(Message* message, absl::string_view field_name);
+  ConstMapIterator ConstMapBegin(const Message* message,
+                                 absl::string_view field_name);
+  ConstMapIterator ConstMapEnd(const Message* message,
+                               absl::string_view field_name);
   int MapSize(const Message& message, absl::string_view field_name);
 
   static std::optional<MapValueConstRef> LookupMapValue(
