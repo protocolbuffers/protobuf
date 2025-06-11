@@ -48,14 +48,7 @@ void MessageNew(Context& ctx, const Descriptor& msg) {
 
     case Kernel::kUpb:
       ctx.Emit(R"rs(
-        let arena = $pbr$::Arena::new();
-        let raw = unsafe {
-            $pbr$::upb_Message_New(
-                <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                arena.raw()).unwrap()
-        };
-        let inner = unsafe { $pbr$::OwnedMessageInner::<Self>::wrap_raw(raw, arena) };
-        Self { inner }
+        Self { inner: $pbr$::OwnedMessageInner::<Self>::new() }
       )rs");
       return;
   }

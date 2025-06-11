@@ -26,26 +26,27 @@ namespace rust {
 
 namespace {
 
-// The upb function to use for the get/set functions, eg `Int32` for the
-// functions `upb_Message_GetInt32` and upb_Message_SetInt32`.
+// The type name to use for the get/set methods on `MessagePtr`, e.g. `i32`
+// for `MessagePtr::get_i32_at_index()` and
+// `MessagePtr::set_base_field_i32_at_index()`.
 std::string UpbCTypeNameForFunctions(const FieldDescriptor& field) {
   switch (field.cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return "Int32";
+      return "i32";
     case FieldDescriptor::CPPTYPE_INT64:
-      return "Int64";
+      return "i64";
     case FieldDescriptor::CPPTYPE_UINT32:
-      return "UInt32";
+      return "u32";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return "UInt64";
+      return "u64";
     case FieldDescriptor::CPPTYPE_DOUBLE:
-      return "Double";
+      return "f64";
     case FieldDescriptor::CPPTYPE_FLOAT:
-      return "Float";
+      return "f32";
     case FieldDescriptor::CPPTYPE_BOOL:
-      return "Bool";
+      return "bool";
     case FieldDescriptor::CPPTYPE_ENUM:
-      return "Int32";
+      return "i32";
     case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_MESSAGE:
       // Handled by a different file.
@@ -73,7 +74,7 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
           {"Scalar", RsTypePath(ctx, field)},
           {"default_value", DefaultValue(ctx, field)},
           {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
-          {"upb_fn_type_name", UpbCTypeNameForFunctions(field)},
+          {"type_name", UpbCTypeNameForFunctions(field)},
           {"getter",
            [&] {
              if (ctx.is_cpp()) {
@@ -87,18 +88,15 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                    R"rs(
                     pub fn $field$($view_self$) -> $Scalar$ {
                       unsafe {
-                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            mt, $upb_mt_field_index$);
-
                         // TODO: b/361751487: This .into() and .try_into() is only
                         // here for the enum<->i32 case, we should avoid it for
                         // other primitives where the types naturally match
                         // perfectly (and do an unchecked conversion for
                         // i32->enum types, since even for closed enums we trust
                         // upb to only return one of the named values).
-                        $pbr$::upb_Message_Get$upb_fn_type_name$(
-                            self.raw_msg(), f, ($default_value$).into()).try_into().unwrap()
+                        self.inner.ptr().get_$type_name$_at_index(
+                          $upb_mt_field_index$, ($default_value$).into()
+                        ).try_into().unwrap()
                       }
                     }
                   )rs");
@@ -117,15 +115,13 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                   pub fn set_$raw_field_name$(&mut self, val: $Scalar$) {
                     unsafe {
-                      let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          mt, $upb_mt_field_index$);
                       // TODO: b/361751487: This .into() is only here
                       // here for the enum<->i32 case, we should avoid it for
                       // other primitives where the types naturally match
-                      // perfectly.
-                      $pbr$::upb_Message_SetBaseField$upb_fn_type_name$(
-                          self.raw_msg(), f, val.into());
+                      //perfectly.
+                      self.inner.ptr_mut().set_base_field_$type_name$_at_index(
+                        $upb_mt_field_index$, val.into()
+                      )
                     }
                   }
                 )rs");

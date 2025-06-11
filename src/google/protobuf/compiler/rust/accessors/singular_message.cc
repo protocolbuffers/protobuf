@@ -46,15 +46,12 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 if (ctx.is_upb()) {
                   ctx.Emit(R"rs(
               let submsg = unsafe {
-                let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                            $upb_mt_field_index$);
-                $pbr$::upb_Message_GetMessage(self.raw_msg(), f)
+                self.inner.ptr().get_message_at_index($upb_mt_field_index$)
               };
               //~ For upb, getters return null if the field is unset, so we need
               //~ to check for null and return the default instance manually.
               //~ Note that a nullptr received from upb manifests as Option::None
-              let raw = submsg.unwrap_or($pbr$::ScratchSpace::zeroed_block());
+              let raw = submsg.map(|ptr| ptr.raw()).unwrap_or($pbr$::ScratchSpace::zeroed_block());
               let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
               $msg_type$View::new($pbi$::Private, inner)
         )rs");
@@ -92,16 +89,15 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  )rs");
              } else {
                ctx.Emit({}, R"rs(
-                  let raw_msg = unsafe {
-                    let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(mt, $upb_mt_field_index$);
-                    $pbr$::upb_Message_GetOrCreateMutableMessage(
-                        self.raw_msg(), mt, f, self.arena().raw()).unwrap()
+                  let ptr = unsafe {
+                    self.inner.ptr_mut().get_or_create_mutable_message_at_index(
+                      $upb_mt_field_index$, self.arena()
+                    ).unwrap()
                   };
                   $msg_type$Mut::from_parent(
                     $pbi$::Private,
                     self.as_message_mut_inner($pbi$::Private),
-                    raw_msg)
+                    ptr.raw())
                 )rs");
              }
            }},
@@ -124,19 +120,16 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   // The message and arena are dropped after the setter. The
                   // memory remains allocated as we fuse the arena with the
                   // parent message's arena.
-                  let mut msg = val.into_proxied($pbi$::Private);
+                  let mut child = val.into_proxied($pbi$::Private);
                   self.inner
                     .arena()
-                    .fuse($pbr$::UpbGetArena::get_arena(&mut msg, $pbi$::Private));
+                    .fuse($pbr$::UpbGetArena::get_arena(&mut child, $pbi$::Private));
 
+                  let child_ptr = $pbr$::UpbGetMessagePtrMut::get_ptr_mut(&mut child, $pbi$::Private);
                   unsafe {
-                    let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                              $upb_mt_field_index$);
-                    $pbr$::upb_Message_SetBaseFieldMessage(
-                      self.inner.raw(),
-                      f,
-                      $pbr$::UpbGetMessagePtrMut::get_raw_message_mut(&mut msg, $pbi$::Private));
+                    self.inner.ptr_mut().set_base_field_message_at_index(
+                      $upb_mt_field_index$, child_ptr
+                    );
                   }
                 )rs");
              } else {

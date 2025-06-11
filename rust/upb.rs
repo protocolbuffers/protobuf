@@ -99,7 +99,19 @@ pub struct OwnedMessageInner<T> {
     arena: Arena,
 }
 
+impl<T: Message + AssociatedMiniTable> Default for OwnedMessageInner<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: Message + AssociatedMiniTable> OwnedMessageInner<T> {
+    pub fn new() -> Self {
+        let arena = Arena::new();
+        let ptr = MessagePtr::new(&arena).expect("alloc should never fail");
+        Self { ptr, arena }
+    }
+
     /// # Safety
     /// - The underlying pointer must of type `T` and be allocated on `arena`.
     pub unsafe fn wrap_raw(raw: RawMessage, arena: Arena) -> Self {
@@ -222,6 +234,14 @@ impl<'msg, T: Message + AssociatedMiniTable> Clone for MessageViewInner<'msg, T>
 impl<'msg, T: Message + AssociatedMiniTable> Copy for MessageViewInner<'msg, T> {}
 
 impl<'msg, T: Message + AssociatedMiniTable> MessageViewInner<'msg, T> {
+    /// # Safety
+    /// - The underlying pointer must live as long as `'msg`.
+    pub unsafe fn wrap(ptr: MessagePtr<T>) -> Self {
+        // SAFETY:
+        // - Caller guaranteed `raw` is valid
+        MessageViewInner { ptr, _phantom: PhantomData }
+    }
+
     /// # Safety
     /// - The underlying pointer must of type `T` and live as long as `'msg`.
     pub unsafe fn wrap_raw(raw: RawMessage) -> Self {
