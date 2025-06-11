@@ -323,52 +323,21 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
 }
-
-void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
-                       std::optional<uint32_t> idx, std::vector<Sub>& vars) {
-  if (!IsStringInlined(field, opts)) {
-    ABSL_CHECK(!idx.has_value());
-    return;
-  }
-
-  // The first bit is the tracking bit for on demand registering ArenaDtor.
-  ABSL_CHECK_GT(*idx, 0u)
-      << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
-
-  int32_t index = *idx / 32;
-  std::string mask = absl::StrFormat("0x%08xU", 1u << (*idx % 32));
-  vars.emplace_back("inlined_string_index", index);
-  vars.emplace_back("inlined_string_mask", mask);
-
-  absl::string_view array = IsMapEntryMessage(field->containing_type())
-                                ? "_inlined_string_donated_"
-                                : "_impl_._inlined_string_donated_";
-
-  vars.emplace_back("inlined_string_donated",
-                    absl::StrFormat("(%s[%d] & %s) != 0;", array, index, mask));
-  vars.emplace_back("donating_states_word",
-                    absl::StrFormat("%s[%d]", array, index));
-  vars.emplace_back("mask_for_undonate", absl::StrFormat("~%s", mask));
-}
 }  // namespace
 
 FieldGenerator::FieldGenerator(const FieldDescriptor* field,
                                const Options& options,
                                MessageSCCAnalyzer* scc_analyzer,
-                               std::optional<uint32_t> hasbit_index,
-                               std::optional<uint32_t> inlined_string_index)
+                               std::optional<uint32_t> hasbit_index)
     : impl_(MakeGenerator(field, options, scc_analyzer)),
       field_vars_(FieldVars(field, options)),
       tracker_vars_(MakeTrackerCalls(field, options)),
       per_generator_vars_(impl_->MakeVars()) {
   HasBitVars(field, options, hasbit_index, field_vars_);
-  InlinedStringVars(field, options, inlined_string_index, field_vars_);
 }
 
-void FieldGeneratorTable::Build(
-    const Options& options, MessageSCCAnalyzer* scc,
-    absl::Span<const int32_t> has_bit_indices,
-    absl::Span<const int32_t> inlined_string_indices) {
+void FieldGeneratorTable::Build(const Options& options, MessageSCCAnalyzer* scc,
+                                absl::Span<const int32_t> has_bit_indices) {
   // Construct all the FieldGenerators.
   fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
@@ -378,14 +347,7 @@ void FieldGeneratorTable::Build(
       has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
     }
 
-    std::optional<uint32_t> inlined_string_index;
-    if (!inlined_string_indices.empty() && inlined_string_indices[index] >= 0) {
-      inlined_string_index =
-          static_cast<uint32_t>(inlined_string_indices[index]);
-    }
-
-    fields_.push_back(FieldGenerator(field, options, scc, has_bit_index,
-                                     inlined_string_index));
+    fields_.push_back(FieldGenerator(field, options, scc, has_bit_index));
   }
 }
 

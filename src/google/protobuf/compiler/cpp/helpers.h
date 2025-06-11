@@ -42,7 +42,7 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-enum class ArenaDtorNeeds { kNone = 0, kOnDemand = 1, kRequired = 2 };
+enum class ArenaDtorNeeds { kNone = 0, kRequired = 1 };
 
 inline absl::string_view ProtobufNamespace(const Options& opts) {
   // This won't be transformed by copybara, since copybara looks for google::protobuf::.

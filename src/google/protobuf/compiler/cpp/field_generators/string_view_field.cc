@@ -80,10 +80,6 @@ class SingularStringView : public FieldGeneratorBase {
 
   bool IsInlined() const override { return is_inlined(); }
 
-  ArenaDtorNeeds NeedsArenaDestructor() const override {
-    return is_inlined() ? ArenaDtorNeeds::kOnDemand : ArenaDtorNeeds::kNone;
-  }
-
   void GeneratePrivateMembers(io::Printer* p) const override {
     // Skips the automatic destruction if inlined; rather calls it explicitly if
     // allocating arena is null.
@@ -116,16 +112,6 @@ class SingularStringView : public FieldGeneratorBase {
         _this->_internal_set_$name$(from._internal_$name$());
       )cc");
     }
-  }
-
-  void GenerateArenaDestructorCode(io::Printer* p) const override {
-    if (!is_inlined()) return;
-
-    p->Emit(R"cc(
-      if (!_this->_internal_$name$_donated()) {
-        _this->$field_$.~InlinedStringField();
-      }
-    )cc");
   }
 
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {
@@ -247,25 +233,17 @@ void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"set_"}, AnnotationCollector::kSet));
 
-  p->Emit({{"donated",
-            [&] {
-              if (!is_inlined()) return;
-              p->Emit(R"cc(
-                PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
-              )cc");
-            }}},
-          R"cc(
-            $DEPRECATED$ ::absl::string_view $name$() const;
-            template <typename Arg_ = ::std::string&&>
-            $DEPRECATED$ void $set_name$(Arg_&& arg);
+  p->Emit(R"cc(
+    $DEPRECATED$ ::absl::string_view $name$() const;
+    template <typename Arg_ = ::std::string&&>
+    $DEPRECATED$ void $set_name$(Arg_&& arg);
 
-            private:
-            ::absl::string_view _internal_$name$() const;
-            PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(::absl::string_view value);
-            $donated$;
+    private:
+    ::absl::string_view _internal_$name$() const;
+    PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(::absl::string_view value);
 
-            public:
-          )cc");
+    public:
+  )cc");
 }
 
 void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
@@ -286,16 +264,6 @@ void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
   )cc");
 }
 
-void ArgsForSetter(io::Printer* p, bool inlined) {
-  if (!inlined) {
-    p->Emit("GetArena()");
-    return;
-  }
-  p->Emit(
-      "GetArena(), _internal_$name_internal$_donated(), "
-      "&$donating_states_word$, $mask_for_undonate$, this");
-}
-
 void SingularStringView::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(
@@ -310,7 +278,6 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
              )cc");
            }},
           {"update_hasbit", [&] { UpdateHasbitSet(p, is_oneof()); }},
-          {"set_args", [&] { ArgsForSetter(p, is_inlined()); }},
           {"check_hasbit",
            [&] {
              if (!is_oneof()) return;
@@ -336,7 +303,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
           $update_hasbit$;
-          $field_$.Set(static_cast<Arg_&&>(arg), $set_args$);
+          $field_$.Set(static_cast<Arg_&&>(arg), GetArena());
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
@@ -348,17 +315,9 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
         inline void $Msg$::_internal_set_$name_internal$(::absl::string_view value) {
           $TsanDetectConcurrentMutation$;
           $update_hasbit$;
-          $field_$.Set(value, $set_args$);
+          $field_$.Set(value, GetArena());
         }
       )cc");
-
-  if (is_inlined()) {
-    p->Emit(R"cc(
-      inline bool $Msg$::_internal_$name_internal$_donated() const {
-        return $inlined_string_donated$;
-      }
-    )cc");
-  }
 }
 
 void SingularStringView::GenerateClearingCode(io::Printer* p) const {
@@ -461,14 +420,8 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    {
-      bool lhs_dtor_registered = ($inlined_string_donated_array$[0] & 1) == 0;
-      bool rhs_dtor_registered =
-          (other->$inlined_string_donated_array$[0] & 1) == 0;
-      ::_pbi::InlinedStringField::InternalSwap(
-          &$field_$, lhs_dtor_registered, this, &other->$field_$,
-          rhs_dtor_registered, other, arena);
-    }
+    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
+                                             arena);
   )cc");
 }
 
@@ -498,31 +451,19 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
     )cc");
   }
 
-  p->Emit(
-      {{"hazzer",
-        [&] {
-          if (HasHasbit(field_)) {
-            p->Emit(R"cc((from.$has_hasbit$) != 0)cc");
-          } else {
-            p->Emit(R"cc(!from._internal_$name$().empty())cc");
-          }
-        }},
-       {"set_args",
-        [&] {
-          if (!is_inlined()) {
-            p->Emit("_this->GetArena()");
-          } else {
-            p->Emit(
-                "_this->GetArena(), "
-                "_this->_internal_$name$_donated(), "
-                "&_this->$donating_states_word$, $mask_for_undonate$, _this");
-          }
-        }}},
-      R"cc(
-        if ($hazzer$) {
-          _this->$field_$.Set(from._internal_$name$(), $set_args$);
-        }
-      )cc");
+  p->Emit({{"hazzer",
+            [&] {
+              if (HasHasbit(field_)) {
+                p->Emit(R"cc((from.$has_hasbit$) != 0)cc");
+              } else {
+                p->Emit(R"cc(!from._internal_$name$().empty())cc");
+              }
+            }}},
+          R"cc(
+            if ($hazzer$) {
+              _this->$field_$.Set(from._internal_$name$(), _this->GetArena());
+            }
+          )cc");
 }
 
 void SingularStringView::GenerateDestructorCode(io::Printer* p) const {

@@ -1299,14 +1299,6 @@ class PROTOBUF_EXPORT Reflection final {
   inline void NaiveSwapHasBit(Message* message1, Message* message2,
                               const FieldDescriptor* field) const;
 
-  inline const uint32_t* GetInlinedStringDonatedArray(
-      const Message& message) const;
-  inline uint32_t* MutableInlinedStringDonatedArray(Message* message) const;
-  inline bool IsInlinedStringDonated(const Message& message,
-                                     const FieldDescriptor* field) const;
-  inline void SwapInlinedStringDonated(Message* lhs, Message* rhs,
-                                       const FieldDescriptor* field) const;
-
   // Returns the `_split_` pointer. Requires: IsSplit() == true.
   inline const void* GetSplitField(const Message* message) const;
   // Returns the address of the `_split_` pointer. Requires: IsSplit() == true.
