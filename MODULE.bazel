@@ -1,6 +1,8 @@
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
 
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 module(
     name = "protobuf",
     version = "32.0-dev",  # Automatically updated on release
@@ -125,37 +127,33 @@ SUPPORTED_PYTHON_VERSIONS = [
     "3.12",
 ]
 
-# TODO: Support hermetic / system python in bzlmod.
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-
-[
-    python.toolchain(
-        # Disable root warning for .pyc cache misses since CI runs as root.
-        # See https://github.com/bazelbuild/rules_python/pull/713
-        ignore_root_user_error = True,
-        is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
-        python_version = python_version,
-    )
-    for python_version in SUPPORTED_PYTHON_VERSIONS
-]
-
-use_repo(
-    python,
-    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+local_runtime_repo = use_repo_rule(
+    "@rules_python//python/local_toolchains:repos.bzl",
+    "local_runtime_repo",
+    dev_dependency = True,
 )
 
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
+local_runtime_toolchains_repo = use_repo_rule(
+    "@rules_python//python/local_toolchains:repos.bzl",
+    "local_runtime_toolchains_repo",
+    dev_dependency = True,
+)
 
-[
-    pip.parse(
-        hub_name = "protobuf_pip_deps",
-        python_version = python_version,
-        requirements_lock = "//python:requirements.txt",
-    )
-    for python_version in SUPPORTED_PYTHON_VERSIONS
-]
+local_runtime_repo(
+    name = "local_python3",
+    interpreter_path = "python3",
+    on_failure = "fail",
+)
 
-use_repo(pip, "protobuf_pip_deps")
+local_runtime_toolchains_repo(
+    name = "local_toolchains",
+    runtimes = ["local_python3"],
+)
+
+register_toolchains(
+    "@local_toolchains//:all",
+    dev_dependency = True,
+)
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
 crate.spec(
