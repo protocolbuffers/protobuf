@@ -639,8 +639,9 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
 }
 
 MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
-                                      const MessageLite& prototype,
+                                      const ClassData* class_data,
                                       const FieldDescriptor* descriptor) {
+  ABSL_DCHECK(class_data != nullptr);
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
@@ -655,7 +656,7 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
 
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
-      ->AddFromPrototype<GenericTypeHandler<MessageLite>>(&prototype);
+      ->AddFromClassData<GenericTypeHandler<MessageLite>>(class_data);
 }
 
 // Defined in extension_set_heavy.cc.

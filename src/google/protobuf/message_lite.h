@@ -243,7 +243,15 @@ class PROTOBUF_EXPORT CachedSize {
 #endif
 };
 
-auto GetClassData(const MessageLite& msg);
+struct ClassData;
+
+// Returns the ClassData for the given message.
+//
+// This function is used to get the ClassData for a message without having to
+// know the type of the message. This is useful for when the message is a
+// generated message.
+template <typename Type>
+const ClassData* GetClassData(const Type& msg);
 
 template <const auto* kDefault, const auto* kClassData>
 struct GeneratedMessageTraitsT {
@@ -1051,14 +1059,26 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::v2::TableDriven;
   friend class internal::v2::TableDrivenMessage;
   friend class internal::v2::TableDrivenParse;
-  friend internal::MessageCreator;
-
+  friend class internal::MessageCreator;
+  friend class internal::RepeatedPtrFieldBase;
+  template <typename Type>
+  friend class internal::GenericTypeHandler;
   template <typename Type>
   friend class Arena::InternalHelper;
 
-  friend auto internal::GetClassData(const MessageLite& msg);
+  template <typename Type>
+  friend const internal::ClassData* internal::GetClassData(const Type& msg);
 
   void LogInitializationErrorMessage() const;
+
+  // Merges the contents of `other` into `this`. This is faster than
+  // `CheckTypeAndMergeFrom()` and should be preferred by friended internal
+  // callers that have the right `ClassData` handy.
+  // REQUIRES: Both `this` and `other` are the exact same class as represented
+  // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
+  // in release builds (probably a crash).
+  void MergeFromWithClassData(const MessageLite& other,
+                              const internal::ClassData* data);
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 
@@ -1140,7 +1160,18 @@ class TypeId {
 
 namespace internal {
 
-inline auto GetClassData(const MessageLite& msg) { return msg.GetClassData(); }
+// The point of this function being a template is that for a concrete message
+// `Type`, the otherwise virtual `GetClassData()` call is resolved and inlined
+// at compile time (via `MessageTraits`).
+template <typename T>
+PROTOBUF_NDEBUG_INLINE const ClassData* GetClassData(const T& msg) {
+  static_assert(std::is_base_of_v<MessageLite, T>);
+  if constexpr (std::is_same_v<T, Message> || std::is_same_v<T, MessageLite>) {
+    return msg.GetClassData();
+  } else {
+    return MessageTraits<T>::class_data();
+  }
+}
 
 template <bool alias>
 bool MergeFromImpl(absl::string_view input, MessageLite* msg,
