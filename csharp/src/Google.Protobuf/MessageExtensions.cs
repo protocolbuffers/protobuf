@@ -95,7 +95,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             byte[] result = new byte[message.CalculateSize()];
-            CodedOutputStream output = new CodedOutputStream(result);
+            using CodedOutputStream output = new CodedOutputStream(result);
             message.WriteTo(output);
             output.CheckNoSpaceLeft();
             return result;
@@ -110,7 +110,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(output, nameof(output));
-            CodedOutputStream codedOutput = new CodedOutputStream(output);
+            using CodedOutputStream codedOutput = new CodedOutputStream(output);
             message.WriteTo(codedOutput);
             codedOutput.Flush();
         }
@@ -124,7 +124,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(output, nameof(output));
-            CodedOutputStream codedOutput = new CodedOutputStream(output);
+            using CodedOutputStream codedOutput = new CodedOutputStream(output);
             codedOutput.WriteLength(message.CalculateSize());
             message.WriteTo(codedOutput);
             codedOutput.Flush();
@@ -239,7 +239,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(data, nameof(data));
-            CodedInputStream input = new CodedInputStream(data)
+            using CodedInputStream input = new CodedInputStream(data)
             {
                 DiscardUnknownFields = discardUnknownFields,
                 ExtensionRegistry = registry
@@ -252,7 +252,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(data, nameof(data));
-            CodedInputStream input = new CodedInputStream(data, offset, length)
+            using CodedInputStream input = new CodedInputStream(data, offset, length)
             {
                 DiscardUnknownFields = discardUnknownFields,
                 ExtensionRegistry = registry
@@ -265,7 +265,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(data, nameof(data));
-            CodedInputStream input = data.CreateCodedInput();
+            using CodedInputStream input = data.CreateCodedInput();
             input.DiscardUnknownFields = discardUnknownFields;
             input.ExtensionRegistry = registry;
             message.MergeFrom(input);
@@ -276,7 +276,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(input, nameof(input));
-            CodedInputStream codedInput = new CodedInputStream(input)
+            using CodedInputStream codedInput = new CodedInputStream(input)
             {
                 DiscardUnknownFields = discardUnknownFields,
                 ExtensionRegistry = registry
@@ -310,7 +310,7 @@ namespace Google.Protobuf
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(input, nameof(input));
             int size = (int) CodedInputStream.ReadRawVarint32(input);
-            Stream limitedStream = new LimitedInputStream(input, size);
+            using Stream limitedStream = new LimitedInputStream(input, size);
             MergeFrom(message, limitedStream, discardUnknownFields, registry);
         }
     }
