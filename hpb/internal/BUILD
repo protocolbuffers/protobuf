@@ -53,6 +53,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = [
+        "//hpb:__subpackages__",
     ],
     deps = [
         "//hpb:status",
