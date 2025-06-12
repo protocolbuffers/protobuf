@@ -371,12 +371,22 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         build_info = None,
     )
 
+    extra_dep_variant_infos = [
+        DepVariantInfo(
+            crate_info = dep[CrateInfo] if CrateInfo in dep else None,
+            dep_info = dep[DepInfo] if DepInfo in dep else None,
+            cc_info = dep[CcInfo] if CcInfo in dep else None,
+            build_info = None,
+        )
+        for dep in ctx.attr._extra_deps
+    ]
+
     dep_variant_info = _compile_rust(
         ctx = ctx,
         attr = ctx.rule.attr,
         src = entry_point_rs_output,
         extra_srcs = rs_gencode,
-        deps = [dep_variant_info_for_runtime] + dep_variant_info_for_native_gencode + dep_variant_infos,
+        deps = [dep_variant_info_for_runtime] + dep_variant_info_for_native_gencode + dep_variant_infos + extra_dep_variant_infos,
         runtime = runtime,
     )
     return [RustProtoInfo(
@@ -422,6 +432,10 @@ def _make_proto_library_aspect(is_upb):
             ),
             "_extra_rustc_flags": attr.label(
                 default = Label("@rules_rust//:extra_rustc_flags"),
+            ),
+            "_extra_deps": attr.label_list(
+                default = [
+                ],
             ),
             "_process_wrapper": attr.label(
                 doc = "A process wrapper for running rustc on all platforms.",
