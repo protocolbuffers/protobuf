@@ -780,6 +780,12 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Turn on -Wdeprecated-enum-enum-conversion. This deprecation comes in C++20
 // via http://wg21.link/p1120r0.
 #pragma clang diagnostic error "-Wdeprecated-enum-enum-conversion"
+// Turn on -Wconstant-conversion which is used in chromiumos_x86_64 builds.
+// See cl/770742024.
+#pragma clang diagnostic error "-Wconstant-conversion"
+// Turn on -Wunused-label which is used in chromiumos_x86_64 builds.
+// See cl/765314834.
+#pragma clang diagnostic error "-Wunused-label"
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma clang diagnostic ignored "-Wunused-parameter"
