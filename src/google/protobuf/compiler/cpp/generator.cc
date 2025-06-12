@@ -93,121 +93,12 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
 
 }  // namespace
 
-bool CppGenerator::Generate(const FileDescriptor* file,
-                            const std::string& parameter,
-                            GeneratorContext* generator_context,
-                            std::string* error) const {
+bool CppGenerator::GenerateImpl(const FileDescriptor* file,
+                                const std::string& parameter,
+                                GeneratorContext* generator_context,
+                                std::string* error,
+                                const Options& file_options) const {
   ABSL_DCHECK_NE(file, nullptr);
-
-  std::vector<std::pair<std::string, std::string>> options;
-  ParseGeneratorParameter(parameter, &options);
-
-  // -----------------------------------------------------------------
-  // parse generator options
-
-  // If the dllexport_decl option is passed to the compiler, we need to write
-  // it in front of every symbol that should be exported if this .proto is
-  // compiled into a Windows DLL.  E.g., if the user invokes the protocol
-  // compiler as:
-  //   protoc --cpp_out=dllexport_decl=FOO_EXPORT:outdir foo.proto
-  // then we'll define classes like this:
-  //   class FOO_EXPORT Foo {
-  //     ...
-  //   }
-  // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
-  // __declspec(dllimport) depending on what is being compiled.
-  //
-  // If the proto_h option is passed to the compiler, we will generate all
-  // classes and enums so that they can be forward-declared from files that
-  // need them from imports.
-  //
-  // If the lite option is passed to the compiler, we will generate the
-  // current files and all transitive dependencies using the LITE runtime.
-  Options file_options;
-
-  file_options.opensource_runtime = opensource_runtime_;
-  file_options.runtime_include_base = runtime_include_base_;
-
-  for (const auto& option : options) {
-    const auto& key = option.first;
-    const auto& value = option.second;
-
-    if (key == "dllexport_decl") {
-      file_options.dllexport_decl = value;
-    } else if (key == "safe_boundary_check") {
-      file_options.bounds_check_mode = BoundsCheckMode::kReturnDefaultValue;
-    } else if (key == "enforced_boundary_check") {
-      file_options.bounds_check_mode = BoundsCheckMode::kAbort;
-    } else if (key == "annotate_headers") {
-      file_options.annotate_headers = true;
-    } else if (key == "annotation_pragma_name") {
-      file_options.annotation_pragma_name = value;
-    } else if (key == "annotation_guard_name") {
-      file_options.annotation_guard_name = value;
-    } else if (key == "speed") {
-      file_options.enforce_mode = EnforceOptimizeMode::kSpeed;
-    } else if (key == "code_size") {
-      file_options.enforce_mode = EnforceOptimizeMode::kCodeSize;
-    } else if (key == "lite") {
-      file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
-    } else if (key == "lite_implicit_weak_fields") {
-      file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
-      file_options.lite_implicit_weak_fields = true;
-      int num_cc_files;
-      if (!value.empty() && absl::SimpleAtoi(value, &num_cc_files)) {
-        file_options.num_cc_files = num_cc_files;
-      }
-    } else if (key == "descriptor_implicit_weak_messages") {
-      file_options.descriptor_implicit_weak_messages = true;
-    } else if (key == "proto_h") {
-      file_options.proto_h = true;
-    } else if (key == "proto_static_reflection_h") {
-    } else if (key == "annotate_accessor") {
-      file_options.annotate_accessor = true;
-    } else if (key == "protos_for_field_listener_events") {
-      for (absl::string_view proto : absl::StrSplit(value, ':')) {
-        if (proto == file->name()) {
-          file_options.field_listener_options.inject_field_listener_events =
-              true;
-          break;
-        }
-      }
-    } else if (key == "inject_field_listener_events") {
-      file_options.field_listener_options.inject_field_listener_events = true;
-    } else if (key == "forbidden_field_listener_events") {
-      std::size_t pos = 0;
-      do {
-        std::size_t next_pos = value.find_first_of("+", pos);
-        if (next_pos == std::string::npos) {
-          next_pos = value.size();
-        }
-        if (next_pos > pos)
-          file_options.field_listener_options.forbidden_field_listener_events
-              .emplace(value.substr(pos, next_pos - pos));
-        pos = next_pos + 1;
-      } while (pos < value.size());
-    } else if (key == "force_eagerly_verified_lazy") {
-      file_options.force_eagerly_verified_lazy = true;
-    } else if (key == "experimental_strip_nonfunctional_codegen") {
-      file_options.strip_nonfunctional_codegen = true;
-    } else if (key == "experimental_cpp_micro_string") {
-      file_options.experimental_use_micro_string = true;
-    } else {
-      *error = absl::StrCat("Unknown generator option: ", key);
-      return false;
-    }
-  }
-
-  // The safe_boundary_check option controls behavior for Google-internal
-  // protobuf APIs.
-  if ((file_options.bounds_check_mode != BoundsCheckMode::kNoEnforcement) &&
-      file_options.opensource_runtime) {
-    *error =
-        "The safe_boundary_check option is not supported outside of Google.";
-    return false;
-  }
-
-  // -----------------------------------------------------------------
 
 
   std::string basename = StripProto(file->name());
@@ -417,6 +308,148 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
     }
   });
   return status;
+}
+
+bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
+                               const std::string& parameter,
+                               GeneratorContext* generator_context,
+                               std::string* error) const {
+  std::vector<std::pair<std::string, std::string>> options;
+  ParseGeneratorParameter(parameter, &options);
+
+  // -----------------------------------------------------------------
+  // parse generator options
+
+  // If the dllexport_decl option is passed to the compiler, we need to write
+  // it in front of every symbol that should be exported if this .proto is
+  // compiled into a Windows DLL.  E.g., if the user invokes the protocol
+  // compiler as:
+  //   protoc --cpp_out=dllexport_decl=FOO_EXPORT:outdir foo.proto
+  // then we'll define classes like this:
+  //   class FOO_EXPORT Foo {
+  //     ...
+  //   }
+  // FOO_EXPORT is a macro which should expand to __declspec(dllexport) or
+  // __declspec(dllimport) depending on what is being compiled.
+  //
+  // If the proto_h option is passed to the compiler, we will generate all
+  // classes and enums so that they can be forward-declared from files that
+  // need them from imports.
+  //
+  // If the lite option is passed to the compiler, we will generate the
+  // current files and all transitive dependencies using the LITE runtime.
+  Options common_file_options;
+
+  common_file_options.opensource_runtime = opensource_runtime_;
+  common_file_options.runtime_include_base = runtime_include_base_;
+
+  std::vector<std::string> protos_for_field_listener_events;
+
+  for (const auto& option : options) {
+    const auto& key = option.first;
+    const auto& value = option.second;
+
+    if (key == "dllexport_decl") {
+      common_file_options.dllexport_decl = value;
+    } else if (key == "safe_boundary_check") {
+      common_file_options.bounds_check_mode =
+          BoundsCheckMode::kReturnDefaultValue;
+    } else if (key == "enforced_boundary_check") {
+      common_file_options.bounds_check_mode = BoundsCheckMode::kAbort;
+    } else if (key == "annotate_headers") {
+      common_file_options.annotate_headers = true;
+    } else if (key == "annotation_pragma_name") {
+      common_file_options.annotation_pragma_name = value;
+    } else if (key == "annotation_guard_name") {
+      common_file_options.annotation_guard_name = value;
+    } else if (key == "speed") {
+      common_file_options.enforce_mode = EnforceOptimizeMode::kSpeed;
+    } else if (key == "code_size") {
+      common_file_options.enforce_mode = EnforceOptimizeMode::kCodeSize;
+    } else if (key == "lite") {
+      common_file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
+    } else if (key == "lite_implicit_weak_fields") {
+      common_file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
+      common_file_options.lite_implicit_weak_fields = true;
+      int num_cc_files;
+      if (!value.empty() && absl::SimpleAtoi(value, &num_cc_files)) {
+        common_file_options.num_cc_files = num_cc_files;
+      }
+    } else if (key == "descriptor_implicit_weak_messages") {
+      common_file_options.descriptor_implicit_weak_messages = true;
+    } else if (key == "proto_h") {
+      common_file_options.proto_h = true;
+    } else if (key == "proto_static_reflection_h") {
+    } else if (key == "annotate_accessor") {
+      common_file_options.annotate_accessor = true;
+    } else if (key == "protos_for_field_listener_events") {
+      protos_for_field_listener_events = absl::StrSplit(value, ':');
+    } else if (key == "inject_field_listener_events") {
+      common_file_options.field_listener_options.inject_field_listener_events =
+          true;
+    } else if (key == "forbidden_field_listener_events") {
+      std::size_t pos = 0;
+      do {
+        std::size_t next_pos = value.find_first_of("+", pos);
+        if (next_pos == std::string::npos) {
+          next_pos = value.size();
+        }
+        if (next_pos > pos)
+          common_file_options.field_listener_options
+              .forbidden_field_listener_events.emplace(
+                  value.substr(pos, next_pos - pos));
+        pos = next_pos + 1;
+      } while (pos < value.size());
+    } else if (key == "force_eagerly_verified_lazy") {
+      common_file_options.force_eagerly_verified_lazy = true;
+    } else if (key == "experimental_strip_nonfunctional_codegen") {
+      common_file_options.strip_nonfunctional_codegen = true;
+    } else if (key == "experimental_cpp_micro_string") {
+      common_file_options.experimental_use_micro_string = true;
+    } else {
+      *error = absl::StrCat("Unknown generator option: ", key);
+      return false;
+    }
+  }
+
+  // The safe_boundary_check option controls behavior for Google-internal
+  // protobuf APIs.
+  if ((common_file_options.bounds_check_mode !=
+       BoundsCheckMode::kNoEnforcement) &&
+      common_file_options.opensource_runtime) {
+    *error =
+        "The safe_boundary_check option is not supported outside of Google.";
+    return false;
+  }
+
+  // -----------------------------------------------------------------
+
+
+  for (size_t i = 0; i < files.size(); i++) {
+    const FileDescriptor* file = files[i];
+    Options file_options = common_file_options;
+    for (absl::string_view proto : protos_for_field_listener_events) {
+      if (file->name() == proto) {
+        file_options.field_listener_options.inject_field_listener_events = true;
+        break;
+      }
+    }
+
+
+    if (!GenerateImpl(file, parameter, generator_context, error,
+                      file_options)) {
+      *error = absl::StrCat(file->name(), ": ", *error);
+      return false;
+    }
+  }
+  return true;
+}
+
+bool CppGenerator::Generate(const FileDescriptor* file,
+                            const std::string& parameter,
+                            GeneratorContext* generator_context,
+                            std::string* error) const {
+  return GenerateAll({file}, parameter, generator_context, error);
 }
 
 }  // namespace cpp
