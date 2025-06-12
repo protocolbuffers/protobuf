@@ -709,6 +709,18 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
   return tmp.first;
 }
 
+template <typename V1Type>
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1) {
+  asm("" : "+r"(value1));
+  return value1;
+}
+
+template <typename V1Type, typename V2Type>
+PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1, V2Type value2) {
+  asm("" : "+r"(value1) : "r"(value2));
+  return value1;
+}
+
 #if defined(__aarch64__) && !defined(_MSC_VER)
 // Generally, speaking, the ARM-optimized Varint decode algorithm is to extract
 // and concatenate all potentially valid data bits, compute the actual length
@@ -790,17 +802,6 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
 // ```
 // Falsely indicate that the specific value is modified at this location.  This
 // prevents code which depends on this value from being scheduled earlier.
-template <typename V1Type>
-PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1) {
-  asm("" : "+r"(value1));
-  return value1;
-}
-
-template <typename V1Type, typename V2Type>
-PROTOBUF_ALWAYS_INLINE V1Type ValueBarrier(V1Type value1, V2Type value2) {
-  asm("" : "+r"(value1) : "r"(value2));
-  return value1;
-}
 
 // Performs a 7 bit UBFX (Unsigned Bit Extract) starting at the indicated bit.
 static PROTOBUF_ALWAYS_INLINE uint64_t Ubfx7(uint64_t data, uint64_t start) {
@@ -935,6 +936,16 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 }
 #endif
 
+// Helper function to prevent inlining
+template <typename T>
+ABSL_ATTRIBUTE_COLD
+PROTOBUF_NOINLINE
+static const char* VarintParseCold(const char* p, T* out) {
+  auto ptr = reinterpret_cast<const uint8_t*>(p);
+
+  return VarintParseSlow(p, ptr[0], out);
+}
+
 // The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
 [[nodiscard]] const char* VarintParse(const char* p, T* out) {
@@ -957,7 +968,54 @@ template <typename T>
     return p + 2;
   }
   return VarintParseSlowArm(p, out, first8);
-#else   // __aarch64__
+#elif defined(__x86_64__) // __aarch64__
+  // Hot path: try to parse a 28 bit varint
+  // Range: 0..268,435,456
+  // Tagged: 0..33,554,432
+  //
+  // Messages longer than 128 bytes are not uncommon, so this
+  // should be faster in the general case
+
+  // Input is guaranteed atleast 10 bytes
+  uint32_t value;
+
+  std::memcpy(&value, p, sizeof(value));
+
+  // Bit is 0 if continuation bit is not set
+  // 1 byte: ?000_000 ?000_000 ?000_000 1000_000
+  // 2 byte: ?000_000 ?000_000 1000_000 0000_000
+  // 3 byte: ?000_000 1000_000 0000_000 0000_000
+  // 4 byte: 1000_000 0000_000 0000_000 0000_000
+  // ? byte: 0000_000 0000_000 0000_000 0000_000
+  uint32_t mask = ValueBarrier(~value) & 0x8080'8080;
+
+  if ABSL_PREDICT_FALSE(mask == 0) {
+    // All continuation bits set, fall back to default implementation
+    return VarintParseCold(p, out);
+  }
+
+  // Use the mask to get the length
+  uint32_t len = absl::countr_zero(mask);
+
+  // See mask table above
+  mask -= 1;
+  // Discard irrelevant bits
+  value &= 0x7f7f'7f7f;
+  value &= mask;
+
+  // https://github.com/protocolbuffers/protobuf/pull/10646#issuecomment-1275499255
+  value += value & 0x00ff'00ff;
+  value += (value & 0x0000'ffff) * 0b0011;
+  value >>= 3;
+
+  // Bit length to byte length
+  len >>= 3;
+  len += 1;
+
+  *out = (T)value;
+
+  return p + len;
+#else // __x86_64__
   auto ptr = reinterpret_cast<const uint8_t*>(p);
   uint32_t res = ptr[0];
   if ((res & 0x80) == 0) {
@@ -965,7 +1023,7 @@ template <typename T>
     return p + 1;
   }
   return VarintParseSlow(p, res, out);
-#endif  // __aarch64__
+#endif  // __x86_64__
 }
 
 // Used for tags, could read up to 5 bytes which must be available.
