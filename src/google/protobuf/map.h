@@ -641,7 +641,6 @@ class MapFieldBaseForParse {
 
   mutable std::atomic<TaggedPtr> payload_{};
   const void* prototype_as_void_;
-  PROTOBUF_TSAN_DECLARE_MEMBER;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
