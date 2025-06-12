@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-bom</artifactId>
-  <version>4.30.3</version>
+  <version>4.30.3-rc1</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [BOM]</name>
@@ -42,17 +42,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
-
-  <distributionManagement>
-    <snapshotRepository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </snapshotRepository>
-    <repository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-  </distributionManagement>
 
   <dependencyManagement>
     <dependencies>
@@ -96,17 +85,6 @@
                 </goals>
                </execution>
             </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-	    <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.6</version>
-            <extensions>true</extensions>
-            <configuration>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <serverId>sonatype-nexus-staging</serverId>
-              <autoReleaseAfterClose>false</autoReleaseAfterClose>
-            </configuration>
           </plugin>
         </plugins>
       </build>
