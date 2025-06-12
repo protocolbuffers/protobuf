@@ -131,6 +131,7 @@ class MessageFactory;
 
 // Defined in other files.
 class AssignDescriptorsHelper;
+class ConstMapIterator;
 class DynamicMessageFactory;
 class GeneratedMessageReflectionTestHelper;
 class MapKey;
@@ -1189,12 +1190,25 @@ class PROTOBUF_EXPORT Reflection final {
   // real element. Mutation to the field may invalidate the iterator.
   MapIterator MapEnd(Message* message, const FieldDescriptor* field) const;
 
+  // Returns a ConstMapIterator referring to the first element in the map field.
+  // If the map field is empty, this function returns the same as
+  // reflection::ConstMapEnd. Mutation to the field may invalidate the iterator.
+  ConstMapIterator ConstMapBegin(const Message* message,
+                                 const FieldDescriptor* field) const;
+
+  // Returns a ConstMapIterator referring to the theoretical element that would
+  // follow the last element in the map field. It does not point to any
+  // real element. Mutation to the field may invalidate the iterator.
+  ConstMapIterator ConstMapEnd(const Message* message,
+                               const FieldDescriptor* field) const;
+
   // Get the number of <key, value> pair of a map field. The result may be
   // different from FieldSize which can have duplicate keys.
   int MapSize(const Message& message, const FieldDescriptor* field) const;
 
   // Help method for MapIterator.
-  friend class MapIterator;
+  template <bool>
+  friend class MapIteratorBase;
   friend class WireFormatForMapFieldTest;
   internal::MapFieldBase* MutableMapData(Message* message,
                                          const FieldDescriptor* field) const;

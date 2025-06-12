@@ -1138,10 +1138,8 @@ class MapKeySorter {
                                      const Reflection* reflection,
                                      const FieldDescriptor* field) {
     std::vector<MapKey> sorted_key_list;
-    for (MapIterator it =
-             reflection->MapBegin(const_cast<Message*>(&message), field);
-         it != reflection->MapEnd(const_cast<Message*>(&message), field);
-         ++it) {
+    for (ConstMapIterator it = reflection->ConstMapBegin(&message, field);
+         it != reflection->ConstMapEnd(&message, field); ++it) {
       sorted_key_list.push_back(it.GetKey());
     }
     MapKeyComparator comparator;
@@ -1239,11 +1237,9 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
               InternalSerializeMapEntry(field, *it, map_value, target, stream);
         }
       } else {
-        for (MapIterator it = message_reflection->MapBegin(
-                 const_cast<Message*>(&message), field);
-             it !=
-             message_reflection->MapEnd(const_cast<Message*>(&message), field);
-             ++it) {
+        for (ConstMapIterator it =
+                 message_reflection->ConstMapBegin(&message, field);
+             it != message_reflection->ConstMapEnd(&message, field); ++it) {
           target = InternalSerializeMapEntry(field, it.GetKey(),
                                              it.GetValueRef(), target, stream);
         }
@@ -1621,12 +1617,12 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     const MapFieldBase* map_field =
         message_reflection->GetMapData(message, field);
     if (map_field->IsMapValid()) {
-      MapIterator iter(const_cast<Message*>(&message), field);
-      MapIterator end(const_cast<Message*>(&message), field);
+      ConstMapIterator iter(&message, field);
+      ConstMapIterator end(&message, field);
       const FieldDescriptor* key_field = field->message_type()->field(0);
       const FieldDescriptor* value_field = field->message_type()->field(1);
-      for (map_field->MapBegin(&iter), map_field->MapEnd(&end); iter != end;
-           ++iter) {
+      for (map_field->ConstMapBegin(&iter), map_field->ConstMapEnd(&end);
+           iter != end; ++iter) {
         size_t size = kMapEntryTagByteSize;
         size += MapKeyDataOnlyByteSize(key_field, iter.GetKey());
         size += MapValueRefDataOnlyByteSize(value_field, iter.GetValueRef());
