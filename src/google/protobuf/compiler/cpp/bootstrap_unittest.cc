@@ -18,6 +18,7 @@
 // If this test fails, run the script
 // "generate_descriptor_proto.sh" and add
 // descriptor.pb.{h,cc} to your changelist.
+#include <gmock/gmock.h>
 
 #include <memory>
 #include <string>
@@ -164,7 +165,8 @@ TEST(BootstrapTest, OptionNotExist) {
 
   const FileDescriptor* file = FileDescriptorProto::descriptor()->file();
   ASSERT_FALSE(generator.Generate(file, parameter, generator_context, &error));
-  EXPECT_EQ(error, absl::StrCat("Unknown generator option: ", parameter));
+  EXPECT_THAT(error, testing::EndsWith(absl::StrCat(
+                         "Unknown generator option: ", parameter)));
 }
 
 }  // namespace

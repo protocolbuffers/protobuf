@@ -134,6 +134,11 @@ class PROTOC_EXPORT CodeGenerator {
   absl::StatusOr<FeatureSetDefaults> BuildFeatureSetDefaults() const;
 
  protected:
+  bool GenerateAllDefault(const std::vector<const FileDescriptor*>& files,
+                          const std::string& parameter,
+                          GeneratorContext* generator_context,
+                          std::string* error) const;
+
   // Retrieves the resolved source features for a given descriptor.  All the
   // global features and language features returned by GetFeatureExtensions will
   // be fully resolved. These should be used to make any feature-based decisions
