@@ -192,13 +192,20 @@ static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
   return ary;
 }
 
+/**
+ * ruby-doc: RepeatedField
+ *
+ */
+
 /*
- * call-seq:
- *     RepeatedField.each(&block)
+ * ruby-doc: RepeatedField#each
  *
  * Invokes the block once for each element of the repeated field. RepeatedField
  * also includes Enumerable; combined with this method, the repeated field thus
  * acts like an ordinary Ruby sequence.
+ *
+ * @yield [Object]
+ * @return [self]
  */
 static VALUE RepeatedField_each(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -214,10 +221,12 @@ static VALUE RepeatedField_each(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.[](index) => value
+ * ruby-doc: RepeatedField#[]
  *
  * Accesses the element at the given index. Returns nil on out-of-bounds
+ *
+ * @param index [Integer]
+ * @return [Object,nil]
  */
 static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -262,11 +271,14 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.[]=(index, value)
+ * ruby-doc: RepeatedField#[]=
  *
  * Sets the element at the given index. On out-of-bounds assignments, extends
  * the array and fills the hole (if any) with default values.
+ *
+ * @param index [Integer]
+ * @param value [Object
+ * @return [nil]
  */
 static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -296,10 +308,12 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.push(value, ...)
+ * ruby-doc: RepeatedField#push
  *
  * Adds a new element to the repeated field.
+ *
+ * @param value [Object]
+ * @return [self]
  */
 static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -317,10 +331,12 @@ static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.<<(value)
+ * ruby-doc: RepeatedField#<<
  *
  * Adds a new element to the repeated field.
+ *
+ * @param value [Object]
+ * @return [self]
  */
 static VALUE RepeatedField_push(VALUE _self, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -355,10 +371,12 @@ static VALUE RepeatedField_pop_one(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.replace(list)
+ * ruby-doc: RepeatedField#replace
  *
  * Replaces the contents of the repeated field with the given list of elements.
+ *
+ * @param list [Array]
+ * @return [Array]
  */
 static VALUE RepeatedField_replace(VALUE _self, VALUE list) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -376,10 +394,11 @@ static VALUE RepeatedField_replace(VALUE _self, VALUE list) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.clear
+ * ruby-doc: RepeatedField#clear
  *
  * Clears (removes all elements from) this repeated field.
+ *
+ * @return [self]
  */
 static VALUE RepeatedField_clear(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -389,10 +408,11 @@ static VALUE RepeatedField_clear(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.length
+ * ruby-doc: RepeatedField#length
  *
  * Returns the length of this repeated field.
+ *
+ * @return [Integer]
  */
 static VALUE RepeatedField_length(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -400,11 +420,12 @@ static VALUE RepeatedField_length(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.dup => repeated_field
+ * ruby-doc: RepeatedField#dup
  *
  * Duplicates this repeated field with a shallow copy. References to all
  * non-primitive element objects (e.g., submessages) are shared.
+ *
+ * @return [RepeatedField]
  */
 static VALUE RepeatedField_dup(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -426,11 +447,12 @@ static VALUE RepeatedField_dup(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.to_ary => array
+ * ruby-doc: RepeatedField#to_ary
  *
  * Used when converted implicitly into array, e.g. compared to an Array.
  * Also called as a fallback of Object#to_a
+ *
+ * @return [Array]
  */
 VALUE RepeatedField_to_ary(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -448,8 +470,7 @@ VALUE RepeatedField_to_ary(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.==(other) => boolean
+ * ruby-doc: RepeatedField#==
  *
  * Compares this repeated field to another. Repeated fields are equal if their
  * element types are equal, their lengths are equal, and each element is equal.
@@ -459,6 +480,9 @@ VALUE RepeatedField_to_ary(VALUE _self) {
  * Repeated fields with dissimilar element types are never equal, even if value
  * comparison (for example, between integers and floats) would have otherwise
  * indicated that every element has equal value.
+ *
+ * @param other [RepeatedField]
+ * @return [Boolean]
  */
 VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
   RepeatedField* self;
@@ -495,12 +519,13 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.frozen? => bool
+ * ruby-doc: RepeatedField#frozen?
  *
  * Returns true if the repeated field is frozen in either Ruby or the underlying
  * representation. Freezes the Ruby repeated field object if it is not already
  * frozen in Ruby but it is frozen in the underlying representation.
+ *
+ * @return [Boolean]
  */
 VALUE RepeatedField_frozen(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -515,11 +540,12 @@ VALUE RepeatedField_frozen(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.freeze => self
+ * ruby-doc: RepeatedField#freeze
  *
  * Freezes the repeated field object. We have to intercept this so we can freeze
  * the underlying representation, not just the Ruby wrapper.
+ *
+ * @return [self]
  */
 VALUE RepeatedField_freeze(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -541,10 +567,11 @@ VALUE RepeatedField_freeze(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.hash => hash_value
+ * ruby-doc: RepeatedField#hash
  *
  * Returns a hash value computed from this repeated field's elements.
+ *
+ * @return [Integer]
  */
 VALUE RepeatedField_hash(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
@@ -560,12 +587,14 @@ VALUE RepeatedField_hash(VALUE _self) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.+(other) => repeated field
+ * ruby-doc: RepeatedField#+
  *
  * Returns a new repeated field that contains the concatenated list of this
  * repeated field's elements and other's elements. The other (second) list may
  * be either another repeated field or a Ruby array.
+ *
+ * @param other [Array,RepeatedField]
+ * @return [RepeatedField]
  */
 VALUE RepeatedField_plus(VALUE _self, VALUE list) {
   VALUE dupped_ = RepeatedField_dup(_self);
@@ -605,10 +634,12 @@ VALUE RepeatedField_plus(VALUE _self, VALUE list) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.concat(other) => self
+ * ruby-doc: RepeatedField#concat
  *
  * concats the passed in array to self.  Returns a Ruby array.
+ *
+ * @param other [RepeatedField]
+ * @return [Array]
  */
 VALUE RepeatedField_concat(VALUE _self, VALUE list) {
   int i;
@@ -621,15 +652,21 @@ VALUE RepeatedField_concat(VALUE _self, VALUE list) {
 }
 
 /*
- * call-seq:
- *     RepeatedField.new(type, type_class = nil, initial_elems = [])
+ * ruby-doc: RepeatedField#initialize
  *
  * Creates a new repeated field. The provided type must be a Ruby symbol, and
- * can take on the same values as those accepted by FieldDescriptor#type=. If
+ * can take on the same values as those accepted by {FieldDescriptor#type=}. If
  * the type is :message or :enum, type_class must be non-nil, and must be the
- * Ruby class or module returned by Descriptor#msgclass or
- * EnumDescriptor#enummodule, respectively. An initial list of elements may also
- * be provided.
+ * Ruby class or module returned by {Descriptor#msgclass} or
+ * {EnumDescriptor#enummodule}, respectively. An initial list of elements may
+ * also be provided.
+ *
+ * @param type [Symbol]
+ * @param type_class [Class<AbstractMessage>, Module]
+ * @paramdefault type_class nil
+ * @param initial_elems [Array]
+ * @paramdefault initial_elems []
+ * @return [RepeatedField]
  */
 VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);

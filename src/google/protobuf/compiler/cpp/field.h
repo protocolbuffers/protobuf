@@ -15,13 +15,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -503,8 +503,8 @@ class FieldGenerator {
   friend class FieldGeneratorTable;
   FieldGenerator(const FieldDescriptor* field, const Options& options,
                  MessageSCCAnalyzer* scc_analyzer,
-                 absl::optional<uint32_t> hasbit_index,
-                 absl::optional<uint32_t> inlined_string_index);
+                 std::optional<uint32_t> hasbit_index,
+                 std::optional<uint32_t> inlined_string_index);
 
   std::unique_ptr<FieldGeneratorBase> impl_;
   std::vector<io::Printer::Sub> field_vars_;

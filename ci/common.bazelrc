@@ -52,13 +52,10 @@ build --incompatible_dont_use_javasourceinfoprovider
 build --incompatible_enable_android_toolchain_resolution
 build --incompatible_enable_apple_toolchain_resolution
 build --incompatible_exclusive_test_sandboxed
-build --incompatible_remote_output_paths_relative_to_input_root
 build --incompatible_remote_use_new_exit_code_for_lost_inputs
 build --incompatible_sandbox_hermetic_tmp
-build --incompatible_struct_has_no_methods
 build --incompatible_top_level_aspects_require_providers
 build --incompatible_use_cc_configure_from_rules_cc
-build --incompatible_use_host_features
 
 # We cannot yet build successfully with the following flags:
 #   --incompatible_check_testonly_for_output_files

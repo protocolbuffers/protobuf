@@ -134,6 +134,7 @@ enum FieldRep : uint16_t {
   kRepCord     = 2 << kRepShift,  // absl::Cord
   kRepSPiece   = 3 << kRepShift,  // StringPieceField
   kRepSString  = 4 << kRepShift,  // std::string*
+  kRepMString  = 5 << kRepShift,  // MicroString
   // Message types (WT=2 unless otherwise noted):
   kRepMessage  = 0,               // MessageLite*
   kRepGroup    = 1 << kRepShift,  // MessageLite* (WT=3,4)
@@ -257,7 +258,7 @@ enum FieldType : uint16_t {
 [[noreturn]] PROTOBUF_EXPORT void AlignFail(std::integral_constant<size_t, 8>,
                                             std::uintptr_t address);
 inline void AlignFail(std::integral_constant<size_t, 1>,
-                      std::uintptr_t address) {}
+                      std::uintptr_t /*address*/) {}
 #endif
 
 #define PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(fn) \
@@ -354,6 +355,9 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBm)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSm)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUm)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastMd)                \
@@ -609,7 +613,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (string types):
   //   B: bytes      S: string     U: UTF-8 string
-  //   (empty): ArenaStringPtr     i: InlinedString
+  //   (empty): ArenaStringPtr   i: InlinedString   c: Cord   m: MicroString
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBS1(
@@ -661,6 +665,19 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcS1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcS2(
+      PROTOBUF_TC_PARAM_DECL);
+
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBmS1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBmS2(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSmS1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSmS2(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUmS1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUmS2(
       PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (message types):
@@ -1015,7 +1032,12 @@ class PROTOBUF_EXPORT TcParser final {
                                      const TcParseTableBase::FieldEntry*);
   static int FieldNumber(const TcParseTableBase* table,
                          const TcParseTableBase::FieldEntry*);
-  static bool ChangeOneof(const TcParseTableBase* table,
+  static void InitOneof(const TcParseTableBase* table,
+                        const TcParseTableBase* inner_table,
+                        const TcParseTableBase::FieldEntry& entry,
+                        MessageLite* msg);
+  static void ChangeOneof(const TcParseTableBase* table,
+                          const TcParseTableBase* inner_table,
                           const TcParseTableBase::FieldEntry& entry,
                           uint32_t field_num, ParseContext* ctx,
                           MessageLite* msg);

@@ -10,10 +10,13 @@
 #ifndef UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
 #define UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
 
+#include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/mem/alloc.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
@@ -58,8 +61,13 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
                                     _upb_sortedmap* sorted, upb_MapEntry* ent) {
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
-  upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->k, map->key_size);
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_StringView key = upb_key_strview(tabent->key);
+    _upb_map_fromkey(key, &ent->k, map->key_size);
+  } else {
+    uintptr_t key = tabent->key.num;
+    memcpy(&ent->k, &key, map->key_size);
+  }
   upb_value val = {tabent->val.val};
   _upb_map_fromvalue(val, &ent->v, map->val_size);
   return true;

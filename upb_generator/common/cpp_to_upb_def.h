@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H_
-#define THIRD_PARTY_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H_
+#ifndef GOOGLE_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H__
+#define GOOGLE_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H__
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upb.h"
@@ -55,4 +55,4 @@ const FieldDescriptor* FindFieldDescriptor(const Descriptor* message,
 
 }  // namespace upb::generator
 
-#endif  // THIRD_PARTY_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H_
+#endif  // GOOGLE_UPB_UPB_GENERATOR_COMMON_DESC_HELPERS_H__

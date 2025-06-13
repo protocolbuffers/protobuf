@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
-#define CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
+#ifndef GOOGLE_PROTOBUF_CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H__
+#define GOOGLE_PROTOBUF_CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H__
 
 #include <functional>
 #include <memory>
@@ -95,6 +95,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void RunJsonTestsForValue();
   void RunJsonTestsForAny();
   void RunJsonTestsForUnknownEnumStringValues();
+  void RunJsonTestsForReservedFields();
   void RunValidJsonTest(const std::string& test_name, ConformanceLevel level,
                         const std::string& input_json,
                         const std::string& equivalent_text_format);
@@ -193,4 +194,4 @@ class BinaryAndJsonConformanceSuiteImpl {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
+#endif  // GOOGLE_PROTOBUF_CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H__

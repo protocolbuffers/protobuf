@@ -13,6 +13,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
 #include <iterator>
+#include <optional>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -23,7 +24,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -255,6 +255,10 @@ std::string PrimitiveTypeName(const Options& options,
 // methods of WireFormat.  For example, TYPE_INT32 becomes "Int32".
 const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 
+// Get the declared cpp_type name in CamelCase format, as is used e.g. for the
+// methods of v2 WireFormat.  For example, CPPTYPE_INT32 becomes "Int32".
+absl::string_view DeclaredCppTypeMethodName(FieldDescriptor::CppType type);
+
 // Return the code that evaluates to the number when compiled.
 std::string Int32ToString(int number);
 
@@ -358,10 +362,8 @@ inline bool IsString(const FieldDescriptor* field) {
 }
 
 
-inline bool IsArenaStringPtr(const FieldDescriptor* field) {
-  return field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
-         field->cpp_string_type() == FieldDescriptor::CppStringType::kView;
-}
+bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts);
+bool IsMicroString(const FieldDescriptor* field, const Options& opts);
 
 bool IsProfileDriven(const Options& options);
 
@@ -372,14 +374,14 @@ PROTOC_EXPORT bool IsRarelyPresent(const FieldDescriptor* field,
 // Returns true if `field` is likely to be present based on PDProto profile.
 bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
-absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
-                                             const Options& options);
+std::optional<float> GetPresenceProbability(const FieldDescriptor* field,
+                                            const Options& options);
 
 // GetFieldGroupPresenceProbability computes presence probability for a group of
 // fields. It uses the absence probability (easier to compute)
 // (1 - p1) * (1 - p2) * ... * (1 - pn), and in the end the aggregate presence
 // probability can be expressed as (1 - all_absent_probability).
-absl::optional<float> GetFieldGroupPresenceProbability(
+std::optional<float> GetFieldGroupPresenceProbability(
     const std::vector<const FieldDescriptor*>& fields, const Options& options);
 
 bool IsStringInliningEnabled(const Options& options);
@@ -487,6 +489,10 @@ bool HasRepeatedFields(const FileDescriptor* file);
 // does not include extensions, since ctype is ignored for extensions.
 bool HasStringPieceFields(const FileDescriptor* file, const Options& options);
 
+// Does the file have any string/bytes fields?.  This excludes cord and string
+// piece fields.
+bool HasRegularStringFields(const FileDescriptor* file, const Options& options);
+
 // Does the file have any string/bytes fields with ctype=CORD? This does not
 // include extensions, since ctype is ignored for extensions.
 bool HasCordFields(const FileDescriptor* file, const Options& options);
@@ -507,6 +513,15 @@ bool IsV2ParseEnabledForMessage(const Descriptor* descriptor);
 // Returns true if a message (descriptor) can have v2 table.
 bool IsV2EnabledForMessage(const Descriptor* descriptor,
                            const Options& options);
+
+#ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+bool IsV2CodegenEnabled(const Options& options);
+bool ShouldGenerateV2Code(const Descriptor* descriptor, const Options& options);
+
+// Returns true if a field can be batched.
+bool IsEligibleForV2Batching(const FieldDescriptor* field);
+bool HasFieldEligibleForV2Batching(const Descriptor* descriptor);
+#endif  // PROTOBUF_INTERNAL_V2_EXPERIMENT
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
@@ -727,6 +742,18 @@ void ListAllFields(const Descriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
 void ListAllFields(const FileDescriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
+
+// Returns true if the field's position in the message is chosen by the layout
+// optimizer.
+bool IsLayoutOptimized(const FieldDescriptor* field, const Options& options);
+
+// Collects all fields from the given descriptor, excluding weak fields and
+// fields in oneofs.
+//
+// Returns the number of weak fields.
+int CollectFieldsExcludingWeakAndOneof(
+    const Descriptor* d, const Options& options,
+    std::vector<const FieldDescriptor*>& fields);
 
 template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
@@ -1118,6 +1145,8 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
                                   absl::string_view parameters);
 
+bool IsStrictUtf8String(const FieldDescriptor* field, const Options& options);
+
 inline bool ShouldGenerateExternSpecializations(const Options& options) {
   // For OSS we omit the specializations to reduce codegen size.
   // Some compilers can't handle that much input in a single translation unit.
@@ -1173,8 +1202,8 @@ bool HasMessageFieldOrExtension(const Descriptor* desc);
 // be annotated with `field`.
 std::vector<io::Printer::Sub> AnnotatedAccessors(
     const FieldDescriptor* field, absl::Span<const absl::string_view> prefixes,
-    absl::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic =
-        absl::nullopt);
+    std::optional<google::protobuf::io::AnnotationCollector::Semantic> semantic =
+        std::nullopt);
 
 // Check whether `file` represents the .proto file FileDescriptorProto and
 // friends. This file needs special handling because it must be usable during

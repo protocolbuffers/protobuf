@@ -588,12 +588,16 @@ class DescriptorTest(unittest.TestCase):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR
     field = message_descriptor.fields_by_name['repeated_int32']
     self.assertEqual(field.default_value, [])
+    self.assertTrue(field.is_repeated)
     field = message_descriptor.fields_by_name['repeated_nested_message']
     self.assertEqual(field.default_value, [])
+    self.assertTrue(field.is_repeated)
     field = message_descriptor.fields_by_name['optionalgroup']
     self.assertEqual(field.default_value, None)
+    self.assertFalse(field.is_required)
     field = message_descriptor.fields_by_name['optional_nested_message']
     self.assertEqual(field.default_value, None)
+    self.assertFalse(field.is_required)
 
 
 class NewDescriptorTest(DescriptorTest):
@@ -650,6 +654,7 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertIn(field_descriptor, {field_descriptor: None})
     self.assertEqual(None, field_descriptor.extension_scope)
     self.assertEqual(None, field_descriptor.enum_type)
+    self.assertFalse(field_descriptor.is_required)
     self.assertTrue(field_descriptor.has_presence)
     if api_implementation.Type() == 'cpp':
       # For test coverage only
@@ -1288,10 +1293,7 @@ class FeaturesTest(parameterized.TestCase):
 
   def testLegacyRequiredTransform(self):
     desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR
-    self.assertEqual(
-        desc.fields_by_name['required_field'].label,
-        descriptor.FieldDescriptor.LABEL_REQUIRED,
-    )
+    self.assertTrue(desc.fields_by_name['required_field'].is_required)
 
   def testLegacyGroupTransform(self):
     desc = unittest_legacy_features_pb2.TestEditionsMessage.DESCRIPTOR

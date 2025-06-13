@@ -25,6 +25,10 @@ module Google
         self.class.encode(self, options)
       end
 
+      def to_hash
+        self.to_h
+      end
+
     end
     class AbstractMessage
       include MessageExts

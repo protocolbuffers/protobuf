@@ -42,6 +42,11 @@ inline std::vector<std::pair<std::string, std::string>> ParseGeneratorParameter(
   return ret;
 }
 
+// Recursively populates the DefPool with the given FileDescriptor.
+void PopulateDefPool(const google::protobuf::FileDescriptor* file, upb::Arena* arena,
+                     DefPool* pool,
+                     absl::flat_hash_set<std::string>* files_seen);
+
 // Recursively populates the DefPoolPair with the given FileDescriptor.
 void PopulateDefPool(const google::protobuf::FileDescriptor* file, upb::Arena* arena,
                      DefPoolPair* pools,

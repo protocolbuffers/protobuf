@@ -30,7 +30,6 @@ const char* init =
     "package.preload['lupb'] = ... "
     "package.path = '"
     "./?.lua;"
-    "./third_party/lunit/?.lua;"
     "external/com_google_protobuf/?.lua;"
     "external/com_google_protobuf/src/?.lua;"
     "bazel-bin/?.lua;"
@@ -40,7 +39,6 @@ const char* init =
     // These additional paths handle the case where this test is invoked from
     // the protobuf repo's Bazel workspace.
     "external/?.lua;"
-    "external/third_party/lunit/?.lua;"
     "src/?.lua;"
     "bazel-bin/external/?.lua;"
     "external/lua/?.lua"

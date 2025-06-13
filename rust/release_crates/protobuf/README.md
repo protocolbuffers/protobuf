@@ -3,9 +3,6 @@ The runtime of the official Google Rust Protobuf implementation.
 This is currently a beta release: the API is subject to change, and there may be
 some rough edges, including missing documentation and features.
 
-Usage of this crate currently requires protoc to be built from source as it
-relies on changes that have not been included in the newest protoc release yet.
-
 An example for how to use this crate can be found in the
 [protobuf_example crate](http://crates.io/crates/protobuf_example)
 
@@ -31,18 +28,12 @@ may reasonably continue to stay on the V3 API.
 
 # How to get a compatible version of protoc
 
-Usage of this crate currently requires protoc to be built from source as it
-relies on changes that have not been included in the newest protoc release yet.
+The protoc binary that you use to generate code needs to have a version that
+exactly matches the version of the protobuf crate you are using. More
+specifically, if you are using Rust protobuf `x.y.z` then you need to use protoc
+`y.z`. See [here](https://protobuf.dev/support/version-support/) for more
+details on our versioning scheme.
 
-A future stable release will be compatible with the officially released protoc
-binaries.
-
-You can build a compatible protoc from source as follows:
-
-```
-git clone https://github.com/protocolbuffers/protobuf.git
-cd protobuf
-git checkout rust-prerelease-4.31.0-beta1
-cmake . -Dprotobuf_FORCE_FETCH_DEPENDENCIES=ON
-cmake --build . --parallel 12"
-```
+The easiest way to get ahold of protoc is to download a prebuilt binary from the
+matching release [here](https://github.com/protocolbuffers/protobuf/releases).
+Just make sure protoc is on your `$PATH` when you run `cargo`.

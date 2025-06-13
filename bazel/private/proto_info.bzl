@@ -9,9 +9,6 @@
 Definition of ProtoInfo provider.
 """
 
-_warning = """ Don't use this field. It's intended for internal use and will be changed or removed
-    without warning."""
-
 def _uniq(iterable):
     unique_elements = {element: None for element in iterable}
     return list(unique_elements.keys())
@@ -37,12 +34,13 @@ def _from_root(root, repo, relpath):
         #   - with sibling layout: `{root}/package/path`
         return _join(root, "" if repo.startswith("../") else repo, relpath)
 
-def _create_proto_info(*, srcs, deps, descriptor_set, proto_path = "", workspace_root = "", bin_dir = None, allow_exports = None):
+def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_path = "", workspace_root = "", bin_dir = None, allow_exports = None):
     """Constructs ProtoInfo.
 
     Args:
       srcs: ([File]) List of .proto files (possibly under _virtual path)
       deps: ([ProtoInfo]) List of dependencies
+      option_deps: ([ProtoInfo]) List of option dependencies
       descriptor_set: (File) Descriptor set for this Proto
       proto_path: (str) Path that should be stripped from files in srcs. When
         stripping is needed, the files should be symlinked into `_virtual_imports/target_name`
@@ -64,6 +62,8 @@ def _create_proto_info(*, srcs, deps, descriptor_set, proto_path = "", workspace
             fail("srcs parameter expects all files to have the same workspace_root: ", workspace_root)
         if not src.short_path.startswith(src_prefix):
             fail("srcs parameter expects all files start with %s" % src_prefix)
+    if not srcs and option_deps:
+        fail("option_deps parameter should not be set when srcs is empty")
     if type(descriptor_set) != "File":
         fail("descriptor_set parameter expected to be a File")
     if proto_path:
@@ -74,15 +74,10 @@ def _create_proto_info(*, srcs, deps, descriptor_set, proto_path = "", workspace
         if not bin_dir:
             fail("bin_dir parameter should be set when _virtual_imports are used")
 
-    direct_proto_sources = srcs
-    transitive_proto_sources = depset(
-        direct = direct_proto_sources,
-        transitive = [dep._transitive_proto_sources for dep in deps],
-        order = "preorder",
-    )
+    protoc_deps = deps + option_deps
     transitive_sources = depset(
         direct = srcs,
-        transitive = [dep.transitive_sources for dep in deps],
+        transitive = [dep.transitive_sources for dep in protoc_deps],
         order = "preorder",
     )
 
@@ -91,7 +86,7 @@ def _create_proto_info(*, srcs, deps, descriptor_set, proto_path = "", workspace
     root_paths = _uniq([src.root.path for src in srcs])
     transitive_proto_path = depset(
         direct = [_empty_to_dot(_from_root(root, workspace_root, proto_path)) for root in root_paths],
-        transitive = [dep.transitive_proto_path for dep in deps],
+        transitive = [dep.transitive_proto_path for dep in protoc_deps],
     )
 
     if srcs:
@@ -99,16 +94,13 @@ def _create_proto_info(*, srcs, deps, descriptor_set, proto_path = "", workspace
     else:
         check_deps_sources = depset(transitive = [dep.check_deps_sources for dep in deps])
 
+    # Exclude option_deps from transitive descriptor sets. option_dep are needed for options
+    # interpretation when compiling .proto sources into descriptors, but should no longer be needed
+    # once descriptor sets are already compiled.
     transitive_descriptor_sets = depset(
         direct = [descriptor_set],
         transitive = [dep.transitive_descriptor_sets for dep in deps],
     )
-
-    # Layering checks.
-    if srcs:
-        exported_sources = depset(direct = direct_proto_sources)
-    else:
-        exported_sources = depset(transitive = [dep._exported_sources for dep in deps])
 
     if "_virtual_imports/" in proto_path:
         #TODO: remove bin_dir from proto_source_root (when users assuming it's there are migrated)
@@ -127,9 +119,6 @@ def _create_proto_info(*, srcs, deps, descriptor_set, proto_path = "", workspace
         transitive_proto_path = transitive_proto_path,
         check_deps_sources = check_deps_sources,
         transitive_imports = transitive_sources,
-        _direct_proto_sources = direct_proto_sources,
-        _transitive_proto_sources = transitive_proto_sources,
-        _exported_sources = exported_sources,
     )
     if allow_exports:
         proto_info["allow_exports"] = allow_exports
@@ -140,12 +129,13 @@ ProtoInfo, _ = provider(
     fields = {
         "direct_sources": "(list[File]) The `.proto` source files from the `srcs` attribute.",
         "transitive_sources": """(depset[File]) The `.proto` source files from this rule and all
-                    its dependent protocol buffer rules.""",
+            its `deps` and `option_deps` protocol buffer rules.""",
         "direct_descriptor_set": """(File) The descriptor set of the direct sources. If no srcs,
             contains an empty file.""",
         "transitive_descriptor_sets": """(depset[File]) A set of descriptor set files of all
-            dependent `proto_library` rules, and this one's. This is not the same as passing
-            --include_imports to proto-compiler. Will be empty if no dependencies.""",
+            its `deps` `proto_library` rules, and this one's. Excludes `option_deps`. This is not
+            the same as passing --include_imports to proto-compiler. Will be empty if no
+            dependencies.""",
         "proto_source_root": """(str) The directory relative to which the `.proto` files defined in
             the `proto_library` are defined. For example, if this is `a/b` and the rule has the
             file `a/b/c/d.proto` as a source, that source file would be imported as
@@ -165,22 +155,14 @@ ProtoInfo, _ = provider(
             This will make it possible to fix `proto_library` in the future.
             """,
         "transitive_proto_path": """(depset(str) A set of `proto_source_root`s collected from the
-            transitive closure of this rule.""",
+            transitive closure of this rule's `deps` and `option_deps`.""",
         "check_deps_sources": """(depset[File]) The `.proto` sources from the 'srcs' attribute.
             If the library is a proxy library that has no sources, it contains the
-            `check_deps_sources` from this library's direct deps.""",
+            `check_deps_sources` from this library's direct `deps`.""",
         "allow_exports": """(Target) The packages where this proto_library can be exported.""",
 
         # Deprecated fields:
         "transitive_imports": """(depset[File]) Deprecated: use `transitive_sources` instead.""",
-
-        # Internal fields:
-        "_direct_proto_sources": """(list[File]) The `ProtoSourceInfo`s from the `srcs`
-            attribute.""" + _warning,
-        "_transitive_proto_sources": """(depset[File]) The `ProtoSourceInfo`s from this
-            rule and all its dependent protocol buffer rules.""" + _warning,
-        "_exported_sources": """(depset[File]) A set of `ProtoSourceInfo`s that may be
-            imported by another `proto_library` depending on this one.""" + _warning,
     },
     init = _create_proto_info,
 )

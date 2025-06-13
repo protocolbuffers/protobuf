@@ -91,11 +91,11 @@ junit_tests(
         ":util",
         "//java/core",
         "//java/core:generic_test_protos_java_proto",
-        "@protobuf_maven//:com_google_code_gson_gson",
-        "@protobuf_maven//:com_google_guava_guava",
-        "@protobuf_maven//:com_google_j2objc_j2objc_annotations",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_code_gson_gson",
+        "@protobuf_maven_dev//:com_google_guava_guava",
+        "@protobuf_maven_dev//:com_google_j2objc_j2objc_annotations",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 

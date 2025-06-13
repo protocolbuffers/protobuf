@@ -50,6 +50,7 @@
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/test_textproto.h"
+#include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -1109,8 +1110,10 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      MapIterator it = reflection_tester.MapBegin(message, field->name());
-      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      ConstMapIterator it =
+          reflection_tester.ConstMapBegin(message, field->name());
+      ConstMapIterator end =
+          reflection_tester.ConstMapEnd(message, field->name());
       // It's unordered, so search for it.
       if (it == end) continue;
       auto next = it;
@@ -1159,8 +1162,10 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      MapIterator it = reflection_tester.MapBegin(message, field->name());
-      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      ConstMapIterator it =
+          reflection_tester.ConstMapBegin(message, field->name());
+      ConstMapIterator end =
+          reflection_tester.ConstMapEnd(message, field->name());
 
       while (it != end) {
         auto next = it;
@@ -1178,8 +1183,10 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   TestMap message;
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
   reflection_tester.SetMapFieldsViaMapReflection(&message);
-  MapIterator it1 = reflection_tester.MapBegin(&message, "map_int32_int32");
-  MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
+  ConstMapIterator it1 =
+      reflection_tester.ConstMapBegin(&message, "map_int32_int32");
+  ConstMapIterator it2 =
+      reflection_tester.ConstMapEnd(&message, "map_int32_int32");
   it2 = it1;
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }

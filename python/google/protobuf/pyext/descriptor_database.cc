@@ -10,6 +10,8 @@
 
 #include "google/protobuf/pyext/descriptor_database.h"
 
+#include <Python.h>
+
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -90,7 +92,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
 }
 
 // Find a file by file name.
-bool PyDescriptorDatabase::FindFileByName(const std::string& filename,
+bool PyDescriptorDatabase::FindFileByName(StringViewArg filename,
                                           FileDescriptorProto* output) {
   ScopedPyObjectPtr py_descriptor(PyObject_CallMethod(
       py_database_, "FindFileByName", "s#", filename.c_str(), filename.size()));
@@ -99,7 +101,7 @@ bool PyDescriptorDatabase::FindFileByName(const std::string& filename,
 
 // Find the file that declares the given fully-qualified symbol name.
 bool PyDescriptorDatabase::FindFileContainingSymbol(
-    const std::string& symbol_name, FileDescriptorProto* output) {
+    StringViewArg symbol_name, FileDescriptorProto* output) {
   ScopedPyObjectPtr py_descriptor(
       PyObject_CallMethod(py_database_, "FindFileContainingSymbol", "s#",
                           symbol_name.c_str(), symbol_name.size()));
@@ -110,7 +112,7 @@ bool PyDescriptorDatabase::FindFileContainingSymbol(
 // with the given field number.
 // Python DescriptorDatabases are not required to implement this method.
 bool PyDescriptorDatabase::FindFileContainingExtension(
-    const std::string& containing_type, int field_number,
+    StringViewArg containing_type, int field_number,
     FileDescriptorProto* output) {
   ScopedPyObjectPtr py_method(
       PyObject_GetAttrString(py_database_, "FindFileContainingExtension"));
@@ -130,7 +132,7 @@ bool PyDescriptorDatabase::FindFileContainingExtension(
 // order.
 // Python DescriptorDatabases are not required to implement this method.
 bool PyDescriptorDatabase::FindAllExtensionNumbers(
-    const std::string& containing_type, std::vector<int>* output) {
+    StringViewArg containing_type, std::vector<int>* output) {
   ScopedPyObjectPtr py_method(
       PyObject_GetAttrString(py_database_, "FindAllExtensionNumbers"));
   if (py_method == nullptr) {
@@ -146,6 +148,14 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
     return false;
   }
   Py_ssize_t size = PyList_Size(py_list.get());
+  if (size == -1) {
+    PyErr_Format(
+        PyExc_RuntimeError,
+        "FindAllExtensionNumbers() on fall back DB must return a list, not %S",
+        py_list.get());
+    PyErr_Print();
+    return false;
+  }
   int64_t item_value;
   for (Py_ssize_t i = 0 ; i < size; ++i) {
     ScopedPyObjectPtr item(PySequence_GetItem(py_list.get(), i));

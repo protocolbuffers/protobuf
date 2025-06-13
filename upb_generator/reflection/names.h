@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_NAMES_H_
-#define THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_NAMES_H_
+#ifndef GOOGLE_UPB_UPB_GENERATOR_REFLECTION_NAMES_H__
+#define GOOGLE_UPB_UPB_GENERATOR_REFLECTION_NAMES_H__
 
 #include <string>
 
@@ -15,8 +15,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-namespace upb {
-namespace generator {
+namespace upb::generator {
 
 // These are the publicly visible symbols defined in foo.upbdefs.h.
 //   const upb_MessageDef* <GetMessage>(upb_DefPool *s);
@@ -25,9 +24,8 @@ namespace generator {
 UPBC_API std::string ReflectionGetMessageSymbol(absl::string_view full_name);
 UPBC_API std::string ReflectionFileSymbol(absl::string_view filename);
 
-}  // namespace generator
-}  // namespace upb
+}  // namespace upb::generator
 
 #include "upb/port/undef.inc"
 
-#endif  // THIRD_PARTY_UPB_UPB_GENERATOR_REFLECTION_NAMES_H_
+#endif  // GOOGLE_UPB_UPB_GENERATOR_REFLECTION_NAMES_H__

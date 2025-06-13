@@ -562,6 +562,46 @@ TEST(FeatureResolverTest, MergeFeaturesDistantFuture) {
                      HasSubstr("maximum supported edition 99997_TEST_ONLY"))));
 }
 
+TEST(FeatureResolverTest, GetEditionFeatureSetDefaults) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_LEGACY,
+                                       EDITION_99997_TEST_ONLY);
+
+  absl::StatusOr<FeatureSet> edition_2023_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_2023, *defaults);
+  absl::StatusOr<FeatureSet> edition_proto3_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_PROTO3, *defaults);
+  absl::StatusOr<FeatureSet> edition_proto2_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_LEGACY, *defaults);
+  absl::StatusOr<FeatureSet> edition_test_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_99998_TEST_ONLY,
+                                             *defaults);
+  EXPECT_OK(edition_2023_feature);
+  EXPECT_EQ(edition_2023_feature->GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
+  EXPECT_OK(edition_proto3_feature);
+  EXPECT_EQ(edition_proto3_feature->GetExtension(pb::test).file_feature(),
+            pb::VALUE2);
+  EXPECT_OK(edition_proto2_feature);
+  EXPECT_EQ(edition_proto2_feature->GetExtension(pb::test).file_feature(),
+            pb::VALUE1);
+  EXPECT_OK(edition_test_feature);
+  EXPECT_EQ(edition_test_feature->GetExtension(pb::test).file_feature(),
+            pb::VALUE4);
+}
+
+TEST(FeatureResolverTest, GetEditionFeatureSetDefaultsNotFound) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_2023,
+                                       EDITION_2023);
+
+  absl::StatusOr<FeatureSet> edition_2023_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_1_TEST_ONLY, *defaults);
+  EXPECT_THAT(edition_2023_feature, HasError(HasSubstr("No valid default")));
+}
+
 TEST(FeatureResolverLifetimesTest, Valid) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { file_feature: VALUE1 }
@@ -1847,6 +1887,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: LEGACY_BEST_EFFORT
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -1863,6 +1904,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
         [pb.test] { file_feature: VALUE1 }
       }
     }
@@ -1879,6 +1921,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
       }
       fixed_features {
         enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
         [pb.test] {}
       }
     }
@@ -1892,6 +1935,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE2024
+        default_symbol_visibility: EXPORT_TOP_LEVEL
         [pb.test] { file_feature: VALUE2 }
       }
       fixed_features {
@@ -1908,6 +1952,7 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
         message_encoding: LENGTH_PREFIXED
         json_format: ALLOW
         enforce_naming_style: STYLE2024
+        default_symbol_visibility: EXPORT_TOP_LEVEL
         [pb.test] { file_feature: VALUE3 }
       }
       fixed_features {

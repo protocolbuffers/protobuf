@@ -1,11 +1,11 @@
 #include "google/protobuf/compiler/cpp/ifndef_guard.h"
 
+#include <optional>
 #include <string>
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -29,7 +29,7 @@ class IfnDefGuardTest : public testing::Test {
   }
 
   std::string out_;
-  absl::optional<io::StringOutputStream> stream_{&out_};
+  std::optional<io::StringOutputStream> stream_{&out_};
 };
 
 TEST_F(IfnDefGuardTest, Basic) {

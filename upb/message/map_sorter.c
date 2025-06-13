@@ -25,12 +25,20 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+static int _upb_mapsorter_intkeys(const void* _a, const void* _b) {
+  const upb_tabent* const* a = _a;
+  const upb_tabent* const* b = _b;
+  uintptr_t a_key = (*a)->key.num;
+  uintptr_t b_key = (*b)->key.num;
+  return a_key < b_key ? -1 : a_key > b_key;
+}
+
 static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
                                    void* b_key, size_t size) {
   const upb_tabent* const* a = _a;
   const upb_tabent* const* b = _b;
-  upb_StringView a_tabkey = upb_tabstrview((*a)->key);
-  upb_StringView b_tabkey = upb_tabstrview((*b)->key);
+  upb_StringView a_tabkey = upb_key_strview((*a)->key);
+  upb_StringView b_tabkey = upb_key_strview((*b)->key);
   _upb_map_fromkey(a_tabkey, a_key, size);
   _upb_map_fromkey(b_tabkey, b_key, size);
 }
@@ -116,15 +124,30 @@ static bool _upb_mapsorter_resize(_upb_mapsorter* s, _upb_sortedmap* sorted,
 
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const upb_Map* map, _upb_sortedmap* sorted) {
-  int map_size = _upb_Map_Size(map);
-  UPB_ASSERT(map_size);
+  int map_size;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    map_size = _upb_Map_Size(map);
+  } else {
+    // For inttable, only sort the table entries, since the array part is
+    // already in a sorted order.
+    map_size = map->t.inttable.t.count;
+  }
 
   if (!_upb_mapsorter_resize(s, sorted, map_size)) return false;
 
   // Copy non-empty entries from the table to s->entries.
   const void** dst = &s->entries[sorted->start];
-  const upb_tabent* src = map->t.strtable.t.entries;
-  const upb_tabent* end = src + upb_table_size(&map->t.strtable.t);
+  const upb_tabent* src;
+  const upb_tabent* end;
+  if (map->UPB_PRIVATE(is_strtable)) {
+    src = map->t.strtable.t.entries;
+    end = src + upb_table_size(&map->t.strtable.t);
+  } else {
+    // For inttable, only sort the table entries, since the array part is
+    // already in a sorted order.
+    src = map->t.inttable.t.entries;
+    end = src + upb_table_size(&map->t.inttable.t);
+  }
   for (; src < end; src++) {
     if (!upb_tabent_isempty(src)) {
       *dst = src;
@@ -135,7 +158,8 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 
   // Sort entries according to the key type.
   qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries),
-        compar[key_type]);
+        map->UPB_PRIVATE(is_strtable) ? compar[key_type]
+                                      : _upb_mapsorter_intkeys);
   return true;
 }
 
@@ -144,7 +168,7 @@ static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   const upb_Extension* const* b = _b;
   uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
   uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
-  assert(a_num != b_num);
+  UPB_ASSERT(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }
 

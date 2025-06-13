@@ -14,18 +14,21 @@ load(
 )
 
 _stages = ["_stage0", "_stage1", ""]
-_protoc = "//:protoc"
+_protoc = "//src/google/protobuf/compiler/release:protoc_minimal"
 
-_extra_proto_path = "-I$$(dirname $(location @com_google_protobuf//:descriptor_proto_srcs))/../.. "
+_extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
+    # TODO: b/396430482 - Remove protoc from bootstrap visibility.
     "//src/google/protobuf/compiler:__pkg__",
+    "//src/google/protobuf/compiler/rust:__pkg__",
     "//third_party/upb/github:__pkg__",
     "//upb_generator:__subpackages__",
     "//upb/reflection:__pkg__",
     "//upb:__pkg__",  # For the amalgamations.
     "//python/dist:__pkg__",  # For the Python source package.
+    "//:__pkg__",  # For protoc
 ]
 
 def _stage_visibility(stage, visibility):
@@ -80,6 +83,7 @@ def bootstrap_cc_binary(name, visibility = [], deps = [], bootstrap_deps = [], *
     for stage in _stages:
         native.cc_binary(
             name = name + stage,
+            malloc = "@bazel_tools//tools/cpp:malloc",
             deps = deps + [dep + stage for dep in bootstrap_deps],
             visibility = _stage_visibility(stage, visibility),
             **kwargs
@@ -217,8 +221,8 @@ def bootstrap_upb_proto_library(
         visibility = _bootstrap_visibility,
         defines = ["UPB_BOOTSTRAP_STAGE=0"],
         deps = [
-            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
-            "//upb:mini_table",
+            "//upb:generated_code_support",
+            "//upb/mini_table",
         ] + [dep + "_stage0" for dep in deps],
         **kwargs
     )
@@ -234,7 +238,7 @@ def bootstrap_upb_proto_library(
         visibility = _bootstrap_visibility,
         defines = ["UPB_BOOTSTRAP_STAGE=1"],
         deps = [
-            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:generated_code_support",
         ] + [dep + "_minitable_stage1" for dep in deps],
         **kwargs
     )
@@ -245,7 +249,7 @@ def bootstrap_upb_proto_library(
         visibility = _bootstrap_visibility,
         defines = ["UPB_BOOTSTRAP_STAGE=1"],
         deps = [
-            "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+            "//upb:generated_code_support",
             ":" + name + "_minitable_stage1",
         ] + [dep + "_minitable_stage1" for dep in deps],
         **kwargs

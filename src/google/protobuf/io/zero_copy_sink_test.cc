@@ -63,10 +63,8 @@ class ChunkedString {
         if (!out.empty()) {
           absl::StrAppend(&out, " ");
         }
-        absl::StrAppend(
-            &out, "\"",
-            absl::CHexEscape(std::string{data_.substr(start, i - start)}),
-            "\"");
+        absl::StrAppend(&out, "\"",
+                        absl::CHexEscape(data_.substr(start, i - start)), "\"");
         start = i;
       }
     }

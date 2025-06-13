@@ -44,6 +44,7 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_arena.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -515,7 +516,6 @@ TEST(ArenaTest, GetConstructTypeWorks) {
   EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<int, const int&>()));
 }
 
-#ifdef __cpp_if_constexpr
 class DispatcherTestProto : public Message {
  public:
   using InternalArenaConstructable_ = void;
@@ -601,7 +601,6 @@ TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
   Arena::Create<DispatcherTestProto>(nullptr, 1);
   EXPECT_EQ(hook_called, "fallback");
 }
-#endif  // __cpp_if_constexpr
 
 TEST(ArenaTest, Parsing) {
   TestAllTypes original;

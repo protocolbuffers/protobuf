@@ -25,6 +25,18 @@ cc_library(
 )
 
 cc_library(
+    name = "generator_headers",
+    hdrs = ["generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+cc_library(
     name = "helpers",
     srcs = [
         "doc_comment.cc",
@@ -60,6 +72,7 @@ cc_library(
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
     ],
@@ -72,6 +85,7 @@ cc_library(
         "generator.h",
         "internal_helpers.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//src/google/protobuf/compiler/java:__subpackages__",
@@ -148,6 +162,7 @@ cc_library(
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
     ],
@@ -204,6 +219,11 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:command_line_interface_tester",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

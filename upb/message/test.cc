@@ -5,8 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -18,6 +20,7 @@
 #include "absl/cleanup/cleanup.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/status.h"
 #include "upb/base/status.hpp"
@@ -27,6 +30,7 @@
 #include "upb/json/encode.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/map.h"
@@ -49,6 +53,7 @@
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
+#include "upb/wire/writer.h"
 
 // Must be last
 #include "upb/port/def.inc"
@@ -676,6 +681,111 @@ TEST(MessageTest, MapField) {
       upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
 }
 
+TEST(MessageTest, MapFieldDeterministicEncoding) {
+  upb::Arena arena1;
+  upb_test_TestMapField* test_msg1 = upb_test_TestMapField_new(arena1.ptr());
+  for (int i = 0; i <= 1000; i++) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg1, i, upb_test_TestMapField_ZERO, arena1.ptr()));
+  }
+  for (int i = 1001; i <= 2000; i++) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg1, i, upb_test_TestMapField_ONE, arena1.ptr()));
+  }
+  for (int i = 2001; i <= 3000; i++) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg1, i, upb_test_TestMapField_TWO, arena1.ptr()));
+  }
+  size_t size1;
+  char* serialized1;
+  upb_EncodeStatus status1 = upb_Encode(
+      UPB_UPCAST(test_msg1), &upb_0test__TestMapField_msg_init,
+      kUpb_EncodeOption_Deterministic, arena1.ptr(), &serialized1, &size1);
+  ASSERT_EQ(status1, kUpb_EncodeStatus_Ok);
+  ASSERT_NE(nullptr, serialized1);
+
+  upb::Arena arena2;
+  upb_test_TestMapField* test_msg2 = upb_test_TestMapField_new(arena2.ptr());
+  // Add the same values in reverse order.
+  for (int i = 3000; i >= 2001; i--) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg2, i, upb_test_TestMapField_TWO, arena2.ptr()));
+  }
+  for (int i = 2000; i >= 1001; i--) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg2, i, upb_test_TestMapField_ONE, arena2.ptr()));
+  }
+  for (int i = 1000; i >= 0; i--) {
+    ASSERT_TRUE(upb_test_TestMapField_map_field_set(
+        test_msg2, i, upb_test_TestMapField_ZERO, arena2.ptr()));
+  }
+  size_t size2;
+  char* serialized2;
+  upb_EncodeStatus status2 = upb_Encode(
+      UPB_UPCAST(test_msg2), &upb_0test__TestMapField_msg_init,
+      kUpb_EncodeOption_Deterministic, arena2.ptr(), &serialized2, &size2);
+  ASSERT_EQ(status2, kUpb_EncodeStatus_Ok);
+  ASSERT_NE(nullptr, serialized2);
+
+  EXPECT_EQ(size1, size2);
+  EXPECT_EQ(0, memcmp(serialized1, serialized2, size1));
+}
+
+TEST(MessageTest, AdjacentAliasedUnknown) {
+  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  upb::Arena arena;
+  upb_Message* msg = upb_Message_New(table, arena.ptr());
+  char region[900];
+  memset(region, 0, sizeof(region));
+  region[0] = 0x0A;  // Tag number 1
+  region[1] = 0xA9;
+  region[2] = 0x02;
+  region[300] = 0x12;  // Tag number 2
+  region[301] = 0xA9;
+  region[302] = 0x02;
+  region[600] = 0x1A;  // Tag number 3
+  region[601] = 0xA9;
+  region[602] = 0x02;
+  // All adjacent fields should be part of a single unknown field entry
+  {
+    upb_DecodeStatus status =
+        upb_Decode(region, sizeof(region), msg, table, nullptr,
+                   kUpb_DecodeOption_AliasString, arena.ptr());
+    ASSERT_EQ(status, kUpb_DecodeStatus_Ok);
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_StringView data;
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region, data.data);
+    EXPECT_EQ(sizeof(region), data.size);
+    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+  }
+
+  upb_Message_Clear(msg, table);
+
+  // Separate decodes should not produce merged aliases, even with adjacent
+  // entries as we don't know that they're part of the same object
+  {
+    upb_Decode(region, 300, msg, table, nullptr, kUpb_DecodeOption_AliasString,
+               arena.ptr());
+    upb_Decode(region + 300, 300, msg, table, nullptr,
+               kUpb_DecodeOption_AliasString, arena.ptr());
+    upb_Decode(region + 600, 300, msg, table, nullptr,
+               kUpb_DecodeOption_AliasString, arena.ptr());
+    upb_StringView data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region, data.data);
+    EXPECT_EQ(300, data.size);
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region + 300, data.data);
+    EXPECT_EQ(300, data.size);
+    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
+    EXPECT_EQ(region + 600, data.data);
+    EXPECT_EQ(300, data.size);
+    ASSERT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+  }
+}
+
 TEST(MessageTest, Freeze) {
   const upb_MiniTable* m = &upb_0test__TestFreeze_msg_init;
   upb::Arena arena;
@@ -749,4 +859,41 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Map_IsFrozen(map));
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
   }
+}
+
+/* Tests some somewhat tricky math used in size calculations while encoding */
+TEST(MessageTest, SkippedVarintSize) {
+  for (uint32_t clz = 0; clz <= 64; clz++) {
+    // Optimized math used in encoding
+    uint32_t skip =
+        UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(clz);
+    // traditional varint size calculation
+    uint64_t val = clz == 64 ? 0 : (~uint64_t{0} >> clz);
+    uint32_t count = 0;
+    do {
+      count++;
+      val >>= 7;
+    } while (val);
+    EXPECT_EQ(skip, 10 - count);
+  }
+}
+
+TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
+  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  upb::Arena arena(table->UPB_PRIVATE(size));
+
+  uintptr_t space_allocated_before =
+      upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
+  upb_Message* msg = upb_Message_New(table, arena.ptr());
+  char region[300];
+  memset(region, 0, sizeof(region));
+  region[0] = 0x0A;  // Tag number 1
+  region[1] = 0xA9;
+  region[2] = 0x02;
+  upb_DecodeStatus status =
+      upb_Decode(region, sizeof(region), msg, table, nullptr, 0, arena.ptr());
+  EXPECT_EQ(status, kUpb_DecodeStatus_Ok);
+  uintptr_t space_allocated_after =
+      upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
+  EXPECT_GT(space_allocated_after, space_allocated_before + 297);
 }

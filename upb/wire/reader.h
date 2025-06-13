@@ -8,6 +8,10 @@
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
 #include "upb/base/internal/endian.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/reader.h"
@@ -134,7 +138,9 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
     case kUpb_WireType_Delimited: {
       int size;
       ptr = upb_WireReader_ReadSize(ptr, &size);
-      if (!ptr) return NULL;
+      if (!ptr || !upb_EpsCopyInputStream_CheckSize(stream, ptr, size)) {
+        return NULL;
+      }
       ptr += size;
       return ptr;
     }

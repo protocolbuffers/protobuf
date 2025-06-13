@@ -1,10 +1,21 @@
+use std::fs::File;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+
+#[derive(Debug, Clone)]
+pub struct Dependency {
+    pub crate_name: String,
+    pub proto_import_paths: Vec<PathBuf>,
+    pub c_include_paths: Vec<PathBuf>,
+    pub proto_files: Vec<String>,
+}
 
 #[derive(Debug)]
 pub struct CodeGen {
     inputs: Vec<PathBuf>,
     output_dir: PathBuf,
     includes: Vec<PathBuf>,
+    dependencies: Vec<Dependency>,
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -30,7 +41,7 @@ cmake --build . --parallel 12",
 // optionally followed by "-dev" or "-rcN". We want to strip the "-dev" suffix
 // if present and return something like "30.0" or "30.0-rc1".
 fn protoc_version(protoc_output: &str) -> String {
-    let mut s = protoc_output.strip_prefix("libprotoc ").unwrap().to_string();
+    let mut s = protoc_output.strip_prefix("libprotoc ").unwrap().trim().to_string();
     let first_dash = s.find("-dev");
     if let Some(i) = first_dash {
         s.truncate(i);
@@ -43,7 +54,7 @@ fn protoc_version(protoc_output: &str) -> String {
 // "X.Y.Z" with an optional suffix starting with a dash. We want to drop the
 // major version ("X.") and only keep the suffix if it starts with "-rc".
 fn expected_protoc_version(cargo_version: &str) -> String {
-    let mut s = cargo_version.to_string();
+    let mut s = cargo_version.replace("-rc.", "-rc");
     let is_release_candidate = s.find("-rc") != None;
     if !is_release_candidate {
         if let Some(i) = s.find('-') {
@@ -62,6 +73,7 @@ impl CodeGen {
             inputs: Vec::new(),
             output_dir: PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("protobuf_generated"),
             includes: Vec::new(),
+            dependencies: Vec::new(),
         }
     }
 
@@ -90,6 +102,11 @@ impl CodeGen {
         self
     }
 
+    pub fn dependency(&mut self, deps: Vec<Dependency>) -> &mut Self {
+        self.dependencies.extend(deps);
+        self
+    }
+
     fn expected_generated_rs_files(&self) -> Vec<PathBuf> {
         self.inputs
             .iter()
@@ -101,15 +118,17 @@ impl CodeGen {
             .collect()
     }
 
-    fn expected_generated_c_files(&self) -> Vec<PathBuf> {
-        self.inputs
-            .iter()
-            .map(|input| {
-                let mut input = input.clone();
-                assert!(input.set_extension("upb_minitable.c"));
-                self.output_dir.join(input)
-            })
-            .collect()
+    fn generate_crate_mapping_file(&self) -> PathBuf {
+        let crate_mapping_path = self.output_dir.join("crate_mapping.txt");
+        let mut file = File::create(crate_mapping_path.clone()).unwrap();
+        for dep in &self.dependencies {
+            file.write_all(format!("{}\n", dep.crate_name).as_bytes()).unwrap();
+            file.write_all(format!("{}\n", dep.proto_files.len()).as_bytes()).unwrap();
+            for f in &dep.proto_files {
+                file.write_all(format!("{}\n", f).as_bytes()).unwrap();
+            }
+        }
+        crate_mapping_path
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
@@ -147,30 +166,29 @@ impl CodeGen {
         for include in &self.includes {
             println!("cargo:rerun-if-changed={}", include.display());
         }
+        for dep in &self.dependencies {
+            for path in &dep.proto_import_paths {
+                println!("cargo:rerun-if-changed={}", path.display());
+            }
+        }
+
+        let crate_mapping_path = self.generate_crate_mapping_file();
 
         cmd.arg(format!("--rust_out={}", self.output_dir.display()))
-            .arg("--rust_opt=experimental-codegen=enabled,kernel=upb")
-            .arg(format!("--upb_minitable_out={}", self.output_dir.display()));
+            .arg("--rust_opt=experimental-codegen=enabled,kernel=upb");
         for include in &self.includes {
             cmd.arg(format!("--proto_path={}", include.display()));
         }
+        for dep in &self.dependencies {
+            for path in &dep.proto_import_paths {
+                cmd.arg(format!("--proto_path={}", path.display()));
+            }
+        }
+        cmd.arg(format!("--rust_opt=crate_mapping={}", crate_mapping_path.display()));
         let output = cmd.output().map_err(|e| format!("failed to run protoc: {}", e))?;
         println!("{}", std::str::from_utf8(&output.stdout).unwrap());
         eprintln!("{}", std::str::from_utf8(&output.stderr).unwrap());
         assert!(output.status.success());
-        self.compile_only()
-    }
-
-    /// Builds and links the C code.
-    pub fn compile_only(&self) -> Result<(), String> {
-        let mut cc_build = cc::Build::new();
-        cc_build
-            .include(
-                std::env::var_os("DEP_UPB_INCLUDE")
-                    .expect("DEP_UPB_INCLUDE should have been set, make sure that the Protobuf crate is a dependency"),
-            )
-            .include(self.output_dir.clone())
-            .flag("-std=c99");
 
         for path in &self.expected_generated_rs_files() {
             if !path.exists() {
@@ -178,14 +196,7 @@ impl CodeGen {
             }
             println!("cargo:rerun-if-changed={}", path.display());
         }
-        for path in &self.expected_generated_c_files() {
-            if !path.exists() {
-                return Err(format!("expected generated file {} does not exist", path.display()));
-            }
-            println!("cargo:rerun-if-changed={}", path.display());
-            cc_build.file(path);
-        }
-        cc_build.compile(&format!("{}_upb_gen_code", std::env::var("CARGO_PKG_NAME").unwrap()));
+
         Ok(())
     }
 }
@@ -198,6 +209,7 @@ mod tests {
     #[gtest]
     fn test_protoc_version() {
         assert_that!(protoc_version("libprotoc 30.0"), eq("30.0"));
+        assert_that!(protoc_version("libprotoc 30.0\n"), eq("30.0"));
         assert_that!(protoc_version("libprotoc 30.0-dev"), eq("30.0"));
         assert_that!(protoc_version("libprotoc 30.0-rc1"), eq("30.0-rc1"));
     }
@@ -208,6 +220,6 @@ mod tests {
         assert_that!(expected_protoc_version("4.30.0-alpha"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-beta"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-pre"), eq("30.0"));
-        assert_that!(expected_protoc_version("4.30.0-rc1"), eq("30.0-rc1"));
+        assert_that!(expected_protoc_version("4.30.0-rc.1"), eq("30.0-rc1"));
     }
 }

@@ -10,6 +10,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 
 namespace google {
 namespace protobuf {

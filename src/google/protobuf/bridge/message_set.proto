@@ -30,47 +30,35 @@
 
 // Author: kenton@google.com (Kenton Varda)
 //
-// This is proto2's version of MessageSet.  See go/messageset to learn what
-// MessageSets are and how they are used.
-//
-// In proto2, we implement MessageSet in terms of extensions, except with a
-// special wire format for backwards-compatibility.  To define a message that
-// goes in a MessageSet in proto2, you must declare within that message's
-// scope an extension of MessageSet named "message_set_extension" and with
-// the field number matching the type ID.  So, for example, this proto1 code:
-//   message Foo {
-//     enum TypeId { MESSAGE_TYPE_ID = 1234; }
-//   }
-// becomes this proto2 code:
-//   message Foo {
-//     extend google.protobuf.bridge.MessageSet {
-//       optional Foo message_set_extension = 1234;
-//     }
-//   }
-//
-// Now you can use the usual proto2 extensions accessors to access this
-// message.  For example, the proto1 code:
-//   MessageSet mset;
-//   Foo* foo = mset.get_mutable<Foo>();
-// becomes this proto2 code:
-//   google::protobuf::bridge::MessageSet mset;
-//   Foo* foo = mset.MutableExtension(Foo::message_set_extension);
-//
-// Of course, new code that doesn't have backwards-compatibility requirements
-// should just use extensions themselves and not worry about MessageSet.
-
+// DEPRECATED: DO NOT USE FOR NEW FIELDS.
 syntax = "proto2";
 
 package google.protobuf.bridge;
 
 option java_outer_classname = "MessageSetProtos";
 option java_multiple_files = true;
-option cc_enable_arenas = true;
 option objc_class_prefix = "GPB";
 
 // This is proto2's version of MessageSet.
+//
+// DEPRECATED: DO NOT USE FOR NEW FIELDS.
+//
+// If you are using editions or proto2, please make your own extendable messages
+// for your use case.
+// If you are using proto3, please use `Any` instead.
+//
+// MessageSet was the implementation of extensions for proto1.
+// When proto2 was introduced, extensions were implemented as a first-class
+// feature.
+// This schema for MessageSet was meant to be a "bridge" solution to migrate
+// MessageSet-bearing messages from proto1 to google.protobuf.
+//
+// This schema has been open-sourced only to facilitate the migration of
+// Google products with MessageSet-bearing messages to open-source environments.
 message MessageSet {
+  option deprecated = true;
   option message_set_wire_format = true;
 
-  extensions 4 to max [verification = UNVERIFIED];
+  extensions 4 to max
+  [verification = UNVERIFIED];
 }

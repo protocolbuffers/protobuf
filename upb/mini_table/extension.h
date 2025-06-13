@@ -30,16 +30,19 @@ upb_MiniTableExtension_CType(const upb_MiniTableExtension* e);
 UPB_API_INLINE uint32_t
 upb_MiniTableExtension_Number(const upb_MiniTableExtension* e);
 
+UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_Extendee(
+    const upb_MiniTableExtension* e);
+
 UPB_API_INLINE const upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
     const upb_MiniTableExtension* e);
 
 UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTableExtension_GetSubEnum(
     const upb_MiniTableExtension* e);
 
-UPB_API_INLINE void upb_MiniTableExtension_SetSubMessage(
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
     upb_MiniTableExtension* e, const upb_MiniTable* m);
 
-UPB_API_INLINE void upb_MiniTableExtension_SetSubEnum(
+UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
     upb_MiniTableExtension* e, const upb_MiniTableEnum* m);
 
 #ifdef __cplusplus

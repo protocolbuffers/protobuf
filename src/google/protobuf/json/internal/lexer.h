@@ -9,14 +9,7 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_LEXER_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_LEXER_H__
 
-#include <array>
-#include <cfloat>
-#include <cmath>
 #include <cstdint>
-#include <iostream>
-#include <limits>
-#include <ostream>
-#include <string>
 #include <utility>
 
 #include "absl/status/status.h"

@@ -5,10 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::upb_MiniTable;
+use super::sys::mini_table::mini_table::{upb_MiniTable, upb_MiniTableEnum};
 
-/// A trait for types which have a constant associated MiniTable (e.g.
-/// generated messages, and their mut and view proxy types).
+/// A trait for types which have an associated MiniTable (e.g. generated
+/// messages, and their mut and view proxy types).
 ///
 /// upb_Message in C is effectively a DST type, where instances are created with
 /// a MiniTable (and have a size dependent on the given MiniTable). Many upb
@@ -20,12 +20,6 @@ use super::upb_MiniTable;
 /// which hold upb_Message* to simplify ensuring the upb C invariants
 /// are maintained.
 ///
-/// Note that this would prefer to be a `const MINI_TABLE: *const upb_MiniTable`
-/// to statically associate a single MiniTable, but as long as the MiniTable is
-/// an extern "C" we cannot do that without the unstable `const_refs_to_static`.
-/// After that feature is stabilized (or if we move the MiniTable generation to
-/// .rs) this will be switched.
-///
 /// SAFETY:
 /// - The MiniTable pointer must be from Protobuf code generation and follow the
 ///   corresponding invariants associated with upb's C API (the pointer should
@@ -33,4 +27,9 @@ use super::upb_MiniTable;
 ///   be modified and should have 'static lifetime).
 pub unsafe trait AssociatedMiniTable {
     fn mini_table() -> *const upb_MiniTable;
+}
+
+/// A trait for closed enums that have an associated MiniTable.
+pub unsafe trait AssociatedMiniTableEnum {
+    fn mini_table() -> *const upb_MiniTableEnum;
 }

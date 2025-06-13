@@ -26,9 +26,8 @@ main `README` file. The version of `protoc` included in the latest release
 supports the `--ruby_out` option to generate Ruby code.
 
 A simple example of using the Ruby extension follows. More extensive
-documentation may be found in the RubyDoc comments (`call-seq` tags) in the
-source, and we plan to release separate, more detailed, documentation at a
-later date.
+documentation may be found on
+[rubydoc.info](https://www.rubydoc.info/gems/google-protobuf).
 
 ```ruby
 require 'google/protobuf'
@@ -88,6 +87,14 @@ Then build the Gem:
     $ rake
     $ rake clobber_package gem
     $ gem install `ls pkg/google-protobuf-*.gem`
+
+If you intend to debug the protobuf_c Ruby bindings with `gdb`, you can also
+build a version with debug symbols enabled by setting the `PROTOBUF_CONFIG`
+enviroment variable when you build the native extension:
+
+```
+$ PROTOBUF_CONFIG=dbg rake
+```
 
 To run the specs:
 

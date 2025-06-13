@@ -6,9 +6,11 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use googletest::prelude::*;
+use map_unittest_rust_proto::TestRecursiveMapMessage;
 use nested_rust_proto::outer::inner::InnerEnum;
 use nested_rust_proto::outer::InnerView;
 use nested_rust_proto::*;
+use protobuf::prelude::*;
 
 #[gtest]
 fn test_deeply_nested_message() {
@@ -119,4 +121,13 @@ fn test_recursive_mut() {
     // See b/314989133.
     // let nested = rec.rec_mut().rec_mut().rec_mut();
     // assert_that!(nested.num(), eq(0));
+}
+
+#[gtest]
+fn test_recursive_map() {
+    let mut m1 = TestRecursiveMapMessage::new();
+    m1.a_mut().insert("k", TestRecursiveMapMessage::new());
+    let m2 = TestRecursiveMapMessage::parse(&m1.serialize().unwrap()).unwrap();
+    assert_that!(m2.a().len(), eq(1));
+    expect_that!(m2.a().get("k"), not(none()));
 }

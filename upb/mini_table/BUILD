@@ -36,10 +36,10 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:port",
+        "//upb/base",
         "//upb/hash",
+        "//upb/mem",
+        "//upb/port",
     ],
 )
 
@@ -60,11 +60,11 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:base",
-        "//upb:mem",
-        "//upb:port",
+        "//upb/base",
         "//upb/hash",
+        "//upb/mem",
         "//upb/message:types",
+        "//upb/port",
     ],
 )
 
@@ -80,10 +80,10 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":mini_table",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:port",
+        "//upb/base",
         "//upb/hash",
+        "//upb/mem",
+        "//upb/port",
     ],
 )
 
@@ -91,7 +91,7 @@ cc_test(
     name = "compat_test",
     srcs = ["compat_test.cc"],
     deps = [
-        "//upb:mini_table_compat",
+        ":compat",
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_upb_proto",
@@ -112,16 +112,17 @@ upb_minitable_proto_library(
     deps = [":message_benchmark_proto"],
 )
 
-cc_test(
+cc_binary(
     name = "message_benchmark",
+    testonly = 1,
     srcs = ["message_benchmark.cc"],
     deps = [
+        ":compat",
         ":message_benchmark_upb_minitable_proto",
         ":mini_table",
-        "//upb:mini_table_compat",
-        "//upb:port",
+        "//upb/port",
         "@abseil-cpp//absl/random",
-        "@com_github_google_benchmark//:benchmark_main",
+        "@google_benchmark//:benchmark_main",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

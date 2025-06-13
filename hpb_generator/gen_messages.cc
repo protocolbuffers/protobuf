@@ -49,16 +49,12 @@ void WriteInternalForwardDeclarationsInHeader(
     const protobuf::Descriptor* message, Context& ctx);
 void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
                                 Context& ctx);
-void WriteExtensionIdentifiersImplementation(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Context& ctx);
 void WriteUsingEnumsInHeader(
     const protobuf::Descriptor* message,
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
     Context& ctx);
 
-// Writes message class declarations into .upb.proto.h.
+// Writes message class declarations into .hpb.h.
 //
 // For each proto Foo, FooAccess and FooProxy/FooCProxy are generated
 // that are exposed to users as Foo , Ptr<Foo> and Ptr<const Foo>.
@@ -264,20 +260,13 @@ void WriteModelPublicDeclaration(
 
         $0(upb_Message* msg, upb_Arena* arena) : $0Access() {
           msg_ = ($1*)msg;
-          arena_ = owned_arena_.ptr();
+          arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
           upb_Arena_Fuse(arena_, arena);
         }
         ::hpb::Arena owned_arena_;
         friend struct ::hpb::internal::PrivateAccess;
         friend Proxy;
         friend CProxy;
-        friend absl::StatusOr<$2>(::hpb::Parse<$2>(
-            absl::string_view bytes,
-            const ::hpb::ExtensionRegistry& extension_registry));
-        friend upb_Arena* hpb::interop::upb::GetArena<$0>($0* message);
-        friend upb_Arena* hpb::interop::upb::GetArena<$0>(::hpb::Ptr<$0> message);
-        friend $0(hpb::interop::upb::MoveMessage<$0>(upb_Message* msg,
-                                                     upb_Arena* arena));
       )cc",
       ClassName(descriptor),
       upb::generator::CApiMessageType(descriptor->full_name()),
@@ -409,15 +398,15 @@ void WriteMessageImplementation(
     ctx.EmitLegacy(
         R"cc(
           $0::$0() : $0Access() {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = $1_new(arena_);
           }
           $0::$0(const $0& from) : $0Access() {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
           }
           $0::$0(const CProxy& from) : $0Access() {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(
                 ::hpb::interop::upb::GetMessage(&from), &$2, arena_);
           }
@@ -427,12 +416,12 @@ void WriteMessageImplementation(
             msg_ = ($1*)::hpb::interop::upb::GetMessage(&m);
           }
           $0& $0::operator=(const $3& from) {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(UPB_UPCAST(from.msg_), &$2, arena_);
             return *this;
           }
           $0& $0::operator=(const CProxy& from) {
-            arena_ = owned_arena_.ptr();
+            arena_ = ::hpb::interop::upb::UnwrapArena(owned_arena_);
             msg_ = ($1*)::hpb::internal::DeepClone(
                 ::hpb::interop::upb::GetMessage(&from), &$2, arena_);
             return *this;
@@ -480,8 +469,6 @@ void WriteMessageImplementation(
           }
         )cc",
         ClassName(descriptor));
-
-    WriteExtensionIdentifiersImplementation(descriptor, file_exts, ctx);
   }
 }
 
@@ -505,18 +492,6 @@ void WriteExtensionIdentifiersInClassHeader(
     if (ext->extension_scope() &&
         ext->extension_scope()->full_name() == message->full_name()) {
       WriteExtensionIdentifierHeader(ext, ctx);
-    }
-  }
-}
-
-void WriteExtensionIdentifiersImplementation(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Context& ctx) {
-  for (auto* ext : file_exts) {
-    if (ext->extension_scope() &&
-        ext->extension_scope()->full_name() == message->full_name()) {
-      WriteExtensionIdentifier(ext, ctx);
     }
   }
 }

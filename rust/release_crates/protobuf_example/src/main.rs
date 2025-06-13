@@ -30,4 +30,12 @@ mod tests {
         let nums: Vec<_> = foo.bar().numbers().iter().collect();
         assert_eq!(nums, vec![1, 2, 3]);
     }
+
+    #[test] // allow_core_test
+    fn set_well_known_type() {
+        let foo = proto!(Foo { timestamp: __ { seconds: 99, nanos: 13 } });
+
+        assert_eq!(foo.timestamp().seconds(), 99);
+        assert_eq!(foo.timestamp().nanos(), 13);
+    }
 }

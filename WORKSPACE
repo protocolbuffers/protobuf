@@ -80,6 +80,31 @@ load("@protobuf_maven//:defs.bzl", "pinned_maven_install")
 
 pinned_maven_install()
 
+maven_install(
+    name = "protobuf_maven_dev",
+    artifacts = [
+        "com.google.caliper:caliper:1.0-beta-3",
+        "com.google.guava:guava-testlib:32.0.1-jre",
+        "com.google.testparameterinjector:test-parameter-injector:1.18",
+        "com.google.truth:truth:1.1.2",
+        "junit:junit:4.13.2",
+        "org.mockito:mockito-core:4.3.1",
+        "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
+        "info.picocli:picocli:4.6.3",
+    ],
+    # For updating instructions, see:
+    # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
+    maven_install_json = "//:maven_dev_install.json",
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)
+
+load("@protobuf_maven_dev//:defs.bzl", pinned_protobuf_maven_install = "pinned_maven_install")
+
+pinned_protobuf_maven_install()
+
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
@@ -112,39 +137,45 @@ load("@rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 
 kt_register_toolchains()
 
+# Workaround for https://github.com/bazel-contrib/rules_ruby/issues/216
+# Patch rules_ruby to disable automatic attempt to install bundler. When fixed,
+# delete Disable_bundle_install.patch and remove the patch related attributes
 http_archive(
     name = "rules_ruby",
-    integrity = "sha256-Lh/xxR6WsKJnS92sYkpJDBtdS6DNrCbi0kuUxBffG6E=",
-    strip_prefix = "rules_ruby-588d9dd40487277e2560ece09fe310d7c0ecb4a6",
-    urls = [
-        "https://github.com/protocolbuffers/rules_ruby/archive/588d9dd40487277e2560ece09fe310d7c0ecb4a6.zip",
+    patch_args = ["-p1"],
+    patches = [
+        "@com_google_protobuf//:Disable_bundle_install.patch",
     ],
+    sha256 = "005da20827bee6b33d8ece7dc9973da293d7f8bb2ca07beaac43c31acaadbd31",
+    strip_prefix = "rules_ruby-0.17.3",
+    url = "https://github.com/bazel-contrib/rules_ruby/releases/download/v0.17.3/rules_ruby-v0.17.3.tar.gz",
 )
 
-load("@rules_ruby//ruby:defs.bzl", "ruby_runtime")
+load("@rules_ruby//ruby:deps.bzl", "rb_bundle_fetch", "rb_register_toolchains")
 
-ruby_runtime("system_ruby")
+rb_register_toolchains(
+    version = "system",
+)
 
-register_toolchains("@system_ruby//:toolchain")
-
-# Uncomment pairs of ruby_runtime() + register_toolchain() calls below to enable
-# local JRuby testing. Do not submit the changes (due to impact on test duration
-# for non JRuby builds due to downloading JRuby SDKs).
-#ruby_runtime("jruby-9.2")
-#
-#register_toolchains("@jruby-9.2//:toolchain")
-#
-#ruby_runtime("jruby-9.3")
-#
-#register_toolchains("@jruby-9.3//:toolchain")
-
-load("@system_ruby//:bundle.bzl", "ruby_bundle")
-
-ruby_bundle(
+rb_bundle_fetch(
     name = "protobuf_bundle",
-    srcs = ["//ruby:google-protobuf.gemspec"],
-    bundler_version = "2.4.22",
+    srcs = [
+        "//ruby:google-protobuf.gemspec",
+    ],
+    gem_checksums = {
+        "bigdecimal-3.1.9": "2ffc742031521ad69c2dfc815a98e426a230a3d22aeac1995826a75dabfad8cc",
+        "bigdecimal-3.1.9-java": "dd9b8f7c870664cd9538a1325ce385ba57a6627969177258c4f0e661a7be4456",
+        "ffi-1.17.1": "26f6b0dbd1101e6ffc09d3ca640b2a21840cc52731ad8a7ded9fb89e5fb0fc39",
+        "ffi-1.17.1-java": "2546e11f9592e2b9b6de49eb96d2a378da47b0bb8469d5cbc9881a55c0d55da7",
+        "ffi-compiler-1.3.2": "a94f3d81d12caf5c5d4ecf13980a70d0aeaa72268f3b9cc13358bcc6509184a0",
+        "power_assert-2.0.5": "63b511b85bb8ea57336d25156864498644f5bbf028699ceda27949e0125bc323",
+        "rake-13.2.1": "46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d",
+        "rake-compiler-1.1.9": "51b5c95a1ff25cabaaf92e674a2bed847ab53d66302fc8843830df46ab1f51f5",
+        "rake-compiler-dock-1.2.1": "3cc968d7ffc923c0e775b28d79a3389efb3d2b16ef52ed0298fbc97d347e5878",
+        "test-unit-3.6.7": "c342bb9f7334ea84a361b43c20b063f405c0bf3c7dbe3ff38f61a91661d29221",
+    },
     gemfile = "//ruby:Gemfile",
+    gemfile_lock = "//ruby:Gemfile.lock",
 )
 
 http_archive(
@@ -159,19 +190,24 @@ http_archive(
 )
 
 http_archive(
-    name = "com_github_google_benchmark",
+    name = "google_benchmark",
     sha256 = "62e2f2e6d8a744d67e4bbc212fcfd06647080de4253c97ad5c6749e09faf2cb0",
     strip_prefix = "benchmark-0baacde3618ca617da95375e0af13ce1baadea47",
     urls = ["https://github.com/google/benchmark/archive/0baacde3618ca617da95375e0af13ce1baadea47.zip"],
 )
 
 http_archive(
-    name = "com_google_googleapis",
-    build_file = "//benchmarks:BUILD.googleapis",
-    patch_cmds = ["find google -type f -name BUILD.bazel -delete"],
-    sha256 = "d986023c3d8d2e1b161e9361366669cac9fb97c2a07e656c2548aca389248bb4",
-    strip_prefix = "googleapis-d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57",
-    urls = ["https://github.com/googleapis/googleapis/archive/d81d0b9e6993d6ab425dff4d7c3d05fb2e59fa57.zip"],
+    name = "googleapis",
+    integrity = "sha256-PopiL25y4WYMFq6EavbasLPraW+98BcuV7nN1nUjeOc=",
+    strip_prefix = "googleapis-fe8ba054ad4f7eca946c2d14a63c3f07c0b586a0",
+    urls = ["https://github.com/googleapis/googleapis/archive/fe8ba054ad4f7eca946c2d14a63c3f07c0b586a0.zip"],
+)
+
+load("@googleapis//:repository_rules.bzl", "switched_rules_by_language")
+
+switched_rules_by_language(
+    name = "com_google_googleapis_imports",
+    cc = True,
 )
 
 load("@system_python//:pip.bzl", "pip_parse")
@@ -196,11 +232,9 @@ http_archive(
 
 http_archive(
     name = "rules_fuzzing",
-    patch_args = ["-p1"],
-    patches = ["//third_party:rules_fuzzing.patch"],
-    sha256 = "77206c54b71f4dd5335123a6ff2a8ea688eca5378d34b4838114dff71652cf26",
-    strip_prefix = "rules_fuzzing-0.5.1",
-    urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.5.1/rules_fuzzing-0.5.1.zip"],
+    integrity = "sha256-CCdEIsQ4NBbfX5gpQ+QNWBQfdJwJAIu3gEQO7OaxE+Q=",
+    strip_prefix = "rules_fuzzing-0.5.3",
+    urls = ["https://github.com/bazelbuild/rules_fuzzing/archive/v0.5.3.tar.gz"],
 )
 
 load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
@@ -217,8 +251,8 @@ fuzzing_py_deps_install_deps()
 
 http_archive(
     name = "rules_rust",
-    integrity = "sha256-r09Wyq5QqZpov845sUG1Cd1oVIyCBLmKt6HK/JTVuwI=",
-    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.54.1/rules_rust-v0.54.1.tar.gz"],
+    integrity = "sha256-8TBqrAsli3kN8BrZq8arsN8LZUFsdLTvJ/Sqsph4CmQ=",
+    urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.56.0/rules_rust-0.56.0.tar.gz"],
 )
 
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains")
@@ -242,6 +276,12 @@ crates_repository(
         "paste": crate.spec(
             version = ">=1",
         ),
+        "quote": crate.spec(
+            version = ">=1",
+        ),
+        "syn": crate.spec(
+            version = ">=2",
+        ),
     },
 )
 
@@ -251,31 +291,35 @@ crate_repositories()
 
 # For testing runtime against old gencode from a previous major version.
 http_archive(
-    name = "com_google_protobuf_v25.0",
+    name = "com_google_protobuf_v25",
     integrity = "sha256-e+7ZxRHWMs/3wirACU3Xcg5VAVMDnV2n4Fm8zrSIR0o=",
+    patch_args = ["-p1"],
+    patches = [
+        # There are other patches, but they are only needed for bzlmod.
+        "@com_google_protobuf//:patches/protobuf_v25/0005-Make-rules_ruby-a-dev-only-dependency.patch",
+    ],
     strip_prefix = "protobuf-25.0",
     url = "https://github.com/protocolbuffers/protobuf/releases/download/v25.0/protobuf-25.0.tar.gz",
 )
 
-# Needed as a dependency of @com_google_protobuf_v25.0
-load("@com_google_protobuf_v25.0//:protobuf_deps.bzl", protobuf_v25_deps = "protobuf_deps")
+# Needed as a dependency of @com_google_protobuf_v25
+load("@com_google_protobuf_v25//:protobuf_deps.bzl", protobuf_v25_deps = "protobuf_deps")
 
 protobuf_v25_deps()
 
 http_archive(
     name = "rules_testing",
-    sha256 = "02c62574631876a4e3b02a1820cb51167bb9cdcdea2381b2fa9d9b8b11c407c4",
-    strip_prefix = "rules_testing-0.6.0",
-    url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.6.0/rules_testing-v0.6.0.tar.gz",
+    sha256 = "89feaf18d6e2fc07ed7e34510058fc8d48e45e6d2ff8a817a718e8c8e4bcda0e",
+    strip_prefix = "rules_testing-0.8.0",
+    url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.8.0/rules_testing-v0.8.0.tar.gz",
 )
 
 # For checking breaking changes to well-known types from the previous release version.
-load("//:protobuf_version.bzl", "PROTOBUF_PREVIOUS_RELEASE")
-
 http_archive(
     name = "com_google_protobuf_previous_release",
-    strip_prefix = "protobuf-" + PROTOBUF_PREVIOUS_RELEASE,
-    url = "https://github.com/protocolbuffers/protobuf/releases/download/v{0}/protobuf-{0}.tar.gz".format(PROTOBUF_PREVIOUS_RELEASE),
+    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
+    strip_prefix = "protobuf-29.0",
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
 )
 
 http_archive(

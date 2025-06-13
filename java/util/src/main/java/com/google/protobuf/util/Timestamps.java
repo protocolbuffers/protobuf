@@ -14,6 +14,7 @@ import static com.google.common.math.LongMath.checkedMultiply;
 import static com.google.common.math.LongMath.checkedSubtract;
 
 import com.google.common.annotations.GwtIncompatible;
+import com.google.common.annotations.J2ktIncompatible;
 import com.google.common.base.Strings;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CompileTimeConstant;
@@ -66,6 +67,7 @@ public final class Timestamps {
 
   @GwtIncompatible("Date formatting is not supported in non JVM java.time")
   @J2ObjCIncompatible
+  @J2ktIncompatible
   private static final ThreadLocal<SimpleDateFormat> timestampFormat =
       new ThreadLocal<SimpleDateFormat>() {
         @Override
@@ -76,6 +78,7 @@ public final class Timestamps {
 
   @GwtIncompatible("Date formatting is not supported in non JVM java.time")
   @J2ObjCIncompatible
+  @J2ktIncompatible
   private static SimpleDateFormat createTimestampFormat() {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
     GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
@@ -200,6 +203,7 @@ public final class Timestamps {
    * @throws IllegalArgumentException if the given timestamp is not in the valid range.
    */
   @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   public static String toString(Timestamp timestamp) {
     checkValid(timestamp);
@@ -231,6 +235,7 @@ public final class Timestamps {
    * @throws ParseException if parsing fails
    */
   @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   public static Timestamp parse(String value) throws ParseException {
     int dayOffset = value.indexOf('T');
@@ -298,6 +303,7 @@ public final class Timestamps {
    * @throws IllegalArgumentException if parsing fails
    */
   @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   public static Timestamp parseUnchecked(@CompileTimeConstant String value) {
     try {
@@ -312,21 +318,25 @@ public final class Timestamps {
   // the following 3 constants contain references to java.time.Instant methods (if that class is
   // available at runtime); otherwise, they are null.
   @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   @Nullable
   private static final Method INSTANT_NOW = instantMethod("now");
 
   @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   @Nullable
   private static final Method INSTANT_GET_EPOCH_SECOND = instantMethod("getEpochSecond");
 
   @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   @Nullable
   private static final Method INSTANT_GET_NANO = instantMethod("getNano");
 
   @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   @Nullable
   private static Method instantMethod(String methodName) {
@@ -345,6 +355,7 @@ public final class Timestamps {
    * instance to read the current time.
    */
   @GwtIncompatible("Uses reflection to access methods of java.time.Instant")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   @SuppressWarnings("nullness")
   public static Timestamp now() {
@@ -515,6 +526,7 @@ public final class Timestamps {
   }
 
   @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   private static long parseTimezoneOffset(String value) throws ParseException {
     int pos = value.indexOf(':');
@@ -533,6 +545,7 @@ public final class Timestamps {
   }
 
   @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   static int parseNanos(String value) throws ParseException {
     int result = 0;
@@ -550,6 +563,7 @@ public final class Timestamps {
 
   /** Format the nano part of a timestamp or a duration. */
   @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
+  @J2ktIncompatible
   @J2ObjCIncompatible
   static String formatNanos(int nanos) {
     // Determine whether to use 3, 6, or 9 digits for the nano part.

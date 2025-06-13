@@ -576,8 +576,20 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
 
 bool CheckAndGetBool(PyObject* arg, bool* value) {
   long long_value = PyLong_AsLong(arg);  // NOLINT
-  if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray") ||
-      (long_value == -1 && PyErr_Occurred())) {
+  if (long_value == -1 && PyErr_Occurred()) {
+    // In NumPy 2.3, numpy.bool does not have an __index__ method and cannot
+    // be converted to a long using PyLong_AsLong.
+    if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.bool")) {
+      PyErr_Clear();
+      int is_true = PyObject_IsTrue(arg);
+      if (is_true >= 0) {
+        *value = static_cast<bool>(is_true);
+        return true;
+      }
+    }
+    FormatTypeError(arg, "int, bool");
+    return false;
+  } else if (!strcmp(Py_TYPE(arg)->tp_name, "numpy.ndarray")) {
     FormatTypeError(arg, "int, bool");
     return false;
   }
@@ -851,6 +863,42 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
   return value;
 }
 
+void DeleteLastRepeatedWithSize(CMessage* self,
+                                const FieldDescriptor* field_descriptor,
+                                Py_ssize_t n) {
+  Message* message = self->message;
+  const Reflection* reflection = message->GetReflection();
+  ABSL_DCHECK(reflection->FieldSize(*message, field_descriptor) >= n);
+  Arena* arena = message->GetArena();
+  ABSL_DCHECK_EQ(arena, nullptr)
+      << "python protobuf is expected to be allocated from heap";
+  for (; n > 0; n--) {
+    // It seems that RemoveLast() is less efficient for sub-messages, and
+    // the memory is not completely released. Prefer ReleaseLast().
+    //
+    // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
+    // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
+    // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
+    // it).
+    //
+    // Note that arena is likely null and ABSL_DCHECK and ReleaseLast might be
+    // redundant. The current approach takes extra cautious path not to disrupt
+    // production.
+    Message* sub_message =
+        (arena == nullptr)
+            ? reflection->UnsafeArenaReleaseLast(message, field_descriptor)
+            : reflection->ReleaseLast(message, field_descriptor);
+    // If there is a live weak reference to an item being removed, we "Release"
+    // it, and it takes ownership of the message.
+    if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
+      released->message = sub_message;
+    } else {
+      // sub_message was not transferred, delete it.
+      delete sub_message;
+    }
+  }
+}
+
 // Delete a slice from a repeated field.
 // The only way to remove items in C++ protos is to delete the last one,
 // so we swap items to move the deleted ones at the end, and then strip the
@@ -911,37 +959,14 @@ int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
     }
   }
 
-  Arena* arena = message->GetArena();
-  ABSL_DCHECK_EQ(arena, nullptr)
-      << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.
-  for (; length > to; length--) {
-    if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+  if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    DeleteLastRepeatedWithSize(self, field_descriptor, length - to);
+  } else {
+    ABSL_DCHECK_EQ(message->GetArena(), nullptr)
+        << "python protobuf is expected to be allocated from heap";
+    for (; length > to; length--) {
       reflection->RemoveLast(message, field_descriptor);
-      continue;
-    }
-    // It seems that RemoveLast() is less efficient for sub-messages, and
-    // the memory is not completely released. Prefer ReleaseLast().
-    //
-    // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
-    // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
-    // arena is used, we fallback to ReleaseLast (but ABSL_DCHECK to find/fix
-    // it).
-    //
-    // Note that arena is likely null and ABSL_DCHECK and ReleaseLast might be
-    // redundant. The current approach takes extra cautious path not to disrupt
-    // production.
-    Message* sub_message =
-        (arena == nullptr)
-            ? reflection->UnsafeArenaReleaseLast(message, field_descriptor)
-            : reflection->ReleaseLast(message, field_descriptor);
-    // If there is a live weak reference to an item being removed, we "Release"
-    // it, and it takes ownership of the message.
-    if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
-      released->message = sub_message;
-    } else {
-      // sub_message was not transferred, delete it.
-      delete sub_message;
     }
   }
 
@@ -1030,7 +1055,7 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           return -1;
         }
       }
-    } else if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+    } else if (descriptor->is_repeated()) {
       ScopedPyObjectPtr container(GetFieldValue(self, descriptor));
       if (container == nullptr) {
         return -1;
@@ -1111,14 +1136,16 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             Descriptor::WELLKNOWNTYPE_STRUCT) {
           ScopedPyObjectPtr ok(PyObject_CallMethod(
               reinterpret_cast<PyObject*>(cmessage), "update", "O", value));
-          if (ok.get() == nullptr && PyDict_Size(value) == 1 &&
-              PyDict_Contains(value, PyUnicode_FromString("fields"))) {
-            // Fallback to init as normal message field.
-            PyErr_Clear();
-            PyObject* tmp = Clear(cmessage);
-            Py_DECREF(tmp);
-            if (InitAttributes(cmessage, nullptr, value) < 0) {
-              return -1;
+          if (ok.get() == nullptr && PyDict_Size(value) == 1) {
+            ScopedPyObjectPtr fields_str(PyUnicode_FromString("fields"));
+            if (PyDict_Contains(value, fields_str.get())) {
+              // Fallback to init as normal message field.
+              PyErr_Clear();
+              PyObject* tmp = Clear(cmessage);
+              Py_DECREF(tmp);
+              if (InitAttributes(cmessage, nullptr, value) < 0) {
+                return -1;
+              }
             }
           }
         } else {
@@ -1302,7 +1329,7 @@ int HasFieldByDescriptor(CMessage* self,
   if (!CheckFieldBelongsToMessage(field_descriptor, message)) {
     return -1;
   }
-  if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (field_descriptor->is_repeated()) {
     PyErr_SetString(PyExc_KeyError,
                     "Field is repeated. A singular method is required.");
     return -1;
@@ -1331,7 +1358,7 @@ const FieldDescriptor* FindFieldWithOneofs(const Message* message,
 
 bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
   auto message_name = std::string(field_descriptor->containing_type()->name());
-  if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (field_descriptor->is_repeated()) {
     PyErr_Format(
         PyExc_ValueError, "Protocol message %s has no singular \"%s\" field.",
         message_name.c_str(), std::string(field_descriptor->name()).c_str());
@@ -2378,21 +2405,19 @@ PyObject* Contains(CMessage* self, PyObject* arg) {
       const Reflection* reflection = message->GetReflection();
       const FieldDescriptor* map_field = descriptor->FindFieldByName("fields");
       const FieldDescriptor* key_field = map_field->message_type()->map_key();
-      PyObject* py_string = CheckString(arg, key_field);
-      if (!py_string) {
+      ScopedPyObjectPtr py_string(CheckString(arg, key_field));
+      if (py_string.get() == nullptr) {
         PyErr_SetString(PyExc_TypeError,
                         "The key passed to Struct message must be a str.");
         return nullptr;
       }
       char* value;
       Py_ssize_t value_len;
-      if (PyBytes_AsStringAndSize(py_string, &value, &value_len) < 0) {
-        Py_DECREF(py_string);
+      if (PyBytes_AsStringAndSize(py_string.get(), &value, &value_len) < 0) {
         Py_RETURN_FALSE;
       }
       std::string key_str;
       key_str.assign(value, value_len);
-      Py_DECREF(py_string);
 
       MapKey map_key;
       map_key.SetStringValue(key_str);
@@ -2401,9 +2426,9 @@ PyObject* Contains(CMessage* self, PyObject* arg) {
     }
     case Descriptor::WELLKNOWNTYPE_LISTVALUE: {
       // For WKT ListValue, check if the key is in the items.
-      PyObject* items = PyObject_CallMethod(reinterpret_cast<PyObject*>(self),
-                                            "items", nullptr);
-      return PyBool_FromLong(PySequence_Contains(items, arg));
+      ScopedPyObjectPtr items(PyObject_CallMethod(
+          reinterpret_cast<PyObject*>(self), "items", nullptr));
+      return PyBool_FromLong(PySequence_Contains(items.get(), arg));
     }
     default:
       // For other messages, check with HasField.
@@ -2619,7 +2644,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
                  std::string(field_descriptor->full_name()).c_str(),
                  Py_TYPE(self)->tp_name);
     return -1;
-  } else if (field_descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  } else if (field_descriptor->is_repeated()) {
     PyErr_Format(PyExc_AttributeError,
                  "Assignment not allowed to repeated "
                  "field \"%s\" in protocol message object.",
@@ -2628,11 +2653,11 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
   } else if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     if (field_descriptor->message_type()->well_known_type() !=
         Descriptor::WELLKNOWNTYPE_UNSPECIFIED) {
-      PyObject* sub_message = GetFieldValue(self, field_descriptor);
-      if (PyObject_HasAttrString(sub_message, "_internal_assign")) {
+      ScopedPyObjectPtr sub_message(GetFieldValue(self, field_descriptor));
+      if (PyObject_HasAttrString(sub_message.get(), "_internal_assign")) {
         AssureWritable(self);
-        ScopedPyObjectPtr ok(
-            PyObject_CallMethod(sub_message, "_internal_assign", "O", value));
+        ScopedPyObjectPtr ok(PyObject_CallMethod(
+            sub_message.get(), "_internal_assign", "O", value));
         if (ok.get() == nullptr) {
           return -1;
         }

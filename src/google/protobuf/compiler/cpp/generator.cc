@@ -97,6 +97,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* generator_context,
                             std::string* error) const {
+  ABSL_DCHECK_NE(file, nullptr);
+
   std::vector<std::pair<std::string, std::string>> options;
   ParseGeneratorParameter(parameter, &options);
 
@@ -188,6 +190,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_strip_nonfunctional_codegen") {
       file_options.strip_nonfunctional_codegen = true;
+    } else if (key == "experimental_cpp_micro_string") {
+      file_options.experimental_use_micro_string = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", key);
       return false;

@@ -41,7 +41,7 @@ upb_proto_reflection_library(
 
 upb_proto_reflection_library(
     name = "ads_upb_proto_reflection",
-    deps = ["@com_google_googleapis//:ads_proto"],
+    deps = ["@googleapis//google/ads/googleads/v17/services:services_proto"],
 )
 
 cc_proto_library(
@@ -71,14 +71,14 @@ cc_test(
         ":benchmark_descriptor_upb_proto_reflection",
         "//src/google/protobuf",
         "//src/google/protobuf/json",
-        "//upb:base",
-        "//upb:json",
-        "//upb:mem",
-        "//upb:reflection",
-        "//upb:wire",
+        "//upb/base",
+        "//upb/json",
+        "//upb/mem",
+        "//upb/reflection",
+        "//upb/wire",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
-        "@com_github_google_benchmark//:benchmark_main",
+        "@google_benchmark//:benchmark_main",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

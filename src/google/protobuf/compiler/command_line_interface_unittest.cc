@@ -675,7 +675,8 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
 
   file_descriptor_proto = file_descriptor_set.add_file();
   file_descriptor_proto->set_name("import_custom_unknown_options.proto");
-  file_descriptor_proto->add_dependency("custom_options.proto");
+  file_descriptor_proto->set_edition(google::protobuf::Edition::EDITION_2024);
+  file_descriptor_proto->add_option_dependency("custom_options.proto");
   // Add custom message option to unknown field. This custom option is
   // not known in generated pool, thus option will be in unknown fields.
   file_descriptor_proto->add_message_type()->set_name("Bar");
@@ -688,7 +689,8 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
 
   Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
       "--descriptor_set_in=$tmpdir/foo.bin "
-      "import_custom_unknown_options.proto");
+      "import_custom_unknown_options.proto "
+      "--experimental_editions");
 
   // TODO: Fix this test. This test case only happens when
   // CommandLineInterface::Run() is used instead of invoke protoc combined
@@ -735,6 +737,49 @@ TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport) {
 
   Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto bar.proto");
+
+  ExpectNoErrors();
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "foo.proto", "Foo");
+  ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
+                                    "bar.proto", "Bar");
+}
+
+TEST_F(CommandLineInterfaceTest, MultipleInputsWithOptionImport) {
+  // Test parsing multiple input files with an option import of a separate file.
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+                      edition = "2024";
+                      message Foo {}
+                 )schema");
+  CreateTempFile("bar.proto",
+                 R"schema(
+                      edition = "2024";
+                      import option "baz.proto";
+                      message Bar {
+                        Bar a = 1 [(field_options) = { baz: 1 }];
+                      }
+                 )schema");
+  CreateTempFile("baz.proto",
+                 R"schema(
+                      edition = "2024";
+                      import "google/protobuf/descriptor.proto";
+                      message Baz {
+                        int64 baz = 1;
+                      }
+                      extend google.protobuf.FieldOptions {
+                        Baz field_options = 5000;
+                      }
+                 )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto bar.proto --experimental_editions");
 
   ExpectNoErrors();
   ExpectGeneratedWithMultipleInputs("test_generator", "foo.proto,bar.proto",
@@ -1434,6 +1479,35 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
   ExpectNoErrors();
 }
 
+TEST_F(CommandLineInterfaceTest, ImportOptions) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("options.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    package test;
+                    import "google/protobuf/descriptor.proto";
+                    extend google.protobuf.FileOptions {
+                      optional TestOptions opt = 99990;
+                    }
+                    message TestOptions {
+                      repeated int32 a = 1;
+                    }
+                 )schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+                    edition = "2024";
+                    import option "options.proto";
+
+                    option (test.opt).a = 1;
+                    option (.test.opt).a = 2;
+                 )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto "
+      "--experimental_editions");
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -2023,6 +2097,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2036,6 +2111,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2048,7 +2124,10 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                  fixed_features {
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
+                  }
                 }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2023
@@ -2077,6 +2156,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2090,6 +2170,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2102,7 +2183,10 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                  fixed_features {
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
+                  }
                 }
                 defaults {
                   edition: EDITION_2024
@@ -2114,6 +2198,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
                   }
                   fixed_features {}
                 }
@@ -2145,6 +2230,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2158,6 +2244,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
@@ -2170,7 +2257,10 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
-                  fixed_features { enforce_naming_style: STYLE_LEGACY }
+                  fixed_features {
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
+                  }
                 }
                 defaults {
                   edition: EDITION_2024
@@ -2182,6 +2272,7 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                     enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
                   }
                   fixed_features {}
                 }
@@ -2353,6 +2444,32 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMaximumUnknown) {
   ExpectErrorSubstring("unknown edition \"2022\"");
 }
 
+TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                 edition = "2024";
+                 option java_multiple_files = true;
+                 message Bar {}
+                 )schema");
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "foo.proto --test_out=$tmpdir --experimental_editions");
+  ExpectErrorSubstring(
+      "`java_multiple_files` is not supported in editions 2024 and above");
+}
+
+TEST_F(CommandLineInterfaceTest, JavaNestInFileClassFor) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+                 edition = "2024";
+                 option java_multiple_files = true;
+                 message Bar {}
+                 )schema");
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "foo.proto --test_out=$tmpdir --experimental_editions");
+  ExpectErrorSubstring(
+      "`java_multiple_files` is not supported in editions 2024 and above");
+}
+
 
 TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {
   CreateTempFile("foo.proto",
@@ -2386,6 +2503,50 @@ TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing) {
 
   Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
       "--direct_dependencies=bla.proto foo.proto");
+
+  ExpectErrorText(
+      "foo.proto: File is imported but not declared in --direct_dependencies: "
+      "bar.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_Multiple) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"bar.proto\";\n"
+                 "import \"bla.proto\";\n"
+                 "message Foo { optional Bar bar = 1; optional Bla bla = 2; }");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar { optional string text = 1; }");
+  CreateTempFile("bla.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bla { optional int64 number = 1; }");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies= foo.proto");
+
+  ExpectErrorText(
+      "foo.proto: File is imported but not declared in --direct_dependencies: "
+      "bar.proto\n"
+      "foo.proto: File is imported but not declared in --direct_dependencies: "
+      "bla.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DirectDependencies_Missing_WithOptionDependencies) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    import "bar.proto";
+    message Foo { optional Bar bar = 1; }
+    )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    message Bar { optional string text = 1; }
+    )schema");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies= "
+      "--option_dependencies=bar.proto foo.proto");
 
   ExpectErrorText(
       "foo.proto: File is imported but not declared in --direct_dependencies: "
@@ -2455,6 +2616,229 @@ TEST_F(CommandLineInterfaceTest, DirectDependencies_CustomErrorMessage) {
   commands.push_back("--direct_dependencies=");
   commands.push_back("--direct_dependencies_violation_msg=Bla \"%s\" Bla");
   commands.push_back("foo.proto");
+  RunWithArgs(commands);
+
+  ExpectErrorText("foo.proto: Bla \"bar.proto\" Bla\n");
+}
+
+TEST_F(CommandLineInterfaceTest, OptionDependencies_Missing_EmptyList) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "bar.proto";
+
+    option (bar_opt) = 1;
+  )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bar_opt = 99990;
+    }
+  )schema");
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--option_dependencies= foo.proto "
+      "--experimental_editions");
+  ExpectErrorText(
+      "foo.proto: File is option imported but not declared in "
+      "--option_dependencies: "
+      "bar.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest, OptionDependencies_Missing) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "bar.proto";
+    import option "bla.proto";
+
+    option (bar_opt) = 1;
+    option (bla_opt) = 2;
+  )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bar_opt = 99990;
+    }
+  )schema");
+  CreateTempFile("bla.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bla_opt = 99991;
+    }
+  )schema");
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--option_dependencies=bla.proto foo.proto");
+  ExpectErrorText(
+      "foo.proto: File is option imported but not declared in "
+      "--option_dependencies: bar.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest, OptionDependencies_Missing_Multiple) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "bar.proto";
+    import option "bla.proto";
+
+    option (bar_opt) = 1;
+    option (bla_opt) = 2;
+  )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bar_opt = 99990;
+    }
+  )schema");
+  CreateTempFile("bla.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bla_opt = 99991;
+    }
+  )schema");
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--option_dependencies= foo.proto");
+  ExpectErrorText(
+      "foo.proto: File is option imported but not declared in "
+      "--option_dependencies: bar.proto\n"
+      "foo.proto: File is option imported but not declared in "
+      "--option_dependencies: bla.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       OptionDependencies_Missing_WithDirectDependencies) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "bar.proto";
+
+    option (bar_opt) = 1;
+  )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bar_opt = 99990;
+    }
+  )schema");
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies=bar.proto "
+      "--option_dependencies= foo.proto");
+
+  ExpectErrorText(
+      "foo.proto: File is option imported but not declared in "
+      "--option_dependencies: "
+      "bar.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest, OptionDependencies_NoViolation) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "bar.proto";
+
+    option (bar_opt) = 1;
+  )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bar_opt = 99990;
+    }
+  )schema");
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--option_dependencies=bar.proto foo.proto "
+      "--experimental_editions");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, OptionDependencies_NoViolation_MultiImports) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "bar.proto";
+    import option "bla.proto";
+
+    option (bar_opt) = 1;
+    option (bla_opt) = 2;
+  )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bar_opt = 99990;
+    }
+  )schema");
+  CreateTempFile("bla.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bla_opt = 99991;
+    }
+  )schema");
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--option_dependencies=bar.proto:bla.proto foo.proto "
+      "--experimental_editions");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, OptionDependencies_ProvidedMultipleTimes) {
+  CreateTempFile("foo.proto", "edition = \"2024\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--option_dependencies=bar.proto --option_dependencies=bla.proto "
+      "foo.proto "
+      "--experimental_editions");
+
+  ExpectErrorText(
+      "--option_dependencies may only be passed once. To specify multiple "
+      "option dependencies, pass them all as a single parameter separated by "
+      "':'.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, OptionDependencies_CustomErrorMessage) {
+  CreateTempFile("foo.proto", R"schema(
+      edition = "2024";
+      import option "bar.proto";
+
+      option (bar_opt) = 1;
+    )schema");
+  CreateTempFile("bar.proto", R"schema(
+    syntax = "proto2";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      optional int32 bar_opt = 99990;
+    }
+  )schema");
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+
+  std::vector<std::string> commands;
+  commands.push_back("protocol_compiler");
+  commands.push_back("--test_out=$tmpdir");
+  commands.push_back("--proto_path=$tmpdir");
+  commands.push_back("--option_dependencies=");
+  commands.push_back("--option_dependencies_violation_msg=Bla \"%s\" Bla");
+  commands.push_back("foo.proto");
+  commands.push_back("--experimental_editions");
   RunWithArgs(commands);
 
   ExpectErrorText("foo.proto: Bla \"bar.proto\" Bla\n");
@@ -2627,6 +3011,51 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   // Source code info included.
   EXPECT_TRUE(descriptor_set.file(0).has_source_code_info());
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
+}
+
+TEST_F(CommandLineInterfaceTest, NoWriteTransitiveOptionImportDescriptorSet) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    import "google/protobuf/descriptor.proto";
+                    extend .google.protobuf.FileOptions {
+                      optional int32 file_opt = 5000;
+                    }
+                )schema");
+  CreateTempFile("foo.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    message Foo {}
+                 )schema");
+  CreateTempFile("bar.proto",
+                 R"schema(
+                    edition = "2024";
+                    import "foo.proto";
+                    import option "custom_option.proto";
+                    option (file_opt) = 1;
+                    message Bar {
+                      Foo foo = 1;
+                    }
+                 )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_imports --proto_path=$tmpdir bar.proto "
+      "--experimental_editions");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  if (HasFatalFailure()) return;
+  EXPECT_EQ(2, descriptor_set.file_size());
+  if (descriptor_set.file(0).name() == "bar.proto") {
+    std::swap(descriptor_set.mutable_file()->mutable_data()[0],
+              descriptor_set.mutable_file()->mutable_data()[1]);
+  }
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("bar.proto", descriptor_set.file(1).name());
 }
 
 TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetention) {
@@ -2839,8 +3268,9 @@ TEST_F(CommandLineInterfaceTest, ParseErrors) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
-  ExpectErrorText(
-      "foo.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
+  ExpectErrorSubstring(
+      "foo.proto:2:1: Expected top-level statement (e.g. "
+      "\"message\").\n");
 }
 
 TEST_F(CommandLineInterfaceTest, ParseErrors_DescriptorSetIn) {
@@ -2873,14 +3303,18 @@ TEST_F(CommandLineInterfaceTest, ParseErrorsMultipleFiles) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
-  ExpectErrorText(
-      "bar.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
-  ExpectErrorText(
-      "baz.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
-  ExpectErrorText(
-      "foo.proto:2:1: Import \"bar.proto\" was not found or had errors.\n");
-  ExpectErrorText(
-      "foo.proto:3:1: Import \"baz.proto\" was not found or had errors.\n");
+  ExpectErrorSubstring(
+      "bar.proto:2:1: Expected top-level statement (e.g. "
+      "\"message\").\n");
+  ExpectErrorSubstring(
+      "baz.proto:2:1: Import \"bar.proto\" was not found or had "
+      "errors.\n");
+  ExpectErrorSubstring(
+      "foo.proto:2:1: Import \"bar.proto\" was not found or had "
+      "errors.\n");
+  ExpectErrorSubstring(
+      "foo.proto:3:1: Import \"baz.proto\" was not found or had "
+      "errors.\n");
 }
 
 TEST_F(CommandLineInterfaceTest, RecursiveImportFails) {
@@ -3343,8 +3777,9 @@ TEST_F(CommandLineInterfaceTest, GccFormatErrors) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir --error_format=gcc foo.proto");
 
-  ExpectErrorText(
-      "foo.proto:2:1: Expected top-level statement (e.g. \"message\").\n");
+  ExpectErrorSubstring(
+      "foo.proto:2:1: Expected top-level statement (e.g. "
+      "\"message\").\n");
 }
 
 TEST_F(CommandLineInterfaceTest, MsvsFormatErrors) {
@@ -4127,6 +4562,7 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 }
 
+
 // Returns true if x is a prefix of y.
 bool IsPrefix(absl::Span<const int> x, absl::Span<const int> y) {
   return x.size() <= y.size() && x == y.subspan(0, x.size());
@@ -4171,6 +4607,155 @@ TEST_F(CommandLineInterfaceTest, SourceInfoOptionRetention) {
   for (const SourceCodeInfo::Location& location : source_code_info.location()) {
     EXPECT_FALSE(IsPrefix(declaration_option_path, location.path()));
   }
+}
+
+// ====== Visibility Tests =========
+
+TEST_F(CommandLineInterfaceTest, VisibilityFromSame) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+          LocalMessage foo = 1;
+        }
+        )schema");
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir vis.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, ExplicitVisibilityFromOther) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema");
+
+  CreateTempFile("importer.proto",
+                 R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.LocalMessage foo = 1;
+        }
+      )schema");
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir importer.proto");
+
+  ExpectErrorSubstring(
+      "Symbol \"vis.test.LocalMessage\", "
+      "defined in \"vis.proto\"  is not visible from \"importer.proto\". It is "
+      "explicitly marked 'local' and cannot be accessed outside its own "
+      "file\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Edition2024DefaultVisibilityFromOther) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        message TopLevelMessage {
+          message NestedMessage {
+          }
+        }
+        )schema");
+
+  CreateTempFile("good_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message GoodImport {
+          vis.test.TopLevelMessage foo = 1;
+        }
+        )schema");
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir good_importer.proto");
+
+  ExpectNoErrors();
+
+  CreateTempFile("bad_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.TopLevelMessage.NestedMessage foo = 1;
+        }
+        )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir bad_importer.proto");
+
+  ExpectErrorSubstring(
+      "Symbol "
+      "\"vis.test.TopLevelMessage.NestedMessage\", defined in \"vis.proto\"  "
+      "is not visible from \"bad_importer.proto\". It defaulted to local from "
+      "file-level 'option features.default_symbol_visibility = "
+      "'EXPORT_TOP_LEVEL'; and cannot be accessed outside its own file\n");
+}
+
+TEST_F(CommandLineInterfaceTest, VisibilityFromLocalExtender) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalExtendee {
+          extensions 1 to 100;
+        }
+        )schema");
+
+  CreateTempFile("bad_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        extend vis.test.LocalExtendee {
+          string bar = 1;
+        }
+      )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir bad_importer.proto");
+
+  ExpectErrorSubstring(
+      "Symbol \"vis.test.LocalExtendee\", "
+      "defined in \"vis.proto\" target of extend is not visible from "
+      "\"bad_importer.proto\". It is explicitly marked 'local' and cannot be "
+      "accessed outside its own file\n");
+}
+
+TEST_F(CommandLineInterfaceTest, VisibilityFeatureSetStrictBadNestedMessage) {
+  CreateTempFile("vis.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+
+    local message LocalOuter {
+      export message Inner {
+      }
+    }
+  )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--include_source_info --proto_path=$tmpdir vis.proto");
+  ExpectErrorSubstring(
+      "vis.proto: \"Inner\" is a nested message and cannot be `export` with "
+      "STRICT "
+      "default_symbol_visibility");
 }
 
 // ===================================================================

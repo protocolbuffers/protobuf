@@ -59,7 +59,7 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
                                   bool is_private = false);
 void WriteFieldEnumValueAccessorDocComment(
     io::Printer* printer, const FieldDescriptor* field, FieldAccessorType type,
-    Options options, bool builder = false, bool kdoc = false);
+    Options options, bool builder = false, bool is_private = false);
 void WriteFieldStringBytesAccessorDocComment(
     io::Printer* printer, const FieldDescriptor* field, FieldAccessorType type,
     Options options, bool builder = false, bool kdoc = false,

@@ -496,7 +496,7 @@ def internal_objc_proto_library(
 
 def internal_ruby_proto_library(
         name,
-        ruby_library,
+        rb_library,
         srcs = [],
         deps = [],
         includes = ["."],
@@ -513,7 +513,7 @@ def internal_ruby_proto_library(
 
     Args:
       name: the name of the ruby_proto_library.
-      ruby_library: the ruby library rules to use.
+      rb_library: the ruby library rules to use.
       srcs: the .proto files to compile.
       deps: a list of dependency labels; must be a internal_ruby_proto_library.
       includes: a string indicating the include path of the .proto files.
@@ -522,7 +522,7 @@ def internal_ruby_proto_library(
       testonly: common rule attribute (see:
           https://bazel.build/reference/be/common-definitions#common-attributes)
       visibility: the visibility of the generated files.
-      **kwargs: other keyword arguments that are passed to ruby_library.
+      **kwargs: other keyword arguments that are passed to rb_library.
 
     """
 
@@ -543,13 +543,12 @@ def internal_ruby_proto_library(
     deps = []
     if default_runtime:
         deps.append(default_runtime)
-    ruby_library(
+    rb_library(
         name = name,
         srcs = [name + "_genproto"],
         deps = deps,
         testonly = testonly,
         visibility = visibility,
-        includes = includes,
         **kwargs
     )
 
@@ -578,7 +577,7 @@ def internal_py_proto_library(
 
     NOTE: the rule is is only an internal workaround to generate protos.  It is deprecated and will
     be removed in the next minor release.  Users should migrate to the py_proto_library rule from
-    rules_python instead.
+    bazel/py_proto_library.bzl instead.
 
     Args:
       name: the name of the py_proto_library.

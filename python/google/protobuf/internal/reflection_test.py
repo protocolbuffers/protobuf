@@ -1474,6 +1474,7 @@ class Proto2ReflectionTest(unittest.TestCase):
 
     self.assertListsEqual([m2, m1, m0], proto.repeated_nested_message)
 
+  @testing_refleaks.SkipReferenceLeakChecker('This leaks in pure python')
   def testHandWrittenReflection(self):
     # Hand written extensions are only supported by the pure-Python
     # implementation of the API.
@@ -1901,6 +1902,13 @@ class Proto2ReflectionTest(unittest.TestCase):
     self.assertEqual(111, ext2[0].bb)
     self.assertEqual(222, ext2[1].bb)
     self.assertEqual(333, ext2[2].bb)
+
+  def testRepeatedExtensionsIn(self):
+    msg = more_extensions_pb2.ExtendedMessage()
+    ext = more_extensions_pb2.repeated_int_extension
+    self.assertNotIn(ext, msg.Extensions)
+    msg.Extensions[ext].append(123)
+    self.assertIn(ext, msg.Extensions)
 
   def testCopyFromBadType(self):
     proto1 = unittest_pb2.TestAllTypes()
@@ -3278,9 +3286,8 @@ class OptionsTest(unittest.TestCase):
     proto.packed_int32.append(1)
     proto.packed_double.append(3.0)
     for field_descriptor, _ in proto.ListFields():
-      self.assertEqual(True, field_descriptor.is_packed)
-      self.assertEqual(descriptor.FieldDescriptor.LABEL_REPEATED,
-                       field_descriptor.label)
+      self.assertTrue(field_descriptor.is_packed)
+      self.assertTrue(field_descriptor.is_repeated)
 
 
 @testing_refleaks.TestCase

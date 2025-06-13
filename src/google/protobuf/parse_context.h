@@ -25,7 +25,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
@@ -34,6 +34,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -177,14 +178,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   [[nodiscard]] const char* Skip(const char* ptr, int size) {
-    if (size <= BytesAvailable(ptr)) {
+    if (CanReadFromPtr(size, ptr)) {
       return ptr + size;
     }
     return SkipFallback(ptr, size);
   }
   [[nodiscard]] const char* ReadString(const char* ptr, int size,
                                        std::string* s) {
-    if (size <= BytesAvailable(ptr)) {
+    if (CanReadFromPtr(size, ptr)) {
       // Fundamentally we just want to do assign to the string.
       // However micro-benchmarks regress on string reading cases. So we copy
       // the same logic from the old CodedInputStream ReadString. Note: as of
@@ -198,25 +199,46 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
   [[nodiscard]] const char* AppendString(const char* ptr, int size,
                                          std::string* s) {
-    if (size <= BytesAvailable(ptr)) {
+    if (CanReadFromPtr(size, ptr)) {
       s->append(ptr, size);
       return ptr + size;
     }
     return AppendStringFallback(ptr, size, s);
   }
+
+  [[nodiscard]] const char* ReadArray(const char* ptr, absl::Span<char> out);
+  [[nodiscard]] const char* VerifyUTF8(const char* ptr, size_t size);
+
+  [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
+                                            Arena* arena);
+  [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr, int size,
+                                                    MicroString& str,
+                                                    Arena* arena);
+
   // Implemented in arenastring.cc
   [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
                                             Arena* arena);
 
   [[nodiscard]] const char* ReadCord(const char* ptr, int size,
                                      ::absl::Cord* cord) {
-    if (size <= std::min<int>(BytesAvailable(ptr), kMaxCordBytesToCopy)) {
+    if (IsRequestedLessThanOrEqualTo(
+            size, std::min<int>(BytesAvailable(ptr), kMaxCordBytesToCopy))) {
       *cord = absl::string_view(ptr, size);
       return ptr + size;
     }
     return ReadCordFallback(ptr, size, cord);
   }
 
+
+  template <typename FuncT>
+  [[nodiscard]] const char* ReadChunkAndCallback(const char* ptr, int size,
+                                                 FuncT&& callback) {
+    if (CanReadFromPtr(size, ptr)) {
+      callback(ptr, size);
+      return ptr + size;
+    }
+    return AppendSize(ptr, size, callback);
+  }
 
   template <typename Tag, typename T>
   [[nodiscard]] const char* ReadRepeatedFixed(const char* ptr, Tag expected_tag,
@@ -259,10 +281,20 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // call Done for further checks.
   bool DataAvailable(const char* ptr) { return ptr < limit_end_; }
 
+  int BytesAvailable(const char* ptr) const {
+    ABSL_DCHECK_NE(ptr, nullptr);
+    ptrdiff_t available = buffer_end_ + kSlopBytes - ptr;
+    ABSL_DCHECK_GE(available, 0);
+    ABSL_DCHECK_LE(available, INT_MAX);
+    return static_cast<int>(available);
+  }
+
+
  protected:
   // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded, it returns true and ptr is set to null.
+  template <bool kExperimentalV2>
   bool DoneWithCheck(const char** ptr, int d) {
     ABSL_DCHECK(*ptr);
     if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
@@ -275,7 +307,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       if (overrun > 0 && next_chunk_ == nullptr) *ptr = nullptr;
       return true;
     }
-    auto res = DoneFallback(overrun, d);
+    auto res = DoneFallback<kExperimentalV2>(overrun, d);
     *ptr = res.first;
     return res.second;
   }
@@ -314,13 +346,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res;
   }
 
- private:
+ protected:
   enum { kSlopBytes = 16, kPatchBufferSize = 32 };
   static_assert(kPatchBufferSize >= kSlopBytes * 2,
                 "Patch buffer needs to be at least large enough to hold all "
                 "the slop bytes from the previous buffer, plus the first "
                 "kSlopBytes from the next buffer.");
 
+ private:
   const char* limit_end_;  // buffer_end_ + min(limit_, 0)
   const char* buffer_end_;
   const char* next_chunk_;
@@ -349,13 +382,19 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // systems. TODO do we need to set this as build flag?
   enum { kSafeStringSize = 50000000 };
 
-  int BytesAvailable(const char* ptr) const {
-    ABSL_DCHECK_NE(ptr, nullptr);
-    ptrdiff_t available = buffer_end_ + kSlopBytes - ptr;
-    ABSL_DCHECK_GE(available, 0);
-    ABSL_DCHECK_LE(available, INT_MAX);
-    return static_cast<int>(available);
-  }
+  // Returns true if it has enough available data given requested. Note that
+  // "available" can be negative but "requested" must not. Casting is done to
+  // preserve sign bit for the latter only.
+  bool IsRequestedLessThanOrEqualTo(int requested, int available);
+
+  // Returns true if "requested" bytes can be read contiguously from "ptr". Note
+  // that negative "requested" is converted to uint32_t before comparison, which
+  // will cause failure.
+  bool CanReadFromPtr(int requested, const char* ptr);
+
+  // Returns true if "requested" bytes are avilable till limit. Note that
+  // negative "requested" is converted to uint32_t before comparison.
+  bool HasEnoughTillLimit(int requested, const char* ptr);
 
   // Advances to next buffer chunk returns a pointer to the same logical place
   // in the stream as set by overrun. Overrun indicates the position in the slop
@@ -364,6 +403,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // error. The invariant of this function is that it's guaranteed that
   // kSlopBytes bytes can be accessed from the returned ptr. This function might
   // advance more buffers than one in the underlying ZeroCopyInputStream.
+  template <bool kExperimentalV2>
   std::pair<const char*, bool> DoneFallback(int overrun, int depth);
   // Advances to the next buffer, at most one call to Next() on the underlying
   // ZeroCopyInputStream is made. This function DOES NOT match the returned
@@ -376,11 +416,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // the ZeroCopyInputStream in the case the parse will end in the last
   // kSlopBytes of the current buffer. depth is the current depth of nested
   // groups (or negative if the use case does not need careful tracking).
+  template <bool kExperimentalV2>
   inline const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
+  const char* VerifyUTF8Fallback(const char* ptr, size_t size);
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
+  const char* ReadArrayFallback(const char* ptr, absl::Span<char> out);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
+  template <bool kExperimentalV2>
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
@@ -393,12 +437,21 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   template <typename A>
-  const char* AppendSize(const char* ptr, int size, const A& append) {
-    int chunk_size = BytesAvailable(ptr);
+  const char* AppendSize(const char* ptr, uint32_t size, const A& append) {
+    // Some append functions may return false to bail out early.
+    constexpr bool kCheckReturn =
+        std::is_invocable_r_v<bool, decltype(append), const char*, int>;
+
+    ABSL_DCHECK_GE(BytesAvailable(ptr), 0);
+    uint32_t chunk_size = static_cast<uint32_t>(BytesAvailable(ptr));
     do {
-      ABSL_DCHECK(size > chunk_size);
+      ABSL_DCHECK_GT(size, chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
-      append(ptr, chunk_size);
+      if constexpr (kCheckReturn) {
+        if (!append(ptr, chunk_size)) return nullptr;
+      } else {
+        append(ptr, chunk_size);
+      }
       ptr += chunk_size;
       size -= chunk_size;
       // TODO Next calls NextBuffer which generates buffers with
@@ -410,7 +463,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr += kSlopBytes;
       chunk_size = BytesAvailable(ptr);
     } while (size > chunk_size);
-    append(ptr, size);
+
+    if constexpr (kCheckReturn) {
+      if (!append(ptr, size)) return nullptr;
+    } else {
+      append(ptr, size);
+    }
     return ptr + size;
   }
 
@@ -495,7 +553,10 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   // Done should only be called when the parsing pointer is pointing to the
   // beginning of field data - that is, at a tag.  Or if it is NULL.
-  bool Done(const char** ptr) { return DoneWithCheck(ptr, group_depth_); }
+  bool Done(const char** ptr) {
+    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_);
+  }
+
 
   int depth() const { return depth_; }
 
@@ -534,6 +595,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
       return Parser::ParseLoop(msg, ptr, this, tc_table);
     });
   }
+
 
   [[nodiscard]] PROTOBUF_NDEBUG_INLINE const char* ParseGroup(MessageLite* msg,
                                                               const char* ptr,
@@ -944,7 +1006,7 @@ template <class T>
 }
 
 [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint64_t
-RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
+RotRight7AndReplaceLowByte(uint64_t res, const char byte) {
   // TODO: remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
   // This will only use one register for `res`.
@@ -1054,7 +1116,7 @@ inline const char* ParseBigVarint(const char* p, uint64_t* out) {
 }
 
 PROTOBUF_EXPORT
-std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t first);
+std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t res);
 
 // Used for length prefixes. Could read up to 5 bytes, but no more than
 // necessary for a single varint. The caller must ensure enough bytes are
@@ -1144,6 +1206,20 @@ inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
   --depth_;
   return ptr;
 }
+
+inline const char* EpsCopyInputStream::ReadMicroString(const char* ptr,
+                                                       MicroString& str,
+                                                       Arena* arena) {
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+
+  if (size <= BytesAvailable(ptr)) {
+    str.Set(absl::string_view(ptr, size), arena);
+    return ptr + size;
+  }
+  return ReadMicroStringFallback(ptr, size, str, arena);
+}
+
 
 template <typename Tag, typename T>
 const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
@@ -1412,6 +1488,11 @@ template <typename T, typename Validator>
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
 [[nodiscard]] PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
+
+extern template std::pair<const char*, bool>
+EpsCopyInputStream::DoneFallback<false>(int, int);
+extern template std::pair<const char*, bool>
+EpsCopyInputStream::DoneFallback<true>(int, int);
 
 }  // namespace internal
 }  // namespace protobuf

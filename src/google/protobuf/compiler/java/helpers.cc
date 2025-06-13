@@ -19,6 +19,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -27,6 +28,8 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -42,7 +45,6 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-using ::google::protobuf::internal::WireFormat;
 using ::google::protobuf::internal::WireFormatLite;
 
 const char kThickSeparator[] =
@@ -53,16 +55,19 @@ const char kThinSeparator[] =
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
                               absl::string_view annotation_file,
                               Options options) {
+  printer->Print("@com.google.protobuf.Generated\n");
+
   if (annotation_file.empty()) {
     return;
   }
+  // Print javax.annotation.Generated to support Kythe indexing
   std::string ptemplate =
       "@javax.annotation.Generated(value=\"protoc\", comments=\"annotations:";
   ptemplate.push_back(delimiter);
   ptemplate.append("annotation_file");
   ptemplate.push_back(delimiter);
   ptemplate.append("\")\n");
-  printer->Print(ptemplate.c_str(), "annotation_file", annotation_file);
+  printer->Print(ptemplate, "annotation_file", annotation_file);
 }
 
 void PrintEnumVerifierLogic(
@@ -568,7 +573,7 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
 
 bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field) {
   return GetJavaType(field) == JAVATYPE_BYTES &&
-         field->default_value_string() != "";
+         !field->default_value_string().empty();
 }
 
 constexpr absl::string_view bit_masks[] = {
@@ -917,6 +922,73 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
   return message->map_value();
 }
 
+
+namespace {
+
+// Gets the value of `nest_in_file_class` feature and returns whether the
+// generated class should be nested in the generated proto file Java class.
+template <typename Descriptor>
+inline bool NestInFileClass(const Descriptor& descriptor) {
+  auto nest_in_file_class =
+      JavaGenerator::GetResolvedSourceFeatureExtension(descriptor, pb::java)
+          .nest_in_file_class();
+  ABSL_CHECK(
+      nest_in_file_class !=
+      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN);
+
+  if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
+    return !descriptor.file()->options().java_multiple_files();
+  }
+  return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
+}
+
+
+// Returns whether the type should be nested in the file class for the given
+// descriptor, depending on different Protobuf Java API versions.
+template <typename Descriptor>
+bool NestInFileClass(const Descriptor& descriptor, bool immutable) {
+  (void)immutable;
+  return NestInFileClass(descriptor);
+}
+
+template <typename Descriptor>
+absl::Status ValidateNestInFileClassFeatureHelper(
+    const Descriptor& descriptor) {
+  if (descriptor.containing_type() != nullptr) {
+    const pb::JavaFeatures& unresolved_features =
+        JavaGenerator::GetUnresolvedSourceFeatures(descriptor, pb::java);
+    if (unresolved_features.has_nest_in_file_class()) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "Feature pb.java.nest_in_file_class only applies to top-level types "
+          "and is not allowed to be set on the nested type: ",
+          descriptor.full_name()));
+    }
+  }
+  return absl::OkStatus();
+}
+}  // namespace
+
+absl::Status ValidateNestInFileClassFeature(const Descriptor& descriptor) {
+  return ValidateNestInFileClassFeatureHelper(descriptor);
+}
+
+absl::Status ValidateNestInFileClassFeature(const EnumDescriptor& descriptor) {
+  return ValidateNestInFileClassFeatureHelper(descriptor);
+}
+
+bool NestedInFileClass(const Descriptor& descriptor, bool immutable) {
+  ABSL_CHECK_OK(ValidateNestInFileClassFeature(descriptor));
+  return NestInFileClass(descriptor, immutable);
+}
+
+bool NestedInFileClass(const EnumDescriptor& descriptor, bool immutable) {
+  ABSL_CHECK_OK(ValidateNestInFileClassFeature(descriptor));
+  return NestInFileClass(descriptor, immutable);
+}
+
+bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable) {
+  return NestInFileClass(descriptor, immutable);
+}
 
 }  // namespace java
 }  // namespace compiler

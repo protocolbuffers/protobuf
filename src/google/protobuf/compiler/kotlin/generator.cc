@@ -68,6 +68,7 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       file_options.strip_nonfunctional_codegen = true;
     } else if (option.first == "no_jvm_dsl") {
       file_options.jvm_dsl = false;
+      file_options.dsl_use_concrete_types = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;

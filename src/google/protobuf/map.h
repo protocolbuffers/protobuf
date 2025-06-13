@@ -402,7 +402,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
   friend class RustMapHelper;
-  friend class v2::TableDrivenMessage;
 
   // Calls `f(type_t)` where `type_t` is an unspecified type that has a `::type`
   // typedef in it representing the dynamic type of key/value of the node.
@@ -642,7 +641,6 @@ class MapFieldBaseForParse {
 
   mutable std::atomic<TaggedPtr> payload_{};
   const void* prototype_as_void_;
-  PROTOBUF_TSAN_DECLARE_MEMBER;
 };
 
 // The value might be of different signedness, so use memcpy to extract it.
@@ -663,6 +661,18 @@ struct KeyNode : NodeBase {
   static constexpr size_t kOffset = sizeof(NodeBase);
   decltype(auto) key() const { return ReadKey<Key>(GetVoidKey()); }
 };
+
+inline map_index_t Hash(absl::string_view k, void* salt) {
+  // Note: we could potentially also use CRC32-based hashing here.
+  return absl::HashOf(k, salt);
+}
+inline map_index_t Hash(uint64_t k, void* salt) {
+  if constexpr (!HasCrc32()) return absl::HashOf(k, salt);
+  uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
+  // Note: Crc32(salt_int, k) causes the random iteration order test to fail so
+  // we also rotate.
+  return Crc32(salt_int, absl::rotr(k, salt_int & 0x3f));
+}
 
 // KeyMapBase is a chaining hash map.
 // The implementation doesn't need the full generality of unordered_map,
@@ -696,7 +706,6 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
-  friend class v2::TableDriven;
 
   Key* GetKey(NodeBase* node) const {
     return UntypedMapBase::GetKey<Key>(node);
@@ -931,8 +940,7 @@ class KeyMapBase : public UntypedMapBase {
   }
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
-    return static_cast<map_index_t>(absl::HashOf(k, table_) &
-                                    (num_buckets_ - 1));
+    return Hash(k, table_) & (num_buckets_ - 1);
   }
 };
 
@@ -1548,7 +1556,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   friend struct internal::MapTestPeer;
   friend struct internal::MapBenchmarkPeer;
   friend class internal::RustMapHelper;
-  friend class internal::v2::TableDriven;
 };
 
 namespace internal {

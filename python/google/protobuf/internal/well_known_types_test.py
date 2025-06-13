@@ -16,6 +16,7 @@ import unittest
 from google.protobuf import json_format
 from google.protobuf import text_format
 from google.protobuf.internal import more_messages_pb2
+from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import well_known_types
 from google.protobuf.internal import well_known_types_test_pb2
 
@@ -54,6 +55,7 @@ class TimeUtilTestBase(parameterized.TestCase):
     self.assertEqual(message, parsed_message)
 
 
+@testing_refleaks.TestCase
 class TimeUtilTest(TimeUtilTestBase):
 
   def testTimestampSerializeAndParse(self):
@@ -704,7 +706,13 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(expected_nano, msg.optional_timestamp.nanos)
 
 
+@testing_refleaks.TestCase
 class StructTest(unittest.TestCase):
+
+  def testEmptyDict(self):
+    # in operator for empty initialized struct
+    msg = well_known_types_test_pb2.WKTMessage(optional_struct={})
+    self.assertNotIn('key', msg.optional_struct)
 
   def testStruct(self):
     struct = struct_pb2.Struct()
@@ -982,6 +990,7 @@ class StructTest(unittest.TestCase):
     self.assertEqual(5, struct['key5'][0][1])
 
 
+@testing_refleaks.TestCase
 class AnyTest(unittest.TestCase):
 
   def testAnyMessage(self):

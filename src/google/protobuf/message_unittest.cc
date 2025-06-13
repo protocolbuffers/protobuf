@@ -19,6 +19,7 @@
 #include <gtest/gtest.h>
 #include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/dynamic_message.h"
@@ -40,7 +41,6 @@
 
 // Must include after the above macros.
 // clang-format off
-#include "google/protobuf/test_util.inc"
 #include "google/protobuf/message_unittest.inc"
 #include "google/protobuf/message_unittest_legacy_apis.inc"
 // clang-format on

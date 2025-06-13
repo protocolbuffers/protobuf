@@ -32,7 +32,6 @@ namespace compiler {
 namespace java {
 
 using internal::WireFormat;
-using internal::WireFormatLite;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 namespace {
@@ -651,7 +650,8 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
                  "      values, $name$_);\n"
                  "}\n");
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               context_->options());
+                               context_->options(), /* builder */ false,
+                               /* kdoc */ false, /* is_private */ true);
   printer->Print(variables_,
                  "private void clear$capitalized_name$() {\n"
                  "  $name$_ = $empty_list$;\n"

@@ -32,6 +32,7 @@
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_extensions.pb.h"
@@ -647,7 +648,7 @@ TEST(ExtensionSetTest, Parsing) {
   TestUtil::SetAllFields(&source);
   source.SerializeToString(&data);
   EXPECT_TRUE(destination.ParseFromString(data));
-  TestUtil::SetOneofFields(&destination);
+  TestUtil::SetOneofFieldsExtensions(&destination);
   TestUtil::ExpectAllExtensionsSet(destination);
 }
 
@@ -1462,5 +1463,13 @@ TEST(ExtensionSetTest, Descriptor) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+// Some code thunks to allow easy inspection of the generated asm via `lldb`.
+auto CodegenGetExtensionInt32(
+    const google::protobuf::unittest::TestAllExtensions& message) {
+  return message.GetExtension(google::protobuf::unittest::optional_int32_extension);
+}
+static int odr [[maybe_unused]] =
+    (::google::protobuf::internal::StrongPointer(&CodegenGetExtensionInt32), 0);
 
 #include "google/protobuf/port_undef.inc"

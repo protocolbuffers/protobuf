@@ -17,6 +17,7 @@
 // Must be last.
 #include "google/protobuf/port_def.inc"
 
+
 namespace google {
 namespace protobuf {
 class Descriptor;
@@ -50,13 +51,14 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetFileImmutableClassName(const FileDescriptor* file);
   // Gets the unqualified default immutable outer class name of a file
   // (converted from the proto file's name).
-  std::string GetFileDefaultImmutableClassName(const FileDescriptor* file);
+  static std::string GetFileDefaultImmutableClassName(
+      const FileDescriptor* file);
 
   // Check whether there is any type defined in the proto file that has
   // the given class name.
-  bool HasConflictingClassName(const FileDescriptor* file,
-                               absl::string_view classname,
-                               NameEquality equality_mode);
+  static bool HasConflictingClassName(const FileDescriptor* file,
+                                      absl::string_view classname,
+                                      NameEquality equality_mode);
 
   // Gets the name of the outer class that holds descriptor information.
   // Descriptors are shared between immutable messages and mutable messages.
@@ -82,10 +84,6 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetImmutableClassName(const DescriptorType* descriptor) {
     return GetClassName(descriptor, true);
   }
-  template <class DescriptorType>
-  std::string GetMutableClassName(const DescriptorType* descriptor) {
-    return GetClassName(descriptor, false);
-  }
 
   // Gets the fully qualified name of an extension identifier.
   std::string GetExtensionIdentifierName(const FieldDescriptor* descriptor,
@@ -103,12 +101,7 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetKotlinFactoryName(const Descriptor* descriptor);
   std::string GetKotlinExtensionsClassName(const Descriptor* descriptor);
   std::string GetKotlinExtensionsClassNameEscaped(const Descriptor* descriptor);
-  std::string GetJavaMutableClassName(const Descriptor* descriptor);
-  std::string GetJavaMutableClassName(const EnumDescriptor* descriptor);
-  std::string GetJavaMutableClassName(const ServiceDescriptor* descriptor);
-  // Gets the outer class and the actual class for downgraded mutable messages.
-  std::string GetDowngradedFileClassName(const FileDescriptor* file);
-  std::string GetDowngradedClassName(const Descriptor* descriptor);
+  std::string GetFileJavaPackage(const FileDescriptor* file, bool immutable);
 
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.
@@ -123,14 +116,18 @@ class PROTOC_EXPORT ClassNameResolver {
 
  private:
   // Get the Java Class style full name of a message.
+  template <typename Descriptor>
   std::string GetJavaClassFullName(absl::string_view name_without_package,
-                                   const FileDescriptor* file, bool immutable);
+                                   const Descriptor& descriptor,
+                                   bool immutable);
+  template <typename Descriptor>
   std::string GetJavaClassFullName(absl::string_view name_without_package,
-                                   const FileDescriptor* file, bool immutable,
+                                   const Descriptor& descriptor, bool immutable,
                                    bool kotlin);
-  // Caches the result to provide better performance.
-  absl::flat_hash_map<const FileDescriptor*, std::string>
-      file_immutable_outer_class_names_;
+
+  template <typename Descriptor>
+  std::string GetJavaClassPackage(const Descriptor& descriptor, bool immutable);
+
 };
 
 }  // namespace java

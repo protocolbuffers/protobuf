@@ -7,6 +7,9 @@
 
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields.
 
+// Extra parens intentional as part of flexing the macro edge cases.
+#![allow(unused_parens, unused_braces)]
+
 use googletest::prelude::*;
 use protobuf::proto;
 use unittest_rust_proto::{

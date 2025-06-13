@@ -20,29 +20,3 @@ message TestUtf8Proto3String {
 message TestUtf8RepeatedProto3String {
   repeated string data = 1;
 }
-
-// copybara:strip_begin(enforce_utf8 option is not respected in OSS)
-message TestUtf8Proto3StringMixed {
-  optional string data = 1;
-
-  // Add other fields with different enforce_utf8 values, to ensure we can
-  // handle the mix.
-  optional string other_data = 2;
-}
-
-message TestUtf8Proto3StringEnforceUtf8False {
-  optional string data = 1;
-}
-
-message TestUtf8RepeatedProto3StringEnforceUtf8False {
-  repeated string data = 1;
-}
-
-message TestUtf8Proto3StringEnforceUtf8FalseMixed {
-  optional string data = 1;
-
-  // Add other fields with different enforce_utf8 values, to ensure we can
-  // handle the mix.
-  optional string other_data = 2;
-}
-// copybara:strip_end

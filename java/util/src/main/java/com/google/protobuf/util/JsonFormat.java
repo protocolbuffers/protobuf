@@ -68,11 +68,7 @@ import javax.annotation.Nullable;
 
 /**
  * Utility class to convert protobuf messages to/from the <a href=
- * 'https://developers.google.com/protocol-buffers/docs/proto3#json'>Proto3 JSON format.</a>
- * Only proto3 features are supported. Proto2 only features such as extensions and unknown fields
- * are discarded in the conversion. That is, when converting proto2 messages to JSON format,
- * extensions and unknown fields are treated as if they do not exist. This applies to proto2
- * messages embedded in proto3 messages as well.
+ * 'https://protobuf.dev/programming-guides/json/'>ProtoJSON format.</a>
  */
 public class JsonFormat {
   private static final Logger logger = Logger.getLogger(JsonFormat.class.getName());
@@ -91,8 +87,7 @@ public class JsonFormat {
         /* preservingProtoFieldNames */ false,
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
-        /* sortingMapKeys */ false,
-        /* unsafeDisableCodepointsForHtmlSymbols */ false);
+        /* sortingMapKeys */ false);
   }
 
   private enum ShouldPrintDefaults {
@@ -115,7 +110,6 @@ public class JsonFormat {
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
-    private final boolean unsafeDisableCodepointsForHtmlSymbols;
 
     private Printer(
         com.google.protobuf.TypeRegistry registry,
@@ -125,8 +119,7 @@ public class JsonFormat {
         boolean preservingProtoFieldNames,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys,
-        boolean unsafeDisableCodepointsForHtmlSymbols) {
+        boolean sortingMapKeys) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.shouldPrintDefaults = shouldOutputDefaults;
@@ -135,7 +128,6 @@ public class JsonFormat {
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
-      this.unsafeDisableCodepointsForHtmlSymbols = unsafeDisableCodepointsForHtmlSymbols;
     }
 
     /**
@@ -157,8 +149,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
     /**
@@ -180,8 +171,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
     /**
@@ -210,8 +200,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
     /**
@@ -239,8 +228,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
     /**
@@ -261,8 +249,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
     /**
@@ -279,8 +266,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           true,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -304,8 +290,7 @@ public class JsonFormat {
           true,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
 
@@ -334,8 +319,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           true,
           printingEnumsAsInts,
-          sortingMapKeys,
-          unsafeDisableCodepointsForHtmlSymbols);
+          sortingMapKeys);
     }
 
     /**
@@ -358,8 +342,7 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          true,
-          unsafeDisableCodepointsForHtmlSymbols);
+          true);
     }
 
     /**
@@ -381,8 +364,7 @@ public class JsonFormat {
               output,
               omittingInsignificantWhitespace,
               printingEnumsAsInts,
-              sortingMapKeys,
-              unsafeDisableCodepointsForHtmlSymbols)
+              sortingMapKeys)
           .print(message);
     }
 
@@ -740,8 +722,6 @@ public class JsonFormat {
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().create();
-      private static final Gson GSON_WITHOUT_HTML_ESCAPING =
-          new GsonBuilder().disableHtmlEscaping().create();
     }
 
     PrinterImpl(
@@ -753,8 +733,7 @@ public class JsonFormat {
         Appendable jsonOutput,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys,
-        boolean unsafeDisableCodepointsForHtmlSymbols) {
+        boolean sortingMapKeys) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.shouldPrintDefaults = shouldPrintDefaults;
@@ -762,10 +741,7 @@ public class JsonFormat {
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
-      this.gson =
-          unsafeDisableCodepointsForHtmlSymbols
-              ? GsonHolder.GSON_WITHOUT_HTML_ESCAPING
-              : GsonHolder.DEFAULT_GSON;
+      this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
         this.generator = new CompactTextGenerator(jsonOutput);

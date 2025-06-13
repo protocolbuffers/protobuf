@@ -97,7 +97,7 @@ class MockGeneratorContext : public GeneratorContext {
 
   io::ZeroCopyOutputStream* Open(const std::string& filename) override {
     auto& map_slot = files_[filename];
-    map_slot.reset(new std::string);
+    map_slot = std::make_unique<std::string>();
     return new io::StringOutputStream(map_slot.get());
   }
 
@@ -161,9 +161,9 @@ TEST(BootstrapTest, OptionNotExist) {
   GeneratorContext* generator_context = nullptr;
   std::string parameter = "aaa";
   std::string error;
-  ASSERT_FALSE(generator.Generate(
-      pool.FindFileByName("google/protobuf/descriptor.proto"), parameter,
-      generator_context, &error));
+
+  const FileDescriptor* file = FileDescriptorProto::descriptor()->file();
+  ASSERT_FALSE(generator.Generate(file, parameter, generator_context, &error));
   EXPECT_EQ(error, absl::StrCat("Unknown generator option: ", parameter));
 }
 

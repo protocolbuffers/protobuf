@@ -34,7 +34,7 @@
 #include "upb/port/def.inc"
 
 struct upb_EnumDef {
-  const UPB_DESC(EnumOptions*) opts;
+  UPB_ALIGN_AS(8) const UPB_DESC(EnumOptions*) opts;
   const UPB_DESC(FeatureSet*) resolved_features;
   const upb_MiniTableEnum* layout;  // Only for proto2.
   const upb_FileDef* file;
@@ -225,7 +225,7 @@ static upb_MiniTableEnum* create_enumlayout(upb_DefBuilder* ctx,
 
 static upb_StringView* _upb_EnumReservedNames_New(
     upb_DefBuilder* ctx, int n, const upb_StringView* protos) {
-  upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
+  upb_StringView* sv = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_StringView, n);
   for (int i = 0; i < n; i++) {
     sv[i].data =
         upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
@@ -285,7 +285,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   e->res_name_count = n_res_name;
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
 
-  upb_inttable_compact(&e->iton, ctx->arena);
+  if (!upb_inttable_compact(&e->iton, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
   if (upb_EnumDef_IsClosed(e)) {
     if (ctx->layout) {
@@ -310,7 +310,7 @@ upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
   const char* name = containing_type ? upb_MessageDef_FullName(containing_type)
                                      : _upb_FileDef_RawPackage(ctx->file);
 
-  upb_EnumDef* e = _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumDef) * n);
+  upb_EnumDef* e = UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumDef, n);
   for (int i = 0; i < n; i++) {
     create_enumdef(ctx, name, protos[i], parent_features, &e[i]);
     e[i].containing_type = containing_type;

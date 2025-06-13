@@ -30,7 +30,7 @@ def _upb_c_proto_library_aspect_impl(target, ctx):
 upb_c_proto_library_aspect = aspect(
     attrs = {
         "_copts": attr.label(
-            default = "//upb:upb_proto_library_copts__for_generated_code_only_do_not_use",
+            default = "//upb:upb_proto_library_copts",
         ),
         "_upb_toolchain": attr.label(
             default = Label("//upb_generator/c:toolchain"),
@@ -52,6 +52,7 @@ upb_c_proto_library_aspect = aspect(
     exec_groups = {
         "proto_compiler": exec_group(),
     },
+    required_providers = [ProtoInfo],
 )
 
 def _upb_c_proto_library_rule_impl(ctx):

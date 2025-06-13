@@ -471,6 +471,13 @@ namespace Google.Protobuf {
 
       string typeUrl =
           (string)value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
+      // If no type URL has been specified, just return an empty JSON object.
+      if (typeUrl == "") {
+        WriteBracketOpen(writer, ObjectOpenBracket);
+        WriteBracketClose(writer, ObjectCloseBracket, false, indentationLevel);
+        return;
+      }
+
       ByteString data =
           (ByteString)value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
       string typeName = Any.GetTypeName(typeUrl);

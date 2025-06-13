@@ -256,7 +256,8 @@ def _IsMessageSetExtension(field):
           field.containing_type.has_options and
           field.containing_type.GetOptions().message_set_wire_format and
           field.type == _FieldDescriptor.TYPE_MESSAGE and
-          field.label == _FieldDescriptor.LABEL_OPTIONAL)
+          not field.is_required and
+          not field.is_repeated)
 
 
 def _IsMapField(field):
@@ -269,7 +270,6 @@ def _IsMessageMapField(field):
   return value_type.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE
 
 def _AttachFieldHelpers(cls, field_descriptor):
-  is_repeated = field_descriptor.label == _FieldDescriptor.LABEL_REPEATED
   field_descriptor._default_constructor = _DefaultValueConstructorForField(
       field_descriptor
   )
@@ -282,7 +282,9 @@ def _AttachFieldHelpers(cls, field_descriptor):
       type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type], False
   )
 
-  if is_repeated and wire_format.IsTypePackable(field_descriptor.type):
+  if field_descriptor.is_repeated and wire_format.IsTypePackable(
+      field_descriptor.type
+  ):
     # To support wire compatibility of adding packed = true, add a decoder for
     # packed values regardless of the field's options.
     AddFieldByTag(wire_format.WIRETYPE_LENGTH_DELIMITED, True)
@@ -291,7 +293,7 @@ def _AttachFieldHelpers(cls, field_descriptor):
 def _MaybeAddEncoder(cls, field_descriptor):
   if hasattr(field_descriptor, '_encoder'):
     return
-  is_repeated = (field_descriptor.label == _FieldDescriptor.LABEL_REPEATED)
+  is_repeated = field_descriptor.is_repeated
   is_map_entry = _IsMapField(field_descriptor)
   is_packed = field_descriptor.is_packed
 
@@ -316,7 +318,7 @@ def _MaybeAddDecoder(cls, field_descriptor):
   if hasattr(field_descriptor, '_decoders'):
     return
 
-  is_repeated = field_descriptor.label == _FieldDescriptor.LABEL_REPEATED
+  is_repeated = field_descriptor.is_repeated
   is_map_entry = _IsMapField(field_descriptor)
   helper_decoders = {}
 
@@ -387,7 +389,7 @@ def _AddEnumValues(descriptor, cls):
 
 
 def _GetInitializeDefaultForMap(field):
-  if field.label != _FieldDescriptor.LABEL_REPEATED:
+  if not field.is_repeated:
     raise ValueError('map_entry set on non-repeated field %s' % (
         field.name))
   fields_by_name = field.message_type.fields_by_name
@@ -425,7 +427,7 @@ def _DefaultValueConstructorForField(field):
   if _IsMapField(field):
     return _GetInitializeDefaultForMap(field)
 
-  if field.label == _FieldDescriptor.LABEL_REPEATED:
+  if field.is_repeated:
     if field.has_default_value and field.default_value != []:
       raise ValueError('Repeated field default value not empty list: %s' % (
           field.default_value))
@@ -517,7 +519,7 @@ def _AddInitMethod(message_descriptor, cls):
       if field_value is None:
         # field=None is the same as no field at all.
         continue
-      if field.label == _FieldDescriptor.LABEL_REPEATED:
+      if field.is_repeated:
         field_copy = field._default_constructor(self)
         if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:  # Composite
           if _IsMapField(field):
@@ -636,7 +638,7 @@ def _AddPropertiesForField(field, cls):
   constant_name = field.name.upper() + '_FIELD_NUMBER'
   setattr(cls, constant_name, field.number)
 
-  if field.label == _FieldDescriptor.LABEL_REPEATED:
+  if field.is_repeated:
     _AddPropertiesForRepeatedField(field, cls)
   elif field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
     _AddPropertiesForNonRepeatedCompositeField(field, cls)
@@ -838,7 +840,7 @@ def _IsPresent(item):
   """Given a (FieldDescriptor, value) tuple from _fields, return true if the
   value should be included in the list returned by ListFields()."""
 
-  if item[0].label == _FieldDescriptor.LABEL_REPEATED:
+  if item[0].is_repeated:
     return bool(item[1])
   elif item[0].cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
     return item[1]._is_present_in_parent
@@ -862,7 +864,7 @@ def _AddHasFieldMethod(message_descriptor, cls):
 
   hassable_fields = {}
   for field in message_descriptor.fields:
-    if field.label == _FieldDescriptor.LABEL_REPEATED:
+    if field.is_repeated:
       continue
     # For proto3, only submessages and fields inside a oneof have presence.
     if not field.has_presence:
@@ -950,7 +952,7 @@ def _AddHasExtensionMethod(cls):
   """Helper for _AddMessageMethods()."""
   def HasExtension(self, field_descriptor):
     extension_dict._VerifyExtensionHandle(self, field_descriptor)
-    if field_descriptor.label == _FieldDescriptor.LABEL_REPEATED:
+    if field_descriptor.is_repeated:
       raise KeyError('"%s" is repeated.' % field_descriptor.full_name)
 
     if field_descriptor.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
@@ -1200,7 +1202,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
   fields_by_tag = cls._fields_by_tag
   message_set_decoders_by_tag = cls._message_set_decoders_by_tag
 
-  def InternalParse(self, buffer, pos, end):
+  def InternalParse(self, buffer, pos, end, current_depth=0):
     """Create a message from serialized bytes.
 
     Args:
@@ -1244,10 +1246,13 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
       else:
         _MaybeAddDecoder(cls, field_des)
         field_decoder = field_des._decoders[is_packed]
-        pos = field_decoder(buffer, new_pos, end, self, field_dict)
+        pos = field_decoder(
+            buffer, new_pos, end, self, field_dict, current_depth
+        )
         if field_des.containing_oneof:
           self._UpdateOneofState(field_des)
     return pos
+
   cls._InternalParse = InternalParse
 
 
@@ -1256,7 +1261,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
   protocol message class."""
 
   required_fields = [field for field in message_descriptor.fields
-                           if field.label == _FieldDescriptor.LABEL_REQUIRED]
+                           if field.is_required]
 
   def IsInitialized(self, errors=None):
     """Checks if all required fields of a message are set.
@@ -1281,7 +1286,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
 
     for field, value in list(self._fields.items()):  # dict can change size!
       if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
-        if field.label == _FieldDescriptor.LABEL_REPEATED:
+        if field.is_repeated:
           if (field.message_type._is_map_entry):
             continue
           for element in value:
@@ -1329,7 +1334,7 @@ def _AddIsInitializedMethod(message_descriptor, cls):
           else:
             # ScalarMaps can't have any initialization errors.
             pass
-        elif field.label == _FieldDescriptor.LABEL_REPEATED:
+        elif field.is_repeated:
           for i in range(len(value)):
             element = value[i]
             prefix = '%s[%d].' % (name, i)
@@ -1354,7 +1359,6 @@ def _FullyQualifiedClassName(klass):
 
 
 def _AddMergeFromMethod(cls):
-  LABEL_REPEATED = _FieldDescriptor.LABEL_REPEATED
   CPPTYPE_MESSAGE = _FieldDescriptor.CPPTYPE_MESSAGE
 
   def MergeFrom(self, msg):
@@ -1370,7 +1374,7 @@ def _AddMergeFromMethod(cls):
     fields = self._fields
 
     for field, value in msg._fields.items():
-      if field.label == LABEL_REPEATED:
+      if field.is_repeated:
         field_value = fields.get(field)
         if field_value is None:
           # Construct a new object to represent this field.
@@ -1439,7 +1443,7 @@ def _DiscardUnknownFields(self):
         if _IsMessageMapField(field):
           for key in value:
             value[key].DiscardUnknownFields()
-      elif field.label == _FieldDescriptor.LABEL_REPEATED:
+      elif field.is_repeated:
         for sub_message in value:
           sub_message.DiscardUnknownFields()
       else:

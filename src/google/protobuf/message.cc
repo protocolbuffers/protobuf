@@ -11,11 +11,11 @@
 
 #include "google/protobuf/message.h"
 
-#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <new>  // IWYU pragma: keep for operator new().
+#include <optional>
 #include <queue>
 #include <string>
 #include <vector>
@@ -30,7 +30,6 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -202,6 +201,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
   return total_size;
 }
 
+
 size_t Message::SpaceUsedLong() const {
   return GetClassData()->full().descriptor_methods->space_used_long(*this);
 }
@@ -271,11 +271,11 @@ class GeneratedMessageFactory final : public MessageFactory {
     dropped_defaults_factory_.SetDelegateToGeneratedFactory(true);
   }
 
-  absl::optional<const Message*> FindInTypeMap(const Descriptor* type)
+  std::optional<const Message*> FindInTypeMap(const Descriptor* type)
       ABSL_SHARED_LOCKS_REQUIRED(mutex_)
   {
     auto it = type_map_.find(type);
-    if (it == type_map_.end()) return absl::nullopt;
+    if (it == type_map_.end()) return std::nullopt;
     return it->second.get();
   }
 
@@ -390,7 +390,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
 
 const Message* GeneratedMessageFactory::TryGetPrototype(
     const Descriptor* type) {
-  absl::optional<const Message*> result;
+  std::optional<const Message*> result;
   {
     absl::ReaderMutexLock lock(&mutex_);
     result = FindInTypeMap(type);
@@ -497,17 +497,6 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 }
 
 namespace internal {
-template <>
-#if defined(_MSC_VER) && (_MSC_VER >= 1800)
-// Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue
-// #240
-PROTOBUF_NOINLINE
-#endif
-    Arena*
-    GenericTypeHandler<Message>::GetArena(Message* value) {
-  return value->GetArena();
-}
-
 template void InternalMetadata::DoClear<UnknownFieldSet>();
 template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
     const UnknownFieldSet& other);

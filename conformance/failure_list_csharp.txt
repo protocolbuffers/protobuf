@@ -33,7 +33,4 @@ Recommended.Editions_Proto3.ValueRejectInfNumberValue.JsonOutput
 Recommended.Editions_Proto3.ValueRejectNanNumberValue.JsonOutput
 Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
-Required.*.JsonInput.AnyWithNoType.* # Failed to parse input or produce output.
-Required.*.JsonInput.AnyWktRepresentationWithEmptyTypeAndValue # Should have failed to parse, but didn't.
-Required.*.JsonInput.AnyWktRepresentationWithBadType # Should have failed to parse, but didn't.
 

@@ -353,6 +353,9 @@ absl::Status ValidateMergedFeatures(const FeatureSet& features) {
   CHECK_ENUM_FEATURE(json_format, JsonFormat, JSON_FORMAT)
   CHECK_ENUM_FEATURE(enforce_naming_style, EnforceNamingStyle,
                      ENFORCE_NAMING_STYLE)
+  CHECK_ENUM_FEATURE(default_symbol_visibility,
+                     VisibilityFeature::DefaultSymbolVisibility,
+                     VisibilityFeature::DEFAULT_SYMBOL_VISIBILITY)
 
 #undef CHECK_ENUM_FEATURE
 
@@ -523,21 +526,10 @@ absl::StatusOr<FeatureResolver> FeatureResolver::Create(
     prev_edition = edition_default.edition();
   }
 
-  // Select the matching edition defaults.
-  auto comparator = [](const auto& a, const auto& b) {
-    return a.edition() < b.edition();
-  };
-  FeatureSetDefaults::FeatureSetEditionDefault search;
-  search.set_edition(edition);
-  auto first_nonmatch =
-      absl::c_upper_bound(compiled_defaults.defaults(), search, comparator);
-  if (first_nonmatch == compiled_defaults.defaults().begin()) {
-    return Error("No valid default found for edition ", edition);
-  }
-
-  FeatureSet features = std::prev(first_nonmatch)->fixed_features();
-  features.MergeFrom(std::prev(first_nonmatch)->overridable_features());
-  return FeatureResolver(std::move(features));
+  auto features =
+      internal::GetEditionFeatureSetDefaults(edition, compiled_defaults);
+  RETURN_IF_ERROR(features.status());
+  return FeatureResolver(std::move(features.value()));
 }
 
 absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
@@ -578,6 +570,25 @@ FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
   return results;
 }
 
+namespace internal {
+absl::StatusOr<FeatureSet> GetEditionFeatureSetDefaults(
+    Edition edition, const FeatureSetDefaults& defaults) {
+  // Select the matching edition defaults.
+  auto comparator = [](const auto& a, const auto& b) {
+    return a.edition() < b.edition();
+  };
+  FeatureSetDefaults::FeatureSetEditionDefault search;
+  search.set_edition(edition);
+  auto first_nonmatch =
+      absl::c_upper_bound(defaults.defaults(), search, comparator);
+  if (first_nonmatch == defaults.defaults().begin()) {
+    return Error("No valid default found for edition ", edition);
+  }
+  FeatureSet features = std::prev(first_nonmatch)->fixed_features();
+  features.MergeFrom(std::prev(first_nonmatch)->overridable_features());
+  return features;
+}
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 

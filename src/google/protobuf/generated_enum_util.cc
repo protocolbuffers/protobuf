@@ -10,11 +10,11 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/generated_message_util.h"
 
@@ -107,7 +107,7 @@ std::vector<uint32_t> GenerateEnumData(absl::Span<const int32_t> values) {
   std::vector<int32_t> fallback_values_too_large, fallback_values_after_bitmap;
   std::vector<uint32_t> bitmap_values;
   constexpr size_t kBitmapBlockSize = 32;
-  absl::optional<int16_t> start_sequence;
+  std::optional<int16_t> start_sequence;
   uint32_t sequence_length = 0;
   for (int32_t v : values) {
     // If we don't yet have a sequence, start it.

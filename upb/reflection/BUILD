@@ -5,8 +5,6 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
-load("//bazel:upb_proto_library.bzl", "upb_proto_reflection_library")
 load(
     "//editions:defaults.bzl",
     "compile_edition_defaults",
@@ -34,18 +32,6 @@ bootstrap_upb_proto_library(
     strip_prefix = "third_party/protobuf/github/bootstrap/src",
 )
 
-upb_proto_reflection_library(
-    name = "descriptor_upb_proto_reflection",
-    visibility = ["//upb:friends"],
-    deps = ["//:descriptor_proto"],
-)
-
-upb_minitable_proto_library(
-    name = "descriptor_upb_minitable_proto",
-    visibility = ["//visibility:public"],
-    deps = ["//:descriptor_proto"],
-)
-
 bootstrap_cc_library(
     name = "reflection",
     hdrs = [
@@ -58,13 +44,13 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_descriptor",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
         "//upb/message:internal",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/port",
     ],
 )
 
@@ -129,37 +115,40 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:message_copy",
-        "//upb:mini_descriptor",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:wire",
+        "//upb/base",
         "//upb/base:internal",
         "//upb/hash",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:copy",
         "//upb/message:internal",
+        "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/wire",
     ],
 )
 
 cc_library(
-    name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    name = "generated_reflection_support",
     hdrs = [
         "def.h",
         "internal/def_pool.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "//upb:port_inc",
+        "//upb/port:inc",
     ],
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//upb:__pkg__",
+        "//upb:friends",
+    ],
     deps = [
         ":internal",
-        "//upb:mem",
-        "//upb:mini_descriptor",
+        "//upb/mem",
+        "//upb/mini_descriptor",
     ],
 )
 
@@ -174,11 +163,13 @@ cc_test(
     deps = [
         ":descriptor_upb_proto",
         ":internal",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:port",
-        "//upb:reflection",
+        ":reflection",
+        "//upb/base",
         "//upb/hash",
+        "//upb/mem",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/port",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

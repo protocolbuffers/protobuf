@@ -35,19 +35,11 @@ load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_sourc
 load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
-    "com.google.caliper:caliper:1.0-beta-3",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.5.1",
     "com.google.j2objc:j2objc-annotations:2.8",
     "com.google.guava:guava:32.0.1-jre",
-    "com.google.guava:guava-testlib:32.0.1-jre",
-    "com.google.testparameterinjector:test-parameter-injector:1.18",
-    "com.google.truth:truth:1.1.2",
-    "junit:junit:4.13.2",
-    "org.mockito:mockito-core:4.3.1",
-    "biz.aQute.bnd:biz.aQute.bndlib:6.4.0",
-    "info.picocli:picocli:4.6.3",
 ]
 
 def _github_archive(repo, commit, **kwargs):
@@ -61,6 +53,16 @@ def _github_archive(repo, commit, **kwargs):
 def protobuf_deps():
     """Loads common dependencies needed to compile the protobuf library."""
 
+    # Pin rules_proto since Bazel 7 otherwise depends on rules_proto 5.3.0-21.7 which is missing
+    # @rules_proto//proto:toolchain_type used by Bazel.
+    # 6.0.0 would at least require users to add `register_toolchains` for rules_proto
+    # TODO: Remove once Bazel 7 is no longer supported.
+    if not native.existing_rule("rules_proto"):
+        http_archive(
+            name = "rules_proto",
+            strip_prefix = "rules_proto-7.1.0",
+            url = "https://github.com/bazelbuild/rules_proto/releases/download/7.1.0/rules_proto-7.1.0.tar.gz",
+        )
     if not native.existing_rule("bazel_features"):
         http_archive(
             name = "bazel_features",
@@ -139,9 +141,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "4f7e2aa1eb9aa722d96498f5ef514f426c1f55161c3c9ae628c857a7128ceb07",
-            strip_prefix = "rules_python-1.0.0",
-            url = "https://github.com/bazelbuild/rules_python/releases/download/1.0.0/rules_python-1.0.0.tar.gz",
+            sha256 = "9c6e26911a79fbf510a8f06d8eedb40f412023cf7fa6d1461def27116bff022c",
+            strip_prefix = "rules_python-1.1.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/1.1.0/rules_python-1.1.0.tar.gz",
         )
 
     if not native.existing_rule("system_python"):
@@ -171,8 +173,8 @@ def protobuf_deps():
     if not native.existing_rule("build_bazel_rules_apple"):
         http_archive(
             name = "build_bazel_rules_apple",
-            sha256 = "b892911288715b354e05b9a6fe9009635f7155991f24f27e779fe80d435c92bc",
-            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.13.0/rules_apple.3.13.0.tar.gz",
+            sha256 = "86ff9c3a2c7bc308fef339bcd5b3819aa735215033886cc281eb63f10cd17976",
+            url = "https://github.com/bazelbuild/rules_apple/releases/download/3.16.0/rules_apple.3.16.0.tar.gz",
         )
 
     if not native.existing_rule("build_bazel_apple_support"):

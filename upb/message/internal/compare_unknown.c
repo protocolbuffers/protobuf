@@ -141,6 +141,9 @@ static void upb_CombineUnknownFields(upb_UnknownField_Context* ctx,
   const char* ptr = *buf;
   uint32_t last_tag = builder->last_tag;
   bool sorted = builder->sorted;
+
+  // Parse the unknown field data. It is an invariant of the data structure that
+  // unknown field data is valid, so parse errors here should be impossible.
   while (!upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag);
@@ -160,25 +163,30 @@ static void upb_CombineUnknownFields(upb_UnknownField_Context* ctx,
     switch (wire_type) {
       case kUpb_WireType_Varint:
         ptr = upb_WireReader_ReadVarint(ptr, &field->data.varint);
+        UPB_ASSERT(ptr);
         break;
       case kUpb_WireType_64Bit:
         ptr = upb_WireReader_ReadFixed64(ptr, &field->data.uint64);
+        UPB_ASSERT(ptr);
         break;
       case kUpb_WireType_32Bit:
         ptr = upb_WireReader_ReadFixed32(ptr, &field->data.uint32);
+        UPB_ASSERT(ptr);
         break;
       case kUpb_WireType_Delimited: {
         int size;
         ptr = upb_WireReader_ReadSize(ptr, &size);
+        UPB_ASSERT(ptr);
         const char* s_ptr = ptr;
         ptr = upb_EpsCopyInputStream_ReadStringAliased(&ctx->stream, &s_ptr,
                                                        size);
+        UPB_ASSERT(ptr);
         field->data.delimited.data = s_ptr;
         field->data.delimited.size = size;
         break;
       }
       case kUpb_WireType_StartGroup:
-        if (--ctx->depth == 0) {
+        if (--ctx->depth < 0) {
           ctx->status = kUpb_UnknownCompareResult_MaxDepthExceeded;
           UPB_LONGJMP(ctx->err, 1);
         }

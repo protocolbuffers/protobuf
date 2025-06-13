@@ -183,7 +183,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
           continue
         if expected_type == wire_format.WIRETYPE_LENGTH_DELIMITED:
           self.assertIn(type(unknown_field.data), (str, bytes))
-        if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+        if field_descriptor.is_repeated:
           self.assertIn(unknown_field.data, expected_value)
         else:
           self.assertEqual(expected_value, unknown_field.data)
@@ -362,11 +362,11 @@ class UnknownEnumValuesTest(unittest.TestCase):
     for field in unknown_field_set:
       if field.field_number == field_descriptor.number:
         count += 1
-        if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+        if field_descriptor.is_repeated:
           self.assertIn(field.data, expected_value)
         else:
           self.assertEqual(expected_value, field.data)
-    if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if field_descriptor.is_repeated:
       self.assertEqual(count, len(expected_value))
     else:
       self.assertEqual(count, 1)

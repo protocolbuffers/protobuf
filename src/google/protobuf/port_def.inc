@@ -148,6 +148,32 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT 1
 
+// Removes google::protobuf::util::MessageDifferencer::AddIgnoreCriteria that takes a
+// raw pointer as an argument in favor of the overload that takes a unique_ptr.
+// Owner: mkruskal@, natebrennan@
+#define PROTOBUF_FUTURE_REMOVE_ADD_IGNORE_CRITERIA 1
+
+// Marks several logically constant operations on Repeated*Field as nodiscard.
+// Owner: ckennelly@, mkruskal@
+#define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
+
+#else
+
+#define PROTOBUF_FUTURE_ADD_NODISCARD
+
+#endif
+
+// Introducing a future-breaking change guard for descriptor database migration.
+// This allows google3 to transition to absl::string_view while keeping OSS
+// on std::string until the migration is fully completed.
+// The temporary macro enables incremental migration before permanently flipping
+// the switch.
+#ifdef PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE
+#error PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE was previously defined
+#endif
+
+#if defined(PROTOBUF_TEMPORARY_ENABLE_STRING_VIEW_DESCRIPTOR_DATABASE)
+#define PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE 1
 #endif
 
 #ifdef PROTOBUF_ALWAYS_INLINE
@@ -218,7 +244,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #endif
 #if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && !defined(__arm__) &&  \
     !defined(_ARCH_PPC) && !defined(__wasm__) &&                      \
-    !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__)
+    !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__) && \
+    !defined(__s390x__)
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 // Compilation fails on X86 Windows:

@@ -110,6 +110,16 @@ void upb_Arena_SetMaxBlockSize(size_t max);
 UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
                                          size_t oldsize, size_t size);
 
+// Attempts to extend the given alloc from arena, in place. Is generally
+// only likely to succeed for the most recent allocation from this arena. If it
+// succeeds, returns true and `ptr`'s allocation is now `size` rather than
+// `oldsize`. Returns false if the allocation cannot be extended; `ptr`'s
+// allocation is unmodified. See also upb_Arena_Realloc.
+// REQUIRES: `size > oldsize`; to shrink, use `upb_Arena_Realloc` or
+// `upb_Arena_ShrinkLast`.
+UPB_API_INLINE bool upb_Arena_TryExtend(upb_Arena* a, void* ptr, size_t oldsize,
+                                        size_t size);
+
 #ifdef UPB_TRACING_ENABLED
 void upb_Arena_SetTraceHandler(void (*initArenaTraceHandler)(const upb_Arena*,
                                                              size_t size),

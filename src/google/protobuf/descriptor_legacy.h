@@ -1,5 +1,5 @@
-#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_EDITION_H__
-#define GOOGLE_PROTOBUF_DESCRIPTOR_EDITION_H__
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_LEGACY_H__
+#define GOOGLE_PROTOBUF_DESCRIPTOR_LEGACY_H__
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -22,4 +22,4 @@ class FileDescriptorLegacy {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_DESCRIPTOR_EDITION_H__
+#endif  // GOOGLE_PROTOBUF_DESCRIPTOR_LEGACY_H__

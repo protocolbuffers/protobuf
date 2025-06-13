@@ -5,11 +5,7 @@ readme = "README.md"
 version = "{VERSION}"
 description = "Code generator for Rust Protocol Buffers bindings"
 license = "BSD-3-Clause"
-rust-version = "1.74"
-
-
-[dependencies]
-cc = "1.1.6"
+rust-version = "1.79"
 
 [dev-dependencies]
 googletest = "0.13.0"

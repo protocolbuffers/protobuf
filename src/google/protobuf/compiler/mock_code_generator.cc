@@ -57,6 +57,7 @@ namespace {
 std::string CommaSeparatedList(
     const std::vector<const FileDescriptor*>& all_files) {
   std::vector<absl::string_view> names;
+  names.reserve(all_files.size());
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }

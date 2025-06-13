@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_SERVICE_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_SERVICE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_SERVICE_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_SERVICE_H__
 
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/descriptor.h"
@@ -98,4 +98,4 @@ class ImmutableServiceGenerator : public ServiceGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // NET_PROTO2_COMPILER_JAVA_SERVICE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_SERVICE_H__

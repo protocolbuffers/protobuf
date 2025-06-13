@@ -61,6 +61,19 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_, context_->options());
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
 
+  if (CheckLargeEnum(descriptor_)) {
+    std::vector<
+        std::pair<const EnumValueDescriptor*, const EnumValueDescriptor*>>
+        alias_pairs;
+    alias_pairs.reserve(aliases_.size());
+    for (const Alias& alias : aliases_) {
+      alias_pairs.emplace_back(alias.value, alias.canonical_value);
+    }
+
+    GenerateLarge(printer, descriptor_, canonical_values_, alias_pairs,
+                  immutable_api_, context_, name_resolver_);
+    return;
+  }
 
   if (!context_->options().opensource_runtime) {
     printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
@@ -263,7 +276,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
         "    getDescriptorForType() {\n"
         "  return getDescriptor();\n"
         "}\n"
-        "public static final com.google.protobuf.Descriptors.EnumDescriptor\n"
+        "public static com.google.protobuf.Descriptors.EnumDescriptor\n"
         "    getDescriptor() {\n",
         "index_text", index_text);
 

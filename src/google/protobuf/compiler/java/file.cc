@@ -18,6 +18,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -33,6 +34,7 @@
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/versions.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -252,6 +254,26 @@ bool FileGenerator::Validate(std::string* error) {
            "https://github.com/protocolbuffers/protobuf/blob/main/java/"
            "lite.md";
   }
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const EnumDescriptor& enm) {
+    if (CheckLargeEnum(&enm) && enm.is_closed()) {
+      absl::StrAppend(
+          error, enm.full_name(),
+          " is a closed enum and can not be used with the large_enum feature.  "
+          "Please migrate to an open enum first, which is a better fit for "
+          "extremely large enums.\n");
+    }
+    absl::Status status = ValidateNestInFileClassFeature(enm);
+    if (!status.ok()) {
+      absl::StrAppend(error, status.message());
+    }
+  });
+
+  google::protobuf::internal::VisitDescriptors(*file_, [&](const Descriptor& message) {
+    absl::Status status = ValidateNestInFileClassFeature(message);
+    if (!status.ok()) {
+      absl::StrAppend(error, status.message());
+    }
+  });
 
   return error->empty();
 }
@@ -338,17 +360,21 @@ void FileGenerator::Generate(io::Printer* printer) {
 
   // -----------------------------------------------------------------
 
-  if (!MultipleJavaFiles(file_, immutable_api_)) {
-    for (int i = 0; i < file_->enum_type_count(); i++) {
+  for (int i = 0; i < file_->enum_type_count(); i++) {
+    if (NestedInFileClass(*file_->enum_type(i), immutable_api_)) {
       generator_factory_->NewEnumGenerator(file_->enum_type(i))
           ->Generate(printer);
     }
-    for (int i = 0; i < file_->message_type_count(); i++) {
+  }
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    if (NestedInFileClass(*file_->message_type(i), immutable_api_)) {
       message_generators_[i]->GenerateInterface(printer);
       message_generators_[i]->Generate(printer);
     }
-    if (HasGenericServices(file_, context_->EnforceLite())) {
-      for (int i = 0; i < file_->service_count(); i++) {
+  }
+  if (HasGenericServices(file_, context_->EnforceLite())) {
+    for (int i = 0; i < file_->service_count(); i++) {
+      if (NestedInFileClass(*file_->service(i), immutable_api_)) {
         std::unique_ptr<ServiceGenerator> generator(
             generator_factory_->NewServiceGenerator(file_->service(i)));
         generator->Generate(printer);
@@ -564,38 +590,39 @@ void FileGenerator::GenerateSiblings(
     const std::string& package_dir, GeneratorContext* context,
     std::vector<std::string>* file_list,
     std::vector<std::string>* annotation_list) {
-  if (MultipleJavaFiles(file_, immutable_api_)) {
-    for (int i = 0; i < file_->enum_type_count(); i++) {
-      std::unique_ptr<EnumGenerator> generator(
-          generator_factory_->NewEnumGenerator(file_->enum_type(i)));
-      GenerateSibling<EnumGenerator>(
-          package_dir, java_package_, file_->enum_type(i), context, file_list,
-          options_.annotate_code, annotation_list, "", generator.get(),
-          options_.opensource_runtime, &EnumGenerator::Generate);
-    }
-    for (int i = 0; i < file_->message_type_count(); i++) {
-      if (immutable_api_) {
-        GenerateSibling<MessageGenerator>(
-            package_dir, java_package_, file_->message_type(i), context,
-            file_list, options_.annotate_code, annotation_list, "OrBuilder",
-            message_generators_[i].get(), options_.opensource_runtime,
-            &MessageGenerator::GenerateInterface);
-      }
+  for (int i = 0; i < file_->enum_type_count(); i++) {
+    if (NestedInFileClass(*file_->enum_type(i), immutable_api_)) continue;
+    std::unique_ptr<EnumGenerator> generator(
+        generator_factory_->NewEnumGenerator(file_->enum_type(i)));
+    GenerateSibling<EnumGenerator>(
+        package_dir, java_package_, file_->enum_type(i), context, file_list,
+        options_.annotate_code, annotation_list, "", generator.get(),
+        options_.opensource_runtime, &EnumGenerator::Generate);
+  }
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    if (NestedInFileClass(*file_->message_type(i), immutable_api_)) continue;
+    if (immutable_api_) {
       GenerateSibling<MessageGenerator>(
           package_dir, java_package_, file_->message_type(i), context,
-          file_list, options_.annotate_code, annotation_list, "",
+          file_list, options_.annotate_code, annotation_list, "OrBuilder",
           message_generators_[i].get(), options_.opensource_runtime,
-          &MessageGenerator::Generate);
+          &MessageGenerator::GenerateInterface);
     }
-    if (HasGenericServices(file_, context_->EnforceLite())) {
-      for (int i = 0; i < file_->service_count(); i++) {
-        std::unique_ptr<ServiceGenerator> generator(
-            generator_factory_->NewServiceGenerator(file_->service(i)));
-        GenerateSibling<ServiceGenerator>(
-            package_dir, java_package_, file_->service(i), context, file_list,
-            options_.annotate_code, annotation_list, "", generator.get(),
-            options_.opensource_runtime, &ServiceGenerator::Generate);
-      }
+    GenerateSibling<MessageGenerator>(
+        package_dir, java_package_, file_->message_type(i), context, file_list,
+        options_.annotate_code, annotation_list, "",
+        message_generators_[i].get(), options_.opensource_runtime,
+        &MessageGenerator::Generate);
+  }
+  if (HasGenericServices(file_, context_->EnforceLite())) {
+    for (int i = 0; i < file_->service_count(); i++) {
+      if (NestedInFileClass(*file_->service(i), immutable_api_)) continue;
+      std::unique_ptr<ServiceGenerator> generator(
+          generator_factory_->NewServiceGenerator(file_->service(i)));
+      GenerateSibling<ServiceGenerator>(
+          package_dir, java_package_, file_->service(i), context, file_list,
+          options_.annotate_code, annotation_list, "", generator.get(),
+          options_.opensource_runtime, &ServiceGenerator::Generate);
     }
   }
 }

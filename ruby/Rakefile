@@ -18,6 +18,7 @@ well_known_protos = %w[
   google/protobuf/timestamp.proto
   google/protobuf/type.proto
   google/protobuf/wrappers.proto
+  google/protobuf/compiler/plugin.proto
 ]
 
 test_protos = %w[
@@ -38,12 +39,6 @@ test_protos = %w[
   tests/utf8.proto
 ]
 
-# These are omitted for now because we don't support proto2.
-proto2_protos = %w[
-  google/protobuf/descriptor.proto
-  google/protobuf/compiler/plugin.proto
-]
-
 if !ENV['PROTOC'].nil?
   protoc_command = ENV['PROTOC']
 elsif system('../bazel-bin/protoc --version')
@@ -52,17 +47,27 @@ else
   protoc_command = 'protoc'
 end
 
+tmp_protoc_out = "tmp/protoc-out"
+
+directory tmp_protoc_out
+
 genproto_output = []
 
 # We won't have access to .. from within docker, but the proto files
 # will be there, thanks to the :genproto rule dependency for gem:native.
 unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
   well_known_protos.each do |proto_file|
-    input_file = "../src/" + proto_file
-    output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
+    input_file = File.join("../src/", proto_file)
+    output_basename = File.basename(proto_file).sub(/\.proto$/, "_pb.rb")
+    tmp_output_file = File.join(tmp_protoc_out, File.dirname(proto_file), output_basename)
+    # Generated _pb.rb for files in subdirectories of google/protobuf
+    # (eg: ../src/google/protobuf/compiler/plugin.proto) should all still end up
+    # in lib/google/protobuf.
+    output_file = File.join("lib/google/protobuf", output_basename)
     genproto_output << output_file
-    file output_file => input_file do |file_task|
-      sh "#{protoc_command} -I../src --ruby_out=lib #{input_file}"
+    file output_file => [input_file, tmp_protoc_out] do |file_task|
+      sh "#{protoc_command} -I../src --ruby_out=#{tmp_protoc_out} #{input_file}"
+      FileUtils.cp tmp_output_file, output_file
     end
   end
 
@@ -155,7 +160,7 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.1.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
@@ -177,6 +182,16 @@ task :clean do
 end
 
 Gem::PackageTask.new(spec) do |pkg|
+  # When packaging the gem via `rake gem`, we only want to define
+  # "ext/google/protobuf_c/extconf.rb" as the extension to build the C
+  # extension.
+  pkg.gem_spec.extensions = pkg.gem_spec.extensions.map do |extension|
+    extension == "Rakefile" ? "ext/google/protobuf_c/extconf.rb" : extension
+  end
+
+  pkg.gem_spec.files.reject! { |f| f == "Rakefile" }
+
+  pkg.package_files.exclude("Rakefile")
 end
 
 # Skip build/genproto in Bazel builds, where we expect this to
@@ -191,7 +206,11 @@ Rake::TestTask.new(:gc_test => ENV['BAZEL'] == 'true' ? [] : :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :genproto, :copy_third_party, :compile, :"ffi-protobuf:default"]
+task :generate_stubs do
+  load './generate_stubs.rb'
+end
+
+task :build => [:clean, :genproto, :copy_third_party, :compile, :generate_stubs, :"ffi-protobuf:default"]
 Rake::Task[:gem].enhance [:copy_third_party, :genproto]
 task :default => [:build]
 

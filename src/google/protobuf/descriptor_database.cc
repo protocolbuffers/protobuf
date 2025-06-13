@@ -12,19 +12,33 @@
 #include "google/protobuf/descriptor_database.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/wire_format_lite.h"
 
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -75,7 +89,8 @@ bool ForAllFileProtos(DescriptorDatabase* db, Fn callback,
 
 DescriptorDatabase::~DescriptorDatabase() = default;
 
-bool DescriptorDatabase::FindAllPackageNames(std::vector<std::string>* output) {
+bool DescriptorDatabase::FindAllPackageNames(
+    std::vector<std::string>* PROTOBUF_NONNULL output) {
   return ForAllFileProtos(
       this,
       [](const FileDescriptorProto& file_proto,
@@ -85,7 +100,8 @@ bool DescriptorDatabase::FindAllPackageNames(std::vector<std::string>* output) {
       output);
 }
 
-bool DescriptorDatabase::FindAllMessageNames(std::vector<std::string>* output) {
+bool DescriptorDatabase::FindAllMessageNames(
+    std::vector<std::string>* PROTOBUF_NONNULL output) {
   return ForAllFileProtos(
       this,
       [](const FileDescriptorProto& file_proto,
@@ -236,8 +252,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddSymbol(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddNestedExtensions(
-    const std::string& filename, const DescriptorProto& message_type,
-    Value value) {
+    StringViewArg filename, const DescriptorProto& message_type, Value value) {
   for (int i = 0; i < message_type.nested_type_size(); i++) {
     if (!AddNestedExtensions(filename, message_type.nested_type(i), value))
       return false;
@@ -250,8 +265,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddNestedExtensions(
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
-    const std::string& filename, const FieldDescriptorProto& field,
-    Value value) {
+    StringViewArg filename, const FieldDescriptorProto& field, Value value) {
   if (!field.extendee().empty() && field.extendee()[0] == '.') {
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
@@ -277,7 +291,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::AddExtension(
 
 template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindFile(
-    const std::string& filename) {
+    StringViewArg filename) {
   auto it = by_name_.find(filename);
   if (it == by_name_.end()) return {};
   return it->second;
@@ -285,7 +299,7 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindFile(
 
 template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindSymbol(
-    const std::string& name) {
+    StringViewArg name) {
   auto iter = FindLastLessOrEqual(&by_symbol_, name);
 
   return (iter != by_symbol_.end() && IsSubSymbol(iter->first, name))
@@ -295,16 +309,18 @@ Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindSymbol(
 
 template <typename Value>
 Value SimpleDescriptorDatabase::DescriptorIndex<Value>::FindExtension(
-    const std::string& containing_type, int field_number) {
-  auto it = by_extension_.find({containing_type, field_number});
+    StringViewArg containing_type, int field_number) {
+  auto it = by_extension_.find(
+      std::make_pair(std::string(containing_type), field_number));
   if (it == by_extension_.end()) return {};
   return it->second;
 }
 
 template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
-    const std::string& containing_type, std::vector<int>* output) {
-  auto it = by_extension_.lower_bound(std::make_pair(containing_type, 0));
+    StringViewArg containing_type, std::vector<int>* PROTOBUF_NONNULL output) {
+  auto it = by_extension_.lower_bound(
+      std::make_pair(std::string(containing_type), 0));
   bool success = false;
 
   for (; it != by_extension_.end() && it->first.first == containing_type;
@@ -318,7 +334,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
 
 template <typename Value>
 void SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllFileNames(
-    std::vector<std::string>* output) {
+    std::vector<std::string>* PROTOBUF_NONNULL output) {
   output->resize(by_name_.size());
   int i = 0;
   for (const auto& kv : by_name_) {
@@ -335,45 +351,48 @@ bool SimpleDescriptorDatabase::Add(const FileDescriptorProto& file) {
   return AddAndOwn(new_file);
 }
 
-bool SimpleDescriptorDatabase::AddAndOwn(const FileDescriptorProto* file) {
+bool SimpleDescriptorDatabase::AddAndOwn(
+    const FileDescriptorProto* PROTOBUF_NONNULL file) {
   files_to_delete_.emplace_back(file);
   return index_.AddFile(*file, file);
 }
 
-bool SimpleDescriptorDatabase::AddUnowned(const FileDescriptorProto* file) {
+bool SimpleDescriptorDatabase::AddUnowned(
+    const FileDescriptorProto* PROTOBUF_NONNULL file) {
   return index_.AddFile(*file, file);
 }
 
-bool SimpleDescriptorDatabase::FindFileByName(const std::string& filename,
-                                              FileDescriptorProto* output) {
+bool SimpleDescriptorDatabase::FindFileByName(
+    StringViewArg filename, FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeCopy(index_.FindFile(filename), output);
 }
 
 bool SimpleDescriptorDatabase::FindFileContainingSymbol(
-    const std::string& symbol_name, FileDescriptorProto* output) {
+    StringViewArg symbol_name, FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeCopy(index_.FindSymbol(symbol_name), output);
 }
 
 bool SimpleDescriptorDatabase::FindFileContainingExtension(
-    const std::string& containing_type, int field_number,
-    FileDescriptorProto* output) {
+    StringViewArg containing_type, int field_number,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeCopy(index_.FindExtension(containing_type, field_number), output);
 }
 
 bool SimpleDescriptorDatabase::FindAllExtensionNumbers(
-    const std::string& extendee_type, std::vector<int>* output) {
+    StringViewArg extendee_type, std::vector<int>* output) {
   return index_.FindAllExtensionNumbers(extendee_type, output);
 }
 
 
 bool SimpleDescriptorDatabase::FindAllFileNames(
-    std::vector<std::string>* output) {
+    std::vector<std::string>* PROTOBUF_NONNULL output) {
   index_.FindAllFileNames(output);
   return true;
 }
 
-bool SimpleDescriptorDatabase::MaybeCopy(const FileDescriptorProto* file,
-                                         FileDescriptorProto* output) {
+bool SimpleDescriptorDatabase::MaybeCopy(
+    const FileDescriptorProto* PROTOBUF_NULLABLE file,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
   if (file == nullptr) return false;
   output->CopyFrom(*file);
   return true;
@@ -395,7 +414,8 @@ class EncodedDescriptorDatabase::DescriptorIndex {
   Value FindExtension(absl::string_view containing_type, int field_number);
   bool FindAllExtensionNumbers(absl::string_view containing_type,
                                std::vector<int>* output);
-  void FindAllFileNames(std::vector<std::string>* output) const;
+  void FindAllFileNames(
+      std::vector<std::string>* PROTOBUF_NONNULL output) const;
 
  private:
   friend class EncodedDescriptorDatabase;
@@ -473,6 +493,18 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       auto p = package(index);
       return absl::StrCat(p, p.empty() ? "" : ".", symbol(index));
     }
+
+    bool IsSubSymbolOf(const DescriptorIndex& index,
+                       absl::string_view super_symbol) const {
+      const auto consume_part = [&](absl::string_view part) {
+        if (!absl::ConsumePrefix(&super_symbol, part)) return false;
+        return super_symbol.empty() || absl::ConsumePrefix(&super_symbol, ".");
+      };
+      if (auto p = package(index); !p.empty()) {
+        if (!consume_part(p)) return false;
+      }
+      return consume_part(symbol(index));
+    }
   };
 
   struct SymbolCompare {
@@ -481,7 +513,6 @@ class EncodedDescriptorDatabase::DescriptorIndex {
     std::string AsString(const SymbolEntry& entry) const {
       return entry.AsString(index);
     }
-    static absl::string_view AsString(absl::string_view str) { return str; }
 
     std::pair<absl::string_view, absl::string_view> GetParts(
         const SymbolEntry& entry) const {
@@ -489,13 +520,8 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       if (package.empty()) return {entry.symbol(index), absl::string_view{}};
       return {package, entry.symbol(index)};
     }
-    std::pair<absl::string_view, absl::string_view> GetParts(
-        absl::string_view str) const {
-      return {str, {}};
-    }
 
-    template <typename T, typename U>
-    bool operator()(const T& lhs, const U& rhs) const {
+    bool operator()(const SymbolEntry& lhs, const SymbolEntry& rhs) const {
       auto lhs_parts = GetParts(lhs);
       auto rhs_parts = GetParts(rhs);
 
@@ -509,6 +535,23 @@ class EncodedDescriptorDatabase::DescriptorIndex {
         return lhs_parts.second < rhs_parts.second;
       }
       return AsString(lhs) < AsString(rhs);
+    }
+
+    bool operator()(absl::string_view lhs, const SymbolEntry& rhs) const {
+      auto p = rhs.package(index);
+      if (!p.empty()) {
+        absl::string_view lhs_part = lhs.substr(0, p.size());
+        lhs.remove_prefix(lhs_part.size());
+        if (int res = lhs_part.compare(p); res != 0) return res < 0;
+        // If compare returned 0 is because we consumed all of `p` and it
+        // matched.
+
+        // Compare the implicit `.`
+        if (lhs.empty() || lhs[0] < '.') return true;
+        if (lhs[0] > '.') return false;
+        lhs.remove_prefix(1);
+      }
+      return lhs < rhs.symbol(index);
     }
   };
   absl::btree_set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
@@ -543,8 +586,8 @@ class EncodedDescriptorDatabase::DescriptorIndex {
   std::vector<ExtensionEntry> by_extension_flat_;
 };
 
-bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
-                                    int size) {
+bool EncodedDescriptorDatabase::Add(
+    const void* PROTOBUF_NONNULL encoded_file_descriptor, int size) {
   FileDescriptorProto file;
   if (file.ParseFromArray(encoded_file_descriptor, size)) {
     return index_->AddFile(file, std::make_pair(encoded_file_descriptor, size));
@@ -555,26 +598,26 @@ bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
   }
 }
 
-bool EncodedDescriptorDatabase::AddCopy(const void* encoded_file_descriptor,
-                                        int size) {
+bool EncodedDescriptorDatabase::AddCopy(
+    const void* PROTOBUF_NONNULL encoded_file_descriptor, int size) {
   void* copy = operator new(size);
   memcpy(copy, encoded_file_descriptor, size);
   files_to_delete_.push_back(copy);
   return Add(copy, size);
 }
 
-bool EncodedDescriptorDatabase::FindFileByName(const std::string& filename,
-                                               FileDescriptorProto* output) {
+bool EncodedDescriptorDatabase::FindFileByName(
+    StringViewArg filename, FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeParse(index_->FindFile(filename), output);
 }
 
 bool EncodedDescriptorDatabase::FindFileContainingSymbol(
-    const std::string& symbol_name, FileDescriptorProto* output) {
+    StringViewArg symbol_name, FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeParse(index_->FindSymbol(symbol_name), output);
 }
 
 bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
-    const std::string& symbol_name, std::string* output) {
+    StringViewArg symbol_name, std::string* PROTOBUF_NONNULL output) {
   auto encoded_file = index_->FindSymbol(symbol_name);
   if (encoded_file.first == nullptr) return false;
 
@@ -602,14 +645,14 @@ bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
 }
 
 bool EncodedDescriptorDatabase::FindFileContainingExtension(
-    const std::string& containing_type, int field_number,
-    FileDescriptorProto* output) {
+    StringViewArg containing_type, int field_number,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeParse(index_->FindExtension(containing_type, field_number),
                     output);
 }
 
 bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
-    const std::string& extendee_type, std::vector<int>* output) {
+    StringViewArg extendee_type, std::vector<int>* output) {
   return index_->FindAllExtensionNumbers(extendee_type, output);
 }
 
@@ -774,8 +817,7 @@ EncodedDescriptorDatabase::DescriptorIndex::FindSymbolOnlyFlat(
   auto iter =
       FindLastLessOrEqual(&by_symbol_flat_, name, by_symbol_.key_comp());
 
-  return iter != by_symbol_flat_.end() &&
-                 IsSubSymbol(iter->AsString(*this), name)
+  return iter != by_symbol_flat_.end() && iter->IsSubSymbolOf(*this, name)
              ? all_values_[iter->data_offset].value()
              : Value();
 }
@@ -832,7 +874,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::FindAllExtensionNumbers(
 }
 
 void EncodedDescriptorDatabase::DescriptorIndex::FindAllFileNames(
-    std::vector<std::string>* output) const {
+    std::vector<std::string>* PROTOBUF_NONNULL output) const {
   output->resize(by_name_.size() + by_name_flat_.size());
   int i = 0;
   for (const auto& entry : by_name_) {
@@ -859,13 +901,14 @@ EncodedDescriptorDatabase::DescriptorIndex::FindFile(
 
 
 bool EncodedDescriptorDatabase::FindAllFileNames(
-    std::vector<std::string>* output) {
+    std::vector<std::string>* PROTOBUF_NONNULL output) {
   index_->FindAllFileNames(output);
   return true;
 }
 
 bool EncodedDescriptorDatabase::MaybeParse(
-    std::pair<const void*, int> encoded_file, FileDescriptorProto* output) {
+    std::pair<const void * PROTOBUF_NULLABLE, int> encoded_file,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
   if (encoded_file.first == nullptr) return false;
   absl::string_view source(static_cast<const char*>(encoded_file.first),
                            encoded_file.second);
@@ -888,8 +931,8 @@ DescriptorPoolDatabase::DescriptorPoolDatabase(
     : pool_(pool), options_(std::move(options)) {}
 DescriptorPoolDatabase::~DescriptorPoolDatabase() {}
 
-bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
-                                            FileDescriptorProto* output) {
+bool DescriptorPoolDatabase::FindFileByName(
+    StringViewArg filename, FileDescriptorProto* PROTOBUF_NONNULL output) {
   const FileDescriptor* file = pool_.FindFileByName(filename);
   if (file == nullptr) return false;
   output->Clear();
@@ -901,7 +944,7 @@ bool DescriptorPoolDatabase::FindFileByName(const std::string& filename,
 }
 
 bool DescriptorPoolDatabase::FindFileContainingSymbol(
-    const std::string& symbol_name, FileDescriptorProto* output) {
+    StringViewArg symbol_name, FileDescriptorProto* PROTOBUF_NONNULL output) {
   const FileDescriptor* file = pool_.FindFileContainingSymbol(symbol_name);
   if (file == nullptr) return false;
   output->Clear();
@@ -913,8 +956,8 @@ bool DescriptorPoolDatabase::FindFileContainingSymbol(
 }
 
 bool DescriptorPoolDatabase::FindFileContainingExtension(
-    const std::string& containing_type, int field_number,
-    FileDescriptorProto* output) {
+    StringViewArg containing_type, int field_number,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
   const Descriptor* extendee = pool_.FindMessageTypeByName(containing_type);
   if (extendee == nullptr) return false;
 
@@ -931,7 +974,7 @@ bool DescriptorPoolDatabase::FindFileContainingExtension(
 }
 
 bool DescriptorPoolDatabase::FindAllExtensionNumbers(
-    const std::string& extendee_type, std::vector<int>* output) {
+    StringViewArg extendee_type, std::vector<int>* output) {
   const Descriptor* extendee = pool_.FindMessageTypeByName(extendee_type);
   if (extendee == nullptr) return false;
 
@@ -948,7 +991,8 @@ bool DescriptorPoolDatabase::FindAllExtensionNumbers(
 // ===================================================================
 
 MergedDescriptorDatabase::MergedDescriptorDatabase(
-    DescriptorDatabase* source1, DescriptorDatabase* source2) {
+    DescriptorDatabase* PROTOBUF_NONNULL source1,
+    DescriptorDatabase* PROTOBUF_NONNULL source2) {
   sources_.push_back(source1);
   sources_.push_back(source2);
 }
@@ -957,8 +1001,8 @@ MergedDescriptorDatabase::MergedDescriptorDatabase(
     : sources_(sources) {}
 MergedDescriptorDatabase::~MergedDescriptorDatabase() {}
 
-bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
-                                              FileDescriptorProto* output) {
+bool MergedDescriptorDatabase::FindFileByName(
+    StringViewArg filename, FileDescriptorProto* PROTOBUF_NONNULL output) {
   for (DescriptorDatabase* source : sources_) {
     if (source->FindFileByName(filename, output)) {
       return true;
@@ -968,7 +1012,7 @@ bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
 }
 
 bool MergedDescriptorDatabase::FindFileContainingSymbol(
-    const std::string& symbol_name, FileDescriptorProto* output) {
+    StringViewArg symbol_name, FileDescriptorProto* PROTOBUF_NONNULL output) {
   for (size_t i = 0; i < sources_.size(); i++) {
     if (sources_[i]->FindFileContainingSymbol(symbol_name, output)) {
       // The symbol was found in source i.  However, if one of the previous
@@ -989,8 +1033,8 @@ bool MergedDescriptorDatabase::FindFileContainingSymbol(
 }
 
 bool MergedDescriptorDatabase::FindFileContainingExtension(
-    const std::string& containing_type, int field_number,
-    FileDescriptorProto* output) {
+    StringViewArg containing_type, int field_number,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
   for (size_t i = 0; i < sources_.size(); i++) {
     if (sources_[i]->FindFileContainingExtension(containing_type, field_number,
                                                  output)) {
@@ -1012,7 +1056,7 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
 }
 
 bool MergedDescriptorDatabase::FindAllExtensionNumbers(
-    const std::string& extendee_type, std::vector<int>* output) {
+    StringViewArg extendee_type, std::vector<int>* output) {
   // NOLINTNEXTLINE(google3-runtime-rename-unnecessary-ordering)
   absl::btree_set<int> merged_results;
   std::vector<int> results;
@@ -1030,7 +1074,7 @@ bool MergedDescriptorDatabase::FindAllExtensionNumbers(
 
 
 bool MergedDescriptorDatabase::FindAllFileNames(
-    std::vector<std::string>* output) {
+    std::vector<std::string>* PROTOBUF_NONNULL output) {
   bool implemented = false;
   for (DescriptorDatabase* source : sources_) {
     std::vector<std::string> source_output;
@@ -1047,3 +1091,5 @@ bool MergedDescriptorDatabase::FindAllFileNames(
 
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

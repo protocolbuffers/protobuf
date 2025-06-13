@@ -56,6 +56,22 @@ def GetMessageClassesForFiles(files, pool):
   This will find and resolve dependencies, failing if the descriptor
   pool cannot satisfy them.
 
+  This will not return the classes for nested types within those classes, for
+  those, use GetMessageClass() on the nested types within their containing
+  messages.
+
+  For example, for the message:
+
+  message NestedTypeMessage {
+    message NestedType {
+      string data = 1;
+    }
+    NestedType nested = 1;
+  }
+
+  NestedTypeMessage will be in the result, but not
+  NestedTypeMessage.NestedType.
+
   Args:
     files: The file names to extract messages from.
     pool: The descriptor pool to find the files including the dependent files.

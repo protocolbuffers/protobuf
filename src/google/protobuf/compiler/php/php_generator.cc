@@ -221,7 +221,7 @@ std::string DefaultForField(const FieldDescriptor* field) {
 
 std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
   if (field->is_repeated()) {
-    return absl::StrCat("$this->", field->name(), "->count() !== 0");
+    return absl::StrCat("count($this->", field->name(), ") !== 0");
   }
   if (field->real_containing_oneof() != nullptr) {
     return absl::StrCat("$this->hasOneof(", field->number(), ")");
@@ -319,16 +319,12 @@ std::string IntToString(int32_t value) {
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
-  switch (field->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      return "optional";
-    case FieldDescriptor::LABEL_REQUIRED:
-      return "required";
-    case FieldDescriptor::LABEL_REPEATED:
-      return "repeated";
-    default:
-      assert(false);
-      return "";
+  if (field->is_required()) {
+    return "required";
+  } else if (field->is_repeated()) {
+    return "repeated";
+  } else {
+    return "optional";
   }
 }
 
@@ -380,7 +376,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     if (start_pos != std::string::npos) {
       type.replace(start_pos, 1, "[]|");
     }
-    type = absl::StrCat(type, "[]");
+    absl::StrAppend(&type, "[]");
   }
   return type;
 }
@@ -753,7 +749,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
 
   if (field->options().deprecated() &&
       (field->is_map() || field->is_repeated())) {
-    printer->Print("if ($arr->count() !== 0) {\n    ^deprecation_trigger^}\n",
+    printer->Print("if (count($arr) !== 0) {\n    ^deprecation_trigger^}\n",
                    "deprecation_trigger", deprecation_trigger);
   }
 
@@ -1771,6 +1767,8 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
 
   for (int i = 0; i < message->field_count(); i++) {
     auto field = message->field(i);
+    auto camel_name = UnderscoresToCamelCase(field->name(), true);
+
     printer->Print(
         "static PHP_METHOD($c_name$, get$camel_name$) {\n"
         "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
@@ -1794,8 +1792,19 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
         "  RETURN_COPY(getThis());\n"
         "}\n"
         "\n",
-        "c_name", c_name, "name", field->name(), "camel_name",
-        UnderscoresToCamelCase(field->name(), true));
+        "c_name", c_name, "name", field->name(), "camel_name", camel_name);
+
+    if (field->has_presence()) {
+      printer->Print(
+          "static PHP_METHOD($c_name$, has$camel_name$) {\n"
+          "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+          "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+          "      intern->desc->msgdef, \"$name$\");\n"
+          "  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));\n"
+          "}\n"
+          "\n",
+          "c_name", c_name, "name", field->name(), "camel_name", camel_name);
+    }
   }
 
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
@@ -1839,12 +1848,20 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
 
   for (int i = 0; i < message->field_count(); i++) {
     auto field = message->field(i);
+    auto camel_name = UnderscoresToCamelCase(field->name(), true);
+
     printer->Print(
         "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n"
         "  PHP_ME($c_name$, set$camel_name$, arginfo_setter, "
         "ZEND_ACC_PUBLIC)\n",
-        "c_name", c_name, "camel_name",
-        UnderscoresToCamelCase(field->name(), true));
+        "c_name", c_name, "camel_name", camel_name);
+
+    if (field->has_presence()) {
+      printer->Print(
+          "  PHP_ME($c_name$, has$camel_name$, arginfo_void, "
+          "ZEND_ACC_PUBLIC)\n",
+          "c_name", c_name, "camel_name", camel_name);
+    }
   }
 
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
@@ -2063,13 +2080,13 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             std::string* error) const {
   Options options;
 
-  for (const auto& option : absl::StrSplit(parameter, ",", absl::SkipEmpty())) {
+  for (const auto& option : absl::StrSplit(parameter, ',', absl::SkipEmpty())) {
     const std::vector<std::string> option_pair =
-        absl::StrSplit(option, "=", absl::SkipEmpty());
+        absl::StrSplit(option, '=', absl::SkipEmpty());
     if (absl::StartsWith(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
       for (const auto& prefix :
-           absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
+           absl::StrSplit(option_pair[1], '#', absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
         ABSL_LOG(INFO) << prefix;
       }

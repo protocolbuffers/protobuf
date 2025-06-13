@@ -90,7 +90,8 @@ PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
   return &map->ob_base;
 }
 
-void PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map) {
+upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
+                                  PyUpb_WeakMap* subobj_map, intptr_t iter) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   if (!map) {
     const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
@@ -101,11 +102,19 @@ void PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map) {
     map = upb_Map_New(arena, upb_FieldDef_CType(key_f),
                       upb_FieldDef_CType(val_f));
   }
+  if (subobj_map) {
+    PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
+  } else {
+    const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
+    upb_MessageValue msgval = {.map_val = map};
+    PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval);
+  }
   PyUpb_ObjCache_Add(map, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.map = map;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
   assert(!PyUpb_MapContainer_IsStub(self));
+  return map;
 }
 
 void PyUpb_MapContainer_Invalidate(PyObject* obj) {
@@ -119,17 +128,7 @@ upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* _self) {
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   if (map) return map;  // Already writable.
 
-  const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
-  upb_Arena* arena = PyUpb_Arena_Get(self->arena);
-  const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
-  const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
-  const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
-  map =
-      upb_Map_New(arena, upb_FieldDef_CType(key_f), upb_FieldDef_CType(val_f));
-  upb_MessageValue msgval = {.map_val = map};
-  PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval);
-  PyUpb_MapContainer_Reify((PyObject*)self, map);
-  return map;
+  return PyUpb_MapContainer_Reify((PyObject*)self, NULL, NULL, 0);
 }
 
 static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,

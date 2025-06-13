@@ -30,7 +30,7 @@ namespace ProtobufTestMessages.Editions.Proto3 {
             "dWYvZHVyYXRpb24ucHJvdG8aIGdvb2dsZS9wcm90b2J1Zi9maWVsZF9tYXNr",
             "LnByb3RvGhxnb29nbGUvcHJvdG9idWYvc3RydWN0LnByb3RvGh9nb29nbGUv",
             "cHJvdG9idWYvdGltZXN0YW1wLnByb3RvGh5nb29nbGUvcHJvdG9idWYvd3Jh",
-            "cHBlcnMucHJvdG8i+0cKElRlc3RBbGxUeXBlc1Byb3RvMxIWCg5vcHRpb25h",
+            "cHBlcnMucHJvdG8ilUgKElRlc3RBbGxUeXBlc1Byb3RvMxIWCg5vcHRpb25h",
             "bF9pbnQzMhgBIAEoBRIWCg5vcHRpb25hbF9pbnQ2NBgCIAEoAxIXCg9vcHRp",
             "b25hbF91aW50MzIYAyABKA0SFwoPb3B0aW9uYWxfdWludDY0GAQgASgEEhcK",
             "D29wdGlvbmFsX3NpbnQzMhgFIAEoERIXCg9vcHRpb25hbF9zaW50NjQYBiAB",
@@ -235,12 +235,13 @@ namespace ProtobufTestMessages.Editions.Proto3 {
             "WhACEhAKA05FRxD///////////8BIlkKC0FsaWFzZWRFbnVtEg0KCUFMSUFT",
             "X0ZPTxAAEg0KCUFMSUFTX0JBUhABEg0KCUFMSUFTX0JBWhACEgcKA01PTxAC",
             "EgcKA21vbxACEgcKA2JBehACGgIQAUINCgtvbmVvZl9maWVsZEoGCPUDEP8D",
-            "IhsKDkZvcmVpZ25NZXNzYWdlEgkKAWMYASABKAUiFgoUTnVsbEh5cG90aGVz",
-            "aXNQcm90bzMiLwoORW51bU9ubHlQcm90bzMiHQoEQm9vbBIKCgZrRmFsc2UQ",
-            "ABIJCgVrVHJ1ZRABKkAKC0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05fRk9PEAAS",
-            "DwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACQk4KMWNvbS5nb29n",
-            "bGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5wcm90bzNIAfgB",
-            "AaICDkVkaXRpb25zUHJvdG8zkgMCCAJiCGVkaXRpb25zcOgH"));
+            "SggIv4Q9EMCEPVIOcmVzZXJ2ZWRfZmllbGQiGwoORm9yZWlnbk1lc3NhZ2US",
+            "CQoBYxgBIAEoBSIWChROdWxsSHlwb3RoZXNpc1Byb3RvMyIvCg5FbnVtT25s",
+            "eVByb3RvMyIdCgRCb29sEgoKBmtGYWxzZRAAEgkKBWtUcnVlEAEqQAoLRm9y",
+            "ZWlnbkVudW0SDwoLRk9SRUlHTl9GT08QABIPCgtGT1JFSUdOX0JBUhABEg8K",
+            "C0ZPUkVJR05fQkFaEAJCTgoxY29tLmdvb2dsZS5wcm90b2J1Zl90ZXN0X21l",
+            "c3NhZ2VzLmVkaXRpb25zLnByb3RvM0gB+AEBogIORWRpdGlvbnNQcm90bzOS",
+            "AwIIAmIIZWRpdGlvbnNw6Ac="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.Proto3.ForeignEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -496,6 +497,7 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     private int optionalInt32_;
     /// <summary>
     /// Singular
+    /// test [kotlin] comment
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

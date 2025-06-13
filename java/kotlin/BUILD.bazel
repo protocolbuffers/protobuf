@@ -26,7 +26,7 @@ kt_jvm_library(
     visibility = ["//visibility:public"],
     deps = [
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
-        "//java/lite",
+        "//java/core:lite_runtime_only",
     ],
 )
 
@@ -40,7 +40,7 @@ kt_jvm_library(
     name = "bytestring_lib",
     srcs = ["src/main/kotlin/com/google/protobuf/ByteStrings.kt"],
     visibility = ["//java:__subpackages__"],
-    deps = ["//java/lite"],
+    deps = ["//java/core:lite_runtime_only"],
 )
 
 kt_jvm_library(
@@ -73,7 +73,6 @@ protobuf_versioned_kt_jvm_library(
 kt_jvm_export(
     name = "kotlin_mvn",
     deploy_env = [
-        "@rules_kotlin//kotlin/compiler:kotlin-stdlib",
         "//java/core",
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin:%s" % PROTOBUF_JAVA_VERSION,
@@ -116,9 +115,9 @@ kt_jvm_library(
     srcs = ["src/test/kotlin/com/google/protobuf/ByteStringsTest.kt"],
     deps = [
         ":bytestring_lib",
-        "//java/lite",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "//java/core:lite_runtime_only",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-test",
     ],
 )
@@ -152,9 +151,9 @@ kt_jvm_library(
         ":example_extensible_message_java_proto",
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
-        "@protobuf_maven//:com_google_guava_guava_testlib",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_guava_guava_testlib",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-test",
     ],
 )
@@ -178,8 +177,8 @@ kt_jvm_library(
         ":only_for_use_in_proto_generated_code_its_generator_and_tests",
         ":shared_runtime",
         "//java/core",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-test",
     ],
 )
@@ -290,8 +289,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_unittest",
         "//java/core:test_util",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
         "@rules_kotlin//kotlin/compiler:kotlin-reflect",
     ],
 )
@@ -308,8 +307,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_proto3_unittest",
         "//java/core:test_util",
-        "@protobuf_maven//:com_google_truth_truth",
-        "@protobuf_maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 
