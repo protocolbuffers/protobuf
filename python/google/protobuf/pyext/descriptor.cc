@@ -824,7 +824,19 @@ static PyObject* GetCppType(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->cpp_type());
 }
 
+static void WarnDeprecatedLabel() {
+  static int deprecated_label_count = 100;
+  if (deprecated_label_count > 0) {
+    --deprecated_label_count;
+    PyErr_WarnEx(
+        PyExc_DeprecationWarning,
+        "label() is deprecated. Use is_required() or is_repeated() instead.",
+        3);
+  }
+}
+
 static PyObject* GetLabel(PyBaseDescriptor* self, void* closure) {
+  WarnDeprecatedLabel();
   return PyLong_FromLong(_GetDescriptor(self)->label());
 }
 
