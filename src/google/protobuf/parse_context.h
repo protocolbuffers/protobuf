@@ -133,9 +133,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     LimitToken(const LimitToken&) = delete;
     LimitToken& operator=(const LimitToken&) = delete;
 
-    LimitToken(LimitToken&& other) { *this = std::move(other); }
+    LimitToken(LimitToken&& other) noexcept { *this = std::move(other); }
 
-    LimitToken& operator=(LimitToken&& other) {
+    LimitToken& operator=(LimitToken&& other) noexcept {
       internal::UnpoisonMemoryRegion(&token_, sizeof(token_));
       token_ = other.token_;
       internal::PoisonMemoryRegion(&other.token_, sizeof(token_));
