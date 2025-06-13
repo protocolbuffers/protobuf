@@ -1260,15 +1260,15 @@ TEST_F(DescriptorTest, FieldLabel) {
   EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, moo_->label());
 
   EXPECT_TRUE(foo_->is_required());
-  EXPECT_FALSE(foo_->is_optional());
+  EXPECT_FALSE((!foo_->is_repeated() && !foo_->is_required()));
   EXPECT_FALSE(foo_->is_repeated());
 
   EXPECT_FALSE(bar_->is_required());
-  EXPECT_TRUE(bar_->is_optional());
+  EXPECT_TRUE(!bar_->is_repeated() && !bar_->is_required());
   EXPECT_FALSE(bar_->is_repeated());
 
   EXPECT_FALSE(baz_->is_required());
-  EXPECT_FALSE(baz_->is_optional());
+  EXPECT_FALSE((!baz_->is_repeated() && !baz_->is_required()));
   EXPECT_TRUE(baz_->is_repeated());
 }
 
