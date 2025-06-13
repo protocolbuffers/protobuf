@@ -43,7 +43,7 @@ class SingleArena : public testing::TestWithParam<bool> {
  public:
   std::unique_ptr<Arena> GetArena() {
     if (this->GetParam()) return nullptr;
-    return std::unique_ptr<Arena>(new Arena());
+    return std::make_unique<Arena>();
   }
 };
 

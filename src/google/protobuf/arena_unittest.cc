@@ -201,7 +201,7 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
     TraitsProber(Arena* arena, int) : Message(nullptr, nullptr) {
       actions.push_back("(Arena, int)");
     }
-    ~TraitsProber() { actions.push_back("~()"); }
+    ~TraitsProber() override { actions.push_back("~()"); }
 
     TraitsProber* New(Arena*) const {
       ABSL_LOG(FATAL);
