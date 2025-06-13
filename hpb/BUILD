@@ -178,7 +178,6 @@ cc_library(
         "//upb/wire",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings:str_format",
-        "@abseil-cpp//absl/types:source_location",
     ],
 )
 
