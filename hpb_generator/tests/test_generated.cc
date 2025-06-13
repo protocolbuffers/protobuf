@@ -18,11 +18,11 @@
 #include "google/protobuf/compiler/hpb/tests/test_enum.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/backend/upb/interop.h"
-#include "google/protobuf/hpb/hpb.h"
-#include "google/protobuf/hpb/ptr.h"
-#include "google/protobuf/hpb/requires.h"
+#include "hpb/arena.h"
+#include "hpb/backend/upb/interop.h"
+#include "hpb/hpb.h"
+#include "hpb/ptr.h"
+#include "hpb/requires.h"
 
 namespace {
 

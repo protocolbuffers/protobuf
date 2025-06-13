@@ -13,8 +13,8 @@
 #include <cstring>
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/internal/internal.h"
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/internal/internal.h"
+#include "hpb/ptr.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"

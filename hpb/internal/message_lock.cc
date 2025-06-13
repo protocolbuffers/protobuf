@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/internal/message_lock.h"
+#include "hpb/internal/message_lock.h"
 
 #include <atomic>
 #include <cstddef>
@@ -13,7 +13,7 @@
 
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/status.h"
+#include "hpb/status.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"

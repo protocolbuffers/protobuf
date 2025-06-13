@@ -10,7 +10,7 @@
 #include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
-#include "google/protobuf/hpb/requires.h"
+#include "hpb/requires.h"
 
 namespace {
 

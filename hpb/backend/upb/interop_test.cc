@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/backend/upb/interop.h"
+#include "hpb/backend/upb/interop.h"
 
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"

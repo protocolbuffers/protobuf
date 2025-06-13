@@ -5,12 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/extension.h"
+#include "hpb/extension.h"
 
 #include "absl/log/absl_check.h"
 #include "absl/status/status.h"
-#include "google/protobuf/hpb/internal/message_lock.h"
-#include "google/protobuf/hpb/status.h"
+#include "hpb/internal/message_lock.h"
+#include "hpb/status.h"
 #include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/message.h"

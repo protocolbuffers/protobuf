@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/extension.h"
+#include "hpb/extension.h"
 
 #include <cstdint>
 #include <type_traits>
@@ -16,9 +16,9 @@
 #include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/hpb.h"
-#include "google/protobuf/hpb/requires.h"
+#include "hpb/arena.h"
+#include "hpb/hpb.h"
+#include "hpb/requires.h"
 
 namespace {
 using ::hpb::internal::Requires;
