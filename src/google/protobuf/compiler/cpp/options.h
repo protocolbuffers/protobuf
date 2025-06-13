@@ -64,11 +64,10 @@ struct Options {
   bool force_split = false;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
-  bool force_inline_string = true;
 #else   // PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = false;
-  bool force_inline_string = false;
 #endif  // !PROTOBUF_STABLE_EXPERIMENTS
+  bool force_inline_string = google::protobuf::internal::ForceInlineStringInProtoc();
   bool strip_nonfunctional_codegen = false;
   bool experimental_use_micro_string =
       google::protobuf::internal::EnableExperimentalMicroString();
