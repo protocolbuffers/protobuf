@@ -2395,7 +2395,7 @@ class MyMapEntry
   constexpr MyMapEntry()
       : MyMapEntry::MapEntry(static_cast<ClassData*>(nullptr)) {}
   MyMapEntry(Arena* arena) : MyMapEntry::MapEntry(arena, nullptr) {}
-  const ClassData* GetClassData() const {
+  const ClassData* GetClassData() const override {
     ABSL_CHECK(false);
     return nullptr;
   }
