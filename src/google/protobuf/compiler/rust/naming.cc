@@ -397,7 +397,7 @@ std::string CrubitCcSymbolName(const Descriptor& msg) {
   // literal is spelled identical to the one used in the generated bindings.
   // This requires some string mangling here to make them match.
   std::string cpp_name = cpp::QualifiedClassName(&msg);
-  if (cpp_name.starts_with("::")) {
+  if (absl::StartsWith(cpp_name, "::")) {
     cpp_name = cpp_name.substr(2);
   }
   cpp_name = absl::StrReplaceAll(cpp_name,
