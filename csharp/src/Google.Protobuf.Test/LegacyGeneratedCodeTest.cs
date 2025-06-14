@@ -129,6 +129,15 @@ namespace Google.Protobuf
 
           pbr::MessageDescriptor pb::IMessage.Descriptor => throw new System.NotImplementedException();
 
+          public void Clear() {
+            if (bb_ != null) {
+              bb_.Clear();
+            }
+            if (_unknownFields != null) {
+               _unknownFields.Clear();
+            }
+          }
+
           /// <summary>Field number for the "bb" field.</summary>
           public const int BbFieldNumber = 1;
           private ParseContextEnabledMessageB bb_;
@@ -185,6 +194,13 @@ namespace Google.Protobuf
           private pb::UnknownFieldSet _unknownFields;
 
           pbr::MessageDescriptor pb::IMessage.Descriptor => throw new System.NotImplementedException();
+
+          public void Clear() {
+            if (a_ != null) {
+              a_.Clear();
+            }
+            optionalInt32_ = 0;
+          }
 
           /// <summary>Field number for the "a" field.</summary>
           public const int AFieldNumber = 1;

@@ -188,6 +188,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
                  "partial void OnConstruction();\n\n");
 
   GenerateCloningCode(printer);
+  GenerateClearCode(printer);
   GenerateFreezingCode(printer);
 
   // Fields/properties
@@ -412,6 +413,46 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
                  "public $class_name$ Clone() {\n"
                  "  return new $class_name$(this);\n"
                  "}\n\n");
+}
+
+void MessageGenerator::GenerateClearCode(io::Printer* printer) {
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print("public void Clear() {\n");
+  printer->Indent();
+  for (int i = 0; i < has_bit_field_count_; i++) {
+    printer->Print("_hasBits$i$ = 0;\n", "i", absl::StrCat(i));
+  }
+  // Clear non-oneof fields first (treating optional proto3 fields as non-oneof)
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    if (field->real_containing_oneof()) {
+      continue;
+    }
+    std::unique_ptr<FieldGeneratorBase> generator(
+        CreateFieldGeneratorInternal(descriptor_->field(i)));
+    generator->GenerateClearCode(printer);
+  }
+  // Clear just the right field for each real oneof
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
+    printer->Print(
+        "$name$Case_ = $property_name$OneofCase.None;\n"
+        "$name$_ = null;\n",
+        "name", UnderscoresToCamelCase(oneof->name(), false),
+        "property_name", UnderscoresToCamelCase(oneof->name(), true));
+  }
+  // Clear extensions fields
+  if (has_extension_ranges_) {
+    printer->Print("if (_extensions != null) {\n");
+    printer->Print("  _extensions.Clear();\n");
+    printer->Print("}\n");
+  }
+  // Clear unknown fields
+  printer->Print("if (_unknownFields != null) {\n");
+  printer->Print("  _unknownFields.Clear();\n");
+  printer->Print("}\n");
+  printer->Outdent();
+  printer->Print("}\n\n");
 }
 
 void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {}

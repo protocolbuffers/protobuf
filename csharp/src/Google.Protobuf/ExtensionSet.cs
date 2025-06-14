@@ -399,5 +399,13 @@ namespace Google.Protobuf
         {
             return ValuesByNumber.Values.All(v => v.IsInitialized());
         }
+
+        /// <summary>
+        /// Clear this extension set
+        /// </summary>
+        public void Clear()
+        {
+            ValuesByNumber.Clear();
+        }
     }
 }
