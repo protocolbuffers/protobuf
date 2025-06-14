@@ -42,7 +42,7 @@ public final class TextFormat {
   private static final String ENABLE_INSERT_SILENT_MARKER_ENV_NAME =
       "SILENT_MARKER_INSERTION_ENABLED";
   private static final boolean ENABLE_INSERT_SILENT_MARKER =
-      "true".equals(System.getenv(ENABLE_INSERT_SILENT_MARKER_ENV_NAME));
+      System.getenv().getOrDefault(ENABLE_INSERT_SILENT_MARKER_ENV_NAME, "true").equals("true");
 
   private static final String REDACTED_MARKER = "[REDACTED]";
 
