@@ -916,7 +916,6 @@ static PyObject* GetDefaultValue(PyBaseDescriptor* self, void* closure) {
     }
     case FieldDescriptor::CPPTYPE_MESSAGE: {
       Py_RETURN_NONE;
-      break;
     }
     default:
       PyErr_Format(PyExc_NotImplementedError, "default value for %s",
