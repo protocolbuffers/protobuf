@@ -27,6 +27,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/internal_feature_helper.h"
 
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -40,7 +41,6 @@ class FileDescriptor;
 class GeneratedCodeInfo;
 
 namespace compiler {
-class AccessInfoMap;
 
 class Version;
 
@@ -193,8 +193,7 @@ constexpr auto MaximumKnownEdition() { return Edition::EDITION_2024; }
 // runs.
 class PROTOC_EXPORT GeneratorContext {
  public:
-  GeneratorContext() {
-  }
+  GeneratorContext() = default;
   GeneratorContext(const GeneratorContext&) = delete;
   GeneratorContext& operator=(const GeneratorContext&) = delete;
   virtual ~GeneratorContext();
