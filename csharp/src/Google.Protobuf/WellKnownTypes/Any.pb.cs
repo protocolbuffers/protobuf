@@ -172,6 +172,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Any(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      typeUrl_ = "";
+      value_ = pb::ByteString.Empty;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "type_url" field.</summary>
     public const int TypeUrlFieldNumber = 1;
     private string typeUrl_ = "";
