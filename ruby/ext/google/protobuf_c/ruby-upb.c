@@ -17023,6 +17023,7 @@ const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
 #undef UPB_LONGJMP
 #undef UPB_PTRADD
 #undef UPB_MUSTTAIL
+#undef UPB_PRESERVE_NONE
 #undef UPB_FASTTABLE_SUPPORTED
 #undef UPB_FASTTABLE_MASK
 #undef UPB_FASTTABLE
