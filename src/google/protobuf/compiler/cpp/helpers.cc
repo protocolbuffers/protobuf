@@ -1343,9 +1343,13 @@ bool IsV2CodegenEnabled(const Options& options) {
   return !options.opensource_runtime && !options.bootstrap;
 }
 
+bool IsEditionsGoldenProto(const Descriptor* descriptor) {
+  return descriptor->file()->package() == "protobuf_editions_test.golden";
+}
+
 bool ShouldGenerateV2Code(const Descriptor* descriptor,
                           const Options& options) {
-  return IsV2CodegenEnabled(options) &&
+  return IsV2CodegenEnabled(options) && !IsEditionsGoldenProto(descriptor) &&
          !HasSimpleBaseClass(descriptor, options);
 }
 
