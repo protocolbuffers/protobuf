@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/repeated_field_iterator.h"
+#include "hpb/repeated_field_iterator.h"
 
 #include <algorithm>
 #include <array>
@@ -18,8 +18,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/backend/upb/interop.h"
+#include "hpb/arena.h"
+#include "hpb/backend/upb/interop.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"

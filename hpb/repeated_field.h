@@ -15,10 +15,10 @@
 #include <type_traits>
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/backend/upb/interop.h"
-#include "google/protobuf/hpb/internal/template_help.h"
-#include "google/protobuf/hpb/ptr.h"
-#include "google/protobuf/hpb/repeated_field_iterator.h"
+#include "hpb/backend/upb/interop.h"
+#include "hpb/internal/template_help.h"
+#include "hpb/ptr.h"
+#include "hpb/repeated_field_iterator.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"

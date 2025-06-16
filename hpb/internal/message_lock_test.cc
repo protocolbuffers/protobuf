@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/internal/message_lock.h"
+#include "hpb/internal/message_lock.h"
 
 #include <atomic>
 #include <mutex>
@@ -16,9 +16,9 @@
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/extension.h"
-#include "google/protobuf/hpb/hpb.h"
+#include "hpb/arena.h"
+#include "hpb/extension.h"
+#include "hpb/hpb.h"
 #include "upb/mem/arena.hpp"
 
 #ifndef ASSERT_OK

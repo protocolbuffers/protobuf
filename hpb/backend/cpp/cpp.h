@@ -9,9 +9,9 @@
 #define GOOGLE_PROTOBUF_HPB_BACKEND_CPP_CPP_H__
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/internal/template_help.h"
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/arena.h"
+#include "hpb/internal/template_help.h"
+#include "hpb/ptr.h"
 
 namespace hpb::internal::backend::cpp {
 
