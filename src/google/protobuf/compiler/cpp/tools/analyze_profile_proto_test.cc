@@ -12,6 +12,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/cpp/tools/analyze_profile_proto_test.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_textproto.h"
 
 namespace google {
@@ -40,6 +41,9 @@ TEST(AnalyzeProfileProtoTest, EmptyProfileToText) {
 }
 
 TEST(AnalyzeProfileProtoTest, UnlikelyStringPresence) {
+  if (google::protobuf::internal::ForceInlineStringInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
   AccessInfo info = ParseTextOrDie(R"pb(
     language: "cpp"
     message {
@@ -96,6 +100,9 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndUsed) {
 }
 
 TEST(AnalyzeProfileProtoTest, UnlikelyPresent) {
+  if (google::protobuf::internal::ForceInlineStringInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
   AccessInfo info = ParseTextOrDie(R"pb(
     language: "cpp"
     message {
@@ -122,6 +129,9 @@ TEST(AnalyzeProfileProtoTest, UnlikelyPresent) {
 }
 
 TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndRarelyUsed) {
+  if (google::protobuf::internal::ForceInlineStringInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
   // Note that the logic pics a 50th percentile threshold which we need to
   // exceed, making testing slightly awkward
   AccessInfo info = ParseTextOrDie(R"pb(
@@ -164,6 +174,9 @@ TEST(AnalyzeProfileProtoTest, NestedCppNameMatchedToPoolName) {
 }
 
 TEST(AnalyzeProfileProtoTest, PrintStatistics) {
+  if (google::protobuf::internal::ForceInlineStringInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
   AccessInfo info = ParseTextOrDie(R"pb(
     language: "cpp"
     message {
@@ -220,6 +233,9 @@ repeated_num_elements_stdev=1.5
 }
 
 TEST(AnalyzeProfileProtoTest, PrintStatisticsAll) {
+  if (google::protobuf::internal::ForceInlineStringInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
   AccessInfo info = ParseTextOrDie(R"pb(
     language: "cpp"
     message {

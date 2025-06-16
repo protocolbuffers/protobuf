@@ -1558,7 +1558,15 @@ TEST(ArenaTest, CopyValuesWithinOneof) {
   auto* foo = message->mutable_foogroup();
   foo->set_a(100);
   foo->set_b("hello world");
-  message->set_foo_string(message->foogroup().b());
+  if (internal::ForceInlineStringInProtoc() && internal::HasMemoryPoisoning()) {
+#if GTEST_HAS_DEATH_TEST
+    EXPECT_DEATH(message->set_foo_string(message->foogroup().b()),
+                 "use-after-poison");
+#endif  // !GTEST_HAS_DEATH_TEST
+    return;
+  } else {
+    message->set_foo_string(message->foogroup().b());
+  }
 
   // As a debug hardening measure, `set_foo_string` would clear `foo` in
   // (!NDEBUG && !ASAN) and the copy wouldn't work.
