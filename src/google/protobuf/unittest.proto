@@ -1805,6 +1805,20 @@ message TestHugeFieldNumbers {
     bytes oneof_bytes = 536870014;
   }
 
+  bool optional_bool = 536870015;
+  int64 optional_int64 = 536870016;
+  float optional_float = 536870017;
+  double optional_double = 536870018;
+  string optional_utf8_string = 536870019 [
+    features.utf8_validation = VERIFY
+  ];
+  string optional_cord = 536870020 [
+    ctype=CORD, features.utf8_validation = VERIFY
+  ];
+  string optional_string_piece = 536870021 [
+    ctype=STRING_PIECE, features.utf8_validation = VERIFY
+  ];
+
   extensions 536860000 to 536869999 [
     declaration = {
       number: 536860000
