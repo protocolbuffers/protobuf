@@ -21,6 +21,9 @@ rust_library(
         "text.rs",
         "wire.rs",
     ],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
