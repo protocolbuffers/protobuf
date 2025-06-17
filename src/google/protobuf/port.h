@@ -270,6 +270,10 @@ inline constexpr bool ForceInlineStringInProtoc() {
   return EnableStableExperiments();
 }
 
+inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
+  return EnableStableExperiments();
+}
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {

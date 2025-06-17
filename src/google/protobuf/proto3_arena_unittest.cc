@@ -276,6 +276,9 @@ TEST(Proto3ArenaTest, CheckOneofMessageFieldIsCleared) {
   if (!internal::DebugHardenClearOneofMessageOnArena()) {
     GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
   }
+  if (google::protobuf::internal::ForceEagerlyVerifiedLazyInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
 
   Arena arena;
   auto msg = Arena::Create<TestAllTypes>(&arena);

@@ -60,7 +60,9 @@ using proto2_unittest::TestAllTypes;
 using proto2_unittest::TestEmptyMessage;
 using proto2_unittest::TestOneof2;
 using proto2_unittest::TestRepeatedString;
+using ::testing::AnyOf;
 using ::testing::ElementsAreArray;
+using ::testing::HasSubstr;
 
 namespace google {
 namespace protobuf {
@@ -917,9 +919,12 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
         Arena::Create<TestAllTypes::NestedMessage>(&arena2);
     arena2_submessage->set_bb(42);
 #if GTEST_HAS_DEATH_TEST
-    EXPECT_DEBUG_DEATH(arena1_message->set_allocated_optional_nested_message(
-                           arena2_submessage),
-                       "submessage_arena");
+    EXPECT_DEBUG_DEATH(
+        arena1_message->set_allocated_optional_nested_message(
+            arena2_submessage),
+        AnyOf(
+            HasSubstr("submessage_arena"),
+            HasSubstr("instance_arena == nullptr || instance_arena == arena")));
 #endif
     EXPECT_NE(arena2_submessage,
               arena1_message->mutable_optional_nested_message());
@@ -932,7 +937,8 @@ TEST(ArenaTest, SetAllocatedAcrossArenas) {
 #if GTEST_HAS_DEATH_TEST
   EXPECT_DEBUG_DEATH(
       heap_message->set_allocated_optional_nested_message(arena1_submessage),
-      "submessage_arena");
+      AnyOf(HasSubstr("submessage_arena"),
+            HasSubstr("instance_arena == nullptr || instance_arena == arena")));
 #endif
   EXPECT_NE(arena1_submessage, heap_message->mutable_optional_nested_message());
   delete heap_message;
@@ -1529,6 +1535,9 @@ TEST(ArenaTest, MutableMessageReflection) {
 TEST(ArenaTest, ClearOneofMessageOnArena) {
   if (!internal::DebugHardenClearOneofMessageOnArena()) {
     GTEST_SKIP() << "arena allocated oneof message fields are not hardened.";
+  }
+  if (google::protobuf::internal::ForceEagerlyVerifiedLazyInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
   }
 
   Arena arena;

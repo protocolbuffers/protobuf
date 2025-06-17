@@ -105,7 +105,6 @@ TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
 
 TEST(GeneratedMessageTest, RecursiveMessageSize) {
   // TODO: remove once synthetic_pdproto lands.
-#ifndef PROTOBUF_FORCE_SPLIT
   struct MockGenerated : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
@@ -115,19 +114,34 @@ TEST(GeneratedMessageTest, RecursiveMessageSize) {
     // + 0-4 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
-#else   // !PROTOBUF_FORCE_SPLIT
-  struct MockGenerated : public MockMessageBase {  // 16 bytes
+
+  struct MockGeneratedLazy : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
+    void* a[2];                                    // 16 bytes (lazy)
+    int32_t i;                                     // 4 bytes
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
+    // + 0-4 bytes padding
+  };
+  ABSL_CHECK_MESSAGE_SIZE(MockGeneratedLazy, 48);
+
+  struct MockGeneratedSplit : public MockMessageBase {  // 16 bytes
+    int has_bits[1];                                    // 4 bytes
+    int cached_size;                                    // 4 bytes
     void* split;                                   // 8 bytes
     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes padding
   };
-  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+  ABSL_CHECK_MESSAGE_SIZE(MockGeneratedSplit, 32);
+
+#ifndef PROTOBUF_FORCE_SPLIT
+  using Type = std::conditional_t<internal::ForceEagerlyVerifiedLazyInProtoc(),
+                                  MockGeneratedLazy, MockGenerated>;
+#else   // !PROTOBUF_FORCE_SPLIT
+  using Type = MockGeneratedSplit;
 #endif  // PROTOBUF_FORCE_SPLIT
 
-  EXPECT_EQ(sizeof(proto2_unittest::TestRecursiveMessage),
-            sizeof(MockGenerated));
+  EXPECT_EQ(sizeof(proto2_unittest::TestRecursiveMessage), sizeof(Type));
 }
 
 TEST(GeneratedMessageTest, OneStringSize) {
@@ -273,20 +287,20 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 80);
 
-  struct MockGeneratedInlinedString : public MockMessageBase {  // 16 bytes
+  struct MockGeneratedExperiments : public MockMessageBase {  // 16 bytes
     int has_bits[1];                               // 4 bytes
     int donated[1];                                // 4 bytes
     int cached_size;                               // 4 bytes
     // + 0-4 bytes padding
     MockExtensionSet extensions;    // 24 bytes
     std::string my_string;          // sizeof(std::string)
-    void* optional_nested_message;  // 8 bytes
-    int64_t my_int;                 // 8 bytes
-    float my_float;                 // 4 bytes
+    void* optional_nested_message[2];  // 16 bytes (lazy)
+    int64_t my_int;                    // 8 bytes
+    float my_float;                    // 4 bytes
     PROTOBUF_TSAN_DECLARE_MEMBER;   // 0-4 bytes
     // + 0-4 bytes padding
   };
-  ABSL_CHECK_MESSAGE_SIZE(MockGeneratedInlinedString, 104);
+  ABSL_CHECK_MESSAGE_SIZE(MockGeneratedExperiments, 112);
 
   struct MockGeneratedSplit : public MockMessageBase {  // 16 bytes
     int has_bits[1];                                    // 4 bytes
@@ -299,8 +313,11 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
   ABSL_CHECK_MESSAGE_SIZE(MockGeneratedSplit, 56);
 
 #ifndef PROTOBUF_FORCE_SPLIT
+  // Make sure both or none are on for this test.
+  ASSERT_EQ(internal::ForceEagerlyVerifiedLazyInProtoc(),
+            internal::ForceInlineStringInProtoc());
   using Type = std::conditional_t<internal::ForceInlineStringInProtoc(),
-                                  MockGeneratedInlinedString, MockGenerated>;
+                                  MockGeneratedExperiments, MockGenerated>;
 #else   // !PROTOBUF_FORCE_SPLIT
   using Type = MockGeneratedSplit;
 #endif  // PROTOBUF_FORCE_SPLIT

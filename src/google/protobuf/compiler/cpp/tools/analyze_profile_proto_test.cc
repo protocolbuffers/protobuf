@@ -7,6 +7,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/path.h"
 #include "google/protobuf/compiler/profile.pb.h"
+#include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -20,6 +21,8 @@ namespace protobuf {
 namespace compiler {
 namespace tools {
 namespace {
+
+using ::testing::HasSubstr;
 
 std::string AnalyzeToText(const AccessInfo& info,
                           AnalyzeProfileProtoOptions options) {
@@ -70,9 +73,9 @@ TEST(AnalyzeProfileProtoTest, LikelyStringPresence) {
   AnalyzeProfileProtoOptions options;
   options.print_unused_threshold = false;
   options.pool = DescriptorPool::generated_pool();
-  EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
-               "Message google::protobuf::compiler::tools::AnalyzeThis\n"
-               "  string optional_string: INLINE\n");
+  EXPECT_THAT(AnalyzeToText(info, options).c_str(),
+              HasSubstr("Message google::protobuf::compiler::tools::AnalyzeThis\n"
+                        "  string optional_string: INLINE\n"));
 }
 
 TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndUsed) {
@@ -94,9 +97,9 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndUsed) {
   AnalyzeProfileProtoOptions options;
   options.print_unused_threshold = false;
   options.pool = DescriptorPool::generated_pool();
-  EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
-               "Message google::protobuf::compiler::tools::AnalyzeThis\n"
-               "  string optional_string: INLINE\n");
+  EXPECT_THAT(AnalyzeToText(info, options).c_str(),
+              HasSubstr("Message google::protobuf::compiler::tools::AnalyzeThis\n"
+                        "  string optional_string: INLINE\n"));
 }
 
 TEST(AnalyzeProfileProtoTest, UnlikelyPresent) {
