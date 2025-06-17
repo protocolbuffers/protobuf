@@ -125,10 +125,7 @@ python.toolchain(
     python_version = "3.12",
 )
 
-use_repo(
-    python
-    #system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
-)
+use_repo(python)
 
 #SUPPORTED_PYTHON_VERSIONS = [
 #    "3.9",
