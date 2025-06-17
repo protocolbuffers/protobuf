@@ -189,6 +189,7 @@ cc_library(
     deps = [
         ":ptr",
         ":status",
+        "//hpb:arena",
         "//hpb/backend/upb:interop",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
