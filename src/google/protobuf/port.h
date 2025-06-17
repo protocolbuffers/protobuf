@@ -634,7 +634,8 @@ PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
 // correctness of the rest of the class.
 template <typename T>
 PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
-  impl->_tsan_detect_race = 0;
+  char protobuf_tsan_dummy = impl->_tsan_detect_race;
+  asm volatile("" : "+r"(protobuf_tsan_dummy));
 }
 #else
 PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
