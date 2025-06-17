@@ -2286,6 +2286,98 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "MissingCommaMultiline", RECOMMENDED,
       "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
+
+  /////////////////////////////////////////////////////////////////////////////
+  //////////////////////////// EXPERIMENT ///////////////////////////////////
+
+  /////// 1 dupe keys should error
+  // - 1A: null and implicit-zeros are entirely ignored for this rule (either
+  // order)
+  // - 1B: null and implicit-zeros ok to come first (= check key isn’t
+  // written, but effectively write nothing) but error if they come second
+  // - 1C: nulls ignored
+  /////// 2 Last Key should win
+  // - 2A: null and implicit-zeros are entirely ignored for this rule (last
+  // thing before will win)
+  // - 2B: null does nothing but implicit-zero writes
+  // - 2C: both null and implicit-zero are ignored
+
+  RunValidJsonTest("esrauch:marker_for_tests_run_will_fail", RECOMMENDED,
+                   "\\a1{(", "");
+
+  RunValidJsonTest("esrauch:dupe_key", RECOMMENDED,
+                   R"({
+    "optionalNestedMessage": {"a": 1},
+    "optionalNestedMessage": {}
+    })",
+                   "optional_nested_message: {}");
+
+  RunValidJsonTest("esrauch:dupe_key_different_casing", RECOMMENDED,
+                   R"({
+    "optional_nested_message": {"a": 1},
+    "optionalNestedMessage": {}
+    })",
+                   "optional_nested_message: {}");
+
+  RunValidJsonTest("esrauch:dupe_key_first_null", RECOMMENDED,
+                   R"({
+    "optionalNestedMessage": null,
+    "optionalNestedMessage": {}
+    })",
+                   "optional_nested_message: {}");
+
+  RunValidJsonTest("esrauch:dupe_key_second_null", RECOMMENDED,
+                   R"({
+      "optionalNestedMessage": {},
+      "optionalNestedMessage": null
+      })",
+                   "");
+  RunValidJsonTest("esrauch:dupe_key_default_value_first", RECOMMENDED,
+                   R"({
+  "oneofUint32": 0,
+  "oneofUint32": 1
+  })",
+                   "oneof_uint32: 1");
+  RunValidJsonTest("esrauch:dupe_key_default_value_second_1AB", RECOMMENDED,
+                   R"({
+"oneofUint32": 1,
+"oneofUint32": 0
+})",
+                   "oneof_uint32: 1");
+  RunValidJsonTest("esrauch:oneof_field_duplicate_1ABC", RECOMMENDED,
+                   R"({"oneofUint32": 1, "oneofString": "test"})",
+                  "oneof_string: \"test\"");
+  RunValidJsonTest("esrauch:oneof_field_duplicate_first_null", RECOMMENDED,
+                   R"({"oneofUint32": null, "oneofString": "test"})",
+                  "oneof_string: \"test\"");
+  RunValidJsonTest("esrauch:oneof_field_duplicate_second_null", RECOMMENDED,
+                   R"({"oneofUint32": 1, "oneofString": null})",
+                  "");
+  RunValidJsonTest("esrauch:oneof_field_default_value_first", RECOMMENDED,
+                   R"({"oneofUint32": 0, "oneofString": "hello"})",
+                  "oneof_string: \"hello\"");
+  RunValidJsonTest("esrauch:oneof_field_default_value_second", RECOMMENDED,
+                   R"({"oneofUint32": 1, "oneofString": ""})",
+                  "oneof_string: \"\"");
+
+  RunValidJsonTest("esrauch:map_field_duplicate_keys_1ABC", REQUIRED,
+                   R"({"mapInt32Int32": {"1": 2, "1": 4}})",
+                  "map_int32_int32: {key: 1 value: 4}");
+  RunValidJsonTest("esrauch:map_field_duplicate_keys_null_first_1A", REQUIRED,
+                   R"({"mapInt32Int32": {"1": null, "1": 4}})",
+                  "map_int32_int32: {key: 1 value: 4}");
+  RunValidJsonTest("esrauch:map_field_duplicate_keys_null_second_1AB", REQUIRED,
+                   R"({"mapInt32Int32": {"1": 2, "1": null}})",
+                  "");
+  RunValidJsonTest("esrauch:map_field_duplicate_keys_default_value_first_1A",
+                   REQUIRED, R"({"mapInt32Int32": {"1": 0, "1": 1}})",
+                  "map_int32_int32: {key: 1 value: 1}");
+  RunValidJsonTest("esrauch:map_field_duplicate_keys_default_value_second_1AB",
+                   REQUIRED, R"({"mapInt32Int32": {"1": 1, "1": 0}})",
+                  "map_int32_int32: {key: 1 value: 0}");
+
+  ////////////
+
   // Duplicated field names are not allowed.
   ExpectParseFailureForJson("FieldNameDuplicate", RECOMMENDED,
                             R"({
