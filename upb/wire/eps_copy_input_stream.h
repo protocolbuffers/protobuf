@@ -8,6 +8,7 @@
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -31,7 +32,7 @@ extern "C" {
 typedef struct {
   const char* end;        // Can read up to SlopBytes bytes beyond this.
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
-  uintptr_t input_delta;  // Diff between the original input pointer and patch
+  ptrdiff_t input_delta;  // Diff between the original input pointer and patch
   const char* buffer_start;  // Pointer to the original input buffer
   int limit;                 // Submessage limit relative to end
   bool error;                // To distinguish between EOF and error.
