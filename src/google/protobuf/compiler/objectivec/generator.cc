@@ -478,7 +478,7 @@ bool ObjectiveCGenerator::GenerateAll(
           }
         }
 
-        for (int i = 0; i < file_generator.NumMessages(); ++i) {
+        for (size_t i = 0; i < file_generator.NumMessages(); ++i) {
           std::unique_ptr<io::ZeroCopyOutputStream> output(
               context->Open(NumberedObjCMFileName(filepath, file_number++)));
           io::Printer printer(output.get());

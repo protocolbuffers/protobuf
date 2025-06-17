@@ -30,7 +30,7 @@ namespace objectivec {
 // header.  If you create your own protocol compiler binary and you want it to
 // support ObjectiveC output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
-class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
+class PROTOC_EXPORT ObjectiveCGenerator final : public CodeGenerator {
  public:
   ObjectiveCGenerator() = default;
   ~ObjectiveCGenerator() override = default;
