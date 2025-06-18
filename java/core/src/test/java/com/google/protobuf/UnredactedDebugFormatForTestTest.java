@@ -244,4 +244,3 @@ public final class UnredactedDebugFormatForTestTest {
                   + "}\n"
             });
   }
-}

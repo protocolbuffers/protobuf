@@ -79,4 +79,3 @@ public final class UnredactedDebugFormatForTest {
           Object[] objects) {
     return LegacyUnredactedTextFormat.legacyUnredactedToStringArray(objects);
   }
-}
