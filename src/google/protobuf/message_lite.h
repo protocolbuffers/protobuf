@@ -1371,7 +1371,7 @@ std::string Utf8Format(const MessageLite& message_lite);
 // message is of instance `T`.
 template <typename T>
 const T* DynamicCastMessage(const MessageLite* from) {
-  static_assert(std::is_base_of<MessageLite, T>::value, "");
+  static_assert(std::is_base_of_v<MessageLite, T>, "");
 
   // We might avoid the call to T::GetClassData() altogether if T were to
   // expose the class data pointer.

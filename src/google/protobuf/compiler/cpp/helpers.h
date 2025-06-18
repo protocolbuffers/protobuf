@@ -998,8 +998,8 @@ class PROTOC_EXPORT Formatter {
 
   // Convenience overloads to accept different types as arguments.
   static std::string ToString(absl::string_view s) { return std::string(s); }
-  template <typename I, typename = typename std::enable_if<
-                            std::is_integral<I>::value>::type>
+  template <typename I, typename = std::enable_if_t<
+                            std::is_integral_v<I>>>
   static std::string ToString(I x) {
     return absl::StrCat(x);
   }
