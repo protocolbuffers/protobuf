@@ -1,7 +1,6 @@
 """Rules to create python distribution files and properly name them"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-#load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
 def _get_suffix(limited_api, python_version, cpu):
     """Computes an ABI version tag for an extension module per PEP 3149."""
@@ -18,7 +17,6 @@ def _get_suffix(limited_api, python_version, cpu):
 
     if python_version == "system":
         python_version = "312"
-        #python_version = SYSTEM_PYTHON_VERSION
         if int(python_version) < 38:
             python_version += "m"
         abis = {
