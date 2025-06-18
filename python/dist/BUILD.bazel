@@ -359,7 +359,7 @@ py_wheel(
     python_tag = selects.with_or({
         ("//python:limited_api_3.9", "//python:full_api_3.9"): "cp39",
         "//python:limited_api_3.10": "cp310",
-        "//conditions:default": "cp12",
+        "//conditions:default": "cp312",
     }),
     # LINT.ThenChange(
     #    :full_api_version,
