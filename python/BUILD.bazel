@@ -104,8 +104,8 @@ selects.config_setting_group(
 
 _message_target_compatible_with = {
     "@platforms//os:windows": ["@platforms//:incompatible"],
-    "@system_python//:none": ["@platforms//:incompatible"],
-    "@system_python//:unsupported": ["@platforms//:incompatible"],
+    #"@system_python//:none": ["@platforms//:incompatible"],
+    #"@system_python//:unsupported": ["@platforms//:incompatible"],
     "//conditions:default": [],
 }
 
