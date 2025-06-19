@@ -446,7 +446,9 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
 }
 
 upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
-  UPB_ASSERT(sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState));
+  UPB_STATIC_ASSERT(
+      sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState),
+      "Need to update UPB_ARENA_SIZE_HACK");
   upb_ArenaState* a;
 
   if (mem) {

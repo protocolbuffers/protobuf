@@ -301,40 +301,45 @@ static void upb_MtDecoder_PushOneof(upb_MtDecoder* d,
 
 static size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
                                       upb_MiniTablePlatform platform) {
+  enum { string_view_size_32 = 8, string_view_size_64 = 16 };
+  UPB_STATIC_ASSERT(sizeof(upb_StringView) ==
+                        UPB_SIZE(string_view_size_32, string_view_size_64),
+                    "StringView size mismatch");
   static const uint8_t kRepToSize32[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_StringView] = string_view_size_32,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToSize64[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 16,
+      [kUpb_FieldRep_StringView] = string_view_size_64,
       [kUpb_FieldRep_8Byte] = 8,
   };
-  UPB_ASSERT(sizeof(upb_StringView) ==
-             UPB_SIZE(kRepToSize32, kRepToSize64)[kUpb_FieldRep_StringView]);
   return platform == kUpb_MiniTablePlatform_32Bit ? kRepToSize32[rep]
                                                   : kRepToSize64[rep];
 }
 
 static size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
                                        upb_MiniTablePlatform platform) {
+  enum { string_view_align_32 = 4, string_view_align_64 = 8 };
+  UPB_STATIC_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
+                        UPB_SIZE(string_view_align_32, string_view_align_64),
+                    "StringView size mismatch");
+
   static const uint8_t kRepToAlign32[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 4,
+      [kUpb_FieldRep_StringView] = string_view_align_32,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToAlign64[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_StringView] = string_view_align_64,
       [kUpb_FieldRep_8Byte] = 8,
   };
-  UPB_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
-             UPB_SIZE(kRepToAlign32, kRepToAlign64)[kUpb_FieldRep_StringView]);
   return platform == kUpb_MiniTablePlatform_32Bit ? kRepToAlign32[rep]
                                                   : kRepToAlign64[rep];
 }
