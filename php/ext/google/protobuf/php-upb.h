@@ -195,6 +195,27 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_AS(x) _Alignas(x)
 #endif
 
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert)
+#define UPB_STATIC_ASSERT(val, msg) static_assert((val), msg)
+#elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_static_assert) || \
+    UPB_GNUC_MIN(4, 6)
+#define UPB_STATIC_ASSERT(val, msg) _Static_assert((val), msg)
+#else
+// Unfortunately this hack doesn't work inside struct declarations, but it works
+// everywhere else
+#define UPB_STATIC_ASSERT_CONCAT_IMPL(s1, s2) s1##s2
+#define UPB_STATIC_ASSERT_CONCAT(s1, s2) UPB_STATIC_ASSERT_CONCAT_IMPL(s1, s2)
+#ifdef __COUNTER__
+#define UPB_STATIC_ASSERT(condition, message)                      \
+  typedef char UPB_STATIC_ASSERT_CONCAT(static_assertion_failure_, \
+                                        __COUNTER__)[(condition) ? 1 : -1]
+#else
+#define UPB_STATIC_ASSERT(condition, message)                      \
+  typedef char UPB_STATIC_ASSERT_CONCAT(static_assertion_failure_, \
+                                        __LINE__)[(condition) ? 1 : -1]
+#endif
+#endif
+
 // Hints to the compiler about likely/unlikely branches.
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_LIKELY(x) __builtin_expect((bool)(x), 1)
@@ -16656,6 +16677,9 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 #undef UPB_ALIGN_MALLOC
 #undef UPB_ALIGN_OF
 #undef UPB_ALIGN_AS
+#undef UPB_STATIC_ASSERT
+#undef UPB_STATIC_ASSERT_CONCAT
+#undef UPB_STATIC_ASSERT_CONCAT_IMPL
 #undef UPB_LIKELY
 #undef UPB_UNLIKELY
 #undef UPB_UNPREDICTABLE

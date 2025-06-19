@@ -196,6 +196,27 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_AS(x) _Alignas(x)
 #endif
 
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert)
+#define UPB_STATIC_ASSERT(val, msg) static_assert((val), msg)
+#elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_static_assert) || \
+    UPB_GNUC_MIN(4, 6)
+#define UPB_STATIC_ASSERT(val, msg) _Static_assert((val), msg)
+#else
+// Unfortunately this hack doesn't work inside struct declarations, but it works
+// everywhere else
+#define UPB_STATIC_ASSERT_CONCAT_IMPL(s1, s2) s1##s2
+#define UPB_STATIC_ASSERT_CONCAT(s1, s2) UPB_STATIC_ASSERT_CONCAT_IMPL(s1, s2)
+#ifdef __COUNTER__
+#define UPB_STATIC_ASSERT(condition, message)                      \
+  typedef char UPB_STATIC_ASSERT_CONCAT(static_assertion_failure_, \
+                                        __COUNTER__)[(condition) ? 1 : -1]
+#else
+#define UPB_STATIC_ASSERT(condition, message)                      \
+  typedef char UPB_STATIC_ASSERT_CONCAT(static_assertion_failure_, \
+                                        __LINE__)[(condition) ? 1 : -1]
+#endif
+#endif
+
 // Hints to the compiler about likely/unlikely branches.
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_LIKELY(x) __builtin_expect((bool)(x), 1)
@@ -3381,7 +3402,9 @@ static upb_Arena* _upb_Arena_InitSlow(upb_alloc* alloc, size_t first_size) {
 }
 
 upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
-  UPB_ASSERT(sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState));
+  UPB_STATIC_ASSERT(
+      sizeof(void*) * UPB_ARENA_SIZE_HACK >= sizeof(upb_ArenaState),
+      "Need to update UPB_ARENA_SIZE_HACK");
   upb_ArenaState* a;
 
   if (mem) {
@@ -5870,40 +5893,45 @@ static void upb_MtDecoder_PushOneof(upb_MtDecoder* d,
 
 static size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
                                       upb_MiniTablePlatform platform) {
+  enum { string_view_size_32 = 8, string_view_size_64 = 16 };
+  UPB_STATIC_ASSERT(sizeof(upb_StringView) ==
+                        UPB_SIZE(string_view_size_32, string_view_size_64),
+                    "StringView size mismatch");
   static const uint8_t kRepToSize32[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_StringView] = string_view_size_32,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToSize64[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 16,
+      [kUpb_FieldRep_StringView] = string_view_size_64,
       [kUpb_FieldRep_8Byte] = 8,
   };
-  UPB_ASSERT(sizeof(upb_StringView) ==
-             UPB_SIZE(kRepToSize32, kRepToSize64)[kUpb_FieldRep_StringView]);
   return platform == kUpb_MiniTablePlatform_32Bit ? kRepToSize32[rep]
                                                   : kRepToSize64[rep];
 }
 
 static size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
                                        upb_MiniTablePlatform platform) {
+  enum { string_view_align_32 = 4, string_view_align_64 = 8 };
+  UPB_STATIC_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
+                        UPB_SIZE(string_view_align_32, string_view_align_64),
+                    "StringView size mismatch");
+
   static const uint8_t kRepToAlign32[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 4,
+      [kUpb_FieldRep_StringView] = string_view_align_32,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToAlign64[] = {
       [kUpb_FieldRep_1Byte] = 1,
       [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_StringView] = string_view_align_64,
       [kUpb_FieldRep_8Byte] = 8,
   };
-  UPB_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
-             UPB_SIZE(kRepToAlign32, kRepToAlign64)[kUpb_FieldRep_StringView]);
   return platform == kUpb_MiniTablePlatform_32Bit ? kRepToAlign32[rep]
                                                   : kRepToAlign64[rep];
 }
@@ -17461,6 +17489,9 @@ const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
 #undef UPB_ALIGN_MALLOC
 #undef UPB_ALIGN_OF
 #undef UPB_ALIGN_AS
+#undef UPB_STATIC_ASSERT
+#undef UPB_STATIC_ASSERT_CONCAT
+#undef UPB_STATIC_ASSERT_CONCAT_IMPL
 #undef UPB_LIKELY
 #undef UPB_UNLIKELY
 #undef UPB_UNPREDICTABLE
