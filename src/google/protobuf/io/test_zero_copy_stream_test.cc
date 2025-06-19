@@ -7,6 +7,7 @@
 
 #include "google/protobuf/io/test_zero_copy_stream.h"
 
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <string>
@@ -33,6 +34,15 @@ std::optional<std::string> CallNext(ZeroCopyInputStream& stream) {
   if (stream.Next(&data, &size)) {
     return std::string(static_cast<const char*>(data),
                        static_cast<size_t>(size));
+  }
+  return std::nullopt;
+}
+
+std::optional<std::string> CallNext(ZeroCopyOutputStream& stream) {
+  void* data;
+  int size;
+  if (stream.Next(&data, &size)) {
+    return std::string(static_cast<char*>(data), static_cast<size_t>(size));
   }
   return std::nullopt;
 }
@@ -187,6 +197,104 @@ TEST(TestZeroCopyInputStreamTest, ByteCountWorks) {
   EXPECT_TRUE(stream.Skip(3));
   EXPECT_EQ(stream.ByteCount(), 10);
   EXPECT_TRUE(stream.Skip(4));
+  EXPECT_EQ(stream.ByteCount(), 14);
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(TestZeroCopyOutputStreamTest, NextChecksPreconditions) {
+  std::vector<std::string> empty;
+  std::unique_ptr<ZeroCopyOutputStream> stream =
+      std::make_unique<TestZeroCopyOutputStream>(empty);
+  void* data;
+  int size;
+  EXPECT_DEATH(stream->Next(nullptr, &size), "data must not be null");
+  EXPECT_DEATH(stream->Next(&data, nullptr), "size must not be null");
+}
+#endif  // GTEST_HAS_DEATH_TEST
+
+TEST(TestZeroCopyOutputStreamTest, NextProvidesTheBuffersCorrectly) {
+  std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};
+  std::unique_ptr<ZeroCopyOutputStream> stream =
+      std::make_unique<TestZeroCopyOutputStream>(expected);
+
+  std::vector<std::string> found;
+  while (auto next = CallNext(*stream)) {
+    found.push_back(*std::move(next));
+  }
+
+  EXPECT_EQ(found, expected);
+}
+
+TEST(TestZeroCopyOutputStreamTest, BackUpGivesBackABuffer) {
+  std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};
+  std::unique_ptr<ZeroCopyOutputStream> stream =
+      std::make_unique<TestZeroCopyOutputStream>(expected);
+
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("ABC")));
+  stream->BackUp(3);
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("ABC")));
+  stream->BackUp(2);
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("BC")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("D")));
+  stream->BackUp(1);
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("D")));
+  stream->BackUp(0);
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("EFG")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
+  stream->BackUp(2);
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("MN")));
+  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(TestZeroCopyOutputStreamTest, BackUpChecksPreconditions) {
+  std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};
+  std::unique_ptr<ZeroCopyOutputStream> stream =
+      std::make_unique<TestZeroCopyOutputStream>(expected);
+
+  // BackUp(0) is allowed.
+  stream->BackUp(0);
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("ABC")));
+  EXPECT_DEATH(stream->BackUp(-1), "count must not be negative");
+  stream->BackUp(1);
+  // BackUp(0) is allowed.
+  stream->BackUp(0);
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("C")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("D")));
+  // Skipping is not supported on the output stream.
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("EFG")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("")));
+  EXPECT_THAT(CallNext(*stream), Optional(Eq("HIJKLMN")));
+  EXPECT_DEATH(stream->BackUp(8), "count must be within bounds of last buffer");
+  EXPECT_THAT(CallNext(*stream), Eq(std::nullopt));
+  // BackUp(0) is allowed.
+  stream->BackUp(0);
+}
+#endif  // GTEST_HAS_DEATH_TEST
+
+TEST(TestZeroCopyOutputStreamTest, ByteCountWorks) {
+  std::vector<std::string> expected = {"ABC", "D", "EFG", "", "", "HIJKLMN"};
+  TestZeroCopyOutputStream stream(expected);
+  EXPECT_EQ(stream.ByteCount(), 0);
+  EXPECT_THAT(CallNext(stream), Optional(Eq("ABC")));
+  EXPECT_EQ(stream.ByteCount(), 3);
+  stream.BackUp(1);
+  EXPECT_EQ(stream.ByteCount(), 2);
+  EXPECT_THAT(CallNext(stream), Optional(Eq("C")));
+  EXPECT_EQ(stream.ByteCount(), 3);
+  EXPECT_THAT(CallNext(stream), Optional(Eq("D")));
+  EXPECT_EQ(stream.ByteCount(), 4);
+  EXPECT_THAT(CallNext(stream), Optional(Eq("EFG")));
+  EXPECT_EQ(stream.ByteCount(), 7);
+  EXPECT_THAT(CallNext(stream), Optional(Eq("")));
+  EXPECT_EQ(stream.ByteCount(), 7);
+  EXPECT_THAT(CallNext(stream), Optional(Eq("")));
+  EXPECT_EQ(stream.ByteCount(), 7);
+  EXPECT_THAT(CallNext(stream), Optional(Eq("HIJKLMN")));
   EXPECT_EQ(stream.ByteCount(), 14);
 }
 
