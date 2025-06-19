@@ -169,6 +169,18 @@ namespace ProtobufUnittest {
       return new OptionsMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      plainField_ = 0;
+      runtimeRetentionField_ = 0;
+      sourceRetentionField_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "plain_field" field.</summary>
     public const int PlainFieldFieldNumber = 1;
     private readonly static int PlainFieldDefaultValue = 0;
@@ -488,6 +500,17 @@ namespace ProtobufUnittest {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as Extendee);
     }
@@ -699,6 +722,21 @@ namespace ProtobufUnittest {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TopLevelMessage Clone() {
       return new TopLevelMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      f_ = 0F;
+      oCase_ = OOneofCase.None;
+      o_ = null;
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "f" field.</summary>
@@ -1035,6 +1073,14 @@ namespace ProtobufUnittest {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public NestedMessage Clone() {
           return new NestedMessage(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -1255,6 +1255,101 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestAllTypes(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      _hasBits1 = 0;
+      optionalInt32_ = 0;
+      optionalInt64_ = 0L;
+      optionalUint32_ = 0;
+      optionalUint64_ = 0UL;
+      optionalSint32_ = 0;
+      optionalSint64_ = 0L;
+      optionalFixed32_ = 0;
+      optionalFixed64_ = 0UL;
+      optionalSfixed32_ = 0;
+      optionalSfixed64_ = 0L;
+      optionalFloat_ = 0F;
+      optionalDouble_ = 0D;
+      optionalBool_ = false;
+      optionalString_ = "";
+      optionalBytes_ = pb::ByteString.Empty;
+      if (optionalGroup_ != null) {
+        optionalGroup_.Clear();
+      }
+      if (optionalNestedMessage_ != null) {
+        optionalNestedMessage_.Clear();
+      }
+      if (optionalForeignMessage_ != null) {
+        optionalForeignMessage_.Clear();
+      }
+      if (optionalImportMessage_ != null) {
+        optionalImportMessage_.Clear();
+      }
+      optionalNestedEnum_ = global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum.Foo;
+      optionalForeignEnum_ = global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo;
+      optionalImportEnum_ = global::Google.Protobuf.TestProtos.Proto2.ImportEnum.ImportFoo;
+      optionalStringPiece_ = "";
+      optionalCord_ = "";
+      if (optionalPublicImportMessage_ != null) {
+        optionalPublicImportMessage_.Clear();
+      }
+      if (optionalLazyMessage_ != null) {
+        optionalLazyMessage_.Clear();
+      }
+      repeatedInt32_.Clear();
+      repeatedInt64_.Clear();
+      repeatedUint32_.Clear();
+      repeatedUint64_.Clear();
+      repeatedSint32_.Clear();
+      repeatedSint64_.Clear();
+      repeatedFixed32_.Clear();
+      repeatedFixed64_.Clear();
+      repeatedSfixed32_.Clear();
+      repeatedSfixed64_.Clear();
+      repeatedFloat_.Clear();
+      repeatedDouble_.Clear();
+      repeatedBool_.Clear();
+      repeatedString_.Clear();
+      repeatedBytes_.Clear();
+      repeatedGroup_.Clear();
+      repeatedNestedMessage_.Clear();
+      repeatedForeignMessage_.Clear();
+      repeatedImportMessage_.Clear();
+      repeatedNestedEnum_.Clear();
+      repeatedForeignEnum_.Clear();
+      repeatedImportEnum_.Clear();
+      repeatedStringPiece_.Clear();
+      repeatedCord_.Clear();
+      repeatedLazyMessage_.Clear();
+      defaultInt32_ = 41;
+      defaultInt64_ = 42L;
+      defaultUint32_ = 43;
+      defaultUint64_ = 44UL;
+      defaultSint32_ = -45;
+      defaultSint64_ = 46L;
+      defaultFixed32_ = 47;
+      defaultFixed64_ = 48UL;
+      defaultSfixed32_ = 49;
+      defaultSfixed64_ = -50L;
+      defaultFloat_ = 51.5F;
+      defaultDouble_ = 52000D;
+      defaultBool_ = true;
+      defaultString_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsbG8="), 0, 5);
+      defaultBytes_ = pb::ByteString.FromBase64("d29ybGQ=");
+      defaultNestedEnum_ = global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum.Bar;
+      defaultForeignEnum_ = global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignBar;
+      defaultImportEnum_ = global::Google.Protobuf.TestProtos.Proto2.ImportEnum.ImportBar;
+      defaultStringPiece_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWJj"), 0, 3);
+      defaultCord_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIz"), 0, 3);
+      oneofFieldCase_ = OneofFieldOneofCase.None;
+      oneofField_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
     private readonly static int OptionalInt32DefaultValue = 0;
@@ -4644,6 +4739,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          bb_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "bb" field.</summary>
         public const int BbFieldNumber = 1;
         private readonly static int BbDefaultValue = 0;
@@ -4864,6 +4969,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new OptionalGroup(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 17;
         private readonly static int ADefaultValue = 0;
@@ -5077,6 +5192,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public RepeatedGroup Clone() {
           return new RepeatedGroup(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "a" field.</summary>
@@ -5300,6 +5425,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public NestedTestAllTypes Clone() {
       return new NestedTestAllTypes(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (child_ != null) {
+        child_.Clear();
+      }
+      if (payload_ != null) {
+        payload_.Clear();
+      }
+      repeatedChild_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "child" field.</summary>
@@ -5585,6 +5725,18 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestDeprecatedFields Clone() {
       return new TestDeprecatedFields(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      deprecatedInt32_ = 0;
+      oneofFieldsCase_ = OneofFieldsOneofCase.None;
+      oneofFields_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "deprecated_int32" field.</summary>
@@ -5883,6 +6035,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestDeprecatedMessage);
     }
@@ -6048,6 +6208,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ForeignMessage Clone() {
       return new ForeignMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      c_ = 0;
+      d_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "c" field.</summary>
@@ -6315,6 +6486,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestReservedFields);
     }
@@ -6475,6 +6654,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestAllExtensions Clone() {
       return new TestAllExtensions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6681,6 +6871,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public OptionalGroup_extension Clone() {
       return new OptionalGroup_extension(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      a_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "a" field.</summary>
@@ -6898,6 +7098,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new RepeatedGroup_extension(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      a_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "a" field.</summary>
     public const int AFieldNumber = 47;
     private readonly static int ADefaultValue = 0;
@@ -7112,6 +7322,19 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestGroup Clone() {
       return new TestGroup(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      if (optionalGroup_ != null) {
+        optionalGroup_.Clear();
+      }
+      optionalForeignEnum_ = global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "optionalgroup" field.</summary>
@@ -7391,6 +7614,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new OptionalGroup(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 17;
         private readonly static int ADefaultValue = 0;
@@ -7613,6 +7846,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestGroupExtension);
     }
@@ -7816,6 +8060,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestNestedExtension);
     }
@@ -7979,6 +8231,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public OptionalGroup_extension Clone() {
           return new OptionalGroup_extension(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "a" field.</summary>
@@ -8264,6 +8526,49 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestRequired Clone() {
       return new TestRequired(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      _hasBits1 = 0;
+      a_ = 0;
+      dummy2_ = 0;
+      b_ = 0;
+      dummy4_ = 0;
+      dummy5_ = 0;
+      dummy6_ = 0;
+      dummy7_ = 0;
+      dummy8_ = 0;
+      dummy9_ = 0;
+      dummy10_ = 0;
+      dummy11_ = 0;
+      dummy12_ = 0;
+      dummy13_ = 0;
+      dummy14_ = 0;
+      dummy15_ = 0;
+      dummy16_ = 0;
+      dummy17_ = 0;
+      dummy18_ = 0;
+      dummy19_ = 0;
+      dummy20_ = 0;
+      dummy21_ = 0;
+      dummy22_ = 0;
+      dummy23_ = 0;
+      dummy24_ = 0;
+      dummy25_ = 0;
+      dummy26_ = 0;
+      dummy27_ = 0;
+      dummy28_ = 0;
+      dummy29_ = 0;
+      dummy30_ = 0;
+      dummy31_ = 0;
+      dummy32_ = 0;
+      c_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "a" field.</summary>
@@ -10131,6 +10436,20 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestRequiredForeign(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      if (optionalMessage_ != null) {
+        optionalMessage_.Clear();
+      }
+      repeatedMessage_.Clear();
+      dummy_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "optional_message" field.</summary>
     public const int OptionalMessageFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestRequired optionalMessage_;
@@ -10416,6 +10735,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestRequiredMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (optionalMessage_ != null) {
+        optionalMessage_.Clear();
+      }
+      repeatedMessage_.Clear();
+      if (requiredMessage_ != null) {
+        requiredMessage_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "optional_message" field.</summary>
     public const int OptionalMessageFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestRequired optionalMessage_;
@@ -10696,6 +11030,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestForeignNested(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (foreignNested_ != null) {
+        foreignNested_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "foreign_nested" field.</summary>
     public const int ForeignNestedFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage foreignNested_;
@@ -10907,6 +11252,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestEmptyMessage);
     }
@@ -11071,6 +11424,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestEmptyMessageWithExtensions Clone() {
       return new TestEmptyMessageWithExtensions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11281,6 +11645,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestMultipleExtensionRanges);
     }
@@ -11487,6 +11862,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestReallyLargeTagNumber Clone() {
       return new TestReallyLargeTagNumber(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      a_ = 0;
+      bb_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "a" field.</summary>
@@ -11760,6 +12146,19 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestRecursiveMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      if (a_ != null) {
+        a_.Clear();
+      }
+      i_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "a" field.</summary>
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestRecursiveMessage a_;
@@ -12020,6 +12419,20 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMutualRecursionA Clone() {
       return new TestMutualRecursionA(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (bb_ != null) {
+        bb_.Clear();
+      }
+      if (subGroup_ != null) {
+        subGroup_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "bb" field.</summary>
@@ -12291,6 +12704,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new SubMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (b_ != null) {
+            b_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "b" field.</summary>
         public const int BFieldNumber = 1;
         private global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionB b_;
@@ -12497,6 +12921,20 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public SubGroup Clone() {
           return new SubGroup(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (subMessage_ != null) {
+            subMessage_.Clear();
+          }
+          if (notInThisScc_ != null) {
+            notInThisScc_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "sub_message" field.</summary>
@@ -12762,6 +13200,19 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestMutualRecursionB(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      if (a_ != null) {
+        a_.Clear();
+      }
+      optionalInt32_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "a" field.</summary>
     public const int AFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA a_;
@@ -13020,6 +13471,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestIsInitialized(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (subMessage_ != null) {
+        subMessage_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "sub_message" field.</summary>
     public const int SubMessageFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestIsInitialized.Types.SubMessage subMessage_;
@@ -13228,6 +13690,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public SubMessage Clone() {
           return new SubMessage(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (subGroup_ != null) {
+            subGroup_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "subgroup" field.</summary>
@@ -13454,6 +13927,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
             public SubGroup Clone() {
               return new SubGroup(this);
+            }
+
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+            public void Clear() {
+              _hasBits0 = 0;
+              i_ = 0;
+              if (_unknownFields != null) {
+                _unknownFields.Clear();
+              }
             }
 
             /// <summary>Field number for the "i" field.</summary>
@@ -13687,6 +14170,22 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestDupFieldNumber Clone() {
       return new TestDupFieldNumber(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      a_ = 0;
+      if (foo_ != null) {
+        foo_.Clear();
+      }
+      if (bar_ != null) {
+        bar_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "a" field.</summary>
@@ -14028,6 +14527,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new Foo(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 1;
         private readonly static int ADefaultValue = 0;
@@ -14241,6 +14750,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public Bar Clone() {
           return new Bar(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "a" field.</summary>
@@ -14464,6 +14983,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestEagerMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (subMessage_ != null) {
+        subMessage_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "sub_message" field.</summary>
     public const int SubMessageFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subMessage_;
@@ -14669,6 +15199,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestLazyMessage Clone() {
       return new TestLazyMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (subMessage_ != null) {
+        subMessage_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "sub_message" field.</summary>
@@ -14881,6 +15422,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestNestedMessageHasBits(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (optionalNestedMessage_ != null) {
+        optionalNestedMessage_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "optional_nested_message" field.</summary>
     public const int OptionalNestedMessageFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.Proto2.TestNestedMessageHasBits.Types.NestedMessage optionalNestedMessage_;
@@ -15090,6 +15642,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public NestedMessage Clone() {
           return new NestedMessage(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          nestedmessageRepeatedInt32_.Clear();
+          nestedmessageRepeatedForeignmessage_.Clear();
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "nestedmessage_repeated_int32" field.</summary>
@@ -15326,6 +15888,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestCamelCaseFieldNames Clone() {
       return new TestCamelCaseFieldNames(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      primitiveField_ = 0;
+      stringField_ = "";
+      enumField_ = global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo;
+      if (messageField_ != null) {
+        messageField_.Clear();
+      }
+      stringPieceField_ = "";
+      cordField_ = "";
+      repeatedPrimitiveField_.Clear();
+      repeatedStringField_.Clear();
+      repeatedEnumField_.Clear();
+      repeatedMessageField_.Clear();
+      repeatedStringPieceField_.Clear();
+      repeatedCordField_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "PrimitiveField" field.</summary>
@@ -15953,6 +16538,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestFieldOrderings(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      myString_ = "";
+      myInt_ = 0L;
+      myFloat_ = 0F;
+      if (optionalNestedMessage_ != null) {
+        optionalNestedMessage_.Clear();
+      }
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "my_string" field.</summary>
     public const int MyStringFieldNumber = 11;
     private readonly static string MyStringDefaultValue = "";
@@ -16360,6 +16963,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          oo_ = 0L;
+          bb_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "oo" field.</summary>
         public const int OoFieldNumber = 2;
         private readonly static long OoDefaultValue = 0L;
@@ -16634,6 +17248,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestExtensionOrderings1(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      myString_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "my_string" field.</summary>
     public const int MyStringFieldNumber = 1;
     private readonly static string MyStringDefaultValue = "";
@@ -16856,6 +17479,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestExtensionOrderings2(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      myString_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "my_string" field.</summary>
     public const int MyStringFieldNumber = 1;
     private readonly static string MyStringDefaultValue = "";
@@ -17069,6 +17701,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public TestExtensionOrderings3 Clone() {
           return new TestExtensionOrderings3(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          myString_ = "";
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "my_string" field.</summary>
@@ -17334,6 +17975,42 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestExtremeDefaultValues Clone() {
       return new TestExtremeDefaultValues(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      escapedBytes_ = pb::ByteString.FromBase64("AAEHCAwKDQkLXCci/g==");
+      largeUint32_ = 4294967295;
+      largeUint64_ = 18446744073709551615UL;
+      smallInt32_ = -2147483647;
+      smallInt64_ = -9223372036854775807L;
+      reallySmallInt32_ = -2147483648;
+      reallySmallInt64_ = -9223372036854775808L;
+      utf8String_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("4Yi0"), 0, 3);
+      zeroFloat_ = 0F;
+      oneFloat_ = 1F;
+      smallFloat_ = 1.5F;
+      negativeOneFloat_ = -1F;
+      negativeFloat_ = -1.5F;
+      largeFloat_ = 2e+08F;
+      smallNegativeFloat_ = -8e-28F;
+      infDouble_ = double.PositiveInfinity;
+      negInfDouble_ = double.NegativeInfinity;
+      nanDouble_ = double.NaN;
+      infFloat_ = float.PositiveInfinity;
+      negInfFloat_ = float.NegativeInfinity;
+      nanFloat_ = float.NaN;
+      cppTrigraph_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("PyA/ID8/ID8/ID8/PyA/Py8gPz8t"), 0, 21);
+      stringWithZero_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsAGxv"), 0, 6);
+      bytesWithZero_ = pb::ByteString.FromBase64("d29yAGxk");
+      stringPieceWithZero_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWIAYw=="), 0, 4);
+      cordWithZero_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIAMw=="), 0, 4);
+      replacementString_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("JHt1bmtub3dufQ=="), 0, 10);
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "escaped_bytes" field.</summary>
@@ -18893,6 +19570,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new SparseEnumMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      sparseEnum_ = global::Google.Protobuf.TestProtos.Proto2.TestSparseEnum.SparseA;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "sparse_enum" field.</summary>
     public const int SparseEnumFieldNumber = 1;
     private readonly static global::Google.Protobuf.TestProtos.Proto2.TestSparseEnum SparseEnumDefaultValue = global::Google.Protobuf.TestProtos.Proto2.TestSparseEnum.SparseA;
@@ -19109,6 +19796,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new OneString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      data_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
     private readonly static string DataDefaultValue = "";
@@ -19321,6 +20017,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new MoreString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      data_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
     private static readonly pb::FieldCodec<string> _repeated_data_codec
@@ -19506,6 +20211,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public OneBytes Clone() {
       return new OneBytes(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      data_ = pb::ByteString.Empty;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "data" field.</summary>
@@ -19720,6 +20434,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new MoreBytes(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      data_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_data_codec
@@ -19910,6 +20633,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Int32Message Clone() {
       return new Int32Message(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      data_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "data" field.</summary>
@@ -20127,6 +20860,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new Uint32Message(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      data_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
     private readonly static uint DataDefaultValue = 0;
@@ -20340,6 +21083,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Int64Message Clone() {
       return new Int64Message(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      data_ = 0L;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "data" field.</summary>
@@ -20557,6 +21310,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new Uint64Message(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      data_ = 0UL;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "data" field.</summary>
     public const int DataFieldNumber = 1;
     private readonly static ulong DataDefaultValue = 0UL;
@@ -20770,6 +21533,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public BoolMessage Clone() {
       return new BoolMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      data_ = false;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "data" field.</summary>
@@ -21000,6 +21773,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestOneof Clone() {
       return new TestOneof(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      fooCase_ = FooOneofCase.None;
+      foo_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "foo_int" field.</summary>
@@ -21412,6 +22195,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new FooGroup(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          b_ = "";
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 5;
         private readonly static int ADefaultValue = 0;
@@ -21683,6 +22477,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestOneofBackwardsCompatible Clone() {
       return new TestOneofBackwardsCompatible(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      fooInt_ = 0;
+      fooString_ = "";
+      if (fooMessage_ != null) {
+        fooMessage_.Clear();
+      }
+      if (fooGroup_ != null) {
+        fooGroup_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "foo_int" field.</summary>
@@ -22058,6 +22869,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new FooGroup(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          b_ = "";
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 5;
         private readonly static int ADefaultValue = 0;
@@ -22378,6 +23200,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestOneof2 Clone() {
       return new TestOneof2(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      bazInt_ = 0;
+      bazString_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("QkFa"), 0, 3);
+      fooCase_ = FooOneofCase.None;
+      foo_ = null;
+      barCase_ = BarOneofCase.None;
+      bar_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "foo_int" field.</summary>
@@ -23485,6 +24322,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new FooGroup(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          a_ = 0;
+          b_ = "";
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 9;
         private readonly static int ADefaultValue = 0;
@@ -23751,6 +24599,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          quxInt_ = 0L;
+          corgeInt_.Clear();
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "qux_int" field.</summary>
         public const int QuxIntFieldNumber = 1;
         private readonly static long QuxIntDefaultValue = 0L;
@@ -24005,6 +24864,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestRequiredOneof Clone() {
       return new TestRequiredOneof(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      fooCase_ = FooOneofCase.None;
+      foo_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "foo_int" field.</summary>
@@ -24350,6 +25219,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new NestedMessage(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          requiredDouble_ = 0D;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "required_double" field.</summary>
         public const int RequiredDoubleFieldNumber = 1;
         private readonly static double RequiredDoubleDefaultValue = 0D;
@@ -24568,6 +25447,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestRequiredMap(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      foo_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "foo" field.</summary>
     public const int FooFieldNumber = 1;
     private static readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.Proto2.TestRequiredMap.Types.NestedMessage>.Codec _map_foo_codec
@@ -24758,6 +25646,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public NestedMessage Clone() {
           return new NestedMessage(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          requiredInt32_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "required_int32" field.</summary>
@@ -24989,6 +25887,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestPackedTypes Clone() {
       return new TestPackedTypes(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      packedInt32_.Clear();
+      packedInt64_.Clear();
+      packedUint32_.Clear();
+      packedUint64_.Clear();
+      packedSint32_.Clear();
+      packedSint64_.Clear();
+      packedFixed32_.Clear();
+      packedFixed64_.Clear();
+      packedSfixed32_.Clear();
+      packedSfixed64_.Clear();
+      packedFloat_.Clear();
+      packedDouble_.Clear();
+      packedBool_.Clear();
+      packedEnum_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "packed_int32" field.</summary>
@@ -25548,6 +26468,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestUnpackedTypes(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      unpackedInt32_.Clear();
+      unpackedInt64_.Clear();
+      unpackedUint32_.Clear();
+      unpackedUint64_.Clear();
+      unpackedSint32_.Clear();
+      unpackedSint64_.Clear();
+      unpackedFixed32_.Clear();
+      unpackedFixed64_.Clear();
+      unpackedSfixed32_.Clear();
+      unpackedSfixed64_.Clear();
+      unpackedFloat_.Clear();
+      unpackedDouble_.Clear();
+      unpackedBool_.Clear();
+      unpackedEnum_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "unpacked_int32" field.</summary>
     public const int UnpackedInt32FieldNumber = 90;
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
@@ -26092,6 +27034,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestPackedExtensions);
     }
@@ -26294,6 +27247,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestUnpackedExtensions Clone() {
       return new TestUnpackedExtensions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -26511,6 +27475,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestDynamicExtensions Clone() {
       return new TestDynamicExtensions(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      scalarExtension_ = 0;
+      enumExtension_ = global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo;
+      dynamicEnumExtension_ = global::Google.Protobuf.TestProtos.Proto2.TestDynamicExtensions.Types.DynamicEnumType.DynamicFoo;
+      if (messageExtension_ != null) {
+        messageExtension_.Clear();
+      }
+      if (dynamicMessageExtension_ != null) {
+        dynamicMessageExtension_.Clear();
+      }
+      repeatedExtension_.Clear();
+      packedExtension_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "scalar_extension" field.</summary>
@@ -26981,6 +27965,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new DynamicMessageType(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          dynamicField_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "dynamic_field" field.</summary>
         public const int DynamicFieldFieldNumber = 2100;
         private readonly static int DynamicFieldDefaultValue = 0;
@@ -27202,6 +28196,20 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestRepeatedScalarDifferentTagSizes Clone() {
       return new TestRepeatedScalarDifferentTagSizes(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      repeatedFixed32_.Clear();
+      repeatedInt32_.Clear();
+      repeatedFixed64_.Clear();
+      repeatedInt64_.Clear();
+      repeatedFloat_.Clear();
+      repeatedUint64_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "repeated_fixed32" field.</summary>
@@ -27551,6 +28559,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestParsingMerge Clone() {
       return new TestParsingMerge(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (requiredAllTypes_ != null) {
+        requiredAllTypes_.Clear();
+      }
+      if (optionalAllTypes_ != null) {
+        optionalAllTypes_.Clear();
+      }
+      repeatedAllTypes_.Clear();
+      if (optionalGroup_ != null) {
+        optionalGroup_.Clear();
+      }
+      repeatedGroup_.Clear();
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "required_all_types" field.</summary>
@@ -27972,6 +29002,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new RepeatedFieldsGenerator(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          field1_.Clear();
+          field2_.Clear();
+          field3_.Clear();
+          group1_.Clear();
+          group2_.Clear();
+          ext1_.Clear();
+          ext2_.Clear();
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "field1" field.</summary>
         public const int Field1FieldNumber = 1;
         private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.Proto2.TestAllTypes> _repeated_field1_codec
@@ -28312,6 +29357,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               return new Group1(this);
             }
 
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+            public void Clear() {
+              if (field1_ != null) {
+                field1_.Clear();
+              }
+              if (_unknownFields != null) {
+                _unknownFields.Clear();
+              }
+            }
+
             /// <summary>Field number for the "field1" field.</summary>
             public const int Field1FieldNumber = 11;
             private global::Google.Protobuf.TestProtos.Proto2.TestAllTypes field1_;
@@ -28517,6 +29573,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
             public Group2 Clone() {
               return new Group2(this);
+            }
+
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+            public void Clear() {
+              if (field1_ != null) {
+                field1_.Clear();
+              }
+              if (_unknownFields != null) {
+                _unknownFields.Clear();
+              }
             }
 
             /// <summary>Field number for the "field1" field.</summary>
@@ -28731,6 +29798,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new OptionalGroup(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (optionalGroupAllTypes_ != null) {
+            optionalGroupAllTypes_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "optional_group_all_types" field.</summary>
         public const int OptionalGroupAllTypesFieldNumber = 11;
         private global::Google.Protobuf.TestProtos.Proto2.TestAllTypes optionalGroupAllTypes_;
@@ -28936,6 +30014,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public RepeatedGroup Clone() {
           return new RepeatedGroup(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (repeatedGroupAllTypes_ != null) {
+            repeatedGroupAllTypes_.Clear();
+          }
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "repeated_group_all_types" field.</summary>
@@ -29162,6 +30251,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       return new TestCommentInjectionMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      a_ = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Ki8gPC0gTmVpdGhlciBzaG91bGQgdGhpcy4="), 0, 26);
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "a" field.</summary>
     public const int AFieldNumber = 1;
     private readonly static string ADefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Ki8gPC0gTmVpdGhlciBzaG91bGQgdGhpcy4="), 0, 26);
@@ -29381,6 +30479,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as FooRequest);
     }
@@ -29538,6 +30644,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FooResponse Clone() {
       return new FooResponse(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -29703,6 +30817,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as FooClientMessage);
     }
@@ -29860,6 +30982,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public FooServerMessage Clone() {
       return new FooServerMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -30025,6 +31155,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as BarRequest);
     }
@@ -30182,6 +31320,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public BarResponse Clone() {
       return new BarResponse(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -30351,6 +31497,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestJsonName Clone() {
       return new TestJsonName(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      fieldName1_ = 0;
+      fieldName2_ = 0;
+      fieldName3_ = 0;
+      FieldName4_ = 0;
+      fIELDNAME5_ = 0;
+      fieldName6_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "field_name1" field.</summary>
@@ -30848,6 +32009,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestHugeFieldNumbers Clone() {
       return new TestHugeFieldNumbers(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      optionalInt32_ = 0;
+      fixed32_ = 0;
+      repeatedInt32_.Clear();
+      packedInt32_.Clear();
+      optionalEnum_ = global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo;
+      optionalString_ = "";
+      optionalBytes_ = pb::ByteString.Empty;
+      if (optionalMessage_ != null) {
+        optionalMessage_.Clear();
+      }
+      if (optionalGroup_ != null) {
+        optionalGroup_.Clear();
+      }
+      stringStringMap_.Clear();
+      oneofFieldCase_ = OneofFieldOneofCase.None;
+      oneofField_ = null;
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "optional_int32" field.</summary>
@@ -31722,6 +32911,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           return new OptionalGroup(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          _hasBits0 = 0;
+          groupA_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "group_a" field.</summary>
         public const int GroupAFieldNumber = 536870009;
         private readonly static int GroupADefaultValue = 0;
@@ -31951,6 +33150,27 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestExtensionInsideTable Clone() {
       return new TestExtensionInsideTable(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      field1_ = 0;
+      field2_ = 0;
+      field3_ = 0;
+      field4_ = 0;
+      field6_ = 0;
+      field7_ = 0;
+      field8_ = 0;
+      field9_ = 0;
+      field10_ = 0;
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "field1" field.</summary>

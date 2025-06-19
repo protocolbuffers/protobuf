@@ -115,6 +115,20 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
       return new FooOptions(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      _hasBits0 = 0;
+      intOpt_ = 0;
+      foo_ = 0;
+      if (_extensions != null) {
+        _extensions.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "int_opt" field.</summary>
     public const int IntOptFieldNumber = 1;
     private readonly static int IntOptDefaultValue = 0;

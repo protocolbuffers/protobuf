@@ -307,6 +307,17 @@ namespace UnitTest.Issues.TestProtos {
       return new TestMessageWithCustomOptions(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      field1_ = "";
+      anOneofCase_ = AnOneofOneofCase.None;
+      anOneof_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "field1" field.</summary>
     public const int Field1FieldNumber = 1;
     private string field1_ = "";
@@ -599,6 +610,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionFooRequest);
     }
@@ -756,6 +775,14 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public CustomOptionFooResponse Clone() {
       return new CustomOptionFooResponse(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -921,6 +948,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionFooClientMessage);
     }
@@ -1082,6 +1117,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionFooServerMessage);
     }
@@ -1239,6 +1282,14 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public DummyMessageContainingEnum Clone() {
       return new DummyMessageContainingEnum(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1418,6 +1469,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as DummyMessageInvalidAsOptionType);
     }
@@ -1575,6 +1634,14 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public CustomOptionMinIntegerValues Clone() {
       return new CustomOptionMinIntegerValues(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1740,6 +1807,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionMaxIntegerValues);
     }
@@ -1897,6 +1972,14 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public CustomOptionOtherValues Clone() {
       return new CustomOptionOtherValues(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2062,6 +2145,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as SettingRealsFromPositiveInts);
     }
@@ -2219,6 +2310,14 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public SettingRealsFromNegativeInts Clone() {
       return new SettingRealsFromNegativeInts(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2384,6 +2483,18 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ComplexOptionType1 Clone() {
       return new ComplexOptionType1(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      foo_ = 0;
+      foo2_ = 0;
+      foo3_ = 0;
+      foo4_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "foo" field.</summary>
@@ -2684,6 +2795,22 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ComplexOptionType2 Clone() {
       return new ComplexOptionType2(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (bar_ != null) {
+        bar_.Clear();
+      }
+      baz_ = 0;
+      if (fred_ != null) {
+        fred_.Clear();
+      }
+      barney_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "bar" field.</summary>
@@ -3002,6 +3129,15 @@ namespace UnitTest.Issues.TestProtos {
           return new ComplexOptionType4(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          waldo_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "waldo" field.</summary>
         public const int WaldoFieldNumber = 1;
         private int waldo_;
@@ -3215,6 +3351,15 @@ namespace UnitTest.Issues.TestProtos {
       return new ComplexOptionType3(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      qux_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "qux" field.</summary>
     public const int QuxFieldNumber = 1;
     private int qux_;
@@ -3417,6 +3562,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as VariousComplexOptions);
     }
@@ -3580,6 +3733,19 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Aggregate Clone() {
       return new Aggregate(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      i_ = 0;
+      s_ = "";
+      if (sub_ != null) {
+        sub_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "i" field.</summary>
@@ -3864,6 +4030,15 @@ namespace UnitTest.Issues.TestProtos {
       return new AggregateMessage(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      fieldname_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "fieldname" field.</summary>
     public const int FieldnameFieldNumber = 1;
     private int fieldname_;
@@ -4066,6 +4241,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as NestedOptionType);
     }
@@ -4232,6 +4415,15 @@ namespace UnitTest.Issues.TestProtos {
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public NestedMessage Clone() {
           return new NestedMessage(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          nestedField_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
         }
 
         /// <summary>Field number for the "nested_field" field.</summary>
