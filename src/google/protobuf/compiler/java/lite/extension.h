@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
