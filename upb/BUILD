@@ -102,45 +102,6 @@ cc_library(
     visibility = ["//hpb/bazel:__pkg__"],
 )
 
-# Aliases ######################################################################
-# TODO: Remove these.
-
-alias(
-    name = "base",
-    actual = "//upb/base",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "mem",
-    actual = "//upb/mem",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message",
-    actual = "//upb/message",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "mini_descriptor",
-    actual = "//upb/mini_descriptor",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "mini_table",
-    actual = "//upb/mini_table",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "wire",
-    actual = "//upb/wire",
-    visibility = ["//visibility:public"],
-)
-
 # Amalgamation #################################################################
 
 upb_amalgamation(
@@ -150,24 +111,24 @@ upb_amalgamation(
         "upb.h",
     ],
     libs = [
-        ":base",
         ":generated_code_support",
-        ":mem",
-        ":message",
-        ":mini_descriptor",
-        ":mini_table",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//upb/base",
         "//upb/base:internal",
         "//upb/hash:hash",
         "//upb/lex:lex",
+        "//upb/mem",
         "//upb/mem:internal",
+        "//upb/message",
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/message:internal",
         "//upb/message:iterator",
         "//upb/message:types",
+        "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/reflection",
@@ -201,26 +162,26 @@ upb_amalgamation(
         "php-upb.h",
     ],
     libs = [
-        ":base",
         ":generated_code_support",
-        ":mem",
-        ":message",
-        ":mini_descriptor",
-        ":mini_table",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
         "//src/google/protobuf:descriptor_upb_reflection_proto",
+        "//upb/base",
         "//upb/base:internal",
         "//upb/hash:hash",
         "//upb/json",
         "//upb/lex:lex",
+        "//upb/mem",
         "//upb/mem:internal",
+        "//upb/message",
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/message:internal",
         "//upb/message:iterator",
         "//upb/message:types",
+        "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/reflection",
@@ -253,25 +214,25 @@ upb_amalgamation(
         "ruby-upb.h",
     ],
     libs = [
-        ":base",
         ":generated_code_support",
-        ":mem",
-        ":message",
-        ":mini_descriptor",
-        ":mini_table",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//upb/base",
         "//upb/base:internal",
         "//upb/hash:hash",
         "//upb/json",
         "//upb/lex:lex",
+        "//upb/mem",
         "//upb/mem:internal",
+        "//upb/message",
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/message:internal",
         "//upb/message:iterator",
         "//upb/message:types",
+        "//upb/mini_descriptor",
         "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/reflection",
