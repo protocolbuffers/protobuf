@@ -328,7 +328,6 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.h
