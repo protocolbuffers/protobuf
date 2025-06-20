@@ -592,33 +592,6 @@ void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
 
 #endif /* UPB_BASE_STATUS_H_ */
 
-#ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
-#define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
-
-#include <stdint.h>
-#include <string.h>
-
-
-/* upb_Arena is a specific allocator implementation that uses arena allocation.
- * The user provides an allocator that will be used to allocate the underlying
- * arena blocks.  Arenas by nature do not require the individual allocations
- * to be freed.  However the Arena does allow users to register cleanup
- * functions that will run when the arena is destroyed.
- *
- * A upb_Arena is *not* thread-safe, although some functions related to its
- * managing its lifetime are, and are documented as such.
- *
- * You could write a thread-safe arena allocator that satisfies the
- * upb_alloc interface, but it would not be as efficient for the
- * single-threaded case. */
-
-#ifndef UPB_MEM_ARENA_H_
-#define UPB_MEM_ARENA_H_
-
-#include <stddef.h>
-#include <stdint.h>
-
-
 #ifndef UPB_MEM_ALLOC_H_
 #define UPB_MEM_ALLOC_H_
 
@@ -712,6 +685,26 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 
 
 #endif /* UPB_MEM_ALLOC_H_ */
+
+/* upb_Arena is a specific allocator implementation that uses arena allocation.
+ * The user provides an allocator that will be used to allocate the underlying
+ * arena blocks.  Arenas by nature do not require the individual allocations
+ * to be freed.  However the Arena does allow users to register cleanup
+ * functions that will run when the arena is destroyed.
+ *
+ * A upb_Arena is *not* thread-safe, although some functions related to its
+ * managing its lifetime are, and are documented as such.
+ *
+ * You could write a thread-safe arena allocator that satisfies the
+ * upb_alloc interface, but it would not be as efficient for the
+ * single-threaded case. */
+
+#ifndef UPB_MEM_ARENA_H_
+#define UPB_MEM_ARENA_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
 
 #ifndef UPB_MEM_INTERNAL_ARENA_H_
 #define UPB_MEM_INTERNAL_ARENA_H_
@@ -1128,416 +1121,211 @@ void upb_Arena_SetTraceHandler(void (*initArenaTraceHandler)(const upb_Arena*,
 
 #endif /* UPB_MEM_ARENA_H_ */
 
-// Must be last.
+#ifndef UPB_PORT_ATOMIC_H_
+#define UPB_PORT_ATOMIC_H_
 
-#ifdef __cplusplus
-extern "C" {
+
+#ifdef UPB_USE_C11_ATOMICS
+
+// IWYU pragma: begin_exports
+#include <stdatomic.h>
+#include <stdbool.h>
+// IWYU pragma: end_exports
+
+#define upb_Atomic_Init(addr, val) atomic_init(addr, val)
+#define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)
+#define upb_Atomic_Store(addr, val, order) \
+  atomic_store_explicit(addr, val, order)
+#define upb_Atomic_Exchange(addr, val, order) \
+  atomic_exchange_explicit(addr, val, order)
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
+                                          success_order, failure_order)
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  atomic_compare_exchange_weak_explicit(addr, expected, desired,               \
+                                        success_order, failure_order)
+
+#elif defined(UPB_USE_MSC_ATOMICS)
+#include <intrin.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#define upb_Atomic_Init(addr, val) (*(addr) = val)
+
+#if defined(_WIN64)
+// MSVC, without C11 atomics, does not have any way in pure C to force
+// load-acquire store-release behavior, so we hack it with exchanges.
+#pragma intrinsic(_InterlockedExchange64)
+#define upb_Atomic_Store(addr, val, order) \
+  (void)_InterlockedExchange64((uint64_t volatile *)addr, (uint64_t)val)
+
+#pragma intrinsic(_InterlockedCompareExchange64)
+static uintptr_t upb_Atomic_LoadMsc(uint64_t volatile *addr) {
+  // Compare exchange with an unlikely value reduces the risk of a spurious
+  // (but harmless) store
+  return _InterlockedCompareExchange64(addr, 0xDEADC0DEBAADF00D,
+                                       0xDEADC0DEBAADF00D);
+}
+// If _Generic is available, use it to avoid emitting a "'uintptr_t' differs in
+// levels of indirection from 'void *'" or -Wint-conversion compiler warning.
+#if __STDC_VERSION__ >= 201112L
+#define upb_Atomic_Load(addr, order)                           \
+  _Generic(addr,                                               \
+      UPB_ATOMIC(uintptr_t) *: upb_Atomic_LoadMsc(             \
+                                 (uint64_t volatile *)(addr)), \
+      default: (void *)upb_Atomic_LoadMsc((uint64_t volatile *)(addr)))
+
+#define upb_Atomic_Exchange(addr, val, order)                                 \
+  _Generic(addr,                                                              \
+      UPB_ATOMIC(uintptr_t) *: _InterlockedExchange64(                        \
+                                 (uint64_t volatile *)(addr), (uint64_t)val), \
+      default: (void *)_InterlockedExchange64((uint64_t volatile *)addr,      \
+                                              (uint64_t)val))
+#else
+// Compare exchange with an unlikely value reduces the risk of a spurious
+// (but harmless) store
+#define upb_Atomic_Load(addr, order) \
+  (void *)upb_Atomic_LoadMsc((uint64_t volatile *)(addr))
+
+#define upb_Atomic_Exchange(addr, val, order) \
+  (void *)_InterlockedExchange64((uint64_t volatile *)addr, (uint64_t)val)
 #endif
 
-// The maximum number of bytes a single protobuf field can take up in the
-// wire format.  We only want to do one bounds check per field, so the input
-// stream guarantees that after upb_EpsCopyInputStream_IsDone() is called,
-// the decoder can read this many bytes without performing another bounds
-// check.  The stream will copy into a patch buffer as necessary to guarantee
-// this invariant.
-#define kUpb_EpsCopyInputStream_SlopBytes 16
-
-typedef struct {
-  const char* end;        // Can read up to SlopBytes bytes beyond this.
-  const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
-  uintptr_t input_delta;  // Diff between the original input pointer and patch
-  const char* buffer_start;  // Pointer to the original input buffer
-  int limit;                 // Submessage limit relative to end
-  bool error;                // To distinguish between EOF and error.
-  bool aliasing;
-  char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
-} upb_EpsCopyInputStream;
-
-// Returns true if the stream is in the error state. A stream enters the error
-// state when the user reads past a limit (caught in IsDone()) or the
-// ZeroCopyInputStream returns an error.
-UPB_INLINE bool upb_EpsCopyInputStream_IsError(upb_EpsCopyInputStream* e) {
-  return e->error;
-}
-
-typedef const char* upb_EpsCopyInputStream_BufferFlipCallback(
-    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start);
-
-typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
-    upb_EpsCopyInputStream* e, const char* ptr, int overrun);
-
-// Initializes a upb_EpsCopyInputStream using the contents of the buffer
-// [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
-// kUpb_EpsCopyInputStream_SlopBytes are available to read.
-UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size,
-                                            bool enable_aliasing) {
-  e->buffer_start = *ptr;
-  if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
-    memset(&e->patch, 0, 32);
-    if (size) memcpy(&e->patch, *ptr, size);
-    e->input_delta = (uintptr_t)*ptr - (uintptr_t)e->patch;
-    *ptr = e->patch;
-    e->end = *ptr + size;
-    e->limit = 0;
-  } else {
-    e->end = *ptr + size - kUpb_EpsCopyInputStream_SlopBytes;
-    e->limit = kUpb_EpsCopyInputStream_SlopBytes;
-    e->input_delta = 0;
-  }
-  e->aliasing = enable_aliasing;
-  e->limit_ptr = e->end;
-  e->error = false;
-}
-
-typedef enum {
-  // The current stream position is at a limit.
-  kUpb_IsDoneStatus_Done,
-
-  // The current stream position is not at a limit.
-  kUpb_IsDoneStatus_NotDone,
-
-  // The current stream position is not at a limit, and the stream needs to
-  // be flipped to a new buffer before more data can be read.
-  kUpb_IsDoneStatus_NeedFallback,
-} upb_IsDoneStatus;
-
-// Returns the status of the current stream position.  This is a low-level
-// function, it is simpler to call upb_EpsCopyInputStream_IsDone() if possible.
-UPB_INLINE upb_IsDoneStatus upb_EpsCopyInputStream_IsDoneStatus(
-    upb_EpsCopyInputStream* e, const char* ptr, int* overrun) {
-  *overrun = ptr - e->end;
-  if (UPB_LIKELY(ptr < e->limit_ptr)) {
-    return kUpb_IsDoneStatus_NotDone;
-  } else if (UPB_LIKELY(*overrun == e->limit)) {
-    return kUpb_IsDoneStatus_Done;
-  } else {
-    return kUpb_IsDoneStatus_NeedFallback;
-  }
-}
-
-// Returns true if the stream has hit a limit, either the current delimited
-// limit or the overall end-of-stream. As a side effect, this function may flip
-// the pointer to a new buffer if there are less than
-// kUpb_EpsCopyInputStream_SlopBytes of data to be read in the current buffer.
-//
-// Postcondition: if the function returns false, there are at least
-// kUpb_EpsCopyInputStream_SlopBytes of data available to read at *ptr.
-UPB_INLINE bool upb_EpsCopyInputStream_IsDoneWithCallback(
-    upb_EpsCopyInputStream* e, const char** ptr,
-    upb_EpsCopyInputStream_IsDoneFallbackFunc* func) {
-  int overrun;
-  switch (upb_EpsCopyInputStream_IsDoneStatus(e, *ptr, &overrun)) {
-    case kUpb_IsDoneStatus_Done:
-      return true;
-    case kUpb_IsDoneStatus_NotDone:
-      return false;
-    case kUpb_IsDoneStatus_NeedFallback:
-      *ptr = func(e, *ptr, overrun);
-      return *ptr == NULL;
-  }
-  UPB_UNREACHABLE();
-}
-
-const char* _upb_EpsCopyInputStream_IsDoneFallbackNoCallback(
-    upb_EpsCopyInputStream* e, const char* ptr, int overrun);
-
-// A simpler version of IsDoneWithCallback() that does not support a buffer flip
-// callback. Useful in cases where we do not need to insert custom logic at
-// every buffer flip.
-//
-// If this returns true, the user must call upb_EpsCopyInputStream_IsError()
-// to distinguish between EOF and error.
-UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
-                                              const char** ptr) {
-  return upb_EpsCopyInputStream_IsDoneWithCallback(
-      e, ptr, _upb_EpsCopyInputStream_IsDoneFallbackNoCallback);
-}
-
-// Returns the total number of bytes that are safe to read from the current
-// buffer without reading uninitialized or unallocated memory.
-//
-// Note that this check does not respect any semantic limits on the stream,
-// either limits from PushLimit() or the overall stream end, so some of these
-// bytes may have unpredictable, nonsense values in them. The guarantee is only
-// that the bytes are valid to read from the perspective of the C language
-// (ie. you can read without triggering UBSAN or ASAN).
-UPB_INLINE size_t upb_EpsCopyInputStream_BytesAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr) {
-  return (e->end - ptr) + kUpb_EpsCopyInputStream_SlopBytes;
-}
-
-// Returns true if the given delimited field size is valid (it does not extend
-// beyond any previously-pushed limits).  `ptr` should point to the beginning
-// of the field data, after the delimited size.
-//
-// Note that this does *not* guarantee that all of the data for this field is in
-// the current buffer.
-UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
-    const upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  UPB_ASSERT(size >= 0);
-  return size <= e->limit - (ptr - e->end);
-}
-
-UPB_INLINE bool _upb_EpsCopyInputStream_CheckSizeAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr, int size, bool submessage) {
-  // This is one extra branch compared to the more normal:
-  //   return (size_t)(end - ptr) < size;
-  // However it is one less computation if we are just about to use "ptr + len":
-  //   https://godbolt.org/z/35YGPz
-  // In microbenchmarks this shows a small improvement.
-  uintptr_t uptr = (uintptr_t)ptr;
-  uintptr_t uend = (uintptr_t)e->limit_ptr;
-  uintptr_t res = uptr + (size_t)size;
-  if (!submessage) uend += kUpb_EpsCopyInputStream_SlopBytes;
-  // NOTE: this check depends on having a linear address space.  This is not
-  // technically guaranteed by uintptr_t.
-  bool ret = res >= uptr && res <= uend;
-  if (size < 0) UPB_ASSERT(!ret);
-  return ret;
-}
-
-// Returns true if the given delimited field size is valid (it does not extend
-// beyond any previously-pushed limited) *and* all of the data for this field is
-// available to be read in the current buffer.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return _upb_EpsCopyInputStream_CheckSizeAvailable(e, ptr, size, false);
-}
-
-// Returns true if the given sub-message size is valid (it does not extend
-// beyond any previously-pushed limited) *and* all of the data for this
-// sub-message is available to be parsed in the current buffer.
-//
-// This implies that all fields from the sub-message can be parsed from the
-// current buffer while maintaining the invariant that we always have at least
-// kUpb_EpsCopyInputStream_SlopBytes of data available past the beginning of
-// any individual field start.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return _upb_EpsCopyInputStream_CheckSizeAvailable(e, ptr, size, true);
-}
-
-// Returns true if aliasing_enabled=true was passed to
-// upb_EpsCopyInputStream_Init() when this stream was initialized.
-UPB_INLINE bool upb_EpsCopyInputStream_AliasingEnabled(
-    upb_EpsCopyInputStream* e) {
-  return e->aliasing;
-}
-
-// Returns true if aliasing_enabled=true was passed to
-// upb_EpsCopyInputStream_Init() when this stream was initialized *and* we can
-// alias into the region [ptr, size] in an input buffer.
-UPB_INLINE bool upb_EpsCopyInputStream_AliasingAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
-  // When EpsCopyInputStream supports streaming, this will need to become a
-  // runtime check.
-  return e->aliasing &&
-         upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size);
-}
-
-// Returns a pointer into an input buffer that corresponds to the parsing
-// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
-// be different if we are currently parsing out of the patch buffer.
-UPB_INLINE const char* upb_EpsCopyInputStream_GetInputPtr(
-    upb_EpsCopyInputStream* e, const char* ptr) {
-  // This somewhat silly looking add-and-subtract behavior provides provenance
-  // from the original input buffer's pointer. After optimization it produces
-  // the same assembly as just casting `(uintptr_t)ptr+input_delta`
-  // https://godbolt.org/z/zosG88oPn
-  size_t position =
-      (uintptr_t)ptr + e->input_delta - (uintptr_t)e->buffer_start;
-  return e->buffer_start + position;
-}
-
-// Returns a pointer into an input buffer that corresponds to the parsing
-// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
-// be different if we are currently parsing out of the patch buffer.
-//
-// REQUIRES: Aliasing must be available for the given pointer. If the input is a
-// flat buffer and aliasing is enabled, then aliasing will always be available.
-UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
-    upb_EpsCopyInputStream* e, const char* ptr) {
-  UPB_ASSUME(upb_EpsCopyInputStream_AliasingAvailable(e, ptr, 0));
-  return upb_EpsCopyInputStream_GetInputPtr(e, ptr);
-}
-
-// Reads string data from the input, aliasing into the input buffer instead of
-// copying. The parsing pointer is passed in `*ptr`, and will be updated if
-// necessary to point to the actual input buffer. Returns the new parsing
-// pointer, which will be advanced past the string data.
-//
-// REQUIRES: Aliasing must be available for this data region (test with
-// upb_EpsCopyInputStream_AliasingAvailable().
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
-    upb_EpsCopyInputStream* e, const char** ptr, size_t size) {
-  UPB_ASSUME(upb_EpsCopyInputStream_AliasingAvailable(e, *ptr, size));
-  const char* ret = *ptr + size;
-  *ptr = upb_EpsCopyInputStream_GetAliasedPtr(e, *ptr);
-  UPB_ASSUME(ret != NULL);
-  return ret;
-}
-
-// Skips `size` bytes of data from the input and returns a pointer past the end.
-// Returns NULL on end of stream or error.
-UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
-                                                   const char* ptr, int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
-  return ptr + size;
-}
-
-// Copies `size` bytes of data from the input `ptr` into the buffer `to`, and
-// returns a pointer past the end. Returns NULL on end of stream or error.
-UPB_INLINE const char* upb_EpsCopyInputStream_Copy(upb_EpsCopyInputStream* e,
-                                                   const char* ptr, void* to,
-                                                   int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
-  memcpy(to, ptr, size);
-  return ptr + size;
-}
-
-// Reads string data from the stream and advances the pointer accordingly.
-// If aliasing was enabled when the stream was initialized, then the returned
-// pointer will point into the input buffer if possible, otherwise new data
-// will be allocated from arena and copied into. We may be forced to copy even
-// if aliasing was enabled if the input data spans input buffers.
-//
-// Returns NULL if memory allocation failed, or we reached a premature EOF.
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
-    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
-    upb_Arena* arena) {
-  if (upb_EpsCopyInputStream_AliasingAvailable(e, *ptr, size)) {
-    return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
-  } else {
-    // We need to allocate and copy.
-    if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
-      return NULL;
-    }
-    UPB_ASSERT(arena);
-    char* data = (char*)upb_Arena_Malloc(arena, size);
-    if (!data) return NULL;
-    const char* ret = upb_EpsCopyInputStream_Copy(e, *ptr, data, size);
-    *ptr = data;
-    return ret;
-  }
-}
-
-UPB_INLINE void _upb_EpsCopyInputStream_CheckLimit(upb_EpsCopyInputStream* e) {
-  UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
-}
-
-// Pushes a limit onto the stack of limits for the current stream.  The limit
-// will extend for `size` bytes beyond the position in `ptr`.  Future calls to
-// upb_EpsCopyInputStream_IsDone() will return `true` when the stream position
-// reaches this limit.
-//
-// Returns a delta that the caller must store and supply to PopLimit() below.
-UPB_INLINE int upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
-                                                const char* ptr, int size) {
-  int limit = size + (int)(ptr - e->end);
-  int delta = e->limit - limit;
-  _upb_EpsCopyInputStream_CheckLimit(e);
-  UPB_ASSERT(limit <= e->limit);
-  e->limit = limit;
-  e->limit_ptr = e->end + UPB_MIN(0, limit);
-  _upb_EpsCopyInputStream_CheckLimit(e);
-  return delta;
-}
-
-// Pops the last limit that was pushed on this stream.  This may only be called
-// once IsDone() returns true.  The user must pass the delta that was returned
-// from PushLimit().
-UPB_INLINE void upb_EpsCopyInputStream_PopLimit(upb_EpsCopyInputStream* e,
-                                                const char* ptr,
-                                                int saved_delta) {
-  UPB_ASSERT(ptr - e->end == e->limit);
-  _upb_EpsCopyInputStream_CheckLimit(e);
-  e->limit += saved_delta;
-  e->limit_ptr = e->end + UPB_MIN(0, e->limit);
-  _upb_EpsCopyInputStream_CheckLimit(e);
-}
-
-UPB_INLINE const char* _upb_EpsCopyInputStream_IsDoneFallbackInline(
-    upb_EpsCopyInputStream* e, const char* ptr, int overrun,
-    upb_EpsCopyInputStream_BufferFlipCallback* callback) {
-  if (overrun < e->limit) {
-    // Need to copy remaining data into patch buffer.
-    UPB_ASSERT(overrun < kUpb_EpsCopyInputStream_SlopBytes);
-    const char* old_end = ptr;
-    const char* new_start = &e->patch[0] + overrun;
-    memset(e->patch + kUpb_EpsCopyInputStream_SlopBytes, 0,
-           kUpb_EpsCopyInputStream_SlopBytes);
-    memcpy(e->patch, e->end, kUpb_EpsCopyInputStream_SlopBytes);
-    ptr = new_start;
-    e->end = &e->patch[kUpb_EpsCopyInputStream_SlopBytes];
-    e->limit -= kUpb_EpsCopyInputStream_SlopBytes;
-    e->limit_ptr = e->end + e->limit;
-    UPB_ASSERT(ptr < e->limit_ptr);
-    e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    return callback(e, old_end, new_start);
-  } else {
-    UPB_ASSERT(overrun > e->limit);
-    e->error = true;
-    return callback(e, NULL, NULL);
-  }
-}
-
-typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
-    upb_EpsCopyInputStream* e, const char* ptr, void* ctx);
-
-// Tries to perform a fast-path handling of the given delimited message data.
-// If the sub-message beginning at `*ptr` and extending for `len` is short and
-// fits within this buffer, calls `func` with `ctx` as a parameter, where the
-// pushing and popping of limits is handled automatically and with lower cost
-// than the normal PushLimit()/PopLimit() sequence.
-UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
-    upb_EpsCopyInputStream* e, const char** ptr, int len,
-    upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx) {
-  if (!upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(e, *ptr, len)) {
+#pragma intrinsic(_InterlockedCompareExchange64)
+static bool upb_Atomic_CompareExchangeMscP(uint64_t volatile *addr,
+                                           uint64_t *expected,
+                                           uint64_t desired) {
+  uint64_t expect_val = *expected;
+  uint64_t actual_val =
+      _InterlockedCompareExchange64(addr, desired, expect_val);
+  if (expect_val != actual_val) {
+    *expected = actual_val;
     return false;
   }
-
-  // Fast case: Sub-message is <128 bytes and fits in the current buffer.
-  // This means we can preserve limit/limit_ptr verbatim.
-  const char* saved_limit_ptr = e->limit_ptr;
-  int saved_limit = e->limit;
-  e->limit_ptr = *ptr + len;
-  e->limit = e->limit_ptr - e->end;
-  UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
-  *ptr = func(e, *ptr, ctx);
-  e->limit_ptr = saved_limit_ptr;
-  e->limit = saved_limit;
-  UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
   return true;
 }
 
-#ifdef __cplusplus
-} /* extern "C" */
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  upb_Atomic_CompareExchangeMscP((uint64_t volatile *)addr,            \
+                                 (uint64_t *)expected, (uint64_t)desired)
+
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  upb_Atomic_CompareExchangeMscP((uint64_t volatile *)addr,                    \
+                                 (uint64_t *)expected, (uint64_t)desired)
+
+#else  // 32 bit pointers
+#pragma intrinsic(_InterlockedExchange)
+#define upb_Atomic_Store(addr, val, order) \
+  (void)_InterlockedExchange((uint32_t volatile *)addr, (uint32_t)val)
+
+#pragma intrinsic(_InterlockedCompareExchange)
+static uintptr_t upb_Atomic_LoadMsc(uint32_t volatile *addr) {
+  // Compare exchange with an unlikely value reduces the risk of a spurious
+  // (but harmless) store
+  return _InterlockedCompareExchange(addr, 0xDEADC0DE, 0xDEADC0DE);
+}
+// If _Generic is available, use it to avoid emitting 'uintptr_t' differs in
+// levels of indirection from 'void *'
+#if __STDC_VERSION__ >= 201112L
+#define upb_Atomic_Load(addr, order)                           \
+  _Generic(addr,                                               \
+      UPB_ATOMIC(uintptr_t) *: upb_Atomic_LoadMsc(             \
+                                 (uint32_t volatile *)(addr)), \
+      default: (void *)upb_Atomic_LoadMsc((uint32_t volatile *)(addr)))
+
+#define upb_Atomic_Exchange(addr, val, order)                                 \
+  _Generic(addr,                                                              \
+      UPB_ATOMIC(uintptr_t) *: _InterlockedExchange(                          \
+                                 (uint32_t volatile *)(addr), (uint32_t)val), \
+      default: (void *)_InterlockedExchange64((uint32_t volatile *)addr,      \
+                                              (uint32_t)val))
+#else
+#define upb_Atomic_Load(addr, order) \
+  (void *)upb_Atomic_LoadMsc((uint32_t volatile *)(addr))
+
+#define upb_Atomic_Exchange(addr, val, order) \
+  (void *)_InterlockedExchange((uint32_t volatile *)addr, (uint32_t)val)
+#endif
+
+#pragma intrinsic(_InterlockedCompareExchange)
+static bool upb_Atomic_CompareExchangeMscP(uint32_t volatile *addr,
+                                           uint32_t *expected,
+                                           uint32_t desired) {
+  uint32_t expect_val = *expected;
+  uint32_t actual_val = _InterlockedCompareExchange(addr, desired, expect_val);
+  if (expect_val != actual_val) {
+    *expected = actual_val;
+    return false;
+  }
+  return true;
+}
+
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  upb_Atomic_CompareExchangeMscP((uint32_t volatile *)addr,            \
+                                 (uint32_t *)expected, (uint32_t)desired)
+
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  upb_Atomic_CompareExchangeMscP((uint32_t volatile *)addr,                    \
+                                 (uint32_t *)expected, (uint32_t)desired)
+#endif
+
+#else  // No atomics
+
+#if !defined(UPB_SUPPRESS_MISSING_ATOMICS)
+// NOLINTNEXTLINE
+#error Your compiler does not support atomic instructions, which UPB uses. If you do not use UPB on multiple threads, you can suppress this error by defining UPB_SUPPRESS_MISSING_ATOMICS.
+#endif
+
+#include <string.h>
+
+#define upb_Atomic_Init(addr, val) (*addr = val)
+#define upb_Atomic_Load(addr, order) (*addr)
+#define upb_Atomic_Store(addr, val, order) (*(addr) = val)
+
+UPB_INLINE void* _upb_NonAtomic_Exchange(void* addr, void* value) {
+  void* old;
+  memcpy(&old, addr, sizeof(value));
+  memcpy(addr, &value, sizeof(value));
+  return old;
+}
+
+#define upb_Atomic_Exchange(addr, val, order) _upb_NonAtomic_Exchange(addr, val)
+
+// `addr` and `expected` are logically double pointers.
+UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
+                                                      void* expected,
+                                                      void* desired) {
+  if (memcmp(addr, expected, sizeof(desired)) == 0) {
+    memcpy(addr, &desired, sizeof(desired));
+    return true;
+  } else {
+    memcpy(expected, addr, sizeof(desired));
+    return false;
+  }
+}
+
+#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
+                                         success_order, failure_order) \
+  _upb_NonAtomic_CompareExchangeStrongP((void*)addr, (void*)expected,  \
+                                        (void*)desired)
+#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
+                                       failure_order)                          \
+  upb_Atomic_CompareExchangeStrong(addr, expected, desired, 0, 0)
+
 #endif
 
 
-#endif  // UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
+#endif  // UPB_PORT_ATOMIC_H_
 
-#ifndef UPB_JSON_DECODE_H_
-#define UPB_JSON_DECODE_H_
+#ifndef UPB_MESSAGE_ACCESSORS_H_
+#define UPB_MESSAGE_ACCESSORS_H_
 
-#include <stddef.h>
-
-
-// Public APIs for message operations that do not depend on the schema.
-//
-// MiniTable-based accessors live in accessors.h.
-
-#ifndef UPB_MESSAGE_MESSAGE_H_
-#define UPB_MESSAGE_MESSAGE_H_
-
-#include <stddef.h>
 #include <stdint.h>
 
 #ifndef UPB_BASE_STRING_VIEW_H_
@@ -2859,6 +2647,52 @@ UPB_API_INLINE bool upb_Array_IsFrozen(const upb_Array* arr);
 
 #endif /* UPB_MESSAGE_ARRAY_H_ */
 
+#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
+
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+
+#ifndef UPB_BASE_INTERNAL_ENDIAN_H_
+#define UPB_BASE_INTERNAL_ENDIAN_H_
+
+#include <stdint.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE bool upb_IsLittleEndian(void) {
+  const int x = 1;
+  return *(char*)&x == 1;
+}
+
+UPB_INLINE uint32_t upb_BigEndian32(uint32_t val) {
+  if (upb_IsLittleEndian()) return val;
+
+  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
+         ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
+}
+
+UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
+  if (upb_IsLittleEndian()) return val;
+
+  const uint64_t hi = ((uint64_t)upb_BigEndian32((uint32_t)val)) << 32;
+  const uint64_t lo = upb_BigEndian32((uint32_t)(val >> 32));
+  return hi | lo;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_BASE_INTERNAL_ENDIAN_H_ */
+
 #ifndef UPB_MESSAGE_INTERNAL_EXTENSION_H_
 #define UPB_MESSAGE_INTERNAL_EXTENSION_H_
 
@@ -3929,236 +3763,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
 
 
 #endif /* UPB_MESSAGE_INTERNAL_MESSAGE_H_ */
-
-// Must be last.
-
-typedef struct upb_Message upb_Message;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Creates a new message with the given mini_table on the given arena.
-UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
-
-//
-// Unknown data may be stored non-contiguously. Each segment stores a block of
-// unknown fields. To iterate over segments:
-//
-//   uintptr_t iter = kUpb_Message_UnknownBegin;
-//   upb_StringView data;
-//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
-//     // Use data
-//   }
-// Iterates in the order unknown fields were parsed.
-
-#define kUpb_Message_UnknownBegin 0
-#define kUpb_Message_ExtensionBegin 0
-
-UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
-                                        upb_StringView* data, uintptr_t* iter);
-
-UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
-
-// Removes a segment of unknown data from the message, advancing to the next
-// segment.  Returns false if the removed segment was at the end of the last
-// chunk.
-//
-// This must be done while iterating:
-//
-//   uintptr_t iter = kUpb_Message_UnknownBegin;
-//   upb_StringView data;
-//   // Iterate chunks
-//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
-//     // Iterate within a chunk, deleting ranges
-//     while (ShouldDeleteSubSegment(&data)) {
-//       // Data now points to the region to be deleted
-//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
-//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
-//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
-//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
-//         // then data now points to the remaining unknown fields after the
-//         // region that was just deleted.
-//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
-//       }
-//     }
-//   }
-//
-// The range given in `data` must be contained inside the most recently
-// returned region.
-typedef enum upb_Message_DeleteUnknownStatus {
-  kUpb_DeleteUnknown_DeletedLast,
-  kUpb_DeleteUnknown_IterUpdated,
-  kUpb_DeleteUnknown_AllocFail,
-} upb_Message_DeleteUnknownStatus;
-upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
-                                                          upb_StringView* data,
-                                                          uintptr_t* iter,
-                                                          upb_Arena* arena);
-
-// Returns the number of extensions present in this message.
-size_t upb_Message_ExtensionCount(const upb_Message* msg);
-
-// Iterates extensions in wire order
-UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
-                                          const upb_MiniTableExtension** out_e,
-                                          upb_MessageValue* out_v,
-                                          uintptr_t* iter);
-
-// Iterates extensions in reverse wire order
-UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
-    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
-    upb_MessageValue* out_v, uintptr_t* iter);
-
-// Mark a message and all of its descendents as frozen/immutable.
-UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
-
-// Returns whether a message has been frozen.
-UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
-
-#ifdef UPB_TRACING_ENABLED
-UPB_API void upb_Message_LogNewMessage(const upb_MiniTable* m,
-                                       const upb_Arena* arena);
-
-UPB_API void upb_Message_SetNewMessageTraceHandler(
-    void (*handler)(const upb_MiniTable* m, const upb_Arena* arena));
-#endif  // UPB_TRACING_ENABLED
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_MESSAGE_H_ */
-
-#ifndef UPB_REFLECTION_DEF_H_
-#define UPB_REFLECTION_DEF_H_
-
-// IWYU pragma: begin_exports
-
-// IWYU pragma: private, include "upb/reflection/def.h"
-
-#ifndef UPB_REFLECTION_DEF_POOL_H_
-#define UPB_REFLECTION_DEF_POOL_H_
-
-
-// IWYU pragma: private, include "upb/reflection/def.h"
-
-// Declarations common to all public def types.
-
-#ifndef UPB_REFLECTION_COMMON_H_
-#define UPB_REFLECTION_COMMON_H_
-
-#ifndef GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
-#define GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
-
-// IWYU pragma: begin_exports
-
-#if defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
-// This header is checked in.
-#elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 1
-// This header is generated at build time by the bootstrapping process.
-#else
-// This is the normal header, generated by upb_c_proto_library().
-/* This file was generated by upb_generator from the input file:
- *
- *     google/protobuf/descriptor.proto
- *
- * Do not edit -- your changes will be discarded when the file is
- * regenerated.
- * NO CHECKED-IN PROTOBUF GENCODE */
-
-#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
-#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
-
-
-#ifndef UPB_GENERATED_CODE_SUPPORT_H_
-#define UPB_GENERATED_CODE_SUPPORT_H_
-
-// This is a bit awkward; we want to conditionally include the fast decoder,
-// but we generally don't let macros like UPB_FASTTABLE leak into user code.
-// We can't #include "decode_fast.h" inside the port/def.inc, because the
-// inc files strictly prohibit recursive inclusion, and decode_fast.h includes
-// port/def.inc. So instead we use this two-part dance to conditionally include
-// decode_fast.h.
-#if UPB_FASTTABLE
-#define UPB_INCLUDE_FAST_DECODE
-#endif
-
-// IWYU pragma: begin_exports
-
-#ifndef UPB_BASE_UPCAST_H_
-#define UPB_BASE_UPCAST_H_
-
-// Must be last.
-
-// This macro provides a way to upcast message pointers in a way that is
-// somewhat more bulletproof than blindly casting a pointer. Example:
-//
-// typedef struct {
-//   upb_Message UPB_PRIVATE(base);
-// } pkg_FooMessage;
-//
-// void f(pkg_FooMessage* msg) {
-//   upb_Decode(UPB_UPCAST(msg), ...);
-// }
-
-#define UPB_UPCAST(x) (&(x)->base##_dont_copy_me__upb_internal_use_only)
-
-
-#endif /* UPB_BASE_UPCAST_H_ */
-
-#ifndef UPB_MESSAGE_ACCESSORS_H_
-#define UPB_MESSAGE_ACCESSORS_H_
-
-#include <stdint.h>
-
-
-#ifndef UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-#define UPB_MESSAGE_INTERNAL_ACCESSORS_H_
-
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-
-
-#ifndef UPB_BASE_INTERNAL_ENDIAN_H_
-#define UPB_BASE_INTERNAL_ENDIAN_H_
-
-#include <stdint.h>
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE bool upb_IsLittleEndian(void) {
-  const int x = 1;
-  return *(char*)&x == 1;
-}
-
-UPB_INLINE uint32_t upb_BigEndian32(uint32_t val) {
-  if (upb_IsLittleEndian()) return val;
-
-  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
-         ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
-}
-
-UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
-  if (upb_IsLittleEndian()) return val;
-
-  const uint64_t hi = ((uint64_t)upb_BigEndian32((uint32_t)val)) << 32;
-  const uint64_t lo = upb_BigEndian32((uint32_t)(val >> 32));
-  return hi | lo;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_BASE_INTERNAL_ENDIAN_H_ */
 
 #ifndef UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_
 #define UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_
@@ -5358,6 +4962,118 @@ UPB_API_INLINE bool upb_Map_IsFrozen(const upb_Map* map);
 
 #endif /* UPB_MESSAGE_MAP_H_ */
 
+// Public APIs for message operations that do not depend on the schema.
+//
+// MiniTable-based accessors live in accessors.h.
+
+#ifndef UPB_MESSAGE_MESSAGE_H_
+#define UPB_MESSAGE_MESSAGE_H_
+
+#include <stddef.h>
+#include <stdint.h>
+
+
+// Must be last.
+
+typedef struct upb_Message upb_Message;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Creates a new message with the given mini_table on the given arena.
+UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
+
+//
+// Unknown data may be stored non-contiguously. Each segment stores a block of
+// unknown fields. To iterate over segments:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_StringView data;
+//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
+//     // Use data
+//   }
+// Iterates in the order unknown fields were parsed.
+
+#define kUpb_Message_UnknownBegin 0
+#define kUpb_Message_ExtensionBegin 0
+
+UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
+                                        upb_StringView* data, uintptr_t* iter);
+
+UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
+
+// Removes a segment of unknown data from the message, advancing to the next
+// segment.  Returns false if the removed segment was at the end of the last
+// chunk.
+//
+// This must be done while iterating:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_StringView data;
+//   // Iterate chunks
+//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
+//     // Iterate within a chunk, deleting ranges
+//     while (ShouldDeleteSubSegment(&data)) {
+//       // Data now points to the region to be deleted
+//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
+//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
+//       }
+//     }
+//   }
+//
+// The range given in `data` must be contained inside the most recently
+// returned region.
+typedef enum upb_Message_DeleteUnknownStatus {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
+                                                          upb_StringView* data,
+                                                          uintptr_t* iter,
+                                                          upb_Arena* arena);
+
+// Returns the number of extensions present in this message.
+size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+// Iterates extensions in wire order
+UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
+                                          const upb_MiniTableExtension** out_e,
+                                          upb_MessageValue* out_v,
+                                          uintptr_t* iter);
+
+// Iterates extensions in reverse wire order
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter);
+
+// Mark a message and all of its descendents as frozen/immutable.
+UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);
+
+// Returns whether a message has been frozen.
+UPB_API_INLINE bool upb_Message_IsFrozen(const upb_Message* msg);
+
+#ifdef UPB_TRACING_ENABLED
+UPB_API void upb_Message_LogNewMessage(const upb_MiniTable* m,
+                                       const upb_Arena* arena);
+
+UPB_API void upb_Message_SetNewMessageTraceHandler(
+    void (*handler)(const upb_MiniTable* m, const upb_Arena* arena));
+#endif  // UPB_TRACING_ENABLED
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_MESSAGE_H_ */
+
 #ifndef UPB_MINI_TABLE_TAGGED_PTR_H_
 #define UPB_MINI_TABLE_TAGGED_PTR_H_
 
@@ -5691,15 +5407,368 @@ bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* mini_table,
 
 #endif  // UPB_MESSAGE_ACCESSORS_H_
 
-// These functions are only used by generated code.
+#ifndef UPB_MESSAGE_COMPAT_H_
+#define UPB_MESSAGE_COMPAT_H_
 
-#ifndef UPB_MESSAGE_MAP_GENCODE_UTIL_H_
-#define UPB_MESSAGE_MAP_GENCODE_UTIL_H_
+#include <stdint.h>
 
-// This header file is referenced by multiple files. Leave it empty.
-// TODO: b/399481227 - Remove this header file, after all the references are
-// cleaned up.
-#endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */
+
+// Must be last.
+
+// upb does not support mixing minitables from different sources but these
+// functions are still used by some existing users so for now we make them
+// available here. This may or may not change in the future so do not add
+// them to new code.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Same as upb_Message_NextExtension but iterates in reverse wire order
+bool upb_Message_NextExtensionReverse(const upb_Message* msg,
+                                      const upb_MiniTableExtension** result,
+                                      uintptr_t* iter);
+// Returns the minitable with the given field number, or NULL on failure.
+const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
+    const upb_Message* msg, uint32_t field_number);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_COMPAT_H_ */
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+#ifndef UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
+#define UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+#ifndef UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+#define UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+
+#include <stdint.h>
+
+
+// Map entries aren't actually stored for map fields, they are only used during
+// parsing. (It helps a lot if all map entry messages have the same layout.)
+// The mini_table layout code will ensure that all map entries have this layout.
+//
+// Note that users can and do create map entries directly, which will also use
+// this layout.
+
+typedef struct {
+  struct upb_Message message;
+  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
+  // and the uint64_t helps make this clear.
+  uint64_t hasbits;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+    double d[2];         // Padding for 32-bit builds.
+  } k;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+    double d[2];         // Padding for 32-bit builds.
+  } v;
+} upb_MapEntry;
+
+#endif  // UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
+// Since maps can be recursive (map values can be messages which contain other
+// maps), _upb_mapsorter can contain a stack of maps.
+
+typedef struct {
+  void const** entries;
+  int size;
+  int cap;
+} _upb_mapsorter;
+
+typedef struct {
+  int start;
+  int pos;
+  int end;
+} _upb_sortedmap;
+
+UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
+  s->entries = NULL;
+  s->size = 0;
+  s->cap = 0;
+}
+
+UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
+  if (s->entries) upb_gfree(s->entries);
+}
+
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
+                                    const struct upb_Map* map,
+                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
+  if (sorted->pos == sorted->end) return false;
+  const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
+  if (map->UPB_PRIVATE(is_strtable)) {
+    upb_StringView key = upb_key_strview(tabent->key);
+    _upb_map_fromkey(key, &ent->k, map->key_size);
+  } else {
+    uintptr_t key = tabent->key.num;
+    memcpy(&ent->k, &key, map->key_size);
+  }
+  upb_value val = {tabent->val.val};
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
+  return true;
+}
+
+UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
+                                       _upb_sortedmap* sorted,
+                                       const upb_Extension** ext) {
+  if (sorted->pos == sorted->end) return false;
+  *ext = (const upb_Extension*)s->entries[sorted->pos++];
+  return true;
+}
+
+UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
+                                      _upb_sortedmap* sorted) {
+  s->size = sorted->start;
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
+                            const struct upb_Map* map, _upb_sortedmap* sorted);
+
+bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
+                             _upb_sortedmap* sorted);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
+
+#ifndef UPB_BASE_INTERNAL_LOG2_H_
+#define UPB_BASE_INTERNAL_LOG2_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE int upb_Log2Ceiling(int x) {
+  if (x <= 1) return 0;
+#ifdef __GNUC__
+  return 32 - __builtin_clz(x - 1);
+#else
+  int lg2 = 0;
+  while ((1 << lg2) < x) lg2++;
+  return lg2;
+#endif
+}
+
+UPB_INLINE int upb_RoundUpToPowerOfTwo(int x) {
+  return 1 << upb_Log2Ceiling(x);
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_BASE_INTERNAL_LOG2_H_ */
+
+#ifndef UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
+#define UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Builds a upb_MiniTableEnum from an enum mini descriptor.
+// The mini descriptor must be for an enum, not a message.
+UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
+                                                   upb_Arena* arena,
+                                                   upb_Status* status);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
+
+#include <stdint.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE char _upb_ToBase92(int8_t ch) {
+  extern const char _kUpb_ToBase92[];
+  UPB_ASSERT(0 <= ch && ch < 92);
+  return _kUpb_ToBase92[ch];
+}
+
+UPB_INLINE char _upb_FromBase92(uint8_t ch) {
+  extern const int8_t _kUpb_FromBase92[];
+  if (' ' > ch || ch > '~') return -1;
+  return _kUpb_FromBase92[ch - ' '];
+}
+
+UPB_INLINE const char* _upb_Base92_DecodeVarint(const char* ptr,
+                                                const char* end, char first_ch,
+                                                uint8_t min, uint8_t max,
+                                                uint32_t* out_val) {
+  uint32_t val = 0;
+  uint32_t shift = 0;
+  const int bits_per_char =
+      upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
+  char ch = first_ch;
+  while (1) {
+    uint32_t bits = _upb_FromBase92(ch) - _upb_FromBase92(min);
+    val |= bits << shift;
+    if (ptr == end || *ptr < min || max < *ptr) {
+      *out_val = val;
+      UPB_ASSUME(ptr != NULL);
+      return ptr;
+    }
+    ch = *ptr++;
+    shift += bits_per_char;
+    if (shift >= 32) return NULL;
+  }
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+
+
+// Must be last.
+
+// upb_MdDecoder: used internally for decoding MiniDescriptors for messages,
+// extensions, and enums.
+typedef struct {
+  const char* end;
+  upb_Status* status;
+  jmp_buf err;
+} upb_MdDecoder;
+
+UPB_PRINTF(2, 3)
+UPB_NORETURN UPB_INLINE void upb_MdDecoder_ErrorJmp(upb_MdDecoder* d,
+                                                    const char* fmt, ...) {
+  if (d->status) {
+    va_list argp;
+    upb_Status_SetErrorMessage(d->status, "Error building mini table: ");
+    va_start(argp, fmt);
+    upb_Status_VAppendErrorFormat(d->status, fmt, argp);
+    va_end(argp);
+  }
+  UPB_LONGJMP(d->err, 1);
+}
+
+UPB_INLINE void upb_MdDecoder_CheckOutOfMemory(upb_MdDecoder* d,
+                                               const void* ptr) {
+  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Out of memory");
+}
+
+UPB_INLINE const char* upb_MdDecoder_DecodeBase92Varint(
+    upb_MdDecoder* d, const char* ptr, char first_ch, uint8_t min, uint8_t max,
+    uint32_t* out_val) {
+  ptr = _upb_Base92_DecodeVarint(ptr, d->end, first_ch, min, max, out_val);
+  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Overlong varint");
+  return ptr;
+}
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
+
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
+
+
+// Must be last.
+
+typedef enum {
+  kUpb_EncodedType_Double = 0,
+  kUpb_EncodedType_Float = 1,
+  kUpb_EncodedType_Fixed32 = 2,
+  kUpb_EncodedType_Fixed64 = 3,
+  kUpb_EncodedType_SFixed32 = 4,
+  kUpb_EncodedType_SFixed64 = 5,
+  kUpb_EncodedType_Int32 = 6,
+  kUpb_EncodedType_UInt32 = 7,
+  kUpb_EncodedType_SInt32 = 8,
+  kUpb_EncodedType_Int64 = 9,
+  kUpb_EncodedType_UInt64 = 10,
+  kUpb_EncodedType_SInt64 = 11,
+  kUpb_EncodedType_OpenEnum = 12,
+  kUpb_EncodedType_Bool = 13,
+  kUpb_EncodedType_Bytes = 14,
+  kUpb_EncodedType_String = 15,
+  kUpb_EncodedType_Group = 16,
+  kUpb_EncodedType_Message = 17,
+  kUpb_EncodedType_ClosedEnum = 18,
+
+  kUpb_EncodedType_RepeatedBase = 20,
+} upb_EncodedType;
+
+typedef enum {
+  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
+  kUpb_EncodedFieldModifier_IsRequired = 1 << 1,
+  kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
+  kUpb_EncodedFieldModifier_FlipValidateUtf8 = 1 << 3,
+} upb_EncodedFieldModifier;
+
+enum {
+  kUpb_EncodedValue_MinField = ' ',
+  kUpb_EncodedValue_MaxField = 'I',
+  kUpb_EncodedValue_MinModifier = 'L',
+  kUpb_EncodedValue_MaxModifier = '[',
+  kUpb_EncodedValue_End = '^',
+  kUpb_EncodedValue_MinSkip = '_',
+  kUpb_EncodedValue_MaxSkip = '~',
+  kUpb_EncodedValue_OneofSeparator = '~',
+  kUpb_EncodedValue_FieldSeparator = '|',
+  kUpb_EncodedValue_MinOneofField = ' ',
+  kUpb_EncodedValue_MaxOneofField = 'b',
+  kUpb_EncodedValue_MaxEnumMask = 'A',
+};
+
+enum {
+  kUpb_EncodedVersion_EnumV1 = '!',
+  kUpb_EncodedVersion_ExtensionV1 = '#',
+  kUpb_EncodedVersion_MapV1 = '%',
+  kUpb_EncodedVersion_MessageV1 = '$',
+  kUpb_EncodedVersion_MessageSetV1 = '&',
+};
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
 
 #ifndef UPB_MINI_TABLE_DECODE_H_
 #define UPB_MINI_TABLE_DECODE_H_
@@ -5745,29 +5814,6 @@ UPB_API_INLINE const upb_MiniTable* upb_MiniTableSub_Message(
 // Export the newer headers, for legacy users.  New users should include the
 // more specific headers directly.
 // IWYU pragma: begin_exports
-
-#ifndef UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
-#define UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Builds a upb_MiniTableEnum from an enum mini descriptor.
-// The mini descriptor must be for an enum, not a message.
-UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
-                                                   upb_Arena* arena,
-                                                   upb_Status* status);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 
 // Functions for linking MiniTables together once they are built from a
 // MiniDescriptor.
@@ -5933,6 +5979,30 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 
 #endif /* UPB_MINI_TABLE_DECODE_H_ */
 
+#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
+#define UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
+
+// Must be last.
+
+typedef enum {
+  kUpb_FieldModifier_IsRepeated = 1 << 0,
+  kUpb_FieldModifier_IsPacked = 1 << 1,
+  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
+  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
+  kUpb_FieldModifier_IsRequired = 1 << 4,
+  kUpb_FieldModifier_ValidateUtf8 = 1 << 5,
+} kUpb_FieldModifier;
+
+// These modifiers are also used on the wire.
+typedef enum {
+  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
+  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
+  kUpb_MessageModifier_IsExtendable = 1 << 2,
+} kUpb_MessageModifier;
+
+
+#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
+
 #ifndef UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 #define UPB_MINI_TABLE_EXTENSION_REGISTRY_H_
 
@@ -6031,6 +6101,52 @@ UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
 
 
 #endif /* UPB_MINI_TABLE_EXTENSION_REGISTRY_H_ */
+
+#ifndef UPB_GENERATED_CODE_SUPPORT_H_
+#define UPB_GENERATED_CODE_SUPPORT_H_
+
+// This is a bit awkward; we want to conditionally include the fast decoder,
+// but we generally don't let macros like UPB_FASTTABLE leak into user code.
+// We can't #include "decode_fast.h" inside the port/def.inc, because the
+// inc files strictly prohibit recursive inclusion, and decode_fast.h includes
+// port/def.inc. So instead we use this two-part dance to conditionally include
+// decode_fast.h.
+#if UPB_FASTTABLE
+#define UPB_INCLUDE_FAST_DECODE
+#endif
+
+// IWYU pragma: begin_exports
+
+#ifndef UPB_BASE_UPCAST_H_
+#define UPB_BASE_UPCAST_H_
+
+// Must be last.
+
+// This macro provides a way to upcast message pointers in a way that is
+// somewhat more bulletproof than blindly casting a pointer. Example:
+//
+// typedef struct {
+//   upb_Message UPB_PRIVATE(base);
+// } pkg_FooMessage;
+//
+// void f(pkg_FooMessage* msg) {
+//   upb_Decode(UPB_UPCAST(msg), ...);
+// }
+
+#define UPB_UPCAST(x) (&(x)->base##_dont_copy_me__upb_internal_use_only)
+
+
+#endif /* UPB_BASE_UPCAST_H_ */
+
+// These functions are only used by generated code.
+
+#ifndef UPB_MESSAGE_MAP_GENCODE_UTIL_H_
+#define UPB_MESSAGE_MAP_GENCODE_UTIL_H_
+
+// This header file is referenced by multiple files. Leave it empty.
+// TODO: b/399481227 - Remove this header file, after all the references are
+// cleaned up.
+#endif /* UPB_MESSAGE_MAP_GENCODE_UTIL_H_ */
 
 #ifndef UPB_MINI_TABLE_FILE_H_
 #define UPB_MINI_TABLE_FILE_H_
@@ -6359,7 +6475,6 @@ UPB_API const char* upb_EncodeStatus_String(upb_EncodeStatus status);
 #undef UPB_INCLUDE_FAST_DECODE
 
 #endif  // UPB_GENERATED_CODE_SUPPORT_H_
-
 /* This file was generated by upb_generator from the input file:
  *
  *     google/protobuf/descriptor.proto
@@ -6475,6 +6590,48 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_MINITABLE_H_ */
+
+#ifndef UPB_REFLECTION_DEF_H_
+#define UPB_REFLECTION_DEF_H_
+
+// IWYU pragma: begin_exports
+
+// IWYU pragma: private, include "upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_DEF_POOL_H_
+#define UPB_REFLECTION_DEF_POOL_H_
+
+
+// IWYU pragma: private, include "upb/reflection/def.h"
+
+// Declarations common to all public def types.
+
+#ifndef UPB_REFLECTION_COMMON_H_
+#define UPB_REFLECTION_COMMON_H_
+
+#ifndef GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
+#define GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
+
+// IWYU pragma: begin_exports
+
+#if defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 0
+// This header is checked in.
+#elif defined(UPB_BOOTSTRAP_STAGE) && UPB_BOOTSTRAP_STAGE == 1
+// This header is generated at build time by the bootstrapping process.
+#else
+// This is the normal header, generated by upb_c_proto_library().
+/* This file was generated by upb_generator from the input file:
+ *
+ *     google/protobuf/descriptor.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
+
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPB_H_
+
+
 
 
 // Must be last.
@@ -14210,6 +14367,257 @@ const UPB_DESC(FeatureSet) *
 // IWYU pragma: end_exports
 
 #endif /* UPB_REFLECTION_DEF_H_ */
+/* This file was generated by upb_generator from the input file:
+ *
+ *     google/protobuf/descriptor.proto
+ *
+ * Do not edit -- your changes will be discarded when the file is
+ * regenerated.
+ * NO CHECKED-IN PROTOBUF GENCODE */
+
+
+
+#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
+#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
+
+
+#ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
+#define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s);
+size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
+upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s);
+
+bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
+                            const upb_FieldDef* f);
+bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
+                            upb_Status* status);
+bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
+                            upb_value* v);
+
+void** _upb_DefPool_ScratchData(const upb_DefPool* s);
+size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s);
+void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform);
+
+// For generated code only: loads a generated descriptor.
+typedef struct _upb_DefPool_Init {
+  struct _upb_DefPool_Init** deps;  // Dependencies of this file.
+  const upb_MiniTableFile* layout;
+  const char* filename;
+  upb_StringView descriptor;  // Serialized descriptor.
+} _upb_DefPool_Init;
+
+bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
+
+// Should only be directly called by tests. This variant lets us suppress
+// the use of compiled-in tables, forcing a rebuild of the tables at runtime.
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_DEF_POOL_INTERNAL_H_ */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern _upb_DefPool_Init google_protobuf_descriptor_proto_upbdefinit;
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FileDescriptorSet_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FileDescriptorSet");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FileDescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FileDescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_DescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.DescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_DescriptorProto_ExtensionRange_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.DescriptorProto.ExtensionRange");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_DescriptorProto_ReservedRange_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.DescriptorProto.ReservedRange");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_ExtensionRangeOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.ExtensionRangeOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_ExtensionRangeOptions_Declaration_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.ExtensionRangeOptions.Declaration");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FieldDescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldDescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_OneofDescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.OneofDescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_EnumDescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumDescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_EnumDescriptorProto_EnumReservedRange_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumDescriptorProto.EnumReservedRange");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_EnumValueDescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumValueDescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_ServiceDescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.ServiceDescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_MethodDescriptorProto_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.MethodDescriptorProto");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FileOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FileOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_MessageOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.MessageOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FieldOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FieldOptions_EditionDefault_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldOptions.EditionDefault");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FieldOptions_FeatureSupport_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldOptions.FeatureSupport");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_OneofOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.OneofOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_EnumOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_EnumValueOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumValueOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_ServiceOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.ServiceOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_MethodOptions_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.MethodOptions");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_UninterpretedOption_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.UninterpretedOption");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_UninterpretedOption_NamePart_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.UninterpretedOption.NamePart");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSet_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSet");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSet_VisibilityFeature_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSet.VisibilityFeature");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSetDefaults_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSetDefaults");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_SourceCodeInfo_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.SourceCodeInfo");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_SourceCodeInfo_Location_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.SourceCodeInfo.Location");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_GeneratedCodeInfo_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.GeneratedCodeInfo");
+}
+
+UPB_INLINE const upb_MessageDef *google_protobuf_GeneratedCodeInfo_Annotation_getmsgdef(upb_DefPool *s) {
+  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
+  return upb_DefPool_FindMessageByName(s, "google.protobuf.GeneratedCodeInfo.Annotation");
+}
+
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
+
+
+#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_ */
+
+#ifndef UPB_JSON_DECODE_H_
+#define UPB_JSON_DECODE_H_
+
+#include <stddef.h>
+
 
 // Must be last.
 
@@ -14494,281 +14902,8 @@ UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
 
 #endif  // UPB_PORT_VSNPRINTF_COMPAT_H_
 
-#ifndef UPB_PORT_ATOMIC_H_
-#define UPB_PORT_ATOMIC_H_
-
-
-#ifdef UPB_USE_C11_ATOMICS
-
-// IWYU pragma: begin_exports
-#include <stdatomic.h>
-#include <stdbool.h>
-// IWYU pragma: end_exports
-
-#define upb_Atomic_Init(addr, val) atomic_init(addr, val)
-#define upb_Atomic_Load(addr, order) atomic_load_explicit(addr, order)
-#define upb_Atomic_Store(addr, val, order) \
-  atomic_store_explicit(addr, val, order)
-#define upb_Atomic_Exchange(addr, val, order) \
-  atomic_exchange_explicit(addr, val, order)
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
-                                         success_order, failure_order) \
-  atomic_compare_exchange_strong_explicit(addr, expected, desired,     \
-                                          success_order, failure_order)
-#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
-                                       failure_order)                          \
-  atomic_compare_exchange_weak_explicit(addr, expected, desired,               \
-                                        success_order, failure_order)
-
-#elif defined(UPB_USE_MSC_ATOMICS)
-#include <intrin.h>
-#include <stdbool.h>
-#include <stdint.h>
-
-#define upb_Atomic_Init(addr, val) (*(addr) = val)
-
-#if defined(_WIN64)
-// MSVC, without C11 atomics, does not have any way in pure C to force
-// load-acquire store-release behavior, so we hack it with exchanges.
-#pragma intrinsic(_InterlockedExchange64)
-#define upb_Atomic_Store(addr, val, order) \
-  (void)_InterlockedExchange64((uint64_t volatile *)addr, (uint64_t)val)
-
-#pragma intrinsic(_InterlockedCompareExchange64)
-static uintptr_t upb_Atomic_LoadMsc(uint64_t volatile *addr) {
-  // Compare exchange with an unlikely value reduces the risk of a spurious
-  // (but harmless) store
-  return _InterlockedCompareExchange64(addr, 0xDEADC0DEBAADF00D,
-                                       0xDEADC0DEBAADF00D);
-}
-// If _Generic is available, use it to avoid emitting a "'uintptr_t' differs in
-// levels of indirection from 'void *'" or -Wint-conversion compiler warning.
-#if __STDC_VERSION__ >= 201112L
-#define upb_Atomic_Load(addr, order)                           \
-  _Generic(addr,                                               \
-      UPB_ATOMIC(uintptr_t) *: upb_Atomic_LoadMsc(             \
-                                 (uint64_t volatile *)(addr)), \
-      default: (void *)upb_Atomic_LoadMsc((uint64_t volatile *)(addr)))
-
-#define upb_Atomic_Exchange(addr, val, order)                                 \
-  _Generic(addr,                                                              \
-      UPB_ATOMIC(uintptr_t) *: _InterlockedExchange64(                        \
-                                 (uint64_t volatile *)(addr), (uint64_t)val), \
-      default: (void *)_InterlockedExchange64((uint64_t volatile *)addr,      \
-                                              (uint64_t)val))
-#else
-// Compare exchange with an unlikely value reduces the risk of a spurious
-// (but harmless) store
-#define upb_Atomic_Load(addr, order) \
-  (void *)upb_Atomic_LoadMsc((uint64_t volatile *)(addr))
-
-#define upb_Atomic_Exchange(addr, val, order) \
-  (void *)_InterlockedExchange64((uint64_t volatile *)addr, (uint64_t)val)
-#endif
-
-#pragma intrinsic(_InterlockedCompareExchange64)
-static bool upb_Atomic_CompareExchangeMscP(uint64_t volatile *addr,
-                                           uint64_t *expected,
-                                           uint64_t desired) {
-  uint64_t expect_val = *expected;
-  uint64_t actual_val =
-      _InterlockedCompareExchange64(addr, desired, expect_val);
-  if (expect_val != actual_val) {
-    *expected = actual_val;
-    return false;
-  }
-  return true;
-}
-
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
-                                         success_order, failure_order) \
-  upb_Atomic_CompareExchangeMscP((uint64_t volatile *)addr,            \
-                                 (uint64_t *)expected, (uint64_t)desired)
-
-#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
-                                       failure_order)                          \
-  upb_Atomic_CompareExchangeMscP((uint64_t volatile *)addr,                    \
-                                 (uint64_t *)expected, (uint64_t)desired)
-
-#else  // 32 bit pointers
-#pragma intrinsic(_InterlockedExchange)
-#define upb_Atomic_Store(addr, val, order) \
-  (void)_InterlockedExchange((uint32_t volatile *)addr, (uint32_t)val)
-
-#pragma intrinsic(_InterlockedCompareExchange)
-static uintptr_t upb_Atomic_LoadMsc(uint32_t volatile *addr) {
-  // Compare exchange with an unlikely value reduces the risk of a spurious
-  // (but harmless) store
-  return _InterlockedCompareExchange(addr, 0xDEADC0DE, 0xDEADC0DE);
-}
-// If _Generic is available, use it to avoid emitting 'uintptr_t' differs in
-// levels of indirection from 'void *'
-#if __STDC_VERSION__ >= 201112L
-#define upb_Atomic_Load(addr, order)                           \
-  _Generic(addr,                                               \
-      UPB_ATOMIC(uintptr_t) *: upb_Atomic_LoadMsc(             \
-                                 (uint32_t volatile *)(addr)), \
-      default: (void *)upb_Atomic_LoadMsc((uint32_t volatile *)(addr)))
-
-#define upb_Atomic_Exchange(addr, val, order)                                 \
-  _Generic(addr,                                                              \
-      UPB_ATOMIC(uintptr_t) *: _InterlockedExchange(                          \
-                                 (uint32_t volatile *)(addr), (uint32_t)val), \
-      default: (void *)_InterlockedExchange64((uint32_t volatile *)addr,      \
-                                              (uint32_t)val))
-#else
-#define upb_Atomic_Load(addr, order) \
-  (void *)upb_Atomic_LoadMsc((uint32_t volatile *)(addr))
-
-#define upb_Atomic_Exchange(addr, val, order) \
-  (void *)_InterlockedExchange((uint32_t volatile *)addr, (uint32_t)val)
-#endif
-
-#pragma intrinsic(_InterlockedCompareExchange)
-static bool upb_Atomic_CompareExchangeMscP(uint32_t volatile *addr,
-                                           uint32_t *expected,
-                                           uint32_t desired) {
-  uint32_t expect_val = *expected;
-  uint32_t actual_val = _InterlockedCompareExchange(addr, desired, expect_val);
-  if (expect_val != actual_val) {
-    *expected = actual_val;
-    return false;
-  }
-  return true;
-}
-
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
-                                         success_order, failure_order) \
-  upb_Atomic_CompareExchangeMscP((uint32_t volatile *)addr,            \
-                                 (uint32_t *)expected, (uint32_t)desired)
-
-#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
-                                       failure_order)                          \
-  upb_Atomic_CompareExchangeMscP((uint32_t volatile *)addr,                    \
-                                 (uint32_t *)expected, (uint32_t)desired)
-#endif
-
-#else  // No atomics
-
-#if !defined(UPB_SUPPRESS_MISSING_ATOMICS)
-// NOLINTNEXTLINE
-#error Your compiler does not support atomic instructions, which UPB uses. If you do not use UPB on multiple threads, you can suppress this error by defining UPB_SUPPRESS_MISSING_ATOMICS.
-#endif
-
-#include <string.h>
-
-#define upb_Atomic_Init(addr, val) (*addr = val)
-#define upb_Atomic_Load(addr, order) (*addr)
-#define upb_Atomic_Store(addr, val, order) (*(addr) = val)
-
-UPB_INLINE void* _upb_NonAtomic_Exchange(void* addr, void* value) {
-  void* old;
-  memcpy(&old, addr, sizeof(value));
-  memcpy(addr, &value, sizeof(value));
-  return old;
-}
-
-#define upb_Atomic_Exchange(addr, val, order) _upb_NonAtomic_Exchange(addr, val)
-
-// `addr` and `expected` are logically double pointers.
-UPB_INLINE bool _upb_NonAtomic_CompareExchangeStrongP(void* addr,
-                                                      void* expected,
-                                                      void* desired) {
-  if (memcmp(addr, expected, sizeof(desired)) == 0) {
-    memcpy(addr, &desired, sizeof(desired));
-    return true;
-  } else {
-    memcpy(expected, addr, sizeof(desired));
-    return false;
-  }
-}
-
-#define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
-                                         success_order, failure_order) \
-  _upb_NonAtomic_CompareExchangeStrongP((void*)addr, (void*)expected,  \
-                                        (void*)desired)
-#define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
-                                       failure_order)                          \
-  upb_Atomic_CompareExchangeStrong(addr, expected, desired, 0, 0)
-
-#endif
-
-
-#endif  // UPB_PORT_ATOMIC_H_
-
-#ifndef UPB_MESSAGE_COMPAT_H_
-#define UPB_MESSAGE_COMPAT_H_
-
-#include <stdint.h>
-
-
-// Must be last.
-
-// upb does not support mixing minitables from different sources but these
-// functions are still used by some existing users so for now we make them
-// available here. This may or may not change in the future so do not add
-// them to new code.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Same as upb_Message_NextExtension but iterates in reverse wire order
-bool upb_Message_NextExtensionReverse(const upb_Message* msg,
-                                      const upb_MiniTableExtension** result,
-                                      uintptr_t* iter);
-// Returns the minitable with the given field number, or NULL on failure.
-const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
-    const upb_Message* msg, uint32_t field_number);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MESSAGE_COMPAT_H_ */
-
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-#ifndef UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
-#define UPB_MESSAGE_INTERNAL_MAP_SORTER_H_
-
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-
-
-#ifndef UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
-#define UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
-
-#include <stdint.h>
-
-
-// Map entries aren't actually stored for map fields, they are only used during
-// parsing. (It helps a lot if all map entry messages have the same layout.)
-// The mini_table layout code will ensure that all map entries have this layout.
-//
-// Note that users can and do create map entries directly, which will also use
-// this layout.
-
-typedef struct {
-  struct upb_Message message;
-  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
-  // and the uint64_t helps make this clear.
-  uint64_t hasbits;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-    double d[2];         // Padding for 32-bit builds.
-  } k;
-  union {
-    upb_StringView str;  // For str/bytes.
-    upb_value val;       // For all other types.
-    double d[2];         // Padding for 32-bit builds.
-  } v;
-} upb_MapEntry;
-
-#endif  // UPB_MESSAGE_INTERNAL_MAP_ENTRY_H_
+#ifndef UPB_LEX_STRTOD_H_
+#define UPB_LEX_STRTOD_H_
 
 // Must be last.
 
@@ -14776,105 +14911,14 @@ typedef struct {
 extern "C" {
 #endif
 
-// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
-// Since maps can be recursive (map values can be messages which contain other
-// maps), _upb_mapsorter can contain a stack of maps.
-
-typedef struct {
-  void const** entries;
-  int size;
-  int cap;
-} _upb_mapsorter;
-
-typedef struct {
-  int start;
-  int pos;
-  int end;
-} _upb_sortedmap;
-
-UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
-  s->entries = NULL;
-  s->size = 0;
-  s->cap = 0;
-}
-
-UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
-  if (s->entries) upb_gfree(s->entries);
-}
-
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
-                                    const struct upb_Map* map,
-                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
-  if (sorted->pos == sorted->end) return false;
-  const upb_tabent* tabent = (const upb_tabent*)s->entries[sorted->pos++];
-  if (map->UPB_PRIVATE(is_strtable)) {
-    upb_StringView key = upb_key_strview(tabent->key);
-    _upb_map_fromkey(key, &ent->k, map->key_size);
-  } else {
-    uintptr_t key = tabent->key.num;
-    memcpy(&ent->k, &key, map->key_size);
-  }
-  upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->v, map->val_size);
-  return true;
-}
-
-UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
-                                       _upb_sortedmap* sorted,
-                                       const upb_Extension** ext) {
-  if (sorted->pos == sorted->end) return false;
-  *ext = (const upb_Extension*)s->entries[sorted->pos++];
-  return true;
-}
-
-UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
-                                      _upb_sortedmap* sorted) {
-  s->size = sorted->start;
-}
-
-bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const struct upb_Map* map, _upb_sortedmap* sorted);
-
-bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
-                             _upb_sortedmap* sorted);
+double _upb_NoLocaleStrtod(const char *str, char **endptr);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 
-#endif /* UPB_MESSAGE_INTERNAL_MAP_SORTER_H_ */
-
-#ifndef UPB_BASE_INTERNAL_LOG2_H_
-#define UPB_BASE_INTERNAL_LOG2_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE int upb_Log2Ceiling(int x) {
-  if (x <= 1) return 0;
-#ifdef __GNUC__
-  return 32 - __builtin_clz(x - 1);
-#else
-  int lg2 = 0;
-  while ((1 << lg2) < x) lg2++;
-  return lg2;
-#endif
-}
-
-UPB_INLINE int upb_RoundUpToPowerOfTwo(int x) {
-  return 1 << upb_Log2Ceiling(x);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_BASE_INTERNAL_LOG2_H_ */
+#endif /* UPB_LEX_STRTOD_H_ */
 
 #ifndef UPB_MESSAGE_COMPARE_H_
 #define UPB_MESSAGE_COMPARE_H_
@@ -15000,6 +15044,409 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
                                              uintptr_t* iter);
 
 #endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__
+
+#ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
+#define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
+
+#include <stdint.h>
+#include <string.h>
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// The maximum number of bytes a single protobuf field can take up in the
+// wire format.  We only want to do one bounds check per field, so the input
+// stream guarantees that after upb_EpsCopyInputStream_IsDone() is called,
+// the decoder can read this many bytes without performing another bounds
+// check.  The stream will copy into a patch buffer as necessary to guarantee
+// this invariant.
+#define kUpb_EpsCopyInputStream_SlopBytes 16
+
+typedef struct {
+  const char* end;        // Can read up to SlopBytes bytes beyond this.
+  const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
+  uintptr_t input_delta;  // Diff between the original input pointer and patch
+  const char* buffer_start;  // Pointer to the original input buffer
+  int limit;                 // Submessage limit relative to end
+  bool error;                // To distinguish between EOF and error.
+  bool aliasing;
+  char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
+} upb_EpsCopyInputStream;
+
+// Returns true if the stream is in the error state. A stream enters the error
+// state when the user reads past a limit (caught in IsDone()) or the
+// ZeroCopyInputStream returns an error.
+UPB_INLINE bool upb_EpsCopyInputStream_IsError(upb_EpsCopyInputStream* e) {
+  return e->error;
+}
+
+typedef const char* upb_EpsCopyInputStream_BufferFlipCallback(
+    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start);
+
+typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
+    upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+
+// Initializes a upb_EpsCopyInputStream using the contents of the buffer
+// [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
+// kUpb_EpsCopyInputStream_SlopBytes are available to read.
+UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size,
+                                            bool enable_aliasing) {
+  e->buffer_start = *ptr;
+  if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
+    memset(&e->patch, 0, 32);
+    if (size) memcpy(&e->patch, *ptr, size);
+    e->input_delta = (uintptr_t)*ptr - (uintptr_t)e->patch;
+    *ptr = e->patch;
+    e->end = *ptr + size;
+    e->limit = 0;
+  } else {
+    e->end = *ptr + size - kUpb_EpsCopyInputStream_SlopBytes;
+    e->limit = kUpb_EpsCopyInputStream_SlopBytes;
+    e->input_delta = 0;
+  }
+  e->aliasing = enable_aliasing;
+  e->limit_ptr = e->end;
+  e->error = false;
+}
+
+typedef enum {
+  // The current stream position is at a limit.
+  kUpb_IsDoneStatus_Done,
+
+  // The current stream position is not at a limit.
+  kUpb_IsDoneStatus_NotDone,
+
+  // The current stream position is not at a limit, and the stream needs to
+  // be flipped to a new buffer before more data can be read.
+  kUpb_IsDoneStatus_NeedFallback,
+} upb_IsDoneStatus;
+
+// Returns the status of the current stream position.  This is a low-level
+// function, it is simpler to call upb_EpsCopyInputStream_IsDone() if possible.
+UPB_INLINE upb_IsDoneStatus upb_EpsCopyInputStream_IsDoneStatus(
+    upb_EpsCopyInputStream* e, const char* ptr, int* overrun) {
+  *overrun = ptr - e->end;
+  if (UPB_LIKELY(ptr < e->limit_ptr)) {
+    return kUpb_IsDoneStatus_NotDone;
+  } else if (UPB_LIKELY(*overrun == e->limit)) {
+    return kUpb_IsDoneStatus_Done;
+  } else {
+    return kUpb_IsDoneStatus_NeedFallback;
+  }
+}
+
+// Returns true if the stream has hit a limit, either the current delimited
+// limit or the overall end-of-stream. As a side effect, this function may flip
+// the pointer to a new buffer if there are less than
+// kUpb_EpsCopyInputStream_SlopBytes of data to be read in the current buffer.
+//
+// Postcondition: if the function returns false, there are at least
+// kUpb_EpsCopyInputStream_SlopBytes of data available to read at *ptr.
+UPB_INLINE bool upb_EpsCopyInputStream_IsDoneWithCallback(
+    upb_EpsCopyInputStream* e, const char** ptr,
+    upb_EpsCopyInputStream_IsDoneFallbackFunc* func) {
+  int overrun;
+  switch (upb_EpsCopyInputStream_IsDoneStatus(e, *ptr, &overrun)) {
+    case kUpb_IsDoneStatus_Done:
+      return true;
+    case kUpb_IsDoneStatus_NotDone:
+      return false;
+    case kUpb_IsDoneStatus_NeedFallback:
+      *ptr = func(e, *ptr, overrun);
+      return *ptr == NULL;
+  }
+  UPB_UNREACHABLE();
+}
+
+const char* _upb_EpsCopyInputStream_IsDoneFallbackNoCallback(
+    upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+
+// A simpler version of IsDoneWithCallback() that does not support a buffer flip
+// callback. Useful in cases where we do not need to insert custom logic at
+// every buffer flip.
+//
+// If this returns true, the user must call upb_EpsCopyInputStream_IsError()
+// to distinguish between EOF and error.
+UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
+                                              const char** ptr) {
+  return upb_EpsCopyInputStream_IsDoneWithCallback(
+      e, ptr, _upb_EpsCopyInputStream_IsDoneFallbackNoCallback);
+}
+
+// Returns the total number of bytes that are safe to read from the current
+// buffer without reading uninitialized or unallocated memory.
+//
+// Note that this check does not respect any semantic limits on the stream,
+// either limits from PushLimit() or the overall stream end, so some of these
+// bytes may have unpredictable, nonsense values in them. The guarantee is only
+// that the bytes are valid to read from the perspective of the C language
+// (ie. you can read without triggering UBSAN or ASAN).
+UPB_INLINE size_t upb_EpsCopyInputStream_BytesAvailable(
+    upb_EpsCopyInputStream* e, const char* ptr) {
+  return (e->end - ptr) + kUpb_EpsCopyInputStream_SlopBytes;
+}
+
+// Returns true if the given delimited field size is valid (it does not extend
+// beyond any previously-pushed limits).  `ptr` should point to the beginning
+// of the field data, after the delimited size.
+//
+// Note that this does *not* guarantee that all of the data for this field is in
+// the current buffer.
+UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
+    const upb_EpsCopyInputStream* e, const char* ptr, int size) {
+  UPB_ASSERT(size >= 0);
+  return size <= e->limit - (ptr - e->end);
+}
+
+UPB_INLINE bool _upb_EpsCopyInputStream_CheckSizeAvailable(
+    upb_EpsCopyInputStream* e, const char* ptr, int size, bool submessage) {
+  // This is one extra branch compared to the more normal:
+  //   return (size_t)(end - ptr) < size;
+  // However it is one less computation if we are just about to use "ptr + len":
+  //   https://godbolt.org/z/35YGPz
+  // In microbenchmarks this shows a small improvement.
+  uintptr_t uptr = (uintptr_t)ptr;
+  uintptr_t uend = (uintptr_t)e->limit_ptr;
+  uintptr_t res = uptr + (size_t)size;
+  if (!submessage) uend += kUpb_EpsCopyInputStream_SlopBytes;
+  // NOTE: this check depends on having a linear address space.  This is not
+  // technically guaranteed by uintptr_t.
+  bool ret = res >= uptr && res <= uend;
+  if (size < 0) UPB_ASSERT(!ret);
+  return ret;
+}
+
+// Returns true if the given delimited field size is valid (it does not extend
+// beyond any previously-pushed limited) *and* all of the data for this field is
+// available to be read in the current buffer.
+//
+// If the size is negative, this function will always return false. This
+// property can be useful in some cases.
+UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
+    upb_EpsCopyInputStream* e, const char* ptr, int size) {
+  return _upb_EpsCopyInputStream_CheckSizeAvailable(e, ptr, size, false);
+}
+
+// Returns true if the given sub-message size is valid (it does not extend
+// beyond any previously-pushed limited) *and* all of the data for this
+// sub-message is available to be parsed in the current buffer.
+//
+// This implies that all fields from the sub-message can be parsed from the
+// current buffer while maintaining the invariant that we always have at least
+// kUpb_EpsCopyInputStream_SlopBytes of data available past the beginning of
+// any individual field start.
+//
+// If the size is negative, this function will always return false. This
+// property can be useful in some cases.
+UPB_INLINE bool upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(
+    upb_EpsCopyInputStream* e, const char* ptr, int size) {
+  return _upb_EpsCopyInputStream_CheckSizeAvailable(e, ptr, size, true);
+}
+
+// Returns true if aliasing_enabled=true was passed to
+// upb_EpsCopyInputStream_Init() when this stream was initialized.
+UPB_INLINE bool upb_EpsCopyInputStream_AliasingEnabled(
+    upb_EpsCopyInputStream* e) {
+  return e->aliasing;
+}
+
+// Returns true if aliasing_enabled=true was passed to
+// upb_EpsCopyInputStream_Init() when this stream was initialized *and* we can
+// alias into the region [ptr, size] in an input buffer.
+UPB_INLINE bool upb_EpsCopyInputStream_AliasingAvailable(
+    upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
+  // When EpsCopyInputStream supports streaming, this will need to become a
+  // runtime check.
+  return e->aliasing &&
+         upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size);
+}
+
+// Returns a pointer into an input buffer that corresponds to the parsing
+// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
+// be different if we are currently parsing out of the patch buffer.
+UPB_INLINE const char* upb_EpsCopyInputStream_GetInputPtr(
+    upb_EpsCopyInputStream* e, const char* ptr) {
+  // This somewhat silly looking add-and-subtract behavior provides provenance
+  // from the original input buffer's pointer. After optimization it produces
+  // the same assembly as just casting `(uintptr_t)ptr+input_delta`
+  // https://godbolt.org/z/zosG88oPn
+  size_t position =
+      (uintptr_t)ptr + e->input_delta - (uintptr_t)e->buffer_start;
+  return e->buffer_start + position;
+}
+
+// Returns a pointer into an input buffer that corresponds to the parsing
+// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
+// be different if we are currently parsing out of the patch buffer.
+//
+// REQUIRES: Aliasing must be available for the given pointer. If the input is a
+// flat buffer and aliasing is enabled, then aliasing will always be available.
+UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
+    upb_EpsCopyInputStream* e, const char* ptr) {
+  UPB_ASSUME(upb_EpsCopyInputStream_AliasingAvailable(e, ptr, 0));
+  return upb_EpsCopyInputStream_GetInputPtr(e, ptr);
+}
+
+// Reads string data from the input, aliasing into the input buffer instead of
+// copying. The parsing pointer is passed in `*ptr`, and will be updated if
+// necessary to point to the actual input buffer. Returns the new parsing
+// pointer, which will be advanced past the string data.
+//
+// REQUIRES: Aliasing must be available for this data region (test with
+// upb_EpsCopyInputStream_AliasingAvailable().
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size) {
+  UPB_ASSUME(upb_EpsCopyInputStream_AliasingAvailable(e, *ptr, size));
+  const char* ret = *ptr + size;
+  *ptr = upb_EpsCopyInputStream_GetAliasedPtr(e, *ptr);
+  UPB_ASSUME(ret != NULL);
+  return ret;
+}
+
+// Skips `size` bytes of data from the input and returns a pointer past the end.
+// Returns NULL on end of stream or error.
+UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
+                                                   const char* ptr, int size) {
+  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  return ptr + size;
+}
+
+// Copies `size` bytes of data from the input `ptr` into the buffer `to`, and
+// returns a pointer past the end. Returns NULL on end of stream or error.
+UPB_INLINE const char* upb_EpsCopyInputStream_Copy(upb_EpsCopyInputStream* e,
+                                                   const char* ptr, void* to,
+                                                   int size) {
+  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  memcpy(to, ptr, size);
+  return ptr + size;
+}
+
+// Reads string data from the stream and advances the pointer accordingly.
+// If aliasing was enabled when the stream was initialized, then the returned
+// pointer will point into the input buffer if possible, otherwise new data
+// will be allocated from arena and copied into. We may be forced to copy even
+// if aliasing was enabled if the input data spans input buffers.
+//
+// Returns NULL if memory allocation failed, or we reached a premature EOF.
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_Arena* arena) {
+  if (upb_EpsCopyInputStream_AliasingAvailable(e, *ptr, size)) {
+    return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
+  } else {
+    // We need to allocate and copy.
+    if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
+      return NULL;
+    }
+    UPB_ASSERT(arena);
+    char* data = (char*)upb_Arena_Malloc(arena, size);
+    if (!data) return NULL;
+    const char* ret = upb_EpsCopyInputStream_Copy(e, *ptr, data, size);
+    *ptr = data;
+    return ret;
+  }
+}
+
+UPB_INLINE void _upb_EpsCopyInputStream_CheckLimit(upb_EpsCopyInputStream* e) {
+  UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
+}
+
+// Pushes a limit onto the stack of limits for the current stream.  The limit
+// will extend for `size` bytes beyond the position in `ptr`.  Future calls to
+// upb_EpsCopyInputStream_IsDone() will return `true` when the stream position
+// reaches this limit.
+//
+// Returns a delta that the caller must store and supply to PopLimit() below.
+UPB_INLINE int upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
+                                                const char* ptr, int size) {
+  int limit = size + (int)(ptr - e->end);
+  int delta = e->limit - limit;
+  _upb_EpsCopyInputStream_CheckLimit(e);
+  UPB_ASSERT(limit <= e->limit);
+  e->limit = limit;
+  e->limit_ptr = e->end + UPB_MIN(0, limit);
+  _upb_EpsCopyInputStream_CheckLimit(e);
+  return delta;
+}
+
+// Pops the last limit that was pushed on this stream.  This may only be called
+// once IsDone() returns true.  The user must pass the delta that was returned
+// from PushLimit().
+UPB_INLINE void upb_EpsCopyInputStream_PopLimit(upb_EpsCopyInputStream* e,
+                                                const char* ptr,
+                                                int saved_delta) {
+  UPB_ASSERT(ptr - e->end == e->limit);
+  _upb_EpsCopyInputStream_CheckLimit(e);
+  e->limit += saved_delta;
+  e->limit_ptr = e->end + UPB_MIN(0, e->limit);
+  _upb_EpsCopyInputStream_CheckLimit(e);
+}
+
+UPB_INLINE const char* _upb_EpsCopyInputStream_IsDoneFallbackInline(
+    upb_EpsCopyInputStream* e, const char* ptr, int overrun,
+    upb_EpsCopyInputStream_BufferFlipCallback* callback) {
+  if (overrun < e->limit) {
+    // Need to copy remaining data into patch buffer.
+    UPB_ASSERT(overrun < kUpb_EpsCopyInputStream_SlopBytes);
+    const char* old_end = ptr;
+    const char* new_start = &e->patch[0] + overrun;
+    memset(e->patch + kUpb_EpsCopyInputStream_SlopBytes, 0,
+           kUpb_EpsCopyInputStream_SlopBytes);
+    memcpy(e->patch, e->end, kUpb_EpsCopyInputStream_SlopBytes);
+    ptr = new_start;
+    e->end = &e->patch[kUpb_EpsCopyInputStream_SlopBytes];
+    e->limit -= kUpb_EpsCopyInputStream_SlopBytes;
+    e->limit_ptr = e->end + e->limit;
+    UPB_ASSERT(ptr < e->limit_ptr);
+    e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
+    return callback(e, old_end, new_start);
+  } else {
+    UPB_ASSERT(overrun > e->limit);
+    e->error = true;
+    return callback(e, NULL, NULL);
+  }
+}
+
+typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
+    upb_EpsCopyInputStream* e, const char* ptr, void* ctx);
+
+// Tries to perform a fast-path handling of the given delimited message data.
+// If the sub-message beginning at `*ptr` and extending for `len` is short and
+// fits within this buffer, calls `func` with `ctx` as a parameter, where the
+// pushing and popping of limits is handled automatically and with lower cost
+// than the normal PushLimit()/PopLimit() sequence.
+UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
+    upb_EpsCopyInputStream* e, const char** ptr, int len,
+    upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx) {
+  if (!upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(e, *ptr, len)) {
+    return false;
+  }
+
+  // Fast case: Sub-message is <128 bytes and fits in the current buffer.
+  // This means we can preserve limit/limit_ptr verbatim.
+  const char* saved_limit_ptr = e->limit_ptr;
+  int saved_limit = e->limit;
+  e->limit_ptr = *ptr + len;
+  e->limit = e->limit_ptr - e->end;
+  UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
+  *ptr = func(e, *ptr, ctx);
+  e->limit_ptr = saved_limit_ptr;
+  e->limit = saved_limit;
+  UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
+  return true;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 
 #ifndef UPB_WIRE_READER_H_
 #define UPB_WIRE_READER_H_
@@ -15299,671 +15746,6 @@ UPB_API bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
 #endif
 
 #endif  // GOOGLE_UPB_UPB_MESSAGE_MERGE_H__
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
-
-#include <stdint.h>
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE char _upb_ToBase92(int8_t ch) {
-  extern const char _kUpb_ToBase92[];
-  UPB_ASSERT(0 <= ch && ch < 92);
-  return _kUpb_ToBase92[ch];
-}
-
-UPB_INLINE char _upb_FromBase92(uint8_t ch) {
-  extern const int8_t _kUpb_FromBase92[];
-  if (' ' > ch || ch > '~') return -1;
-  return _kUpb_FromBase92[ch - ' '];
-}
-
-UPB_INLINE const char* _upb_Base92_DecodeVarint(const char* ptr,
-                                                const char* end, char first_ch,
-                                                uint8_t min, uint8_t max,
-                                                uint32_t* out_val) {
-  uint32_t val = 0;
-  uint32_t shift = 0;
-  const int bits_per_char =
-      upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
-  char ch = first_ch;
-  while (1) {
-    uint32_t bits = _upb_FromBase92(ch) - _upb_FromBase92(min);
-    val |= bits << shift;
-    if (ptr == end || *ptr < min || max < *ptr) {
-      *out_val = val;
-      UPB_ASSUME(ptr != NULL);
-      return ptr;
-    }
-    ch = *ptr++;
-    shift += bits_per_char;
-    if (shift >= 32) return NULL;
-  }
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_BASE92_H_
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
-
-
-// Must be last.
-
-// upb_MdDecoder: used internally for decoding MiniDescriptors for messages,
-// extensions, and enums.
-typedef struct {
-  const char* end;
-  upb_Status* status;
-  jmp_buf err;
-} upb_MdDecoder;
-
-UPB_PRINTF(2, 3)
-UPB_NORETURN UPB_INLINE void upb_MdDecoder_ErrorJmp(upb_MdDecoder* d,
-                                                    const char* fmt, ...) {
-  if (d->status) {
-    va_list argp;
-    upb_Status_SetErrorMessage(d->status, "Error building mini table: ");
-    va_start(argp, fmt);
-    upb_Status_VAppendErrorFormat(d->status, fmt, argp);
-    va_end(argp);
-  }
-  UPB_LONGJMP(d->err, 1);
-}
-
-UPB_INLINE void upb_MdDecoder_CheckOutOfMemory(upb_MdDecoder* d,
-                                               const void* ptr) {
-  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Out of memory");
-}
-
-UPB_INLINE const char* upb_MdDecoder_DecodeBase92Varint(
-    upb_MdDecoder* d, const char* ptr, char first_ch, uint8_t min, uint8_t max,
-    uint32_t* out_val) {
-  ptr = _upb_Base92_DecodeVarint(ptr, d->end, first_ch, min, max, out_val);
-  if (!ptr) upb_MdDecoder_ErrorJmp(d, "Overlong varint");
-  return ptr;
-}
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_DECODER_H_
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
-
-
-// Must be last.
-
-typedef enum {
-  kUpb_EncodedType_Double = 0,
-  kUpb_EncodedType_Float = 1,
-  kUpb_EncodedType_Fixed32 = 2,
-  kUpb_EncodedType_Fixed64 = 3,
-  kUpb_EncodedType_SFixed32 = 4,
-  kUpb_EncodedType_SFixed64 = 5,
-  kUpb_EncodedType_Int32 = 6,
-  kUpb_EncodedType_UInt32 = 7,
-  kUpb_EncodedType_SInt32 = 8,
-  kUpb_EncodedType_Int64 = 9,
-  kUpb_EncodedType_UInt64 = 10,
-  kUpb_EncodedType_SInt64 = 11,
-  kUpb_EncodedType_OpenEnum = 12,
-  kUpb_EncodedType_Bool = 13,
-  kUpb_EncodedType_Bytes = 14,
-  kUpb_EncodedType_String = 15,
-  kUpb_EncodedType_Group = 16,
-  kUpb_EncodedType_Message = 17,
-  kUpb_EncodedType_ClosedEnum = 18,
-
-  kUpb_EncodedType_RepeatedBase = 20,
-} upb_EncodedType;
-
-typedef enum {
-  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
-  kUpb_EncodedFieldModifier_IsRequired = 1 << 1,
-  kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
-  kUpb_EncodedFieldModifier_FlipValidateUtf8 = 1 << 3,
-} upb_EncodedFieldModifier;
-
-enum {
-  kUpb_EncodedValue_MinField = ' ',
-  kUpb_EncodedValue_MaxField = 'I',
-  kUpb_EncodedValue_MinModifier = 'L',
-  kUpb_EncodedValue_MaxModifier = '[',
-  kUpb_EncodedValue_End = '^',
-  kUpb_EncodedValue_MinSkip = '_',
-  kUpb_EncodedValue_MaxSkip = '~',
-  kUpb_EncodedValue_OneofSeparator = '~',
-  kUpb_EncodedValue_FieldSeparator = '|',
-  kUpb_EncodedValue_MinOneofField = ' ',
-  kUpb_EncodedValue_MaxOneofField = 'b',
-  kUpb_EncodedValue_MaxEnumMask = 'A',
-};
-
-enum {
-  kUpb_EncodedVersion_EnumV1 = '!',
-  kUpb_EncodedVersion_ExtensionV1 = '#',
-  kUpb_EncodedVersion_MapV1 = '%',
-  kUpb_EncodedVersion_MessageV1 = '$',
-  kUpb_EncodedVersion_MessageSetV1 = '&',
-};
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_WIRE_CONSTANTS_H_
-
-#ifndef UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
-#define UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
-
-// Must be last.
-
-typedef enum {
-  kUpb_FieldModifier_IsRepeated = 1 << 0,
-  kUpb_FieldModifier_IsPacked = 1 << 1,
-  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
-  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
-  kUpb_FieldModifier_IsRequired = 1 << 4,
-  kUpb_FieldModifier_ValidateUtf8 = 1 << 5,
-} kUpb_FieldModifier;
-
-// These modifiers are also used on the wire.
-typedef enum {
-  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
-  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
-  kUpb_MessageModifier_IsExtendable = 1 << 2,
-} kUpb_MessageModifier;
-
-
-#endif  // UPB_MINI_DESCRIPTOR_INTERNAL_MODIFIERS_H_
-
-#ifndef UPB_MINI_TABLE_COMPAT_H_
-#define UPB_MINI_TABLE_COMPAT_H_
-
-
-// Must be last.
-
-// upb does not support mixing minitables from different sources but these
-// functions are still used by some existing users so for now we make them
-// available here. This may or may not change in the future so do not add
-// them to new code.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Checks if memory layout of src is compatible with dst.
-bool upb_MiniTable_Compatible(const upb_MiniTable* src,
-                              const upb_MiniTable* dst);
-
-typedef enum {
-  kUpb_MiniTableEquals_NotEqual,
-  kUpb_MiniTableEquals_Equal,
-  kUpb_MiniTableEquals_OutOfMemory,
-} upb_MiniTableEquals_Status;
-
-// Checks equality of mini tables originating from different language runtimes.
-upb_MiniTableEquals_Status upb_MiniTable_Equals(const upb_MiniTable* src,
-                                                const upb_MiniTable* dst);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_COMPAT_H_ */
-
-#ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
-#define UPB_WIRE_INTERNAL_CONSTANTS_H_
-
-#define kUpb_WireFormat_DefaultDepthLimit 100
-
-// MessageSet wire format is:
-//   message MessageSet {
-//     repeated group Item = 1 {
-//       required int32 type_id = 2;
-//       required bytes message = 3;
-//     }
-//   }
-
-enum {
-  kUpb_MsgSet_Item = 1,
-  kUpb_MsgSet_TypeId = 2,
-  kUpb_MsgSet_Message = 3,
-};
-
-#endif /* UPB_WIRE_INTERNAL_CONSTANTS_H_ */
-
-/*
- * Internal implementation details of the decoder that are shared between
- * decode.c and decode_fast.c.
- */
-
-#ifndef UPB_WIRE_INTERNAL_DECODER_H_
-#define UPB_WIRE_INTERNAL_DECODER_H_
-
-#include <setjmp.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-
-#include "utf8_range.h"
-
-// Must be last.
-
-#define DECODE_NOGROUP (uint32_t)-1
-
-typedef struct upb_Decoder {
-  upb_EpsCopyInputStream input;
-  const upb_ExtensionRegistry* extreg;
-  upb_Message* original_msg;  // Pointer to preserve data to
-  int depth;                  // Tracks recursion depth to bound stack usage.
-  uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
-  uint16_t options;
-  bool missing_required;
-  bool message_is_done;
-  union {
-    upb_Arena arena;
-    void* foo[UPB_ARENA_SIZE_HACK];
-  };
-  upb_DecodeStatus status;
-  jmp_buf err;
-
-#ifndef NDEBUG
-  const char* debug_tagstart;
-  const char* debug_valstart;
-  char* trace_ptr;
-  char* trace_end;
-#endif
-} upb_Decoder;
-
-UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
-                                        size_t size,
-                                        const upb_ExtensionRegistry* extreg,
-                                        int options, upb_Arena* arena,
-                                        char* trace_buf, size_t trace_size) {
-  upb_EpsCopyInputStream_Init(&d->input, &buf, size,
-                              options & kUpb_DecodeOption_AliasString);
-
-  d->extreg = extreg;
-  d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
-  d->end_group = DECODE_NOGROUP;
-  d->options = (uint16_t)options;
-  d->missing_required = false;
-  d->status = kUpb_DecodeStatus_Ok;
-  d->message_is_done = false;
-#ifndef NDEBUG
-  d->trace_ptr = trace_buf;
-  d->trace_end = UPB_PTRADD(trace_buf, trace_size);
-#endif
-  if (trace_buf) *trace_buf = 0;  // Null-terminate.
-
-  // Violating the encapsulation of the arena for performance reasons.
-  // This is a temporary arena that we swap into and swap out of when we are
-  // done.  The temporary arena only needs to be able to handle allocation,
-  // not fuse or free, so it does not need many of the members to be initialized
-  // (particularly parent_or_count).
-  UPB_PRIVATE(_upb_Arena_SwapIn)(&d->arena, arena);
-  return buf;
-}
-
-UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
-                                                upb_Arena* arena) {
-  UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return d->status;
-}
-
-// Trace events are used to trace the progress of the decoder.
-// Events:
-//   'D'  Fast dispatch
-//   'F'  Field successfully parsed fast.
-//   '<'  Fallback to MiniTable parser.
-//   'M'  Field successfully parsed with MiniTable.
-//   'X'  Truncated -- trace buffer is full, further events were discarded.
-UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
-#ifndef NDEBUG
-  if (d->trace_ptr == NULL) return;
-  if (d->trace_ptr == d->trace_end - 1) {
-    d->trace_ptr[-1] = 'X';  // Truncated.
-    return;
-  }
-  d->trace_ptr[0] = event;
-  d->trace_ptr[1] = '\0';
-  d->trace_ptr++;
-#endif
-};
-
-UPB_INLINE
-bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
-  return utf8_range_IsValid(ptr, len);
-}
-
-const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
-                                       const upb_Message* msg,
-                                       const upb_MiniTable* m);
-
-/* x86-64 pointers always have the high 16 bits matching. So we can shift
- * left 8 and right 8 without loss of information. */
-UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
-  return ((intptr_t)tablep << 8) | tablep->UPB_PRIVATE(table_mask);
-}
-
-UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
-  return (const upb_MiniTable*)(table >> 8);
-}
-
-const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun);
-
-const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
-                                       upb_Message* msg,
-                                       const upb_MiniTable* layout);
-
-UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return upb_EpsCopyInputStream_IsDoneWithCallback(
-      &d->input, ptr, &_upb_Decoder_IsDoneFallback);
-}
-
-UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
-                                         upb_DecodeStatus status);
-
-UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
-    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
-  upb_Decoder* d = (upb_Decoder*)e;
-  if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  return new_start;
-}
-
-
-#endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
-#ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
-#define GOOGLE_UPB_UPB_WIRE_WRITER_H__
-
-#include <stdint.h>
-
-// Must be last.
-
-UPB_FORCEINLINE uint32_t
-UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
-  // Calculate how many bytes of the possible 10 bytes we will *not* encode,
-  // because they are part of a zero prefix. For the number 300, it would use 2
-  // bytes encoded, so the number of bytes to skip would be 8. Adding 7 to the
-  // clz input ensures that we're rounding up.
-  return (((uint32_t)clz + 7) * 9) >> 6;
-}
-
-
-#endif  // GOOGLE_UPB_UPB_WIRE_WRITER_H__
-/* This file was generated by upb_generator from the input file:
- *
- *     google/protobuf/descriptor.proto
- *
- * Do not edit -- your changes will be discarded when the file is
- * regenerated.
- * NO CHECKED-IN PROTOBUF GENCODE */
-
-
-
-#ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
-#define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_
-
-
-#ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
-#define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s);
-size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
-upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s);
-
-bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
-                            const upb_FieldDef* f);
-bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
-                            upb_Status* status);
-bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
-                            upb_value* v);
-
-void** _upb_DefPool_ScratchData(const upb_DefPool* s);
-size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s);
-void _upb_DefPool_SetPlatform(upb_DefPool* s, upb_MiniTablePlatform platform);
-
-// For generated code only: loads a generated descriptor.
-typedef struct _upb_DefPool_Init {
-  struct _upb_DefPool_Init** deps;  // Dependencies of this file.
-  const upb_MiniTableFile* layout;
-  const char* filename;
-  upb_StringView descriptor;  // Serialized descriptor.
-} _upb_DefPool_Init;
-
-bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
-
-// Should only be directly called by tests. This variant lets us suppress
-// the use of compiled-in tables, forcing a rebuild of the tables at runtime.
-bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
-                                bool rebuild_minitable);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_REFLECTION_DEF_POOL_INTERNAL_H_ */
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern _upb_DefPool_Init google_protobuf_descriptor_proto_upbdefinit;
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FileDescriptorSet_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FileDescriptorSet");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FileDescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FileDescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_DescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.DescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_DescriptorProto_ExtensionRange_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.DescriptorProto.ExtensionRange");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_DescriptorProto_ReservedRange_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.DescriptorProto.ReservedRange");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_ExtensionRangeOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.ExtensionRangeOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_ExtensionRangeOptions_Declaration_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.ExtensionRangeOptions.Declaration");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FieldDescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldDescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_OneofDescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.OneofDescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_EnumDescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumDescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_EnumDescriptorProto_EnumReservedRange_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumDescriptorProto.EnumReservedRange");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_EnumValueDescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumValueDescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_ServiceDescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.ServiceDescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_MethodDescriptorProto_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.MethodDescriptorProto");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FileOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FileOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_MessageOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.MessageOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FieldOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FieldOptions_EditionDefault_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldOptions.EditionDefault");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FieldOptions_FeatureSupport_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FieldOptions.FeatureSupport");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_OneofOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.OneofOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_EnumOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_EnumValueOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.EnumValueOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_ServiceOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.ServiceOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_MethodOptions_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.MethodOptions");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_UninterpretedOption_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.UninterpretedOption");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_UninterpretedOption_NamePart_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.UninterpretedOption.NamePart");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSet_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSet");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSet_VisibilityFeature_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSet.VisibilityFeature");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSetDefaults_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSetDefaults");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_FeatureSetDefaults_FeatureSetEditionDefault_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_SourceCodeInfo_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.SourceCodeInfo");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_SourceCodeInfo_Location_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.SourceCodeInfo.Location");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_GeneratedCodeInfo_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.GeneratedCodeInfo");
-}
-
-UPB_INLINE const upb_MessageDef *google_protobuf_GeneratedCodeInfo_Annotation_getmsgdef(upb_DefPool *s) {
-  _upb_DefPool_LoadDefInit(s, &google_protobuf_descriptor_proto_upbdefinit);
-  return upb_DefPool_FindMessageByName(s, "google.protobuf.GeneratedCodeInfo.Annotation");
-}
-
-
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif
-
-
-#endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H__UPBDEFS_H_ */
-
-#ifndef UPB_LEX_STRTOD_H_
-#define UPB_LEX_STRTOD_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-double _upb_NoLocaleStrtod(const char *str, char **endptr);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_LEX_STRTOD_H_ */
 
 #ifndef UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
 #define UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_
@@ -16658,6 +16440,188 @@ upb_MethodDef* _upb_MethodDefs_New(upb_DefBuilder* ctx, int n,
 
 
 #endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
+
+#ifndef UPB_WIRE_INTERNAL_CONSTANTS_H_
+#define UPB_WIRE_INTERNAL_CONSTANTS_H_
+
+#define kUpb_WireFormat_DefaultDepthLimit 100
+
+// MessageSet wire format is:
+//   message MessageSet {
+//     repeated group Item = 1 {
+//       required int32 type_id = 2;
+//       required bytes message = 3;
+//     }
+//   }
+
+enum {
+  kUpb_MsgSet_Item = 1,
+  kUpb_MsgSet_TypeId = 2,
+  kUpb_MsgSet_Message = 3,
+};
+
+#endif /* UPB_WIRE_INTERNAL_CONSTANTS_H_ */
+
+/*
+ * Internal implementation details of the decoder that are shared between
+ * decode.c and decode_fast.c.
+ */
+
+#ifndef UPB_WIRE_INTERNAL_DECODER_H_
+#define UPB_WIRE_INTERNAL_DECODER_H_
+
+#include <setjmp.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "utf8_range.h"
+
+// Must be last.
+
+#define DECODE_NOGROUP (uint32_t)-1
+
+typedef struct upb_Decoder {
+  upb_EpsCopyInputStream input;
+  const upb_ExtensionRegistry* extreg;
+  upb_Message* original_msg;  // Pointer to preserve data to
+  int depth;                  // Tracks recursion depth to bound stack usage.
+  uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
+  uint16_t options;
+  bool missing_required;
+  bool message_is_done;
+  union {
+    upb_Arena arena;
+    void* foo[UPB_ARENA_SIZE_HACK];
+  };
+  upb_DecodeStatus status;
+  jmp_buf err;
+
+#ifndef NDEBUG
+  const char* debug_tagstart;
+  const char* debug_valstart;
+  char* trace_ptr;
+  char* trace_end;
+#endif
+} upb_Decoder;
+
+UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
+                                        size_t size,
+                                        const upb_ExtensionRegistry* extreg,
+                                        int options, upb_Arena* arena,
+                                        char* trace_buf, size_t trace_size) {
+  upb_EpsCopyInputStream_Init(&d->input, &buf, size,
+                              options & kUpb_DecodeOption_AliasString);
+
+  d->extreg = extreg;
+  d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
+  d->end_group = DECODE_NOGROUP;
+  d->options = (uint16_t)options;
+  d->missing_required = false;
+  d->status = kUpb_DecodeStatus_Ok;
+  d->message_is_done = false;
+#ifndef NDEBUG
+  d->trace_ptr = trace_buf;
+  d->trace_end = UPB_PTRADD(trace_buf, trace_size);
+#endif
+  if (trace_buf) *trace_buf = 0;  // Null-terminate.
+
+  // Violating the encapsulation of the arena for performance reasons.
+  // This is a temporary arena that we swap into and swap out of when we are
+  // done.  The temporary arena only needs to be able to handle allocation,
+  // not fuse or free, so it does not need many of the members to be initialized
+  // (particularly parent_or_count).
+  UPB_PRIVATE(_upb_Arena_SwapIn)(&d->arena, arena);
+  return buf;
+}
+
+UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
+                                                upb_Arena* arena) {
+  UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
+  return d->status;
+}
+
+// Trace events are used to trace the progress of the decoder.
+// Events:
+//   'D'  Fast dispatch
+//   'F'  Field successfully parsed fast.
+//   '<'  Fallback to MiniTable parser.
+//   'M'  Field successfully parsed with MiniTable.
+//   'X'  Truncated -- trace buffer is full, further events were discarded.
+UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
+#ifndef NDEBUG
+  if (d->trace_ptr == NULL) return;
+  if (d->trace_ptr == d->trace_end - 1) {
+    d->trace_ptr[-1] = 'X';  // Truncated.
+    return;
+  }
+  d->trace_ptr[0] = event;
+  d->trace_ptr[1] = '\0';
+  d->trace_ptr++;
+#endif
+};
+
+UPB_INLINE
+bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
+  return utf8_range_IsValid(ptr, len);
+}
+
+const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
+                                       const upb_Message* msg,
+                                       const upb_MiniTable* m);
+
+/* x86-64 pointers always have the high 16 bits matching. So we can shift
+ * left 8 and right 8 without loss of information. */
+UPB_INLINE intptr_t decode_totable(const upb_MiniTable* tablep) {
+  return ((intptr_t)tablep << 8) | tablep->UPB_PRIVATE(table_mask);
+}
+
+UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
+  return (const upb_MiniTable*)(table >> 8);
+}
+
+const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
+                                        const char* ptr, int overrun);
+
+const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
+                                       upb_Message* msg,
+                                       const upb_MiniTable* layout);
+
+UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
+  return upb_EpsCopyInputStream_IsDoneWithCallback(
+      &d->input, ptr, &_upb_Decoder_IsDoneFallback);
+}
+
+UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
+                                         upb_DecodeStatus status);
+
+UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
+    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
+  upb_Decoder* d = (upb_Decoder*)e;
+  if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  return new_start;
+}
+
+
+#endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
+#ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
+#define GOOGLE_UPB_UPB_WIRE_WRITER_H__
+
+#include <stdint.h>
+
+// Must be last.
+
+UPB_FORCEINLINE uint32_t
+UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
+  // Calculate how many bytes of the possible 10 bytes we will *not* encode,
+  // because they are part of a zero prefix. For the number 300, it would use 2
+  // bytes encoded, so the number of bytes to skip would be 8. Adding 7 to the
+  // clz input ensures that we're rounding up.
+  return (((uint32_t)clz + 7) * 9) >> 6;
+}
+
+
+#endif  // GOOGLE_UPB_UPB_WIRE_WRITER_H__
 
 // This should #undef all macros #defined in def.inc
 
