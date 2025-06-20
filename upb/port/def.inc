@@ -179,8 +179,16 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
-#ifdef __clang__
+
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_alignof) || \
+    defined(__cplusplus)
+#define UPB_ALIGN_OF(type) alignof(type)
+#elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_alignof)
 #define UPB_ALIGN_OF(type) _Alignof(type)
+#elif UPB_GNUC_MIN(2, 95)
+#define UPB_ALIGN_OF(type) __alignof__(type)
+#elif defined(_MSC_VER)
+#define UPB_ALIGN_OF(type) __alignof(type)
 #else
 #define UPB_ALIGN_OF(type) \
   offsetof(                \
@@ -200,7 +208,8 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_AS(x) _Alignas(x)
 #endif
 
-#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert)
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert) || \
+    defined(__cplusplus)
 #define UPB_STATIC_ASSERT(val, msg) static_assert((val), msg)
 #elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_static_assert) || \
     UPB_GNUC_MIN(4, 6)

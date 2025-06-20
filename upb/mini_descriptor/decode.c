@@ -19,6 +19,7 @@
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/map_entry.h"
+#include "upb/message/internal/types.h"
 #include "upb/mini_descriptor/internal/base92.h"
 #include "upb/mini_descriptor/internal/decoder.h"
 #include "upb/mini_descriptor/internal/modifiers.h"
@@ -662,12 +663,13 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
     }
   }
 
-  // The fasttable parser (supported on 64-bit only) depends on this being a
-  // multiple of 8 in order to satisfy UPB_MALLOC_ALIGN, which is also 8.
-  //
-  // On 32-bit we could potentially make this smaller, but there is no
-  // compelling reason to optimize this right now.
-  d->table.UPB_PRIVATE(size) = UPB_ALIGN_UP(d->table.UPB_PRIVATE(size), 8);
+  // Since messages are always allocated on arenas, we can save repeatedly
+  // realigning by doing alignment at minitable construction time. We don't want
+  // to align to UPB_MALLOC_ALIGN because it can change with sanitizers, and if
+  // we're generating code we don't want to calculate size differently depending
+  // on the proto compiler's host or build configuration.
+  d->table.UPB_PRIVATE(size) =
+      UPB_ALIGN_UP(d->table.UPB_PRIVATE(size), kUpb_Message_Align);
 }
 
 static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
@@ -806,7 +808,7 @@ done:
         upb_DecodeFast_GetFunctionPointer(fasttable[i].function_idx);
   }
 #endif
-
+  UPB_PRIVATE(upb_MiniTable_CheckInvariants)(ret);
   return ret;
 }
 
