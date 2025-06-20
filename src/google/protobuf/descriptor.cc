@@ -4825,6 +4825,28 @@ class DescriptorBuilder {
   void CheckVisibilityRulesVisit(const EnumDescriptor& enm,
                                  const EnumDescriptorProto& proto,
                                  VisibilityCheckerState& state);
+  void CheckVisibilityRulesVisit(const FileDescriptor&,
+                                 const FileDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const FieldDescriptor&,
+                                 const FieldDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const EnumValueDescriptor&,
+                                 const EnumValueDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const OneofDescriptor&,
+                                 const OneofDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const Descriptor::ExtensionRange&,
+                                 const DescriptorProto::ExtensionRange& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const MethodDescriptor&,
+                                 const MethodDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const ServiceDescriptor&,
+                                 const ServiceDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+
   bool IsEnumNamespaceMessage(const EnumDescriptor& enm) const;
 
 
@@ -8395,9 +8417,7 @@ void DescriptorBuilder::CheckVisibilityRules(FileDescriptor* file,
 
   // Build our state object so we can apply rules based on type.
   internal::VisitDescriptors(
-      *file, proto,
-      [&](const auto& descriptor, const auto& proto)
-          -> decltype(CheckVisibilityRulesVisit(descriptor, proto, state)) {
+      *file, proto, [&](const auto& descriptor, const auto& proto) {
         CheckVisibilityRulesVisit(descriptor, proto, state);
       });
 
