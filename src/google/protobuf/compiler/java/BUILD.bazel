@@ -37,6 +37,26 @@ cc_library(
 )
 
 cc_library(
+    name = "context",
+    hdrs = [
+        "context.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":field_common",
+        ":helpers",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/container:flat_hash_map",
+    ],
+)
+
+cc_library(
     name = "helpers",
     srcs = [
         "doc_comment.cc",
@@ -45,7 +65,6 @@ cc_library(
         "names.cc",
     ],
     hdrs = [
-        "context.h",
         "doc_comment.h",
         "generator.h",
         "helpers.h",
@@ -92,6 +111,7 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":context",
         ":helpers",
         ":java_features_bootstrap",
         "//src/google/protobuf",
@@ -141,6 +161,8 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":context",
+        ":field_common",
         ":generator_common",
         ":helpers",
         ":internal_helpers",
@@ -169,10 +191,24 @@ cc_library(
 )
 
 cc_library(
-    name = "generator_common",
+    name = "field_common",
     srcs = ["field_common.cc"],
+    hdrs = ["field_common.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":helpers",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "generator_common",
     hdrs = [
-        "field_common.h",
         "generator_common.h",
         "generator_factory.h",
     ],
@@ -182,6 +218,7 @@ cc_library(
         "//src/google/protobuf/compiler/kotlin:__subpackages__",
     ],
     deps = [
+        ":context",
         ":helpers",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
