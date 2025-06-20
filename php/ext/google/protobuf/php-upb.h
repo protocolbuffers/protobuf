@@ -174,8 +174,16 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
-#ifdef __clang__
+
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_alignof) || \
+    defined(__cplusplus)
+#define UPB_ALIGN_OF(type) alignof(type)
+#elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_alignof)
 #define UPB_ALIGN_OF(type) _Alignof(type)
+#elif UPB_GNUC_MIN(2, 95)
+#define UPB_ALIGN_OF(type) __alignof__(type)
+#elif defined(_MSC_VER)
+#define UPB_ALIGN_OF(type) __alignof(type)
 #else
 #define UPB_ALIGN_OF(type) \
   offsetof(                \
@@ -195,7 +203,8 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_AS(x) _Alignas(x)
 #endif
 
-#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert)
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert) || \
+    defined(__cplusplus)
 #define UPB_STATIC_ASSERT(val, msg) static_assert((val), msg)
 #elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_static_assert) || \
     UPB_GNUC_MIN(4, 6)
@@ -2076,6 +2085,10 @@ typedef enum {
   kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
 
+enum {
+  kUpb_Message_Align = 8,
+};
+
 // upb_MiniTable represents the memory layout of a given upb_MessageDef.
 // The members are public so generated code can initialize them,
 // but users MUST NOT directly read or write any of its members.
@@ -2085,8 +2098,8 @@ struct upb_MiniTable {
   const upb_MiniTableSubInternal* UPB_PRIVATE(subs);
   const struct upb_MiniTableField* UPB_ONLYBITS(fields);
 
-  // Must be aligned to sizeof(void*). Doesn't include internal members like
-  // unknown fields, extension dict, pointer to msglayout, etc.
+  // Must be aligned to kUpb_Message_Align. Doesn't include internal members
+  // like unknown fields, extension dict, pointer to msglayout, etc.
   uint16_t UPB_PRIVATE(size);
 
   uint16_t UPB_ONLYBITS(field_count);
@@ -2111,6 +2124,13 @@ struct upb_MiniTable {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_INLINE void UPB_PRIVATE(upb_MiniTable_CheckInvariants)(
+    const struct upb_MiniTable* mt) {
+  UPB_STATIC_ASSERT(UPB_MALLOC_ALIGN >= kUpb_Message_Align, "Under aligned");
+  UPB_STATIC_ASSERT(kUpb_Message_Align >= UPB_ALIGN_OF(void*), "Under aligned");
+  UPB_ASSERT(mt->UPB_PRIVATE(size) % kUpb_Message_Align == 0);
+}
 
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
     _upb_MiniTable_StrongReference)(const struct upb_MiniTable* mt) {
@@ -3398,11 +3418,15 @@ UPB_API void upb_Message_SetNewMessageTraceHandler(
 // Inline version upb_Message_New(), for internal use.
 UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
                                                 upb_Arena* a) {
+  UPB_PRIVATE(upb_MiniTable_CheckInvariants)(m);
 #ifdef UPB_TRACING_ENABLED
   upb_Message_LogNewMessage(m, a);
 #endif  // UPB_TRACING_ENABLED
 
-  const int size = m->UPB_PRIVATE(size);
+  const size_t size = m->UPB_PRIVATE(size);
+  // Message sizes are aligned up when constructing minitables; telling the
+  // compiler this avoids redoing alignment on the malloc fast path
+  UPB_ASSUME(size % kUpb_Message_Align == 0);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
   if (UPB_UNLIKELY(!msg)) return NULL;
   memset(msg, 0, size);

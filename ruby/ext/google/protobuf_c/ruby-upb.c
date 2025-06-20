@@ -175,8 +175,16 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
-#ifdef __clang__
+
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_alignof) || \
+    defined(__cplusplus)
+#define UPB_ALIGN_OF(type) alignof(type)
+#elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_alignof)
 #define UPB_ALIGN_OF(type) _Alignof(type)
+#elif UPB_GNUC_MIN(2, 95)
+#define UPB_ALIGN_OF(type) __alignof__(type)
+#elif defined(_MSC_VER)
+#define UPB_ALIGN_OF(type) __alignof(type)
 #else
 #define UPB_ALIGN_OF(type) \
   offsetof(                \
@@ -196,7 +204,8 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ALIGN_AS(x) _Alignas(x)
 #endif
 
-#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert)
+#if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_static_assert) || \
+    defined(__cplusplus)
 #define UPB_STATIC_ASSERT(val, msg) static_assert((val), msg)
 #elif __STDC_VERSION__ >= 201112L || UPB_HAS_EXTENSION(c_static_assert) || \
     UPB_GNUC_MIN(4, 6)
@@ -8606,12 +8615,13 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
     }
   }
 
-  // The fasttable parser (supported on 64-bit only) depends on this being a
-  // multiple of 8 in order to satisfy UPB_MALLOC_ALIGN, which is also 8.
-  //
-  // On 32-bit we could potentially make this smaller, but there is no
-  // compelling reason to optimize this right now.
-  d->table.UPB_PRIVATE(size) = UPB_ALIGN_UP(d->table.UPB_PRIVATE(size), 8);
+  // Since messages are always allocated on arenas, we can save repeatedly
+  // realigning by doing alignment at minitable construction time. We don't want
+  // to align to UPB_MALLOC_ALIGN because it can change with sanitizers, and if
+  // we're generating code we don't want to calculate size differently depending
+  // on the proto compiler's host or build configuration.
+  d->table.UPB_PRIVATE(size) =
+      UPB_ALIGN_UP(d->table.UPB_PRIVATE(size), kUpb_Message_Align);
 }
 
 static void upb_MtDecoder_ValidateEntryField(upb_MtDecoder* d,
@@ -8750,7 +8760,7 @@ done:
         upb_DecodeFast_GetFunctionPointer(fasttable[i].function_idx);
   }
 #endif
-
+  UPB_PRIVATE(upb_MiniTable_CheckInvariants)(ret);
   return ret;
 }
 
