@@ -69,7 +69,7 @@ cc_library(
     hdrs = ["generated_code_support.h"],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        ":port_inc",
+        "//upb/port:inc",
     ],
     visibility = [
         "//pkg:__pkg__",
@@ -97,7 +97,7 @@ cc_library(
     name = "generated_cpp_support",
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        ":port_inc",
+        "//upb/port:inc",
     ],
     visibility = ["//hpb/bazel:__pkg__"],
 )
@@ -108,18 +108,6 @@ cc_library(
 alias(
     name = "base",
     actual = "//upb/base",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "generated_reflection_support",
-    actual = "//upb/reflection:generated_reflection_support",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "json",
-    actual = "//upb/json",
     visibility = ["//visibility:public"],
 )
 
@@ -136,30 +124,6 @@ alias(
 )
 
 alias(
-    name = "message_compare",
-    actual = "//upb/message:compare",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "message_copy",
-    actual = "//upb/message:copy",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_promote",
-    actual = "//upb/message:promote",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "message_split64",
-    actual = "//upb/message:split64",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "mini_descriptor",
     actual = "//upb/mini_descriptor",
     visibility = ["//visibility:public"],
@@ -172,56 +136,8 @@ alias(
 )
 
 alias(
-    name = "mini_table_compat",
-    actual = "//upb/mini_table:compat",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "port",
-    actual = "//upb/port",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "port_inc",
-    actual = "//upb/port:inc",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "reflection",
-    actual = "//upb/reflection",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "text",
-    actual = "//upb/text",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "wire",
     actual = "//upb/wire",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "wire_byte_size",
-    actual = "//upb/wire:byte_size",
-    visibility = ["//upb:friends"],
-)
-
-alias(
-    name = "wire_reader",
-    actual = "//upb/wire:reader",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "eps_copy_input_stream",
-    actual = "//upb/wire:eps_copy_input_stream",
     visibility = ["//visibility:public"],
 )
 
@@ -235,35 +151,34 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":eps_copy_input_stream",
         ":generated_code_support",
         ":mem",
         ":message",
-        ":message_compare",
-        ":message_copy",
         ":mini_descriptor",
         ":mini_table",
-        ":mini_table_compat",
-        ":port",
-        ":reflection",
-        ":wire",
-        ":wire_reader",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
         "//upb/base:internal",
         "//upb/hash:hash",
         "//upb/lex:lex",
         "//upb/mem:internal",
+        "//upb/message:compare",
+        "//upb/message:copy",
         "//upb/message:internal",
         "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/reflection",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
         "//upb/text:debug",
         "//upb/text:internal",
+        "//upb/wire",
         "//upb/wire:decoder",
+        "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:reader",
         "//upb/wire:reader_internal",
         "//upb/wire:writer",
     ],
@@ -287,35 +202,34 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":eps_copy_input_stream",
         ":generated_code_support",
-        ":json",
         ":mem",
         ":message",
-        ":message_compare",
-        ":message_copy",
         ":mini_descriptor",
         ":mini_table",
-        ":mini_table_compat",
-        ":port",
-        ":reflection",
-        ":wire",
-        ":wire_reader",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
         "//src/google/protobuf:descriptor_upb_reflection_proto",
         "//upb/base:internal",
         "//upb/hash:hash",
+        "//upb/json",
         "//upb/lex:lex",
         "//upb/mem:internal",
+        "//upb/message:compare",
+        "//upb/message:copy",
         "//upb/message:internal",
         "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/reflection",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
+        "//upb/wire",
         "//upb/wire:decoder",
+        "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:reader",
         "//upb/wire:reader_internal",
         "//upb/wire:writer",
     ],
@@ -340,35 +254,34 @@ upb_amalgamation(
     ],
     libs = [
         ":base",
-        ":eps_copy_input_stream",
         ":generated_code_support",
-        ":json",
         ":mem",
         ":message",
-        ":message_compare",
-        ":message_copy",
         ":mini_descriptor",
         ":mini_table",
-        ":mini_table_compat",
-        ":port",
-        ":reflection",
-        ":wire",
-        ":wire_reader",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
         "//upb/base:internal",
         "//upb/hash:hash",
+        "//upb/json",
         "//upb/lex:lex",
         "//upb/mem:internal",
+        "//upb/message:compare",
+        "//upb/message:copy",
         "//upb/message:internal",
         "//upb/message:iterator",
         "//upb/message:types",
         "//upb/mini_descriptor:internal",
         "//upb/mini_table:internal",
+        "//upb/port",
+        "//upb/reflection",
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:internal",
         "//upb/util:def_to_proto",
+        "//upb/wire",
         "//upb/wire:decoder",
+        "//upb/wire:eps_copy_input_stream",
+        "//upb/wire:reader",
         "//upb/wire:reader_internal",
         "//upb/wire:writer",
     ],

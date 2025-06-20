@@ -31,11 +31,11 @@ cc_library(
     copts = UPB_DEFAULT_COPTS + ["-Wno-tautological-constant-out-of-range-compare"],
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:json",
-        "//upb:message",
-        "//upb:port",
-        "//upb:reflection",
-        "//upb:text",
+        "//upb/json",
+        "//upb/message",
+        "//upb/port",
+        "//upb/reflection",
+        "//upb/text",
         "@lua//:liblua",
     ],
 )
