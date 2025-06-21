@@ -1,0 +1,2 @@
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2 # Should have failed to parse, but didn't.
