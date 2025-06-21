@@ -137,6 +137,7 @@ cc_test(
     srcs = ["repeated_field_iterator_test.cc"],
     deps = [
         ":arena",
+        ":hpb",
         ":repeated_field",
         "//hpb/backend/upb:interop",
         "//upb/base",
@@ -163,10 +164,21 @@ cc_library(
 cc_library(
     name = "arena",
     hdrs = ["arena.h"],
+    defines = select({
+        ":hpb_backend_upb": ["HPB_INTERNAL_BACKEND=HPB_INTERNAL_BACKEND_UPB"],
+        ":hpb_backend_cpp": ["HPB_INTERNAL_BACKEND=HPB_INTERNAL_BACKEND_CPP"],
+    }),
     visibility = ["//visibility:public"],
     deps = [
-        "//upb/mem",
-    ],
+        ":multibackend",
+    ] + select({
+        ":hpb_backend_cpp": [
+            "//src/google/protobuf:arena",
+        ],
+        ":hpb_backend_upb": [
+            "//upb/mem",
+        ],
+    }),
 )
 
 cc_library(

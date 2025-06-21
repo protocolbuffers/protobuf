@@ -567,7 +567,7 @@ TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
 
 TEST(CppGeneratedCode, GetExtensionRepeatedi32) {
   TestModel model;
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_int32_ext);
   // These bytes are the serialized form of a repeated int32 field
@@ -583,7 +583,7 @@ TEST(CppGeneratedCode, GetExtensionRepeatedi32) {
 
 TEST(CppGeneratedCode, GetExtensionRepeatedi64) {
   TestModel model;
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_int64_ext);
   // These bytes represent a repeated int64 field with one element: [322].
@@ -609,7 +609,7 @@ TEST(CppGeneratedCode, GetExtensionSingularString) {
 
 TEST(CppGeneratedCode, GetExtensionRepeatedString) {
   TestModel model;
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_string_ext);
   // These bytes represent a repeated string field with two elements:
