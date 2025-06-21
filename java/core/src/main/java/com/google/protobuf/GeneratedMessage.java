@@ -1943,7 +1943,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   private static Method getMethodOrDie(
       final Class<?> clazz, final String name, final Class<?>... params) {
     try {
-      return clazz.getMethod(name, params);
+      return clazz.getDeclaredMethod(name, params);
     } catch (NoSuchMethodException e) {
       throw new IllegalStateException(
           "Generated message class \"" + clazz.getName() + "\" missing method \"" + name + "\".",
