@@ -1,6 +1,7 @@
 #include "naming.h"
 
 #include <gtest/gtest.h>
+#include "conformance/conformance.pb.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
