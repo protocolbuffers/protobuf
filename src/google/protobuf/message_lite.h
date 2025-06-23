@@ -12,6 +12,12 @@
 //
 // Defines MessageLite, the abstract interface implemented by all (lite
 // and non-lite) protocol message objects.
+//
+// This is only intended to be extended by protoc created gencode or types
+// defined in the Protobuf runtime. It is not intended or supported for
+// application code to extend this class, and any protected methods may be
+// removed without being it being considered a breaking change as long as the
+// corresponding gencode does not use it.
 
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__

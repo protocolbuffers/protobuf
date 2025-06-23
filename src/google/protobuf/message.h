@@ -10,9 +10,13 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // Defines Message, the abstract interface implemented by non-lite
-// protocol message objects.  Although it's possible to implement this
-// interface manually, most users will use the protocol compiler to
-// generate implementations.
+// protocol message objects.
+//
+// This is only intended to be extended by protoc created gencode or types
+// defined in the Protobuf runtime. It is not intended or supported for
+// application code to extend this class, and any protected methods may be
+// removed without being it being considered a breaking change as long as the
+// corresponding gencode does not use it.
 //
 // Example usage:
 //
@@ -180,7 +184,7 @@ class MessageReflectionFriend;
 namespace expr {
 class CelMapReflectionFriend;  // field_backed_map_impl.cc
 class SudoMapReflectionFriend;
-}
+}  // namespace expr
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
