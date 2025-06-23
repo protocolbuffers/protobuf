@@ -11,7 +11,7 @@ Pod::Spec.new do |s|
   s.cocoapods_version = '>= 1.12.0'
 
   s.source = { :git => 'https://github.com/google/protobuf.git',
-               :tag => "v#{s.version}" }
+               :tag => "v#{s.version}-cpp" }
 
   s.source_files = 'src/google/protobuf/*.{h,cc,inc}',
                    'src/google/protobuf/stubs/*.{h,cc}',
