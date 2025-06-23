@@ -293,7 +293,7 @@ pkg_tar(
     package_file_name = "protobuf.tar.gz",
     strip_prefix = ".",
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
+        #"@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
 )
@@ -312,7 +312,7 @@ genrule(
         mv protobuf/dist/*.tar.gz $@
     """,
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
+        #"@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     tools = [requirement("setuptools")],
@@ -371,7 +371,7 @@ py_wheel(
         "src/",
     ],
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
+        #"@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     version = PROTOBUF_PYTHON_VERSION,
@@ -411,7 +411,7 @@ py_wheel(
         "src/",
     ],
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
+        #"@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     version = PROTOBUF_PYTHON_VERSION,
@@ -437,7 +437,7 @@ py_wheel(
         "src/",
     ],
     target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
+        #"@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     version = PROTOBUF_PYTHON_VERSION,
