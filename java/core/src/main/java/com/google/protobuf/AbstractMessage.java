@@ -24,6 +24,13 @@ import java.util.Map;
  * A partial implementation of the {@link Message} interface which implements as many methods of
  * that interface as possible in terms of other methods.
  *
+ * <p>Users should generally ignore this class and use the Message interface instead.
+ *
+ * <p>This class is intended to only be extended by protoc created gencode. It is not intended or
+ * supported to extend this class, and any protected methods may be removed without it being
+ * considered a breaking change as long as all supported gencode does not depend on the changed
+ * methods.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public abstract class AbstractMessage

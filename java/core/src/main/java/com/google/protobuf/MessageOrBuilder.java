@@ -14,6 +14,9 @@ import java.util.Map;
  * Base interface for methods common to {@link Message} and {@link Message.Builder} to provide type
  * equivalency.
  *
+ * <p>This interface is intended to only be implemented by protoc created gencode. It is not
+ * intended or supported to implement this interface manually.
+ *
  * @author jonp@google.com (Jon Perlow)
  */
 @CheckReturnValue
