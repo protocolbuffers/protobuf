@@ -37,7 +37,7 @@ foreach(proto_file ${tests_protos})
     PROTOS ${proto_file}
     LANGUAGE cpp
     OUT_VAR pb_generated_files
-    IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+    IMPORT_DIRS ${protobuf_SOURCE_DIR}/src ${protobuf_SOURCE_DIR}/java/core/src/main/resources
   )
   set(tests_proto_files ${tests_proto_files} ${pb_generated_files})
 endforeach(proto_file)
