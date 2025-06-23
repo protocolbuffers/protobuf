@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.cocoapods_version = '>= 1.12.0'
 
   s.source = { :git => 'https://github.com/protocolbuffers/protobuf.git',
-               :tag => "v#{s.version}" }
+               :tag => "v#{s.version}-objectivec" }
 
   s.source_files = 'objectivec/*.{h,m,swift}'
   # The following would cause duplicate symbol definitions. GPBProtocolBuffers is expected to be
