@@ -9684,7 +9684,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
           return absl::StrCat("Option \"", debug_msg_name,
                               "\" unknown. Ensure that your proto",
                               " definition file imports the proto which "
-                              "defines the option (i.e. via import option).");
+                              "defines the option (i.e. via import option "
+                              "after edition 2024).");
         });
       }
     } else if (field->containing_type() != descriptor) {

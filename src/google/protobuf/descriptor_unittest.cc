@@ -6141,7 +6141,7 @@ TEST_F(ImportOptionValidationErrorTest,
       "foo.proto: Foo.foo: OPTION_NAME: Option \"(bar)\" unknown. Ensure that "
       "your proto "
       "definition file imports the proto which defines the option (i.e. via "
-      "import option).\n");
+      "import option after edition 2024).\n");
 }
 
 TEST_F(ImportOptionValidationErrorTest,
@@ -6799,7 +6799,7 @@ TEST_F(ValidationErrorTest, UnknownOption) {
       "moo.proto: moo.proto: OPTION_NAME: Option \"(baaz.bar)\" unknown. "
       "Ensure "
       "that your proto definition file imports the proto which defines the "
-      "option (i.e. via import option).\n");
+      "option (i.e. via import option after edition 2024).\n");
 }
 
 TEST_F(ValidationErrorTest, CustomOptionConflictingFieldNumber) {
@@ -14249,7 +14249,7 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
             "use_option.proto: FooMessage: OPTION_NAME: Option "
             "\"(foo_extension)\" unknown. Ensure that your proto definition "
             "file imports the proto which defines the option (i.e. via import "
-            "option).\n");
+            "option after edition 2024).\n");
 
   // Verify that the extension does trigger a lifetime error.
   error_collector.text_.clear();
