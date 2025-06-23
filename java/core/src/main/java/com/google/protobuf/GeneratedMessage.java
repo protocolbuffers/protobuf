@@ -38,8 +38,14 @@ import java.util.TreeMap;
 
 /**
  * All generated protocol message classes extend this class. This class implements most of the
- * Message and Builder interfaces using Java reflection. Users can ignore this class and pretend
- * that generated messages implement the Message interface directly.
+ * Message and Builder interfaces using Java reflection.
+ *
+ * <p>Users should generally ignore this class and use the Message interface instead.
+ *
+ * <p>This class is intended to only be extended by protoc created gencode. It is not intended or
+ * supported to extend this class, and any protected methods may be removed without it being
+ * considered a breaking change as long as all supported gencode does not depend on the changed
+ * methods.
  *
  * @author kenton@google.com Kenton Varda
  */

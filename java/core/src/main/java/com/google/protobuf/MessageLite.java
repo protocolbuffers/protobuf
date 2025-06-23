@@ -14,6 +14,9 @@ import java.io.OutputStream;
 /**
  * Abstract interface implemented by Protocol Message objects.
  *
+ * <p>This interface is intended to only be implemented by protoc created gencode. It is not
+ * intended or supported to implement this interface manually.
+ *
  * <p>This interface is implemented by all protocol message objects. Non-lite messages additionally
  * implement the Message interface, which is a subclass of MessageLite. Use MessageLite instead when
  * you only need the subset of features which it supports -- namely, nothing that uses descriptors
