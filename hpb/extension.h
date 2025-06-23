@@ -260,7 +260,7 @@ class ExtensionRegistry {
 
   // TODO: b/379100963 - Introduce ShutdownHpbLibrary
   static const ExtensionRegistry* NewGeneratedRegistry() {
-    static upb::Arena* global_arena = new upb::Arena();
+    static hpb::Arena* global_arena = new hpb::Arena();
     ExtensionRegistry* registry = new ExtensionRegistry(*global_arena);
     upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
     return registry;

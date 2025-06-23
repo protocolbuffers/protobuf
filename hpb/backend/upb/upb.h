@@ -20,12 +20,12 @@
 namespace hpb::internal::backend::upb {
 
 template <typename T>
-typename T::Proxy CreateMessage(Arena& arena) {
+typename T::Proxy CreateMessage(hpb::Arena& arena) {
   return PrivateAccess::CreateMessage<T>(hpb::interop::upb::UnwrapArena(arena));
 }
 
 template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
+typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
   return internal::PrivateAccess::Proxy<T>(
       internal::DeepClone(interop::upb::GetMessage(message), T::minitable(),
                           hpb::interop::upb::UnwrapArena(arena)),
@@ -48,7 +48,8 @@ void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(PtrOrRaw<T> message, Arena& arena) {
+absl::StatusOr<absl::string_view> Serialize(PtrOrRaw<T> message,
+                                            hpb::Arena& arena) {
   return hpb::internal::Serialize(interop::upb::GetMessage(message),
                                   interop::upb::GetMiniTable(message),
                                   hpb::interop::upb::UnwrapArena(arena), 0);

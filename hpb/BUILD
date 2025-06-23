@@ -51,10 +51,6 @@ cc_library(
         "hpb.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    defines = select({
-        ":hpb_backend_upb": ["HPB_INTERNAL_BACKEND=HPB_INTERNAL_BACKEND_UPB"],
-        ":hpb_backend_cpp": ["HPB_INTERNAL_BACKEND=HPB_INTERNAL_BACKEND_CPP"],
-    }),
     visibility = ["//visibility:public"],
     deps = [
         ":arena",
@@ -86,7 +82,11 @@ cc_library(
     hdrs = [
         "multibackend.h",
     ],
-    visibility = ["//visibility:private"],
+    defines = select({
+        ":hpb_backend_upb": ["HPB_INTERNAL_BACKEND=HPB_INTERNAL_BACKEND_UPB"],
+        ":hpb_backend_cpp": ["HPB_INTERNAL_BACKEND=HPB_INTERNAL_BACKEND_CPP"],
+    }),
+    visibility = ["//hpb:__subpackages__"],
 )
 
 cc_library(
@@ -137,6 +137,7 @@ cc_test(
     srcs = ["repeated_field_iterator_test.cc"],
     deps = [
         ":arena",
+        ":hpb",
         ":repeated_field",
         "//hpb/backend/upb:interop",
         "//upb/base",
@@ -165,8 +166,16 @@ cc_library(
     hdrs = ["arena.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//upb/mem",
-    ],
+        ":multibackend",
+        "//hpb/backend:types",
+    ] + select({
+        ":hpb_backend_cpp": [
+            "//src/google/protobuf:arena",
+        ],
+        ":hpb_backend_upb": [
+            "//upb/mem",
+        ],
+    }),
 )
 
 cc_library(

@@ -32,14 +32,6 @@
 
 namespace hpb {
 
-#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
-namespace backend = internal::backend::upb;
-#elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
-namespace backend = internal::backend::cpp;
-#else
-#error hpb backend unknown
-#endif
-
 template <typename T>
 typename T::Proxy CreateMessage(Arena& arena) {
   return backend::CreateMessage<T>(arena);
