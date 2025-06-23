@@ -210,7 +210,15 @@ switched_rules_by_language(
     cc = True,
 )
 
-load("@system_python//:pip.bzl", "pip_parse")
+#load("@system_python//:pip.bzl", "pip_parse")
+#load("@protobuf_pip_deps//:pip.bzl", "pip_parse")
+
+#pip_parse(
+#    name = "protobuf_pip_deps",
+#    requirements = "//python:requirements.txt",
+#)
+
+load("@rules_python//python:pip.bzl", "pip_parse")
 
 pip_parse(
     name = "protobuf_pip_deps",
