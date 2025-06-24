@@ -12,11 +12,11 @@ edition = "2024";
 
 package proto2_test_check_utf8;
 
-import "google/protobuf/java_features.proto";
-
 option features.utf8_validation = NONE;
 option features.(pb.java).utf8_validation = VERIFY;
 option java_outer_classname = "TestCheckUtf8";
+
+import option "google/protobuf/java_features.proto";
 
 message StringWrapper {
   option features.(pb.java).nest_in_file_class = YES;
