@@ -406,3 +406,16 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
   }
   return kUpb_UnknownToMessage_Ok;
 }
+
+const char* upb_FindUnknownStatus_String(upb_FindUnknown_Status status) {
+  switch (status) {
+    case kUpb_FindUnknown_Ok:
+      return "Ok";
+    case kUpb_FindUnknown_ParseError:
+      return "Parse error";
+    case kUpb_FindUnknown_NotPresent:
+      return "Field not found";
+    default:
+      return "Unknown status";
+  }
+}
