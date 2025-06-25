@@ -243,6 +243,14 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
   EXPECT_THAT(actions, ElementsAreArray(with_int));
 }
 
+TEST(ArenaTest, ZeroAllocDoesNotReturnNull) {
+  Arena arena;
+  EXPECT_NE(arena.AllocateAligned(0), nullptr);
+  // Try again after allocating some memory.
+  arena.AllocateAligned(10000);
+  EXPECT_NE(arena.AllocateAligned(0), nullptr);
+}
+
 TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {
   TestCtorAndDtorTraits<false, false>({"()", "~()"}, {"(const T&)", "~()"},
                                       {"(int)", "~()"});
@@ -566,6 +574,18 @@ TEST(ArenaTest, CreateArenaConstructable) {
   TestUtil::ExpectAllFieldsSet(*copied);
   EXPECT_EQ(copied->GetArena(), &arena);
   EXPECT_EQ(copied->optional_nested_message().GetArena(), &arena);
+}
+
+TEST(ArenaTest, CreateArenaCheckFailsOnTooLargeInput) {
+  size_t max = std::numeric_limits<size_t>::max();
+
+  EXPECT_DEATH(Arena::CreateArray<double>(nullptr, max / sizeof(double) + 1),
+               "Requested size is too large to fit into size_t");
+
+  // For int32_t we trap even at this level because rounding up to 8 bytes will
+  // overflow.
+  EXPECT_DEATH(Arena::CreateArray<int32_t>(nullptr, max / sizeof(int32_t)),
+               "Requested size is too large to fit into size_t");
 }
 
 TEST(ArenaTest, CreateRepeatedPtrField) {

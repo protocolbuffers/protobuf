@@ -202,11 +202,7 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
     char* ret = ptr();
-    // ret + n may point out of the block bounds, or ret may be nullptr.
-    // Both computations have undefined behavior when done on pointers,
-    // so do them on uintptr_t instead.
-    if (ABSL_PREDICT_FALSE(reinterpret_cast<uintptr_t>(ret) + n >
-                           reinterpret_cast<uintptr_t>(limit_))) {
+    if (ABSL_PREDICT_FALSE(limit_ - ret < static_cast<ptrdiff_t>(n))) {
       return false;
     }
     internal::UnpoisonMemoryRegion(ret, n);
@@ -297,7 +293,7 @@ class PROTOBUF_EXPORT SerialArena {
   }
   PROTOBUF_ALWAYS_INLINE
   void MaybePrefetchData(const char* next) {
-    ABSL_DCHECK(static_cast<const void*>(prefetch_ptr_) == nullptr ||
+    ABSL_DCHECK(static_cast<const void*>(prefetch_ptr_) == ptr() ||
                 static_cast<const void*>(prefetch_ptr_) >= head());
     prefetch_ptr_ =
         MaybePrefetchImpl(kPrefetchDataDegree, next, limit_, prefetch_ptr_);
@@ -371,15 +367,24 @@ class PROTOBUF_EXPORT SerialArena {
   // Members are declared here to track sizeof(SerialArena) and hotness
   // centrally. They are (roughly) laid out in descending order of hotness.
 
+  // We initialize ptr/limit with an arbitrary valid pointer.
+  // This allows Allocate to always return non-null even when asking for zero
+  // bytes.
+  static char* ArbitraryInternalPointerForInit() {
+    // Use rodata to detect potential bugs. No one should be writing here.
+    alignas(8) static constexpr char dummy{};
+    return const_cast<char*>(&dummy);
+  }
+
   // Next pointer to allocate from.  Always 8-byte aligned.  Points inside
   // head_ (and head_->pos will always be non-canonical).  We keep these
   // here to reduce indirection.
-  std::atomic<char*> ptr_{nullptr};
+  std::atomic<char*> ptr_{ArbitraryInternalPointerForInit()};
   // Limiting address up to which memory can be allocated from the head block.
-  char* limit_ = nullptr;
+  char* limit_ = ArbitraryInternalPointerForInit();
   // Current prefetch positions. Data from `ptr_` up to but not including
   // `prefetch_ptr_` is software prefetched.
-  const char* prefetch_ptr_ = nullptr;
+  const char* prefetch_ptr_ = ArbitraryInternalPointerForInit();
 
   // Chunked linked list for managing cleanup for arena elements.
   cleanup::ChunkList cleanup_list_;
