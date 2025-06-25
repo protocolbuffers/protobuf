@@ -140,12 +140,12 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_),
         0x004, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_[0]),
-        ::_pbi::kInvalidFieldOffsetTag,
-        ::_pbi::kInvalidFieldOffsetTag,
-        ::_pbi::kInvalidFieldOffsetTag,
-        ::_pbi::kInvalidFieldOffsetTag,
-        ::_pbi::kInvalidFieldOffsetTag,
-        ::_pbi::kInvalidFieldOffsetTag,
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
         0x000, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_),
