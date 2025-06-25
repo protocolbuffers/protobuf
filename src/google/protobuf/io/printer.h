@@ -664,7 +664,7 @@ class PROTOBUF_EXPORT Printer {
   void Indent() { indent_ += options_.spaces_per_indent; }
 
   // Undoes a call to Indent().
-  void Outdent();
+  void Outdent(SourceLocation loc = SourceLocation::current());
 
   // FormatInternal is a helper function not meant to use directly, use
   // compiler::cpp::Formatter instead.
