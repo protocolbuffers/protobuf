@@ -44,6 +44,16 @@ jobs:
             cache_key: '17'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-17-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
             targets: //java/... //java/internal:java_version //compatibility/...
+          - name: Incompatible Enable Proto Toolchain Resolution
+            cache_key: 'incompatible_enable_proto_toolchain_resolution'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-17-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+            targets: //java/... //java/internal:java_version //compatibility/...
+            flags: --incompatible_enable_proto_toolchain_resolution=true
+          - name: No Incompatible Enable Proto Toolchain Resolution
+            cache_key: 'noincompatible_enable_proto_toolchain_resolution'
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-17-168f9c9d015a0fa16611e1e9eede796fe9bfbb69
+            targets: //java/... //java/internal:java_version //compatibility/...
+            flags: --incompatible_enable_proto_toolchain_resolution=false
           - name: Bazel7
             cache_key: 'bazel7bzlmod'
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604
