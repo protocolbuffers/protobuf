@@ -21,7 +21,7 @@ path = "src/shared.rs"
 paste = "1.0.15"
 
 [dev-dependencies]
-googletest = "0.13.0"
+googletest = "0.14.2"
 
 [build-dependencies]
 cc = "1.1.6"
