@@ -1181,7 +1181,8 @@ bool MessageDifferencer::CompareMapField(
       // Users didn't set custom map field key comparator
       !map_field_key_comparator_.contains(repeated_field) &&
       // Users didn't set repeated field comparison
-      repeated_field_comparison_ == AS_LIST &&
+      (repeated_field_comparison_ == AS_LIST ||
+       repeated_field_comparison_ == AS_SET) &&
       // Users didn't set their own FieldComparator implementation
       field_comparator_kind_ == kFCDefault) {
     const FieldDescriptor* key_des = repeated_field->message_type()->map_key();
