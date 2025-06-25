@@ -1226,25 +1226,13 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename T>
   void VerifyFieldType(const FieldDescriptor* field) const;
 
-  template <class T>
-  const T& GetRawNonOneof(const Message& message,
-                          const FieldDescriptor* field) const;
-  template <class T>
-  const T& GetRawSplit(const Message& message,
-                       const FieldDescriptor* field) const;
   template <typename Type>
   const Type& GetRaw(const Message& message,
                      const FieldDescriptor* field) const;
 
-  void* MutableRawNonOneofImpl(Message* message,
-                               const FieldDescriptor* field) const;
   void* MutableRawSplitImpl(Message* message,
                             const FieldDescriptor* field) const;
-  void* MutableRawImpl(Message* message, const FieldDescriptor* field) const;
 
-  template <typename Type>
-  Type* MutableRawNonOneof(Message* message,
-                           const FieldDescriptor* field) const;
   template <typename Type>
   Type* MutableRaw(Message* message, const FieldDescriptor* field) const;
 
@@ -1784,45 +1772,22 @@ void Reflection::VerifyFieldType(const FieldDescriptor* field) const {
 }
 
 template <typename Type>
-const Type& Reflection::GetRawSplit(const Message& message,
-                                    const FieldDescriptor* field) const {
-  VerifyFieldType<Type>(field);
-  ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
-
-  const void* split = GetSplitField(&message);
-  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
-    return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
-  }
-  return *internal::GetConstPointerAtOffset<Type>(split, field_offset);
-}
-
-template <class Type>
-const Type& Reflection::GetRawNonOneof(const Message& message,
-                                       const FieldDescriptor* field) const {
-  VerifyFieldType<Type>(field);
-  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
-    return GetRawSplit<Type>(message, field);
-  }
-  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  return internal::GetConstRefAtOffset<Type>(message, field_offset);
-}
-
-template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
   VerifyFieldType<Type>(field);
-  ABSL_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
-      << "Field = " << field->full_name();
 
-  if (ABSL_PREDICT_TRUE(!schema_.InRealOneof(field))) {
-    return GetRawNonOneof<Type>(message, field);
+  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+
+  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
+    ABSL_DCHECK(!schema_.InRealOneof(field))
+        << "Field = " << field->full_name();
+
+    const void* split = GetSplitField(&message);
+    if (internal::SplitFieldHasExtraIndirectionStatic<Type>(field)) {
+      return **internal::GetConstPointerAtOffset<Type*>(split, field_offset);
+    }
+    return *internal::GetConstPointerAtOffset<Type>(split, field_offset);
   }
-
-  // Oneof fields are not split.
-  ABSL_DCHECK(!schema_.IsSplit(field));
-
-  const uint32_t field_offset = schema_.GetFieldOffset(field);
   return internal::GetConstRefAtOffset<Type>(message, field_offset);
 }
 
@@ -1841,17 +1806,16 @@ MutableRepeatedFieldRef<T> Reflection::GetMutableRepeatedFieldRef(
 }
 
 template <typename Type>
-Type* Reflection::MutableRawNonOneof(Message* message,
-                                     const FieldDescriptor* field) const {
-  VerifyFieldType<Type>(field);
-  return reinterpret_cast<Type*>(MutableRawNonOneofImpl(message, field));
-}
-
-template <typename Type>
 Type* Reflection::MutableRaw(Message* message,
                              const FieldDescriptor* field) const {
   VerifyFieldType<Type>(field);
-  return reinterpret_cast<Type*>(MutableRawImpl(message, field));
+
+  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
+    return reinterpret_cast<Type*>(MutableRawSplitImpl(message, field));
+  }
+
+  const uint32_t field_offset = schema_.GetFieldOffset<Type>(field);
+  return internal::GetPointerAtOffset<Type>(message, field_offset);
 }
 
 

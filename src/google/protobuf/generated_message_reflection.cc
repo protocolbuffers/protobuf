@@ -2765,10 +2765,9 @@ void* Reflection::MutableRawRepeatedField(Message* message,
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
-      return MutableRawNonOneof<MapFieldBase>(message, field)
-          ->MutableRepeatedField();
+      return MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
     }
-    return MutableRawNonOneof<void>(message, field);
+    return MutableRaw<void>(message, field);
   }
 }
 
@@ -2794,9 +2793,9 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
-      return &(GetRawNonOneof<MapFieldBase>(message, field).GetRepeatedField());
+      return &(GetRaw<MapFieldBase>(message, field).GetRepeatedField());
     }
-    return &GetRawNonOneof<char>(message, field);
+    return &GetRaw<char>(message, field);
   }
 }
 
@@ -2942,7 +2941,7 @@ void* Reflection::MutableRawSplitImpl(Message* message,
                                       const FieldDescriptor* field) const {
   ABSL_DCHECK(!schema_.InRealOneof(field)) << "Field = " << field->full_name();
 
-  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
+  const uint32_t field_offset = schema_.GetFieldOffset(field);
   PrepareSplitMessageForWrite(message);
   void** split = MutableSplitField(message);
   if (SplitFieldHasExtraIndirection(field)) {
@@ -2951,29 +2950,6 @@ void* Reflection::MutableRawSplitImpl(Message* message,
                           message->GetArena());
   }
   return GetPointerAtOffset<void>(*split, field_offset);
-}
-
-void* Reflection::MutableRawNonOneofImpl(Message* message,
-                                         const FieldDescriptor* field) const {
-  if (ABSL_PREDICT_FALSE(schema_.IsSplit(field))) {
-    return MutableRawSplitImpl(message, field);
-  }
-
-  const uint32_t field_offset = schema_.GetFieldOffsetNonOneof(field);
-  return GetPointerAtOffset<void>(message, field_offset);
-}
-
-void* Reflection::MutableRawImpl(Message* message,
-                                 const FieldDescriptor* field) const {
-  if (ABSL_PREDICT_TRUE(!schema_.InRealOneof(field))) {
-    return MutableRawNonOneofImpl(message, field);
-  }
-
-  // Oneof fields are not split.
-  ABSL_DCHECK(!schema_.IsSplit(field));
-
-  const uint32_t field_offset = schema_.GetFieldOffset(field);
-  return GetPointerAtOffset<void>(message, field_offset);
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
@@ -3443,7 +3419,7 @@ const void* Reflection::RepeatedFieldData(
     return GetExtensionSet(message).GetRawRepeatedField(
         field->number(), internal::DefaultRawPtr());
   } else {
-    return &GetRawNonOneof<char>(message, field);
+    return &GetRaw<char>(message, field);
   }
 }
 
@@ -3465,7 +3441,7 @@ void* Reflection::RepeatedFieldData(Message* message,
     return MutableExtensionSet(message)->MutableRawRepeatedField(
         field->number(), field->type(), field->is_packed(), field);
   } else {
-    return MutableRawNonOneof<char>(message, field);
+    return MutableRaw<char>(message, field);
   }
 }
 

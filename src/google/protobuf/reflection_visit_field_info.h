@@ -79,19 +79,15 @@ struct DynamicFieldInfoHelper {
   static T Get(const Reflection* reflection, const Message& message,
                const FieldDescriptor* field) {
     if constexpr (is_oneof) {
-      return reflection->GetRaw<T>(message, field);
-    } else {
-      return reflection->GetRawNonOneof<T>(message, field);
     }
+    return reflection->GetRaw<T>(message, field);
   }
   template <typename T>
   static T& GetRef(const Reflection* reflection, const Message& message,
                    const FieldDescriptor* field) {
     if constexpr (is_oneof) {
-      return reflection->GetRaw<T>(message, field);
-    } else {
-      return reflection->GetRawNonOneof<T>(message, field);
     }
+    return reflection->GetRaw<T>(message, field);
   }
   template <typename T>
   static T& Mutable(const Reflection* reflection, Message& message,
@@ -99,7 +95,7 @@ struct DynamicFieldInfoHelper {
     if constexpr (is_oneof) {
       return *reflection->MutableRaw<T>(&message, field);
     } else {
-      return *reflection->MutableRawNonOneof<T>(&message, field);
+      return *reflection->MutableRaw<T>(&message, field);
     }
   }
 

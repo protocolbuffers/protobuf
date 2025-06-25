@@ -2677,10 +2677,13 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   for (auto field : FieldRange(descriptor_)) {
     // TODO: We should not have an entry in the offset table for fields
     // that do not use them.
-    if (field->options().weak() || field->real_containing_oneof()) {
+    if (field->options().weak()) {
       // Mark the field to prevent unintentional access through reflection.
       // Don't use the top bit because that is for unused fields.
       format("::_pbi::kInvalidFieldOffsetTag");
+    } else if (field->real_containing_oneof()) {
+      format("PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$1$_)",
+             field->real_containing_oneof()->name());
     } else {
       format("PROTOBUF_FIELD_OFFSET($classtype$$1$, $2$)",
              ShouldSplit(field, options_) ? "::Impl_::Split" : "",
