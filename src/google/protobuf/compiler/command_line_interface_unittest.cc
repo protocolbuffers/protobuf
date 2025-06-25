@@ -87,7 +87,6 @@ using google::protobuf::io::win32::write;
 // which case tcmalloc will print warnings that fail the plugin tests.
 #if !defined(GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN)
 
-
 namespace {
 
 std::string CreatePluginArg() {
@@ -185,7 +184,6 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
 #if defined(_WIN32)
   void ExpectNullCodeGeneratorCalled(const std::string& parameter);
 #endif  // _WIN32
-
 
   std::string ReadFile(absl::string_view filename);
   void ReadDescriptorSet(absl::string_view filename,
@@ -335,7 +333,6 @@ void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
   EXPECT_EQ(parameter, null_generator_->parameter_);
 }
 #endif  // _WIN32
-
 
 std::string CommandLineInterfaceTest::ReadFile(absl::string_view filename) {
   std::string path = absl::StrCat(temp_directory(), "/", filename);

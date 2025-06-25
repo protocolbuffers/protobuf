@@ -40,7 +40,6 @@ class FileDescriptor;
 class GeneratedCodeInfo;
 
 namespace compiler {
-class AccessInfoMap;
 
 class Version;
 
@@ -193,8 +192,7 @@ constexpr auto MaximumKnownEdition() { return Edition::EDITION_2024; }
 // runs.
 class PROTOC_EXPORT GeneratorContext {
  public:
-  GeneratorContext() {
-  }
+  GeneratorContext() = default;
   GeneratorContext(const GeneratorContext&) = delete;
   GeneratorContext& operator=(const GeneratorContext&) = delete;
   virtual ~GeneratorContext();
@@ -240,7 +238,6 @@ class PROTOC_EXPORT GeneratorContext {
   // Retrieves the version number of the protocol compiler associated with
   // this GeneratorContext.
   virtual void GetCompilerVersion(Version* version) const;
-
 };
 
 // The type GeneratorContext was once called OutputDirectory. This typedef

@@ -424,7 +424,6 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
   // -----------------------------------------------------------------
 
-
   for (size_t i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
     Options file_options = common_file_options;

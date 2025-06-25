@@ -45,6 +45,8 @@ class CommandLineInterfaceTester : public testing::Test {
   // is replaced with TestTempDir().
   void RunProtoc(absl::string_view command);
   void RunProtocWithArgs(std::vector<std::string> args);
+  void RunProtocAndExpectDeath(absl::string_view command,
+                               const std::string& death_message_regex);
 
   // -----------------------------------------------------------------
   // Methods to set up the test (called before Run()).
@@ -123,6 +125,12 @@ class CommandLineInterfaceTester : public testing::Test {
 
   void ExpectFileContent(absl::string_view filename, absl::string_view content);
 
+  void ExpectFileContentContainsSubstring(absl::string_view filename,
+                                          absl::string_view content_substring);
+
+  void ExpectFileContentNotContainsSubstring(
+      absl::string_view filename, absl::string_view content_substring);
+
  private:
   // The object we are testing.
   CommandLineInterface cli_;
@@ -141,6 +149,8 @@ class CommandLineInterfaceTester : public testing::Test {
   std::string captured_stdout_;
 
   std::vector<std::unique_ptr<CodeGenerator>> generators_;
+
+  std::string FileContents(absl::string_view filename) const;
 };
 
 }  // namespace compiler
