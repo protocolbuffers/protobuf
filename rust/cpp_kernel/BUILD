@@ -19,6 +19,9 @@ cc_library(
         "serialized_data.h",
         "strings.h",
     ],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     visibility = [
         "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
@@ -38,6 +41,9 @@ cc_library(
 rust_library(
     name = "rust_alloc_for_cpp_api",
     srcs = ["rust_alloc_for_cpp_api.rs"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     visibility = [
         "//rust:__subpackages__",
     ],
