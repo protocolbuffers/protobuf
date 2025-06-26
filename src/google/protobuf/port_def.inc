@@ -242,8 +242,9 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && (defined(__aarch64__) || \
-    defined(__x86_64__) || defined(_M_X64))
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) &&                        \
+    (defined(__aarch64__) || defined(__x86_64__) || defined(_M_X64) || \
+     defined(__riscv))
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 // Compilation fails on X86 Windows:
