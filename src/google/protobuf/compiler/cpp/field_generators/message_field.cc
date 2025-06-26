@@ -645,7 +645,7 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
             }}},
           R"cc(
             if (GetArena() == nullptr) {
-              delete $field_$;
+              $pbi$::NonNullDelete($field_$);
             } else if ($pbi$::DebugHardenClearOneofMessageOnArena()) {
               $poison_or_clear$;
             }

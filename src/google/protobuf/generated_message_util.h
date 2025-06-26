@@ -392,6 +392,14 @@ constexpr std::optional<uintptr_t> EncodePlacementArenaOffsets(
   return arena_bits;
 }
 
+// Uses an ASSUME to tell the compiler that it does not need to emit the null
+// pointer check that is implicit in `delete x;` statements.
+template <typename T>
+PROTOBUF_ALWAYS_INLINE void NonNullDelete(T* ptr) {
+  PROTOBUF_ASSUME(ptr != nullptr);
+  delete ptr;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

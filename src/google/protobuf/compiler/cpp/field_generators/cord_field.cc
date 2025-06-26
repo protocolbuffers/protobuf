@@ -430,11 +430,11 @@ bool CordOneofFieldGenerator::RequiresArena(GeneratorFunction func) const {
 }
 
 void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format(
-      "if (GetArena() == nullptr) {\n"
-      "  delete $field$;\n"
-      "}\n");
+  printer->Emit(R"cc(
+    if (GetArena() == nullptr) {
+      $pbi$::NonNullDelete($field$);
+    }
+  )cc");
 }
 
 void CordOneofFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
