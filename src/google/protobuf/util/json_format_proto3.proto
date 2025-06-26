@@ -178,6 +178,13 @@ message TestCustomJsonName {
   int32 value = 1 [json_name = "@value"];
 }
 
+message TestCustomJsonType {
+  // By default, this field would be represented as a string.
+  // With the jstype FieldOption set to JS_NUMBER, it will be
+  // represented as a number.
+  int64 value = 1 [jstype = JS_NUMBER];
+}
+
 message TestEvilJson {
   int32 regular_value = 1 [json_name = "regular_name"];
   int32 script = 2 [json_name = "</script>"];

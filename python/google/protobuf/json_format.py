@@ -28,6 +28,7 @@ from operator import methodcaller
 import re
 
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pb2
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf.internal import type_checkers
@@ -307,6 +308,8 @@ class _Printer(object):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
       return bool(value)
     elif field.cpp_type in _INT64_TYPES:
+      if field.GetOptions().jstype == descriptor_pb2.FieldOptions.JSType.JS_NUMBER:
+        return value
       return str(value)
     elif field.cpp_type in _FLOAT_TYPES:
       if math.isinf(value):

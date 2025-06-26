@@ -1653,6 +1653,16 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestCustomJsonName()
     self.CheckParseBack(message, parsed_message)
 
+  def testJsonType(self):
+    message = json_format_proto3_pb2.TestCustomJsonType()
+    message.value = 12345
+    self.assertEqual(
+      '{\n  "value": 12345\n}',
+      json_format.MessageToJson(message),
+    )
+    parsed_message = json_format_proto3_pb2.TestCustomJsonType()
+    self.CheckParseBack(message, parsed_message)
+
   def testSortKeys(self):
     # Testing sort_keys is not perfectly working, as by random luck we could
     # get the output sorted. We just use a selection of names.
