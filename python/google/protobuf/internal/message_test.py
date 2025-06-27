@@ -1431,6 +1431,17 @@ class MessageTest(unittest.TestCase):
         'TestAllTypes.NestedMessage', nested.__class__.__qualname__
     )
 
+  def testAssignBoolToEnum(self, message_module):
+    m = message_module.TestAllTypes(optional_nested_enum=2)
+    # TODO: change warning into error in 2026 Q1
+    # with self.assertRaises(TypeError):
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_nested_enum = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.optional_nested_enum, 1)
+    # TODO: change to assert with 2 in 2026 Q1
+    # self.assertEqual(m.optional_nested_enum, 2)
+
 
 @testing_refleaks.TestCase
 class TestRecursiveGroup(unittest.TestCase):
