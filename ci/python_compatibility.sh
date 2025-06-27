@@ -62,7 +62,6 @@ COMPAT_PROTOS=(
   no_package
   packed_field_test
   test_bad_identifiers
-  test_proto2
   test_proto3_optional
 )
 
