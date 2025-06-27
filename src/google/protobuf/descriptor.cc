@@ -8717,7 +8717,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       return;
     }
 
-    if (pool_->EnforceCustomExtensionDeclarations()) {
+    if (pool_->ShouldEnforceExtensionDeclaration(*field)) {
       for (const auto& declaration : extension_range->options_->declaration()) {
         if (declaration.number() != field->number()) continue;
         if (declaration.reserved()) {
