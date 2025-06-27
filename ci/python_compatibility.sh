@@ -75,4 +75,6 @@ done
 # our test wheels.
 TEST_EXCLUSIONS="_pybind11_test.py"
 TESTS=$(pip show -f protobuftests | grep -i $TEST_FILTER | grep --invert-match $TEST_EXCLUSIONS | sed 's,/,.,g' | sed -E 's,.py$,,g')
-python -m unittest -v ${TESTS[@]}
+for test in $TESTS; do
+  python -m unittest -v $test
+done
