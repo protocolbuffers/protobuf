@@ -35,6 +35,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -157,11 +158,19 @@ struct ExtensionInfo {
   };
 
   struct MessageInfo {
-    const MessageLite* prototype;
+    const MessageLite* prototype = nullptr;
     // The TcParse table used for this object.
     // Never null. (except in platforms that don't constant initialize default
     // instances)
-    const internal::TcParseTableBase* tc_table;
+    const internal::TcParseTableBase* tc_table = nullptr;
+
+    const ClassData* GetClassData() const {
+#ifdef PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+      return tc_table->class_data;
+#else
+      return google::protobuf::internal::GetClassData(*prototype);
+#endif
+    }
   };
 
   union {
@@ -425,7 +434,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* AddString(int number, FieldType type, desc);
   MessageLite* AddMessage(int number, FieldType type,
-                          const MessageLite& prototype, desc);
+                          const ClassData* class_data, desc);
   MessageLite* AddMessage(const FieldDescriptor* descriptor,
                           MessageFactory* factory);
   void AddAllocatedMessage(const FieldDescriptor* descriptor,
@@ -1667,8 +1676,9 @@ class RepeatedMessageTypeTraits {
   }
   static inline MutableType Add(int number, FieldType field_type,
                                 ExtensionSet* set) {
+    static const ClassData* class_data = MessageTraits<Type>::class_data();
     return static_cast<Type*>(
-        set->AddMessage(number, field_type, Type::default_instance(), nullptr));
+        set->AddMessage(number, field_type, class_data, nullptr));
   }
   static inline const RepeatedPtrField<Type>& GetRepeated(
       int number, const ExtensionSet& set) {

@@ -163,11 +163,10 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
   int count = std::min(ClearedCount(), from.current_size_);
+  const ClassData* class_data = GetClassData(*src[0]);
   for (int i = 0; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
-    ABSL_DCHECK(TypeId::Get(*src[i]) == TypeId::Get(*src[0]))
-        << src[i]->GetTypeName() << " vs " << src[0]->GetTypeName();
-    dst[i]->CheckTypeAndMergeFrom(*src[i]);
+    dst[i]->MergeFromWithClassData(*src[i], class_data);
   }
   return count;
 }
@@ -214,8 +213,7 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
   auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
   auto end = src + from.current_size_;
-  const MessageLite* prototype = src[0];
-  ABSL_DCHECK(prototype != nullptr);
+  const ClassData* class_data = GetClassData(*src[0]);
   if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
@@ -224,10 +222,8 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
     ABSL_DCHECK(*src != nullptr);
-    ABSL_DCHECK(TypeId::Get(**src) == TypeId::Get(*prototype))
-        << (**src).GetTypeName() << " vs " << prototype->GetTypeName();
-    *dst = prototype->New(arena);
-    (*dst)->CheckTypeAndMergeFrom(**src);
+    *dst = class_data->New(arena);
+    (*dst)->MergeFromWithClassData(**src, class_data);
   }
   ExchangeCurrentSize(new_size);
   if (new_size > allocated_size()) {

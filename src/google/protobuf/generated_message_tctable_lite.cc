@@ -515,8 +515,8 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 
 MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
                                   RepeatedPtrFieldBase& field) {
-  return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
-      table->class_data->prototype);
+  return field.AddFromClassData<GenericTypeHandler<MessageLite>>(
+      table->class_data);
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>
