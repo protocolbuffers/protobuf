@@ -234,6 +234,16 @@ message TestAllTypesProto2 {
     features.message_encoding = DELIMITED
   ];
 
+  message GroupCustomJSONName {
+    int32 group_int32 = 207;
+    uint32 group_uint32 = 208;
+  }
+
+  GroupCustomJSONName groupcustomjsonname = 209 [
+    json_name = "GroupJsonNameCustomized",
+    features.message_encoding = DELIMITED
+  ];
+
   // default values
   int32 default_int32 = 241 [
     default = -123456789

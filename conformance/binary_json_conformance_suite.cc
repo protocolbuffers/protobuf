@@ -2280,6 +2280,11 @@ void BinaryAndJsonConformanceSuiteImpl<
         optional_int32: 1
         optional_int64: 2
       )");
+  if (!run_proto3_tests_) {
+    RunValidJsonTest("GroupCustomJSONName", RECOMMENDED,
+                     "{\"GroupJsonNameCustomized\":{\"group_int32\":1}",
+                     R"(groupcustomjsonname:{group_int32:1})");
+  }
   // Missing comma between key/value pairs.
   ExpectParseFailureForJson("MissingCommaOneLine", RECOMMENDED,
                             "{ \"optionalInt32\": 1 \"optionalInt64\": 2 }");
