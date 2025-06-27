@@ -179,7 +179,9 @@ class PROTOC_EXPORT CodeGenerator {
 // The minimum edition supported by protoc.
 constexpr auto ProtocMinimumEdition() { return Edition::EDITION_PROTO2; }
 // The maximum edition supported by protoc.
-constexpr auto ProtocMaximumEdition() { return Edition::EDITION_2023; }
+constexpr auto ProtocMaximumEdition() {
+  return Edition::EDITION_2024;
+}
 
 // The maximum edition known to protoc, which may or may not be officially
 // supported yet.  During development of a new edition, this will typically be
