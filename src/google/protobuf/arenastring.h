@@ -16,6 +16,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/source_location.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/port.h"
@@ -295,7 +296,8 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void Set(std::string&& value, Arena* arena);
   template <typename... OverloadDisambiguator>
   void Set(const std::string& value, Arena* arena);
-  void Set(const char* s, Arena* arena);
+  void Set(const char* s, Arena* arena,
+           absl::SourceLocation loc = absl::SourceLocation::current());
   void Set(const char* s, size_t n, Arena* arena);
 
   void SetBytes(absl::string_view value, Arena* arena);
@@ -461,7 +463,12 @@ inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
   }
 }
 
-inline void ArenaStringPtr::Set(const char* s, Arena* arena) {
+inline void ArenaStringPtr::Set(const char* s, Arena* arena,
+                                absl::SourceLocation loc) {
+  if (s == nullptr) {
+    fprintf(stderr, "ERROR IS HERE: %s %d\n", loc.file_name(), loc.line());
+    std::abort();
+  }
   Set(absl::string_view{s}, arena);
 }
 
