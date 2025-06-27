@@ -452,8 +452,8 @@ void Parser::LocationRecorder::AttachComments(
   if (!trailing->empty()) {
     location_->mutable_trailing_comments()->swap(*trailing);
   }
-  for (int i = 0; i < detached_comments->size(); ++i) {
-    location_->add_leading_detached_comments()->swap((*detached_comments)[i]);
+  for (auto & detached_comment : *detached_comments) {
+    location_->add_leading_detached_comments()->swap(detached_comment);
   }
   detached_comments->clear();
 }
