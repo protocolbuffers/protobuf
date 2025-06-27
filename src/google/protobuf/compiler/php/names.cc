@@ -32,7 +32,6 @@ const char* const kReservedNames[] = {
     "unset",        "use",        "var",          "while",      "xor",
     "yield",        "int",        "float",        "bool",       "string",
     "true",         "false",      "null",         "void",       "iterable"};
-const int kReservedNamesSize = 80;
 
 namespace google {
 namespace protobuf {
