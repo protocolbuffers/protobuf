@@ -112,9 +112,19 @@ option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 // {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional
 // seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),
 // are optional. The "Z" suffix indicates the timezone ("UTC"); the timezone
-// is required. A proto3 JSON serializer should always use UTC (as indicated by
-// "Z") when printing the Timestamp type and a proto3 JSON parser should be
+// is required. A ProtoJSON serializer should always use UTC (as indicated by
+// "Z") when printing the Timestamp type and a ProtoJSON parser should be
 // able to accept both UTC and other timezones (as indicated by an offset).
+//
+// Note that ProtoJSON timestamp spec is officially RFC3339 as a profile of
+// ISO-8601-2019. RFC3339 is intended to declare a subset of ISO-8601, and
+// there are some oddities due to ISO-8601 being clarified after RFC3339 was
+// published in 2002. Most notably, ISO-8601-1988 is ambiguous about whether
+// lowercase letters should be accepted when it is possible to use an uppercase
+// letter, and RFC3339 itself has a note suggesting an ISO-8601 note should be
+// interpreted as allowing lowercase letters. ISO-8601-2019 has no such note and
+// is unambiguous that lowercase letters are not allowed, and so RFC3339 as
+// a profile of ISO-8601-2019 the lowercase letters are not allowed.
 //
 // For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
 // 01:30 UTC on January 15, 2017.
