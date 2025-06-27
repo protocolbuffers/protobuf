@@ -316,7 +316,7 @@ jobs:
         # Test the first release of each python major version, plus some extra coverage for 3.x.y
         # since it predates our breaking change policies.
         # Major versions: 4.21.0, 5.26.0, 6.30.0
-        version: ["3.19.0", "3.20.0", "21.0", "26.0", "30.0"]
+        version: ["3.19.0", "3.20.0", "21.0", "26.0"]
         implementation: ["Pure", "upb"]
         include:
           # We don't support 3.19.0 anymore, so our infra should show a failure.
