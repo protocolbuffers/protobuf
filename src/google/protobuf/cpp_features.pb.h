@@ -302,7 +302,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   void _internal_set_legacy_closed_enum(bool value);
 
   public:
-  // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool has_enum_name_uses_string_view() const;
   void clear_enum_name_uses_string_view() ;
   bool enum_name_uses_string_view() const;
@@ -429,7 +429,7 @@ inline void CppFeatures::_internal_set_string_type(::pb::CppFeatures_StringType 
                                           _impl_.string_type_ = value;
 }
 
-// optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+// optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_enum_name_uses_string_view() const {
   bool value = (_impl_._has_bits_[0] & 0x00000004U) != 0;
   return value;
