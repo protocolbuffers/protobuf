@@ -92,33 +92,13 @@ def ValidateProtobufRuntimeVersion(
         ' Cross-domain usage of Protobuf is not supported.'
     )
 
-  if gen_major != MAJOR:
-    if gen_major == MAJOR - 1:
-      if _warning_count < _MAX_WARNING_COUNT:
-        warnings.warn(
-            'Protobuf gencode version %s is exactly one major version older'
-            ' than the runtime version %s at %s. Please update the gencode to'
-            ' avoid compatibility violations in the next runtime release.'
-            % (gen_version, version, location)
-        )
-        _warning_count += 1
-    else:
-      _ReportVersionError(
-          'Detected mismatched Protobuf Gencode/Runtime major versions when'
-          f' loading {location}: gencode {gen_version} runtime {version}.'
-          f' Same major version is required. {error_prompt}'
-      )
-
-  if MINOR < gen_minor or (MINOR == gen_minor and PATCH < gen_patch):
+  if (
+      MAJOR < gen_major
+      or (MAJOR == gen_major and MINOR < gen_minor)
+      or (MAJOR == gen_major and MINOR == gen_minor and PATCH < gen_patch)
+  ):
     _ReportVersionError(
         'Detected incompatible Protobuf Gencode/Runtime versions when loading'
         f' {location}: gencode {gen_version} runtime {version}. Runtime version'
         f' cannot be older than the linked gencode version. {error_prompt}'
-    )
-
-  if gen_suffix != SUFFIX:
-    _ReportVersionError(
-        'Detected mismatched Protobuf Gencode/Runtime version suffixes when'
-        f' loading {location}: gencode {gen_version} runtime {version}.'
-        f' Version suffixes must be the same. {error_prompt}'
     )
