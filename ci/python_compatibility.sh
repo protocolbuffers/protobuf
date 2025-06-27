@@ -17,7 +17,7 @@ popd
 # protoc prior to 28.0 doesn't support inf/nan option values.
 sed -i 's/\(inf\|nan\)/0/g' src/google/protobuf/unittest_custom_options.proto
 
-bazel build //python:copied_test_proto_files //python:copied_wkt_proto_files
+USE_BAZEL_VERSION=6.3.0 bazelisk build //python:copied_test_proto_files //python:copied_wkt_proto_files
 
 COMPAT_COPIED_PROTOS=(
   # Well-known types give good build coverage
