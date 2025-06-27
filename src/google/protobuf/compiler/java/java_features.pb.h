@@ -526,7 +526,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   void _internal_set_use_old_outer_classname_default(bool value);
 
   public:
-  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
   bool has_nest_in_file_class() const;
   void clear_nest_in_file_class() ;
   ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass nest_in_file_class() const;
@@ -722,7 +722,7 @@ inline void JavaFeatures::_internal_set_use_old_outer_classname_default(bool val
   _impl_.use_old_outer_classname_default_ = value;
 }
 
-// optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+// optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
 inline bool JavaFeatures::has_nest_in_file_class() const {
   bool value = (_impl_._has_bits_[0] & 0x00000010U) != 0;
   return value;
