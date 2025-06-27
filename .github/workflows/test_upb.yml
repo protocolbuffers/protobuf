@@ -319,3 +319,69 @@ jobs:
           for test in $TESTS; do
             python -m unittest -v $test
           done
+
+  test_python_compatibility:
+    name: ${{ inputs.continuous-prefix }} Test Python Compatibility (${{ matrix.implementation }} - ${{ matrix.version }})
+    needs: build_wheels
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        # Test the first release of each python major version, plus some extra coverage for 3.x.y
+        # since it predates our breaking change policies.
+        # Major versions: 4.21.0, 5.26.0, 6.30.0
+        version: ["3.19.0", "3.20.0", "21.0", "26.0", "30.0"]
+        implementation: ["Pure", "upb"]
+        include:
+          # We don't support 3.19.0 anymore, so our infra should show a failure.
+          - version: "3.19.0"
+            fail: true
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request_target' }}
+    steps:
+      - name: Checkout pending changes
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v4
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Download Wheels
+        if: ${{ inputs.continuous-run }}
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        with:
+          name: python-wheels
+          path: wheels
+      - name: Delete Binary Wheels (pure python only)
+        if: ${{ inputs.continuous-run && matrix.implementation == 'Pure' }}
+        run: find wheels -type f | grep -v none-any | xargs rm
+      - name: Setup Python
+        if: ${{ inputs.continuous-run }}
+        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        with:
+          python-version: 3.13
+      - name: Setup Python venv
+        if: ${{ inputs.continuous-run }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m venv env
+          source env/bin/activate
+          echo "VIRTUAL ENV:" $VIRTUAL_ENV
+      - name: Download Requirements
+        if: ${{ inputs.continuous-run }}
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        with:
+          name: requirements
+          path: requirements
+      - name: Install requirements
+        if: ${{ inputs.continuous-run }}
+        run: pip install -r requirements/requirements.txt
+      - name: Install Protobuf Wheels
+        if: ${{ inputs.continuous-run }}
+        run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
+      - name: Make the test script executable
+        if: ${{ inputs.continuous-run }}
+        run: chmod +x ci/python_compatibility.sh
+      - name: Run compatibility tests
+        if: ${{ inputs.continuous-run && !matrix.fail }}
+        run: ci/python_compatibility.sh ${{ matrix.version }}
+      - name: Run failing compatibility tests
+        if: ${{ inputs.continuous-run && matrix.fail }}
+        run: (! ci/python_compatibility.sh ${{ matrix.version }})
