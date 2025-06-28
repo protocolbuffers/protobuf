@@ -109,7 +109,7 @@ public final class Descriptors {
     return javaEditionDefaults;
   }
 
-  static FeatureSet getEditionDefaults(Edition edition) {
+  public static FeatureSet getEditionDefaults(Edition edition) {
     FeatureSetDefaults javaEditionDefaults = getJavaEditionDefaults();
     if (edition.getNumber() < javaEditionDefaults.getMinimumEdition().getNumber()) {
       throw new IllegalArgumentException(
