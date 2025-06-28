@@ -10,6 +10,7 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -28,9 +29,7 @@ using type_info = ::type_info;
 #endif
 
 #include "absl/base/attributes.h"
-#include "absl/base/macros.h"
 #include "absl/base/optimization.h"
-#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
@@ -656,16 +655,25 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
     Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from) {
-  // If the object is larger than half a cache line, prefetch it.
-  // This way of prefetching is a little more aggressive than if we
-  // condition off a whole cache line, but benchmarks show better results.
-  if (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
-    PROTOBUF_PREFETCH_WITH_OFFSET(from, 64);
+  const auto* typed_from = static_cast<const T*>(from);
+  // If the object is larger than half of a cache line, prefetch either the rest
+  // of it or half of it, whichiver is smaller, starting at 1-cache-line offset.
+  // This has shown the best benchmark results on average between several tested
+  // configurations.
+  if constexpr (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
+    using internal::PrefetchOpts;
+    static constexpr PrefetchOpts kPrefetchOpts = {
+        /*num=*/{std::min(sizeof(T) / 2, sizeof(T) - ABSL_CACHELINE_SIZE),
+                 PrefetchOpts::kBytes},
+        /*from=*/{1, PrefetchOpts::kLines},
+        /*locality=*/PrefetchOpts::kHigh,
+    };
+    internal::Prefetch<kPrefetchOpts, T, T>(typed_from);
   }
   static_assert(is_destructor_skippable<T>::value, "");
   void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
                                : ::operator new(sizeof(T));
-  return new (mem) T(arena, *static_cast<const T*>(from));
+  return new (mem) T(arena, *typed_from);
 }
 
 template <>
