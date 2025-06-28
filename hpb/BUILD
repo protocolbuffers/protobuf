@@ -200,6 +200,7 @@ cc_library(
         ":status",
         "//hpb:arena",
         "//hpb/backend/upb:interop",
+        "//hpb/internal",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
         "//upb/base",

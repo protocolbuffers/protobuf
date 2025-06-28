@@ -17,6 +17,7 @@
 #include "absl/strings/string_view.h"
 #include "hpb/arena.h"
 #include "hpb/backend/upb/interop.h"
+#include "hpb/internal/internal.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
 #include "hpb/ptr.h"
