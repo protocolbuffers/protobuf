@@ -904,5 +904,376 @@ namespace Google.Protobuf
             };
             Assert.AreEqual(expected, message1.MapStringString);
         }
+
+        [Test]
+        public void TestClearSingleFields()
+        {
+            // Single fields
+            var message = new TestAllTypes();
+
+            Assert.AreEqual(false, message.SingleBool);
+            message.SingleBool = true;
+            Assert.AreNotEqual(false, message.SingleBool);
+            message.Clear();
+            Assert.AreEqual(false, message.SingleBool);
+
+            Assert.AreEqual(ByteString.Empty, message.SingleBytes);
+            message.SingleBytes = ByteString.CopyFromUtf8("test1");
+            Assert.AreNotEqual(ByteString.Empty, message.SingleBytes);
+            message.Clear();
+            Assert.AreEqual(ByteString.Empty, message.SingleBytes);
+
+            Assert.AreEqual(0.0, message.SingleDouble);
+            message.SingleDouble = 1.23;
+            Assert.AreNotEqual(0.0, message.SingleDouble);
+            message.Clear();
+            Assert.AreEqual(0.0, message.SingleDouble);
+
+            Assert.AreEqual(0, message.SingleFixed32);
+            message.SingleFixed32 = 123;
+            Assert.AreNotEqual(0, message.SingleFixed32);
+            message.Clear();
+            Assert.AreEqual(0, message.SingleFixed32);
+
+            Assert.AreEqual(0L, message.SingleFixed64);
+            message.SingleFixed64 = 123L;
+            Assert.AreNotEqual(0L, message.SingleFixed64);
+            message.Clear();
+            Assert.AreEqual(0L, message.SingleFixed64);
+
+            Assert.AreEqual(0.0f, message.SingleFloat);
+            message.SingleFloat = 1.23f;
+            Assert.AreNotEqual(0.0f, message.SingleFloat);
+            message.Clear();
+            Assert.AreEqual(0.0f, message.SingleFloat);
+
+            Assert.AreEqual(ForeignEnum.ForeignUnspecified, message.SingleForeignEnum);
+            message.SingleForeignEnum = ForeignEnum.ForeignFoo;
+            Assert.AreNotEqual(ForeignEnum.ForeignUnspecified, message.SingleForeignEnum);
+            message.Clear();
+            Assert.AreEqual(ForeignEnum.ForeignUnspecified, message.SingleForeignEnum);
+
+            Assert.IsNull(message.SingleForeignMessage);
+            message.Clear();
+            Assert.IsNull(message.SingleForeignMessage);
+            var singleForeignMessage = new global::Google.Protobuf.TestProtos.ForeignMessage();
+            message.SingleForeignMessage = singleForeignMessage;
+            Assert.AreEqual(singleForeignMessage, message.SingleForeignMessage);
+            message.Clear();
+            Assert.AreEqual(singleForeignMessage, message.SingleForeignMessage);
+
+            Assert.AreEqual(ImportEnum.Unspecified, message.SingleImportEnum);
+            message.SingleImportEnum = ImportEnum.ImportFoo;
+            Assert.AreNotEqual(ImportEnum.Unspecified, message.SingleImportEnum);
+            message.Clear();
+            Assert.AreEqual(ImportEnum.Unspecified, message.SingleImportEnum);
+
+            Assert.IsNull(message.SingleImportMessage);
+            message.Clear();
+            Assert.IsNull(message.SingleImportMessage);
+            var importMessage = new global::Google.Protobuf.TestProtos.ImportMessage();
+            message.SingleImportMessage = importMessage;
+            Assert.AreEqual(importMessage, message.SingleImportMessage);
+            message.Clear();
+            Assert.AreEqual(importMessage, message.SingleImportMessage);
+
+            Assert.AreEqual(0, message.SingleInt32);
+            message.SingleInt32 = 123;
+            Assert.AreNotEqual(0, message.SingleInt32);
+            message.Clear();
+            Assert.AreEqual(0, message.SingleInt32);
+
+            Assert.AreEqual(0L, message.SingleInt64);
+            message.SingleInt64 = 123;
+            Assert.AreNotEqual(0L, message.SingleInt64);
+            message.Clear();
+            Assert.AreEqual(0L, message.SingleInt64);
+
+            Assert.AreEqual(TestAllTypes.Types.NestedEnum.Unspecified, message.SingleNestedEnum);
+            message.SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo;
+            Assert.AreNotEqual(TestAllTypes.Types.NestedEnum.Unspecified, message.SingleNestedEnum);
+            message.Clear();
+            Assert.AreEqual(TestAllTypes.Types.NestedEnum.Unspecified, message.SingleNestedEnum);
+
+            Assert.IsNull(message.SingleNestedMessage);
+            message.Clear();
+            Assert.IsNull(message.SingleNestedMessage);
+            var nestedMessage = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+            message.SingleNestedMessage = nestedMessage;
+            Assert.AreEqual(nestedMessage, message.SingleNestedMessage);
+            message.Clear();
+            Assert.AreEqual(nestedMessage, message.SingleNestedMessage);
+
+            Assert.IsNull(message.SinglePublicImportMessage);
+            message.Clear();
+            Assert.IsNull(message.SinglePublicImportMessage);
+            var publicImportMessage = new global::Google.Protobuf.TestProtos.PublicImportMessage();
+            message.SinglePublicImportMessage = publicImportMessage;
+            Assert.AreEqual(publicImportMessage, message.SinglePublicImportMessage);
+            message.Clear();
+            Assert.AreEqual(publicImportMessage, message.SinglePublicImportMessage);
+
+            Assert.AreEqual(0, message.SingleSfixed32);
+            message.SingleSfixed32 = 123;
+            Assert.AreNotEqual(0, message.SingleSfixed32);
+            message.Clear();
+            Assert.AreEqual(0, message.SingleSfixed32);
+
+            Assert.AreEqual(0L, message.SingleSfixed64);
+            message.SingleSfixed64 = 123L;
+            Assert.AreNotEqual(0L, message.SingleSfixed64);
+            message.Clear();
+            Assert.AreEqual(0L, message.SingleSfixed64);
+
+            Assert.AreEqual(0, message.SingleSint32);
+            message.SingleSint32 = 123;
+            Assert.AreNotEqual(0, message.SingleSint32);
+            message.Clear();
+            Assert.AreEqual(0, message.SingleSint32);
+
+            Assert.AreEqual(0L, message.SingleSint64);
+            message.SingleSint64 = 123L;
+            Assert.AreNotEqual(0L, message.SingleSint64);
+            message.Clear();
+            Assert.AreEqual(0L, message.SingleSint64);
+
+            Assert.AreEqual("", message.SingleString);
+            message.SingleString = "test2";
+            Assert.AreNotEqual("", message.SingleString);
+            message.Clear();
+            Assert.AreEqual("", message.SingleString);
+
+            Assert.AreEqual(0U, message.SingleUint32);
+            message.SingleUint32 = 123U;
+            Assert.AreNotEqual(0U, message.SingleUint32);
+            message.Clear();
+            Assert.AreEqual(0U, message.SingleUint32);
+
+            Assert.AreEqual(0UL, message.SingleUint64);
+            message.SingleUint64 = 123UL;
+            Assert.AreNotEqual(0UL, message.SingleUint64);
+            message.Clear();
+            Assert.AreEqual(0UL, message.SingleUint64);
+        }
+
+        [Test]
+        public void TestClearRepeatedFields()
+        {
+            // Repeated fields
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedBool.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedBool.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedBytes.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedBytes.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedDouble.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedDouble.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedFixed32.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedFixed32.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedFixed64.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedFixed64.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedFloat.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedFloat.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedForeignEnum.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedForeignEnum.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedForeignMessage.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedForeignMessage.Count);
+            }
+
+            {
+
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedImportEnum.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedImportEnum.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedImportMessage.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedImportMessage.Count);
+
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedNestedEnum.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedNestedEnum.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedNestedMessage.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedNestedMessage.Count);
+            }
+
+            {
+
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedPublicImportMessage.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedPublicImportMessage.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedSfixed32.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedSfixed32.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedSfixed64.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedSfixed64.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedSint32.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedSint32.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedSint64.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedSint64.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedString.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedString.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedUint32.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedUint32.Count);
+            }
+
+            {
+                var message = SampleMessages.CreateFullTestAllTypes();
+                Assert.AreNotEqual(0, message.RepeatedUint64.Count);
+                message.Clear();
+                Assert.AreEqual(0, message.RepeatedUint64.Count);
+            }
+        }
+
+
+        [Test]
+        public void TestClearOneofFields()
+        {
+            // Oneof fields
+            {
+                var message = new TestAllTypes();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.AreEqual(0, message.OneofUint32);
+
+                message.OneofUint32 = 123;
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, message.OneofFieldCase);
+                Assert.AreEqual(123, message.OneofUint32);
+
+                message.Clear();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.AreEqual(0, message.OneofUint32);
+            }
+
+            {
+                var message = new TestAllTypes();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.AreEqual("", message.OneofString);
+
+                message.OneofString = "test3";
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofString, message.OneofFieldCase);
+                Assert.AreEqual("test3", message.OneofString);
+
+                message.Clear();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.AreEqual("", message.OneofString);
+            }
+
+            {
+                var message = new TestAllTypes();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.AreEqual(ByteString.Empty, message.OneofBytes);
+
+                var byteString = ByteString.CopyFromUtf8("test4");
+                message.OneofBytes = byteString;
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofBytes, message.OneofFieldCase);
+                Assert.AreEqual(byteString, message.OneofBytes);
+
+                message.Clear();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.AreEqual(ByteString.Empty, message.OneofBytes);
+            }
+
+            {
+                var message = new TestAllTypes();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.IsNull(message.OneofNestedMessage);
+
+                var nestedMessage = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
+                message.OneofNestedMessage = nestedMessage;
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofNestedMessage, message.OneofFieldCase);
+                Assert.AreEqual(nestedMessage, message.OneofNestedMessage);
+
+                message.Clear();
+
+                Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+                Assert.IsNull(message.OneofNestedMessage);
+            }
+        }
     }
 }
