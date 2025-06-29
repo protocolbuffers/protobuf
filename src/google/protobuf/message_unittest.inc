@@ -1589,6 +1589,7 @@ template <typename T>
 static std::vector<const FieldDescriptor*> GetFields() {
   auto* descriptor = T::descriptor();
   std::vector<const FieldDescriptor*> fields;
+  fields.reserve(descriptor->field_count());
   for (int i = 0; i < descriptor->field_count(); ++i) {
     fields.push_back(descriptor->field(i));
   }
