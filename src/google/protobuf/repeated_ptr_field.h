@@ -148,9 +148,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // We use the same TypeHandler for all Message types to deduplicate generated
   // code.
   template <typename TypeHandler>
-  using CommonHandler = typename std::conditional<
-      std::is_base_of<MessageLite, Value<TypeHandler>>::value,
-      GenericTypeHandler<MessageLite>, TypeHandler>::type;
+  using CommonHandler = std::conditional_t<
+      std::is_base_of_v<MessageLite, Value<TypeHandler>>,
+      GenericTypeHandler<MessageLite>, TypeHandler>;
 
   constexpr RepeatedPtrFieldBase()
       : tagged_rep_or_elem_(nullptr),
@@ -328,8 +328,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Appends all message values from `from` to this instance.
   template <typename T>
   void MergeFrom(const RepeatedPtrFieldBase& from) {
-    static_assert(std::is_base_of<MessageLite, T>::value, "");
-    if constexpr (!std::is_base_of<Message, T>::value) {
+    static_assert(std::is_base_of_v<MessageLite, T>, "");
+    if constexpr (!std::is_base_of_v<Message, T>) {
       // For LITE objects we use the generic MergeFrom to save on binary size.
       return MergeFrom<MessageLite>(from);
     }
@@ -972,13 +972,13 @@ class GenericTypeHandler<std::string> {
 template <typename Element>
 class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     : private internal::RepeatedPtrFieldBase {
-  static_assert(!std::is_const<Element>::value,
+  static_assert(!std::is_const_v<Element>,
                 "We do not support const value types.");
-  static_assert(!std::is_volatile<Element>::value,
+  static_assert(!std::is_volatile_v<Element>,
                 "We do not support volatile value types.");
-  static_assert(!std::is_pointer<Element>::value,
+  static_assert(!std::is_pointer_v<Element>,
                 "We do not support pointer value types.");
-  static_assert(!std::is_reference<Element>::value,
+  static_assert(!std::is_reference_v<Element>,
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
@@ -1023,8 +1023,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   explicit RepeatedPtrField(Arena* arena);
 
   template <typename Iter,
-            typename = typename std::enable_if<std::is_constructible<
-                Element, decltype(*std::declval<Iter>())>::value>::type>
+            typename = std::enable_if_t<std::is_constructible_v<
+                Element, decltype(*std::declval<Iter>())>>>
   RepeatedPtrField(Iter begin, Iter end);
 
   RepeatedPtrField(const RepeatedPtrField& rhs)
@@ -1346,7 +1346,7 @@ template <typename Element>
 RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
   if (!NeedsDestroy()) return;
-  if constexpr (std::is_base_of<MessageLite, Element>::value) {
+  if constexpr (std::is_base_of_v<MessageLite, Element>) {
     DestroyProtos();
   } else {
     Destroy<TypeHandler>();
@@ -1437,9 +1437,9 @@ template <typename Element>
 template <typename Iter>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Iter begin,
                                                            Iter end) {
-  if (std::is_base_of<
+  if (std::is_base_of_v<
           std::forward_iterator_tag,
-          typename std::iterator_traits<Iter>::iterator_category>::value) {
+          typename std::iterator_traits<Iter>::iterator_category>) {
     int reserve = static_cast<int>(std::distance(begin, end));
     Reserve(size() + reserve);
   }
@@ -1605,9 +1605,9 @@ inline size_t RepeatedPtrField<Element>::SpaceUsedExcludingSelfLong() const {
   // `google::protobuf::Message` has a virtual method `SpaceUsedLong`, hence we can
   // instantiate just one function for all protobuf messages.
   // Note: std::is_base_of requires that `Element` is a concrete class.
-  using H = typename std::conditional<std::is_base_of<Message, Element>::value,
+  using H = std::conditional_t<std::is_base_of_v<Message, Element>,
                                       internal::GenericTypeHandler<Message>,
-                                      TypeHandler>::type;
+                                      TypeHandler>;
   return RepeatedPtrFieldBase::SpaceUsedExcludingSelfLong<H>();
 }
 
@@ -1695,7 +1695,7 @@ class RepeatedPtrIterator {
  public:
   using iterator = RepeatedPtrIterator<Element>;
   using iterator_category = std::random_access_iterator_tag;
-  using value_type = typename std::remove_const<Element>::type;
+  using value_type = std::remove_const_t<Element>;
   using difference_type = std::ptrdiff_t;
   using pointer = Element*;
   using reference = Element&;
@@ -1706,8 +1706,8 @@ class RepeatedPtrIterator {
   // Allows "upcasting" from RepeatedPtrIterator<T**> to
   // RepeatedPtrIterator<const T*const*>.
   template <typename OtherElement,
-            typename std::enable_if<std::is_convertible<
-                OtherElement*, pointer>::value>::type* = nullptr>
+            std::enable_if_t<std::is_convertible_v<
+                OtherElement*, pointer>>* = nullptr>
   RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
       : it_(other.it_) {}
 
@@ -1815,7 +1815,7 @@ template <typename Element, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator {
  private:
   using traits =
-      std::iterator_traits<typename std::remove_const<Element>::type*>;
+      std::iterator_traits<std::remove_const_t<Element>*>;
 
  public:
   using value_type = typename traits::value_type;
@@ -1834,9 +1834,9 @@ class RepeatedPtrOverPtrsIterator {
   // RepeatedPtrOverPtrsIterator<const T*const*>.
   template <
       typename OtherElement, typename OtherVoidPtr,
-      typename std::enable_if<
-          std::is_convertible<OtherElement*, pointer>::value &&
-          std::is_convertible<OtherVoidPtr, VoidPtr>::value>::type* = nullptr>
+      std::enable_if_t<
+          std::is_convertible_v<OtherElement*, pointer> &&
+          std::is_convertible_v<OtherVoidPtr, VoidPtr>>* = nullptr>
   RepeatedPtrOverPtrsIterator(
       const RepeatedPtrOverPtrsIterator<OtherElement, OtherVoidPtr>& other)
       : it_(other.it_) {}
