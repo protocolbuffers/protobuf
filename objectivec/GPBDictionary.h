@@ -913,7 +913,7 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return The object if found, nil otherwise.
  **/
-- (ObjectType)objectForKey:(uint32_t)key;
+- (__nullable ObjectType)objectForKey:(uint32_t)key;
 
 /**
  * Enumerates the keys and values on this dictionary with the given block.
@@ -1843,7 +1843,7 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return The object if found, nil otherwise.
  **/
-- (ObjectType)objectForKey:(int32_t)key;
+- (__nullable ObjectType)objectForKey:(int32_t)key;
 
 /**
  * Enumerates the keys and values on this dictionary with the given block.
@@ -2773,7 +2773,7 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return The object if found, nil otherwise.
  **/
-- (ObjectType)objectForKey:(uint64_t)key;
+- (__nullable ObjectType)objectForKey:(uint64_t)key;
 
 /**
  * Enumerates the keys and values on this dictionary with the given block.
@@ -3703,7 +3703,7 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return The object if found, nil otherwise.
  **/
-- (ObjectType)objectForKey:(int64_t)key;
+- (__nullable ObjectType)objectForKey:(int64_t)key;
 
 /**
  * Enumerates the keys and values on this dictionary with the given block.
@@ -4633,7 +4633,7 @@ __attribute__((objc_subclassing_restricted))
  *
  * @return The object if found, nil otherwise.
  **/
-- (ObjectType)objectForKey:(BOOL)key;
+- (__nullable ObjectType)objectForKey:(BOOL)key;
 
 /**
  * Enumerates the keys and values on this dictionary with the given block.
