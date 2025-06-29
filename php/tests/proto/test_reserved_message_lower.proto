@@ -49,8 +49,11 @@ message interface {}
 message isset {}
 message list {}
 message match {}
+message mixed {}
 message namespace {}
+message never {}
 message new {}
+message object {}
 message or {}
 message parent {}
 message print {}
