@@ -10,8 +10,15 @@
 
 #include <cstddef>
 
-#include "hpb/backend/types.h"
 #include "hpb/multibackend.h"
+
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
+#include "hpb/backend/upb/types.h"
+#elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
+#include "hpb/backend/cpp/types.h"
+#else
+#error "Unsupported hpb backend"
+#endif
 
 namespace hpb {
 namespace internal {
