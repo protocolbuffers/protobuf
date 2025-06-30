@@ -185,7 +185,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #elif defined(__GNUC__)
 #define PROTOBUF_ALWAYS_INLINE inline __attribute__((always_inline))
 #elif defined(_MSC_VER)
-#define PROTOBUF_ALWAYS_INLINE inline __forceinline
+#define PROTOBUF_ALWAYS_INLINE __forceinline
 #else
 #define PROTOBUF_ALWAYS_INLINE inline
 #endif
