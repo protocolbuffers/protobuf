@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
     s.files     += ["lib/google/protobuf_java.jar"] +
       Dir.glob('ext/**/*').reject do |file|
         File.basename(file) =~ /^((convert|defs|map|repeated_field)\.[ch]|
-                                   BUILD\.bazel|extconf\.rb|wrap_memcpy\.c)$/x
+                                   BUILD\.bazel|extconf\.rb)$/x
       end
     s.extensions = ["ext/google/protobuf_c/Rakefile"]
     s.add_dependency "ffi", "~>1"
