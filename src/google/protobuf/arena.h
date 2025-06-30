@@ -663,7 +663,7 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
   if constexpr (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
     using internal::PrefetchOpts;
     static constexpr PrefetchOpts kPrefetchOpts = {
-        /*num=*/{std::min(sizeof(T) / 2, sizeof(T) - ABSL_CACHELINE_SIZE),
+        /*num=*/{std::min(sizeof(T) / 2, sizeof(T) - ABSL_CACHELINE_SIZE / 2),
                  PrefetchOpts::kBytes},
         /*from=*/{1, PrefetchOpts::kLines},
         /*locality=*/PrefetchOpts::kHigh,
