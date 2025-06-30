@@ -87,10 +87,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
-      # TODO: b/426584168 - Remove this workaround after the GitHub runners are fixed
-      - name: Upgrade LLVM
-        shell: bash
-        run: choco upgrade llvm
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
