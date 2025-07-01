@@ -30,6 +30,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <typeinfo>
 #include <utility>
 
 #include "absl/base/attributes.h"
@@ -1226,8 +1227,28 @@ template <typename T>
 PROTOBUF_NDEBUG_INLINE const ClassData* GetClassData(const T& msg) {
   static_assert(std::is_base_of_v<MessageLite, T>);
   if constexpr (std::is_same_v<T, MessageLite> || std::is_same_v<Message, T>) {
-    PROTOBUF_DEBUG_COUNTER("GetClassData.Virtual").Inc();
+#if PROTOBUF_RTTI && !defined(PROTOBUF_CUSTOM_VTABLE)
+    // Cache the last seen `ClassData` to avoid the virtual call.
+    static thread_local const std::type_info* last_type_info = nullptr;
+    static thread_local const ClassData* last_class_data = nullptr;
+    if (&typeid(msg) == last_type_info) {
+      PROTOBUF_DEBUG_COUNTER("GetClassData.Cached").Inc();
+      ABSL_DCHECK_EQ(last_class_data, msg.GetClassData());
+      return last_class_data;
+    } else {
+      PROTOBUF_DEBUG_COUNTER("GetClassData.Virtual").Inc();
+      const ClassData* msg_class_data = msg.GetClassData();
+      // Disable caching for dynamic messages: they all have the same vtable but
+      // different `ClassData`s, which in addition can change dynamically.
+      if (!msg_class_data->is_dynamic) [[likely]] {
+        last_type_info = &typeid(msg);
+        last_class_data = msg_class_data;
+      }
+      return msg_class_data;
+    }
+#else
     return msg.GetClassData();
+#endif  // defined(PROTOBUF_RTTI) && !defined(PROTOBUF_CUSTOM_VTABLE)
   } else {
     PROTOBUF_DEBUG_COUNTER("GetClassData.Constexpr").Inc();
     return MessageTraits<T>::class_data();
