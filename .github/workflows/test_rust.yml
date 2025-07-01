@@ -36,7 +36,7 @@ jobs:
 
           # rules_rust does not support workspace + bazel 8, so we test workspace + bazel 7
           - name: "No bzlmod"
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.1.2-27cf7b86212020d7e552bc13b1e084abb971da75"
+            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604"
 
     name: Linux ${{ matrix.config.name }}
     runs-on: ubuntu-22-4core
