@@ -2129,8 +2129,8 @@ _GeneratedCodeInfo_Annotation_default_instance_.Init();
 _GeneratedCodeInfo_default_instance_.Init();;
 }
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-static std::true_type dynamic_init_dummy_google_2fprotobuf_2fdescriptor_2eproto{
-    (InitializeFileDescriptorDefaultInstances(), std::true_type{})};
+static ::std::true_type dynamic_init_dummy_google_2fprotobuf_2fdescriptor_2eproto{
+    (InitializeFileDescriptorDefaultInstances(), ::std::true_type{})};
 #endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 }  // namespace internal
 }  // namespace protobuf

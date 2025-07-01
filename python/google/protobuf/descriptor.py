@@ -128,13 +128,16 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     """
     self._features = None
     self.file = file
-    self._options = options
-    self._loaded_options = None
+    self._original_options = options
+    # These two fields are duplicated as a compatibility shim for old gencode
+    # that resets them.  In 26.x (cl/580304039) we renamed _options to,
+    # _loaded_options breaking backwards compatibility.
+    self._options = self._loaded_options = None
     self._options_class_name = options_class_name
     self._serialized_options = serialized_options
 
     # Does this descriptor have non-default options?
-    self.has_options = (self._options is not None) or (
+    self.has_options = (self._original_options is not None) or (
         self._serialized_options is not None
     )
 
@@ -186,7 +189,8 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
 
   def _LazyLoadOptions(self):
     """Lazily initializes descriptor options towards the end of the build."""
-    if self._loaded_options:
+    if self._options and self._loaded_options == self._options:
+      # If neither has been reset by gencode, use the cache.
       return
 
     # pylint: disable=g-import-not-at-top
@@ -206,12 +210,12 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
             descriptor_pb2.Edition.Value(edition), options_class()
         )
       with _lock:
-        self._loaded_options = options_class()
+        self._options = self._loaded_options = options_class()
         if not self._features:
           self._features = features
     else:
       if not self._serialized_options:
-        options = self._options
+        options = self._original_options
       else:
         options = _ParseOptions(options_class(), self._serialized_options)
 
@@ -220,13 +224,13 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
             descriptor_pb2.Edition.Value(edition), options
         )
       with _lock:
-        self._loaded_options = options
+        self._options = self._loaded_options = options
         if not self._features:
           self._features = features
         if options.HasField('features'):
           options.ClearField('features')
           if not options.SerializeToString():
-            self._loaded_options = options_class()
+            self._options = self._loaded_options = options_class()
             self.has_options = False
 
   def GetOptions(self):
@@ -235,9 +239,10 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     Returns:
       The options set on this descriptor.
     """
-    if not self._loaded_options:
+    # If either has been reset by gencode, reload options.
+    if not self._options or not self._loaded_options:
       self._LazyLoadOptions()
-    return self._loaded_options
+    return self._options
 
 
 class _NestedDescriptorBase(DescriptorBase):

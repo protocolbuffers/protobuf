@@ -7,9 +7,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
-#include "upb/mem/arena.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
@@ -22,15 +21,6 @@
 
 // Must be last.
 #include "upb/port/def.inc"
-
-UPB_INLINE
-upb_Message* decode_newmsg(upb_Decoder* d, const upb_MiniTable* m) {
-  size_t size = m->UPB_PRIVATE(size);
-  // OPT: specialize for message size
-  char* msg_data = (char*)upb_Arena_Malloc(&d->arena, size);
-  memset(msg_data, 0, size);
-  return (upb_Message*)msg_data;
-}
 
 typedef struct {
   intptr_t table;
@@ -88,7 +78,7 @@ const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
   submsg.msg = *dst;                                                      \
                                                                           \
   if (card == kUpb_DecodeFast_Repeated || UPB_LIKELY(!submsg.msg)) {      \
-    *dst = submsg.msg = decode_newmsg(d, subtablep);                      \
+    *dst = submsg.msg = _upb_Message_New(subtablep, &d->arena);           \
   }                                                                       \
                                                                           \
   ptr += tagbytes;                                                        \

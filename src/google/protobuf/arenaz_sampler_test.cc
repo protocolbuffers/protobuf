@@ -13,13 +13,16 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
-#include <random>
 #include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/log_streamer.h"
+#include "absl/random/random.h"
+#include "absl/random/seed_sequences.h"
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
@@ -330,6 +333,14 @@ TEST(ThreadSafeArenazSamplerTest, Unregistration) {
   EXPECT_THAT(GetBytesAllocated(&sampler), IsEmpty());
 }
 
+// This will log the following:
+// ```
+// Tagged seed sequence (ABSL_RANDOM_SALT_OVERRIDE=fBAY_g): SEED_MT_0=XVKmv...
+// Tagged seed sequence (ABSL_RANDOM_SALT_OVERRIDE=fBAY_g): SEED_MT_1=5wvqx...
+//   ...
+// ```
+// To try to reproduce a run using the same random sequence, do this:
+//   $ export SEED_MT_0=XVKmv... SEED_MT_1=5wvqx... ... bazel test <this test>
 TEST(ThreadSafeArenazSamplerTest, MultiThreaded) {
   ThreadSafeArenazSampler sampler;
   absl::Notification stop;
@@ -337,23 +348,22 @@ TEST(ThreadSafeArenazSamplerTest, MultiThreaded) {
 
   for (int i = 0; i < 10; ++i) {
     const int64_t sampling_stride = 11 + i % 3;
-    pool.Schedule([&sampler, &stop, sampling_stride]() {
-      std::random_device rd;
-      std::mt19937 gen(rd());
-
+    pool.Schedule([i, &sampler, &stop, sampling_stride]() {
+      absl::BitGen bitgen{absl::MakeTaggedSeedSeq(
+          /*env_var=*/absl::StrCat("SEED_", test_info_->name(), "_", i).c_str(),
+          /*stream=*/absl::LogInfoStreamer().stream())};
       std::vector<ThreadSafeArenaStats*> infoz;
       while (!stop.HasBeenNotified()) {
         if (infoz.empty()) {
           infoz.push_back(sampler.Register(sampling_stride));
         }
-        switch (std::uniform_int_distribution<>(0, 1)(gen)) {
+        switch (absl::Uniform(absl::IntervalClosedClosed, bitgen, 0, 1)) {
           case 0: {
             infoz.push_back(sampler.Register(sampling_stride));
             break;
           }
           case 1: {
-            size_t p =
-                std::uniform_int_distribution<>(0, infoz.size() - 1)(gen);
+            size_t p = absl::Uniform<size_t>(bitgen, 0, infoz.size());
             ThreadSafeArenaStats* info = infoz[p];
             infoz[p] = infoz.back();
             infoz.pop_back();
@@ -361,6 +371,9 @@ TEST(ThreadSafeArenazSamplerTest, MultiThreaded) {
             sampler.Unregister(info);
             break;
           }
+          default:
+            ABSL_UNREACHABLE();
+            break;
         }
       }
     });

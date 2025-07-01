@@ -15,17 +15,23 @@ rust_library(
         "arena.rs",
         "associated_mini_table.rs",
         "lib.rs",
+        "message.rs",
         "mini_table.rs",
         "owned_arena_box.rs",
         "text.rs",
         "wire.rs",
+    ],
+    proc_macro_deps = [
+        "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     visibility = [
         "//rust:__subpackages__",
         "//src/google/protobuf:__subpackages__",
     ],
-    deps = ["//rust/upb/sys"],
+    deps = [
+        "//rust/upb/sys",
+    ],
 )
 
 rust_test(

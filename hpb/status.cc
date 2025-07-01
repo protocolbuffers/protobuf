@@ -5,13 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/status.h"
+#include "hpb/status.h"
 
 #include <cstdint>
 
 #include "absl/status/status.h"
 #include "absl/strings/str_format.h"
-#include "absl/types/source_location.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 

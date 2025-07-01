@@ -21,7 +21,6 @@ PROTOBUF_C_SOURCES = [
     "shared_convert.h",
     "shared_message.c",
     "shared_message.h",
-    "wrap_memcpy.c",
 ]
 
 # We copy everything into a copy/ subdirectory so that we can use the

@@ -2420,7 +2420,8 @@ TEST_F(ParserValidationErrorTest, FileOptionNameError) {
   ExpectHasValidationErrors(
       "option foo = 5;",
       "0:7: Option \"foo\" unknown. Ensure that your proto definition file "
-      "imports the proto which defines the option (i.e. via import option).\n");
+      "imports the proto which defines the option (i.e. via import option "
+      "after edition 2024).\n");
 }
 
 TEST_F(ParserValidationErrorTest, FileOptionValueError) {
@@ -2436,7 +2437,8 @@ TEST_F(ParserValidationErrorTest, FieldOptionNameError) {
       "  optional bool bar = 1 [foo=1];\n"
       "}\n",
       "1:25: Option \"foo\" unknown. Ensure that your proto definition file "
-      "imports the proto which defines the option (i.e. via import option).\n");
+      "imports the proto which defines the option (i.e. via import option "
+      "after edition 2024).\n");
 }
 
 TEST_F(ParserValidationErrorTest, FieldOptionValueError) {

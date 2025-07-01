@@ -25,6 +25,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/cpp/generator.h"
+#include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -161,10 +162,11 @@ TEST(BootstrapTest, OptionNotExist) {
   GeneratorContext* generator_context = nullptr;
   std::string parameter = "aaa";
   std::string error;
-  ASSERT_FALSE(generator.Generate(
-      pool.FindFileByName("google/protobuf/descriptor.proto"), parameter,
-      generator_context, &error));
-  EXPECT_EQ(error, absl::StrCat("Unknown generator option: ", parameter));
+
+  const FileDescriptor* file = FileDescriptorProto::descriptor()->file();
+  ASSERT_FALSE(generator.Generate(file, parameter, generator_context, &error));
+  EXPECT_THAT(error, testing::EndsWith(absl::StrCat(
+                         "Unknown generator option: ", parameter)));
 }
 
 }  // namespace

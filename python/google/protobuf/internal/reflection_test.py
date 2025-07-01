@@ -3144,7 +3144,7 @@ class SerializationTest(unittest.TestCase):
       with self.assertRaises(AttributeError) as e:
         # Try to access the descriptor of the field 'optional_int32'
         cls.optional_int32.DESCRIPTOR
-        self.assertEquals('optional_int32', str(e.exception))
+        self.assertEqual('optional_int32', str(e.exception))
     else:
       self.assertIs(
           cls.optional_int32.DESCRIPTOR,

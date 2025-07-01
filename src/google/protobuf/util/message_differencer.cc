@@ -1095,10 +1095,8 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
   }
 
   // First pass: check whether the same keys are present.
-  for (MapIterator it = reflection1->MapBegin(const_cast<Message*>(&message1),
-                                              map_field),
-                   it_end = reflection1->MapEnd(const_cast<Message*>(&message1),
-                                                map_field);
+  for (ConstMapIterator it = reflection1->ConstMapBegin(&message1, map_field),
+                        it_end = reflection1->ConstMapEnd(&message1, map_field);
        it != it_end; ++it) {
     if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
       return false;
@@ -1110,10 +1108,9 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
   switch (val_des->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, METHOD, COMPAREMETHOD)                           \
   case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                  \
-    for (MapIterator it = reflection1->MapBegin(                              \
-                         const_cast<Message*>(&message1), map_field),         \
-                     it_end = reflection1->MapEnd(                            \
-                         const_cast<Message*>(&message1), map_field);         \
+    for (ConstMapIterator                                                     \
+             it = reflection1->ConstMapBegin(&message1, map_field),           \
+             it_end = reflection1->ConstMapEnd(&message1, map_field);         \
          it != it_end; ++it) {                                                \
       MapValueConstRef value2;                                                \
       reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2); \
@@ -1136,11 +1133,9 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
     HANDLE_TYPE(ENUM, EnumValue, Int32);
 #undef HANDLE_TYPE
     case FieldDescriptor::CPPTYPE_MESSAGE: {
-      for (MapIterator it = reflection1->MapBegin(
-               const_cast<Message*>(&message1), map_field);
-           it !=
-           reflection1->MapEnd(const_cast<Message*>(&message1), map_field);
-           ++it) {
+      for (ConstMapIterator it =
+               reflection1->ConstMapBegin(&message1, map_field);
+           it != reflection1->ConstMapEnd(&message1, map_field); ++it) {
         if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
           return false;
         }

@@ -24,7 +24,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:port",
+        "//upb/port",
     ],
 )
 
@@ -36,7 +36,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = ["//upb:port"],
+    deps = ["//upb/port"],
 )
 
 cc_test(

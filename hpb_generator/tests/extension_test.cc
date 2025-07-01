@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/extension.h"
+#include "hpb/extension.h"
 
 #include <cstdint>
 #include <type_traits>
@@ -16,9 +16,9 @@
 #include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
 #include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/hpb.h"
-#include "google/protobuf/hpb/requires.h"
+#include "hpb/arena.h"
+#include "hpb/hpb.h"
+#include "hpb/requires.h"
 
 namespace {
 using ::hpb::internal::Requires;
@@ -218,7 +218,8 @@ TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
   EXPECT_TRUE(ext.ok());
   EXPECT_NE(hpb::interop::upb::GetMessage(*ext), prior_message);
 }
-
+// TODO - re-enable once hpb arena api can take init blocks
+/*
 TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   // Use an initial block to disallow fusing.
   char initial_block[1000];
@@ -236,6 +237,7 @@ TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   EXPECT_TRUE(::hpb::HasExtension(model, theme));
   EXPECT_TRUE(hpb::GetExtension(model, theme).ok());
 }
+*/
 
 TEST(CppGeneratedCode, SetExtensionShouldClone) {
   TestModel model;
@@ -565,7 +567,7 @@ TEST(CppGeneratedCode, ExtensionFieldNumberConstant) {
 
 TEST(CppGeneratedCode, GetExtensionRepeatedi32) {
   TestModel model;
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_int32_ext);
   // These bytes are the serialized form of a repeated int32 field
@@ -581,7 +583,7 @@ TEST(CppGeneratedCode, GetExtensionRepeatedi32) {
 
 TEST(CppGeneratedCode, GetExtensionRepeatedi64) {
   TestModel model;
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_int64_ext);
   // These bytes represent a repeated int64 field with one element: [322].
@@ -607,7 +609,7 @@ TEST(CppGeneratedCode, GetExtensionSingularString) {
 
 TEST(CppGeneratedCode, GetExtensionRepeatedString) {
   TestModel model;
-  upb::Arena arena;
+  hpb::Arena arena;
   hpb::ExtensionRegistry extensions(arena);
   extensions.AddExtension(repeated_string_ext);
   // These bytes represent a repeated string field with two elements:

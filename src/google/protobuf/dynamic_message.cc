@@ -947,6 +947,14 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   for (int i = 0; i < type->real_oneof_decl_count(); i++) {
     size = AlignTo(size, kSafeAlignment);
     offsets[type->field_count() + i] = size;
+
+    for (int j = 0; j < type->real_oneof_decl(i)->field_count(); j++) {
+      const FieldDescriptor* field = type->real_oneof_decl(i)->field(j);
+      // oneof fields' offset is the one for the union.
+      // They are already set above, so copy them.
+      offsets[field->index()] = size | FieldFlags(field);
+    }
+
     size += kMaxOneofUnionSize;
   }
 
@@ -956,20 +964,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
 
   // Construct the reflection object.
-
-  // Compute the size of default oneof instance and offsets of default
-  // oneof fields.
-  for (int i = 0; i < type->real_oneof_decl_count(); i++) {
-    for (int j = 0; j < type->real_oneof_decl(i)->field_count(); j++) {
-      const FieldDescriptor* field = type->real_oneof_decl(i)->field(j);
-      // oneof fields are not accessed through offsets, but we still have the
-      // entry for each.
-      // Mark the field to prevent unintentional access through reflection.
-      // Don't use the top bit because that is for unused fields.
-      offsets[field->index()] =
-          internal::kInvalidFieldOffsetTag | FieldFlags(field);
-    }
-  }
 
   // Allocate the prototype fields.
   void* base = operator new(size);

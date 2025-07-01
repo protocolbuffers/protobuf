@@ -44,8 +44,8 @@ bootstrap_cc_library(
     visibility = ["//upb:friend_generators"],
     deps = [
         "//src/google/protobuf:port",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/mini_table",
+        "//upb/port",
         "@abseil-cpp//absl/strings",
     ],
 )
@@ -66,10 +66,10 @@ bootstrap_cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:base",
-        "//upb:mini_descriptor",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/base",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/port",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/strings",
     ],
@@ -96,9 +96,9 @@ bootstrap_cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator_lite",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:port",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/port",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",

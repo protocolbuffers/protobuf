@@ -1339,18 +1339,27 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
 }
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+bool IsV2CodegenEnabled(const Options& options) {
+  return !options.opensource_runtime && !options.bootstrap;
+}
+
+bool IsEditionsGoldenProto(const Descriptor* descriptor) {
+  return descriptor->file()->package() == "protobuf_editions_test.golden";
+}
+
 bool ShouldGenerateV2Code(const Descriptor* descriptor,
                           const Options& options) {
-  return !options.opensource_runtime && !options.bootstrap &&
+  return IsV2CodegenEnabled(options) && !IsEditionsGoldenProto(descriptor) &&
          !HasSimpleBaseClass(descriptor, options);
 }
 
 bool IsEligibleForV2Batching(const FieldDescriptor* field) {
   // Non-message fields whose numbers fit into 2B should be considered for
   // batching although the actual batching depends on the current batching, the
-  // payload size, etc.
+  // payload size, etc. Oneof fields are not eligible for batching because they
+  // are handled separately.
   return field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE &&
-         !field->is_map() &&
+         field->real_containing_oneof() == nullptr && !field->is_map() &&
          field->number() < std::numeric_limits<uint16_t>::max();
 }
 
@@ -1909,15 +1918,15 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
   }
 
   static const auto* bootstrap_mapping =
-      // TODO Replace these with string_view once we remove
-      // StringPiece.
-      new absl::flat_hash_map<absl::string_view, std::string>{
+      new absl::flat_hash_map<absl::string_view, absl::string_view>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
           {"third_party/protobuf/cpp_features",
            "third_party/protobuf/cpp_features"},
           {"third_party/protobuf/compiler/plugin",
            "third_party/protobuf/compiler/plugin"},
+          {"third_party/protobuf/internal_options",
+           "third_party/protobuf/internal_options_bootstrap"},
           {"net/proto2/compiler/proto/profile",
            "net/proto2/compiler/proto/profile_bootstrap"},
       };
@@ -1926,7 +1935,7 @@ bool GetBootstrapBasename(const Options& options, absl::string_view basename,
     *bootstrap_basename = std::string(basename);
     return false;
   } else {
-    *bootstrap_basename = iter->second;
+    *bootstrap_basename = std::string(iter->second);
     return true;
   }
 }

@@ -9,9 +9,9 @@
 
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, IntoProxied, Map, MapIter, MapMut, MapView, Message, Mut,
-    MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
-    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
+    MergeFrom, Message, Mut, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied,
+    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -95,20 +95,42 @@ impl IntoProxied<ProtoBytes> for SerializedData {
 #[derive(Debug)]
 #[doc(hidden)]
 pub struct OwnedMessageInner<T> {
-    msg: RawMessage,
+    ptr: MessagePtr<T>,
     arena: Arena,
-    _phantom: PhantomData<T>,
+}
+
+impl<T: Message + AssociatedMiniTable> Default for OwnedMessageInner<T> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<T: Message + AssociatedMiniTable> OwnedMessageInner<T> {
-    /// # Safety
-    /// - The underlying pointer must of type `T` and be allocated on `arena`.
-    pub unsafe fn wrap_raw(msg: RawMessage, arena: Arena) -> Self {
-        OwnedMessageInner { msg, arena, _phantom: PhantomData }
+    pub fn new() -> Self {
+        let arena = Arena::new();
+        let ptr = MessagePtr::new(&arena).expect("alloc should never fail");
+        Self { ptr, arena }
     }
 
-    pub fn msg(&self) -> RawMessage {
-        self.msg
+    /// # Safety
+    /// - The underlying pointer must of type `T` and be allocated on `arena`.
+    pub unsafe fn wrap_raw(raw: RawMessage, arena: Arena) -> Self {
+        // SAFETY:
+        // - Caller guaranteed `raw` is valid and of type `T`
+        let ptr = unsafe { MessagePtr::wrap(raw) };
+        OwnedMessageInner { ptr, arena }
+    }
+
+    pub fn ptr_mut(&mut self) -> MessagePtr<T> {
+        self.ptr
+    }
+
+    pub fn ptr(&self) -> MessagePtr<T> {
+        self.ptr
+    }
+
+    pub fn raw(&self) -> RawMessage {
+        self.ptr.raw()
     }
 
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound access requires mutable access.
@@ -145,9 +167,8 @@ impl<T: Message + AssociatedMiniTable> OwnedMessageInner<T> {
 #[derive(Debug)]
 #[doc(hidden)]
 pub struct MessageMutInner<'msg, T> {
-    msg: RawMessage,
+    ptr: MessagePtr<T>,
     arena: &'msg Arena,
-    _phantom: PhantomData<(&'msg mut (), T)>,
 }
 
 impl<'msg, T: Message + AssociatedMiniTable> Clone for MessageMutInner<'msg, T> {
@@ -161,24 +182,36 @@ impl<'msg, T: Message + AssociatedMiniTable> MessageMutInner<'msg, T> {
     /// # Safety
     /// - `msg` must be a valid `RawMessage`
     /// - `arena` must hold the memory for `msg`
-    pub unsafe fn wrap_raw(msg: RawMessage, arena: &'msg Arena) -> Self {
-        MessageMutInner { msg, arena, _phantom: PhantomData }
+    pub unsafe fn wrap_raw(raw: RawMessage, arena: &'msg Arena) -> Self {
+        // SAFETY:
+        // - Caller guaranteed `raw` is valid and of type `T`
+        let ptr = unsafe { MessagePtr::wrap(raw) };
+        MessageMutInner { ptr, arena }
     }
 
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
     pub fn mut_of_owned(msg: &'msg mut OwnedMessageInner<T>) -> Self {
-        MessageMutInner { msg: msg.msg, arena: &msg.arena, _phantom: PhantomData }
+        MessageMutInner { ptr: msg.ptr, arena: &msg.arena }
     }
 
     pub fn from_parent<ParentT>(
         parent_msg: MessageMutInner<'msg, ParentT>,
-        message_field_ptr: RawMessage,
+        raw_field_ptr: RawMessage,
     ) -> Self {
-        MessageMutInner { msg: message_field_ptr, arena: parent_msg.arena, _phantom: PhantomData }
+        let ptr = unsafe { MessagePtr::wrap(raw_field_ptr) };
+        MessageMutInner { ptr, arena: parent_msg.arena }
     }
 
-    pub fn msg(&self) -> RawMessage {
-        self.msg
+    pub fn ptr_mut(&mut self) -> MessagePtr<T> {
+        self.ptr
+    }
+
+    pub fn ptr(&self) -> MessagePtr<T> {
+        self.ptr
+    }
+
+    pub fn raw(&self) -> RawMessage {
+        self.ptr.raw()
     }
 
     pub fn arena(&self) -> &Arena {
@@ -189,8 +222,8 @@ impl<'msg, T: Message + AssociatedMiniTable> MessageMutInner<'msg, T> {
 #[derive(Debug)]
 #[doc(hidden)]
 pub struct MessageViewInner<'msg, T> {
-    msg: RawMessage,
-    _phantom: PhantomData<(&'msg (), T)>,
+    ptr: MessagePtr<T>,
+    _phantom: PhantomData<&'msg ()>,
 }
 
 impl<'msg, T: Message + AssociatedMiniTable> Clone for MessageViewInner<'msg, T> {
@@ -202,23 +235,38 @@ impl<'msg, T: Message + AssociatedMiniTable> Copy for MessageViewInner<'msg, T> 
 
 impl<'msg, T: Message + AssociatedMiniTable> MessageViewInner<'msg, T> {
     /// # Safety
+    /// - The underlying pointer must live as long as `'msg`.
+    pub unsafe fn wrap(ptr: MessagePtr<T>) -> Self {
+        // SAFETY:
+        // - Caller guaranteed `raw` is valid
+        MessageViewInner { ptr, _phantom: PhantomData }
+    }
+
+    /// # Safety
     /// - The underlying pointer must of type `T` and live as long as `'msg`.
-    pub unsafe fn wrap_raw(msg: RawMessage) -> Self {
-        MessageViewInner { msg, _phantom: PhantomData }
+    pub unsafe fn wrap_raw(raw: RawMessage) -> Self {
+        // SAFETY:
+        // - Caller guaranteed `raw` is valid and of type `T`
+        let ptr = unsafe { MessagePtr::wrap(raw) };
+        MessageViewInner { ptr, _phantom: PhantomData }
     }
 
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
     pub fn view_of_owned(owned: &'msg OwnedMessageInner<T>) -> Self {
-        MessageViewInner { msg: owned.msg, _phantom: PhantomData }
+        MessageViewInner { ptr: owned.ptr, _phantom: PhantomData }
     }
 
     #[allow(clippy::needless_pass_by_ref_mut)] // Sound construction requires mutable access.
     pub fn view_of_mut(msg_mut: MessageMutInner<'msg, T>) -> Self {
-        MessageViewInner { msg: msg_mut.msg, _phantom: PhantomData }
+        MessageViewInner { ptr: msg_mut.ptr, _phantom: PhantomData }
     }
 
-    pub fn msg(&self) -> RawMessage {
-        self.msg
+    pub fn ptr(&self) -> MessagePtr<T> {
+        self.ptr
+    }
+
+    pub fn raw(&self) -> RawMessage {
+        self.ptr.raw()
     }
 }
 
@@ -434,6 +482,116 @@ macro_rules! impl_repeated_bytes {
                 }
             }
         )*
+    }
+}
+
+unsafe impl<T> ProxiedInRepeated for T
+where
+    T: Message + UpbTypeConversions + AssociatedMiniTable,
+{
+    fn repeated_new(_private: Private) -> Repeated<Self> {
+        let arena = Arena::new();
+        Repeated::from_inner(Private, unsafe {
+            InnerRepeated::from_raw_parts(upb_Array_New(arena.raw(), CType::Message), arena)
+        })
+    }
+
+    unsafe fn repeated_free(_private: Private, _repeated: &mut Repeated<Self>) {
+        // No-op: the memory will be dropped by the arena.
+    }
+
+    fn repeated_len(repeated: View<Repeated<Self>>) -> usize {
+        // SAFETY: `repeated.as_raw()` is a valid `upb_Array*`.
+        unsafe { upb_Array_Size(repeated.as_raw(Private)) }
+    }
+
+    fn repeated_push(mut repeated: Mut<Repeated<Self>>, val: impl IntoProxied<Self>) {
+        // SAFETY:
+        // - `repeated.as_raw()` is a valid `upb_Array*`.
+        // - `msg_ptr` is a valid `upb_Message*`.
+        unsafe {
+            upb_Array_Append(
+                repeated.as_raw(Private),
+                <Self as UpbTypeConversions>::into_message_value_fuse_if_required(
+                    repeated.raw_arena(Private),
+                    val.into_proxied(Private),
+                ),
+                repeated.raw_arena(Private),
+            );
+        };
+    }
+
+    fn repeated_clear(mut repeated: Mut<Repeated<Self>>) {
+        // SAFETY:
+        // - `repeated.as_raw()` is a valid `upb_Array*`.
+        unsafe { upb_Array_Resize(repeated.as_raw(Private), 0, repeated.raw_arena(Private)) };
+    }
+
+    unsafe fn repeated_get_unchecked<'a>(
+        repeated: View<'a, Repeated<Self>>,
+        index: usize,
+    ) -> View<'a, Self> {
+        // SAFETY:
+        // - `repeated.as_raw()` is a valid `const upb_Array*`.
+        // - `index < len(repeated)` is promised by the caller.
+        let val = unsafe { upb_Array_Get(repeated.as_raw(Private), index) };
+        // SAFETY:
+        // - `val` has the correct variant for Self.
+        // - `val` is valid for `'a` lifetime.
+        unsafe { Self::from_message_value(val) }
+    }
+
+    unsafe fn repeated_get_mut_unchecked<'a>(
+        mut repeated: Mut<'a, Repeated<Self>>,
+        index: usize,
+    ) -> Mut<'a, Self> {
+        // SAFETY:
+        // - `repeated.as_raw()` is a valid `upb_Array*`.
+        // - `repeated` is a an array of message-valued elements.
+        // - `index < len(repeated)` is promised by the caller.
+        let val = unsafe { upb_Array_GetMutable(repeated.as_raw(Private), index) };
+        // SAFETY:
+        // - `val` is the correct variant for `Self`.
+        // - `val` is valid for `'a` lifetime.
+        unsafe { Self::from_message_mut(val, repeated.arena(Private)) }
+    }
+
+    unsafe fn repeated_set_unchecked(
+        mut repeated: Mut<Repeated<Self>>,
+        index: usize,
+        val: impl IntoProxied<Self>,
+    ) {
+        unsafe {
+            upb_Array_Set(
+                repeated.as_raw(Private),
+                index,
+                <Self as UpbTypeConversions>::into_message_value_fuse_if_required(
+                    repeated.raw_arena(Private),
+                    val.into_proxied(Private),
+                ),
+            )
+        }
+    }
+
+    fn repeated_copy_from(src: View<Repeated<Self>>, dest: Mut<Repeated<Self>>) {
+        // SAFETY:
+        // - Elements of `src` and `dest` have message minitable `Self::mini_table()`.
+        unsafe {
+            repeated_message_copy_from(src, dest, <Self as AssociatedMiniTable>::mini_table());
+        }
+    }
+
+    fn repeated_reserve(mut repeated: Mut<Repeated<Self>>, additional: usize) {
+        // SAFETY:
+        // - `repeated.as_raw()` is a valid `upb_Array*`.
+        unsafe {
+            let size = upb_Array_Size(repeated.as_raw(Private));
+            upb_Array_Reserve(
+                repeated.as_raw(Private),
+                size + additional,
+                repeated.raw_arena(Private),
+            );
+        }
     }
 }
 
@@ -667,15 +825,15 @@ pub trait UpbTypeConversions: Proxied {
     ) -> upb_MessageValue;
 
     /// # Safety
-    /// - `msg` must be the correct variant for `Self`.
-    /// - `msg` pointers must point to memory valid for `'msg` lifetime.
-    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, Self>;
+    /// - `msg_val` must be the correct variant for `Self`.
+    /// - `msg_val` pointers must point to memory valid for `'msg` lifetime.
+    unsafe fn from_message_value<'msg>(msg_val: upb_MessageValue) -> View<'msg, Self>;
 
     /// # Safety
-    /// - `msg` must be the correct variant for `Self`.
-    /// - `msg` pointers must point to memory valid for `'msg` lifetime.
+    /// - `raw` must be the correct variant for `Self`.
+    /// - `raw` pointers must point to memory valid for `'msg` lifetime.
     #[allow(unused_variables)]
-    unsafe fn from_message_mut<'msg>(msg: RawMessage, arena: &'msg Arena) -> Mut<'msg, Self>
+    unsafe fn from_message_mut<'msg>(raw: RawMessage, arena: &'msg Arena) -> Mut<'msg, Self>
     where
         Self: Message,
     {
@@ -942,38 +1100,28 @@ pub unsafe fn upb_Map_InsertAndReturnIfInserted(
 /// Internal-only trait to support blanket impls that need const access to raw messages
 /// on codegen. Should never be used by application code.
 #[doc(hidden)]
-pub unsafe trait UpbGetRawMessage: SealedInternal {
-    fn get_raw_message(&self, _private: Private) -> RawMessage;
-}
+pub unsafe trait UpbGetMessagePtr: SealedInternal {
+    type Msg: AssociatedMiniTable + Message;
 
-// The generated code only implements this trait on View proxies, so we use a blanket
-// implementation for owned messages and Mut proxies.
-unsafe impl<T> UpbGetRawMessage for T
-where
-    Self: AsMut + AsView,
-    for<'a> View<'a, <Self as AsView>::Proxied>: UpbGetRawMessage,
-{
+    fn get_ptr(&self, _private: Private) -> MessagePtr<Self::Msg>;
+
+    // TODO: Remove.
     fn get_raw_message(&self, _private: Private) -> RawMessage {
-        self.as_view().get_raw_message(_private)
+        self.get_ptr(Private).raw()
     }
 }
 
 /// Internal-only trait to support blanket impls that need mutable access to raw messages
 /// on codegen. Must not be implemented on View proxies. Should never be used by application code.
 #[doc(hidden)]
-pub unsafe trait UpbGetRawMessageMut: SealedInternal {
-    fn get_raw_message_mut(&mut self, _private: Private) -> RawMessage;
-}
+pub unsafe trait UpbGetMessagePtrMut: SealedInternal {
+    type Msg: AssociatedMiniTable + Message;
 
-// The generated code only implements this trait on Mut proxies, so we use a blanket implementation
-// for owned messages.
-unsafe impl<T> UpbGetRawMessageMut for T
-where
-    Self: MutProxied,
-    for<'a> Mut<'a, Self>: UpbGetRawMessageMut,
-{
+    fn get_ptr_mut(&mut self, _private: Private) -> MessagePtr<Self::Msg>;
+
+    // TODO: remove.
     fn get_raw_message_mut(&mut self, _private: Private) -> RawMessage {
-        self.as_mut().get_raw_message_mut(_private)
+        self.get_ptr_mut(Private).raw()
     }
 }
 
@@ -987,7 +1135,7 @@ pub unsafe trait UpbGetArena: SealedInternal {
 impl<T> MatcherEq for T
 where
     Self: AssociatedMiniTable + AsView + Debug,
-    for<'a> View<'a, <Self as AsView>::Proxied>: UpbGetRawMessage,
+    for<'a> View<'a, <Self as AsView>::Proxied>: UpbGetMessagePtr,
 {
     fn matches(&self, o: &Self) -> bool {
         unsafe {
@@ -1001,20 +1149,20 @@ where
     }
 }
 
-impl<T> Clear for T
-where
-    Self: AssociatedMiniTable + UpbGetRawMessageMut,
-{
+impl<T: UpbGetMessagePtrMut> Clear for T {
     fn clear(&mut self) {
-        unsafe { upb_Message_Clear(self.get_raw_message_mut(Private), Self::mini_table()) }
+        unsafe { self.get_ptr_mut(Private).clear() }
     }
 }
 
-fn clear_and_parse_helper<T: AssociatedMiniTable + UpbGetRawMessageMut + UpbGetArena>(
+fn clear_and_parse_helper<T>(
     msg: &mut T,
     data: &[u8],
     decode_options: i32,
-) -> Result<(), ParseError> {
+) -> Result<(), ParseError>
+where
+    T: AssociatedMiniTable + UpbGetMessagePtrMut + UpbGetArena,
+{
     Clear::clear(msg);
     // SAFETY:
     // - `msg` is a valid mutable message.
@@ -1023,8 +1171,7 @@ fn clear_and_parse_helper<T: AssociatedMiniTable + UpbGetRawMessageMut + UpbGetA
     unsafe {
         upb::wire::decode_with_options(
             data,
-            msg.get_raw_message_mut(Private),
-            T::mini_table(),
+            msg.get_ptr_mut(Private),
             msg.get_arena(Private),
             decode_options,
         )
@@ -1035,7 +1182,7 @@ fn clear_and_parse_helper<T: AssociatedMiniTable + UpbGetRawMessageMut + UpbGetA
 
 impl<T> ClearAndParse for T
 where
-    Self: AssociatedMiniTable + UpbGetRawMessageMut + UpbGetArena,
+    Self: AssociatedMiniTable + UpbGetMessagePtrMut + UpbGetArena,
 {
     fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, upb::wire::decode_options::CHECK_REQUIRED)
@@ -1043,5 +1190,57 @@ where
 
     fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, 0)
+    }
+}
+
+impl<T> TakeFrom for T
+where
+    Self: CopyFrom + AsMut,
+    for<'a> Mut<'a, <Self as AsMut>::MutProxied>: Clear,
+{
+    fn take_from(&mut self, mut src: impl AsMut<MutProxied = Self::Proxied>) {
+        let mut src = src.as_mut();
+        // TODO: b/393559271 - Optimize this copy out.
+        CopyFrom::copy_from(self, AsView::as_view(&src));
+        Clear::clear(&mut src);
+    }
+}
+
+impl<T> CopyFrom for T
+where
+    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
+{
+    fn copy_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        // SAFETY: self and src are both valid `T`s associated with
+        // `Self::mini_table()`.
+        unsafe {
+            assert!(upb_Message_DeepCopy(
+                self.get_raw_message(Private),
+                src.as_view().get_raw_message(Private),
+                <Self as AssociatedMiniTable>::mini_table(),
+                self.get_arena(Private).raw()
+            ));
+        }
+    }
+}
+
+impl<T> MergeFrom for T
+where
+    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
+{
+    fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
+        // SAFETY: self and src are both valid `T`s.
+        unsafe {
+            assert!(upb_Message_MergeFrom(
+                self.get_raw_message(Private),
+                src.as_view().get_raw_message(Private),
+                <Self as AssociatedMiniTable>::mini_table(),
+                // Use a nullptr for the ExtensionRegistry.
+                std::ptr::null(),
+                self.get_arena(Private).raw()
+            ));
+        }
     }
 }

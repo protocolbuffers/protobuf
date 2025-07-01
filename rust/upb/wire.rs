@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::sys::wire::wire::{upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
-use super::{Arena, MiniTable, RawMessage};
+use super::{Arena, AssociatedMiniTable, MessagePtr, MiniTable, RawMessage};
 
 /// Contains the decode options that can be passed to `decode_with_options`.
 pub mod decode_options {
@@ -53,17 +53,15 @@ pub unsafe fn encode(
 ///
 /// # Safety
 /// - `msg` must be mutable.
-/// - `msg` must be associated with `mini_table`.
-pub unsafe fn decode(
+pub unsafe fn decode<T: AssociatedMiniTable>(
     buf: &[u8],
-    msg: RawMessage,
-    mini_table: *const MiniTable,
+    msg: MessagePtr<T>,
     arena: &Arena,
 ) -> Result<(), DecodeStatus> {
     // SAFETY:
     // - `msg` is mutable and is associated with `mini_table`.
     // - `decode_options::CHECK_REQUIRED` is a valid decode option.
-    unsafe { decode_with_options(buf, msg, mini_table, arena, decode_options::CHECK_REQUIRED) }
+    unsafe { decode_with_options(buf, msg, arena, decode_options::CHECK_REQUIRED) }
 }
 
 /// Decodes into the provided message (merge semantics). If Err, then
@@ -71,12 +69,10 @@ pub unsafe fn decode(
 ///
 /// # Safety
 /// - `msg` must be mutable.
-/// - `msg` must be associated with `mini_table`.
 /// - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module.
-pub unsafe fn decode_with_options(
+pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     buf: &[u8],
-    msg: RawMessage,
-    mini_table: *const MiniTable,
+    msg: MessagePtr<T>,
     arena: &Arena,
     decode_options_bitmask: i32,
 ) -> Result<(), DecodeStatus> {
@@ -92,8 +88,8 @@ pub unsafe fn decode_with_options(
         upb_Decode(
             buf,
             len,
-            msg,
-            mini_table,
+            msg.raw(),
+            T::mini_table(),
             core::ptr::null(),
             decode_options_bitmask,
             arena.raw(),

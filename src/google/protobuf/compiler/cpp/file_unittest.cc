@@ -146,6 +146,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestVerifyBigFieldNumberUint32",
       "TestRequiredOneof",
       "TestRequired",
+      "TestRequired.MapFieldEntry",
       "TestOneof2",
       "TestNestedMessageHasBits.NestedMessage",
       "TestNestedGroupExtensionOuter.Layer1OptionalGroup",

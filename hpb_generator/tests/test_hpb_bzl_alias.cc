@@ -7,8 +7,8 @@
 
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/hpb/tests/set_alias.hpb.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/hpb.h"
+#include "hpb/arena.h"
+#include "hpb/hpb.h"
 
 namespace {
 using hpb_unittest::protos::Child;

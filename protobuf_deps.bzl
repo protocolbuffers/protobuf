@@ -85,8 +85,8 @@ def protobuf_deps():
         _github_archive(
             name = "abseil-cpp",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "9ac7062b1860d895fb5a8cbf58c3e9ef8f674b5f",  # Abseil LTS 20250127
-            sha256 = "d8ae9aa794a571ee39c77085ee69f1d4ac276212a7d99734974d95df7baa8d13",
+            commit = "76bb24329e8bf5f39704eb10d21b9a80befa7c81",  # Abseil LTS 20250512.1
+            integrity = "sha256-jF3/tZRlrthY/Y+cEgf1ljqPmtqNOcwVh392LHtERWA=",
         )
 
     if not native.existing_rule("zlib"):
@@ -141,9 +141,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "4f7e2aa1eb9aa722d96498f5ef514f426c1f55161c3c9ae628c857a7128ceb07",
-            strip_prefix = "rules_python-1.0.0",
-            url = "https://github.com/bazelbuild/rules_python/releases/download/1.0.0/rules_python-1.0.0.tar.gz",
+            sha256 = "9c6e26911a79fbf510a8f06d8eedb40f412023cf7fa6d1461def27116bff022c",
+            strip_prefix = "rules_python-1.1.0",
+            url = "https://github.com/bazelbuild/rules_python/releases/download/1.1.0/rules_python-1.1.0.tar.gz",
         )
 
     if not native.existing_rule("system_python"):
@@ -155,9 +155,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_jvm_external"):
         http_archive(
             name = "rules_jvm_external",
-            strip_prefix = "rules_jvm_external-6.3",
-            sha256 = "c18a69d784bcd851be95897ca0eca0b57dc86bb02e62402f15736df44160eb02",
-            url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/6.3/rules_jvm_external-6.3.tar.gz",
+            strip_prefix = "rules_jvm_external-6.7",
+            sha256 = "a1e351607f04fed296ba33c4977d3fe2a615ed50df7896676b67aac993c53c18",
+            url = "https://github.com/bazelbuild/rules_jvm_external/releases/download/6.7/rules_jvm_external-6.7.tar.gz",
         )
 
     if not native.existing_rule("rules_pkg"):

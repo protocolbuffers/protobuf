@@ -1358,7 +1358,7 @@ TEST(LiteBasicTest, CodedInputStreamRollback) {
 using CastType1 = proto2_unittest::TestAllTypesLite;
 using CastType2 = proto2_unittest::TestPackedTypesLite;
 
-TEST(LiteTest, DynamicCastMessage) {
+TEST(LiteTest, DynamicCastMessageValidType) {
   CastType1 test_type_1;
 
   MessageLite* test_type_1_pointer = &test_type_1;

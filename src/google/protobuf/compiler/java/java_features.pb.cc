@@ -128,7 +128,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fjava_2fjava_
     "_classname_default\030\004 \001(\010B(\210\001\001\230\001\001\242\001\t\022\004tru"
     "e\030\204\007\242\001\n\022\005false\030\351\007\262\001\006\010\351\007 \351\007\022\177\n\022nest_in_fi"
     "le_class\030\005 \001(\01627.pb.JavaFeatures.NestInF"
-    "ileClassFeature.NestInFileClassB*\210\001\002\230\001\003\230"
+    "ileClassFeature.NestInFileClassB*\210\001\001\230\001\003\230"
     "\001\006\230\001\010\242\001\013\022\006LEGACY\030\204\007\242\001\007\022\002NO\030\351\007\262\001\003\010\351\007\032|\n\026N"
     "estInFileClassFeature\"X\n\017NestInFileClass"
     "\022\036\n\032NEST_IN_FILE_CLASS_UNKNOWN\020\000\022\006\n\002NO\020\001"
@@ -412,7 +412,7 @@ JavaFeatures::_table_ = {
     // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.use_old_outer_classname_default_), 3>(),
      {32, 3, 0, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_)}},
-    // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+    // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
      {40, 4, 3, PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_)}},
     {::_pbi::TcParser::MiniParse, {}},
@@ -428,7 +428,7 @@ JavaFeatures::_table_ = {
     {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.large_enum_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+    // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_), _Internal::kHasBitsOffset + 4, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
   }},
   {{
@@ -499,7 +499,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
         4, this_._internal_use_old_outer_classname_default(), target);
   }
 
-  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
   if ((cached_has_bits & 0x00000010U) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
@@ -538,7 +538,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_utf8_validation());
     }
-    // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+    // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
     if ((cached_has_bits & 0x00000010U) != 0) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_nest_in_file_class());

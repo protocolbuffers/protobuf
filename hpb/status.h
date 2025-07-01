@@ -11,7 +11,6 @@
 #include <cstdint>
 
 #include "absl/status/status.h"
-#include "absl/types/source_location.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 

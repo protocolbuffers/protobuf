@@ -64,6 +64,7 @@ inline Group::Group(std::initializer_list<WireField> _val) : val(_val) {}
 // Converts a WireMessage to a binary payload, with normal varints of the
 // shortest possible length.
 std::string ToBinaryPayload(const wire_types::WireMessage& msg);
+std::string ToBinaryPayload(const wire_types::WireValue& value);
 
 // Converts a WireMessage to a binary payload, forcing varints to be at least
 // min_tag_length bytes long for tags and min_val_varint_length bytes long for
@@ -73,6 +74,9 @@ std::string ToBinaryPayload(const wire_types::WireMessage& msg);
 // wire format.  Tags may only be 5 bytes long, and values may only be 10 bytes
 // long, but you can pass values larger than this to test invalid payloads.
 std::string ToBinaryPayloadWithLongVarints(const wire_types::WireMessage& msg,
+                                           int min_tag_length,
+                                           int min_val_varint_length);
+std::string ToBinaryPayloadWithLongVarints(const wire_types::WireValue& value,
                                            int min_tag_length,
                                            int min_val_varint_length);
 

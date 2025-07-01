@@ -206,7 +206,11 @@ Rake::TestTask.new(:gc_test => ENV['BAZEL'] == 'true' ? [] : :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :genproto, :copy_third_party, :compile, :"ffi-protobuf:default"]
+task :generate_stubs do
+  load './generate_stubs.rb'
+end
+
+task :build => [:clean, :genproto, :copy_third_party, :compile, :generate_stubs, :"ffi-protobuf:default"]
 Rake::Task[:gem].enhance [:copy_third_party, :genproto]
 task :default => [:build]
 

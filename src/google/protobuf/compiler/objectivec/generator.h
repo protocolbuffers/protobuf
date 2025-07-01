@@ -30,7 +30,7 @@ namespace objectivec {
 // header.  If you create your own protocol compiler binary and you want it to
 // support ObjectiveC output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
-class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
+class PROTOC_EXPORT ObjectiveCGenerator final : public CodeGenerator {
  public:
   ObjectiveCGenerator() = default;
   ~ObjectiveCGenerator() override = default;
@@ -49,7 +49,9 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
     return (FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS);
   }
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override {
+    return Edition::EDITION_2024;
+  }
 };
 
 }  // namespace objectivec

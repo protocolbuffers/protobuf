@@ -8,10 +8,29 @@
 #ifndef GOOGLE_PROTOBUF_HPB_ARENA_H__
 #define GOOGLE_PROTOBUF_HPB_ARENA_H__
 
-#include "upb/mem/arena.hpp"
+#include "hpb/backend/types.h"
+#include "hpb/multibackend.h"
 
 namespace hpb {
-using Arena = upb::Arena;
+namespace internal {
+struct PrivateAccess;
 }
+
+class Arena {
+ public:
+  Arena() = default;
+
+// There are certain operations that are only supported by upb, e.g. fusing.
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
+  bool Fuse(Arena& other) { return arena_.Fuse(other.arena_); };
+  bool IsFused(Arena& other) { return arena_.IsFused(other.arena_); };
+#endif
+
+ private:
+  backend::Arena arena_;
+
+  friend struct hpb::internal::PrivateAccess;
+};
+}  // namespace hpb
 
 #endif  // GOOGLE_PROTOBUF_HPB_ARENA_H__

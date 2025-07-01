@@ -33,11 +33,14 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+struct Options;
+
 // CodeGenerator implementation which generates a C++ source file and
 // header.  If you create your own protocol compiler binary and you want
 // it to support C++ output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
-class PROTOC_EXPORT CppGenerator : public CodeGenerator {
+class PROTOC_EXPORT CppGenerator final : public CodeGenerator {
  public:
   CppGenerator() = default;
   CppGenerator(const CppGenerator&) = delete;
@@ -71,12 +74,19 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
                 GeneratorContext* generator_context,
                 std::string* error) const override;
 
+  bool GenerateAll(const std::vector<const FileDescriptor*>& files,
+                   const std::string& parameter,
+                   GeneratorContext* generator_context,
+                   std::string* error) const override;
+
   uint64_t GetSupportedFeatures() const override {
     return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
   }
 
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override {
+    return Edition::EDITION_2024;
+  }
 
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
     return {GetExtensionReflection(pb::cpp)};
@@ -86,6 +96,9 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
   using CodeGenerator::GetResolvedSourceFeatures;
 
  private:
+  bool GenerateImpl(const FileDescriptor* file, const std::string& parameter,
+                    GeneratorContext* generator_context, std::string* error,
+                    const Options& file_options) const;
   bool opensource_runtime_ = google::protobuf::internal::IsOss();
   std::string runtime_include_base_;
 

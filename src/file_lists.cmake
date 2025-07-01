@@ -328,7 +328,6 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/helpers.h
@@ -698,6 +697,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.c
   ${protobuf_SOURCE_DIR}/upb/wire/reader.c
 )
 
@@ -824,6 +824,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/internal/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/types.h
+  ${protobuf_SOURCE_DIR}/upb/wire/writer.h
 )
 
 # @//pkg:protoc-gen-upb

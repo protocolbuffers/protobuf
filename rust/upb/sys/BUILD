@@ -50,12 +50,12 @@ cc_library(
     name = "upb_c_api",
     srcs = ["upb_api.c"],
     deps = [
-        "//upb:mem",
-        "//upb:message",
-        "//upb:message_compare",
-        "//upb:message_copy",
-        "//upb:mini_table",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:compare",
+        "//upb/message:copy",
         "//upb/mini_descriptor",
+        "//upb/mini_table",
         "//upb/text:debug",
     ],
 )

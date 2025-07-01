@@ -91,7 +91,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffeatures_2eproto[
     "cpp for more information\022Z\n\013string_type\030"
     "\002 \001(\0162\032.pb.CppFeatures.StringTypeB)\210\001\001\230\001"
     "\004\230\001\001\242\001\013\022\006STRING\030\204\007\242\001\t\022\004VIEW\030\351\007\262\001\003\010\350\007\022L\n\032"
-    "enum_name_uses_string_view\030\003 \001(\010B(\210\001\002\230\001\006"
+    "enum_name_uses_string_view\030\003 \001(\010B(\210\001\001\230\001\006"
     "\230\001\001\242\001\n\022\005false\030\204\007\242\001\t\022\004true\030\351\007\262\001\003\010\351\007\"E\n\nSt"
     "ringType\022\027\n\023STRING_TYPE_UNKNOWN\020\000\022\010\n\004VIE"
     "W\020\001\022\010\n\004CORD\020\002\022\n\n\006STRING\020\003::\n\003cpp\022\033.googl"
@@ -250,7 +250,7 @@ CppFeatures::_table_ = {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::FastEr0S1,
      {16, 0, 3, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_)}},
-    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(CppFeatures, _impl_.enum_name_uses_string_view_), 2>(),
      {24, 2, 0, PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_)}},
   }}, {{
@@ -260,7 +260,7 @@ CppFeatures::_table_ = {
     {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.string_type_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+    // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
     {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
   }},
   {{
@@ -316,7 +316,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
         2, this_._internal_string_type(), target);
   }
 
-  // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   if ((cached_has_bits & 0x00000004U) != 0) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(

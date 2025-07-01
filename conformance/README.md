@@ -49,28 +49,54 @@ While we plan to model all our supported languages more completely in Bazel,
 today some of them are a bit tricky to run.  Below is a list of the commands
 (and prerequisites) to run each language's conformance tests.
 
+C#:
+
+```
+$ which dotnet || echo "You must have dotnet installed!"
+$ bazel test //csharp:conformance_test \
+    --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=~ \
+    --action_env=DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
+```
+
 Java:
 
     $ bazel test //java/core:conformance_test //java/lite:conformance_test
 
-Python:
-
-    $ bazel test //python:conformance_test
-
-Python C++:
-
-    $ bazel test //python:conformance_test_cpp --define=use_fast_cpp_protos=true
-
-C#:
-
-    $ `which dotnet || echo "You must have dotnet installed!"
-    $ `bazel test //csharp:conformance_test \
-        --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=~ \
-        --action_env=DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
-
 Objective-C (Mac only):
 
-    $ `bazel test //objectivec:conformance_test --macos_minimum_os=11.0`
+```
+$ bazel test //objectivec:conformance_test --macos_minimum_os=11.0
+```
+
+PHP:
+
+```
+$ bazel test //php:conformance_test
+```
+
+PHP (C):
+
+```
+$ which gcc     || echo "gcc is required!"
+$ which libtool || echo "libtool is required!"
+$ which make    || echo "make is required!"
+$ which pear    || echo "pear is required! It might require a development version of PHP such as a php-dev package"
+$ which pecl    || echo "pecl is required! It might require a development version of PHP such as a php-dev package"
+$ which phpize  || echo "phpize is required! It might require a development version of PHP such as a php-dev package"
+$ bazel test //php:conformance_test_c
+```
+
+Python:
+
+```
+$ bazel test //python:conformance_test
+```
+
+Python (C++):
+
+```
+$ bazel test //python:conformance_test_cpp --define=use_fast_cpp_protos=true
+```
 
 Ruby:
 
@@ -78,7 +104,7 @@ Ruby:
     $ bazel test //ruby:conformance_test --define=ruby_platform=c \
         --action_env=PATH --action_env=GEM_PATH --action_env=GEM_HOME
 
-JRuby:
+Ruby (JRuby):
 
     $ [[ $(ruby --version) == "jruby"* ]] || echo "Switch to Java Ruby!"
     $ bazel test //ruby:conformance_test_jruby --define=ruby_platform=java \

@@ -549,7 +549,9 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   ParseContext& operator=(ParseContext&&) = delete;
   ParseContext& operator=(const ParseContext&) = delete;
 
-  void TrackCorrectEnding() { group_depth_ = 0; }
+  void TrackCorrectEnding() {
+    group_depth_ = 0;
+  }
 
   // Done should only be called when the parsing pointer is pointing to the
   // beginning of field data - that is, at a tag.  Or if it is NULL.
@@ -639,8 +641,9 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // data), but is also used to index in stack_ to store the current state.
   int depth_;
   // Unfortunately necessary for the fringe case of ending on 0 or end-group tag
-  // in the last kSlopBytes of a ZeroCopyInputStream chunk.
-  int group_depth_ = INT_MIN;
+  // in the last kSlopBytes of a ZeroCopyInputStream chunk. Note that INT16_MIN
+  // is intentionally used to avoid decrementing INT_MIN, which is UB.
+  int group_depth_ = std::numeric_limits<int16_t>::min();
   Data data_;
 };
 

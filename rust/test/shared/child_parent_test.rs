@@ -19,10 +19,10 @@ fn test_canonical_types() {
 
 #[gtest]
 fn test_parent_serialization() {
-    assert_that!(*parent_rust_proto::Parent::new().serialize().unwrap(), empty());
+    assert_that!(*parent_rust_proto::Parent::new().serialize().unwrap(), is_empty());
 }
 
 #[gtest]
 fn test_child_serialization() {
-    assert_that!(*child_rust_proto::Child::new().serialize().unwrap(), empty());
+    assert_that!(*child_rust_proto::Child::new().serialize().unwrap(), is_empty());
 }

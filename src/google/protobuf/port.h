@@ -251,13 +251,27 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
-inline constexpr bool EnableExperimentalMicroString() {
-#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING) || \
-    defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+inline constexpr bool EnableStableExperiments() {
+#if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
 #else
   return false;
 #endif
+}
+
+inline constexpr bool EnableExperimentalMicroString() {
+#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
+  return true;
+#endif
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceInlineStringInProtoc() {
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
+  return EnableStableExperiments();
 }
 
 // Returns true if debug hardening for clearing oneof message on arenas is
@@ -761,6 +775,27 @@ PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
 #endif
 }
 
+
+#if defined(__x86_64__) && defined(__SSE4_2__)
+
+constexpr bool HasCrc32() { return true; }
+inline uint32_t Crc32(uint32_t crc, uint64_t v) {
+  return __builtin_ia32_crc32di(crc, v);
+}
+
+#elif defined(__ARM_FEATURE_CRC32)
+
+constexpr bool HasCrc32() { return true; }
+inline uint32_t Crc32(uint32_t crc, uint64_t v) {
+  return __builtin_arm_crc32cd(crc, v);
+}
+
+#else
+
+constexpr bool HasCrc32() { return false; }
+inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
+
+#endif
 
 }  // namespace internal
 }  // namespace protobuf

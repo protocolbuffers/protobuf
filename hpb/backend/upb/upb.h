@@ -10,26 +10,26 @@
 
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/arena.h"
-#include "google/protobuf/hpb/backend/upb/interop.h"
-#include "google/protobuf/hpb/internal/internal.h"
-#include "google/protobuf/hpb/internal/message_lock.h"
-#include "google/protobuf/hpb/internal/template_help.h"
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/arena.h"
+#include "hpb/backend/upb/interop.h"
+#include "hpb/internal/internal.h"
+#include "hpb/internal/message_lock.h"
+#include "hpb/internal/template_help.h"
+#include "hpb/ptr.h"
 
 namespace hpb::internal::backend::upb {
 
 template <typename T>
-typename T::Proxy CreateMessage(Arena& arena) {
-  return PrivateAccess::CreateMessage<T>(arena.ptr());
+typename T::Proxy CreateMessage(hpb::Arena& arena) {
+  return PrivateAccess::CreateMessage<T>(hpb::interop::upb::UnwrapArena(arena));
 }
 
 template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
+typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
   return internal::PrivateAccess::Proxy<T>(
       internal::DeepClone(interop::upb::GetMessage(message), T::minitable(),
-                          arena.ptr()),
-      arena.ptr());
+                          hpb::interop::upb::UnwrapArena(arena)),
+      hpb::interop::upb::UnwrapArena(arena));
 }
 
 template <typename T>
@@ -48,10 +48,11 @@ void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
 }
 
 template <typename T>
-absl::StatusOr<absl::string_view> Serialize(PtrOrRaw<T> message, Arena& arena) {
+absl::StatusOr<absl::string_view> Serialize(PtrOrRaw<T> message,
+                                            hpb::Arena& arena) {
   return hpb::internal::Serialize(interop::upb::GetMessage(message),
                                   interop::upb::GetMiniTable(message),
-                                  arena.ptr(), 0);
+                                  hpb::interop::upb::UnwrapArena(arena), 0);
 }
 
 }  // namespace hpb::internal::backend::upb

@@ -242,10 +242,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #ifdef PROTOBUF_TAILCALL
 #error PROTOBUF_TAILCALL was previously defined
 #endif
-#if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && !defined(__arm__) &&  \
-    !defined(_ARCH_PPC) && !defined(__wasm__) &&                      \
-    !(defined(_MSC_VER) && defined(_M_IX86)) && !defined(__i386__) && \
-    !defined(__s390x__)
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::musttail) && (defined(__aarch64__) || \
+    defined(__x86_64__) || defined(_M_X64))
 // Compilation fails on ARM32: b/195943306
 // Compilation fails on powerpc64le: b/187985113
 // Compilation fails on X86 Windows:
@@ -780,6 +778,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Turn on -Wdeprecated-enum-enum-conversion. This deprecation comes in C++20
 // via http://wg21.link/p1120r0.
 #pragma clang diagnostic error "-Wdeprecated-enum-enum-conversion"
+// Turn on -Wconstant-conversion which is used in chromiumos_x86_64 builds.
+#pragma clang diagnostic error "-Wconstant-conversion"
+// Turn on -Wunused-label which is used in chromiumos_x86_64 builds.
+#pragma clang diagnostic error "-Wunused-label"
 // This error has been generally flaky, but we need to disable it specifically
 // to fix https://github.com/protocolbuffers/protobuf/issues/12313
 #pragma clang diagnostic ignored "-Wunused-parameter"

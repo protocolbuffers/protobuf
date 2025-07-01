@@ -87,7 +87,6 @@ using google::protobuf::io::win32::write;
 // which case tcmalloc will print warnings that fail the plugin tests.
 #if !defined(GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN)
 
-
 namespace {
 
 std::string CreatePluginArg() {
@@ -185,7 +184,6 @@ class CommandLineInterfaceTest : public CommandLineInterfaceTester {
 #if defined(_WIN32)
   void ExpectNullCodeGeneratorCalled(const std::string& parameter);
 #endif  // _WIN32
-
 
   std::string ReadFile(absl::string_view filename);
   void ReadDescriptorSet(absl::string_view filename,
@@ -335,7 +333,6 @@ void CommandLineInterfaceTest::ExpectNullCodeGeneratorCalled(
   EXPECT_EQ(parameter, null_generator_->parameter_);
 }
 #endif  // _WIN32
-
 
 std::string CommandLineInterfaceTest::ReadFile(absl::string_view filename) {
   std::string path = absl::StrCat(temp_directory(), "/", filename);
@@ -1581,7 +1578,7 @@ TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "generator --test_out specifies a maximum edition 99999_TEST_ONLY which "
-      "is not the protoc maximum 2023");
+      "is not the protoc maximum");
 }
 
 TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
@@ -2012,21 +2009,6 @@ TEST_F(CommandLineInterfaceTest, PluginErrorAndNoEditionsSupport) {
       "--plug_out: foo.proto: Saw message type MockCodeGenerator_Error.");
 }
 
-TEST_F(CommandLineInterfaceTest, AfterProtocMaximumEditionError) {
-  CreateTempFile("foo.proto",
-                 R"schema(
-    edition = "2024";
-    package foo;
-    message Foo {
-    }
-  )schema");
-
-  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
-  ExpectErrorSubstring(
-      "foo.proto: is a file using edition 2024, which is later than the protoc "
-      "maximum supported edition 2023.");
-}
-
 TEST_F(CommandLineInterfaceTest, AfterProtocMaximumEditionAllowlisted) {
   constexpr absl::string_view path = "google/protobuf";
   CreateTempFile(absl::StrCat(path, "/foo.proto"),
@@ -2086,52 +2068,66 @@ TEST_F(CommandLineInterfaceTest, EditionDefaults) {
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_THAT(defaults, EqualsProto(R"pb(
-                defaults {
-                  edition: EDITION_LEGACY
-                  overridable_features {}
-                  fixed_features {
-                    field_presence: EXPLICIT
-                    enum_type: CLOSED
-                    repeated_field_encoding: EXPANDED
-                    utf8_validation: NONE
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: LEGACY_BEST_EFFORT
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_PROTO3
-                  overridable_features {}
-                  fixed_features {
-                    field_presence: IMPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                defaults {
-                  edition: EDITION_2023
-                  overridable_features {
-                    field_presence: EXPLICIT
-                    enum_type: OPEN
-                    repeated_field_encoding: PACKED
-                    utf8_validation: VERIFY
-                    message_encoding: LENGTH_PREFIXED
-                    json_format: ALLOW
-                  }
-                  fixed_features {
-                    enforce_naming_style: STYLE_LEGACY
-                    default_symbol_visibility: EXPORT_ALL
-                  }
-                }
-                minimum_edition: EDITION_PROTO2
-                maximum_edition: EDITION_2023
-              )pb"));
+    defaults {
+      edition: EDITION_LEGACY
+      overridable_features {}
+      fixed_features {
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: NONE
+        message_encoding: LENGTH_PREFIXED
+        json_format: LEGACY_BEST_EFFORT
+        enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
+      }
+    }
+    defaults {
+      edition: EDITION_PROTO3
+      overridable_features {}
+      fixed_features {
+        field_presence: IMPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
+      }
+    }
+    defaults {
+      edition: EDITION_2023
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+      }
+      fixed_features {
+        enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
+      }
+    }
+    defaults {
+      edition: EDITION_2024
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2024
+        default_symbol_visibility: EXPORT_TOP_LEVEL
+      }
+      fixed_features {}
+    }
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_2024
+  )pb"));
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {

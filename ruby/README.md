@@ -26,9 +26,8 @@ main `README` file. The version of `protoc` included in the latest release
 supports the `--ruby_out` option to generate Ruby code.
 
 A simple example of using the Ruby extension follows. More extensive
-documentation may be found in the RubyDoc comments (`call-seq` tags) in the
-source, and we plan to release separate, more detailed, documentation at a
-later date.
+documentation may be found on
+[rubydoc.info](https://www.rubydoc.info/gems/google-protobuf).
 
 ```ruby
 require 'google/protobuf'

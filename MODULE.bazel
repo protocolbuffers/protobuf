@@ -28,7 +28,7 @@ single_version_override(
 # LINT.IfChange
 #endif // PROTO2_OPENSOURCE
 # protoc dependencies
-bazel_dep(name = "abseil-cpp", version = "20250127.0")
+bazel_dep(name = "abseil-cpp", version = "20250512.1")
 bazel_dep(name = "rules_cc", version = "0.0.17")
 bazel_dep(name = "zlib", version = "1.3.1.bcr.5")
 #ifndef PROTO2_OPENSOURCE
@@ -44,7 +44,7 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "1.9.6")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "1.0.0")
+bazel_dep(name = "rules_python", version = "1.1.0")
 
 # Pin to rules_proto to 7.1.0 to avoid toolchain incompatibilities when
 # --incompatible_enable_proto_toolchain_resolution=true in Bazel 7.

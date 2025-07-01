@@ -15,11 +15,12 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/hpb/backend/upb/interop.h"
-#include "google/protobuf/hpb/internal/message_lock.h"
-#include "google/protobuf/hpb/internal/template_help.h"
-#include "google/protobuf/hpb/ptr.h"
-#include "google/protobuf/hpb/status.h"
+#include "hpb/arena.h"
+#include "hpb/backend/upb/interop.h"
+#include "hpb/internal/message_lock.h"
+#include "hpb/internal/template_help.h"
+#include "hpb/ptr.h"
+#include "hpb/status.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
@@ -224,8 +225,11 @@ upb_ExtensionRegistry* GetUpbExtensions(
 
 class ExtensionRegistry {
  public:
-  explicit ExtensionRegistry(const upb::Arena& arena)
-      : registry_(upb_ExtensionRegistry_New(arena.ptr())) {}
+  // The lifetimes of the ExtensionRegistry and the Arena are disparate, but
+  // the Arena must outlive the ExtensionRegistry.
+  explicit ExtensionRegistry(const hpb::Arena& arena)
+      : registry_(
+            upb_ExtensionRegistry_New(hpb::interop::upb::UnwrapArena(arena))) {}
 
   template <typename ExtensionIdentifier>
   void AddExtension(const ExtensionIdentifier& id) {
@@ -256,7 +260,7 @@ class ExtensionRegistry {
 
   // TODO: b/379100963 - Introduce ShutdownHpbLibrary
   static const ExtensionRegistry* NewGeneratedRegistry() {
-    static upb::Arena* global_arena = new upb::Arena();
+    static hpb::Arena* global_arena = new hpb::Arena();
     ExtensionRegistry* registry = new ExtensionRegistry(*global_arena);
     upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
     return registry;

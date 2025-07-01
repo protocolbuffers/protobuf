@@ -515,6 +515,7 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
                            const Options& options);
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
+bool IsV2CodegenEnabled(const Options& options);
 bool ShouldGenerateV2Code(const Descriptor* descriptor, const Options& options);
 
 // Returns true if a field can be batched.

@@ -228,6 +228,13 @@ struct Bytes {
 
 }  // namespace field_types
 
+using PackableFieldTypes =
+    testing::Types<field_types::Fixed32, field_types::Fixed64,
+                   field_types::SFixed32, field_types::SFixed64,
+                   field_types::Float, field_types::Double, field_types::Int32,
+                   field_types::Int64, field_types::UInt32, field_types::UInt64,
+                   field_types::SInt32, field_types::SInt64, field_types::Bool>;
+
 using FieldTypes =
     testing::Types<field_types::Fixed32, field_types::Fixed64,
                    field_types::SFixed32, field_types::SFixed64,

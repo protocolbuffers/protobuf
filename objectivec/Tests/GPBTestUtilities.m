@@ -33,7 +33,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 }
 
 + (instancetype)gpbtu_dataWithEmbeddedNulls {
-  char bytes[6] = "\1\0\2\3\0\5";
+  char bytes[6] = {'\1', '\0', '\2', '\3', '\0', '\5'};
   return [self dataWithBytes:bytes length:sizeof(bytes)];
 }
 @end

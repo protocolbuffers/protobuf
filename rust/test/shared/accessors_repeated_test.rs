@@ -16,7 +16,7 @@ macro_rules! generate_repeated_numeric_test {
           #[gtest]
           fn [< test_repeated_ $field _accessors >]() {
               let mut msg = TestAllTypes::new();
-              assert_that!(msg.[< repeated_ $field >](), empty());
+              assert_that!(msg.[< repeated_ $field >](), is_empty());
               assert_that!(msg.[< repeated_ $field >]().len(), eq(0));
               assert_that!(msg.[<repeated_ $field >]().get(0), none());
 
@@ -107,7 +107,7 @@ generate_repeated_numeric_test!(
 #[gtest]
 fn test_repeated_bool_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_that!(msg.repeated_bool(), empty());
+    assert_that!(msg.repeated_bool(), is_empty());
     assert_that!(msg.repeated_bool().len(), eq(0));
     assert_that!(msg.repeated_bool().get(0), none());
 
@@ -139,7 +139,7 @@ fn test_repeated_enum_accessors() {
     use test_all_types::NestedEnum;
 
     let mut msg = TestAllTypes::new();
-    assert_that!(msg.repeated_nested_enum(), empty());
+    assert_that!(msg.repeated_nested_enum(), is_empty());
     assert_that!(msg.repeated_nested_enum().len(), eq(0));
     assert_that!(msg.repeated_nested_enum().get(0), none());
 
@@ -272,7 +272,7 @@ fn test_repeated_strings() {
     let mut older_msg = TestAllTypes::new();
     {
         let mut msg = TestAllTypes::new();
-        assert_that!(msg.repeated_string(), empty());
+        assert_that!(msg.repeated_string(), is_empty());
         {
             let s = String::from("set from Mut");
             msg.repeated_string_mut().push(s);
@@ -299,7 +299,7 @@ fn test_repeated_strings() {
     );
 
     older_msg.repeated_string_mut().clear();
-    assert_that!(older_msg.repeated_string(), empty());
+    assert_that!(older_msg.repeated_string(), is_empty());
 }
 
 #[gtest]
@@ -307,7 +307,7 @@ fn test_repeated_bytes() {
     let mut older_msg = TestAllTypes::new();
     {
         let mut msg = TestAllTypes::new();
-        assert_that!(msg.repeated_bytes(), empty());
+        assert_that!(msg.repeated_bytes(), is_empty());
         {
             let s = Vec::from(b"set from Mut");
             msg.repeated_bytes_mut().push(s);
@@ -336,5 +336,5 @@ fn test_repeated_bytes() {
     );
 
     older_msg.repeated_bytes_mut().clear();
-    assert_that!(older_msg.repeated_bytes(), empty());
+    assert_that!(older_msg.repeated_bytes(), is_empty());
 }

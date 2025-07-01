@@ -2113,7 +2113,7 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOverwrittenLazyOneofDoesNotLeak) {
 TEST(MESSAGE_TEST_NAME, AllSetMethodsOnStringField) {
   UNITTEST::TestAllTypes msg;
 
-  msg.set_optional_string(absl::string_view("Abcdef"));
+  msg.set_optional_string("Abcdef");
   EXPECT_EQ(msg.optional_string(), "Abcdef");
 
   msg.set_optional_string("Asciiz");

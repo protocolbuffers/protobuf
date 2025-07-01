@@ -10,11 +10,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "upb/message/message.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
 
@@ -59,7 +61,6 @@ UPB_INLINE UPB_PRESERVE_NONE const char* _upb_FastDecoder_TagDispatch(
   const _upb_FastTable_Entry* ent = &table_p->UPB_PRIVATE(fasttable)[ofs >> 3];
 #endif
 
-  _upb_Decoder_Trace(d, 'D');
   UPB_MUSTTAIL return ent->field_parser(d, ptr, msg, table, hasbits,
                                         ent->field_data ^ tag);
 }
@@ -80,6 +81,7 @@ UPB_FORCEINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_Dispatch(
 
   // Read two bytes of tag data (for a one-byte tag, the high byte is junk).
   data = _upb_FastDecoder_LoadTag(ptr);
+  _upb_Decoder_Trace(d, 'D');
   UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
 }
 
@@ -170,20 +172,90 @@ typedef enum {
 
   // Alias for clarity in the code.
   kUpb_DecodeFastNext_FallbackToMiniTable = kUpb_DecodeFastNext_Return,
+
+  // Tail call to the function to parse the current field.
+  kUpb_DecodeFastNext_MessageIsDoneFallback = 3,
+
+  // Tail call to the function to parse the current field, except parse it as
+  // packed instead of unpacked.
+  kUpb_DecodeFastNext_TailCallPacked = 4,
+
+  // Tail call to the function to parse the current field, except parse it as
+  // unpacked instead of packed.
+  kUpb_DecodeFastNext_TailCallUnpacked = 5,
 } upb_DecodeFastNext;
 
-#define UPB_DECODEFAST_NEXT(next)                                           \
+const char* upb_DecodeFast_IsDoneFallback(UPB_PARSE_PARAMS);
+
+/* Error function that will abort decoding with longjmp(). We can't declare this
+ * UPB_NORETURN, even though it is appropriate, because if we do then compilers
+ * will "helpfully" refuse to tailcall to it
+ * (see: https://stackoverflow.com/a/55657013), which will defeat a major goal
+ * of our optimizations. That is also why we must declare it in a separate file,
+ * otherwise the compiler will see that it calls longjmp() and deduce that it is
+ * noreturn. */
+const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
+
+UPB_INLINE
+const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
+  d->status = status;
+  return _upb_FastDecoder_ErrorJmp2(d);
+}
+
+#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)    \
   if (UPB_UNLIKELY(next != kUpb_DecodeFastNext_TailCallDispatch)) {         \
     switch (next) {                                                         \
       case kUpb_DecodeFastNext_Return:                                      \
         UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
       case kUpb_DecodeFastNext_Error:                                       \
+        UPB_ASSERT(d->status != kUpb_DecodeStatus_Ok);                      \
         return _upb_FastDecoder_ErrorJmp2(d);                               \
+      case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
+        UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
+            UPB_PARSE_ARGS);                                                \
+      case kUpb_DecodeFastNext_TailCallPacked:                              \
+        UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
+      case kUpb_DecodeFastNext_TailCallUnpacked:                            \
+        UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
       default:                                                              \
         UPB_UNREACHABLE();                                                  \
     }                                                                       \
   }                                                                         \
   UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
+
+// Uncomment this to see the exit points from the fast decoder.
+// #define UPB_LOG_EXITS
+
+UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
+                                       upb_DecodeFastNext val, const char* sym,
+                                       const char* file, int line) {
+#ifdef UPB_LOG_EXITS
+  fprintf(stderr, "Fasttable fallback @ %s:%d -> %s (%d)\n", file, line, sym,
+          val);
+#endif
+  *next = val;
+  return false;
+}
+
+UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
+                                        upb_DecodeFastNext* next,
+                                        upb_DecodeStatus val, const char* sym,
+                                        const char* file, int line) {
+#ifdef UPB_LOG_EXITS
+  fprintf(stderr, "Fasttable error @ %s:%d -> %s (%d)\n", file, line, sym, val);
+#endif
+  d->status = val;
+  *next = kUpb_DecodeFastNext_Error;
+  return false;
+}
+
+// Call using the following pattern:
+//    // Will return false.
+//    return UPB_EXIT_FASTTABLE(kUpb_DecodeFastNext_FallbackToMiniTable);
+#define UPB_DECODEFAST_EXIT(n, next) \
+  upb_DecodeFast_SetExit(next, n, #n, __FILE__, __LINE__)
+#define UPB_DECODEFAST_ERROR(d, st, next) \
+  upb_DecodeFast_SetError(d, next, st, #st, __FILE__, __LINE__)
 
 #include "upb/port/undef.inc"
 

@@ -38,6 +38,8 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       lite_(!java::HasDescriptorMethods(descriptor_->file(),
                                         context->EnforceLite())),
       jvm_dsl_(!lite_ || context->options().jvm_dsl),
+      dsl_use_concrete_types_(lite_ &&
+                              context->options().dsl_use_concrete_types),
       field_generators_(java::FieldGeneratorMap<FieldGenerator>(descriptor_)) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (java::IsRealOneof(descriptor_->field(i))) {
@@ -196,9 +198,9 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
           "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
           "name", context_->GetFieldGeneratorInfo(field)->name);
     }
-    if (jvm_dsl_) {
-      // On the JVM, we can use `FooOrBuilder`, and it saves code size to
-      // generate only one method instead of two.
+    if (!dsl_use_concrete_types_) {
+      // We can use `FooOrBuilder`, and it saves code size to generate only one
+      // method instead of two.
       printer->Print(
           "public val $full_classname$OrBuilder.$camelcase_name$OrNull: "
           "$full_name$?\n"
@@ -212,8 +214,8 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
               name_resolver_->GetImmutableClassName(field->message_type())),
           "name", context_->GetFieldGeneratorInfo(field)->capitalized_name);
     } else {
-      // Non-JVM platforms don't have `FooOrBuilder`, so we generate `Foo`
-      // and `Foo.Builder` methods.
+      // We don't have `FooOrBuilder`, so we generate `Foo` and `Foo.Builder`
+      // methods.
       printer->Print(
           "public val $full_classname$.$camelcase_name$OrNull: "
           "$full_name$?\n"

@@ -4825,6 +4825,28 @@ class DescriptorBuilder {
   void CheckVisibilityRulesVisit(const EnumDescriptor& enm,
                                  const EnumDescriptorProto& proto,
                                  VisibilityCheckerState& state);
+  void CheckVisibilityRulesVisit(const FileDescriptor&,
+                                 const FileDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const FieldDescriptor&,
+                                 const FieldDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const EnumValueDescriptor&,
+                                 const EnumValueDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const OneofDescriptor&,
+                                 const OneofDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const Descriptor::ExtensionRange&,
+                                 const DescriptorProto::ExtensionRange& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const MethodDescriptor&,
+                                 const MethodDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+  void CheckVisibilityRulesVisit(const ServiceDescriptor&,
+                                 const ServiceDescriptorProto& proto,
+                                 VisibilityCheckerState& state) {}
+
   bool IsEnumNamespaceMessage(const EnumDescriptor& enm) const;
 
 
@@ -7419,7 +7441,7 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
     const EnumValueDescriptor* value = result->value(i);
     std::string stripped =
         EnumValueToPascalCase(remover.MaybeRemove(value->name()));
-    auto insert_result = values.try_emplace(stripped, value);
+    auto insert_result = values.try_emplace(std::move(stripped), value);
     bool inserted = insert_result.second;
 
     // We don't throw the error if the two conflicting symbols are identical, or
@@ -8395,9 +8417,7 @@ void DescriptorBuilder::CheckVisibilityRules(FileDescriptor* file,
 
   // Build our state object so we can apply rules based on type.
   internal::VisitDescriptors(
-      *file, proto,
-      [&](const auto& descriptor, const auto& proto)
-          -> decltype(CheckVisibilityRulesVisit(descriptor, proto, state)) {
+      *file, proto, [&](const auto& descriptor, const auto& proto) {
         CheckVisibilityRulesVisit(descriptor, proto, state);
       });
 
@@ -8594,6 +8614,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   }
 
   ValidateFieldFeatures(field, proto);
+
 
   if (field->file()->edition() >= Edition::EDITION_2024 &&
       field->has_legacy_proto_ctype()) {
@@ -9663,7 +9684,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
           return absl::StrCat("Option \"", debug_msg_name,
                               "\" unknown. Ensure that your proto",
                               " definition file imports the proto which "
-                              "defines the option (i.e. via import option).");
+                              "defines the option (i.e. via import option "
+                              "after edition 2024).");
         });
       }
     } else if (field->containing_type() != descriptor) {
@@ -10708,6 +10730,10 @@ bool IsGroupLike(const FieldDescriptor& field) {
 bool IsLazilyInitializedFile(absl::string_view filename) {
   if (filename == "third_party/protobuf/cpp_features.proto" ||
       filename == "google/protobuf/cpp_features.proto") {
+    return true;
+  }
+  if (filename == "third_party/protobuf/internal_options.proto" ||
+      filename == "google/protobuf/internal_options.proto") {
     return true;
   }
   return filename == "net/proto2/proto/descriptor.proto" ||

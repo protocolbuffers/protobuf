@@ -16,45 +16,55 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <memory>
-#include <random>
+#include <ostream>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
 
-#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"  // IWYU pragma: keep
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
+#include "google/protobuf/testing/googletest.h"  // IWYU pragma: keep
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "absl/base/log_severity.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
-#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/substitute.h"
-#include "absl/time/time.h"
-#include "google/protobuf/arena_test_util.h"
+#include "absl/log/globals.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/arena_test_util.h"  // IWYU pragma: keep
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map.h"
+#include "google/protobuf/map_entry.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_proto3_unittest.pb.h"
+#include "google/protobuf/map_test_util.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/reflection_tester.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -1110,8 +1120,10 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      MapIterator it = reflection_tester.MapBegin(message, field->name());
-      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      ConstMapIterator it =
+          reflection_tester.ConstMapBegin(message, field->name());
+      ConstMapIterator end =
+          reflection_tester.ConstMapEnd(message, field->name());
       // It's unordered, so search for it.
       if (it == end) continue;
       auto next = it;
@@ -1160,8 +1172,10 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      MapIterator it = reflection_tester.MapBegin(message, field->name());
-      MapIterator end = reflection_tester.MapEnd(message, field->name());
+      ConstMapIterator it =
+          reflection_tester.ConstMapBegin(message, field->name());
+      ConstMapIterator end =
+          reflection_tester.ConstMapEnd(message, field->name());
 
       while (it != end) {
         auto next = it;
@@ -1179,8 +1193,10 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   TestMap message;
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
   reflection_tester.SetMapFieldsViaMapReflection(&message);
-  MapIterator it1 = reflection_tester.MapBegin(&message, "map_int32_int32");
-  MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
+  ConstMapIterator it1 =
+      reflection_tester.ConstMapBegin(&message, "map_int32_int32");
+  ConstMapIterator it2 =
+      reflection_tester.ConstMapEnd(&message, "map_int32_int32");
   it2 = it1;
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }

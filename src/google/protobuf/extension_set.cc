@@ -31,7 +31,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/extension_set_inl.h"
+#include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
@@ -639,7 +639,7 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
 }
 
 MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
-                                      const MessageLite& prototype,
+                                      const ClassData* class_data,
                                       const FieldDescriptor* descriptor) {
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
@@ -652,10 +652,9 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
   } else {
     ABSL_DCHECK_TYPE(*extension, REPEATED_FIELD, MESSAGE);
   }
-
   return reinterpret_cast<internal::RepeatedPtrFieldBase*>(
              extension->ptr.repeated_message_value)
-      ->AddFromPrototype<GenericTypeHandler<MessageLite>>(&prototype);
+      ->AddFromClassData<GenericTypeHandler<MessageLite>>(class_data);
 }
 
 // Defined in extension_set_heavy.cc.
@@ -1420,6 +1419,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
   return result;
 }
 
+
 int ExtensionSet::Extension::GetSize() const {
   ABSL_DCHECK(is_repeated);
   switch (cpp_type(type)) {
@@ -1920,7 +1920,7 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   return nullptr;
 }
 
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena* arena)>
+std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
     ExtensionSet::maybe_create_lazy_extension_;
 
 }  // namespace internal
