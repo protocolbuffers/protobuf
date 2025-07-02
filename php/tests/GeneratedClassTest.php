@@ -1008,8 +1008,11 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower\PBisset();
         $m = new \Lower\PBlist();
         $m = new \Lower\PBmatch();
+        $m = new \Lower\PBmixed();
         $m = new \Lower\PBnamespace();
+        $m = new \Lower\PBnever();
         $m = new \Lower\PBnew();
+        $m = new \Lower\PBobject();
         $m = new \Lower\PBor();
         $m = new \Lower\PBparent();
         $m = new \Lower\PBprint();
@@ -1170,8 +1173,11 @@ class GeneratedClassTest extends TestBase
         $m = new \Lower_enum\PBisset();
         $m = new \Lower_enum\PBlist();
         $m = new \Lower_enum\PBmatch();
+        $m = new \Lower_enum\PBmixed();
         $m = new \Lower_enum\PBnamespace();
+        $m = new \Lower_enum\PBnever();
         $m = new \Lower_enum\PBnew();
+        $m = new \Lower_enum\PBobject();
         $m = new \Lower_enum\PBor();
         $m = new \Lower_enum\PBparent();
         $m = new \Lower_enum\PBprint();
@@ -1332,8 +1338,11 @@ class GeneratedClassTest extends TestBase
         $m = \Lower_enum_value\NotAllowed::PBisset;
         $m = \Lower_enum_value\NotAllowed::PBlist;
         $m = \Lower_enum_value\NotAllowed::PBmatch;
+        $m = \Lower_enum_value\NotAllowed::PBmixed;
         $m = \Lower_enum_value\NotAllowed::PBnamespace;
+        $m = \Lower_enum_value\NotAllowed::PBnever;
         $m = \Lower_enum_value\NotAllowed::PBnew;
+        $m = \Lower_enum_value\NotAllowed::PBobject;
         $m = \Lower_enum_value\NotAllowed::PBor;
         $m = \Lower_enum_value\NotAllowed::PBprint;
         $m = \Lower_enum_value\NotAllowed::PBprivate;
