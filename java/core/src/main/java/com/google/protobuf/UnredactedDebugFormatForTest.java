@@ -79,4 +79,16 @@ public final class UnredactedDebugFormatForTest {
           Object[] objects) {
     return LegacyUnredactedTextFormat.legacyUnredactedToStringArray(objects);
   }
+
+  /**
+   * Return String.format() with the guarantee that any Protobuf Message.toString() invoked under
+   * this call always returns TextFormat (except for Message.toString() calls that are also under
+   * ProtobufToStringOutput.callWithDebugFormat). This is useful for refactoring String.format()
+   * calls when 1) the objects being interpolated are Protobuf messages or contain Protobuf
+   * messages, and 2) the existing code expects toString() on the interpolated objects to output the
+   * text format.
+   */
+  public static String unredactedStringFormat(String format, Object... args) {
+    return LegacyUnredactedTextFormat.legacyUnredactedStringFormat(format, args);
+  }
 }

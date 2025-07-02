@@ -244,4 +244,26 @@ public final class UnredactedDebugFormatForTestTest {
                   + "}\n"
             });
   }
+
+  @Test
+  public void unredactedStringFormat_returnsFormattedStringInTextFormat() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            UnredactedDebugFormatForTest.unredactedStringFormat(
+                "The proto is %s", message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "The proto is [optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
+  }
 }
