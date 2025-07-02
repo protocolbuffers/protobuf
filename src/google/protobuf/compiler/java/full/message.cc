@@ -1184,7 +1184,8 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
       "  return pos == -1 ? \"\" : typeUrl.substring(pos + 1);\n"
       "}\n"
       "\n"
-      "public static <T extends com.google.protobuf.Message> Any pack(\n"
+      "public static <T extends com.google.protobuf.GeneratedMessage> Any "
+      "pack(\n"
       "    T message) {\n"
       "  return Any.newBuilder()\n"
       "      .setTypeUrl(getTypeUrl(\"type.googleapis.com\",\n"
@@ -1225,7 +1226,7 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
       "private volatile com.google.protobuf.Message cachedUnpackValue;\n"
       "\n"
       "@java.lang.SuppressWarnings(\"unchecked\")\n"
-      "public <T extends com.google.protobuf.Message> T unpack(\n"
+      "public <T extends com.google.protobuf.GeneratedMessage> T unpack(\n"
       "    java.lang.Class<T> clazz)\n"
       "    throws com.google.protobuf.InvalidProtocolBufferException {\n");
   printer->Print(
