@@ -354,6 +354,19 @@ std::string ClassNameResolver::GetKotlinFactoryName(
   return IsForbiddenKotlin(name) ? absl::StrCat(name, "_") : name;
 }
 
+std::string ClassNameResolver::GetFullyQualifiedKotlinFactoryName(
+    const Descriptor* descriptor) {
+  if (descriptor->containing_type() != nullptr) {
+    return absl::StrCat(
+        GetKotlinExtensionsClassName(descriptor->containing_type()), ".",
+        GetKotlinFactoryName(descriptor));
+  } else {
+    return absl::StrCat(
+        GetFileJavaPackage(descriptor->file(), /*immutable=*/true), ".",
+        GetKotlinFactoryName(descriptor));
+  }
+}
+
 std::string ClassNameResolver::GetJavaImmutableClassName(
     const Descriptor* descriptor) {
   return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, true),

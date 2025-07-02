@@ -132,6 +132,26 @@ PROTOC_EXPORT std::string UnderscoresToCamelCaseCheckReserved(
 PROTOC_EXPORT std::string UnderscoresToCapitalizedCamelCase(
     const FieldDescriptor* field);
 
+// Requires:
+//   descriptor != NULL
+// Returns:
+//   The unqualified Kotlin factory name.
+PROTOC_EXPORT std::string KotlinFactoryName(const Descriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+// Returns:
+//   The fully qualified Kotlin factory name.
+PROTOC_EXPORT std::string FullyQualifiedKotlinFactoryName(
+    const Descriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+// Returns:
+//   The fully qualified Kotlin extensions class name.
+PROTOC_EXPORT std::string KotlinExtensionsClassName(
+    const Descriptor* descriptor);
+
 
 }  // namespace java
 }  // namespace compiler
