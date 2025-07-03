@@ -503,8 +503,7 @@ class FieldGenerator {
   friend class FieldGeneratorTable;
   FieldGenerator(const FieldDescriptor* field, const Options& options,
                  MessageSCCAnalyzer* scc_analyzer,
-                 std::optional<uint32_t> hasbit_index,
-                 std::optional<uint32_t> inlined_string_index);
+                 std::optional<uint32_t> hasbit_index);
 
   std::unique_ptr<FieldGeneratorBase> impl_;
   std::vector<io::Printer::Sub> field_vars_;
@@ -522,8 +521,7 @@ class FieldGeneratorTable {
   FieldGeneratorTable& operator=(const FieldGeneratorTable&) = delete;
 
   void Build(const Options& options, MessageSCCAnalyzer* scc_analyzer,
-             absl::Span<const int32_t> has_bit_indices,
-             absl::Span<const int32_t> inlined_string_indices);
+             absl::Span<const int32_t> has_bit_indices);
 
   const FieldGenerator& get(const FieldDescriptor* field) const {
     ABSL_CHECK_EQ(field->containing_type(), descriptor_);
