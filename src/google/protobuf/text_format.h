@@ -420,6 +420,9 @@ class PROTOBUF_EXPORT TextFormat {
       }
     }
 
+    // Sets whether strings will be redacted and thus unparsable.
+    void SetRedactDebugString(bool redact) { redact_debug_string_ = redact; }
+
     // Register a custom field-specific FastFieldValuePrinter for fields
     // with a particular FieldDescriptor.
     // Returns "true" if the registration succeeded, or "false", if there is
@@ -458,9 +461,6 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Sets whether silent markers will be inserted.
     void SetInsertSilentMarker(bool v) { insert_silent_marker_ = v; }
-
-    // Sets whether strings will be redacted and thus unparsable.
-    void SetRedactDebugString(bool redact) { redact_debug_string_ = redact; }
 
     // Sets whether the output string should be made non-deterministic.
     // This discourages equality checks based on serialized string comparisons.
