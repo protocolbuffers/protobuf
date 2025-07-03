@@ -99,6 +99,7 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetJavaImmutableClassName(const EnumDescriptor* descriptor);
   std::string GetJavaImmutableClassName(const ServiceDescriptor* descriptor);
   std::string GetKotlinFactoryName(const Descriptor* descriptor);
+  std::string GetFullyQualifiedKotlinFactoryName(const Descriptor* descriptor);
   std::string GetKotlinExtensionsClassName(const Descriptor* descriptor);
   std::string GetKotlinExtensionsClassNameEscaped(const Descriptor* descriptor);
   std::string GetFileJavaPackage(const FileDescriptor* file, bool immutable);
