@@ -2,7 +2,7 @@
 #include <smmintrin.h>
 #include <tmmintrin.h>
 
-static FORCE_INLINE_ATTR inline size_t utf8_range_ValidateUTF8Simd(
+static FORCE_INLINE_ATTR size_t utf8_range_ValidateUTF8Simd(
     const char* data_original, const char* data, const char* end,
     int return_position) {
   /* This code checks that utf-8 ranges are structurally valid 16 bytes at once
