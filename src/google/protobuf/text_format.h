@@ -82,7 +82,7 @@ class PythonFieldValuePrinter;
 
 namespace internal {
 // Enum used to set printing options for StringifyMessage.
-PROTOBUF_EXPORT enum class Option;
+enum class Option;
 
 // Converts a protobuf message to a string. Sensitive fields are redacted, and a
 // per-process randomized prefix is inserted.
