@@ -29,18 +29,18 @@ class PyDescriptorDatabase : public DescriptorDatabase {
   // with a copy of FileDescriptorProto.
 
   // Find a file by file name.
-  bool FindFileByName(const std::string& filename,
+  bool FindFileByName(StringViewArg filename,
                       FileDescriptorProto* output) override;
 
   // Find the file that declares the given fully-qualified symbol name.
-  bool FindFileContainingSymbol(const std::string& symbol_name,
+  bool FindFileContainingSymbol(StringViewArg symbol_name,
                                 FileDescriptorProto* output) override;
 
   // Find the file which defines an extension extending the given message type
   // with the given field number.
   // Containing_type must be a fully-qualified type name.
   // Python objects are not required to implement this method.
-  bool FindFileContainingExtension(const std::string& containing_type,
+  bool FindFileContainingExtension(StringViewArg containing_type,
                                    int field_number,
                                    FileDescriptorProto* output) override;
 
@@ -48,7 +48,7 @@ class PyDescriptorDatabase : public DescriptorDatabase {
   // containing_type, and appends them to output in an undefined
   // order.
   // Python objects are not required to implement this method.
-  bool FindAllExtensionNumbers(const std::string& containing_type,
+  bool FindAllExtensionNumbers(StringViewArg containing_type,
                                std::vector<int>* output) override;
 
  private:
