@@ -56,12 +56,6 @@ jobs:
         shell: bash
         run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
 
-      # TODO: b/426584168 - Remove this workaround after the GitHub runners are fixed
-      - name: Upgrade LLVM on Windows
-        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
-        shell: bash
-        run: choco upgrade llvm
-
       - name: Configure Bazel version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         working-directory: examples
