@@ -541,6 +541,7 @@ class DispatcherTestProto : public Message {
   }
   const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
     ABSL_LOG(FATAL);
+    return nullptr;
   }
 };
 // We use a specialization to inject behavior for the test.

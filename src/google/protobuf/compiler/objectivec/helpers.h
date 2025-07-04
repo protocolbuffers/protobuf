@@ -179,6 +179,7 @@ class SubstitutionMap {
       return std::string(subs_.at(it->second).value());
     }
     ABSL_LOG(FATAL) << " Unknown variable: " << key;
+    return "";
   }
 
   // Sets or replaces a variable in the map.
