@@ -3009,7 +3009,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
                    if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
                      auto* $cached_split_ptr$ = this_.$split$;
                      $split_field_dtors_impl$;
-                     delete $cached_split_ptr$;
+                     $pbi$::NonNullDelete($cached_split_ptr$);
                    }
                  )cc");
            }},
@@ -3784,7 +3784,10 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
         "// @@protoc_insertion_point(one_of_clear_start:$full_name$)\n");
     format.Indent();
     format("$pbi$::TSanWrite(&_impl_);\n");
-    format("switch ($oneofname$_case()) {\n");
+    // Reset the case number first before the dispatch.
+    // That way there is no work after the switch and the cases can tail call.
+    format("switch (::std::exchange($oneof_case$[$1$], $2$_NOT_SET)) {\n", i,
+           absl::AsciiStrToUpper(oneof->name()));
     format.Indent();
     for (auto field : FieldRange(oneof)) {
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
@@ -3805,10 +3808,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
         "}\n",
         absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
-    format(
-        "}\n"
-        "$oneof_case$[$1$] = $2$_NOT_SET;\n",
-        i, absl::AsciiStrToUpper(oneof->name()));
+    format("}\n");
     format.Outdent();
     format(
         "}\n"
