@@ -837,9 +837,6 @@ class PROTOBUF_EXPORT MapIteratorBase {
   ValueRef value_;
 };
 
-extern template class MapIteratorBase</*kIsMutable=*/false>;
-extern template class MapIteratorBase</*kIsMutable=*/true>;
-
 class PROTOBUF_EXPORT ConstMapIterator final
     : public MapIteratorBase</*kIsMutable=*/false> {
   friend class internal::MapFieldBase;
