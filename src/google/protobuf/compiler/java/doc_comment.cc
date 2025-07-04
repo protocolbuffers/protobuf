@@ -36,8 +36,7 @@ std::string EscapeJavadoc(absl::string_view input) {
 
   char prev = '*';
 
-  for (std::string::size_type i = 0; i < input.size(); i++) {
-    char c = input[i];
+  for (char c : input) {
     switch (c) {
       case '*':
         // Avoid "/*".
@@ -154,12 +153,11 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
       printer->Print(" * <pre>\n");
     }
 
-    for (size_t i = 0; i < lines.size(); i++) {
+    for (auto line : lines) {
       // Lines should start with a single space and any extraneous leading
       // spaces should be stripped. For lines starting with a /, the leading
       // space will prevent putting it right after the leading asterisk from
       // closing the comment.
-      std::string line = lines[i];
       line.erase(line.begin(),
                  std::find_if(line.begin(), line.end(), [](unsigned char ch) {
                    return !std::isspace(ch);
