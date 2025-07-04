@@ -2126,11 +2126,13 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 184);
 enum class ExtDeclEnforcementLevel : uint8_t {
   // No enforcement.
   kNoEnforcement = 0,
-  // All extensions excluding descriptor.proto extensions
+  // All extensions excluding descriptor.proto and MessageSet extensions
   // (go/extension-declarations#descriptor-proto)
   kCustomExtensions = 1,
-  // All extensions including descriptor.proto extensions.
+  // All extensions including descriptor.proto and MessageSet extensions.
   kAllExtensions = 2,
+  // All except for MessageSet extensions.
+  kAllExtensionsExceptMessageSet = 3,
 };
 #endif  // !SWIG
 
@@ -2386,16 +2388,29 @@ class PROTOBUF_EXPORT DescriptorPool {
     enforce_extension_declarations_ = enforce;
   }
 
-  bool EnforceDescriptorExtensionDeclarations() const {
-    return enforce_extension_declarations_ ==
-           ExtDeclEnforcementLevel::kAllExtensions;
-  }
-
-  bool EnforceCustomExtensionDeclarations() const {
+  bool ShouldEnforceDescriptorExtensionDeclarations() const {
     return enforce_extension_declarations_ ==
                ExtDeclEnforcementLevel::kAllExtensions ||
            enforce_extension_declarations_ ==
-               ExtDeclEnforcementLevel::kCustomExtensions;
+               ExtDeclEnforcementLevel::kAllExtensionsExceptMessageSet;
+  }
+
+  bool ShouldEnforceExtensionDeclaration(const FieldDescriptor& field) const {
+    ABSL_DCHECK(field.is_extension());
+    switch (enforce_extension_declarations_) {
+      case ExtDeclEnforcementLevel::kCustomExtensions:
+        return field.containing_type()->file()->name() !=
+                   "net/proto2/proto/descriptor.proto" &&
+               field.containing_type()->full_name() !=
+                   "google.protobuf.bridge.MessageSet";
+      case ExtDeclEnforcementLevel::kAllExtensions:
+        return true;
+      case ExtDeclEnforcementLevel::kAllExtensionsExceptMessageSet:
+        return field.containing_type()->full_name() !=
+               "google.protobuf.bridge.MessageSet";
+      default:
+        return false;
+    }
   }
 
 #ifndef SWIG
