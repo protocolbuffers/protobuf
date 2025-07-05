@@ -18,7 +18,6 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: "No bzlmod", flags: --noenable_bzlmod --enable_workspace }
           - { name: "Bzlmod and Workspace", flags: --enable_bzlmod --enable_workspace }
           - { name: Optimized, flags: --config=opt }
           - { name: ASAN, flags: --config=asan }
