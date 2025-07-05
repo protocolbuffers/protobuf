@@ -93,6 +93,9 @@ message Api {
 
   // The source syntax of the service.
   Syntax syntax = 7;
+
+  // The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+  string edition = 8;
 }
 
 // Method represents a method of an API interface.
@@ -117,6 +120,9 @@ message Method {
 
   // The source syntax of this method.
   Syntax syntax = 7;
+
+  // The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+  string edition = 8;
 }
 
 // Declares an API Interface to be included in this interface. The including
