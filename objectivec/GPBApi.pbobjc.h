@@ -53,6 +53,7 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
   GPBApi_FieldNumber_SourceContext = 5,
   GPBApi_FieldNumber_MixinsArray = 6,
   GPBApi_FieldNumber_Syntax = 7,
+  GPBApi_FieldNumber_Edition = 8,
 };
 
 /**
@@ -123,6 +124,9 @@ GPB_FINAL @interface GPBApi : GPBMessage
 /** The source syntax of the service. */
 @property(nonatomic, readwrite) GPBSyntax syntax;
 
+/** The source edition string, only valid when syntax is SYNTAX_EDITIONS. */
+@property(nonatomic, readwrite, copy, null_resettable) NSString *edition;
+
 @end
 
 /**
@@ -147,6 +151,7 @@ typedef GPB_ENUM(GPBMethod_FieldNumber) {
   GPBMethod_FieldNumber_ResponseStreaming = 5,
   GPBMethod_FieldNumber_OptionsArray = 6,
   GPBMethod_FieldNumber_Syntax = 7,
+  GPBMethod_FieldNumber_Edition = 8,
 };
 
 /**
@@ -176,6 +181,9 @@ GPB_FINAL @interface GPBMethod : GPBMessage
 
 /** The source syntax of this method. */
 @property(nonatomic, readwrite) GPBSyntax syntax;
+
+/** The source edition string, only valid when syntax is SYNTAX_EDITIONS. */
+@property(nonatomic, readwrite, copy, null_resettable) NSString *edition;
 
 @end
 

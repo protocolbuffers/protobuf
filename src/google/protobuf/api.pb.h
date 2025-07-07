@@ -439,6 +439,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
     kNameFieldNumber = 1,
     kRequestTypeUrlFieldNumber = 2,
     kResponseTypeUrlFieldNumber = 4,
+    kEditionFieldNumber = 8,
     kRequestStreamingFieldNumber = 3,
     kResponseStreamingFieldNumber = 5,
     kSyntaxFieldNumber = 7,
@@ -505,6 +506,21 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   ::std::string* PROTOBUF_NONNULL _internal_mutable_response_type_url();
 
   public:
+  // string edition = 8;
+  void clear_edition() ;
+  const ::std::string& edition() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_edition(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_edition();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_edition();
+  void set_allocated_edition(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+
+  public:
   // bool request_streaming = 3;
   void clear_request_streaming() ;
   bool request_streaming() const;
@@ -539,8 +555,8 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7,
-                                   1, 68,
+  static const ::google::protobuf::internal::TcParseTable<3, 8,
+                                   1, 83,
                                    2>
       _table_;
 
@@ -565,6 +581,7 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr request_type_url_;
     ::google::protobuf::internal::ArenaStringPtr response_type_url_;
+    ::google::protobuf::internal::ArenaStringPtr edition_;
     bool request_streaming_;
     bool response_streaming_;
     int syntax_;
@@ -725,6 +742,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
     kMixinsFieldNumber = 6,
     kNameFieldNumber = 1,
     kVersionFieldNumber = 4,
+    kEditionFieldNumber = 8,
     kSourceContextFieldNumber = 5,
     kSyntaxFieldNumber = 7,
   };
@@ -809,6 +827,21 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   ::std::string* PROTOBUF_NONNULL _internal_mutable_version();
 
   public:
+  // string edition = 8;
+  void clear_edition() ;
+  const ::std::string& edition() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_edition(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_edition();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_edition();
+  void set_allocated_edition(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+
+  public:
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
   void clear_source_context() ;
@@ -838,8 +871,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<3, 7,
-                                   4, 39,
+  static const ::google::protobuf::internal::TcParseTable<3, 8,
+                                   4, 54,
                                    2>
       _table_;
 
@@ -865,6 +898,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin > mixins_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::internal::ArenaStringPtr version_;
+    ::google::protobuf::internal::ArenaStringPtr edition_;
     ::google::protobuf::SourceContext* PROTOBUF_NULLABLE source_context_;
     int syntax_;
     PROTOBUF_TSAN_DECLARE_MEMBER
@@ -1119,7 +1153,7 @@ inline void Api::set_allocated_version(::std::string* PROTOBUF_NULLABLE value) {
 
 // .google.protobuf.SourceContext source_context = 5;
 inline bool Api::has_source_context() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004U) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008U) != 0;
   PROTOBUF_ASSUME(!value || _impl_.source_context_ != nullptr);
   return value;
 }
@@ -1140,16 +1174,16 @@ inline void Api::unsafe_arena_set_allocated_source_context(
   }
   _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(value);
   if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000004U;
+    _impl_._has_bits_[0] |= 0x00000008U;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000004U;
+    _impl_._has_bits_[0] &= ~0x00000008U;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Api.source_context)
 }
 inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Api::release_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
-  _impl_._has_bits_[0] &= ~0x00000004U;
+  _impl_._has_bits_[0] &= ~0x00000008U;
   ::google::protobuf::SourceContext* released = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
@@ -1169,7 +1203,7 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Api::unsafe_arena_re
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
 
-  _impl_._has_bits_[0] &= ~0x00000004U;
+  _impl_._has_bits_[0] &= ~0x00000008U;
   ::google::protobuf::SourceContext* temp = _impl_.source_context_;
   _impl_.source_context_ = nullptr;
   return temp;
@@ -1184,7 +1218,7 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NONNULL Api::_internal_mutabl
 }
 inline ::google::protobuf::SourceContext* PROTOBUF_NONNULL Api::mutable_source_context()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000004U;
+  _impl_._has_bits_[0] |= 0x00000008U;
   ::google::protobuf::SourceContext* _msg = _internal_mutable_source_context();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Api.source_context)
   return _msg;
@@ -1201,9 +1235,9 @@ inline void Api::set_allocated_source_context(::google::protobuf::SourceContext*
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
-    _impl_._has_bits_[0] |= 0x00000004U;
+    _impl_._has_bits_[0] |= 0x00000008U;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000004U;
+    _impl_._has_bits_[0] &= ~0x00000008U;
   }
 
   _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(value);
@@ -1264,7 +1298,7 @@ Api::_internal_mutable_mixins() {
 inline void Api::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000008U;
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline ::google::protobuf::Syntax Api::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.syntax)
@@ -1272,7 +1306,7 @@ inline ::google::protobuf::Syntax Api::syntax() const {
 }
 inline void Api::set_syntax(::google::protobuf::Syntax value) {
   _internal_set_syntax(value);
-  _impl_._has_bits_[0] |= 0x00000008U;
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
 }
 inline ::google::protobuf::Syntax Api::_internal_syntax() const {
@@ -1282,6 +1316,71 @@ inline ::google::protobuf::Syntax Api::_internal_syntax() const {
 inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = value;
+}
+
+// string edition = 8;
+inline void Api::clear_edition() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.edition_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000004U;
+}
+inline const ::std::string& Api::edition() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:google.protobuf.Api.edition)
+  return _internal_edition();
+}
+template <typename Arg_, typename... Args_>
+PROTOBUF_ALWAYS_INLINE void Api::set_edition(Arg_&& arg, Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000004U;
+  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:google.protobuf.Api.edition)
+}
+inline ::std::string* PROTOBUF_NONNULL Api::mutable_edition()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::std::string* _s = _internal_mutable_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Api.edition)
+  return _s;
+}
+inline const ::std::string& Api::_internal_edition() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.edition_.Get();
+}
+inline void Api::_internal_set_edition(const ::std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000004U;
+  _impl_.edition_.Set(value, GetArena());
+}
+inline ::std::string* PROTOBUF_NONNULL Api::_internal_mutable_edition() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000004U;
+  return _impl_.edition_.Mutable( GetArena());
+}
+inline ::std::string* PROTOBUF_NULLABLE Api::release_edition() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.Api.edition)
+  if ((_impl_._has_bits_[0] & 0x00000004U) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000004U;
+  auto* released = _impl_.edition_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.edition_.Set("", GetArena());
+  }
+  return released;
+}
+inline void Api::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000004U;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000004U;
+  }
+  _impl_.edition_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.edition_.IsDefault()) {
+    _impl_.edition_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.edition)
 }
 
 // -------------------------------------------------------------------
@@ -1422,7 +1521,7 @@ inline void Method::set_allocated_request_type_url(::std::string* PROTOBUF_NULLA
 inline void Method::clear_request_streaming() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.request_streaming_ = false;
-  _impl_._has_bits_[0] &= ~0x00000008U;
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline bool Method::request_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.request_streaming)
@@ -1430,7 +1529,7 @@ inline bool Method::request_streaming() const {
 }
 inline void Method::set_request_streaming(bool value) {
   _internal_set_request_streaming(value);
-  _impl_._has_bits_[0] |= 0x00000008U;
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_streaming)
 }
 inline bool Method::_internal_request_streaming() const {
@@ -1511,7 +1610,7 @@ inline void Method::set_allocated_response_type_url(::std::string* PROTOBUF_NULL
 inline void Method::clear_response_streaming() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_streaming_ = false;
-  _impl_._has_bits_[0] &= ~0x00000010U;
+  _impl_._has_bits_[0] &= ~0x00000020U;
 }
 inline bool Method::response_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.response_streaming)
@@ -1519,7 +1618,7 @@ inline bool Method::response_streaming() const {
 }
 inline void Method::set_response_streaming(bool value) {
   _internal_set_response_streaming(value);
-  _impl_._has_bits_[0] |= 0x00000010U;
+  _impl_._has_bits_[0] |= 0x00000020U;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_streaming)
 }
 inline bool Method::_internal_response_streaming() const {
@@ -1581,7 +1680,7 @@ Method::_internal_mutable_options() {
 inline void Method::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000020U;
+  _impl_._has_bits_[0] &= ~0x00000040U;
 }
 inline ::google::protobuf::Syntax Method::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.syntax)
@@ -1589,7 +1688,7 @@ inline ::google::protobuf::Syntax Method::syntax() const {
 }
 inline void Method::set_syntax(::google::protobuf::Syntax value) {
   _internal_set_syntax(value);
-  _impl_._has_bits_[0] |= 0x00000020U;
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
 }
 inline ::google::protobuf::Syntax Method::_internal_syntax() const {
@@ -1599,6 +1698,71 @@ inline ::google::protobuf::Syntax Method::_internal_syntax() const {
 inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = value;
+}
+
+// string edition = 8;
+inline void Method::clear_edition() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.edition_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000008U;
+}
+inline const ::std::string& Method::edition() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:google.protobuf.Method.edition)
+  return _internal_edition();
+}
+template <typename Arg_, typename... Args_>
+PROTOBUF_ALWAYS_INLINE void Method::set_edition(Arg_&& arg, Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000008U;
+  _impl_.edition_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:google.protobuf.Method.edition)
+}
+inline ::std::string* PROTOBUF_NONNULL Method::mutable_edition()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::std::string* _s = _internal_mutable_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Method.edition)
+  return _s;
+}
+inline const ::std::string& Method::_internal_edition() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.edition_.Get();
+}
+inline void Method::_internal_set_edition(const ::std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000008U;
+  _impl_.edition_.Set(value, GetArena());
+}
+inline ::std::string* PROTOBUF_NONNULL Method::_internal_mutable_edition() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000008U;
+  return _impl_.edition_.Mutable( GetArena());
+}
+inline ::std::string* PROTOBUF_NULLABLE Method::release_edition() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.Method.edition)
+  if ((_impl_._has_bits_[0] & 0x00000008U) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000008U;
+  auto* released = _impl_.edition_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.edition_.Set("", GetArena());
+  }
+  return released;
+}
+inline void Method::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000008U;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000008U;
+  }
+  _impl_.edition_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.edition_.IsDefault()) {
+    _impl_.edition_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.Method.edition)
 }
 
 // -------------------------------------------------------------------
