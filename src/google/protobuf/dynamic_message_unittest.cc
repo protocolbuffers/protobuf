@@ -114,7 +114,7 @@ TEST(DynamicMessageTest,
 
   Reflection::ScratchSpace scratch;
   absl::string_view default_value = ref->GetStringView(*msg, field, scratch);
-  ref->SetString(msg.get(), field, std::string("foo"));
+  ref->SetString(msg.get(), field, "foo");
   EXPECT_EQ("foo", ref->GetStringView(*msg, field, scratch));
   msg->Clear();
   EXPECT_EQ(default_value, ref->GetStringView(*msg, field, scratch));
