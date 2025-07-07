@@ -27,7 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         runner: [ ubuntu, windows, macos ]
-        bazelversion: [ '7.1.2', '8.0.0' ]
+        bazelversion: [ '7.6.1', '8.0.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution: [ "", "--incompatible_enable_proto_toolchain_resolution=true" ]
     runs-on: ${{ matrix.runner }}-latest

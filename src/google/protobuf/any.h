@@ -12,7 +12,6 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
-#include "absl/strings/cord.h"
 #include "google/protobuf/message_lite.h"
 
 // Must be included last.

@@ -20,7 +20,7 @@ if (echo "$previous_commit_title" | grep -q "^Auto-generate files"); then
 fi
 
 export BAZEL=bazelisk
-export USE_BAZEL_VERSION=7.4.0
+export USE_BAZEL_VERSION=7.6.1
 
 ./regenerate_stale_files.sh
 

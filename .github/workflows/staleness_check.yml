@@ -50,7 +50,7 @@ jobs:
         # commit.
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
-          version: 7.1.2 # Bazel version
+          version: 7.6.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness
           # TODO: Enable bzlmod once //python/dist is buildable.
