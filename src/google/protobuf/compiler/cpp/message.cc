@@ -681,6 +681,18 @@ MessageGenerator::MessageGenerator(
       index_in_file_messages_);
 }
 
+bool MessageGenerator::ShouldGenerateEnclosingIf(
+    const FieldDescriptor& field) const {
+  if (HasBitIndex(&field) == kNoHasbit) {
+    return false;
+  } else if (field.is_repeated()) {
+    return !IsLikelyPresent(&field, options_);
+  } else {
+    return field.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+           field.cpp_type() == FieldDescriptor::CPPTYPE_STRING;
+  }
+}
+
 size_t MessageGenerator::HasBitsSize() const {
   return (max_has_bit_index_ + 31) / 32;
 }
@@ -1247,6 +1259,16 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
           )cc");
 }
 
+void MessageGenerator::GenerateVerifyHasBitConsistency(
+    io::Printer* p, absl::string_view prefix) {
+  p->Emit({{"prefix", prefix}},
+          R"cc(
+            if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+              $prefix$VerifyHasBitConsistency();
+            }
+          )cc");
+}
+
 namespace {
 
 class AccessorVerifier {
@@ -1314,7 +1336,8 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
     }
   };
 
-  if (!HasHasbit(field)) {
+  if (!HasHasbit(field) ||
+      (field->is_repeated() && IsLikelyPresent(field, options_))) {
     MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
                              /*with_enclosing_braces_always=*/true);
     return;
@@ -2996,6 +3019,8 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   };
   p->Emit(
       {
+          {"has_bit_consistency",
+           [&] { GenerateVerifyHasBitConsistency(p, "this_."); }},
           {"field_dtors", [&] { emit_field_dtors(/* split_fields= */ false); }},
           {"split_field_dtors",
            [&] {
@@ -3037,6 +3062,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
       R"cc(
         inline void $classname$::SharedDtor(MessageLite& self) {
           $classname$& this_ = static_cast<$classname$&>(self);
+          $has_bit_consistency$;
           this_._internal_metadata_.Delete<$unknown_fields_type$>();
           $DCHK$(this_.GetArena() == nullptr);
           $WeakDescriptorSelfPin$;
@@ -3265,8 +3291,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto generate_copy_fields = [&] {
     for (auto it = begin; it != end; ++it) {
-      const auto& gen = field_generators_.get(*it);
-      auto v = p->WithVars(FieldVars(*it, options_));
+      const auto* field = *it;
+      const auto& gen = field_generators_.get(field);
+      auto v = p->WithVars(FieldVars(field, options_));
 
       // Non trivial field values are copy constructed
       if (!gen.has_trivial_value() || gen.should_split()) {
@@ -3274,11 +3301,12 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
         continue;
       }
 
-      if (gen.is_message()) {
+      if (gen.is_message() ||
+          (field->is_repeated() && !IsLikelyPresent(field, options_))) {
         emit_pending_copy_fields(it, false);
-        emit_copy_message(*it);
+        emit_copy_message(field);
       } else if (first == nullptr) {
-        first = *it;
+        first = field;
       }
     }
     emit_pending_copy_fields(end, false);
@@ -3611,7 +3639,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         // (memset) per chunk, and if present it will be at the beginning.
         bool same =
             HasByteIndex(a) == HasByteIndex(b) &&
-            a->is_repeated() == b->is_repeated() &&
             IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
             ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
             (CanClearByZeroing(a) == CanClearByZeroing(b) ||
@@ -3708,10 +3735,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         // clear strings and messages if they were set.
         //
         // TODO:  Let the CppFieldGenerator decide this somehow.
-        bool have_enclosing_if =
-            HasBitIndex(field) != kNoHasbit &&
-            (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-             field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+        const bool have_enclosing_if = ShouldGenerateEnclosingIf(*field);
 
         if (have_enclosing_if) {
           PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index,
@@ -4295,6 +4319,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
       "  auto& from = static_cast<const $classname$&>(from_msg);\n");
   format.Indent();
+  GenerateVerifyHasBitConsistency(p, "from.");
   if (RequiresArena(GeneratorFunction::kMergeFrom)) {
     p->Emit(R"cc(
       $pb$::Arena* arena = _this->GetArena();
@@ -4371,10 +4396,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       for (const auto* field : fields) {
         const auto& generator = field_generators_.get(field);
 
-        if (field->is_repeated()) {
-          generator.GenerateMergingCode(p);
-        } else if (!field->is_required() && !field->is_repeated() &&
-                   !HasHasbit(field)) {
+        if ((!field->is_required() && !HasHasbit(field)) ||
+            (field->is_repeated() && IsLikelyPresent(field, options_))) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
           MayEmitMutableIfNonDefaultCheck(
@@ -4509,9 +4532,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   }
 
   format(
-      "_this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(from._"
-      "internal_"
-      "metadata_);\n");
+      "_this->_internal_metadata_.MergeFrom<$unknown_fields_type$>("
+      "from._internal_metadata_);\n");
 
   format.Outdent();
   format("}\n");
@@ -4633,7 +4655,8 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   }
 
   PrintFieldComment(Formatter{p}, field, options_);
-  if (HasHasbit(field)) {
+  if (HasHasbit(field) &&
+      (!field->is_repeated() || !IsLikelyPresent(field, options_))) {
     int has_bit_index = HasBitIndex(field);
     int has_word_index = has_bit_index / 32;
     bool use_cached_has_bits = cached_has_bits_index == has_word_index;
@@ -4716,6 +4739,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
 
   p->Emit(
       {
+          {"has_bit_consistency",
+           [&] { GenerateVerifyHasBitConsistency(p, "this_."); }},
           {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
           {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
           {"ifdef",
@@ -4746,6 +4771,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
           const $classname$& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
           $annotate_serialize$;
+          $has_bit_consistency$;
           // @@protoc_insertion_point(serialize_to_array_start:$full_name$)
           $ifdef$;
           // @@protoc_insertion_point(serialize_to_array_end:$full_name$)
@@ -4778,7 +4804,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
         v_.push_back(field);
       } else {
         // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field) && field->has_presence()) {
+        if (HasHasbit(field) && !field->real_containing_oneof()) {
           // We speculatively load the entire _has_bits_[index] contents, even
           // if it is for only one field.  Deferring non-oneof emitting would
           // allow us to determine whether this is going to be useful.
@@ -5166,7 +5192,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   std::vector<FieldChunk> chunks =
       CollectFields(rest, options_, [&](const auto* a, const auto* b) {
         return a->is_required() == b->is_required() &&
-               a->is_repeated() == b->is_repeated() &&
                HasByteIndex(a) == HasByteIndex(b) &&
                IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);

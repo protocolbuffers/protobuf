@@ -524,10 +524,10 @@ uint16_t MakeTypeCardForField(
     cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
-  if (has_hasbit) {
-    type_card = fl::kFcOptional;
-  } else if (field->is_repeated()) {
+  if (field->is_repeated()) {
     type_card = fl::kFcRepeated;
+  } else if (has_hasbit) {
+    type_card = fl::kFcOptional;
   } else if (field->real_containing_oneof()) {
     type_card = fl::kFcOneof;
   } else {
