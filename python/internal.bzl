@@ -1,6 +1,7 @@
 """
 Internal helpers for building the Python protobuf runtime.
 """
+# delete me
 
 load("@rules_python//python:py_test.bzl", "py_test")
 
