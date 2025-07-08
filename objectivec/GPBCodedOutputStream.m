@@ -829,7 +829,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   }
 }
 
-//%PDDM-EXPAND-END (19 expansions)
+//%PDDM-EXPAND-END (18 expansions)
 
 // clang-format on
 
