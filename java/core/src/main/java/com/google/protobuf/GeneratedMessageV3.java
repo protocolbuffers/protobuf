@@ -325,44 +325,7 @@ public abstract class GeneratedMessageV3
    */
   @Deprecated
   public interface ExtendableMessageOrBuilder<MessageT extends ExtendableMessage<MessageT>>
-      extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3> {
-
-    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    <T> boolean hasExtension(GeneratedExtension<MessageT, T> extension);
-
-    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    <T> int getExtensionCount(GeneratedExtension<MessageT, List<T>> extension);
-
-    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    <T> T getExtension(GeneratedExtension<MessageT, T> extension);
-
-    /* Removed from GeneratedMessage.ExtendableMessageOrBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    <T> T getExtension(GeneratedExtension<MessageT, List<T>> extension, int index);
-  }
+      extends GeneratedMessage.ExtendableMessageOrBuilder<GeneratedMessageV3> {}
 
   /**
    * Stub for GeneratedMessageV3.ExtendableMessage wrapping GeneratedMessage.ExtendableMessage for
@@ -388,54 +351,6 @@ public abstract class GeneratedMessageV3
       super(builder);
     }
 
-    /* Removed from GeneratedMessage.ExtendableMessage in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> boolean hasExtension(final GeneratedExtension<MessageT, T> extension) {
-      return hasExtension((ExtensionLite<MessageT, T>) extension);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableMessage in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> int getExtensionCount(final GeneratedExtension<MessageT, List<T>> extension) {
-      return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableMessage in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> T getExtension(final GeneratedExtension<MessageT, T> extension) {
-      return getExtension((ExtensionLite<MessageT, T>) extension);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableMessage in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> T getExtension(
-        final GeneratedExtension<MessageT, List<T>> extension, final int index) {
-      return getExtension((ExtensionLite<MessageT, List<T>>) extension, index);
-    }
 
     /* Overrides abstract GeneratedMessage.ExtendableMessage.internalGetFieldAccessorTable().
      *
@@ -516,104 +431,6 @@ public abstract class GeneratedMessageV3
       super(parent);
     }
 
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> boolean hasExtension(final GeneratedExtension<MessageT, T> extension) {
-      return hasExtension((ExtensionLite<MessageT, T>) extension);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> int getExtensionCount(final GeneratedExtension<MessageT, List<T>> extension) {
-      return getExtensionCount((ExtensionLite<MessageT, List<T>>) extension);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> T getExtension(final GeneratedExtension<MessageT, T> extension) {
-      return getExtension((ExtensionLite<MessageT, T>) extension);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking
-     * change (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    @Override
-    public final <T> T getExtension(
-        final GeneratedExtension<MessageT, List<T>> extension, final int index) {
-      return getExtension((ExtensionLite<MessageT, List<T>>) extension, index);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    public <T> BuilderT setExtension(
-        final GeneratedMessage.GeneratedExtension<MessageT, T> extension, final T value) {
-      return setExtension((ExtensionLite<MessageT, T>) extension, value);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    public <T> BuilderT setExtension(
-        final GeneratedMessage.GeneratedExtension<MessageT, List<T>> extension,
-        final int index,
-        final T value) {
-      return setExtension((ExtensionLite<MessageT, List<T>>) extension, index, value);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    public <T> BuilderT addExtension(
-        final GeneratedMessage.GeneratedExtension<MessageT, List<T>> extension, final T value) {
-      return addExtension((ExtensionLite<MessageT, List<T>>) extension, value);
-    }
-
-    /* Removed from GeneratedMessage.ExtendableBuilder in
-     * https://github.com/protocolbuffers/protobuf/commit/94a2a448518403341b8aa71335ab1123fbdcccd8
-     *
-     * @deprecated This method is deprecated, and slated for removal in the next Java breaking change
-     * (5.x). Users should update gencode to >= 4.26.x which no longer overrides this method.
-     */
-    @Deprecated
-    public <T> BuilderT clearExtension(
-        final GeneratedMessage.GeneratedExtension<MessageT, T> extension) {
-      return clearExtension((ExtensionLite<MessageT, T>) extension);
-    }
 
     /* Stub for method overridden from old generated code removed in
      * https://github.com/protocolbuffers/protobuf/commit/7bff169d32710b143951ec6ce2c4ea9a56e2ad24
