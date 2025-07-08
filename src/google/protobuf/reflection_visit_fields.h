@@ -251,7 +251,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
         if ((has_bits[index / 32] & (1u << (index % 32))) == 0) continue;
       } else {
         // Skip if it has default values.
-        if (!reflection->HasFieldSingular(message, field)) continue;
+        if (!reflection->HasFieldNonWeak(message, field)) continue;
       }
       switch (field->type()) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                     \

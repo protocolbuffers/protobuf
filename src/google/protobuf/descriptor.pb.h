@@ -1353,12 +1353,44 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   // accessors -------------------------------------------------------
   enum : int {
+    kLeadingCommentsFieldNumber = 3,
+    kTrailingCommentsFieldNumber = 4,
     kPathFieldNumber = 1,
     kSpanFieldNumber = 2,
     kLeadingDetachedCommentsFieldNumber = 6,
-    kLeadingCommentsFieldNumber = 3,
-    kTrailingCommentsFieldNumber = 4,
   };
+  // optional string leading_comments = 3;
+  bool has_leading_comments() const;
+  void clear_leading_comments() ;
+  const ::std::string& leading_comments() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_leading_comments(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_leading_comments();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_leading_comments();
+  void set_allocated_leading_comments(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_leading_comments() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_leading_comments();
+
+  public:
+  // optional string trailing_comments = 4;
+  bool has_trailing_comments() const;
+  void clear_trailing_comments() ;
+  const ::std::string& trailing_comments() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_trailing_comments(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_trailing_comments();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_trailing_comments();
+  void set_allocated_trailing_comments(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_trailing_comments() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_trailing_comments();
+
+  public:
   // repeated int32 path = 1 [packed = true];
   int path_size() const;
   private:
@@ -1417,38 +1449,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_leading_detached_comments();
 
   public:
-  // optional string leading_comments = 3;
-  bool has_leading_comments() const;
-  void clear_leading_comments() ;
-  const ::std::string& leading_comments() const;
-  template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_leading_comments(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_leading_comments();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_leading_comments();
-  void set_allocated_leading_comments(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_leading_comments() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_leading_comments();
-
-  public:
-  // optional string trailing_comments = 4;
-  bool has_trailing_comments() const;
-  void clear_trailing_comments() ;
-  const ::std::string& trailing_comments() const;
-  template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_trailing_comments(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_trailing_comments();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_trailing_comments();
-  void set_allocated_trailing_comments(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_trailing_comments() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_trailing_comments();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
  private:
   class _Internal;
@@ -1475,13 +1475,13 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
         const SourceCodeInfo_Location& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::ArenaStringPtr leading_comments_;
+    ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
     ::google::protobuf::RepeatedField<::int32_t> path_;
     ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     ::google::protobuf::RepeatedField<::int32_t> span_;
     ::google::protobuf::internal::CachedSize _span_cached_byte_size_;
     ::google::protobuf::RepeatedPtrField<::std::string> leading_detached_comments_;
-    ::google::protobuf::internal::ArenaStringPtr leading_comments_;
-    ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -1655,30 +1655,12 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   // accessors -------------------------------------------------------
   enum : int {
-    kPathFieldNumber = 1,
     kSourceFileFieldNumber = 2,
     kBeginFieldNumber = 3,
     kEndFieldNumber = 4,
     kSemanticFieldNumber = 5,
+    kPathFieldNumber = 1,
   };
-  // repeated int32 path = 1 [packed = true];
-  int path_size() const;
-  private:
-  int _internal_path_size() const;
-
-  public:
-  void clear_path() ;
-  ::int32_t path(int index) const;
-  void set_path(int index, ::int32_t value);
-  void add_path(::int32_t value);
-  const ::google::protobuf::RepeatedField<::int32_t>& path() const;
-  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_path();
-
-  private:
-  const ::google::protobuf::RepeatedField<::int32_t>& _internal_path() const;
-  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_path();
-
-  public:
   // optional string source_file = 2;
   bool has_source_file() const;
   void clear_source_file() ;
@@ -1728,6 +1710,24 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   void _internal_set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value);
 
   public:
+  // repeated int32 path = 1 [packed = true];
+  int path_size() const;
+  private:
+  int _internal_path_size() const;
+
+  public:
+  void clear_path() ;
+  ::int32_t path(int index) const;
+  void set_path(int index, ::int32_t value);
+  void add_path(::int32_t value);
+  const ::google::protobuf::RepeatedField<::int32_t>& path() const;
+  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_path();
+
+  private:
+  const ::google::protobuf::RepeatedField<::int32_t>& _internal_path() const;
+  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_path();
+
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo.Annotation)
  private:
   class _Internal;
@@ -1754,12 +1754,12 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
         const GeneratedCodeInfo_Annotation& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedField<::int32_t> path_;
-    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     ::google::protobuf::internal::ArenaStringPtr source_file_;
     ::int32_t begin_;
     ::int32_t end_;
     int semantic_;
+    ::google::protobuf::RepeatedField<::int32_t> path_;
+    ::google::protobuf::internal::CachedSize _path_cached_byte_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -3809,31 +3809,14 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   // accessors -------------------------------------------------------
   enum : int {
-    kNameFieldNumber = 2,
     kIdentifierValueFieldNumber = 3,
     kStringValueFieldNumber = 7,
     kAggregateValueFieldNumber = 8,
     kPositiveIntValueFieldNumber = 4,
     kNegativeIntValueFieldNumber = 5,
     kDoubleValueFieldNumber = 6,
+    kNameFieldNumber = 2,
   };
-  // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  int name_size() const;
-  private:
-  int _internal_name_size() const;
-
-  public:
-  void clear_name() ;
-  ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL mutable_name(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL mutable_name();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& _internal_name() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL _internal_mutable_name();
-  public:
-  const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
-  ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL add_name();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& name() const;
   // optional string identifier_value = 3;
   bool has_identifier_value() const;
   void clear_identifier_value() ;
@@ -3915,6 +3898,23 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   void _internal_set_double_value(double value);
 
   public:
+  // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
+  int name_size() const;
+  private:
+  int _internal_name_size() const;
+
+  public:
+  void clear_name() ;
+  ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL mutable_name(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL mutable_name();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& _internal_name() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL _internal_mutable_name();
+  public:
+  const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
+  ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL add_name();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& name() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption)
  private:
   class _Internal;
@@ -3941,13 +3941,13 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
         const UninterpretedOption& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
     ::google::protobuf::internal::ArenaStringPtr identifier_value_;
     ::google::protobuf::internal::ArenaStringPtr string_value_;
     ::google::protobuf::internal::ArenaStringPtr aggregate_value_;
     ::uint64_t positive_int_value_;
     ::int64_t negative_int_value_;
     double double_value_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption_NamePart > name_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -4335,8 +4335,9 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
         const SourceCodeInfo& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -4533,8 +4534,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
         const GeneratedCodeInfo& from_msg);
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -4923,27 +4925,10 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 34,
     kDeprecatedFieldNumber = 33,
+    kUninterpretedOptionFieldNumber = 999,
   };
-  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
-  void clear_uninterpreted_option() ;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-  public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 34;
   bool has_features() const;
   void clear_features() ;
@@ -4970,6 +4955,23 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   void _internal_set_deprecated(bool value);
 
   public:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  private:
+  int _internal_uninterpreted_option_size() const;
+
+  public:
+  void clear_uninterpreted_option() ;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -5182,9 +5184,9 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     bool deprecated_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -5342,9 +5344,24 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 1,
+    kUninterpretedOptionFieldNumber = 999,
   };
+  // optional .google.protobuf.FeatureSet features = 1;
+  bool has_features() const;
+  void clear_features() ;
+  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
+  void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
+  ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+
+  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   private:
@@ -5362,21 +5379,6 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
-  // optional .google.protobuf.FeatureSet features = 1;
-  bool has_features() const;
-  void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
-  [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
-  void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
-  ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -5589,8 +5591,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -5769,28 +5771,11 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 35,
     kDeprecatedFieldNumber = 33,
     kIdempotencyLevelFieldNumber = 34,
+    kUninterpretedOptionFieldNumber = 999,
   };
-  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
-  void clear_uninterpreted_option() ;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-  public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 35;
   bool has_features() const;
   void clear_features() ;
@@ -5828,6 +5813,23 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   void _internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value);
 
   public:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  private:
+  int _internal_uninterpreted_option_size() const;
+
+  public:
+  void clear_uninterpreted_option() ;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -6040,10 +6042,10 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     bool deprecated_;
     int idempotency_level_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -6201,31 +6203,14 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 12,
     kMessageSetWireFormatFieldNumber = 1,
     kNoStandardDescriptorAccessorFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
     kMapEntryFieldNumber = 7,
     kDeprecatedLegacyJsonFieldConflictsFieldNumber = 11,
+    kUninterpretedOptionFieldNumber = 999,
   };
-  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
-  void clear_uninterpreted_option() ;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-  public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 12;
   bool has_features() const;
   void clear_features() ;
@@ -6296,6 +6281,23 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
 
   public:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  private:
+  int _internal_uninterpreted_option_size() const;
+
+  public:
+  void clear_uninterpreted_option() ;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -6508,13 +6510,13 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     bool message_set_wire_format_;
     bool no_standard_descriptor_accessor_;
     bool deprecated_;
     bool map_entry_;
     bool deprecated_legacy_json_field_conflicts_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -6693,7 +6695,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUninterpretedOptionFieldNumber = 999,
     kJavaPackageFieldNumber = 1,
     kJavaOuterClassnameFieldNumber = 8,
     kGoPackageFieldNumber = 11,
@@ -6714,24 +6715,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     kJavaStringCheckUtf8FieldNumber = 27,
     kOptimizeForFieldNumber = 9,
     kCcEnableArenasFieldNumber = 31,
+    kUninterpretedOptionFieldNumber = 999,
   };
-  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
-  void clear_uninterpreted_option() ;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-  public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional string java_package = 1;
   bool has_java_package() const;
   void clear_java_package() ;
@@ -7006,6 +6991,23 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   void _internal_set_cc_enable_arenas(bool value);
 
   public:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  private:
+  int _internal_uninterpreted_option_size() const;
+
+  public:
+  void clear_uninterpreted_option() ;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -7218,7 +7220,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::internal::ArenaStringPtr java_package_;
     ::google::protobuf::internal::ArenaStringPtr java_outer_classname_;
     ::google::protobuf::internal::ArenaStringPtr go_package_;
@@ -7239,6 +7240,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     bool java_string_check_utf8_;
     int optimize_for_;
     bool cc_enable_arenas_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -7489,9 +7491,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kTargetsFieldNumber = 19,
-    kEditionDefaultsFieldNumber = 20,
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 21,
     kFeatureSupportFieldNumber = 22,
     kCtypeFieldNumber = 1,
@@ -7503,60 +7502,10 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     kUnverifiedLazyFieldNumber = 15,
     kDebugRedactFieldNumber = 16,
     kRetentionFieldNumber = 17,
+    kTargetsFieldNumber = 19,
+    kEditionDefaultsFieldNumber = 20,
+    kUninterpretedOptionFieldNumber = 999,
   };
-  // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
-  int targets_size() const;
-  private:
-  int _internal_targets_size() const;
-
-  public:
-  void clear_targets() ;
-  public:
-  ::google::protobuf::FieldOptions_OptionTargetType targets(int index) const;
-  void set_targets(int index, ::google::protobuf::FieldOptions_OptionTargetType value);
-  void add_targets(::google::protobuf::FieldOptions_OptionTargetType value);
-  const ::google::protobuf::RepeatedField<int>& targets() const;
-  ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL mutable_targets();
-
-  private:
-  const ::google::protobuf::RepeatedField<int>& _internal_targets() const;
-  ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL _internal_mutable_targets();
-
-  public:
-  // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
-  int edition_defaults_size() const;
-  private:
-  int _internal_edition_defaults_size() const;
-
-  public:
-  void clear_edition_defaults() ;
-  ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL mutable_edition_defaults(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL mutable_edition_defaults();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& _internal_edition_defaults() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL _internal_mutable_edition_defaults();
-  public:
-  const ::google::protobuf::FieldOptions_EditionDefault& edition_defaults(int index) const;
-  ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL add_edition_defaults();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& edition_defaults() const;
-  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
-  void clear_uninterpreted_option() ;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-  public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 21;
   bool has_features() const;
   void clear_features() ;
@@ -7686,6 +7635,59 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   void _internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value);
 
   public:
+  // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
+  int targets_size() const;
+  private:
+  int _internal_targets_size() const;
+
+  public:
+  void clear_targets() ;
+  public:
+  ::google::protobuf::FieldOptions_OptionTargetType targets(int index) const;
+  void set_targets(int index, ::google::protobuf::FieldOptions_OptionTargetType value);
+  void add_targets(::google::protobuf::FieldOptions_OptionTargetType value);
+  const ::google::protobuf::RepeatedField<int>& targets() const;
+  ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL mutable_targets();
+
+  private:
+  const ::google::protobuf::RepeatedField<int>& _internal_targets() const;
+  ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL _internal_mutable_targets();
+
+  public:
+  // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
+  int edition_defaults_size() const;
+  private:
+  int _internal_edition_defaults_size() const;
+
+  public:
+  void clear_edition_defaults() ;
+  ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL mutable_edition_defaults(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL mutable_edition_defaults();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& _internal_edition_defaults() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL _internal_mutable_edition_defaults();
+  public:
+  const ::google::protobuf::FieldOptions_EditionDefault& edition_defaults(int index) const;
+  ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL add_edition_defaults();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& edition_defaults() const;
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  private:
+  int _internal_uninterpreted_option_size() const;
+
+  public:
+  void clear_uninterpreted_option() ;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -7898,9 +7900,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedField<int> targets_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldOptions_EditionDefault > edition_defaults_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE feature_support_;
     int ctype_;
@@ -7912,6 +7911,9 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     bool unverified_lazy_;
     bool debug_redact_;
     int retention_;
+    ::google::protobuf::RepeatedField<int> targets_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldOptions_EditionDefault > edition_defaults_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -8070,27 +8072,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
 
   // accessors -------------------------------------------------------
   enum : int {
-    kDefaultsFieldNumber = 1,
     kMinimumEditionFieldNumber = 4,
     kMaximumEditionFieldNumber = 5,
+    kDefaultsFieldNumber = 1,
   };
-  // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
-  int defaults_size() const;
-  private:
-  int _internal_defaults_size() const;
-
-  public:
-  void clear_defaults() ;
-  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL mutable_defaults(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL mutable_defaults();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& _internal_defaults() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL _internal_mutable_defaults();
-  public:
-  const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& defaults(int index) const;
-  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL add_defaults();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& defaults() const;
   // optional .google.protobuf.Edition minimum_edition = 4;
   bool has_minimum_edition() const;
   void clear_minimum_edition() ;
@@ -8113,6 +8098,23 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   void _internal_set_maximum_edition(::google::protobuf::Edition value);
 
   public:
+  // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
+  int defaults_size() const;
+  private:
+  int _internal_defaults_size() const;
+
+  public:
+  void clear_defaults() ;
+  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL mutable_defaults(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL mutable_defaults();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& _internal_defaults() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL _internal_mutable_defaults();
+  public:
+  const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& defaults(int index) const;
+  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL add_defaults();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& defaults() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults)
  private:
   class _Internal;
@@ -8139,9 +8141,9 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
         const FeatureSetDefaults& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
     int minimum_edition_;
     int maximum_edition_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault > defaults_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -8320,11 +8322,37 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   // accessors -------------------------------------------------------
   enum : int {
-    kDeclarationFieldNumber = 2,
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 50,
     kVerificationFieldNumber = 3,
+    kDeclarationFieldNumber = 2,
+    kUninterpretedOptionFieldNumber = 999,
   };
+  // optional .google.protobuf.FeatureSet features = 50;
+  bool has_features() const;
+  void clear_features() ;
+  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
+  void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
+  ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
+
+  private:
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+
+  public:
+  // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
+  bool has_verification() const;
+  void clear_verification() ;
+  ::google::protobuf::ExtensionRangeOptions_VerificationState verification() const;
+  void set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
+
+  private:
+  ::google::protobuf::ExtensionRangeOptions_VerificationState _internal_verification() const;
+  void _internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
+
+  public:
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
   int declaration_size() const;
   private:
@@ -8359,32 +8387,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
-  // optional .google.protobuf.FeatureSet features = 50;
-  bool has_features() const;
-  void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
-  [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
-  void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
-  ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
-  // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
-  bool has_verification() const;
-  void clear_verification() ;
-  ::google::protobuf::ExtensionRangeOptions_VerificationState verification() const;
-  void set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
-
-  private:
-  ::google::protobuf::ExtensionRangeOptions_VerificationState _internal_verification() const;
-  void _internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -8597,10 +8599,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration > declaration_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     int verification_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::ExtensionRangeOptions_Declaration > declaration_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -8758,29 +8760,12 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 2,
     kFeatureSupportFieldNumber = 4,
     kDeprecatedFieldNumber = 1,
     kDebugRedactFieldNumber = 3,
+    kUninterpretedOptionFieldNumber = 999,
   };
-  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
-  void clear_uninterpreted_option() ;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-  public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 2;
   bool has_features() const;
   void clear_features() ;
@@ -8833,6 +8818,23 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   void _internal_set_debug_redact(bool value);
 
   public:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  private:
+  int _internal_uninterpreted_option_size() const;
+
+  public:
+  void clear_uninterpreted_option() ;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -9045,11 +9047,11 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE feature_support_;
     bool deprecated_;
     bool debug_redact_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -9207,29 +9209,12 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
-    kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 7,
     kAllowAliasFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
     kDeprecatedLegacyJsonFieldConflictsFieldNumber = 6,
+    kUninterpretedOptionFieldNumber = 999,
   };
-  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
-  void clear_uninterpreted_option() ;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-  public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
-  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 7;
   bool has_features() const;
   void clear_features() ;
@@ -9278,6 +9263,23 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
 
   public:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  private:
+  int _internal_uninterpreted_option_size() const;
+
+  public:
+  void clear_uninterpreted_option() ;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL mutable_uninterpreted_option();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -9490,11 +9492,11 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
     ::google::protobuf::internal::ExtensionSet _extensions_;
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
     bool allow_alias_;
     bool deprecated_;
     bool deprecated_legacy_json_field_conflicts_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -11024,27 +11026,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
 
   // accessors -------------------------------------------------------
   enum : int {
-    kMethodFieldNumber = 2,
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 3,
+    kMethodFieldNumber = 2,
   };
-  // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  int method_size() const;
-  private:
-  int _internal_method_size() const;
-
-  public:
-  void clear_method() ;
-  ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL mutable_method(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL mutable_method();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& _internal_method() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_method();
-  public:
-  const ::google::protobuf::MethodDescriptorProto& method(int index) const;
-  ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL add_method();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& method() const;
   // optional string name = 1;
   bool has_name() const;
   void clear_name() ;
@@ -11076,6 +11061,23 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   ::google::protobuf::ServiceOptions* PROTOBUF_NONNULL _internal_mutable_options();
 
   public:
+  // repeated .google.protobuf.MethodDescriptorProto method = 2;
+  int method_size() const;
+  private:
+  int _internal_method_size() const;
+
+  public:
+  void clear_method() ;
+  ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL mutable_method(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL mutable_method();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& _internal_method() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_method();
+  public:
+  const ::google::protobuf::MethodDescriptorProto& method(int index) const;
+  ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL add_method();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& method() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
  private:
   class _Internal;
@@ -11102,9 +11104,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
         const ServiceDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE options_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -11263,13 +11265,55 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   // accessors -------------------------------------------------------
   enum : int {
-    kValueFieldNumber = 2,
-    kReservedRangeFieldNumber = 4,
-    kReservedNameFieldNumber = 5,
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 3,
     kVisibilityFieldNumber = 6,
+    kValueFieldNumber = 2,
+    kReservedRangeFieldNumber = 4,
+    kReservedNameFieldNumber = 5,
   };
+  // optional string name = 1;
+  bool has_name() const;
+  void clear_name() ;
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+
+  public:
+  // optional .google.protobuf.EnumOptions options = 3;
+  bool has_options() const;
+  void clear_options() ;
+  const ::google::protobuf::EnumOptions& options() const;
+  [[nodiscard]] ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE release_options();
+  ::google::protobuf::EnumOptions* PROTOBUF_NONNULL mutable_options();
+  void set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value);
+  ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
+
+  private:
+  const ::google::protobuf::EnumOptions& _internal_options() const;
+  ::google::protobuf::EnumOptions* PROTOBUF_NONNULL _internal_mutable_options();
+
+  public:
+  // optional .google.protobuf.SymbolVisibility visibility = 6;
+  bool has_visibility() const;
+  void clear_visibility() ;
+  ::google::protobuf::SymbolVisibility visibility() const;
+  void set_visibility(::google::protobuf::SymbolVisibility value);
+
+  private:
+  ::google::protobuf::SymbolVisibility _internal_visibility() const;
+  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
+
+  public:
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
   int value_size() const;
   private:
@@ -11326,48 +11370,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
 
   public:
-  // optional string name = 1;
-  bool has_name() const;
-  void clear_name() ;
-  const ::std::string& name() const;
-  template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
-  // optional .google.protobuf.EnumOptions options = 3;
-  bool has_options() const;
-  void clear_options() ;
-  const ::google::protobuf::EnumOptions& options() const;
-  [[nodiscard]] ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE release_options();
-  ::google::protobuf::EnumOptions* PROTOBUF_NONNULL mutable_options();
-  void set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value);
-  ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::EnumOptions& _internal_options() const;
-  ::google::protobuf::EnumOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
-  // optional .google.protobuf.SymbolVisibility visibility = 6;
-  bool has_visibility() const;
-  void clear_visibility() ;
-  ::google::protobuf::SymbolVisibility visibility() const;
-  void set_visibility(::google::protobuf::SymbolVisibility value);
-
-  private:
-  ::google::protobuf::SymbolVisibility _internal_visibility() const;
-  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
   class _Internal;
@@ -11394,12 +11396,12 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
         const EnumDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto_EnumReservedRange > reserved_range_;
-    ::google::protobuf::RepeatedPtrField<::std::string> reserved_name_;
     ::google::protobuf::internal::ArenaStringPtr name_;
     ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE options_;
     int visibility_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto_EnumReservedRange > reserved_range_;
+    ::google::protobuf::RepeatedPtrField<::std::string> reserved_name_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -11559,6 +11561,9 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   // accessors -------------------------------------------------------
   enum : int {
+    kNameFieldNumber = 1,
+    kOptionsFieldNumber = 7,
+    kVisibilityFieldNumber = 11,
     kFieldFieldNumber = 2,
     kNestedTypeFieldNumber = 3,
     kEnumTypeFieldNumber = 4,
@@ -11567,10 +11572,49 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     kOneofDeclFieldNumber = 8,
     kReservedRangeFieldNumber = 9,
     kReservedNameFieldNumber = 10,
-    kNameFieldNumber = 1,
-    kOptionsFieldNumber = 7,
-    kVisibilityFieldNumber = 11,
   };
+  // optional string name = 1;
+  bool has_name() const;
+  void clear_name() ;
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+
+  public:
+  // optional .google.protobuf.MessageOptions options = 7;
+  bool has_options() const;
+  void clear_options() ;
+  const ::google::protobuf::MessageOptions& options() const;
+  [[nodiscard]] ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE release_options();
+  ::google::protobuf::MessageOptions* PROTOBUF_NONNULL mutable_options();
+  void set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value);
+  ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
+
+  private:
+  const ::google::protobuf::MessageOptions& _internal_options() const;
+  ::google::protobuf::MessageOptions* PROTOBUF_NONNULL _internal_mutable_options();
+
+  public:
+  // optional .google.protobuf.SymbolVisibility visibility = 11;
+  bool has_visibility() const;
+  void clear_visibility() ;
+  ::google::protobuf::SymbolVisibility visibility() const;
+  void set_visibility(::google::protobuf::SymbolVisibility value);
+
+  private:
+  ::google::protobuf::SymbolVisibility _internal_visibility() const;
+  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
+
+  public:
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
   int field_size() const;
   private:
@@ -11712,48 +11756,6 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
 
   public:
-  // optional string name = 1;
-  bool has_name() const;
-  void clear_name() ;
-  const ::std::string& name() const;
-  template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
-  // optional .google.protobuf.MessageOptions options = 7;
-  bool has_options() const;
-  void clear_options() ;
-  const ::google::protobuf::MessageOptions& options() const;
-  [[nodiscard]] ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE release_options();
-  ::google::protobuf::MessageOptions* PROTOBUF_NONNULL mutable_options();
-  void set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value);
-  ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::MessageOptions& _internal_options() const;
-  ::google::protobuf::MessageOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
-  // optional .google.protobuf.SymbolVisibility visibility = 11;
-  bool has_visibility() const;
-  void clear_visibility() ;
-  ::google::protobuf::SymbolVisibility visibility() const;
-  void set_visibility(::google::protobuf::SymbolVisibility value);
-
-  private:
-  ::google::protobuf::SymbolVisibility _internal_visibility() const;
-  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
   class _Internal;
@@ -11780,6 +11782,9 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
         const DescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::ArenaStringPtr name_;
+    ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE options_;
+    int visibility_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > nested_type_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
@@ -11788,9 +11793,6 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto > oneof_decl_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ReservedRange > reserved_range_;
     ::google::protobuf::RepeatedPtrField<::std::string> reserved_name_;
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE options_;
-    int visibility_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -11948,6 +11950,12 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   // accessors -------------------------------------------------------
   enum : int {
+    kNameFieldNumber = 1,
+    kPackageFieldNumber = 2,
+    kSyntaxFieldNumber = 12,
+    kOptionsFieldNumber = 8,
+    kSourceCodeInfoFieldNumber = 9,
+    kEditionFieldNumber = 14,
     kDependencyFieldNumber = 3,
     kMessageTypeFieldNumber = 4,
     kEnumTypeFieldNumber = 5,
@@ -11956,13 +11964,96 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     kPublicDependencyFieldNumber = 10,
     kWeakDependencyFieldNumber = 11,
     kOptionDependencyFieldNumber = 15,
-    kNameFieldNumber = 1,
-    kPackageFieldNumber = 2,
-    kSyntaxFieldNumber = 12,
-    kOptionsFieldNumber = 8,
-    kSourceCodeInfoFieldNumber = 9,
-    kEditionFieldNumber = 14,
   };
+  // optional string name = 1;
+  bool has_name() const;
+  void clear_name() ;
+  const ::std::string& name() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_name(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_name();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
+  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+
+  public:
+  // optional string package = 2;
+  bool has_package() const;
+  void clear_package() ;
+  const ::std::string& package() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_package(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_package();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_package();
+  void set_allocated_package(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_package();
+
+  public:
+  // optional string syntax = 12;
+  bool has_syntax() const;
+  void clear_syntax() ;
+  const ::std::string& syntax() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_syntax(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_syntax();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_syntax();
+  void set_allocated_syntax(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_syntax() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_syntax();
+
+  public:
+  // optional .google.protobuf.FileOptions options = 8;
+  bool has_options() const;
+  void clear_options() ;
+  const ::google::protobuf::FileOptions& options() const;
+  [[nodiscard]] ::google::protobuf::FileOptions* PROTOBUF_NULLABLE release_options();
+  ::google::protobuf::FileOptions* PROTOBUF_NONNULL mutable_options();
+  void set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value);
+  ::google::protobuf::FileOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
+
+  private:
+  const ::google::protobuf::FileOptions& _internal_options() const;
+  ::google::protobuf::FileOptions* PROTOBUF_NONNULL _internal_mutable_options();
+
+  public:
+  // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
+  bool has_source_code_info() const;
+  void clear_source_code_info() ;
+  const ::google::protobuf::SourceCodeInfo& source_code_info() const;
+  [[nodiscard]] ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE release_source_code_info();
+  ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL mutable_source_code_info();
+  void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value);
+  void unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value);
+  ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE unsafe_arena_release_source_code_info();
+
+  private:
+  const ::google::protobuf::SourceCodeInfo& _internal_source_code_info() const;
+  ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL _internal_mutable_source_code_info();
+
+  public:
+  // optional .google.protobuf.Edition edition = 14;
+  bool has_edition() const;
+  void clear_edition() ;
+  ::google::protobuf::Edition edition() const;
+  void set_edition(::google::protobuf::Edition value);
+
+  private:
+  ::google::protobuf::Edition _internal_edition() const;
+  void _internal_set_edition(::google::protobuf::Edition value);
+
+  public:
   // repeated string dependency = 3;
   int dependency_size() const;
   private:
@@ -12111,95 +12202,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_option_dependency();
 
   public:
-  // optional string name = 1;
-  bool has_name() const;
-  void clear_name() ;
-  const ::std::string& name() const;
-  template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_name(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_name();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
-  void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
-  // optional string package = 2;
-  bool has_package() const;
-  void clear_package() ;
-  const ::std::string& package() const;
-  template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_package(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_package();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_package();
-  void set_allocated_package(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_package();
-
-  public:
-  // optional string syntax = 12;
-  bool has_syntax() const;
-  void clear_syntax() ;
-  const ::std::string& syntax() const;
-  template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_syntax(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_syntax();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_syntax();
-  void set_allocated_syntax(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_syntax() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_syntax();
-
-  public:
-  // optional .google.protobuf.FileOptions options = 8;
-  bool has_options() const;
-  void clear_options() ;
-  const ::google::protobuf::FileOptions& options() const;
-  [[nodiscard]] ::google::protobuf::FileOptions* PROTOBUF_NULLABLE release_options();
-  ::google::protobuf::FileOptions* PROTOBUF_NONNULL mutable_options();
-  void set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value);
-  ::google::protobuf::FileOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::FileOptions& _internal_options() const;
-  ::google::protobuf::FileOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
-  // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
-  bool has_source_code_info() const;
-  void clear_source_code_info() ;
-  const ::google::protobuf::SourceCodeInfo& source_code_info() const;
-  [[nodiscard]] ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE release_source_code_info();
-  ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL mutable_source_code_info();
-  void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value);
-  void unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value);
-  ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE unsafe_arena_release_source_code_info();
-
-  private:
-  const ::google::protobuf::SourceCodeInfo& _internal_source_code_info() const;
-  ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL _internal_mutable_source_code_info();
-
-  public:
-  // optional .google.protobuf.Edition edition = 14;
-  bool has_edition() const;
-  void clear_edition() ;
-  ::google::protobuf::Edition edition() const;
-  void set_edition(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_edition() const;
-  void _internal_set_edition(::google::protobuf::Edition value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
   class _Internal;
@@ -12226,6 +12228,12 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
         const FileDescriptorProto& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::ArenaStringPtr name_;
+    ::google::protobuf::internal::ArenaStringPtr package_;
+    ::google::protobuf::internal::ArenaStringPtr syntax_;
+    ::google::protobuf::FileOptions* PROTOBUF_NULLABLE options_;
+    ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE source_code_info_;
+    int edition_;
     ::google::protobuf::RepeatedPtrField<::std::string> dependency_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > message_type_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
@@ -12234,12 +12242,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     ::google::protobuf::RepeatedField<::int32_t> public_dependency_;
     ::google::protobuf::RepeatedField<::int32_t> weak_dependency_;
     ::google::protobuf::RepeatedPtrField<::std::string> option_dependency_;
-    ::google::protobuf::internal::ArenaStringPtr name_;
-    ::google::protobuf::internal::ArenaStringPtr package_;
-    ::google::protobuf::internal::ArenaStringPtr syntax_;
-    ::google::protobuf::FileOptions* PROTOBUF_NULLABLE options_;
-    ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE source_code_info_;
-    int edition_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -12626,8 +12628,9 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
         const FileDescriptorSet& from_msg);
     ::google::protobuf::internal::ExtensionSet _extensions_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -12662,6 +12665,7 @@ inline int FileDescriptorSet::file_size() const {
 inline void FileDescriptorSet::clear_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL FileDescriptorSet::mutable_file(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -12670,6 +12674,7 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL FileDescriptorS
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL FileDescriptorSet::mutable_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorSet.file)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_file();
@@ -12683,6 +12688,7 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL FileDescriptorS
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_file()->Add();
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorSet.file)
   return _add;
 }
@@ -12854,11 +12860,13 @@ inline int FileDescriptorProto::dependency_size() const {
 inline void FileDescriptorProto::clear_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.dependency_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000040U;
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::add_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::std::string* _s = _internal_mutable_dependency()->Add();
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.dependency)
   return _s;
 }
@@ -12884,6 +12892,7 @@ inline void FileDescriptorProto::add_dependency(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_dependency(),
                                ::std::forward<Arg_>(value),
                                args... );
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline const ::google::protobuf::RepeatedPtrField<::std::string>& FileDescriptorProto::dependency()
@@ -12893,6 +12902,7 @@ inline const ::google::protobuf::RepeatedPtrField<::std::string>& FileDescriptor
 }
 inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FileDescriptorProto::mutable_dependency() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.dependency)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_dependency();
@@ -12918,6 +12928,7 @@ inline int FileDescriptorProto::public_dependency_size() const {
 inline void FileDescriptorProto::clear_public_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.public_dependency_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000800U;
 }
 inline ::int32_t FileDescriptorProto::public_dependency(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.public_dependency)
@@ -12930,6 +12941,7 @@ inline void FileDescriptorProto::set_public_dependency(int index, ::int32_t valu
 inline void FileDescriptorProto::add_public_dependency(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_public_dependency()->Add(value);
+  _impl_._has_bits_[0] |= 0x00000800U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.public_dependency)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::public_dependency() const
@@ -12939,6 +12951,7 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL FileDescriptorProto::mutable_public_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000800U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.public_dependency)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_public_dependency();
@@ -12964,6 +12977,7 @@ inline int FileDescriptorProto::weak_dependency_size() const {
 inline void FileDescriptorProto::clear_weak_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.weak_dependency_.Clear();
+  _impl_._has_bits_[0] &= ~0x00001000U;
 }
 inline ::int32_t FileDescriptorProto::weak_dependency(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.weak_dependency)
@@ -12976,6 +12990,7 @@ inline void FileDescriptorProto::set_weak_dependency(int index, ::int32_t value)
 inline void FileDescriptorProto::add_weak_dependency(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_weak_dependency()->Add(value);
+  _impl_._has_bits_[0] |= 0x00001000U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.weak_dependency)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::weak_dependency() const
@@ -12985,6 +13000,7 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& FileDescriptorProto::
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL FileDescriptorProto::mutable_weak_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00001000U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.weak_dependency)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_weak_dependency();
@@ -13010,11 +13026,13 @@ inline int FileDescriptorProto::option_dependency_size() const {
 inline void FileDescriptorProto::clear_option_dependency() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.option_dependency_.Clear();
+  _impl_._has_bits_[0] &= ~0x00002000U;
 }
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::add_option_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::std::string* _s = _internal_mutable_option_dependency()->Add();
+  _impl_._has_bits_[0] |= 0x00002000U;
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.option_dependency)
   return _s;
 }
@@ -13040,6 +13058,7 @@ inline void FileDescriptorProto::add_option_dependency(Arg_&& value, Args_... ar
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_option_dependency(),
                                ::std::forward<Arg_>(value),
                                args... );
+  _impl_._has_bits_[0] |= 0x00002000U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.option_dependency)
 }
 inline const ::google::protobuf::RepeatedPtrField<::std::string>& FileDescriptorProto::option_dependency()
@@ -13049,6 +13068,7 @@ inline const ::google::protobuf::RepeatedPtrField<::std::string>& FileDescriptor
 }
 inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 FileDescriptorProto::mutable_option_dependency() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00002000U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.option_dependency)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_option_dependency();
@@ -13074,6 +13094,7 @@ inline int FileDescriptorProto::message_type_size() const {
 inline void FileDescriptorProto::clear_message_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.message_type_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000080U;
 }
 inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::mutable_message_type(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13082,6 +13103,7 @@ inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL FileDescriptorProto
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL FileDescriptorProto::mutable_message_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000080U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.message_type)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_message_type();
@@ -13095,6 +13117,7 @@ inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL FileDescriptorProto
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto* _add = _internal_mutable_message_type()->Add();
+  _impl_._has_bits_[0] |= 0x00000080U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.message_type)
   return _add;
 }
@@ -13124,6 +13147,7 @@ inline int FileDescriptorProto::enum_type_size() const {
 inline void FileDescriptorProto::clear_enum_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_type_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000100U;
 }
 inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::mutable_enum_type(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13132,6 +13156,7 @@ inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL FileDescriptorP
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL FileDescriptorProto::mutable_enum_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000100U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.enum_type)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_enum_type();
@@ -13145,6 +13170,7 @@ inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL FileDescriptorP
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
+  _impl_._has_bits_[0] |= 0x00000100U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.enum_type)
   return _add;
 }
@@ -13174,6 +13200,7 @@ inline int FileDescriptorProto::service_size() const {
 inline void FileDescriptorProto::clear_service() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.service_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000200U;
 }
 inline ::google::protobuf::ServiceDescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::mutable_service(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13182,6 +13209,7 @@ inline ::google::protobuf::ServiceDescriptorProto* PROTOBUF_NONNULL FileDescript
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* PROTOBUF_NONNULL FileDescriptorProto::mutable_service()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000200U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.service)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_service();
@@ -13195,6 +13223,7 @@ inline ::google::protobuf::ServiceDescriptorProto* PROTOBUF_NONNULL FileDescript
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::ServiceDescriptorProto* _add = _internal_mutable_service()->Add();
+  _impl_._has_bits_[0] |= 0x00000200U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.service)
   return _add;
 }
@@ -13224,6 +13253,7 @@ inline int FileDescriptorProto::extension_size() const {
 inline void FileDescriptorProto::clear_extension() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.extension_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000400U;
 }
 inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::mutable_extension(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13232,6 +13262,7 @@ inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL FileDescriptor
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL FileDescriptorProto::mutable_extension()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000400U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileDescriptorProto.extension)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_extension();
@@ -13245,6 +13276,7 @@ inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL FileDescriptor
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
+  _impl_._has_bits_[0] |= 0x00000400U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.extension)
   return _add;
 }
@@ -13861,6 +13893,7 @@ inline int DescriptorProto::field_size() const {
 inline void DescriptorProto::clear_field() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.field_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000008U;
 }
 inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProto::mutable_field(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13869,6 +13902,7 @@ inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProt
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL DescriptorProto::mutable_field()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.field)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_field();
@@ -13882,6 +13916,7 @@ inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProt
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_field()->Add();
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.field)
   return _add;
 }
@@ -13911,6 +13946,7 @@ inline int DescriptorProto::extension_size() const {
 inline void DescriptorProto::clear_extension() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.extension_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000080U;
 }
 inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProto::mutable_extension(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13919,6 +13955,7 @@ inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProt
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL DescriptorProto::mutable_extension()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000080U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_extension();
@@ -13932,6 +13969,7 @@ inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProt
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
+  _impl_._has_bits_[0] |= 0x00000080U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension)
   return _add;
 }
@@ -13961,6 +13999,7 @@ inline int DescriptorProto::nested_type_size() const {
 inline void DescriptorProto::clear_nested_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nested_type_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL DescriptorProto::mutable_nested_type(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -13969,6 +14008,7 @@ inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL DescriptorProto::mu
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL DescriptorProto::mutable_nested_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.nested_type)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_nested_type();
@@ -13982,6 +14022,7 @@ inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL DescriptorProto::ad
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto* _add = _internal_mutable_nested_type()->Add();
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.nested_type)
   return _add;
 }
@@ -14011,6 +14052,7 @@ inline int DescriptorProto::enum_type_size() const {
 inline void DescriptorProto::clear_enum_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_type_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000020U;
 }
 inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL DescriptorProto::mutable_enum_type(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14019,6 +14061,7 @@ inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL DescriptorProto
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL DescriptorProto::mutable_enum_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000020U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.enum_type)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_enum_type();
@@ -14032,6 +14075,7 @@ inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL DescriptorProto
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
+  _impl_._has_bits_[0] |= 0x00000020U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.enum_type)
   return _add;
 }
@@ -14061,6 +14105,7 @@ inline int DescriptorProto::extension_range_size() const {
 inline void DescriptorProto::clear_extension_range() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.extension_range_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000040U;
 }
 inline ::google::protobuf::DescriptorProto_ExtensionRange* PROTOBUF_NONNULL DescriptorProto::mutable_extension_range(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14069,6 +14114,7 @@ inline ::google::protobuf::DescriptorProto_ExtensionRange* PROTOBUF_NONNULL Desc
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* PROTOBUF_NONNULL DescriptorProto::mutable_extension_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.extension_range)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_extension_range();
@@ -14082,6 +14128,7 @@ inline ::google::protobuf::DescriptorProto_ExtensionRange* PROTOBUF_NONNULL Desc
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto_ExtensionRange* _add = _internal_mutable_extension_range()->Add();
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension_range)
   return _add;
 }
@@ -14111,6 +14158,7 @@ inline int DescriptorProto::oneof_decl_size() const {
 inline void DescriptorProto::clear_oneof_decl() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.oneof_decl_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000100U;
 }
 inline ::google::protobuf::OneofDescriptorProto* PROTOBUF_NONNULL DescriptorProto::mutable_oneof_decl(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14119,6 +14167,7 @@ inline ::google::protobuf::OneofDescriptorProto* PROTOBUF_NONNULL DescriptorProt
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* PROTOBUF_NONNULL DescriptorProto::mutable_oneof_decl()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000100U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.oneof_decl)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_oneof_decl();
@@ -14132,6 +14181,7 @@ inline ::google::protobuf::OneofDescriptorProto* PROTOBUF_NONNULL DescriptorProt
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::OneofDescriptorProto* _add = _internal_mutable_oneof_decl()->Add();
+  _impl_._has_bits_[0] |= 0x00000100U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.oneof_decl)
   return _add;
 }
@@ -14259,6 +14309,7 @@ inline int DescriptorProto::reserved_range_size() const {
 inline void DescriptorProto::clear_reserved_range() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_range_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000200U;
 }
 inline ::google::protobuf::DescriptorProto_ReservedRange* PROTOBUF_NONNULL DescriptorProto::mutable_reserved_range(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14267,6 +14318,7 @@ inline ::google::protobuf::DescriptorProto_ReservedRange* PROTOBUF_NONNULL Descr
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* PROTOBUF_NONNULL DescriptorProto::mutable_reserved_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000200U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_range)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_range();
@@ -14280,6 +14332,7 @@ inline ::google::protobuf::DescriptorProto_ReservedRange* PROTOBUF_NONNULL Descr
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::DescriptorProto_ReservedRange* _add = _internal_mutable_reserved_range()->Add();
+  _impl_._has_bits_[0] |= 0x00000200U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_range)
   return _add;
 }
@@ -14309,11 +14362,13 @@ inline int DescriptorProto::reserved_name_size() const {
 inline void DescriptorProto::clear_reserved_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_name_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000400U;
 }
 inline ::std::string* PROTOBUF_NONNULL DescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::std::string* _s = _internal_mutable_reserved_name()->Add();
+  _impl_._has_bits_[0] |= 0x00000400U;
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.DescriptorProto.reserved_name)
   return _s;
 }
@@ -14339,6 +14394,7 @@ inline void DescriptorProto::add_reserved_name(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_reserved_name(),
                                ::std::forward<Arg_>(value),
                                args... );
+  _impl_._has_bits_[0] |= 0x00000400U;
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<::std::string>& DescriptorProto::reserved_name()
@@ -14348,6 +14404,7 @@ inline const ::google::protobuf::RepeatedPtrField<::std::string>& DescriptorProt
 }
 inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 DescriptorProto::mutable_reserved_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000400U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_name)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_name();
@@ -14634,6 +14691,7 @@ inline int ExtensionRangeOptions::uninterpreted_option_size() const {
 inline void ExtensionRangeOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000008U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ExtensionRangeOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14642,6 +14700,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ExtensionRangeO
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL ExtensionRangeOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -14655,6 +14714,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ExtensionRangeO
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
   return _add;
 }
@@ -14684,6 +14744,7 @@ inline int ExtensionRangeOptions::declaration_size() const {
 inline void ExtensionRangeOptions::clear_declaration() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.declaration_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000004U;
 }
 inline ::google::protobuf::ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL ExtensionRangeOptions::mutable_declaration(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -14692,6 +14753,7 @@ inline ::google::protobuf::ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL E
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* PROTOBUF_NONNULL ExtensionRangeOptions::mutable_declaration()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.declaration)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_declaration();
@@ -14705,6 +14767,7 @@ inline ::google::protobuf::ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL E
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::ExtensionRangeOptions_Declaration* _add = _internal_mutable_declaration()->Add();
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.declaration)
   return _add;
 }
@@ -15760,6 +15823,7 @@ inline int EnumDescriptorProto::value_size() const {
 inline void EnumDescriptorProto::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000008U;
 }
 inline ::google::protobuf::EnumValueDescriptorProto* PROTOBUF_NONNULL EnumDescriptorProto::mutable_value(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15768,6 +15832,7 @@ inline ::google::protobuf::EnumValueDescriptorProto* PROTOBUF_NONNULL EnumDescri
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* PROTOBUF_NONNULL EnumDescriptorProto::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.value)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_value();
@@ -15781,6 +15846,7 @@ inline ::google::protobuf::EnumValueDescriptorProto* PROTOBUF_NONNULL EnumDescri
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumValueDescriptorProto* _add = _internal_mutable_value()->Add();
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.value)
   return _add;
 }
@@ -15908,6 +15974,7 @@ inline int EnumDescriptorProto::reserved_range_size() const {
 inline void EnumDescriptorProto::clear_reserved_range() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_range_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL EnumDescriptorProto::mutable_reserved_range(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -15916,6 +15983,7 @@ inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNU
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* PROTOBUF_NONNULL EnumDescriptorProto::mutable_reserved_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_range)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_range();
@@ -15929,6 +15997,7 @@ inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNU
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::EnumDescriptorProto_EnumReservedRange* _add = _internal_mutable_reserved_range()->Add();
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_range)
   return _add;
 }
@@ -15958,11 +16027,13 @@ inline int EnumDescriptorProto::reserved_name_size() const {
 inline void EnumDescriptorProto::clear_reserved_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.reserved_name_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000020U;
 }
 inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::std::string* _s = _internal_mutable_reserved_name()->Add();
+  _impl_._has_bits_[0] |= 0x00000020U;
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
   return _s;
 }
@@ -15988,6 +16059,7 @@ inline void EnumDescriptorProto::add_reserved_name(Arg_&& value, Args_... args) 
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_reserved_name(),
                                ::std::forward<Arg_>(value),
                                args... );
+  _impl_._has_bits_[0] |= 0x00000020U;
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline const ::google::protobuf::RepeatedPtrField<::std::string>& EnumDescriptorProto::reserved_name()
@@ -15997,6 +16069,7 @@ inline const ::google::protobuf::RepeatedPtrField<::std::string>& EnumDescriptor
 }
 inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 EnumDescriptorProto::mutable_reserved_name() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000020U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumDescriptorProto.reserved_name)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_reserved_name();
@@ -16325,6 +16398,7 @@ inline int ServiceDescriptorProto::method_size() const {
 inline void ServiceDescriptorProto::clear_method() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.method_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000004U;
 }
 inline ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL ServiceDescriptorProto::mutable_method(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -16333,6 +16407,7 @@ inline ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL ServiceDescri
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL ServiceDescriptorProto::mutable_method()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceDescriptorProto.method)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_method();
@@ -16346,6 +16421,7 @@ inline ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL ServiceDescri
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::MethodDescriptorProto* _add = _internal_mutable_method()->Add();
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceDescriptorProto.method)
   return _add;
 }
@@ -17885,6 +17961,7 @@ inline int FileOptions::uninterpreted_option_size() const {
 inline void FileOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00100000U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FileOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -17893,6 +17970,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FileOptions::mu
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL FileOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00100000U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FileOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -17906,6 +17984,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FileOptions::ad
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00100000U;
   // @@protoc_insertion_point(field_add:google.protobuf.FileOptions.uninterpreted_option)
   return _add;
 }
@@ -18177,6 +18256,7 @@ inline int MessageOptions::uninterpreted_option_size() const {
 inline void MessageOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000040U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MessageOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -18185,6 +18265,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MessageOptions:
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL MessageOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MessageOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -18198,6 +18279,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MessageOptions:
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_add:google.protobuf.MessageOptions.uninterpreted_option)
   return _add;
 }
@@ -18762,6 +18844,7 @@ inline int FieldOptions::targets_size() const {
 inline void FieldOptions::clear_targets() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.targets_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000800U;
 }
 inline ::google::protobuf::FieldOptions_OptionTargetType FieldOptions::targets(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.targets)
@@ -18780,6 +18863,7 @@ inline void FieldOptions::add_targets(::google::protobuf::FieldOptions_OptionTar
                                               value, ::google::protobuf::FieldOptions_OptionTargetType_internal_data_));
                                           ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_targets()->Add(value);
+  _impl_._has_bits_[0] |= 0x00000800U;
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.targets)
 }
 inline const ::google::protobuf::RepeatedField<int>& FieldOptions::targets() const
@@ -18789,6 +18873,7 @@ inline const ::google::protobuf::RepeatedField<int>& FieldOptions::targets() con
 }
 inline ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL FieldOptions::mutable_targets()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000800U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.targets)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_targets();
@@ -18814,6 +18899,7 @@ inline int FieldOptions::edition_defaults_size() const {
 inline void FieldOptions::clear_edition_defaults() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_defaults_.Clear();
+  _impl_._has_bits_[0] &= ~0x00001000U;
 }
 inline ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL FieldOptions::mutable_edition_defaults(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -18822,6 +18908,7 @@ inline ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL FieldOp
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL FieldOptions::mutable_edition_defaults()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00001000U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.edition_defaults)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_edition_defaults();
@@ -18835,6 +18922,7 @@ inline ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL FieldOp
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FieldOptions_EditionDefault* _add = _internal_mutable_edition_defaults()->Add();
+  _impl_._has_bits_[0] |= 0x00001000U;
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.edition_defaults)
   return _add;
 }
@@ -19060,6 +19148,7 @@ inline int FieldOptions::uninterpreted_option_size() const {
 inline void FieldOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00002000U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FieldOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19068,6 +19157,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FieldOptions::m
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL FieldOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00002000U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FieldOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -19081,6 +19171,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FieldOptions::a
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00002000U;
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.uninterpreted_option)
   return _add;
 }
@@ -19212,6 +19303,7 @@ inline int OneofOptions::uninterpreted_option_size() const {
 inline void OneofOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000002U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL OneofOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19220,6 +19312,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL OneofOptions::m
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL OneofOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000002U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.OneofOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -19233,6 +19326,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL OneofOptions::a
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00000002U;
   // @@protoc_insertion_point(field_add:google.protobuf.OneofOptions.uninterpreted_option)
   return _add;
 }
@@ -19448,6 +19542,7 @@ inline int EnumOptions::uninterpreted_option_size() const {
 inline void EnumOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19456,6 +19551,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumOptions::mu
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL EnumOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -19469,6 +19565,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumOptions::ad
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_add:google.protobuf.EnumOptions.uninterpreted_option)
   return _add;
 }
@@ -19754,6 +19851,7 @@ inline int EnumValueOptions::uninterpreted_option_size() const {
 inline void EnumValueOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumValueOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19762,6 +19860,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumValueOption
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL EnumValueOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.EnumValueOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -19775,6 +19874,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumValueOption
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValueOptions.uninterpreted_option)
   return _add;
 }
@@ -19934,6 +20034,7 @@ inline int ServiceOptions::uninterpreted_option_size() const {
 inline void ServiceOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000004U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ServiceOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -19942,6 +20043,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ServiceOptions:
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL ServiceOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ServiceOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -19955,6 +20057,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ServiceOptions:
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceOptions.uninterpreted_option)
   return _add;
 }
@@ -20145,6 +20248,7 @@ inline int MethodOptions::uninterpreted_option_size() const {
 inline void MethodOptions::clear_uninterpreted_option() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.uninterpreted_option_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000008U;
 }
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MethodOptions::mutable_uninterpreted_option(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -20153,6 +20257,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MethodOptions::
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL MethodOptions::mutable_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.MethodOptions.uninterpreted_option)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_uninterpreted_option();
@@ -20166,6 +20271,7 @@ inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MethodOptions::
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_add:google.protobuf.MethodOptions.uninterpreted_option)
   return _add;
 }
@@ -20300,6 +20406,7 @@ inline int UninterpretedOption::name_size() const {
 inline void UninterpretedOption::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000040U;
 }
 inline ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL UninterpretedOption::mutable_name(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -20308,6 +20415,7 @@ inline ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL Uninte
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL UninterpretedOption::mutable_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.UninterpretedOption.name)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_name();
@@ -20321,6 +20429,7 @@ inline ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL Uninte
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::UninterpretedOption_NamePart* _add = _internal_mutable_name()->Add();
+  _impl_._has_bits_[0] |= 0x00000040U;
   // @@protoc_insertion_point(field_add:google.protobuf.UninterpretedOption.name)
   return _add;
 }
@@ -21132,6 +21241,7 @@ inline int FeatureSetDefaults::defaults_size() const {
 inline void FeatureSetDefaults::clear_defaults() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.defaults_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000004U;
 }
 inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL FeatureSetDefaults::mutable_defaults(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -21140,6 +21250,7 @@ inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL FeatureSetDefaults::mutable_defaults()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.FeatureSetDefaults.defaults)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_defaults();
@@ -21153,6 +21264,7 @@ inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* _add = _internal_mutable_defaults()->Add();
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_add:google.protobuf.FeatureSetDefaults.defaults)
   return _add;
 }
@@ -21248,6 +21360,7 @@ inline int SourceCodeInfo_Location::path_size() const {
 inline void SourceCodeInfo_Location::clear_path() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.path_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000004U;
 }
 inline ::int32_t SourceCodeInfo_Location::path(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.path)
@@ -21260,6 +21373,7 @@ inline void SourceCodeInfo_Location::set_path(int index, ::int32_t value) {
 inline void SourceCodeInfo_Location::add_path(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_path()->Add(value);
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.path)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::path() const
@@ -21269,6 +21383,7 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Locati
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_path()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000004U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.path)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_path();
@@ -21294,6 +21409,7 @@ inline int SourceCodeInfo_Location::span_size() const {
 inline void SourceCodeInfo_Location::clear_span() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.span_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000008U;
 }
 inline ::int32_t SourceCodeInfo_Location::span(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceCodeInfo.Location.span)
@@ -21306,6 +21422,7 @@ inline void SourceCodeInfo_Location::set_span(int index, ::int32_t value) {
 inline void SourceCodeInfo_Location::add_span(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_span()->Add(value);
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.span)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Location::span() const
@@ -21315,6 +21432,7 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& SourceCodeInfo_Locati
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL SourceCodeInfo_Location::mutable_span()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000008U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.span)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_span();
@@ -21478,11 +21596,13 @@ inline int SourceCodeInfo_Location::leading_detached_comments_size() const {
 inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.leading_detached_comments_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::add_leading_detached_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::std::string* _s = _internal_mutable_leading_detached_comments()->Add();
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _s;
 }
@@ -21508,6 +21628,7 @@ inline void SourceCodeInfo_Location::add_leading_detached_comments(Arg_&& value,
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_leading_detached_comments(),
                                ::std::forward<Arg_>(value),
                                args... );
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline const ::google::protobuf::RepeatedPtrField<::std::string>& SourceCodeInfo_Location::leading_detached_comments()
@@ -21517,6 +21638,7 @@ inline const ::google::protobuf::RepeatedPtrField<::std::string>& SourceCodeInfo
 }
 inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 SourceCodeInfo_Location::mutable_leading_detached_comments() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_leading_detached_comments();
@@ -21546,6 +21668,7 @@ inline int SourceCodeInfo::location_size() const {
 inline void SourceCodeInfo::clear_location() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.location_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline ::google::protobuf::SourceCodeInfo_Location* PROTOBUF_NONNULL SourceCodeInfo::mutable_location(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -21554,6 +21677,7 @@ inline ::google::protobuf::SourceCodeInfo_Location* PROTOBUF_NONNULL SourceCodeI
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* PROTOBUF_NONNULL SourceCodeInfo::mutable_location()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.SourceCodeInfo.location)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_location();
@@ -21567,6 +21691,7 @@ inline ::google::protobuf::SourceCodeInfo_Location* PROTOBUF_NONNULL SourceCodeI
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::SourceCodeInfo_Location* _add = _internal_mutable_location()->Add();
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.location)
   return _add;
 }
@@ -21600,6 +21725,7 @@ inline int GeneratedCodeInfo_Annotation::path_size() const {
 inline void GeneratedCodeInfo_Annotation::clear_path() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.path_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000010U;
 }
 inline ::int32_t GeneratedCodeInfo_Annotation::path(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.GeneratedCodeInfo.Annotation.path)
@@ -21612,6 +21738,7 @@ inline void GeneratedCodeInfo_Annotation::set_path(int index, ::int32_t value) {
 inline void GeneratedCodeInfo_Annotation::add_path(::int32_t value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _internal_mutable_path()->Add(value);
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.Annotation.path)
 }
 inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Annotation::path() const
@@ -21621,6 +21748,7 @@ inline const ::google::protobuf::RepeatedField<::int32_t>& GeneratedCodeInfo_Ann
 }
 inline ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::mutable_path()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000010U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.Annotation.path)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_path();
@@ -21806,6 +21934,7 @@ inline int GeneratedCodeInfo::annotation_size() const {
 inline void GeneratedCodeInfo::clear_annotation() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.annotation_.Clear();
+  _impl_._has_bits_[0] &= ~0x00000001U;
 }
 inline ::google::protobuf::GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL GeneratedCodeInfo::mutable_annotation(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -21814,6 +21943,7 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL Genera
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* PROTOBUF_NONNULL GeneratedCodeInfo::mutable_annotation()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.GeneratedCodeInfo.annotation)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_annotation();
@@ -21827,6 +21957,7 @@ inline ::google::protobuf::GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL Genera
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::GeneratedCodeInfo_Annotation* _add = _internal_mutable_annotation()->Add();
+  _impl_._has_bits_[0] |= 0x00000001U;
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.annotation)
   return _add;
 }
