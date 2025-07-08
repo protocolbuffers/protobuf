@@ -82,6 +82,7 @@ class GeneratedMessageReflectionTestHelper {
 namespace {
 
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Pointee;
 using ::testing::Property;
 
@@ -1800,6 +1801,32 @@ TEST(GeneratedMessageReflection, ListFieldsSorted) {
                           Pointee(Property(&FieldDescriptor::number, 5)),
                           Pointee(Property(&FieldDescriptor::number, 50)),
                           Pointee(Property(&FieldDescriptor::number, 101))));
+}
+
+TEST(GeneratedMessageReflection, ListFieldsEmptyRepeated) {
+  unittest::TestAllTypes msg;
+  const Reflection* reflection = msg.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+
+  msg.mutable_repeated_bool();
+  reflection->ListFields(msg, &fields);
+  EXPECT_THAT(fields, IsEmpty());
+
+  msg.Clear();
+  reflection->GetMutableRepeatedFieldRef<bool>(
+      &msg, msg.GetDescriptor()->FindFieldByName("repeated_bool"));
+  reflection->ListFields(msg, &fields);
+  EXPECT_THAT(fields, IsEmpty());
+}
+
+TEST(GeneratedMessageReflection, ListFieldsEmptyMap) {
+  unittest::TestMap msg;
+  const Reflection* reflection = msg.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+
+  msg.mutable_map_int32_int32();
+  reflection->ListFields(msg, &fields);
+  EXPECT_THAT(fields, IsEmpty());
 }
 
 TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {

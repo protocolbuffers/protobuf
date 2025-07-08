@@ -2784,7 +2784,7 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   EXPECT_TRUE(to.ParseFromString(data));
   EXPECT_EQ(0, to.unknown_map_field().size());
   EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
-  EXPECT_EQ(1, to.known_map_field().size());
+  ASSERT_EQ(1, to.known_map_field().size());
   EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 
   data.clear();
@@ -2792,9 +2792,9 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   to.SerializeToString(&data);
   EXPECT_TRUE(from.ParseFromString(data));
   EXPECT_EQ(0, from.GetReflection()->GetUnknownFields(from).field_count());
-  EXPECT_EQ(1, from.known_map_field().size());
+  ASSERT_EQ(1, from.known_map_field().size());
   EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_FOO, from.known_map_field().at(0));
-  EXPECT_EQ(1, from.unknown_map_field().size());
+  ASSERT_EQ(1, from.unknown_map_field().size());
   EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_EXTRA, from.unknown_map_field().at(0));
 
   // Test the same behavior with the reflection based parser.
@@ -2808,7 +2808,7 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
 
   EXPECT_EQ(0, to.unknown_map_field().size());
   EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
-  EXPECT_EQ(1, to.known_map_field().size());
+  ASSERT_EQ(1, to.known_map_field().size());
   EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
 }
 

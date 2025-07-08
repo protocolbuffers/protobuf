@@ -3300,9 +3300,9 @@ INSTANTIATE_TEST_SUITE_P(
                                 }
                            )pb",
                            /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                                /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
+                               /*expected_has_hasbit=*/true,
                            }},
         // Test case: proto3 singular fields
         HasHasbitTestParam{R"pb(name: 'foo.proto'
@@ -3361,9 +3361,9 @@ INSTANTIATE_TEST_SUITE_P(
                                 }
                            )pb",
                            /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                                /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
+                               /*expected_has_hasbit=*/true,
                            }},
         // Test case: proto2 extension fields.
         // Note that extension fields don't have hasbits.
@@ -3510,9 +3510,9 @@ INSTANTIATE_TEST_SUITE_P(
                                 }
                            )pb",
                            /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
+                               /*expected_hasbitmode=*/HasbitMode::kHintHasbit,
                                /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
+                               /*expected_has_hasbit=*/true,
                            }},
         // Test case: extension fields.
         // Note that extension fields don't have hasbits.
