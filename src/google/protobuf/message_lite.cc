@@ -292,6 +292,8 @@ template bool MergeFromImpl<false>(BoundedZCIS input, MessageLite* msg,
 template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
                                   const internal::TcParseTableBase* tc_table,
                                   MessageLite::ParseFlags parse_flags);
+
+
 }  // namespace internal
 
 class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
