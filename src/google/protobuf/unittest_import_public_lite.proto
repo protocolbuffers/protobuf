@@ -7,7 +7,7 @@
 
 // Author: liujisi@google.com (Pherl Liu)
 
-edition = "2023";
+edition = "2024";
 
 package proto2_unittest_import;
 
