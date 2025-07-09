@@ -187,7 +187,6 @@ PROTOBUF_MAVEN_ARTIFACTS = [
 
 protobuf_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 protobuf_maven.install(
-    name = "protobuf_maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     lock_file = "//:maven_install.json",
     repositories = [
@@ -195,7 +194,9 @@ protobuf_maven.install(
         "https://repo.maven.apache.org/maven2",
     ],
 )
-use_repo(protobuf_maven, "protobuf_maven")
+# Use the default "maven" namespace because protobuf java targets are exposed to users
+# See https://github.com/protocolbuffers/protobuf/issues/21177
+use_repo(protobuf_maven, protobuf_maven="maven")
 
 # Temporarily pin transitive dependency for https://github.com/bazelbuild/bazel/issues/24426
 bazel_dep(name = "re2", version = "2024-07-02.bcr.1")
@@ -203,7 +204,6 @@ bazel_dep(name = "re2", version = "2024-07-02.bcr.1")
 # Development dependencies
 protobuf_maven_dev = use_extension("@rules_jvm_external//:extensions.bzl", "maven", dev_dependency = True)
 protobuf_maven_dev.install(
-    name = "protobuf_maven_dev",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS + [
         "com.google.caliper:caliper:1.0-beta-3",
         "com.google.guava:guava-testlib:32.0.1-jre",
@@ -220,7 +220,7 @@ protobuf_maven_dev.install(
         "https://repo.maven.apache.org/maven2",
     ],
 )
-use_repo(protobuf_maven_dev, "protobuf_maven_dev")
+use_repo(protobuf_maven_dev, protobuf_maven_dev="maven")
 
 bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)
 bazel_dep(name = "rules_buf", version = "0.3.0", dev_dependency = True)
