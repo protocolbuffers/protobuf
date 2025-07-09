@@ -76,7 +76,7 @@ rules_jvm_external_setup()
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
-    name = "protobuf_maven",
+    name = "maven",
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     repositories = [
         "https://repo1.maven.org/maven2",
