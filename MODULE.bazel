@@ -177,6 +177,7 @@ crate.spec(
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
+# Keep this list minimal; these dependencies will be part of the common `maven` install and could affect end-user projects.
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
