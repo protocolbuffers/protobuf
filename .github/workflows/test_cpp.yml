@@ -440,11 +440,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
-      # TODO: b/426584168 - Remove this workaround after the GitHub runners are fixed
-      - name: Upgrade LLVM on Windows
-        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
-        shell: bash
-        run: choco upgrade llvm
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v4
@@ -512,12 +507,6 @@ jobs:
         with:
           arch: ${{ matrix.windows-arch || 'x64' }}
           vsversion: ${{ matrix.vsversion }}
-
-      # TODO: b/426584168 - Remove this workaround after the GitHub runners are fixed
-      - name: Upgrade LLVM on Windows
-        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
-        shell: bash
-        run: choco upgrade llvm
 
       - name: Setup sccache
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
