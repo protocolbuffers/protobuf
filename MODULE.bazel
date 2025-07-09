@@ -130,9 +130,6 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 [
     python.toolchain(
-        # Disable root warning for .pyc cache misses since CI runs as root.
-        # See https://github.com/bazelbuild/rules_python/pull/713
-        ignore_root_user_error = True,
         is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
         python_version = python_version,
     )
