@@ -15,13 +15,13 @@ import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -41,8 +41,8 @@ public final class TextFormat {
   private static final String DEBUG_STRING_SILENT_MARKER = " \t ";
   private static final String ENABLE_INSERT_SILENT_MARKER_ENV_NAME =
       "SILENT_MARKER_INSERTION_ENABLED";
-  private static final boolean ENABLE_INSERT_SILENT_MARKER =
-      "true".equals(System.getenv(ENABLE_INSERT_SILENT_MARKER_ENV_NAME));
+  private static final boolean ENABLE_INSERT_SILENT_MARKER = true;
+  private static final boolean ENABLE_TRACING = true;
 
   private static final String REDACTED_MARKER = "[REDACTED]";
 
@@ -374,6 +374,51 @@ public final class TextFormat {
       print(message, output, FieldReporterLevel.PRINT);
     }
 
+    /** Returns true if the frame is under the given prefix. */
+    @SuppressWarnings("Java8ApiChecker")
+    private static boolean filterFramebyPrefix(StackWalker.StackFrame frame, String prefix) {
+      String className = frame.getClassName();
+      return className.startsWith(prefix);
+    }
+
+    /** Returns true if the frame is from Protobuf. */
+    @SuppressWarnings("Java8ApiChecker")
+    private static boolean isProtobufFrame(StackWalker.StackFrame frame) {
+      return filterFramebyPrefix(frame, PROTOBUF_PACKAGE_NAME);
+    }
+
+    @SuppressWarnings("Java8ApiChecker")
+    private static String getStringifiedFrame(StackWalker.StackFrame frame) {
+      String fileName = frame.getFileName();
+      int lineNumber = frame.getLineNumber();
+      if (fileName == null || lineNumber <= 0) {
+        fileName = "OrreryNonExistingFile.java";
+        lineNumber = 1000;
+      }
+      StackTraceElement element = frame.toStackTraceElement();
+      String className = element.getClassName();
+      String methodName = element.getMethodName();
+      if (className == null || methodName == null || className.isEmpty() || methodName.isEmpty()) {
+        className = "OrreryNonExistingClass";
+        methodName = "OrreryNonExistingMethod";
+      }
+      return String.format("%s!!!%s(%s:%d)", className, methodName, fileName, lineNumber);
+    }
+
+    /** Get the caller of Protobuf toString() */
+    @SuppressWarnings("Java8ApiChecker")
+    static String getCallerOfProtobufToString() {
+      return "orrerytrace@"
+          + StackWalker.getInstance()
+              .walk(
+                  f ->
+                      f.filter(s -> !isProtobufFrame(s))
+                          .map(frame -> getStringifiedFrame(frame) + "<-")
+                          .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                          .toString())
+          + "@@@@";
+    }
+
     void print(final MessageOrBuilder message, final Appendable output, FieldReporterLevel level)
         throws IOException {
       TextGenerator generator =
@@ -383,6 +428,11 @@ public final class TextFormat {
               message.getDescriptorForType(),
               level,
               this.insertSilentMarker);
+      if (this.insertSilentMarker && ENABLE_TRACING) {
+        logger.info(
+            "#orrerytype=" + message.getClass().getName() + "@@@@" + getCallerOfProtobufToString());
+      }
+
       print(message, generator);
     }
 
