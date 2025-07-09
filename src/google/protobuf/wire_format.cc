@@ -23,6 +23,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"

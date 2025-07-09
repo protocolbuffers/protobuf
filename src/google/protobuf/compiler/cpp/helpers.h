@@ -508,7 +508,8 @@ bool HasEnumDefinitions(const FileDescriptor* file);
 bool HasV2MessageTable(const FileDescriptor* file, const Options& options);
 bool HasV2ParseTable(const FileDescriptor* file, const Options& options);
 
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor);
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
+                                const Options& options);
 
 // Returns true if a message (descriptor) can have v2 table.
 bool IsV2EnabledForMessage(const Descriptor* descriptor,

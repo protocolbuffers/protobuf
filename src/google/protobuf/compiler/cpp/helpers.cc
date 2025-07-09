@@ -1378,7 +1378,9 @@ bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
   return false;
 }
 
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor) {
+
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
+                                const Options& options) {
   return false;
 }
 

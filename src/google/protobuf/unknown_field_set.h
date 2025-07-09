@@ -46,8 +46,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class InternalMetadata;           // metadata_lite.h
-class WireFormat;                 // wire_format.h
+class InternalMetadata;  // metadata_lite.h
+class WireFormat;        // wire_format.h
 class MessageSetFieldSkipperUsingCord;
 // extension_set_heavy.cc
 class UnknownFieldParserHelper;
@@ -55,7 +55,7 @@ struct UnknownFieldSetTestPeer;
 
 }  // namespace internal
 
-class Message;       // message.h
+class Message;  // message.h
 
 // Represents one field in an UnknownFieldSet.
 class PROTOBUF_EXPORT UnknownField {
@@ -243,6 +243,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   friend internal::WireFormat;
   friend internal::UnknownFieldParserHelper;
   friend internal::UnknownFieldSetTestPeer;
+  friend internal::v2::TableDrivenParse;
 
   std::string* AddLengthDelimited(int number);
 
@@ -278,6 +279,18 @@ class PROTOBUF_EXPORT UnknownFieldSet {
     return MergeFromCodedStream(&coded_stream);
   }
 
+  absl::string_view V2Data() const {
+    return v2_data_ ? *v2_data_ : absl::string_view{};
+  }
+
+  std::string* MutableV2Data() {
+    if (!v2_data_) {
+      v2_data_ = Arena::Create<std::string>(arena());
+    }
+    return v2_data_;
+  }
+
+  std::string* v2_data_ = nullptr;
   RepeatedField<UnknownField> fields_;
 };
 
@@ -305,7 +318,10 @@ const char* UnknownFieldParse(uint64_t tag, UnknownFieldSet* unknown,
 
 constexpr UnknownFieldSet::UnknownFieldSet() = default;
 
-inline UnknownFieldSet::~UnknownFieldSet() { Clear(); }
+inline UnknownFieldSet::~UnknownFieldSet() {
+  Clear();
+  if (arena() == nullptr) delete v2_data_;
+}
 
 inline const UnknownFieldSet& UnknownFieldSet::default_instance() {
   PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT static const UnknownFieldSet
@@ -319,6 +335,7 @@ inline void UnknownFieldSet::Clear() {
   if (!fields_.empty()) {
     ClearFallback();
   }
+  if (v2_data_ != nullptr) v2_data_->clear();
 }
 
 inline bool UnknownFieldSet::empty() const { return fields_.empty(); }
