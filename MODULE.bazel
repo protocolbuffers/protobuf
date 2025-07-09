@@ -127,34 +127,19 @@ SUPPORTED_PYTHON_VERSIONS = [
 
 # TODO: Support hermetic / system python in bzlmod.
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-
-[
-    python.toolchain(
-        # Disable root warning for .pyc cache misses since CI runs as root.
-        # See https://github.com/bazelbuild/rules_python/pull/713
-        ignore_root_user_error = True,
-        is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
-        python_version = python_version,
-    )
-    for python_version in SUPPORTED_PYTHON_VERSIONS
-]
-
-use_repo(
-    python,
-    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+python.toolchain(
+    ignore_root_user_error = True,
+    is_default = True,
+    python_version = "3.12",
 )
+use_repo(python, "python_3_12")
 
-pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
-
-[
-    pip.parse(
-        hub_name = "protobuf_pip_deps",
-        python_version = python_version,
-        requirements_lock = "//python:requirements.txt",
-    )
-    for python_version in SUPPORTED_PYTHON_VERSIONS
-]
-
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "protobuf_pip_deps",
+    python_version = "3.12",
+    requirements_lock = "//python:requirements.txt",
+)
 use_repo(pip, "protobuf_pip_deps")
 
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
