@@ -1243,6 +1243,7 @@ bool MessageLite::ParseFrom(const T& input) {
   return internal::MergeFromImpl<alias>(input, this, tc_table, flags);
 }
 
+
 // ===================================================================
 // Shutdown support.
 
