@@ -987,6 +987,8 @@ class PROTOBUF_EXPORT MessageLite {
         GetClassData()->cached_size_offset);
   }
 
+  void VerifyHasBitConsistency() const;
+
  public:
   enum ParseFlags {
     // Merge vs. Parse:
