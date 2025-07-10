@@ -118,7 +118,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return nullptr;
   }
 
-  if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
+  if (!descriptor->is_repeated() &&
       descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
     return cmessage::InternalGetScalar(self->parent->message, descriptor);
   }
@@ -130,7 +130,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return iterator->second->AsPyObject();
   }
 
-  if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
+  if (!descriptor->is_repeated() &&
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // TODO: consider building the class on the fly!
     ContainerBase* sub_message =
@@ -142,7 +142,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return sub_message->AsPyObject();
   }
 
-  if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (descriptor->is_repeated()) {
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // On the fly message class creation is needed to support the following
       // situation:
