@@ -40,7 +40,9 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest_import_option.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
@@ -1823,6 +1825,38 @@ TEST(GeneratedMessageReflection, UnvalidatedStringsAreDowngradedToBytes) {
       proto2_unittest::repeated_string_extension, "bar");
   parsed_msg.mutable_optional_extension()->Swap(
       msg.mutable_optional_extension());
+}
+
+TEST(GeneratedMessageReflection, ImportOption) {
+  proto2_unittest_import_option::TestMessage message;
+  google::protobuf::FileDescriptor const* file_descriptor =
+      message.GetDescriptor()->file();
+  google::protobuf::Descriptor const* message_descriptor = message.GetDescriptor();
+  google::protobuf::FieldDescriptor const* field_descriptor =
+      message_descriptor->FindFieldByName("field1");
+
+  EXPECT_EQ(
+      1, file_descriptor->options().GetExtension(proto2_unittest::file_opt1));
+  EXPECT_EQ(2, message_descriptor->options().GetExtension(
+                   proto2_unittest::message_opt1));
+  EXPECT_EQ(
+      3, field_descriptor->options().GetExtension(proto2_unittest::field_opt1));
+
+  // Options not linked in should be in unknown fields.
+  EXPECT_EQ(1, file_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7736975,
+            file_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(1, file_descriptor->options().unknown_fields().field(0).varint());
+  EXPECT_EQ(1, message_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7739037,
+            message_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(2,
+            message_descriptor->options().unknown_fields().field(0).varint());
+
+  EXPECT_EQ(1, field_descriptor->options().unknown_fields().field_count());
+  EXPECT_EQ(7740937,
+            field_descriptor->options().unknown_fields().field(0).number());
+  EXPECT_EQ(3, field_descriptor->options().unknown_fields().field(0).fixed64());
 }
 
 }  // namespace
