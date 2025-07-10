@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 pub struct Dependency {
     pub crate_name: String,
     pub proto_import_paths: Vec<PathBuf>,
-    pub c_include_paths: Vec<PathBuf>,
     pub proto_files: Vec<String>,
 }
 
