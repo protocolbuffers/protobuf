@@ -31,6 +31,9 @@ package_group(
 rust_library(
     name = "protobuf",
     srcs = ["protobuf.rs"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     rustc_flags = select({
         ":use_upb_kernel": ["--cfg=upb_kernel"],
         "//conditions:default": ["--cfg=cpp_kernel"],
@@ -86,6 +89,9 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
 rust_library(
     name = "protobuf_upb",
     srcs = PROTOBUF_SHARED + ["upb.rs"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     crate_root = "shared.rs",
     proc_macro_deps = [
         "//rust/proto_proc_macro",
@@ -133,6 +139,9 @@ rust_library(
 rust_library(
     name = "protobuf_cpp",
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     crate_root = "shared.rs",
     proc_macro_deps = [
         "//rust/proto_proc_macro",
@@ -218,6 +227,9 @@ rust_library(
 rust_library(
     name = "utf8",
     srcs = ["utf8.rs"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
 )
 
 proto_lang_toolchain(
