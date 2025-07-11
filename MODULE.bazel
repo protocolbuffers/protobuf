@@ -174,6 +174,7 @@ crate.spec(
 crate.from_specs()
 use_repo(crate, crate_index = "crates")
 
+# Keep this list minimal; these dependencies will be part of the common `maven` install and could affect end-user projects.
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
@@ -182,9 +183,8 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.guava:guava:32.0.1-jre",
 ]
 
-protobuf_maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
-protobuf_maven.install(
-    name = "protobuf_maven",
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+maven.install(
     artifacts = PROTOBUF_MAVEN_ARTIFACTS,
     lock_file = "//:maven_install.json",
     repositories = [
@@ -192,7 +192,10 @@ protobuf_maven.install(
         "https://repo.maven.apache.org/maven2",
     ],
 )
-use_repo(protobuf_maven, "protobuf_maven")
+
+# Use the default "maven" namespace because protobuf java targets are exposed to users
+# See https://github.com/protocolbuffers/protobuf/issues/21177
+use_repo(maven, "maven")
 
 # Temporarily pin transitive dependency for https://github.com/bazelbuild/bazel/issues/24426
 bazel_dep(name = "re2", version = "2024-07-02.bcr.1")
