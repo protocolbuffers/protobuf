@@ -1,5 +1,6 @@
 # This package contains tests exercising C++/Rust interop in the cpp kernel.
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_rust//rust:defs.bzl", "rust_test")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")

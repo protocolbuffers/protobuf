@@ -1,5 +1,6 @@
 # This package contains Rust protobuf runtime implementation built on top of the C++ backend.
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 cc_library(
