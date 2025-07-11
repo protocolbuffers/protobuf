@@ -328,6 +328,14 @@ constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
   return false;
 }
 
+inline constexpr bool DebugHardenVerifyHasBitConsistency() {
+#if !defined(NDEBUG) || defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
+  return true;
+#endif
+  return false;
+}
+
 // Reads n bytes from p, if PerformDebugChecks() is true. This allows ASAN to
 // detect if a range of memory is not valid when we expect it to be. The
 // volatile keyword is necessary here to prevent the compiler from optimizing
