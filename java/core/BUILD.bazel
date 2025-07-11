@@ -182,7 +182,7 @@ protobuf_java_export(
 protobuf_java_library(
     name = "lite_runtime_only",
     srcs = LITE_SRCS,
-    visibility = ["//java/kotlin:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 proto_library(
