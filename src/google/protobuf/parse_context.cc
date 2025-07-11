@@ -106,10 +106,8 @@ bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
   ABSL_DCHECK_LE(overrun, kSlopBytes);
   auto ptr = begin + overrun;
   auto end = begin + kSlopBytes;
-  return ParsingEndsInBuffer(ptr, end, depth);
-}
-
-
+  /*
+  
 template <bool kExperimentalV2>
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
   if (next_chunk_ == nullptr) return nullptr;  // We've reached end of stream.
