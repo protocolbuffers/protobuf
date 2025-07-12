@@ -19,3 +19,12 @@ cc_library(
         "@abseil-cpp//absl/strings:string_view",
     ],
 )
+
+cc_library(
+    name = "types",
+    hdrs = ["types.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//src/google/protobuf:arena",
+    ],
+)

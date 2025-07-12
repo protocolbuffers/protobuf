@@ -60,3 +60,12 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "types",
+    hdrs = ["types.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//upb/mem",
+    ],
+)

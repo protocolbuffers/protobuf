@@ -167,12 +167,13 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":multibackend",
-        "//hpb/backend:types",
     ] + select({
         ":hpb_backend_cpp": [
+            "//hpb/backend/cpp:types",
             "//src/google/protobuf:arena",
         ],
         ":hpb_backend_upb": [
+            "//hpb/backend/upb:types",
             "//upb/mem",
         ],
     }),
