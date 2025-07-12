@@ -1033,16 +1033,15 @@ TEST_P(BlockSizes, ReadCordReuseCord) {
                                  16, 17, 50, 100, 1023, 1024, 8000, 16000};
     int total_size = 0;
     std::vector<int> sizes;
-    for (size_t i = 0; i < ABSL_ARRAYSIZE(kSizes); ++i) {
-      sizes.push_back(kSizes[i]);
-      total_size += kSizes[i];
+    for (int kSize : kSizes) {
+      sizes.push_back(kSize);
+      total_size += kSize;
     }
     ASSERT_GE(1362 * sizeof(kRawBytes), total_size * 2);
 
     absl::Cord reused_cord;
     for (int pass = 0; pass < 2; ++pass) {
-      for (size_t i = 0; i < sizes.size(); ++i) {
-        const int size = sizes[i];
+      for (int size : sizes) {
         EXPECT_TRUE(coded_input.ReadCord(&reused_cord, size));
         EXPECT_EQ(size, reused_cord.size());
         EXPECT_EQ(

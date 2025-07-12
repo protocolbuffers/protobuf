@@ -106,8 +106,7 @@ std::string ShoutyToPascalCase(absl::string_view input) {
   std::string result;
   // Simple way of implementing "always start with upper"
   char previous = '_';
-  for (int i = 0; i < input.size(); i++) {
-    char current = input[i];
+  for (char current : input) {
     if (!absl::ascii_isalnum(current)) {
       previous = current;
       continue;
@@ -134,9 +133,9 @@ std::string ShoutyToPascalCase(absl::string_view input) {
 std::string TryRemovePrefix(absl::string_view prefix, absl::string_view value) {
   // First normalize to a lower-case no-underscores prefix to match against
   std::string prefix_to_match = "";
-  for (size_t i = 0; i < prefix.size(); i++) {
-    if (prefix[i] != '_') {
-      prefix_to_match += absl::ascii_tolower(prefix[i]);
+  for (char i : prefix) {
+    if (i != '_') {
+      prefix_to_match += absl::ascii_tolower(i);
     }
   }
 
