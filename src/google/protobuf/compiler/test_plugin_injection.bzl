@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 # This works around https://github.com/bazelbuild/bazel/issues/19124 by using a generated header to
@@ -57,8 +58,7 @@ EOF
         visibility = ["//visibility:private"],
         testonly = True,
     )
-
-    native.cc_library(
+    cc_library(
         name = name,
         hdrs = [hdr],
         strip_include_prefix = "/src",
