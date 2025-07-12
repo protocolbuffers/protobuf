@@ -891,14 +891,59 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** Check if a singular extension is present. */
     <T> boolean hasExtension(ExtensionLite<? extends MessageT, T> extension);
 
+    /**
+     * hasExtension() overload for {@link Extension} instances. Since {@link Extension} is a subtype
+     * of {@link ExtensionLite}, this is redundant for source-compatibility, but exists here to
+     * maintain ABI compatibility with .class files which dispatch to a method of the concrete type.
+     */
+    default <T> boolean hasExtension(Extension<? extends MessageT, T> extension) {
+      return hasExtension((ExtensionLite<? extends MessageT, T>) extension);
+    }
+
+    /** Overload to maintain ABI compatibility. See {@link #hasExtension(Extension)}. */
+    default <T> boolean hasExtension(GeneratedExtension<? extends MessageT, T> extension) {
+      return hasExtension((ExtensionLite<? extends MessageT, T>) extension);
+    }
+
     /** Get the number of elements in a repeated extension. */
     <T> int getExtensionCount(ExtensionLite<? extends MessageT, List<T>> extension);
+
+    /** Overload to maintain ABI compatibility. See {@link #hasExtension(Extension)}. */
+    default <T> int getExtensionCount(Extension<? extends MessageT, List<T>> extension) {
+      return getExtensionCount((ExtensionLite<? extends MessageT, List<T>>) extension);
+    }
+
+    /** Overload to maintain ABI compatibility. See {@link #hasExtension(Extension)}. */
+    default <T> int getExtensionCount(GeneratedExtension<? extends MessageT, List<T>> extension) {
+      return getExtensionCount((ExtensionLite<? extends MessageT, List<T>>) extension);
+    }
 
     /** Get the value of an extension. */
     <T> T getExtension(ExtensionLite<? extends MessageT, T> extension);
 
+    /** Overload to maintain ABI compatibility. See {@link #hasExtension(Extension)}. */
+    default <T> T getExtension(Extension<? extends MessageT, T> extension) {
+      return getExtension((ExtensionLite<? extends MessageT, T>) extension);
+    }
+
+    /** Overload to maintain ABI compatibility. See {@link #hasExtension(Extension)}. */
+    default <T> T getExtension(GeneratedExtension<? extends MessageT, T> extension) {
+      return getExtension((ExtensionLite<? extends MessageT, T>) extension);
+    }
+
     /** Get one element of a repeated extension. */
     <T> T getExtension(ExtensionLite<? extends MessageT, List<T>> extension, int index);
+
+    /** Overload to maintain ABI compatibility. See {@link #hasExtension(Extension)}. */
+    default <T> T getExtension(Extension<? extends MessageT, List<T>> extension, int index) {
+      return getExtension((ExtensionLite<? extends MessageT, List<T>>) extension, index);
+    }
+
+    /** Overload to maintain ABI compatibility. See {@link #hasExtension(Extension)}. */
+    default <T> T getExtension(
+        GeneratedExtension<? extends MessageT, List<T>> extension, int index) {
+      return getExtension((ExtensionLite<? extends MessageT, List<T>>) extension, index);
+    }
   }
 
   /**
@@ -1381,6 +1426,18 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       return (BuilderT) this;
     }
 
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT setExtension(
+        final Extension<? extends MessageT, T> extension, final T value) {
+      return setExtension((ExtensionLite<? extends MessageT, T>) extension, value);
+    }
+
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT setExtension(
+        final GeneratedExtension<? extends MessageT, T> extension, final T value) {
+      return setExtension((ExtensionLite<? extends MessageT, T>) extension, value);
+    }
+
     /** Set the value of one element of a repeated extension. */
     public final <T> BuilderT setExtension(
         final ExtensionLite<? extends MessageT, List<T>> extensionLite,
@@ -1396,6 +1453,20 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       return (BuilderT) this;
     }
 
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT setExtension(
+        final Extension<? extends MessageT, List<T>> extension, final int index, final T value) {
+      return setExtension((ExtensionLite<? extends MessageT, List<T>>) extension, index, value);
+    }
+
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT setExtension(
+        final GeneratedExtension<? extends MessageT, List<T>> extension,
+        final int index,
+        final T value) {
+      return setExtension((ExtensionLite<? extends MessageT, List<T>>) extension, index, value);
+    }
+
     /** Append a value to a repeated extension. */
     public final <T> BuilderT addExtension(
         final ExtensionLite<? extends MessageT, List<T>> extensionLite, final T value) {
@@ -1409,6 +1480,18 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       return (BuilderT) this;
     }
 
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT addExtension(
+        final Extension<? extends MessageT, List<T>> extension, final T value) {
+      return addExtension((ExtensionLite<? extends MessageT, List<T>>) extension, value);
+    }
+
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT addExtension(
+        final GeneratedExtension<? extends MessageT, List<T>> extension, final T value) {
+      return addExtension((ExtensionLite<? extends MessageT, List<T>>) extension, value);
+    }
+
     /** Clear an extension. */
     public final <T> BuilderT clearExtension(
         final ExtensionLite<? extends MessageT, T> extensionLite) {
@@ -1419,6 +1502,17 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       extensions.clearField(extension.getDescriptor());
       onChanged();
       return (BuilderT) this;
+    }
+
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT clearExtension(final Extension<? extends MessageT, T> extensionLite) {
+      return clearExtension((ExtensionLite<? extends MessageT, T>) extensionLite);
+    }
+
+    /** Overload to maintain ABI compatibility. */
+    public final <T> BuilderT clearExtension(
+        final GeneratedExtension<? extends MessageT, T> extensionLite) {
+      return clearExtension((ExtensionLite<? extends MessageT, T>) extensionLite);
     }
 
     /** Called by subclasses to check if all extensions are initialized. */
