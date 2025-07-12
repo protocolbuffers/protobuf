@@ -511,6 +511,14 @@ inline const ClassDataFull& ClassData::full() const {
 
 }  // namespace internal
 
+namespace internal {
+namespace v2 {
+namespace table {
+class ParseInfo;
+}  // namespace table
+}  // namespace v2
+}  // namespace internal
+
 // Interface to light weight protocol messages.
 //
 // This interface is implemented by all protocol message objects.  Non-lite
@@ -1073,6 +1081,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   template <typename Type>
   friend const internal::ClassData* internal::GetClassData(const Type& msg);
+  friend class internal::v2::table::ParseInfo;
 
   void LogInitializationErrorMessage() const;
 

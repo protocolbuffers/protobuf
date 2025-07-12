@@ -121,6 +121,14 @@ class PROTOBUF_EXPORT UnknownField {
   } data_;
 };
 
+namespace internal {
+namespace v2 {
+namespace table {
+class ParseInfo;
+}  // namespace table
+}  // namespace v2
+}  // namespace internal
+
 // An UnknownFieldSet contains fields that were encountered while parsing a
 // message but were not defined by its type.  Keeping track of these can be
 // useful, especially in that they may be written if the message is serialized
@@ -244,6 +252,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   friend internal::UnknownFieldParserHelper;
   friend internal::UnknownFieldSetTestPeer;
   friend internal::v2::TableDrivenParse;
+  friend internal::v2::table::ParseInfo;
 
   std::string* AddLengthDelimited(int number);
 
