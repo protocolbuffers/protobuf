@@ -15,7 +15,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
@@ -567,13 +566,13 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<SingularEnum>(desc, options, scc);
+  return std::make_unique<SingularEnum>(desc, options, scc);
 }
 
 std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
     const FieldDescriptor* desc, const Options& options,
     MessageSCCAnalyzer* scc) {
-  return absl::make_unique<RepeatedEnum>(desc, options, scc);
+  return std::make_unique<RepeatedEnum>(desc, options, scc);
 }
 
 }  // namespace cpp
