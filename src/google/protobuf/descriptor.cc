@@ -5190,17 +5190,7 @@ bool DescriptorPool::ShouldEnforceExtensionDeclaration(
 
 const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
   if (feature_set_defaults_spec_ != nullptr) return *feature_set_defaults_spec_;
-  static const FeatureSetDefaults* cpp_default_spec =
-      internal::OnShutdownDelete([] {
-        auto* defaults = new FeatureSetDefaults();
-        internal::ParseNoReflection(
-            absl::string_view{
-                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
-                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
-            *defaults);
-        return defaults;
-      }());
-  return *cpp_default_spec;
+  return internal::cpp::GetFeatureSetDefaults();
 }
 
 bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
@@ -10671,6 +10661,18 @@ bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to
   return to.IsInitializedWithErrors();
 }
 
+const FeatureSet& GetUnresolvedFeatureSet(const FileDescriptor& descriptor) {
+  return InternalFeatureHelper::GetUnresolvedFeatures(descriptor);
+}
+
+const FeatureSet& GetUnresolvedFeatureSet(const Descriptor& descriptor) {
+  return InternalFeatureHelper::GetUnresolvedFeatures(descriptor);
+}
+
+const FeatureSet& GetUnresolvedFeatureSet(const EnumDescriptor& descriptor) {
+  return InternalFeatureHelper::GetUnresolvedFeatures(descriptor);
+}
+
 namespace cpp {
 bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
   if (field->legacy_enum_field_treated_as_closed()) {
@@ -10779,9 +10781,29 @@ bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
 Edition FileDescriptor::edition() const { return edition_; }
 
 namespace internal {
+
 absl::string_view ShortEditionName(Edition edition) {
   return absl::StripPrefix(Edition_Name(edition), "EDITION_");
 }
+
+namespace cpp {
+
+const FeatureSetDefaults& GetFeatureSetDefaults() {
+  static const FeatureSetDefaults* cpp_default_spec =
+      internal::OnShutdownDelete([] {
+        auto* defaults = new FeatureSetDefaults();
+        internal::ParseNoReflection(
+            absl::string_view{
+                PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS,
+                sizeof(PROTOBUF_INTERNAL_CPP_EDITION_DEFAULTS) - 1},
+            *defaults);
+        return defaults;
+      }());
+  return *cpp_default_spec;
+}
+
+}  // namespace cpp
+
 }  // namespace internal
 
 }  // namespace protobuf

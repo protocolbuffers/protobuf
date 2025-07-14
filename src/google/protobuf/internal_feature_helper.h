@@ -26,6 +26,12 @@ class PROTOBUF_EXPORT InternalFeatureHelper {
     return desc.features();
   }
 
+  template <typename DescriptorT>
+  static const FeatureSet& GetUnresolvedFeatures(const DescriptorT& desc) {
+    return desc.proto_features_ != nullptr ? *desc.proto_features_
+                                           : FeatureSet::default_instance();
+  }
+
  private:
   friend class ::google::protobuf::compiler::CodeGenerator;
   friend class ::google::protobuf::compiler::CommandLineInterface;

@@ -8,6 +8,7 @@
 #include "google/protobuf/util/type_resolver_util.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/any.pb.h"
@@ -15,13 +16,17 @@
 #include "google/protobuf/type.pb.h"
 #include "google/protobuf/wrappers.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/container/inlined_vector.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "absl/types/optional.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/util/type_resolver.h"
 
 // clang-format off
@@ -48,6 +53,72 @@ using google::protobuf::Syntax;
 using google::protobuf::Type;
 using google::protobuf::UInt32Value;
 using google::protobuf::UInt64Value;
+
+struct FeaturesField {
+  const FieldDescriptor* descriptor;
+  FeatureSet features;
+};
+
+absl::optional<FeatureSet> PartiallyResolveFeatures(
+    const Descriptor& descriptor) {
+  const FileDescriptor* file = descriptor.file();
+  absl::InlinedVector<FeatureSet, 3> features;
+  const Descriptor* parent = &descriptor;
+  while (parent != nullptr) {
+    const auto& descriptor_features =
+        internal::GetUnresolvedFeatureSet(*parent);
+    if (&descriptor_features != &FeatureSet::default_instance()) {
+      features.push_back(descriptor_features);
+    }
+    parent = parent->containing_type();
+  }
+  const auto& descriptor_features = internal::GetUnresolvedFeatureSet(*file);
+  if (&descriptor_features != &FeatureSet::default_instance()) {
+    features.push_back(descriptor_features);
+  }
+  if (features.empty()) {
+    return absl::nullopt;
+  }
+  FeatureSet feature_set;
+  for (auto it = features.rbegin(); it != features.rend(); ++it) {
+    feature_set.MergeFrom(*it);
+  }
+  return feature_set;
+}
+
+absl::optional<FeatureSet> PartiallyResolveFeatures(
+    const EnumDescriptor& descriptor) {
+  const FileDescriptor* file = descriptor.file();
+  absl::InlinedVector<FeatureSet, 3> features;
+  {
+    const auto& descriptor_features =
+        internal::GetUnresolvedFeatureSet(descriptor);
+    if (&descriptor_features != &FeatureSet::default_instance()) {
+      features.push_back(descriptor_features);
+    }
+  }
+  const Descriptor* parent = descriptor.containing_type();
+  while (parent != nullptr) {
+    const auto& descriptor_features =
+        internal::GetUnresolvedFeatureSet(*parent);
+    if (&descriptor_features != &FeatureSet::default_instance()) {
+      features.push_back(descriptor_features);
+    }
+    parent = parent->containing_type();
+  }
+  const auto& descriptor_features = internal::GetUnresolvedFeatureSet(*file);
+  if (&descriptor_features != &FeatureSet::default_instance()) {
+    features.push_back(descriptor_features);
+  }
+  if (features.empty()) {
+    return absl::nullopt;
+  }
+  FeatureSet feature_set;
+  for (auto it = features.rbegin(); it != features.rend(); ++it) {
+    feature_set.MergeFrom(*it);
+  }
+  return feature_set;
+}
 
 template <typename WrapperT, typename T>
 static WrapperT WrapValue(T value) {
@@ -134,11 +205,20 @@ void ConvertOptionField(const Reflection* reflection, const Message& options,
 
 // Implementation details for Convert*Options.
 void ConvertOptionsInternal(const Message& options,
+                            const absl::optional<FeaturesField>& features_field,
                             RepeatedPtrField<Option>& output) {
   const Reflection* reflection = options.GetReflection();
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(options, &fields);
+  bool found_features = false;
   for (const FieldDescriptor* field : fields) {
+    if (features_field.has_value() && features_field->descriptor == field) {
+      found_features = true;
+      Option* option = output.Add();
+      option->set_name(field->name());
+      option->mutable_value()->PackFrom(features_field->features);
+      continue;
+    }
     if (field->is_repeated()) {
       const int size = reflection->FieldSize(options, field);
       for (int i = 0; i < size; ++i) {
@@ -148,26 +228,11 @@ void ConvertOptionsInternal(const Message& options,
       ConvertOptionField(reflection, options, field, -1, output.Add());
     }
   }
-}
-
-void ConvertMessageOptions(const MessageOptions& options,
-                           RepeatedPtrField<Option>& output) {
-  return ConvertOptionsInternal(options, output);
-}
-
-void ConvertFieldOptions(const FieldOptions& options,
-                         RepeatedPtrField<Option>& output) {
-  return ConvertOptionsInternal(options, output);
-}
-
-void ConvertEnumOptions(const EnumOptions& options,
-                        RepeatedPtrField<Option>& output) {
-  return ConvertOptionsInternal(options, output);
-}
-
-void ConvertEnumValueOptions(const EnumValueOptions& options,
-                             RepeatedPtrField<Option>& output) {
-  return ConvertOptionsInternal(options, output);
+  if (features_field.has_value() && !found_features) {
+    Option* option = output.Add();
+    option->set_name(features_field->descriptor->name());
+    option->mutable_value()->PackFrom(features_field->features);
+  }
 }
 
 std::string DefaultValueAsString(const FieldDescriptor& descriptor) {
@@ -245,7 +310,8 @@ void ConvertFieldDescriptor(absl::string_view url_prefix,
     field->set_packed(true);
   }
 
-  ConvertFieldOptions(proto.options(), *field->mutable_options());
+  ConvertOptionsInternal(proto.options(), absl::nullopt,
+                         *field->mutable_options());
 }
 
 Syntax ConvertSyntax(absl::string_view syntax) {
@@ -276,11 +342,22 @@ void ConvertEnumDescriptor(const EnumDescriptor& descriptor,
     value->set_name(value_descriptor.name());
     value->set_number(value_descriptor.number());
 
-    ConvertEnumValueOptions(proto.value(i).options(),
-                            *value->mutable_options());
+    ConvertOptionsInternal(proto.value(i).options(), absl::nullopt,
+                           *value->mutable_options());
+  }
+  absl::optional<FeaturesField> features_field;
+  if (enum_type->syntax() == Syntax::SYNTAX_EDITIONS) {
+    auto features = PartiallyResolveFeatures(descriptor);
+    if (features.has_value()) {
+      features_field.emplace();
+      features_field->descriptor =
+          proto.options().GetDescriptor()->FindFieldByName("features");
+      features_field->features = std::move(*features);
+    }
   }
 
-  ConvertEnumOptions(proto.options(), *enum_type->mutable_options());
+  ConvertOptionsInternal(proto.options(), features_field,
+                         *enum_type->mutable_options());
 }
 
 void ConvertDescriptor(absl::string_view url_prefix,
@@ -301,7 +378,18 @@ void ConvertDescriptor(absl::string_view url_prefix,
     type->add_oneofs(descriptor.oneof_decl(i)->name());
   }
   type->mutable_source_context()->set_file_name(descriptor.file()->name());
-  ConvertMessageOptions(proto.options(), *type->mutable_options());
+  absl::optional<FeaturesField> features_field;
+  if (type->syntax() == Syntax::SYNTAX_EDITIONS) {
+    auto features = PartiallyResolveFeatures(descriptor);
+    if (features.has_value()) {
+      features_field.emplace();
+      features_field->descriptor =
+          proto.options().GetDescriptor()->FindFieldByName("features");
+      features_field->features = std::move(*features);
+    }
+  }
+  ConvertOptionsInternal(proto.options(), features_field,
+                         *type->mutable_options());
 }
 
 class DescriptorPoolTypeResolver : public TypeResolver {
