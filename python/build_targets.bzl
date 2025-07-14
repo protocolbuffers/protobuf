@@ -9,6 +9,8 @@ Most users should depend upon public aliases in the root:
 """
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
@@ -72,8 +74,7 @@ def build_targets(name):
         ],
         strip_prefix = "src",
     )
-
-    native.cc_binary(
+    cc_binary(
         name = "google/protobuf/internal/_api_implementation.so",
         srcs = ["google/protobuf/internal/api_implementation.cc"],
         copts = COPTS + [
@@ -107,8 +108,7 @@ def build_targets(name):
             "define": "allow_oversize_protos=true",
         },
     )
-
-    native.cc_binary(
+    cc_binary(
         name = "google/protobuf/pyext/_message.so",
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
@@ -448,8 +448,7 @@ def build_targets(name):
         name = "proto_json_test",
         srcs = ["google/protobuf/internal/proto_json_test.py"],
     )
-
-    native.cc_library(
+    cc_library(
         name = "proto_api",
         srcs = ["google/protobuf/proto_api.cc"],
         hdrs = ["google/protobuf/proto_api.h"],
