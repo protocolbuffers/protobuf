@@ -130,12 +130,12 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 
 [
     python.toolchain(
-        is_default = python_version == SUPPORTED_PYTHON_VERSIONS[-1],
         python_version = python_version,
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
 
+python.defaults(python_version = SUPPORTED_PYTHON_VERSIONS[-1])
 use_repo(
     python,
     system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
