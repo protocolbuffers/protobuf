@@ -8,6 +8,8 @@
 #ifndef GOOGLE_PROTOBUF_HPB_ARENA_H__
 #define GOOGLE_PROTOBUF_HPB_ARENA_H__
 
+#include <cstddef>
+
 #include "hpb/backend/types.h"
 #include "hpb/multibackend.h"
 
@@ -19,6 +21,7 @@ struct PrivateAccess;
 class Arena {
  public:
   Arena() = default;
+  Arena(char* initial_block, size_t size) : arena_(initial_block, size) {}
 
 // There are certain operations that are only supported by upb, e.g. fusing.
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
