@@ -243,7 +243,6 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   friend internal::WireFormat;
   friend internal::UnknownFieldParserHelper;
   friend internal::UnknownFieldSetTestPeer;
-  friend internal::v2::TableDrivenParse;
 
   std::string* AddLengthDelimited(int number);
 
