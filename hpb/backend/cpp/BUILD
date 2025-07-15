@@ -15,9 +15,10 @@ cc_library(
     visibility = ["//hpb:__subpackages__"],
     deps = [
         "//hpb:arena",
+        "//hpb:extension",
         "//hpb:ptr",
         "//hpb/internal:template_help",
-        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings:string_view",
     ],
 )

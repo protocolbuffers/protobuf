@@ -12,10 +12,13 @@
 #include "absl/strings/string_view.h"
 #include "hpb/arena.h"
 #include "hpb/backend/upb/interop.h"
+#include "hpb/extension.h"
 #include "hpb/internal/internal.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
 #include "hpb/ptr.h"
+#include "hpb/status.h"
+#include "upb/wire/decode.h"
 
 namespace hpb::internal::backend::upb {
 
@@ -53,6 +56,36 @@ absl::StatusOr<absl::string_view> Serialize(PtrOrRaw<T> message,
   return hpb::internal::Serialize(interop::upb::GetMessage(message),
                                   interop::upb::GetMiniTable(message),
                                   hpb::interop::upb::UnwrapArena(arena), 0);
+}
+
+template <typename T>
+bool Parse(PtrOrRaw<T> message, absl::string_view bytes,
+           const ExtensionRegistry& extension_registry) {
+  static_assert(!std::is_const_v<T>);
+  upb_Message_Clear(interop::upb::GetMessage(message),
+                    interop::upb::GetMiniTable(message));
+  auto* arena = interop::upb::GetArena(message);
+  return upb_Decode(bytes.data(), bytes.size(),
+                    interop::upb::GetMessage(message),
+                    interop::upb::GetMiniTable(message),
+                    internal::GetUpbExtensions(extension_registry),
+                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
+}
+
+template <typename T>
+absl::StatusOr<T> Parse(absl::string_view bytes,
+                        const ExtensionRegistry& extension_registry) {
+  T message;
+  auto* arena = interop::upb::GetArena(&message);
+  upb_DecodeStatus status =
+      upb_Decode(bytes.data(), bytes.size(), interop::upb::GetMessage(&message),
+                 interop::upb::GetMiniTable(&message),
+                 internal::GetUpbExtensions(extension_registry),
+                 /* options= */ 0, arena);
+  if (status == kUpb_DecodeStatus_Ok) {
+    return message;
+  }
+  return MessageDecodeError(status);
 }
 
 }  // namespace hpb::internal::backend::upb
