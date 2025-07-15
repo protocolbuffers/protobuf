@@ -1074,6 +1074,10 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename Type>
   friend const internal::ClassData* internal::GetClassData(const Type& msg);
 
+  static bool CheckFieldPresence(const internal::ParseContext& ctx,
+                                 const MessageLite& msg,
+                                 MessageLite::ParseFlags parse_flags);
+
   void LogInitializationErrorMessage() const;
 
   // Merges the contents of `other` into `this`. This is faster than
