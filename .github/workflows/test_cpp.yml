@@ -427,7 +427,7 @@ jobs:
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022-msvc-cl
-            bazel: test //src/...  --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance --define=protobuf_allow_msvc=true
+            bazel: test //src/...  --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance
           - name: Windows Bazel clang-cl
             os: windows-2022
             cache_key: windows-2022-clang-cl
