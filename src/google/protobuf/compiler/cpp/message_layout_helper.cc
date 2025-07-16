@@ -143,10 +143,10 @@ MessageLayoutHelper::BuildFieldAlignmentGroups(
       hotness = kRepeated;
     } else {
       hotness = GetFieldHotness(field, options, scc_analyzer);
+    }
 
-      if (hotness != kCold && IsFastPathField(field, fast_path_fields)) {
-        hotness = kFastParse;
-      }
+    if (hotness > kCold && IsFastPathField(field, fast_path_fields)) {
+      hotness = kFastParse;
     }
 
     FieldGroup fg = SingleFieldGroup(field);

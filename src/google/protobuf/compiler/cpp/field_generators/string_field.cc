@@ -853,6 +853,9 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
 }
 
 void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
+  // Note: no need to set hasbit in mutable_$name$(int index). Hasbits only need
+  // to be updated if a new element is (potentially) added, not if an existing
+  // element is mutated.
   bool bytes = field_->type() == FieldDescriptor::TYPE_BYTES;
   p->Emit(
       {
@@ -871,6 +874,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           ::std::string* _s = _internal_mutable_$name_internal$()->Add();
+          $set_hasbit$;
           $annotate_add_mutable$;
           // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
           return _s;
@@ -904,6 +908,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $pbi$::AddToRepeatedPtrField(*_internal_mutable_$name_internal$(),
                                        ::std::forward<Arg_>(value),
                                        args... $bytes_tag$);
+          $set_hasbit$;
           $annotate_add$;
           // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
         }
@@ -917,6 +922,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
         $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
+          $set_hasbit$;
           $annotate_mutable_list$;
           // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
           $TsanDetectConcurrentMutation$;
