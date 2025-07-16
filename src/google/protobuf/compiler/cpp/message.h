@@ -198,6 +198,8 @@ class MessageGenerator {
   //   at construction.
   ArenaDtorNeeds NeedsArenaDestructor() const;
 
+  bool ShouldGenerateEnclosingIf(const FieldDescriptor& field) const;
+
   size_t HasBitsSize() const;
   size_t InlinedStringDonatedSize() const;
   absl::flat_hash_map<absl::string_view, std::string> HasBitVars(

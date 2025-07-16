@@ -787,6 +787,10 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
+
+  // No need to set hasbit in mutable_$name$(int index). Hasbits only need to be
+  // updated if a new element is (potentially) added, not if an existing element
+  // is mutated.
   p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
           R"cc(
             inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
@@ -803,6 +807,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
+      $set_hasbit$;
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $StrongRef$;
@@ -827,6 +832,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $Submsg$* _add = _internal_mutable_$name_internal$()->Add();
+      $set_hasbit$;
       $annotate_add_mutable$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
       return _add;
