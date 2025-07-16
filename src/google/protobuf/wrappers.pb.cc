@@ -413,6 +413,9 @@ DoubleValue::~DoubleValue() {
 }
 inline void DoubleValue::SharedDtor(MessageLite& self) {
   DoubleValue& this_ = static_cast<DoubleValue&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -516,6 +519,9 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const DoubleValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DoubleValue)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -568,6 +574,9 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
 void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
   auto& from = static_cast<const DoubleValue&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -646,6 +655,9 @@ FloatValue::~FloatValue() {
 }
 inline void FloatValue::SharedDtor(MessageLite& self) {
   FloatValue& this_ = static_cast<FloatValue&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -749,6 +761,9 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const FloatValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FloatValue)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -801,6 +816,9 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
 void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FloatValue*>(&to_msg);
   auto& from = static_cast<const FloatValue&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -879,6 +897,9 @@ Int64Value::~Int64Value() {
 }
 inline void Int64Value::SharedDtor(MessageLite& self) {
   Int64Value& this_ = static_cast<Int64Value&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -982,6 +1003,9 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Int64Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int64Value)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -1035,6 +1059,9 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
 void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Int64Value*>(&to_msg);
   auto& from = static_cast<const Int64Value&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1113,6 +1140,9 @@ UInt64Value::~UInt64Value() {
 }
 inline void UInt64Value::SharedDtor(MessageLite& self) {
   UInt64Value& this_ = static_cast<UInt64Value&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -1216,6 +1246,9 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const UInt64Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt64Value)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -1269,6 +1302,9 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
 void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
   auto& from = static_cast<const UInt64Value&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1347,6 +1383,9 @@ Int32Value::~Int32Value() {
 }
 inline void Int32Value::SharedDtor(MessageLite& self) {
   Int32Value& this_ = static_cast<Int32Value&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -1450,6 +1489,9 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Int32Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int32Value)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -1503,6 +1545,9 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
 void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Int32Value*>(&to_msg);
   auto& from = static_cast<const Int32Value&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1581,6 +1626,9 @@ UInt32Value::~UInt32Value() {
 }
 inline void UInt32Value::SharedDtor(MessageLite& self) {
   UInt32Value& this_ = static_cast<UInt32Value&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -1684,6 +1732,9 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const UInt32Value& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt32Value)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -1737,6 +1788,9 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
 void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
   auto& from = static_cast<const UInt32Value&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1815,6 +1869,9 @@ BoolValue::~BoolValue() {
 }
 inline void BoolValue::SharedDtor(MessageLite& self) {
   BoolValue& this_ = static_cast<BoolValue&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -1918,6 +1975,9 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const BoolValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BoolValue)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -1970,6 +2030,9 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
 void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<BoolValue*>(&to_msg);
   auto& from = static_cast<const BoolValue&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -2061,6 +2124,9 @@ StringValue::~StringValue() {
 }
 inline void StringValue::SharedDtor(MessageLite& self) {
   StringValue& this_ = static_cast<StringValue&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.value_.Destroy();
@@ -2171,6 +2237,9 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const StringValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -2225,6 +2294,9 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
 void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<StringValue*>(&to_msg);
   auto& from = static_cast<const StringValue&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -2322,6 +2394,9 @@ BytesValue::~BytesValue() {
 }
 inline void BytesValue::SharedDtor(MessageLite& self) {
   BytesValue& this_ = static_cast<BytesValue&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.value_.Destroy();
@@ -2429,6 +2504,9 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const BytesValue& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BytesValue)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -2481,6 +2559,9 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
 void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<BytesValue*>(&to_msg);
   auto& from = static_cast<const BytesValue&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;

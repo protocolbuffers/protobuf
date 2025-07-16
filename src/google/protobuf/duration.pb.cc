@@ -155,6 +155,9 @@ Duration::~Duration() {
 }
 inline void Duration::SharedDtor(MessageLite& self) {
   Duration& this_ = static_cast<Duration&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -268,6 +271,9 @@ PROTOBUF_NOINLINE void Duration::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const Duration& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Duration)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -338,6 +344,9 @@ PROTOBUF_NOINLINE void Duration::Clear() {
 void Duration::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<Duration*>(&to_msg);
   auto& from = static_cast<const Duration&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Duration)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;

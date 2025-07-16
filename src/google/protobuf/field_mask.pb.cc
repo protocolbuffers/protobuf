@@ -152,6 +152,9 @@ FieldMask::~FieldMask() {
 }
 inline void FieldMask::SharedDtor(MessageLite& self) {
   FieldMask& this_ = static_cast<FieldMask&>(self);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
@@ -269,6 +272,9 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const FieldMask& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    this_.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
@@ -323,6 +329,9 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
 void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
   auto* const _this = static_cast<FieldMask*>(&to_msg);
   auto& from = static_cast<const FieldMask&>(from_msg);
+  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
+    from.VerifyHasBitConsistency();
+  }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
