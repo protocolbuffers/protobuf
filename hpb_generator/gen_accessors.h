@@ -8,8 +8,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__
 #define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__
 
-#include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_utils.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {

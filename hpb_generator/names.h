@@ -11,7 +11,7 @@
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/compiler/hpb/context.h"
+#include "hpb_generator/context.h"
 
 namespace google::protobuf::hpb_generator {
 

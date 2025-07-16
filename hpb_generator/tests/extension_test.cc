@@ -13,9 +13,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
+#include "hpb_generator/tests/child_model.hpb.h"
+#include "hpb_generator/tests/test_extension.hpb.h"
+#include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb/arena.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/hpb.h"

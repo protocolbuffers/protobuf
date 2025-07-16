@@ -9,7 +9,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_REPEATED_FIELDS_H__
 
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/context.h"
+#include "hpb_generator/context.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {

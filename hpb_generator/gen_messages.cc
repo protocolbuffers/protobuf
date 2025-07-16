@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/gen_messages.h"
+#include "hpb_generator/gen_messages.h"
 
 #include <cstddef>
 #include <string>
@@ -15,12 +15,12 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_accessors.h"
-#include "google/protobuf/compiler/hpb/gen_enums.h"
-#include "google/protobuf/compiler/hpb/gen_extensions.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/names.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_accessors.h"
+#include "hpb_generator/gen_enums.h"
+#include "hpb_generator/gen_extensions.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
 #include "upb_generator/minitable/names.h"

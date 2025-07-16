@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/generator.h"
+#include "hpb_generator/generator.h"
 
 #include <memory>
 #include <string>
@@ -16,12 +16,12 @@
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
-#include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_enums.h"
-#include "google/protobuf/compiler/hpb/gen_extensions.h"
-#include "google/protobuf/compiler/hpb/gen_messages.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/names.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_enums.h"
+#include "hpb_generator/gen_extensions.h"
+#include "hpb_generator/gen_messages.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {

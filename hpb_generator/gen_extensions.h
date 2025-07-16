@@ -8,7 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GEN_EXTENSIONS_H__
 #define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_EXTENSIONS_H__
 
-#include "google/protobuf/compiler/hpb/context.h"
+#include "hpb_generator/context.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
