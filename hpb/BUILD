@@ -201,6 +201,7 @@ cc_library(
         ":ptr",
         ":status",
         "//hpb:arena",
+        "//hpb/backend/upb:extension",
         "//hpb/backend/upb:interop",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",

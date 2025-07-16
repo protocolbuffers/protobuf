@@ -16,14 +16,13 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "hpb/arena.h"
+#include "hpb/backend/upb/extension.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
 #include "hpb/ptr.h"
 #include "hpb/status.h"
 #include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
-#include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/mini_table/extension.h"
@@ -38,18 +37,6 @@ class RepeatedField;
 namespace internal {
 template <typename Extendee, typename Extension>
 class ExtensionIdentifier;
-
-absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
-                           const upb_MiniTableExtension* ext,
-                           upb_Message* extension, upb_Arena* extension_arena);
-
-absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
-                          const upb_MiniTableExtension* ext,
-                          const upb_Message* extension);
-
-void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
-                       const upb_MiniTableExtension* ext,
-                       upb_Message* extension, upb_Arena* extension_arena);
 
 /**
  * Trait that maps upb extension types to the corresponding

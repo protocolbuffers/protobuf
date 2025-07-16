@@ -65,3 +65,20 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "extension",
+    srcs = ["extension.cc"],
+    hdrs = ["extension.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//hpb:status",
+        "//hpb/internal:message_lock",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_table",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+    ],
+)
