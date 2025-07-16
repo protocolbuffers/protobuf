@@ -72,13 +72,17 @@ cc_library(
     hdrs = ["extension.h"],
     visibility = ["//hpb:__subpackages__"],
     deps = [
+        ":interop",
         "//hpb:status",
         "//hpb/internal:message_lock",
+        "//hpb/internal:template_help",
         "//upb/base",
         "//upb/mem",
         "//upb/message",
         "//upb/mini_table",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
