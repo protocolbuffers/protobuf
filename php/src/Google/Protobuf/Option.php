@@ -12,6 +12,9 @@ use Google\Protobuf\RepeatedField;
 /**
  * A protocol buffer option, which can be attached to a message, field,
  * enumeration, etc.
+ * New usages of this message as an alternative to FileOptions, MessageOptions,
+ * FieldOptions, EnumOptions, EnumValueOptions, ServiceOptions, or MethodOptions
+ * are strongly discouraged.
  *
  * Generated from protobuf message <code>google.protobuf.Option</code>
  */

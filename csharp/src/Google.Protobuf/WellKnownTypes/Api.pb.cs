@@ -64,6 +64,11 @@ namespace Google.Protobuf.WellKnownTypes {
   /// sometimes simply referred to as "APIs" in other contexts, such as the name of
   /// this message itself. See https://cloud.google.com/apis/design/glossary for
   /// detailed terminology.
+  ///
+  /// New usages of this message as an alternative to ServiceDescriptorProto are
+  /// strongly discouraged. This message does not reliability preserve all
+  /// information necessary to model the schema and preserve semantics. Instead
+  /// make use of FileDescriptorSet which preserves the necessary information.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Api : pb::IMessage<Api>
@@ -544,6 +549,11 @@ namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>
   /// Method represents a method of an API interface.
+  ///
+  /// New usages of this message as an alternative to MethodDescriptorProto are
+  /// strongly discouraged. This message does not reliability preserve all
+  /// information necessary to model the schema and preserve semantics. Instead
+  /// make use of FileDescriptorSet which preserves the necessary information.
   /// </summary>
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Method : pb::IMessage<Method>

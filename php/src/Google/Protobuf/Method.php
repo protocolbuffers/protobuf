@@ -11,6 +11,10 @@ use Google\Protobuf\RepeatedField;
 
 /**
  * Method represents a method of an API interface.
+ * New usages of this message as an alternative to MethodDescriptorProto are
+ * strongly discouraged. This message does not reliability preserve all
+ * information necessary to model the schema and preserve semantics. Instead
+ * make use of FileDescriptorSet which preserves the necessary information.
  *
  * Generated from protobuf message <code>google.protobuf.Method</code>
  */

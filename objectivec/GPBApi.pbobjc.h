@@ -66,6 +66,11 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
  * sometimes simply referred to as "APIs" in other contexts, such as the name of
  * this message itself. See https://cloud.google.com/apis/design/glossary for
  * detailed terminology.
+ *
+ * New usages of this message as an alternative to ServiceDescriptorProto are
+ * strongly discouraged. This message does not reliability preserve all
+ * information necessary to model the schema and preserve semantics. Instead
+ * make use of FileDescriptorSet which preserves the necessary information.
  **/
 GPB_FINAL @interface GPBApi : GPBMessage
 
@@ -156,6 +161,11 @@ typedef GPB_ENUM(GPBMethod_FieldNumber) {
 
 /**
  * Method represents a method of an API interface.
+ *
+ * New usages of this message as an alternative to MethodDescriptorProto are
+ * strongly discouraged. This message does not reliability preserve all
+ * information necessary to model the schema and preserve semantics. Instead
+ * make use of FileDescriptorSet which preserves the necessary information.
  **/
 GPB_FINAL @interface GPBMethod : GPBMessage
 
