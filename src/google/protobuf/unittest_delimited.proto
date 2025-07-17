@@ -1,12 +1,10 @@
-edition = "2023";
+edition = "2024";
 
 package editions_unittest;
 
 import "google/protobuf/unittest_delimited_import.proto";
 
-option java_multiple_files = true;
-
-// Test various scenarios that are now possible in edition 2023 that weren't in
+// Test various scenarios that are now possible in edition 2023+ that weren't in
 // google.protobuf.
 
 message LengthPrefixed {
