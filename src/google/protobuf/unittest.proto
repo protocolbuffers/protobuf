@@ -348,6 +348,7 @@ extend TestAllExtensions {
     features.message_encoding = DELIMITED
   ];
 
+  TestAllTypes optional_message_extension = 17;
   TestAllTypes.NestedMessage optional_nested_message_extension = 18;
   ForeignMessage optional_foreign_message_extension = 19;
   proto2_unittest_import.ImportMessage optional_import_message_extension = 20;
