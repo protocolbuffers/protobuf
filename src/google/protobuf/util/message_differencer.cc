@@ -2335,13 +2335,13 @@ void MessageDifferencer::StreamReporter::ReportMatched(
 void MessageDifferencer::StreamReporter::ReportIgnored(
     const Message& /*message1*/, const Message& /*message2*/,
     const std::vector<SpecificField>& field_path) {
-  printer_->Print("ignored: ");
-  PrintPath(field_path, true);
-  if (CheckPathChanged(field_path)) {
-    printer_->Print(" -> ");
-    PrintPath(field_path, false);
-  }
-  printer_->Print("\n");  // Print for newlines.
+  // printer_->Print("ignored: ");
+  // PrintPath(field_path, true);
+  // if (CheckPathChanged(field_path)) {
+  //   printer_->Print(" -> ");
+  //   PrintPath(field_path, false);
+  // }
+  // printer_->Print("\n");  // Print for newlines.
 }
 
 void MessageDifferencer::StreamReporter::SetMessages(const Message& message1,
