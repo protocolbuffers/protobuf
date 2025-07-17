@@ -7,7 +7,6 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load(
     "//hpb/bazel:hpb_proto_library.bzl",
     "hpb_proto_library_copts",
@@ -95,7 +94,6 @@ cc_library(
     name = "repeated_field",
     hdrs = [
         "repeated_field.h",
-        "repeated_field_iterator.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
@@ -103,6 +101,7 @@ cc_library(
         ":hpb",
         ":ptr",
         "//hpb/backend/upb:interop",
+        "//hpb/backend/upb:repeated_field_iterator",
         "//hpb/internal:template_help",
         "//upb/base",
         "//upb/mem",
@@ -132,23 +131,6 @@ hpb_proto_library_copts(
     name = "hpb_proto_library_copts",
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb/bazel:__pkg__"],
-)
-
-cc_test(
-    name = "repeated_field_iterator_test",
-    srcs = ["repeated_field_iterator_test.cc"],
-    deps = [
-        ":arena",
-        ":hpb",
-        ":repeated_field",
-        "//hpb/backend/upb:interop",
-        "//upb/base",
-        "//upb/mem",
-        "//upb/message",
-        "@abseil-cpp//absl/strings:string_view",
-        "@googletest//:gtest",
-        "@googletest//:gtest_main",
-    ],
 )
 
 cc_library(
