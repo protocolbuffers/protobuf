@@ -127,9 +127,13 @@ final class CodedOutputStreamWriter implements Writer {
     output.writeMessage(fieldNumber, (MessageLite) value);
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public void writeMessage(int fieldNumber, Object value, Schema schema) throws IOException {
-    output.writeMessage(fieldNumber, (MessageLite) value, schema);
+    AbstractMessageLite<?, ?> message = (AbstractMessageLite) value;
+    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeUInt32NoTag(message.getSerializedSize(schema));
+    schema.writeTo(message, this);
   }
 
   @Deprecated
@@ -138,9 +142,13 @@ final class CodedOutputStreamWriter implements Writer {
     output.writeGroup(fieldNumber, (MessageLite) value);
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public void writeGroup(int fieldNumber, Object value, Schema schema) throws IOException {
-    output.writeGroup(fieldNumber, (MessageLite) value, schema);
+    AbstractMessageLite<?, ?> message = (AbstractMessageLite) value;
+    output.writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
+    schema.writeTo(message, this);
+    output.writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
   }
 
   @Deprecated

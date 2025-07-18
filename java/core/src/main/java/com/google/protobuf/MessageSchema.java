@@ -1615,7 +1615,7 @@ final class MessageSchema<T> implements Schema<T> {
           if (isFieldPresent(
               message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size +=
-                CodedOutputStream.computeGroupSize(
+                SchemaUtil.computeGroupSize(
                     number,
                     (MessageLite) unsafe.getObject(message, offset),
                     getMessageFieldSchema(i));
@@ -2038,7 +2038,7 @@ final class MessageSchema<T> implements Schema<T> {
         case 68: // ONEOF_GROUP:
           if (isOneofPresent(message, number, i)) {
             size +=
-                CodedOutputStream.computeGroupSize(
+                SchemaUtil.computeGroupSize(
                     number,
                     (MessageLite) unsafe.getObject(message, offset),
                     getMessageFieldSchema(i));
