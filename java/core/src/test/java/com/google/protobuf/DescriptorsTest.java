@@ -1231,7 +1231,7 @@ public class DescriptorsTest {
 
     @Test
     public void testDefaultDescriptorExtensionRange() throws Exception {
-      assertThat(new Descriptor("default").isExtensionNumber(1)).isTrue();
+      assertThat(new Descriptor(null, "default").isExtensionNumber(1)).isTrue();
     }
 
     @Test
