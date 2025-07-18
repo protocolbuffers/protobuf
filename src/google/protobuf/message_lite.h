@@ -363,7 +363,6 @@ struct ClassDataFull;
 struct PROTOBUF_EXPORT ClassData {
   const MessageLite* prototype;
   const internal::TcParseTableBase* tc_table;
-  void (*on_demand_register_arena_dtor)(MessageLite& msg, Arena& arena);
   bool (*is_initialized)(const MessageLite&);
   void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
   internal::MessageCreator message_creator;
@@ -387,7 +386,6 @@ struct PROTOBUF_EXPORT ClassData {
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr ClassData(
       const MessageLite* prototype, const internal::TcParseTableBase* tc_table,
-      void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
       bool (*is_initialized)(const MessageLite&),
       void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
       internal::MessageCreator message_creator, uint32_t cached_size_offset,
@@ -395,7 +393,6 @@ struct PROTOBUF_EXPORT ClassData {
       )
       : prototype(prototype),
         tc_table(tc_table),
-        on_demand_register_arena_dtor(on_demand_register_arena_dtor),
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
@@ -409,7 +406,6 @@ struct PROTOBUF_EXPORT ClassData {
   // helper code simpler.
   constexpr ClassData(
       const MessageLite* prototype, const internal::TcParseTableBase* tc_table,
-      void (*on_demand_register_arena_dtor)(MessageLite&, Arena&),
       bool (*is_initialized)(const MessageLite&),
       void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
       internal::MessageCreator message_creator,
@@ -423,7 +419,6 @@ struct PROTOBUF_EXPORT ClassData {
       )
       : prototype(prototype),
         tc_table(tc_table),
-        on_demand_register_arena_dtor(on_demand_register_arena_dtor),
         is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
@@ -879,8 +874,6 @@ class PROTOBUF_EXPORT MessageLite {
 #endif
 
   const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
-
-  void OnDemandRegisterArenaDtor(Arena* arena);
 
  protected:
   // Message implementations require access to internally visible API.

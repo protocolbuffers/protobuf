@@ -377,7 +377,6 @@ constexpr auto Version::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Version_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Version::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Version>(),
@@ -752,7 +751,6 @@ constexpr auto CodeGeneratorRequest::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_CodeGeneratorRequest_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           CodeGeneratorRequest::IsInitializedImpl,
           &CodeGeneratorRequest::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<CodeGeneratorRequest>(),
@@ -1162,7 +1160,6 @@ constexpr auto CodeGeneratorResponse_File::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_CodeGeneratorResponse_File_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &CodeGeneratorResponse_File::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse_File>(),
@@ -1540,7 +1537,6 @@ constexpr auto CodeGeneratorResponse::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_CodeGeneratorResponse_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &CodeGeneratorResponse::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<CodeGeneratorResponse>(),
