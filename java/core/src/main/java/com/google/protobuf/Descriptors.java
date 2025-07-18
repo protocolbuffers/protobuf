@@ -70,7 +70,7 @@ public final class Descriptors {
   private static final EnumDescriptor[] EMPTY_ENUM_DESCRIPTORS = new EnumDescriptor[0];
   private static final ServiceDescriptor[] EMPTY_SERVICE_DESCRIPTORS = new ServiceDescriptor[0];
   private static final OneofDescriptor[] EMPTY_ONEOF_DESCRIPTORS = new OneofDescriptor[0];
-  private static final ConcurrentHashMap<Integer, FeatureSet> FEATURE_CACHE =
+  private static final ConcurrentHashMap<FeatureSet, FeatureSet> FEATURE_CACHE =
       new ConcurrentHashMap<>();
 
   @SuppressWarnings("NonFinalStaticField")
@@ -142,7 +142,7 @@ public final class Descriptors {
   }
 
   private static FeatureSet internFeatures(FeatureSet features) {
-    FeatureSet cached = FEATURE_CACHE.putIfAbsent(features.hashCode(), features);
+    FeatureSet cached = FEATURE_CACHE.putIfAbsent(features, features);
     if (cached == null) {
       return features;
     }
