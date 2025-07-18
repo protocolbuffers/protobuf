@@ -506,14 +506,14 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   ::std::string* PROTOBUF_NONNULL _internal_mutable_response_type_url();
 
   public:
-  // string edition = 8;
-  void clear_edition() ;
-  const ::std::string& edition() const;
+  // string edition = 8 [deprecated = true];
+  [[deprecated]]  void clear_edition() ;
+  [[deprecated]] const ::std::string& edition() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
-  void set_edition(Arg_&& arg, Args_... args);
-  ::std::string* PROTOBUF_NONNULL mutable_edition();
-  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_edition();
-  void set_allocated_edition(::std::string* PROTOBUF_NULLABLE value);
+  [[deprecated]] void set_edition(Arg_&& arg, Args_... args);
+  [[deprecated]] ::std::string* PROTOBUF_NONNULL mutable_edition();
+  [[deprecated]] [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_edition();
+  [[deprecated]] void set_allocated_edition(::std::string* PROTOBUF_NULLABLE value);
 
   private:
   const ::std::string& _internal_edition() const;
@@ -541,10 +541,10 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   void _internal_set_response_streaming(bool value);
 
   public:
-  // .google.protobuf.Syntax syntax = 7;
-  void clear_syntax() ;
-  ::google::protobuf::Syntax syntax() const;
-  void set_syntax(::google::protobuf::Syntax value);
+  // .google.protobuf.Syntax syntax = 7 [deprecated = true];
+  [[deprecated]]  void clear_syntax() ;
+  [[deprecated]] ::google::protobuf::Syntax syntax() const;
+  [[deprecated]] void set_syntax(::google::protobuf::Syntax value);
 
   private:
   ::google::protobuf::Syntax _internal_syntax() const;
@@ -1676,7 +1676,7 @@ Method::_internal_mutable_options() {
   return &_impl_.options_;
 }
 
-// .google.protobuf.Syntax syntax = 7;
+// .google.protobuf.Syntax syntax = 7 [deprecated = true];
 inline void Method::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
@@ -1700,7 +1700,7 @@ inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
   _impl_.syntax_ = value;
 }
 
-// string edition = 8;
+// string edition = 8 [deprecated = true];
 inline void Method::clear_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();

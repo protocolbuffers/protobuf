@@ -212,17 +212,17 @@ const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] ABSL_ATTR
     "rce_context\030\005 \001(\0132\036.google.protobuf.Sour"
     "ceContext\022&\n\006mixins\030\006 \003(\0132\026.google.proto"
     "buf.Mixin\022\'\n\006syntax\030\007 \001(\0162\027.google.proto"
-    "buf.Syntax\022\017\n\007edition\030\010 \001(\t\"\346\001\n\006Method\022\014"
+    "buf.Syntax\022\017\n\007edition\030\010 \001(\t\"\356\001\n\006Method\022\014"
     "\n\004name\030\001 \001(\t\022\030\n\020request_type_url\030\002 \001(\t\022\031"
     "\n\021request_streaming\030\003 \001(\010\022\031\n\021response_ty"
     "pe_url\030\004 \001(\t\022\032\n\022response_streaming\030\005 \001(\010"
     "\022(\n\007options\030\006 \003(\0132\027.google.protobuf.Opti"
-    "on\022\'\n\006syntax\030\007 \001(\0162\027.google.protobuf.Syn"
-    "tax\022\017\n\007edition\030\010 \001(\t\"#\n\005Mixin\022\014\n\004name\030\001 "
-    "\001(\t\022\014\n\004root\030\002 \001(\tBv\n\023com.google.protobuf"
-    "B\010ApiProtoP\001Z,google.golang.org/protobuf"
-    "/types/known/apipb\242\002\003GPB\252\002\036Google.Protob"
-    "uf.WellKnownTypesb\006proto3"
+    "on\022+\n\006syntax\030\007 \001(\0162\027.google.protobuf.Syn"
+    "taxB\002\030\001\022\023\n\007edition\030\010 \001(\tB\002\030\001\"#\n\005Mixin\022\014\n"
+    "\004name\030\001 \001(\t\022\014\n\004root\030\002 \001(\tBv\n\023com.google."
+    "protobufB\010ApiProtoP\001Z,google.golang.org/"
+    "protobuf/types/known/apipb\242\002\003GPB\252\002\036Googl"
+    "e.Protobuf.WellKnownTypesb\006proto3"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fapi_2eproto_deps[2] = {
@@ -233,7 +233,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fapi_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto = {
     false,
     false,
-    785,
+    793,
     descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto,
     "google/protobuf/api.proto",
     &descriptor_table_google_2fprotobuf_2fapi_2eproto_once,
@@ -969,7 +969,7 @@ Method::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::Method>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // string edition = 8;
+    // string edition = 8 [deprecated = true];
     {::_pbi::TcParser::FastUS1,
      {66, 3, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.edition_)}},
     // string name = 1;
@@ -990,7 +990,7 @@ Method::_table_ = {
     // repeated .google.protobuf.Option options = 6;
     {::_pbi::TcParser::FastMtR1,
      {50, 63, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.options_)}},
-    // .google.protobuf.Syntax syntax = 7;
+    // .google.protobuf.Syntax syntax = 7 [deprecated = true];
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Method, _impl_.syntax_), 6>(),
      {56, 6, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_)}},
   }}, {{
@@ -1008,9 +1008,9 @@ Method::_table_ = {
     {PROTOBUF_FIELD_OFFSET(Method, _impl_.response_streaming_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     // repeated .google.protobuf.Option options = 6;
     {PROTOBUF_FIELD_OFFSET(Method, _impl_.options_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-    // .google.protobuf.Syntax syntax = 7;
+    // .google.protobuf.Syntax syntax = 7 [deprecated = true];
     {PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_), _Internal::kHasBitsOffset + 6, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
-    // string edition = 8;
+    // string edition = 8 [deprecated = true];
     {PROTOBUF_FIELD_OFFSET(Method, _impl_.edition_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
   }},
   {{
@@ -1134,7 +1134,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
             target, stream);
   }
 
-  // .google.protobuf.Syntax syntax = 7;
+  // .google.protobuf.Syntax syntax = 7 [deprecated = true];
   if ((this_._impl_._has_bits_[0] & 0x00000040U) != 0) {
     if (this_._internal_syntax() != 0) {
       target = stream->EnsureSpace(target);
@@ -1143,7 +1143,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
     }
   }
 
-  // string edition = 8;
+  // string edition = 8 [deprecated = true];
   if ((this_._impl_._has_bits_[0] & 0x00000008U) != 0) {
     if (!this_._internal_edition().empty()) {
       const ::std::string& _s = this_._internal_edition();
@@ -1209,7 +1209,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
                                         this_._internal_response_type_url());
       }
     }
-    // string edition = 8;
+    // string edition = 8 [deprecated = true];
     if ((cached_has_bits & 0x00000008U) != 0) {
       if (!this_._internal_edition().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -1228,7 +1228,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
         total_size += 2;
       }
     }
-    // .google.protobuf.Syntax syntax = 7;
+    // .google.protobuf.Syntax syntax = 7 [deprecated = true];
     if ((cached_has_bits & 0x00000040U) != 0) {
       if (this_._internal_syntax() != 0) {
         total_size += 1 +
