@@ -17,13 +17,21 @@
 #include "hpb/backend/upb/interop.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
+#include "hpb/multibackend.h"
 #include "hpb/ptr.h"
 #include "upb/message/accessors.h"
 #include "upb/mini_table/extension_registry.h"
 
 namespace hpb {
+// upb has a notion of an ExtensionRegistry. We expect most callers to use
+// the generated registry, which utilizes upb linker arrays.
+//
+// Since google::protobuf::cpp does not have an extension registry, this'll
+// basically be a no-op if that backend is toggled. For the c++ backend,
+// hpb funcs must be called with hpb::ExtensionRegistry::EmptyRegistry().
 class ExtensionRegistry {
  public:
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
   // The lifetimes of the ExtensionRegistry and the Arena are disparate, but
   // the Arena must outlive the ExtensionRegistry.
   explicit ExtensionRegistry(const hpb::Arena& arena)
@@ -46,6 +54,7 @@ class ExtensionRegistry {
     static const ExtensionRegistry* r = NewGeneratedRegistry();
     return *r;
   }
+#endif
 
   static const ExtensionRegistry& EmptyRegistry() {
     static const ExtensionRegistry* r = new ExtensionRegistry();
@@ -53,6 +62,7 @@ class ExtensionRegistry {
   }
 
  private:
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
   friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
       const ExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
@@ -64,7 +74,7 @@ class ExtensionRegistry {
     upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
     return registry;
   }
-
+#endif
   explicit ExtensionRegistry() = default;
 };
 
