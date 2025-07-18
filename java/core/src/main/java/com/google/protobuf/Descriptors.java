@@ -348,7 +348,9 @@ public final class Descriptors {
         name = packageName + '.' + name;
       }
       final GenericDescriptor result = pool.findSymbol(name);
-      if (result instanceof FieldDescriptor && result.getFile() == this) {
+      if (result instanceof FieldDescriptor
+          && ((FieldDescriptor) result).isExtension()
+          && result.getFile() == this) {
         return (FieldDescriptor) result;
       } else {
         return null;
