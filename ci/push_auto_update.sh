@@ -20,7 +20,12 @@ if (echo "$previous_commit_title" | grep -q "^Auto-generate files"); then
 fi
 
 export BAZEL=bazelisk
+# LINT.IfChange(bazel_version)
 export USE_BAZEL_VERSION=7.6.1
+# Also remember to change third_party/protobuf/github/.bazeliskrc !!
+# LINT.ThenChange(
+# //depot/google3/devtools/kokoro/config/gcp/protobuf-build/pb-build-gcp-ubuntu.gcl:apple_bazel7.6_image,
+# //depot/google3/third_party/protobuf/release/kokoro/common/linux/bazel.sh:bazel7.6_image)
 
 ./regenerate_stale_files.sh
 
