@@ -562,6 +562,7 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.JavaFeatures)
   ABSL_DCHECK_NE(&from, _this);
+  PROTOBUF_BUILTIN_ASSUME_SEPARATE_STORAGE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
