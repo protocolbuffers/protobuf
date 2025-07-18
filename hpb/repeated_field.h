@@ -16,9 +16,9 @@
 
 #include "absl/strings/string_view.h"
 #include "hpb/backend/upb/interop.h"
+#include "hpb/backend/upb/repeated_field_iterator.h"
 #include "hpb/internal/template_help.h"
 #include "hpb/ptr.h"
-#include "hpb/repeated_field_iterator.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
