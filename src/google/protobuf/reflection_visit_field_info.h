@@ -703,6 +703,7 @@ struct RepeatedEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedField<FieldT>::iterator> Mutable() {
+    ABSL_DCHECK(!field->is_extension());
     auto& rep =
         *reflection->MutableRepeatedFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
@@ -804,6 +805,7 @@ struct RepeatedPtrEntityDynamicFieldInfoBase {
     return {const_repeated.cbegin(), const_repeated.cend()};
   }
   iterator_range<typename RepeatedPtrField<FieldT>::iterator> Mutable() {
+    ABSL_DCHECK(!field->is_extension());
     auto& rep =
         *reflection->MutableRepeatedPtrFieldInternal<FieldT>(&message, field);
     return {rep.begin(), rep.end()};
@@ -1399,6 +1401,7 @@ struct MapDynamicFieldInfo {
             reflection, message, field);
 
     map_field.Clear();
+    reflection->ClearHasBit(&message, field);
   }
 
   static constexpr bool is_repeated = true;    // NOLINT
