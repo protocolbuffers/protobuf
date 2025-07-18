@@ -129,10 +129,16 @@ message Method {
   repeated Option options = 6;
 
   // The source syntax of this method.
-  Syntax syntax = 7;
+  //
+  // This field should be ignored, instead the syntax should be inherited from
+  // Api. This is similar to Field and EnumValue.
+  Syntax syntax = 7 [deprecated = true];
 
   // The source edition string, only valid when syntax is SYNTAX_EDITIONS.
-  string edition = 8;
+  //
+  // This field should be ignored, instead the edition should be inherited from
+  // Api. This is similar to Field and EnumValue.
+  string edition = 8 [deprecated = true];
 }
 
 // Declares an API Interface to be included in this interface. The including
