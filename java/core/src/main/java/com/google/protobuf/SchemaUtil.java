@@ -648,8 +648,23 @@ final class SchemaUtil {
     if (value instanceof LazyFieldLite) {
       return CodedOutputStream.computeLazyFieldSize(fieldNumber, (LazyFieldLite) value);
     } else {
-      return CodedOutputStream.computeMessageSize(fieldNumber, (MessageLite) value, schema);
+      return computeMessageSize(fieldNumber, (MessageLite) value, schema);
     }
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded message field, including
+   * tag.
+   */
+  static int computeMessageSize(
+      final int fieldNumber, final MessageLite value, final Schema schema) {
+    return CodedOutputStream.computeTagSize(fieldNumber) + computeMessageSizeNoTag(value, schema);
+  }
+
+  /** Compute the number of bytes that would be needed to encode an embedded message field. */
+  static int computeMessageSizeNoTag(final MessageLite value, final Schema schema) {
+    return CodedOutputStream.computeLengthDelimitedFieldSize(
+        ((AbstractMessageLite) value).getSerializedSize(schema));
   }
 
   static int computeSizeMessageList(int fieldNumber, List<?> list) {
@@ -680,7 +695,7 @@ final class SchemaUtil {
       if (value instanceof LazyFieldLite) {
         size += CodedOutputStream.computeLazyFieldSizeNoTag((LazyFieldLite) value);
       } else {
-        size += CodedOutputStream.computeMessageSizeNoTag((MessageLite) value, schema);
+        size += computeMessageSizeNoTag((MessageLite) value, schema);
       }
     }
     return size;
@@ -696,6 +711,23 @@ final class SchemaUtil {
       size += CodedOutputStream.computeBytesSizeNoTag(list.get(i));
     }
     return size;
+  }
+
+  /** Compute the number of bytes that would be needed to encode a {@code group} field. */
+  @Deprecated
+  static int computeGroupSizeNoTag(final MessageLite value, Schema schema) {
+    return ((AbstractMessageLite) value).getSerializedSize(schema);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a {@code group} field, including
+   * tag.
+   *
+   * @deprecated groups are deprecated.
+   */
+  @Deprecated
+  static int computeGroupSize(final int fieldNumber, final MessageLite value, Schema schema) {
+    return CodedOutputStream.computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value, schema);
   }
 
   static int computeSizeGroupList(int fieldNumber, List<MessageLite> list) {
@@ -717,7 +749,7 @@ final class SchemaUtil {
     }
     int size = 0;
     for (int i = 0; i < length; i++) {
-      size += CodedOutputStream.computeGroupSize(fieldNumber, list.get(i), schema);
+      size += computeGroupSize(fieldNumber, list.get(i), schema);
     }
     return size;
   }

@@ -633,15 +633,6 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an embedded message field, including
-   * tag.
-   */
-  static int computeMessageSize(
-      final int fieldNumber, final MessageLite value, final Schema schema) {
-    return computeTagSize(fieldNumber) + computeMessageSizeNoTag(value, schema);
-  }
-
-  /**
    * Compute the number of bytes that would be needed to encode a MessageSet extension to the
    * stream. For historical reasons, the wire format differs from normal fields.
    */
@@ -852,11 +843,6 @@ public abstract class CodedOutputStream extends ByteOutput {
     return computeLengthDelimitedFieldSize(value.getSerializedSize());
   }
 
-  /** Compute the number of bytes that would be needed to encode an embedded message field. */
-  static int computeMessageSizeNoTag(final MessageLite value, final Schema schema) {
-    return computeLengthDelimitedFieldSize(((AbstractMessageLite) value).getSerializedSize(schema));
-  }
-
   static int computeLengthDelimitedFieldSize(int fieldLength) {
     return computeUInt32SizeNoTag(fieldLength) + fieldLength;
   }
@@ -1005,19 +991,6 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Write a {@code group} field, including tag, to the stream.
-   *
-   * @deprecated groups are deprecated.
-   */
-  @Deprecated
-  final void writeGroup(final int fieldNumber, final MessageLite value, Schema schema)
-      throws IOException {
-    writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
-    writeGroupNoTag(value, schema);
-    writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
-  }
-
-  /**
    * Write a {@code group} field to the stream.
    *
    * @deprecated groups are deprecated.
@@ -1025,16 +998,6 @@ public abstract class CodedOutputStream extends ByteOutput {
   @Deprecated
   public final void writeGroupNoTag(final MessageLite value) throws IOException {
     value.writeTo(this);
-  }
-
-  /**
-   * Write a {@code group} field to the stream.
-   *
-   * @deprecated groups are deprecated.
-   */
-  @Deprecated
-  final void writeGroupNoTag(final MessageLite value, Schema schema) throws IOException {
-    schema.writeTo(value, wrapper);
   }
 
   /**
@@ -1048,28 +1011,11 @@ public abstract class CodedOutputStream extends ByteOutput {
     return computeTagSize(fieldNumber) * 2 + value.getSerializedSize();
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code group} field, including
-   * tag.
-   *
-   * @deprecated groups are deprecated.
-   */
-  @Deprecated
-  static int computeGroupSize(final int fieldNumber, final MessageLite value, Schema schema) {
-    return computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value, schema);
-  }
-
   /** Compute the number of bytes that would be needed to encode a {@code group} field. */
   @Deprecated
   @InlineMe(replacement = "value.getSerializedSize()")
   public static int computeGroupSizeNoTag(final MessageLite value) {
     return value.getSerializedSize();
-  }
-
-  /** Compute the number of bytes that would be needed to encode a {@code group} field. */
-  @Deprecated
-  static int computeGroupSizeNoTag(final MessageLite value, Schema schema) {
-    return ((AbstractMessageLite) value).getSerializedSize(schema);
   }
 
   /**
