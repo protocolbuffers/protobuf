@@ -633,15 +633,6 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an embedded message field, including
-   * tag.
-   */
-  static int computeMessageSize(
-      final int fieldNumber, final MessageLite value, final Schema schema) {
-    return computeTagSize(fieldNumber) + computeMessageSizeNoTag(value, schema);
-  }
-
-  /**
    * Compute the number of bytes that would be needed to encode a MessageSet extension to the
    * stream. For historical reasons, the wire format differs from normal fields.
    */
@@ -850,11 +841,6 @@ public abstract class CodedOutputStream extends ByteOutput {
   /** Compute the number of bytes that would be needed to encode an embedded message field. */
   public static int computeMessageSizeNoTag(final MessageLite value) {
     return computeLengthDelimitedFieldSize(value.getSerializedSize());
-  }
-
-  /** Compute the number of bytes that would be needed to encode an embedded message field. */
-  static int computeMessageSizeNoTag(final MessageLite value, final Schema schema) {
-    return computeLengthDelimitedFieldSize(((AbstractMessageLite) value).getSerializedSize(schema));
   }
 
   static int computeLengthDelimitedFieldSize(int fieldLength) {
