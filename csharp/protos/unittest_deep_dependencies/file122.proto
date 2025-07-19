@@ -1,0 +1,2 @@
+syntax = "proto3";
+package unittest_deep_dependencies;
