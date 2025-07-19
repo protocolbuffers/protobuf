@@ -1306,15 +1306,16 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
     uint32_t* lhs_has_bits = MutableHasBits(lhs);
     uint32_t* rhs_has_bits = MutableHasBits(rhs);
 
-    int fields_with_has_bits = 0;
+    uint32_t max_has_bit_index = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
-      if (internal::cpp::HasHasbit(field)) {
-        ++fields_with_has_bits;
+      const uint32_t has_bit_index = schema_.HasBitIndex(field);
+      if (has_bit_index != static_cast<uint32_t>(-1)) {
+        max_has_bit_index = std::max(max_has_bit_index, has_bit_index);
       }
     }
 
-    int has_bits_size = (fields_with_has_bits + 31) / 32;
+    int has_bits_size = max_has_bit_index / 32 + 1;
 
     for (int i = 0; i < has_bits_size; i++) {
       std::swap(lhs_has_bits[i], rhs_has_bits[i]);

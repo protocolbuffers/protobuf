@@ -10680,7 +10680,7 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
   return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
-HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
+HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
   if (field->real_containing_oneof() || field->options().weak() ||
       field->is_extension()) {
@@ -10700,8 +10700,8 @@ HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
   return HasbitMode::kNoHasbit;
 }
 
-bool HasHasbit(const FieldDescriptor* field) {
-  return GetFieldHasbitMode(field) != HasbitMode::kNoHasbit;
+bool HasHasbitWithoutProfile(const FieldDescriptor* field) {
+  return GetFieldHasbitModeWithoutProfile(field) != HasbitMode::kNoHasbit;
 }
 
 static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {

@@ -306,7 +306,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
     return;
   }
 
-  ABSL_CHECK(internal::cpp::HasHasbit(field));
+  ABSL_CHECK(HasHasbit(field, opts));
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xU", 1u << (*idx % 32));

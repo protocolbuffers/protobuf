@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
-#include <new>
 #include <optional>
 #include <queue>
 #include <string>
@@ -70,6 +69,9 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+
+using ::google::protobuf::internal::cpp::HasbitMode;
+
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
 
@@ -1094,11 +1096,22 @@ std::optional<float> GetFieldGroupPresenceProbability(
   return 1.0 - all_absent_probability;
 }
 
+HasbitMode GetFieldHasbitMode(const FieldDescriptor* field,
+                              const Options& options) {
+  // TODO: Use profile data to determine the hasbit mode for fields
+  // with optional hasbits.
+  return internal::cpp::GetFieldHasbitModeWithoutProfile(field);
+}
+
+bool HasHasbit(const FieldDescriptor* field, const Options& options) {
+  return GetFieldHasbitMode(field, options) != HasbitMode::kNoHasbit;
+}
+
 bool IsStringInliningEnabled(const Options& options) {
   return options.force_inline_string || IsProfileDriven(options);
 }
 
-bool CanStringBeInlined(const FieldDescriptor* field) {
+bool CanStringBeInlined(const FieldDescriptor* field, const Options& options) {
   // TODO: Handle inlining for any.proto.
   if (IsAnyMessage(field->containing_type())) return false;
   if (field->containing_type()->options().map_entry()) return false;
@@ -1107,7 +1120,7 @@ bool CanStringBeInlined(const FieldDescriptor* field) {
   // We rely on has bits to distinguish field presence for release_$name$.  When
   // there is no hasbit, we cannot use the address of the string instance when
   // the field has been inlined.
-  if (!internal::cpp::HasHasbit(field)) return false;
+  if (!HasHasbit(field, options)) return false;
 
   if (!IsString(field)) return false;
   if (!field->default_value_string().empty()) return false;

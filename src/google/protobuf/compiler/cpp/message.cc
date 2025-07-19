@@ -66,9 +66,7 @@ namespace cpp {
 namespace {
 using ::google::protobuf::internal::WireFormat;
 using ::google::protobuf::internal::WireFormatLite;
-using ::google::protobuf::internal::cpp::GetFieldHasbitMode;
 using ::google::protobuf::internal::cpp::HasbitMode;
-using ::google::protobuf::internal::cpp::HasHasbit;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -255,8 +253,8 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
 }
 
 void EmitNonDefaultCheck(io::Printer* p, absl::string_view prefix,
-                         const FieldDescriptor* field) {
-  ABSL_CHECK(GetFieldHasbitMode(field) != HasbitMode::kTrueHasbit);
+                         const FieldDescriptor* field, const Options& options) {
+  ABSL_CHECK(GetFieldHasbitMode(field, options) != HasbitMode::kTrueHasbit);
   ABSL_CHECK(!field->is_repeated());
   ABSL_CHECK(!field->containing_oneof() || field->real_containing_oneof());
 
@@ -284,8 +282,9 @@ void EmitNonDefaultCheck(io::Printer* p, absl::string_view prefix,
   }
 }
 
-bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field) {
-  if (GetFieldHasbitMode(field) == HasbitMode::kTrueHasbit) {
+bool ShouldEmitNonDefaultCheck(const FieldDescriptor* field,
+                               const Options& options) {
+  if (GetFieldHasbitMode(field, options) == HasbitMode::kTrueHasbit) {
     return false;
   }
   return !field->is_repeated();
@@ -299,7 +298,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
   ABSL_DCHECK(IsArenaStringPtr(field, opts));
   p->Emit(
       {
-          {"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }},
+          {"condition", [&] { EmitNonDefaultCheck(p, prefix, field, opts); }},
           {"emit_body", [&] { emit_body(); }},
           {"set_empty_string",
            [&] {
@@ -347,12 +346,14 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
 // be generated if nondefault check is not emitted.
 void MayEmitIfNonDefaultCheck(io::Printer* p, absl::string_view prefix,
                               const FieldDescriptor* field,
+                              const Options& options,
                               absl::AnyInvocable<void()> emit_body,
                               bool with_enclosing_braces_always) {
-  if (ShouldEmitNonDefaultCheck(field)) {
+  if (ShouldEmitNonDefaultCheck(field, options)) {
     p->Emit(
         {
-            {"condition", [&] { EmitNonDefaultCheck(p, prefix, field); }},
+            {"condition",
+             [&] { EmitNonDefaultCheck(p, prefix, field, options); }},
             {"emit_body", [&] { emit_body(); }},
         },
         R"cc(
@@ -394,7 +395,7 @@ void MayEmitMutableIfNonDefaultCheck(io::Printer* p, absl::string_view prefix,
                                      const Options& opts,
                                      absl::AnyInvocable<void()> emit_body,
                                      bool with_enclosing_braces_always) {
-  if (ShouldEmitNonDefaultCheck(field)) {
+  if (ShouldEmitNonDefaultCheck(field, opts)) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
         IsArenaStringPtr(field, opts)) {
       // If a field is backed by std::string, when default initialized it will
@@ -409,12 +410,13 @@ void MayEmitMutableIfNonDefaultCheck(io::Printer* p, absl::string_view prefix,
   }
 
   // Fall back to the default implementation.
-  return MayEmitIfNonDefaultCheck(p, prefix, field, std::move(emit_body),
+  return MayEmitIfNonDefaultCheck(p, prefix, field, opts, std::move(emit_body),
                                   with_enclosing_braces_always);
 }
 
-bool HasInternalHasMethod(const FieldDescriptor* field) {
-  return !HasHasbit(field) &&
+bool HasInternalHasMethod(const FieldDescriptor* field,
+                          const Options& options) {
+  return !field->is_repeated() && !HasHasbit(field, options) &&
          field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
 }
 
@@ -649,7 +651,7 @@ MessageGenerator::MessageGenerator(
 
   // This message has hasbits iff one or more fields need one.
   for (auto field : optimized_order_) {
-    if (HasHasbit(field)) {
+    if (HasHasbit(field, options_)) {
       if (has_bit_indices_.empty()) {
         has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
       }
@@ -809,7 +811,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               }},
              {"internal_hazzer",
               [&] {
-                if (field->is_repeated() || !HasInternalHasMethod(field)) {
+                if (!HasInternalHasMethod(field, options_)) {
                   return;
                 }
                 p->Emit({Sub("_internal_has_name",
@@ -1121,7 +1123,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
         )cc");
     return;
   }
-  if (GetFieldHasbitMode(field) == HasbitMode::kTrueHasbit) {
+  if (GetFieldHasbitMode(field, options_) == HasbitMode::kTrueHasbit) {
     auto v = p->WithVars(HasBitVars(field));
     p->Emit(
         {Sub{"ASSUME",
@@ -1184,7 +1186,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
       }
     )cc");
   }
-  if (HasInternalHasMethod(field)) {
+  if (HasInternalHasMethod(field, options_)) {
     p->Emit(R"cc(
       inline bool $classname$::_internal_has_$name_internal$() const {
         return $has_field$;
@@ -1229,7 +1231,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                   )cc");
                 }
                 field_generators_.get(field).GenerateClearingCode(p);
-                if (HasHasbit(field)) {
+                if (HasHasbit(field, options_)) {
                   auto v = p->WithVars(HasBitVars(field));
                   p->Emit(R"cc(
                     $has_bits$[$has_array_index$] &= ~$has_mask$;
@@ -1324,8 +1326,8 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
     }
   };
 
-  if (!HasHasbit(field)) {
-    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+  if (!HasHasbit(field, options_)) {
+    MayEmitIfNonDefaultCheck(p, "this_.", field, options_, std::move(emit_body),
                              /*with_enclosing_braces_always=*/true);
     return;
   }
@@ -1347,7 +1349,8 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
               // Note that it's possible that the field has explicit presence.
               // In that case, nondefault check will not be emitted but
               // emit_body will still be emitted.
-              MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                       std::move(emit_body),
                                        /*with_enclosing_braces_always=*/false);
             }}},
           R"cc(
@@ -1360,7 +1363,7 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
-  if (!HasHasbit(field) || field->options().weak()) return;
+  if (!HasHasbit(field, options_) || field->options().weak()) return;
 
   int has_bit_index = has_bit_indices_[field->index()];
 
@@ -4388,7 +4391,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         if (field->is_repeated()) {
           generator.GenerateMergingCode(p);
         } else if (!field->is_required() && !field->is_repeated() &&
-                   !HasHasbit(field)) {
+                   !HasHasbit(field, options_)) {
           // Merge semantics without true field presence: primitive fields are
           // merged only if non-zero (numeric) or non-empty (string).
           MayEmitMutableIfNonDefaultCheck(
@@ -4408,13 +4411,13 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           format("}\n");
         } else {
           // Check hasbit, using cached bits.
-          ABSL_CHECK(HasHasbit(field));
+          ABSL_CHECK(HasHasbit(field, options_));
           int has_bit_index = has_bit_indices_[field->index()];
           format("if ($1$) {\n", GenerateConditionMaybeWithProbabilityForField(
                                      has_bit_index, field, options_));
           format.Indent();
 
-          if (GetFieldHasbitMode(field) == HasbitMode::kHintHasbit) {
+          if (GetFieldHasbitMode(field, options_) == HasbitMode::kHintHasbit) {
             // Merge semantics without true field presence: primitive fields are
             // merged only if non-zero (numeric) or non-empty (string).
             MayEmitMutableIfNonDefaultCheck(
@@ -4422,7 +4425,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                 /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
                 /*with_enclosing_braces_always=*/false);
           } else {
-            ABSL_DCHECK(GetFieldHasbitMode(field) == HasbitMode::kTrueHasbit);
+            ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
+                        HasbitMode::kTrueHasbit);
             if (check_has_byte && IsPOD(field)) {
               generator.GenerateCopyConstructorCode(p);
             } else {
@@ -4646,7 +4650,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
   }
 
   PrintFieldComment(Formatter{p}, field, options_);
-  if (HasHasbit(field)) {
+  if (HasHasbit(field, options_)) {
     int has_bit_index = HasBitIndex(field);
     int has_word_index = has_bit_index / 32;
     bool use_cached_has_bits = cached_has_bits_index == has_word_index;
@@ -4654,7 +4658,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
         {
             {"body",
              [&]() {
-               MayEmitIfNonDefaultCheck(p, "this_.", field,
+               MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
                                         std::move(emit_body),
                                         /*with_enclosing_braces_always=*/false);
              }},
@@ -4669,7 +4673,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
           }
         )cc");
   } else if (!field->is_required() && !field->is_repeated()) {
-    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+    MayEmitIfNonDefaultCheck(p, "this_.", field, options_, std::move(emit_body),
                              /*with_enclosing_braces_always=*/true);
   } else {
     emit_body();
@@ -4779,8 +4783,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   // compiler's emitted code might check has_y() even when has_x() is true.
   class LazySerializerEmitter {
    public:
-    LazySerializerEmitter(MessageGenerator* mg, io::Printer* p)
-        : mg_(mg), p_(p), cached_has_bit_index_(kNoHasbit) {}
+    LazySerializerEmitter(MessageGenerator* mg, io::Printer* p,
+                          const Options& options)
+        : mg_(mg), p_(p), options_(options), cached_has_bit_index_(kNoHasbit) {}
 
     ~LazySerializerEmitter() { Flush(); }
 
@@ -4794,7 +4799,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
         v_.push_back(field);
       } else {
         // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field) && field->has_presence()) {
+        if (HasHasbit(field, options_) && field->has_presence()) {
           // We speculatively load the entire _has_bits_[index] contents, even
           // if it is for only one field.  Deferring non-oneof emitting would
           // allow us to determine whether this is going to be useful.
@@ -4837,6 +4842,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
 
     MessageGenerator* mg_;
     io::Printer* p_;
+    const Options& options_;
     std::vector<const FieldDescriptor*> v_;
 
     // cached_has_bit_index_ maintains that:
@@ -4929,7 +4935,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
           {"handle_lazy_fields",
            [&] {
              // Merge fields and extension ranges, sorted by field number.
-             LazySerializerEmitter e(this, p);
+             LazySerializerEmitter e(this, p, options_);
              LazyExtensionRangeEmitter re(this, p);
              LargestWeakFieldHolder largest_weak_field;
              size_t i, j;
@@ -5480,8 +5486,8 @@ void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
                                                   io::Printer* p) const {
   absl::AnyInvocable<void()> emit_body = [&] {
   };
-  if (!HasHasbit(field)) {
-    MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+  if (!HasHasbit(field, options_)) {
+    MayEmitIfNonDefaultCheck(p, "this_.", field, options_, std::move(emit_body),
                              /*with_enclosing_braces_always=*/true);
     return;
   }
@@ -5504,7 +5510,8 @@ void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
               // Note that it's possible that the field has explicit presence.
               // In that case, nondefault check will not be emitted but
               // emit_body will still be emitted.
-              MayEmitIfNonDefaultCheck(p, "this_.", field, std::move(emit_body),
+              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                       std::move(emit_body),
                                        /*with_enclosing_braces_always=*/false);
             }}},
           R"cc(

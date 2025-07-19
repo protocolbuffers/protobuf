@@ -83,10 +83,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-using ::google::protobuf::internal::cpp::GetFieldHasbitMode;
+using ::google::protobuf::internal::cpp::GetFieldHasbitModeWithoutProfile;
 using ::google::protobuf::internal::cpp::GetUtf8CheckMode;
 using ::google::protobuf::internal::cpp::HasbitMode;
-using ::google::protobuf::internal::cpp::HasHasbit;
+using ::google::protobuf::internal::cpp::HasHasbitWithoutProfile;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
 using ::testing::AnyOf;
@@ -3252,9 +3252,9 @@ class HasHasbitTest : public testing::TestWithParam<HasHasbitTestParam> {
 TEST_P(HasHasbitTest, TestHasHasbitExplicitPresence) {
   EXPECT_EQ(GetField()->has_presence(),
             GetParam().expected_output.expected_has_presence);
-  EXPECT_EQ(GetFieldHasbitMode(GetField()),
+  EXPECT_EQ(GetFieldHasbitModeWithoutProfile(GetField()),
             GetParam().expected_output.expected_hasbitmode);
-  EXPECT_EQ(HasHasbit(GetField()),
+  EXPECT_EQ(HasHasbitWithoutProfile(GetField()),
             GetParam().expected_output.expected_has_hasbit);
 }
 

@@ -862,7 +862,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     // fields will have "hint hasbits" where
     // - if hasbit is unset, field is not present.
     // - if hasbit is set, field is present if it is also nonempty.
-    if (internal::cpp::HasHasbit(field)) {
+    if (internal::cpp::HasHasbitWithoutProfile(field)) {
       // TODO: b/112602698 - during Python textproto serialization, MapEntry
       // messages may be generated from DynamicMessage on the fly. C++
       // implementations of MapEntry messages always have hasbits, but

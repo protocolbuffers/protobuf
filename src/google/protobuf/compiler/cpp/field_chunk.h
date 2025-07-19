@@ -55,7 +55,7 @@ std::vector<FieldChunk> CollectFields(
   std::vector<FieldChunk> chunks;
   for (auto field : fields) {
     if (chunks.empty() || !equivalent(chunks.back().fields.back(), field)) {
-      chunks.emplace_back(internal::cpp::HasHasbit(field),
+      chunks.emplace_back(HasHasbit(field, options),
                           IsRarelyPresent(field, options),
                           ShouldSplit(field, options));
     }

@@ -31,7 +31,6 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-using ::google::protobuf::internal::cpp::HasHasbit;
 using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -411,7 +410,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
   // will have checked that this field is set.  If so, we can avoid redundant
   // checks against the default variable.
 
-  if (is_inlined() && HasHasbit(field_)) {
+  if (is_inlined() && HasHasbit(field_, options_)) {
     p->Emit(R"cc(
       $DCHK$(!$field_$.IsDefault());
     )cc");
@@ -433,8 +432,8 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
     return;
   }
 
-  p->Emit({{"Clear",
-            HasHasbit(field_) ? "ClearNonDefaultToEmpty" : "ClearToEmpty"}},
+  p->Emit({{"Clear", HasHasbit(field_, options_) ? "ClearNonDefaultToEmpty"
+                                                 : "ClearToEmpty"}},
           R"cc(
             $field_$.$Clear$();
           )cc");
@@ -501,7 +500,7 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
   p->Emit(
       {{"hazzer",
         [&] {
-          if (HasHasbit(field_)) {
+          if (HasHasbit(field_, options_)) {
             p->Emit(R"cc((from.$has_hasbit$) != 0)cc");
           } else {
             p->Emit(R"cc(!from._internal_$name$().empty())cc");
