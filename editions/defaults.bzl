@@ -78,6 +78,8 @@ def _embed_edition_defaults_impl(ctx):
         inputs = [ctx.file.defaults, ctx.file.template],
     )
 
+    return DefaultInfo(files = depset([ctx.outputs.output]))
+
 embed_edition_defaults = rule(
     doc = "genrule to embed edition defaults binary data into a template file.",
     attrs = {
@@ -103,8 +105,8 @@ embed_edition_defaults = rule(
         ),
         "encoding": attr.string(
             default = "octal",
-            values = ["octal", "base64"],
-            doc = "The encoding format to use for the binary data (octal or base64)",
+            values = ["octal", "base64", "xxd-i", "uint8_list"],
+            doc = "The encoding format to use for the binary data (octal, base64, xxd-i, uint8_list)",
         ),
         "_escape": attr.label(
             default = "//editions:internal_defaults_escape",

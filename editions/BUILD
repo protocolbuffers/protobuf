@@ -74,6 +74,26 @@ embed_edition_defaults(
     template = "defaults_test_embedded_base64.h.template",
 )
 
+embed_edition_defaults(
+    name = "embed_test_defaults_uint8_list",
+    testonly = True,
+    defaults = ":test_defaults_2023",
+    encoding = "uint8_list",
+    output = "defaults_test_embedded_uint8_list.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "defaults_test_embedded_uint8_list.h.template",
+)
+
+embed_edition_defaults(
+    name = "embed_test_defaults_xxd_i",
+    testonly = True,
+    defaults = ":test_defaults_2023",
+    encoding = "xxd-i",
+    output = "defaults_test_embedded_xxd_i.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "defaults_test_embedded_xxd_i.h.template",
+)
+
 cc_binary(
     name = "internal_defaults_escape",
     srcs = ["internal_defaults_escape.cc"],
@@ -94,6 +114,8 @@ cc_library(
     hdrs = [
         "defaults_test_embedded.h",
         "defaults_test_embedded_base64.h",
+        "defaults_test_embedded_uint8_list.h",
+        "defaults_test_embedded_xxd_i.h",
     ],
 )
 
