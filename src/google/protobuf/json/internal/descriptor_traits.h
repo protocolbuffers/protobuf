@@ -19,11 +19,13 @@
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
@@ -411,14 +413,19 @@ struct Proto3Type {
 
   static const Desc& ContainingType(Field f) { return f->parent(); }
   static bool IsMap(Field f) {
-    if (f->proto().kind() != google::protobuf::Field::TYPE_MESSAGE) {
+    if (!IsRepeated(f) ||
+        f->proto().kind() != google::protobuf::Field::TYPE_MESSAGE) {
       return false;
     }
 
     bool value = false;
     (void)WithFieldType(f, [&value](const Desc& desc) {
-      value = absl::c_any_of(desc.proto().options(), [&](auto& option) {
-        return option.name() == "map_entry";
+      value = absl::c_any_of(desc.proto().options(), [&](const auto& option) {
+        // Per the docs this should only be "map_entry", but some code failed to
+        // heed this and included the full name. Support both.
+        return option.name() == "map_entry" ||
+               option.name() == "google.protobuf.MessageOptions.map_entry" ||
+               option.name() == "google.protobuf.MessageOptions.map_entry";
       });
       return absl::OkStatus();
     });
@@ -431,6 +438,9 @@ struct Proto3Type {
   }
 
   static bool IsExplicitPresence(Field f) {
+    if (IsRepeated(f)) {
+      return false;
+    }
     // Implicit presence requires this weird check: in proto3 the following
     // cases support presence:
     // 1) Anything contained in a oneof (including things explicitly declared
@@ -439,8 +449,13 @@ struct Proto3Type {
     //    TYPE_MESSAGE here).
     if (f->parent().proto().syntax() == google::protobuf::SYNTAX_PROTO3) {
       return f->proto().oneof_index() != 0 ||
-             (f->proto().kind() == google::protobuf::Field::TYPE_MESSAGE &&
-              !IsRepeated(f));
+             f->proto().kind() == google::protobuf::Field::TYPE_MESSAGE;
+    }
+
+    if (f->parent().proto().syntax() == google::protobuf::SYNTAX_EDITIONS) {
+      return f->proto().kind() == google::protobuf::Field::TYPE_MESSAGE ||
+             f->proto().oneof_index() != 0 ||
+             f->features().field_presence() != google::protobuf::FeatureSet::IMPLICIT;
     }
 
     return f->proto().cardinality() ==
