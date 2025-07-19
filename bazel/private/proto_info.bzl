@@ -34,7 +34,7 @@ def _from_root(root, repo, relpath):
         #   - with sibling layout: `{root}/package/path`
         return _join(root, "" if repo.startswith("../") else repo, relpath)
 
-def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_path = "", workspace_root = "", bin_dir = None, allow_exports = None):
+def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_path = "", workspace_root = "", bin_dir = None, allow_exports = None, extension_declarations = []):
     """Constructs ProtoInfo.
 
     Args:
@@ -48,6 +48,7 @@ def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_pa
       workspace_root: (str) Set to ctx.workspace_root if this is not the main repository.
       bin_dir: (str) Set to ctx.bin_dir if _virtual_imports are used.
       allow_exports: (Target) The packages where this proto_library can be exported.
+      extension_declarations: ([File]) List of files containing extension declarations
 
     Returns:
       (ProtoInfo)
@@ -110,6 +111,11 @@ def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_pa
     else:
         proto_source_root = _empty_to_dot(_join(workspace_root, proto_path))
 
+    transitive_extension_declarations = depset(
+        direct = extension_declarations,
+        transitive = [dep.transitive_extension_declarations for dep in protoc_deps],
+    )
+
     proto_info = dict(
         direct_sources = srcs,
         transitive_sources = transitive_sources,
@@ -119,6 +125,7 @@ def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_pa
         transitive_proto_path = transitive_proto_path,
         check_deps_sources = check_deps_sources,
         transitive_imports = transitive_sources,
+        transitive_extension_declarations = transitive_extension_declarations,
     )
     if allow_exports:
         proto_info["allow_exports"] = allow_exports
@@ -160,6 +167,9 @@ ProtoInfo, _ = provider(
             If the library is a proxy library that has no sources, it contains the
             `check_deps_sources` from this library's direct `deps`.""",
         "allow_exports": """(Target) The packages where this proto_library can be exported.""",
+        "transitive_extension_declarations": """(depset[File]) The extension
+            declaration files associated with this rule and all transitive
+            dependencies.""",
 
         # Deprecated fields:
         "transitive_imports": """(depset[File]) Deprecated: use `transitive_sources` instead.""",
