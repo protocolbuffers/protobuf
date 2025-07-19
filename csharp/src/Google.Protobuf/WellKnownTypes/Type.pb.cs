@@ -155,6 +155,23 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Type(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      fields_.Clear();
+      oneofs_.Clear();
+      options_.Clear();
+      if (sourceContext_ != null) {
+        sourceContext_.Clear();
+      }
+      syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
+      edition_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
@@ -581,6 +598,24 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Field Clone() {
       return new Field(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      kind_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Kind.TypeUnknown;
+      cardinality_ = global::Google.Protobuf.WellKnownTypes.Field.Types.Cardinality.Unknown;
+      number_ = 0;
+      name_ = "";
+      typeUrl_ = "";
+      oneofIndex_ = 0;
+      packed_ = false;
+      options_.Clear();
+      jsonName_ = "";
+      defaultValue_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "kind" field.</summary>
@@ -1251,6 +1286,22 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Enum(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      enumvalue_.Clear();
+      options_.Clear();
+      if (sourceContext_ != null) {
+        sourceContext_.Clear();
+      }
+      syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
+      edition_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
@@ -1644,6 +1695,17 @@ namespace Google.Protobuf.WellKnownTypes {
       return new EnumValue(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      number_ = 0;
+      options_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
@@ -1919,6 +1981,18 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Option Clone() {
       return new Option(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      if (value_ != null) {
+        value_.Clear();
+      }
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "name" field.</summary>

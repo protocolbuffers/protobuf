@@ -74,6 +74,13 @@ namespace Google.Protobuf.TestProtos.OldGenerator {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void Clear() {
+      if(_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestMessage);
     }
