@@ -715,6 +715,27 @@ final class SchemaUtil {
     return size;
   }
 
+  /**
+   * Compute the number of bytes that would be needed to encode a {@code group} field.
+   *
+   * @deprecated groups are deprecated.
+   */
+  @Deprecated
+  static int computeGroupSizeNoTag(final MessageLite value, Schema schema) {
+    return ((AbstractMessageLite) value).getSerializedSize(schema);
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a {@code group} field, including
+   * tag.
+   *
+   * @deprecated groups are deprecated.
+   */
+  @Deprecated
+  static int computeGroupSize(final int fieldNumber, final MessageLite value, Schema schema) {
+    return CodedOutputStream.computeTagSize(fieldNumber) * 2 + computeGroupSizeNoTag(value, schema);
+  }
+
   static int computeSizeGroupList(int fieldNumber, List<MessageLite> list) {
     final int length = list.size();
     if (length == 0) {
@@ -734,7 +755,7 @@ final class SchemaUtil {
     }
     int size = 0;
     for (int i = 0; i < length; i++) {
-      size += CodedOutputStream.computeGroupSize(fieldNumber, list.get(i), schema);
+      size += computeGroupSize(fieldNumber, list.get(i), schema);
     }
     return size;
   }

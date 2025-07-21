@@ -142,9 +142,13 @@ final class CodedOutputStreamWriter implements Writer {
     output.writeGroup(fieldNumber, (MessageLite) value);
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   @Override
   public void writeGroup(int fieldNumber, Object value, Schema schema) throws IOException {
-    output.writeGroup(fieldNumber, (MessageLite) value, schema);
+    AbstractMessageLite<?, ?> message = (AbstractMessageLite) value;
+    output.writeTag(fieldNumber, WireFormat.WIRETYPE_START_GROUP);
+    schema.writeTo(message, this);
+    output.writeTag(fieldNumber, WireFormat.WIRETYPE_END_GROUP);
   }
 
   @Deprecated
@@ -334,6 +338,7 @@ final class CodedOutputStreamWriter implements Writer {
       }
     }
   }
+
   @Override
   public void writeUInt64List(int fieldNumber, List<Long> value, boolean packed)
       throws IOException {

@@ -1615,7 +1615,7 @@ final class MessageSchema<T> implements Schema<T> {
           if (isFieldPresent(
               message, i, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
             size +=
-                CodedOutputStream.computeGroupSize(
+                SchemaUtil.computeGroupSize(
                     number,
                     (MessageLite) unsafe.getObject(message, offset),
                     getMessageFieldSchema(i));
@@ -2038,7 +2038,7 @@ final class MessageSchema<T> implements Schema<T> {
         case 68: // ONEOF_GROUP:
           if (isOneofPresent(message, number, i)) {
             size +=
-                CodedOutputStream.computeGroupSize(
+                SchemaUtil.computeGroupSize(
                     number,
                     (MessageLite) unsafe.getObject(message, offset),
                     getMessageFieldSchema(i));
@@ -4204,13 +4204,20 @@ final class MessageSchema<T> implements Schema<T> {
 
       if (hasExtensions
           && registers.extensionRegistry != ExtensionRegistryLite.getEmptyRegistry()) {
-        position = decodeExtensionOrUnknownField(
-            tag, data, position, limit, message, defaultInstance,
-            (UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite>) unknownFieldSchema,
-            registers);
+        position =
+            decodeExtensionOrUnknownField(
+                tag,
+                data,
+                position,
+                limit,
+                message,
+                defaultInstance,
+                (UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite>) unknownFieldSchema,
+                registers);
       } else {
-        position = decodeUnknownField(
-            tag, data, position, limit, getMutableUnknownFields(message), registers);
+        position =
+            decodeUnknownField(
+                tag, data, position, limit, getMutableUnknownFields(message), registers);
       }
     }
     if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
@@ -4764,9 +4771,9 @@ final class MessageSchema<T> implements Schema<T> {
       final long offset = offset(typeAndOffset);
       switch (type(typeAndOffset)) {
         case 0: // DOUBLE:
-            return Double.doubleToRawLongBits(UnsafeUtil.getDouble(message, offset)) != 0L;
+          return Double.doubleToRawLongBits(UnsafeUtil.getDouble(message, offset)) != 0L;
         case 1: // FLOAT:
-            return Float.floatToRawIntBits(UnsafeUtil.getFloat(message, offset)) != 0;
+          return Float.floatToRawIntBits(UnsafeUtil.getFloat(message, offset)) != 0;
         case 2: // INT64:
           return UnsafeUtil.getLong(message, offset) != 0L;
         case 3: // UINT64:
