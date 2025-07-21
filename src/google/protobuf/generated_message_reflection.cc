@@ -28,7 +28,6 @@
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/const_init.h"
-#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -68,7 +67,6 @@ using google::protobuf::internal::ArenaStringPtr;
 using google::protobuf::internal::DescriptorTable;
 using google::protobuf::internal::ExtensionSet;
 using google::protobuf::internal::GenericTypeHandler;
-using google::protobuf::internal::GetEmptyString;
 using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::LazyField;
@@ -3955,7 +3953,7 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
   }
 }
 
-bool IsDescendant(Message& root, const Message& message) {
+bool IsDescendant(const Message& root, const Message& message) {
   const Reflection* reflection = root.GetReflection();
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(root, &fields);
@@ -3966,8 +3964,8 @@ bool IsDescendant(Message& root, const Message& message) {
 
     // Optional messages.
     if (!field->is_repeated()) {
-      Message* sub_message = reflection->MutableMessage(&root, field);
-      if (sub_message == &message || IsDescendant(*sub_message, message)) {
+      const Message& sub_message = reflection->GetMessage(root, field);
+      if (&sub_message == &message || IsDescendant(sub_message, message)) {
         return true;
       }
       continue;
@@ -3977,9 +3975,9 @@ bool IsDescendant(Message& root, const Message& message) {
     if (!IsMapFieldInApi(field)) {
       int count = reflection->FieldSize(root, field);
       for (int i = 0; i < count; i++) {
-        Message* sub_message =
-            reflection->MutableRepeatedMessage(&root, field, i);
-        if (sub_message == &message || IsDescendant(*sub_message, message)) {
+        const Message& sub_message =
+            reflection->GetRepeatedMessage(root, field, i);
+        if (&sub_message == &message || IsDescendant(sub_message, message)) {
           return true;
         }
       }
@@ -3993,10 +3991,11 @@ bool IsDescendant(Message& root, const Message& message) {
     // Skip map fields whose value type is not message.
     if (val_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
 
-    MapIterator end = reflection->MapEnd(&root, field);
-    for (auto iter = reflection->MapBegin(&root, field); iter != end; ++iter) {
-      Message* sub_message = iter.MutableValueRef()->MutableMessageValue();
-      if (sub_message == &message || IsDescendant(*sub_message, message)) {
+    const auto end = reflection->ConstMapEnd(&root, field);
+    for (auto iter = reflection->ConstMapBegin(&root, field); iter != end;
+         ++iter) {
+      const Message& sub_message = iter.GetValueRef().GetMessageValue();
+      if (&sub_message == &message || IsDescendant(sub_message, message)) {
         return true;
       }
     }
