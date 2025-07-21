@@ -1083,7 +1083,8 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
   if ([self class] == pbMessageClass) {
     // This is here to start up the "base" class descriptor.
     [self descriptor];
-    // Message shares extension method resolving with GPBRootObject so insure
+
+    // Message shares extension method resolving with GPBRootObject so ensure
     // it is started up at the same time.
     (void)[GPBRootObject class];
   } else if ([self superclass] == pbMessageClass) {
