@@ -457,19 +457,19 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldDocComment(printer, descriptor_, context_->options());
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$\n"
-        "public $value_type_pass_through_nullness$ "
-        "${$get$capitalized_name$OrDefault$}$(\n"
-        "    $key_type$ key,\n"
-        "    $value_type_pass_through_nullness$ defaultValue) {\n"
-        "  $key_null_check$\n"
-        "  java.util.Map<$type_parameters$> map =\n"
-        "      internalGet$capitalized_name$();\n"
-        "  return map.containsKey(key) ? map.get(key) : defaultValue;\n"
-        "}\n");
+    printer->Print(variables_,
+                   "@java.lang.Override\n"
+                   "$deprecation$\n"
+                   "public $value_type_pass_through_nullness$ "
+                   "${$get$capitalized_name$OrDefault$}$(\n"
+                   "    $key_type$ key,\n"
+                   "    $value_type_pass_through_nullness$ defaultValue) {\n"
+                   "  $key_null_check$\n"
+                   "  java.util.Map<$type_parameters$> map =\n"
+                   "      internalGet$capitalized_name$();\n"
+                   "  $boxed_value_type$ v = map.get(key);\n"
+                   "  return v != null ? v : defaultValue;\n"
+                   "}\n");
     printer->Annotate("{", "}", descriptor_);
     WriteFieldDocComment(printer, descriptor_, context_->options());
     printer->Print(variables_,
@@ -480,10 +480,11 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
                    "  $key_null_check$\n"
                    "  java.util.Map<$type_parameters$> map =\n"
                    "      internalGet$capitalized_name$();\n"
-                   "  if (!map.containsKey(key)) {\n"
+                   "  $boxed_value_type$ v = map.get(key);\n"
+                   "  if (v == null) {\n"
                    "    throw new java.lang.IllegalArgumentException();\n"
                    "  }\n"
-                   "  return map.get(key);\n"
+                   "  return v;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
