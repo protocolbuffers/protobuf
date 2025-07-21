@@ -8436,9 +8436,9 @@ void DescriptorBuilder::CheckVisibilityRules(FileDescriptor* file,
         CheckVisibilityRulesVisit(descriptor, proto, state);
       });
 
-  // In edition 2024 we only enforce STRICT visibilty rules. There are possibly
+  // In edition 2024 we only enforce STRICT visibility rules. There are possibly
   // more rules to come in future editions, but for now just apply the rule for
-  // enforcing nested symbol local visibilty. There is a single caveat for,
+  // enforcing nested symbol local visibility. There is a single caveat for,
   // allowing nested enums to have visibility set only when
   //
   // local msg { export enum {} reserved 1 to max; }
