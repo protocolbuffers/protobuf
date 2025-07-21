@@ -597,9 +597,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       CodedInputStream input, final WireFormat.FieldType type, boolean checkUtf8)
       throws IOException {
     if (checkUtf8) {
-      return WireFormat.readPrimitiveField(input, type, WireFormat.Utf8Validation.STRICT);
+      return input.readPrimitiveField(type, WireFormat.Utf8Validation.STRICT);
     } else {
-      return WireFormat.readPrimitiveField(input, type, WireFormat.Utf8Validation.LOOSE);
+      return input.readPrimitiveField(type, WireFormat.Utf8Validation.LOOSE);
     }
   }
 

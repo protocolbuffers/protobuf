@@ -1195,8 +1195,7 @@ class MessageReflection {
       } else {
         while (input.getBytesUntilLimit() > 0) {
           final Object value =
-              WireFormat.readPrimitiveField(
-                  input, field.getLiteType(), target.getUtf8Validation(field));
+              input.readPrimitiveField(field.getLiteType(), target.getUtf8Validation(field));
           target.addRepeatedField(field, value);
         }
       }
@@ -1231,9 +1230,7 @@ class MessageReflection {
           }
           break;
         default:
-          value =
-              WireFormat.readPrimitiveField(
-                  input, field.getLiteType(), target.getUtf8Validation(field));
+          value = input.readPrimitiveField(field.getLiteType(), target.getUtf8Validation(field));
           break;
       }
 
