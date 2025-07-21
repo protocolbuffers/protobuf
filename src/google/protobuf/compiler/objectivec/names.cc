@@ -21,6 +21,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
@@ -762,7 +764,41 @@ std::string FileClassName(const FileDescriptor* file) {
       UnderscoresToCamelCase(StripProto(BaseFileName(file)), true), "Root");
   // There aren't really any reserved words that end in "Root", but playing
   // it safe and checking.
-  return SanitizeNameForObjC(prefix, name, "_RootClass", nullptr);
+  return SanitizeNameForObjC(prefix, name, "_Class", nullptr);
+}
+
+std::string FileUniqueSymbolName(const FileDescriptor* file,
+                                 absl::string_view suffix) {
+  // Combines
+  // [FileClassPrefix]_[PackageDerivedString]_[FileClassName]_[suffix].
+
+  std::vector<absl::string_view> parts;
+  std::string prefix = FileClassPrefix(file);
+  if (!prefix.empty()) {
+    parts.push_back(prefix);
+  }
+  std::string package_derived_string = ProtoPackageSanitizedName(file);
+  if (!package_derived_string.empty()) {
+    parts.push_back(package_derived_string);
+  }
+  std::string fileClassName = FileClassName(file);
+  if (!fileClassName.empty()) {
+    parts.push_back(fileClassName);
+  }
+  if (!suffix.empty()) {
+    parts.push_back(suffix);
+  }
+  std::string joined = absl::StrJoin(parts, "_");
+  std::string sanitized = SanitizeNameForObjC("", joined, "_", nullptr);
+  return sanitized;
+}
+
+std::string ProtoPackageSanitizedName(const FileDescriptor* file) {
+  return SanitizeNameForObjC(
+      "",
+      UnderscoresToCamelCase(absl::StrReplaceAll(file->package(), {{".", "_"}}),
+                             true),
+      "_", nullptr);
 }
 
 std::string ClassNameWorker(const Descriptor* descriptor) {
@@ -855,6 +891,14 @@ std::string UnCamelCaseEnumShortName(absl::string_view name) {
     result += absl::ascii_toupper(c);
   }
   return result;
+}
+
+std::string ExtensionFunctionName(const FieldDescriptor* descriptor,
+                                  absl::string_view prefix) {
+  const std::string name = NameFromFieldDescriptor(descriptor);
+  const std::string camel_case_name = UnderscoresToCamelCase(name, true);
+  const std::string prefixed_name = absl::StrCat(prefix, "_", camel_case_name);
+  return SanitizeNameForObjC("", prefixed_name, "_Extension", nullptr);
 }
 
 std::string ExtensionMethodName(const FieldDescriptor* descriptor) {

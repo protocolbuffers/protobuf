@@ -56,12 +56,16 @@ class MessageGenerator {
   const std::string file_description_name_;
   const Descriptor* descriptor_;
   const GenerationOptions& generation_options_;
+  const bool emit_class_based_extensions_;
   FieldGeneratorMap field_generators_;
   const std::string class_name_;
   const std::string deprecated_attribute_;
   std::vector<const ExtensionGenerator*> extension_generators_;
   std::vector<std::unique_ptr<OneofGenerator>> oneof_generators_;
   int sizeof_has_storage_;
+
+  void GenerateClassBasedExtensionHeader(io::Printer* printer) const;
+  void GenerateFunctionBasedExtensionHeader(io::Printer* printer) const;
 };
 
 }  // namespace objectivec

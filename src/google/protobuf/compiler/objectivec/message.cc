@@ -199,6 +199,11 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
     : file_description_name_(file_description_name),
       descriptor_(descriptor),
       generation_options_(generation_options),
+      emit_class_based_extensions_(
+          generation_options.extension_generation_mode ==
+              ExtensionGenerationMode::kClassBased ||
+          generation_options.extension_generation_mode ==
+              ExtensionGenerationMode::kMigration),
       field_generators_(descriptor, generation_options),
       class_name_(ClassName(descriptor_)),
       deprecated_attribute_(
@@ -247,7 +252,10 @@ void MessageGenerator::AddExtensionGenerators(
     if (!generation_options_.strip_custom_options ||
         !ExtensionIsCustomOption(extension)) {
       extension_generators->push_back(std::make_unique<ExtensionGenerator>(
-          class_name_, extension, generation_options_));
+          class_name_,
+          absl::StrCat(ProtoPackageSanitizedName(descriptor_->file()), "_",
+                       class_name_, "_extension"),
+          extension, generation_options_));
       extension_generators_.push_back(extension_generators->back().get());
     }
   }
@@ -385,20 +393,56 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
   }
 
   if (!extension_generators_.empty()) {
-    printer->Emit({{"extension_info",
-                    [&] {
-                      for (const auto* generator : extension_generators_) {
-                        generator->GenerateMembersHeader(printer);
-                      }
-                    }}},
-                  R"objc(
+    if (emit_class_based_extensions_) {
+      GenerateClassBasedExtensionHeader(printer);
+    } else {
+      GenerateFunctionBasedExtensionHeader(printer);
+    }
+  }
+}
+
+void MessageGenerator::GenerateClassBasedExtensionHeader(
+    io::Printer* printer) const {
+  printer->Emit({{"extension_methods",
+                  [&] {
+                    for (const auto* generator : extension_generators_) {
+                      generator->GenerateMethodsHeader(printer);
+                    }
+                  }}},
+                R"objc(
                     @interface $classname$ (DynamicMethods)
 
-                    $extension_info$
+                    $extension_methods$
                     @end
                   )objc");
-    printer->Emit("\n");
-  }
+  printer->Emit("\n");
+}
+
+void MessageGenerator::GenerateFunctionBasedExtensionHeader(
+    io::Printer* printer) const {
+  printer->Emit({{"extension_functions",
+                  [&] {
+                    for (const auto* generator : extension_generators_) {
+                      generator->GenerateFunctionsHeader(printer);
+                    }
+                  }},
+                 {"extension_methods",
+                  [&] {
+                    for (const auto* generator : extension_generators_) {
+                      generator->GenerateMethodsHeader(printer);
+                    }
+                  }}},
+                R"objc(
+                    #pragma mark - $classname$ Extensions
+
+                    $extension_functions$
+
+                    @interface $classname$ (DynamicMethods)
+
+                    $extension_methods$
+                    @end
+                  )objc");
+  printer->Emit("\n");
 }
 
 void MessageGenerator::GenerateSource(io::Printer* printer) const {

@@ -1,0 +1,23 @@
+syntax = "proto2";
+
+package objc.protobuf.tests;
+
+option objc_class_prefix = "";
+
+message Car {
+  required string make = 1;
+  required string model = 2;
+  required string year = 3;
+
+  extensions 1000 to max;
+}
+
+extend Car {
+  optional string notes = 1000;
+}
+
+message DMV {
+  extend Car {
+    optional string vin = 1001;
+  }
+}
