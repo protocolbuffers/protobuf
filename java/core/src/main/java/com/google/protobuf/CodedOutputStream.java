@@ -470,7 +470,6 @@ public abstract class CodedOutputStream extends ByteOutput {
   public abstract void writeLazy(ByteBuffer value) throws IOException;
 
   // =================================================================
-  // =================================================================
 
   /**
    * Compute the number of bytes that would be needed to encode an {@code int32} field, including
