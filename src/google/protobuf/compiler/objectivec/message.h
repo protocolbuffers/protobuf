@@ -62,6 +62,8 @@ class MessageGenerator {
   std::vector<const ExtensionGenerator*> extension_generators_;
   std::vector<std::unique_ptr<OneofGenerator>> oneof_generators_;
   int sizeof_has_storage_;
+
+  void GenerateClassBasedExtensionHeader(io::Printer* printer) const;
 };
 
 }  // namespace objectivec
