@@ -42,7 +42,7 @@ class ExtensionRegistry {
     }
   }
 
-  static const ExtensionRegistry& generated_registry() {
+  static const ExtensionRegistry& GeneratedRegistry() {
     static const ExtensionRegistry* r = NewGeneratedRegistry();
     return *r;
   }

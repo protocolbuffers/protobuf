@@ -470,7 +470,7 @@ TEST(CppGeneratedCode, ParseWithExtensionRegistry) {
 
   TestModel parsed_model =
       ::hpb::Parse<TestModel>(bytes.value(),
-                              hpb::ExtensionRegistry::generated_registry())
+                              hpb::ExtensionRegistry::GeneratedRegistry())
           .value();
   EXPECT_EQ("Test123", parsed_model.str1());
   EXPECT_EQ(true, hpb::GetExtension(&parsed_model, theme).ok());
@@ -555,8 +555,7 @@ TEST(CppGeneratedCode, HasExtensionAndRegistry) {
 
   // Test with ExtensionRegistry
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(data,
-                              hpb::ExtensionRegistry::generated_registry())
+      ::hpb::Parse<TestModel>(data, hpb::ExtensionRegistry::GeneratedRegistry())
           .value();
   EXPECT_TRUE(::hpb::HasExtension(&parsed_model, theme));
 }

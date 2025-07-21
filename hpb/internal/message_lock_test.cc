@@ -129,7 +129,7 @@ TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceBothEager) {
 
 TEST(CppGeneratedCode, ConcurrentAccessDoesNotRaceGlobalInstance) {
   hpb::Arena arena;
-  TestConcurrentExtensionAccess(hpb::ExtensionRegistry::generated_registry());
+  TestConcurrentExtensionAccess(hpb::ExtensionRegistry::GeneratedRegistry());
 }
 
 }  // namespace
