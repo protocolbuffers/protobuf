@@ -86,3 +86,33 @@ cc_library(
         "@abseil-cpp//absl/strings:string_view",
     ],
 )
+
+cc_library(
+    name = "repeated_field_iterator",
+    hdrs = ["repeated_field_iterator.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        ":interop",
+        "//hpb",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_iterator_test",
+    srcs = ["repeated_field_iterator_test.cc"],
+    deps = [
+        ":interop",
+        ":repeated_field_iterator",
+        "//hpb:arena",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
