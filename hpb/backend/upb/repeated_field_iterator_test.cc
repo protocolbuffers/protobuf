@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "hpb/repeated_field_iterator.h"
+#include "hpb/backend/upb/repeated_field_iterator.h"
 
 #include <algorithm>
 #include <array>
