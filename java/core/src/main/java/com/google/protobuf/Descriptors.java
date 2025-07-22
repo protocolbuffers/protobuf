@@ -277,7 +277,7 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = pool.findSymbol(name);
+      final GenericDescriptor result = tables.findSymbol(name);
       if (result instanceof Descriptor && result.getFile() == this) {
         return (Descriptor) result;
       } else {
@@ -301,7 +301,7 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = pool.findSymbol(name);
+      final GenericDescriptor result = tables.findSymbol(name);
       if (result instanceof EnumDescriptor && result.getFile() == this) {
         return (EnumDescriptor) result;
       } else {
@@ -325,7 +325,7 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = pool.findSymbol(name);
+      final GenericDescriptor result = tables.findSymbol(name);
       if (result instanceof ServiceDescriptor && result.getFile() == this) {
         return (ServiceDescriptor) result;
       } else {
@@ -347,7 +347,7 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = pool.findSymbol(name);
+      final GenericDescriptor result = tables.findSymbol(name);
       if (result instanceof FieldDescriptor && result.getFile() == this) {
         return (FieldDescriptor) result;
       } else {
@@ -397,14 +397,15 @@ public final class Descriptors {
       // In the translation step (implemented by FileDescriptor's
       // constructor), we build an object tree mirroring the
       // FileDescriptorProto's tree and put all of the descriptors into the
-      // DescriptorPool's lookup tables.  In the linking step, we look up all
-      // type references in the DescriptorPool, so that, for example, a
+      // FileDescriptorTables's lookup tables.  In the linking step, we look up all
+      // type references in the FileDescriptorTables, so that, for example, a
       // FieldDescriptor for an embedded message contains a pointer directly
       // to the Descriptor for that message's type.  We also detect undefined
       // types in the linking step.
-      DescriptorPool pool = new DescriptorPool(dependencies, allowUnknownDependencies);
+      FileDescriptorTables tables =
+          new FileDescriptorTables(dependencies, allowUnknownDependencies);
       FileDescriptor result =
-          new FileDescriptor(proto, dependencies, pool, allowUnknownDependencies);
+          new FileDescriptor(proto, dependencies, tables, allowUnknownDependencies);
       result.crossLink();
       // Skip feature resolution until later for calls from gencode.
       if (!allowUnresolvedFeatures) {
@@ -536,16 +537,16 @@ public final class Descriptors {
     private final FieldDescriptor[] extensions;
     private final FileDescriptor[] dependencies;
     private final FileDescriptor[] publicDependencies;
-    private final DescriptorPool pool;
+    private final FileDescriptorTables tables;
     private volatile boolean featuresResolved;
 
     private FileDescriptor(
         final FileDescriptorProto proto,
         final FileDescriptor[] dependencies,
-        final DescriptorPool pool,
+        final FileDescriptorTables tables,
         boolean allowUnknownDependencies)
         throws DescriptorValidationException {
-      this.pool = pool;
+      this.tables = tables;
       this.proto = proto;
       this.dependencies = dependencies.clone();
       this.featuresResolved = false;
@@ -573,7 +574,7 @@ public final class Descriptors {
       this.publicDependencies = new FileDescriptor[publicDependencies.size()];
       publicDependencies.toArray(this.publicDependencies);
 
-      pool.addPackage(getPackage(), this);
+      tables.addPackage(getPackage(), this);
 
       messageTypes =
           (proto.getMessageTypeCount() > 0)
@@ -611,7 +612,7 @@ public final class Descriptors {
     /** Create a placeholder FileDescriptor for a message Descriptor. */
     FileDescriptor(String packageName, Descriptor message) throws DescriptorValidationException {
       this.parent = null;
-      this.pool = new DescriptorPool(new FileDescriptor[0], true);
+      this.tables = new FileDescriptorTables(new FileDescriptor[0], true);
       this.proto =
           FileDescriptorProto.newBuilder()
               .setName(message.getFullName() + ".placeholder.proto")
@@ -627,8 +628,8 @@ public final class Descriptors {
       services = EMPTY_SERVICE_DESCRIPTORS;
       extensions = EMPTY_FIELD_DESCRIPTORS;
 
-      pool.addPackage(packageName, this);
-      pool.addSymbol(message);
+      tables.addPackage(packageName, this);
+      tables.addSymbol(message);
     }
 
     public void resolveAllFeaturesImmutable() {
@@ -919,7 +920,7 @@ public final class Descriptors {
      * @return The field's descriptor, or {@code null} if not found.
      */
     public FieldDescriptor findFieldByName(final String name) {
-      final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
+      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
       if (result instanceof FieldDescriptor) {
         return (FieldDescriptor) result;
       } else {
@@ -945,7 +946,7 @@ public final class Descriptors {
      * @return The types's descriptor, or {@code null} if not found.
      */
     public Descriptor findNestedTypeByName(final String name) {
-      final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
+      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
       if (result instanceof Descriptor) {
         return (Descriptor) result;
       } else {
@@ -960,7 +961,7 @@ public final class Descriptors {
      * @return The types's descriptor, or {@code null} if not found.
      */
     public EnumDescriptor findEnumTypeByName(final String name) {
-      final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
+      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
       if (result instanceof EnumDescriptor) {
         return (EnumDescriptor) result;
       } else {
@@ -1102,7 +1103,7 @@ public final class Descriptors {
       }
       this.realOneofCount = this.oneofs.length - syntheticOneofCount;
 
-      file.pool.addSymbol(this);
+      file.tables.addSymbol(this);
 
       // NOTE: The defined extension ranges are guaranteed to be disjoint.
       if (proto.getExtensionRangeCount() > 0) {
@@ -1805,7 +1806,7 @@ public final class Descriptors {
         extensionScope = null;
       }
 
-      file.pool.addSymbol(this);
+      file.tables.addSymbol(this);
     }
 
     @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
@@ -1955,8 +1956,8 @@ public final class Descriptors {
     private void crossLink() throws DescriptorValidationException {
       if (proto.hasExtendee()) {
         final GenericDescriptor extendee =
-            file.pool.lookupSymbol(
-                proto.getExtendee(), this, DescriptorPool.SearchFilter.TYPES_ONLY);
+            file.tables.lookupSymbol(
+                proto.getExtendee(), this, FileDescriptorTables.SearchFilter.TYPES_ONLY);
         if (!(extendee instanceof Descriptor)) {
           throw new DescriptorValidationException(
               this, '\"' + proto.getExtendee() + "\" is not a message type.");
@@ -1976,8 +1977,8 @@ public final class Descriptors {
 
       if (proto.hasTypeName()) {
         final GenericDescriptor typeDescriptor =
-            file.pool.lookupSymbol(
-                proto.getTypeName(), this, DescriptorPool.SearchFilter.TYPES_ONLY);
+            file.tables.lookupSymbol(
+                proto.getTypeName(), this, FileDescriptorTables.SearchFilter.TYPES_ONLY);
 
         if (!proto.hasType()) {
           // Choose field type based on symbol.
@@ -2269,7 +2270,7 @@ public final class Descriptors {
      * @return the value's descriptor, or {@code null} if not found
      */
     public EnumValueDescriptor findValueByName(final String name) {
-      final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
+      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
       if (result instanceof EnumValueDescriptor) {
         return (EnumValueDescriptor) result;
       } else {
@@ -2395,7 +2396,7 @@ public final class Descriptors {
       this.distinctNumbers = j + 1;
       Arrays.fill(valuesSortedByNumber, distinctNumbers, proto.getValueCount(), null);
 
-      file.pool.addSymbol(this);
+      file.tables.addSymbol(this);
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */
@@ -2534,7 +2535,7 @@ public final class Descriptors {
       this.proto = proto;
       this.type = parent;
       this.fullName = parent.getFullName() + '.' + proto.getName();
-      file.pool.addSymbol(this);
+      file.tables.addSymbol(this);
     }
 
     // Create an unknown enum value.
@@ -2548,7 +2549,7 @@ public final class Descriptors {
       this.type = parent;
       this.fullName = parent.getFullName() + '.' + proto.getName();
 
-      // Don't add this descriptor into pool.
+      // Don't add this descriptor into tables.
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */
@@ -2635,7 +2636,7 @@ public final class Descriptors {
      * @return the method's descriptor, or {@code null} if not found
      */
     public MethodDescriptor findMethodByName(final String name) {
-      final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
+      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
       if (result instanceof MethodDescriptor) {
         return (MethodDescriptor) result;
       } else {
@@ -2664,7 +2665,7 @@ public final class Descriptors {
         methods[i] = new MethodDescriptor(proto.getMethod(i), file, this, i);
       }
 
-      file.pool.addSymbol(this);
+      file.tables.addSymbol(this);
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */
@@ -2802,7 +2803,7 @@ public final class Descriptors {
 
       fullName = parent.getFullName() + '.' + proto.getName();
 
-      file.pool.addSymbol(this);
+      file.tables.addSymbol(this);
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */
@@ -2813,8 +2814,9 @@ public final class Descriptors {
     private void crossLink() throws DescriptorValidationException {
       final GenericDescriptor input =
           getFile()
-              .pool
-              .lookupSymbol(proto.getInputType(), this, DescriptorPool.SearchFilter.TYPES_ONLY);
+              .tables
+              .lookupSymbol(
+                  proto.getInputType(), this, FileDescriptorTables.SearchFilter.TYPES_ONLY);
       if (!(input instanceof Descriptor)) {
         throw new DescriptorValidationException(
             this, '\"' + proto.getInputType() + "\" is not a message type.");
@@ -2823,8 +2825,9 @@ public final class Descriptors {
 
       final GenericDescriptor output =
           getFile()
-              .pool
-              .lookupSymbol(proto.getOutputType(), this, DescriptorPool.SearchFilter.TYPES_ONLY);
+              .tables
+              .lookupSymbol(
+                  proto.getOutputType(), this, FileDescriptorTables.SearchFilter.TYPES_ONLY);
       if (!(output instanceof Descriptor)) {
         throw new DescriptorValidationException(
             this, '\"' + proto.getOutputType() + "\" is not a message type.");
@@ -2860,7 +2863,7 @@ public final class Descriptors {
 
   /**
    * All descriptors implement this to make it easier to implement tools like {@code
-   * DescriptorPool}.
+   * FileDescriptorTables}.
    */
   public abstract static class GenericDescriptor {
     // Private constructor to prevent subclasses outside of com.google.protobuf.Descriptors
@@ -3015,16 +3018,16 @@ public final class Descriptors {
    * A private helper class which contains lookup tables containing all the descriptors defined in a
    * particular file.
    */
-  private static final class DescriptorPool {
+  private static final class FileDescriptorTables {
 
-    /** Defines what subclass of descriptors to search in the descriptor pool. */
+    /** Defines what subclass of descriptors to search in the descriptor tables. */
     enum SearchFilter {
       TYPES_ONLY,
       AGGREGATES_ONLY,
       ALL_SYMBOLS
     }
 
-    DescriptorPool(final FileDescriptor[] dependencies, boolean allowUnknownDependencies) {
+    FileDescriptorTables(final FileDescriptor[] dependencies, boolean allowUnknownDependencies) {
       this.dependencies =
           Collections.newSetFromMap(
               new IdentityHashMap<FileDescriptor, Boolean>(dependencies.length));
@@ -3081,7 +3084,7 @@ public final class Descriptors {
       }
 
       for (final FileDescriptor dependency : dependencies) {
-        result = dependency.pool.descriptorsByName.get(fullName);
+        result = dependency.tables.descriptorsByName.get(fullName);
         if (result != null) {
           if ((filter == SearchFilter.ALL_SYMBOLS)
               || ((filter == SearchFilter.TYPES_ONLY) && isType(result))
@@ -3115,7 +3118,7 @@ public final class Descriptors {
     GenericDescriptor lookupSymbol(
         final String name,
         final GenericDescriptor relativeTo,
-        final DescriptorPool.SearchFilter filter)
+        final FileDescriptorTables.SearchFilter filter)
         throws DescriptorValidationException {
 
       GenericDescriptor result;
@@ -3162,7 +3165,9 @@ public final class Descriptors {
 
             // Append firstPart and try to find
             scopeToTry.append(firstPart);
-            result = findSymbol(scopeToTry.toString(), DescriptorPool.SearchFilter.AGGREGATES_ONLY);
+            result =
+                findSymbol(
+                    scopeToTry.toString(), FileDescriptorTables.SearchFilter.AGGREGATES_ONLY);
 
             if (result != null) {
               if (firstPartLength != -1) {
