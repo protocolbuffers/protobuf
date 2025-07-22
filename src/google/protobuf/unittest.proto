@@ -2695,3 +2695,7 @@ message TestMessageForMove_Large {
   repeated string s118 = 118;
   repeated string s119 = 119;
 }
+
+message NestedSameName {
+  enum NestedSameName { NESTED_SAME_NAME_UNKNOWN = 0; }
+}
