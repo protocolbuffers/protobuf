@@ -479,7 +479,7 @@ public final class Timestamps {
     checkValid(from);
     checkValid(to);
     return Durations.normalizedDuration(
-        checkedSubtract(to.getSeconds(), from.getSeconds()),
+        Math.subtractExact(to.getSeconds(), from.getSeconds()),
         checkedSubtract(to.getNanos(), from.getNanos()));
   }
 

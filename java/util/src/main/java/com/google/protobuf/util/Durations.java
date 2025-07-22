@@ -440,7 +440,7 @@ public final class Durations {
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toNanos(Duration duration) {
     checkValid(duration);
-    return checkedAdd(
+    return Math.addExact(
         checkedMultiply(duration.getSeconds(), NANOS_PER_SECOND), duration.getNanos());
   }
 
