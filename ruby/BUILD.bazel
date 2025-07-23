@@ -29,6 +29,7 @@ config_setting(
     flag_values = {
         ":ffi": "enabled",
     },
+    visibility = ["//ruby:__subpackages__"],
 )
 
 config_setting(
@@ -36,6 +37,7 @@ config_setting(
     flag_values = {
         ":ffi": "disabled",
     },
+    visibility = ["//ruby:__subpackages__"],
 )
 
 selects.config_setting_group(
@@ -76,6 +78,7 @@ selects.config_setting_group(
         ":ffi_enabled",
         "@platforms//os:osx",
     ],
+    visibility = ["//ruby:__subpackages__"],
 )
 
 selects.config_setting_group(
@@ -84,6 +87,7 @@ selects.config_setting_group(
         ":ffi_enabled",
         "@platforms//os:linux",
     ],
+    visibility = ["//ruby:__subpackages__"],
 )
 
 internal_copy_files(

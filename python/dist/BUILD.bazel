@@ -130,6 +130,7 @@ selects.config_setting_group(
         ":osx_x86_64_release",
         ":osx_x86_64_local",
     ],
+    visibility = ["//python:__subpackages__"],
 )
 
 config_setting(
@@ -157,6 +158,7 @@ selects.config_setting_group(
         ":osx_aarch64_release",
         ":osx_aarch64_local",
     ],
+    visibility = ["//python:__subpackages__"],
 )
 
 config_setting(
@@ -189,6 +191,7 @@ selects.config_setting_group(
         ":windows_x86_32_release",
         ":windows_x86_32_local",
     ],
+    visibility = ["//python:__subpackages__"],
 )
 
 config_setting(
