@@ -17,13 +17,24 @@
 #include "hpb/backend/upb/interop.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
+#include "hpb/multibackend.h"
 #include "hpb/ptr.h"
 #include "upb/message/accessors.h"
 #include "upb/mini_table/extension_registry.h"
 
 namespace hpb {
+// upb has a notion of an ExtensionRegistry. We expect most callers to use
+// the generated registry, which utilizes upb linker arrays. It is also possible
+// to call hpb funcs with hpb::ExtensionRegistry::EmptyRegistry().
+//
+// Since google::protobuf::cpp only has the generated registry, hpb funcs
+// that use an extension registry must be invoked with
+// hpb::ExtensionRegistry::generated_registry(). Note that
+// hpb::ExtensionRegistry::empty_registry() does not even exist
+// for the cpp backend.
 class ExtensionRegistry {
  public:
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
   // The lifetimes of the ExtensionRegistry and the Arena are disparate, but
   // the Arena must outlive the ExtensionRegistry.
   explicit ExtensionRegistry(const hpb::Arena& arena)
@@ -42,29 +53,37 @@ class ExtensionRegistry {
     }
   }
 
+  static const ExtensionRegistry& EmptyRegistry() {
+    static const ExtensionRegistry* r = new ExtensionRegistry();
+    return *r;
+  }
+#endif
+
   static const ExtensionRegistry& generated_registry() {
     static const ExtensionRegistry* r = NewGeneratedRegistry();
     return *r;
   }
 
-  static const ExtensionRegistry& EmptyRegistry() {
-    static const ExtensionRegistry* r = new ExtensionRegistry();
-    return *r;
-  }
-
  private:
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
   friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
       const ExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
-
+#endif
   // TODO: b/379100963 - Introduce ShutdownHpbLibrary
   static const ExtensionRegistry* NewGeneratedRegistry() {
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
     static hpb::Arena* global_arena = new hpb::Arena();
     ExtensionRegistry* registry = new ExtensionRegistry(*global_arena);
     upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
     return registry;
+#elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
+    ExtensionRegistry* registry = new ExtensionRegistry();
+    return registry;
+#else
+#error "Unsupported hpb backend"
+#endif
   }
-
   explicit ExtensionRegistry() = default;
 };
 
