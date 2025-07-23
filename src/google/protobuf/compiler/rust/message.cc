@@ -166,16 +166,9 @@ void IntoProxiedForMessage(Context& ctx, const Descriptor& msg) {
         impl<'msg> $pb$::IntoProxied<$Msg$> for $Msg$View<'msg> {
           fn into_proxied(self, _private: $pbi$::Private) -> $Msg$ {
             let mut dst = $Msg$::new();
-            let dst_raw = $pbr$::UpbGetMessagePtrMut::get_raw_message_mut(&mut dst, $pbi$::Private);
-            let dst_arena = $pbr$::UpbGetArena::get_arena(&mut dst, $pbi$::Private);
-            let src_raw = $pbr$::UpbGetMessagePtr::get_raw_message(&self, $pbi$::Private);
-
-            unsafe { $pbr$::upb_Message_DeepCopy(
-              dst_raw,
-              src_raw,
-              <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-              dst_arena.raw(),
-            ) };
+            assert!(unsafe {
+              dst.inner.ptr_mut().deep_copy(self.inner.ptr(), dst.inner.arena())
+            });
             dst
           }
         }
