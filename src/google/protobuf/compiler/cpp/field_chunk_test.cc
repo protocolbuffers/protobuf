@@ -1,5 +1,3 @@
-#include "google/protobuf/compiler/cpp/field_chunk.h"
-
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -9,6 +7,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/cpp/field_chunk_abcdefghijklmnopqrstuvwxyz_abcdefghijklmnopqrstuvwxyz.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/unittest.pb.h"
 

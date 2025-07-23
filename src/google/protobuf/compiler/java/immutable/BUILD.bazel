@@ -4,7 +4,7 @@
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
-    name = "fg",
+    name = "field_generator",
     hdrs = ["field_generator.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
@@ -18,7 +18,7 @@ cc_library(
 # We have to expose the field generators individually (instead of just through the factory) because
 # the mutable generators delegate to them directly.
 cc_library(
-    name = "fgs",
+    name = "field_generators",
     srcs = [
         "enum_field.cc",
         "map_field.cc",
@@ -36,7 +36,7 @@ cc_library(
     copts = COPTS,
     strip_include_prefix = "/src",
     deps = [
-        ":fg",
+        ":field_generator",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler/java:context",
@@ -54,15 +54,15 @@ cc_library(
 )
 
 cc_library(
-    name = "mfg",
+    name = "make_field_generators",
     srcs = ["make_field_gens.cc"],
     hdrs = ["make_field_gens.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
     deps = [
-        ":fg",
-        ":fgs",
+        ":field_generator",
+        ":field_generators",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
@@ -109,7 +109,7 @@ cc_library(
 )
 
 cc_library(
-    name = "full",
+    name = "immutable",
     srcs = [
         "extension.cc",
         "generator_factory.cc",
@@ -135,8 +135,8 @@ cc_library(
     ],
     deps = [
         ":eg",
-        ":fg",
-        ":mfg",
+        ":field_generator",
+        ":make_field_generators",
         ":service",
         "//src/google/protobuf",
         "//src/google/protobuf:port",

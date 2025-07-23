@@ -9,13 +9,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ENUM_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ENUM_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_FIELD_H__
 
 #include <string>
 
-#include "absl/container/flat_hash_map.h"
-#include "google/protobuf/compiler/java/full/field_generator.h"
+#include "google/protobuf/compiler/java/immutable/field_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -35,15 +34,17 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
+class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
  public:
-  explicit ImmutableEnumFieldGenerator(const FieldDescriptor* descriptor,
-                                       int messageBitIndex, int builderBitIndex,
-                                       Context* context);
-  ImmutableEnumFieldGenerator(const ImmutableEnumFieldGenerator&) = delete;
-  ImmutableEnumFieldGenerator& operator=(const ImmutableEnumFieldGenerator&) =
+  explicit ImmutableMessageFieldGenerator(const FieldDescriptor* descriptor,
+                                          int messageBitIndex,
+                                          int builderBitIndex,
+                                          Context* context);
+  ImmutableMessageFieldGenerator(const ImmutableMessageFieldGenerator&) =
       delete;
-  ~ImmutableEnumFieldGenerator() override;
+  ImmutableMessageFieldGenerator& operator=(
+      const ImmutableMessageFieldGenerator&) = delete;
+  ~ImmutableMessageFieldGenerator() override;
 
   // implements ImmutableFieldGenerator
   // ---------------------------------------
@@ -56,9 +57,9 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
   void GenerateBuilderMembers(io::Printer* printer) const override;
   void GenerateInitializationCode(io::Printer* printer) const override;
   void GenerateBuilderClearCode(io::Printer* printer) const override;
-  void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuildingCode(io::Printer* printer) const override;
+  void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
   void GenerateFieldBuilderInitializationCode(
@@ -73,43 +74,53 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
   int message_bit_index_;
   int builder_bit_index_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
-  Context* context_;
   ClassNameResolver* name_resolver_;
+  Context* context_;
+
+  virtual void PrintNestedBuilderCondition(
+      io::Printer* printer, const char* regular_case,
+      const char* nested_builder_case) const;
+  virtual void PrintNestedBuilderFunction(
+      io::Printer* printer, const char* method_prototype,
+      const char* regular_case, const char* nested_builder_case,
+      const char* trailing_code,
+      std::optional<io::AnnotationCollector::Semantic> semantic =
+          std::nullopt) const;
 };
 
-class ImmutableEnumOneofFieldGenerator : public ImmutableEnumFieldGenerator {
+class ImmutableMessageOneofFieldGenerator
+    : public ImmutableMessageFieldGenerator {
  public:
-  ImmutableEnumOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                   int messageBitIndex, int builderBitIndex,
-                                   Context* context);
-  ImmutableEnumOneofFieldGenerator(const ImmutableEnumOneofFieldGenerator&) =
-      delete;
-  ImmutableEnumOneofFieldGenerator& operator=(
-      const ImmutableEnumOneofFieldGenerator&) = delete;
-  ~ImmutableEnumOneofFieldGenerator() override;
+  ImmutableMessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+                                      int messageBitIndex, int builderBitIndex,
+                                      Context* context);
+  ImmutableMessageOneofFieldGenerator(
+      const ImmutableMessageOneofFieldGenerator&) = delete;
+  ImmutableMessageOneofFieldGenerator& operator=(
+      const ImmutableMessageOneofFieldGenerator&) = delete;
+  ~ImmutableMessageOneofFieldGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
   void GenerateBuilderClearCode(io::Printer* printer) const override;
-  void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuildingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
-  void GenerateEqualsCode(io::Printer* printer) const override;
-  void GenerateHashCode(io::Printer* printer) const override;
 };
 
-class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {
+class RepeatedImmutableMessageFieldGenerator
+    : public ImmutableMessageFieldGenerator {
  public:
-  explicit RepeatedImmutableEnumFieldGenerator(
+  explicit RepeatedImmutableMessageFieldGenerator(
       const FieldDescriptor* descriptor, int messageBitIndex,
       int builderBitIndex, Context* context);
-  RepeatedImmutableEnumFieldGenerator(
-      const RepeatedImmutableEnumFieldGenerator&) = delete;
-  RepeatedImmutableEnumFieldGenerator& operator=(
-      const RepeatedImmutableEnumFieldGenerator&) = delete;
-  ~RepeatedImmutableEnumFieldGenerator() override;
+  RepeatedImmutableMessageFieldGenerator(
+      const RepeatedImmutableMessageFieldGenerator&) = delete;
+  RepeatedImmutableMessageFieldGenerator& operator=(
+      const RepeatedImmutableMessageFieldGenerator&) = delete;
+  ~RepeatedImmutableMessageFieldGenerator() override;
 
   // implements ImmutableFieldGenerator ---------------------------------------
   int GetNumBitsForMessage() const override;
@@ -122,8 +133,6 @@ class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuildingCode(io::Printer* printer) const override;
   void GenerateBuilderParsingCode(io::Printer* printer) const override;
-  void GenerateBuilderParsingCodeFromPacked(
-      io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
   void GenerateFieldBuilderInitializationCode(
@@ -132,6 +141,17 @@ class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {
   void GenerateHashCode(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
+
+ protected:
+  void PrintNestedBuilderCondition(
+      io::Printer* printer, const char* regular_case,
+      const char* nested_builder_case) const override;
+  void PrintNestedBuilderFunction(
+      io::Printer* printer, const char* method_prototype,
+      const char* regular_case, const char* nested_builder_case,
+      const char* trailing_code,
+      std::optional<io::AnnotationCollector::Semantic> semantic =
+          std::nullopt) const override;
 };
 
 }  // namespace java
@@ -139,4 +159,4 @@ class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ENUM_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_FIELD_H__

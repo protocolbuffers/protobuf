@@ -10,7 +10,7 @@
 
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/generator_common.h"
-#include "google/protobuf/compiler/java/full/field_generator.h"
+#include "google/protobuf/compiler/java/immutable/field_generator.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
