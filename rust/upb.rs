@@ -66,8 +66,7 @@ const UPB_SCRATCH_SPACE_BYTES: usize = 65_536;
 /// view, we can allocate a large block and refer to that when dealing
 /// with readonly access.
 #[repr(C, align(8))] // align to UPB_MALLOC_ALIGN = 8
-#[doc(hidden)]
-pub struct ScratchSpace([u8; UPB_SCRATCH_SPACE_BYTES]);
+struct ScratchSpace([u8; UPB_SCRATCH_SPACE_BYTES]);
 impl ScratchSpace {
     pub fn zeroed_block() -> RawMessage {
         static ZEROED_BLOCK: ScratchSpace = ScratchSpace([0; UPB_SCRATCH_SPACE_BYTES]);
