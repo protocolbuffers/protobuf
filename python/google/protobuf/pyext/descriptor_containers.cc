@@ -326,11 +326,18 @@ static int DescriptorSequence_Equal(PyContainer* self, PyObject* other) {
       if (value1 == nullptr) {
         return -1;
       }
+#ifdef Py_GIL_DISABLED
+      PyObject* value2 = PyList_GetItemRef(other, index);
+#else
       PyObject* value2 = PyList_GetItem(other, index);
+#endif
       if (value2 == nullptr) {
         return -1;
       }
       int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
+#ifdef Py_GIL_DISABLED
+      Py_DECREF(value2);
+#endif
       if (cmp != 1)  // error or not equal
           return cmp;
     }
@@ -374,12 +381,21 @@ static int DescriptorMapping_Equal(PyContainer* self, PyObject* other) {
       if (value1 == nullptr) {
         return -1;
       }
+#ifdef Py_GIL_DISABLED
+      PyObject* value2;
+      int status = PyDict_GetItemRef(other, key.get());
+      if (status == -1) return -1;
+#else
       PyObject* value2 = PyDict_GetItem(other, key.get());
+#endif
       if (value2 == nullptr) {
         // Not found in the other dictionary
         return 0;
       }
       int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
+#ifdef Py_GIL_DISABLED
+      Py_DECREF(value2);
+#endif
       if (cmp != 1)  // error or not equal
           return cmp;
     }

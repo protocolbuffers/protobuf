@@ -282,8 +282,12 @@ static PyObject* PyUpb_UnknownFieldSet_GetItem(PyObject* _self,
     PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
     return NULL;
   }
+#ifdef Py_GIL_DISABLED
+  PyObject* ret = PyList_GetItemRef(self->fields, index);
+#else
   PyObject* ret = PyList_GetItem(self->fields, index);
   if (ret) Py_INCREF(ret);
+#endif
   return ret;
 }
 

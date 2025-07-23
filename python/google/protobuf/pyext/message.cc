@@ -212,12 +212,23 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   }
 
   // Check dict['DESCRIPTOR']
+#ifdef Py_GIL_DISABLED
+  PyObject* py_descriptor;
+  int status = PyDict_GetItemRef(dict, kDESCRIPTOR);
+  if (status == -1) return nullptr;
+#else
   PyObject* py_descriptor = PyDict_GetItem(dict, kDESCRIPTOR);
+#endif
   if (py_descriptor == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Message class has no DESCRIPTOR");
     return nullptr;
   }
+#ifndef Py_GIL_DISABLED
+  Py_INCREF(py_descriptor);
+#endif
+
   if (!PyObject_TypeCheck(py_descriptor, &PyMessageDescriptor_Type)) {
+    Py_DECREF(py_descriptor);
     PyErr_Format(PyExc_TypeError, "Expected a message Descriptor, got %s",
                  py_descriptor->ob_type->tp_name);
     return nullptr;
@@ -225,12 +236,14 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   const Descriptor* message_descriptor =
       PyMessageDescriptor_AsDescriptor(py_descriptor);
   if (message_descriptor == nullptr) {
+    Py_DECREF(py_descriptor);
     return nullptr;
   }
 
   // Messages have no __dict__
   ScopedPyObjectPtr slots(PyTuple_New(0));
   if (PyDict_SetItemString(dict, "__slots__", slots.get()) < 0) {
+    Py_DECREF(py_descriptor);
     return nullptr;
   }
 
@@ -247,8 +260,18 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
     ABSL_DCHECK(WKT_classes != nullptr);
   }
 
+#ifdef Py_GIL_DISABLED
+  PyObject* well_known_class;
+  int status =
+    PyDict_GetItemStringRef(WKT_classes, std::string(message_descriptor->full_name()).c_str(), &well_known_class);
+  if (status == -1) {
+    Py_DECREF(py_descriptor);
+    return nullptr;
+  }
+#else
   PyObject* well_known_class = PyDict_GetItemString(
       WKT_classes, std::string(message_descriptor->full_name()).c_str());
+#endif
   if (well_known_class == nullptr) {
     new_args.reset(Py_BuildValue("s(OO)O", name, CMessage_Type,
                                  PythonMessage_class, dict));
@@ -258,22 +281,17 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   }
 
   if (new_args == nullptr) {
+    Py_DECREF(py_descriptor);
     return nullptr;
   }
   // Call the base metaclass.
   ScopedPyObjectPtr result(PyType_Type.tp_new(type, new_args.get(), nullptr));
   if (result == nullptr) {
+    Py_DECREF(py_descriptor);
     return nullptr;
   }
   CMessageClass* newtype = reinterpret_cast<CMessageClass*>(result.get());
 
-  // Cache the descriptor, both as Python object and as C++ pointer.
-  const Descriptor* descriptor =
-      PyMessageDescriptor_AsDescriptor(py_descriptor);
-  if (descriptor == nullptr) {
-    return nullptr;
-  }
-  Py_INCREF(py_descriptor);
   newtype->py_message_descriptor = py_descriptor;
   newtype->message_descriptor = descriptor;
   // TODO: Don't always use the canonical pool of the descriptor,
@@ -281,31 +299,48 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   PyDescriptorPool* py_descriptor_pool =
       GetDescriptorPool_FromPool(descriptor->file()->pool());
   if (py_descriptor_pool == nullptr) {
+    Py_DECREF(newtype->py_message_descriptor);
     return nullptr;
   }
 
+#ifdef Py_GIL_DISABLED
+  PyObject* py_message_factory_obj;
+  int status = PyDict_GetItemRef(dict, kMessageFactory, &py_message_factory_obj);
+  if (status == -1) {
+    Py_DECREF(newtype->py_message_descriptor);
+    return nullptr;
+  }
+#else
   PyObject* py_message_factory_obj = PyDict_GetItem(dict, kMessageFactory);
+#endif
   PyMessageFactory* py_message_factory = nullptr;
   if (py_message_factory_obj == nullptr) {
+    Py_INCREF(py_descriptor_pool->py_message_factory);
     py_message_factory = py_descriptor_pool->py_message_factory;
   } else {
+#ifndef Py_GIL_DISABLED
+    Py_INCREF(py_message_factory_obj);
+#endif
     py_message_factory =
         reinterpret_cast<PyMessageFactory*>(py_message_factory_obj);
   }
 
   newtype->py_message_factory = py_message_factory;
-  Py_INCREF(newtype->py_message_factory);
 
   // Register the message in the MessageFactory.
   // TODO: Move this call to MessageFactory.GetPrototype() when the
   // MessageFactory is fully implemented in C++.
   if (message_factory::RegisterMessageClass(newtype->py_message_factory,
                                             descriptor, newtype) < 0) {
+    Py_DECREF(newtype->py_message_descriptor);
+    Py_DECREF(newtype->py_message_factory);
     return nullptr;
   }
 
   // Continue with type initialization: add other descriptors, enum values...
   if (AddDescriptors(result.get(), descriptor) < 0) {
+    Py_DECREF(newtype->py_message_descriptor);
+    Py_DECREF(newtype->py_message_factory);
     return nullptr;
   }
   return result.release();
