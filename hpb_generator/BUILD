@@ -27,7 +27,6 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":generator",
-        "//base",
         "//src/google/protobuf/compiler:plugin",
         "@abseil-cpp//absl/flags:flag",
     ],
