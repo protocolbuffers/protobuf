@@ -140,6 +140,7 @@ use_repo(
     python,
     system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
 )
+# use_repo(python, "python")
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
 
