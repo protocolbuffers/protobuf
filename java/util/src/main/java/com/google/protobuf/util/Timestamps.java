@@ -7,11 +7,9 @@
 
 package com.google.protobuf.util;
 
-import static com.google.common.math.IntMath.checkedAdd;
-import static com.google.common.math.IntMath.checkedSubtract;
-import static com.google.common.math.LongMath.checkedAdd;
-import static com.google.common.math.LongMath.checkedMultiply;
-import static com.google.common.math.LongMath.checkedSubtract;
+import static java.lang.Math.addExact;
+import static java.lang.Math.multiplyExact;
+import static java.lang.Math.subtractExact;
 
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.annotations.J2ktIncompatible;
@@ -432,8 +430,8 @@ public final class Timestamps {
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toMillis(Timestamp timestamp) {
     checkValid(timestamp);
-    return checkedAdd(
-        checkedMultiply(timestamp.getSeconds(), MILLIS_PER_SECOND),
+    return addExact(
+        multiplyExact(timestamp.getSeconds(), (long) MILLIS_PER_SECOND),
         timestamp.getNanos() / NANOS_PER_MILLISECOND);
   }
 
@@ -454,8 +452,8 @@ public final class Timestamps {
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toMicros(Timestamp timestamp) {
     checkValid(timestamp);
-    return checkedAdd(
-        checkedMultiply(timestamp.getSeconds(), MICROS_PER_SECOND),
+    return addExact(
+        multiplyExact(timestamp.getSeconds(), (long) MICROS_PER_SECOND),
         timestamp.getNanos() / NANOS_PER_MICROSECOND);
   }
 
@@ -470,8 +468,8 @@ public final class Timestamps {
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static long toNanos(Timestamp timestamp) {
     checkValid(timestamp);
-    return checkedAdd(
-        checkedMultiply(timestamp.getSeconds(), NANOS_PER_SECOND), timestamp.getNanos());
+    return addExact(
+        multiplyExact(timestamp.getSeconds(), (long) NANOS_PER_SECOND), timestamp.getNanos());
   }
 
   /** Calculate the difference between two timestamps. */
@@ -479,8 +477,8 @@ public final class Timestamps {
     checkValid(from);
     checkValid(to);
     return Durations.normalizedDuration(
-        checkedSubtract(to.getSeconds(), from.getSeconds()),
-        checkedSubtract(to.getNanos(), from.getNanos()));
+        subtractExact(to.getSeconds(), from.getSeconds()),
+        subtractExact(to.getNanos(), from.getNanos()));
   }
 
   /** Add a duration to a timestamp. */
@@ -488,8 +486,8 @@ public final class Timestamps {
     checkValid(start);
     Durations.checkValid(length);
     return normalizedTimestamp(
-        checkedAdd(start.getSeconds(), length.getSeconds()),
-        checkedAdd(start.getNanos(), length.getNanos()));
+        addExact(start.getSeconds(), length.getSeconds()),
+        addExact(start.getNanos(), length.getNanos()));
   }
 
   /** Subtract a duration from a timestamp. */
@@ -497,8 +495,8 @@ public final class Timestamps {
     checkValid(start);
     Durations.checkValid(length);
     return normalizedTimestamp(
-        checkedSubtract(start.getSeconds(), length.getSeconds()),
-        checkedSubtract(start.getNanos(), length.getNanos()));
+        subtractExact(start.getSeconds(), length.getSeconds()),
+        subtractExact(start.getNanos(), length.getNanos()));
   }
 
   static Timestamp normalizedTimestamp(long seconds, int nanos) {
@@ -512,14 +510,14 @@ public final class Timestamps {
               seconds));
     }
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
-      seconds = checkedAdd(seconds, nanos / NANOS_PER_SECOND);
+      seconds = addExact(seconds, nanos / NANOS_PER_SECOND);
       nanos = (int) (nanos % NANOS_PER_SECOND);
     }
     if (nanos < 0) {
       nanos =
           (int)
               (nanos + NANOS_PER_SECOND); // no overflow since nanos is negative (and we're adding)
-      seconds = checkedSubtract(seconds, 1);
+      seconds = subtractExact(seconds, 1);
     }
     Timestamp timestamp = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
     return checkValid(timestamp);
