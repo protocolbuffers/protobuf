@@ -32,7 +32,6 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -464,7 +463,7 @@ std::string Generator::GetResolvedFeatures(
   ABSL_CHECK(feature_set != nullptr)
       << "Malformed descriptor.proto doesn't contain "
       << FeatureSet::GetDescriptor()->full_name();
-  auto message_factory = absl::make_unique<DynamicMessageFactory>();
+  auto message_factory = std::make_unique<DynamicMessageFactory>();
   auto features =
       absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
   features->ParseFromString(
