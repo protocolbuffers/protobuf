@@ -74,11 +74,18 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 }
 
 namespace {
+
 bool ReadHas(const FieldEntry& entry, const MessageLite* msg) {
   auto has_idx = static_cast<uint32_t>(entry.has_idx);
   const auto& hasblock = TcParser::RefAt<const uint32_t>(msg, has_idx / 32 * 4);
   return (hasblock & (uint32_t{1} << (has_idx % 32))) != 0;
 }
+
+PROTOBUF_ALWAYS_INLINE void SetCachedHasBit(uint64_t& cached_hasbits,
+                                            uint8_t hasbit_idx) {
+  cached_hasbits |= uint64_t{1} << hasbit_idx;
+}
+
 }  // namespace
 
 void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
@@ -529,7 +536,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   }
   auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SetCachedHasBit(hasbits, data.hasbit_idx());
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
   const auto aux = *table->field_aux(data.aux_idx());
@@ -684,7 +691,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularFixed(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   ptr += sizeof(TagType);  // Consume tag
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SetCachedHasBit(hasbits, data.hasbit_idx());
   RefAt<LayoutType>(msg, data.offset()) = UnalignedLoad<LayoutType>(ptr);
   ptr += sizeof(LayoutType);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -905,7 +912,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   ptr += sizeof(TagType);  // Consume tag
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SetCachedHasBit(hasbits, data.hasbit_idx());
 
   // clang isn't smart enough to be able to only conditionally save
   // registers to the stack, so we turn the integer-greater-than-128
@@ -947,7 +954,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::FastVarintS1(
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SetCachedHasBit(hasbits, data.hasbit_idx());
   RefAt<FieldType>(msg, data.offset()) = res;
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
@@ -971,7 +978,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
     field = static_cast<bool>(value);
 
     ptr += sizeof(TagType) + 1;  // Consume the tag and the value.
-    hasbits |= (uint64_t{1} << data.hasbit_idx());
+    SetCachedHasBit(hasbits, data.hasbit_idx());
 
     PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
@@ -1205,7 +1212,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
     ptr = ptr2;
     PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
   }
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SetCachedHasBit(hasbits, data.hasbit_idx());
   RefAt<int32_t>(msg, data.offset()) = tmp;
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
@@ -1350,7 +1357,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnumSmallRange(
 
   RefAt<int32_t>(msg, data.offset()) = v;
   ptr += sizeof(TagType) + 1;
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SetCachedHasBit(hasbits, data.hasbit_idx());
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
@@ -1570,7 +1577,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   }
   auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
-  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  SetCachedHasBit(hasbits, data.hasbit_idx());
   auto& field = RefAt<FieldType>(msg, data.offset());
   auto arena = msg->GetArena();
   if (arena) {
