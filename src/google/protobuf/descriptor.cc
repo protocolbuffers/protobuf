@@ -1970,6 +1970,8 @@ inline auto FileDescriptorTables::FindNestedSymbol(
 
 Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 absl::string_view name) {
+  // LOG(ERROR) << "---SUUU: DescriptorPool::Tables::FindByNameHelper: " <<
+  // name;
   if (pool->mutex_ != nullptr) {
     // Fast path: the Symbol is already cached.  This is just a hash lookup.
     absl::ReaderMutexLock lock(pool->mutex_);
@@ -2579,6 +2581,7 @@ const FileDescriptor* DescriptorPool::FindFileContainingSymbol(
 
 const Descriptor* DescriptorPool::FindMessageTypeByName(
     absl::string_view name) const {
+  // LOG(ERROR) << "---SUUU: DescriptorPool::FindMessageTypeByName: " << name;
   return tables_->FindByNameHelper(this, name).descriptor();
 }
 
@@ -2611,6 +2614,7 @@ const OneofDescriptor* DescriptorPool::FindOneofByName(
 
 const EnumDescriptor* DescriptorPool::FindEnumTypeByName(
     absl::string_view name) const {
+  // LOG(ERROR) << "---SUUU: DescriptorPool::FindEnumTypeByName: " << name;
   return tables_->FindByNameHelper(this, name).enum_descriptor();
 }
 
