@@ -566,11 +566,15 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
 
 void GenerateDefaultInstanceImpl(Context& ctx, const Descriptor& msg) {
   if (ctx.is_upb()) {
-    ctx.Emit("$pbr$::ScratchSpace::zeroed_block()");
+    ctx.Emit("$pbr$::MessageViewInner::default()");
   } else {
     ctx.Emit(
         {{"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
-        "$default_instance_thunk$()");
+        R"rs(
+        unsafe {
+          $pbr$::MessageViewInner::wrap_raw($default_instance_thunk$())
+        }
+        )rs");
   }
 }
 
@@ -811,8 +815,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         impl $std$::default::Default for $Msg$View<'_> {
           fn default() -> $Msg$View<'static> {
-            let inner = unsafe { $pbr$::MessageViewInner::wrap_raw($default_instance_impl$) };
-            $Msg$View::new($pbi$::Private, inner)
+            $Msg$View::new($pbi$::Private, $default_instance_impl$)
           }
         }
 

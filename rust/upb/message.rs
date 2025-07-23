@@ -124,8 +124,8 @@ impl<T: AssociatedMiniTable> MessagePtr<T> {
     ///
     /// # Safety
     /// - `self` must be a legally dereferenceable.
-    /// - The field at `index` must be a message field.
-    pub unsafe fn get_message_at_index(self, index: u32) -> Option<MessagePtr<T>> {
+    /// - The field at `index` must be a message field of type `ChildT`.
+    pub unsafe fn get_message_at_index<ChildT>(self, index: u32) -> Option<MessagePtr<ChildT>> {
         let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
 
         let raw = unsafe { sys_msg::upb_Message_GetMessage(self.raw, f) };

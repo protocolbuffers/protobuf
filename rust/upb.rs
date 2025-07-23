@@ -270,6 +270,17 @@ impl<'msg, T: Message + AssociatedMiniTable> MessageViewInner<'msg, T> {
     }
 }
 
+impl<T: Message + AssociatedMiniTable> Default for MessageViewInner<'static, T> {
+    fn default() -> Self {
+        unsafe {
+            // SAFETY:
+            // - `ScratchSpace::zeroed_block()` is a valid const `RawMessage` for all possible T.
+            // - `ScratchSpace::zeroed_block()' has 'static lifetime.
+            Self::wrap_raw(ScratchSpace::zeroed_block())
+        }
+    }
+}
+
 /// Kernel-specific owned `string` and `bytes` field type.
 #[doc(hidden)]
 pub struct InnerProtoString(OwnedArenaBox<[u8]>);
