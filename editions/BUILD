@@ -74,6 +74,26 @@ embed_edition_defaults(
     template = "defaults_test_embedded_base64.h.template",
 )
 
+embed_edition_defaults(
+    name = "embed_test_defaults_decimal_array",
+    testonly = True,
+    defaults = ":test_defaults_2023",
+    encoding = "decimal_array",
+    output = "defaults_test_embedded_decimal_array.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "defaults_test_embedded_decimal_array.h.template",
+)
+
+embed_edition_defaults(
+    name = "embed_test_defaults_hex_array",
+    testonly = True,
+    defaults = ":test_defaults_2023",
+    encoding = "hex_array",
+    output = "defaults_test_embedded_hex_array.h",
+    placeholder = "DEFAULTS_VALUE",
+    template = "defaults_test_embedded_hex_array.h.template",
+)
+
 cc_binary(
     name = "internal_defaults_escape",
     srcs = ["internal_defaults_escape.cc"],
@@ -94,6 +114,8 @@ cc_library(
     hdrs = [
         "defaults_test_embedded.h",
         "defaults_test_embedded_base64.h",
+        "defaults_test_embedded_decimal_array.h",
+        "defaults_test_embedded_hex_array.h",
     ],
 )
 

@@ -16,6 +16,8 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "editions/defaults_test_embedded.h"
 #include "editions/defaults_test_embedded_base64.h"
+#include "editions/defaults_test_embedded_decimal_array.h"
+#include "editions/defaults_test_embedded_hex_array.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_textproto.h"
@@ -172,6 +174,48 @@ TEST(DefaultsTest, EmbeddedBase64) {
                         sizeof(DEFAULTS_TEST_EMBEDDED_BASE64) - 1},
       &data));
   ASSERT_TRUE(defaults.ParseFromString(data));
+  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
+  ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
+
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
+  EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
+  EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults.defaults()[2]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::VALUE3);
+}
+
+TEST(DefaultsTest, EmbeddedDecimalArray) {
+  FeatureSetDefaults defaults;
+  ASSERT_TRUE(defaults.ParseFromArray(kDefaultTestEmbeddedDecimalArray.data(),
+                                      kDefaultTestEmbeddedDecimalArray.size()))
+      << "Could not parse embedded data";
+  ASSERT_EQ(defaults.defaults().size(), 3);
+  ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
+  ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
+
+  EXPECT_EQ(defaults.defaults()[0].edition(), EDITION_LEGACY);
+  EXPECT_EQ(defaults.defaults()[1].edition(), EDITION_PROTO3);
+  EXPECT_EQ(defaults.defaults()[2].edition(), EDITION_2023);
+  EXPECT_EQ(defaults.defaults()[2].overridable_features().field_presence(),
+            FeatureSet::EXPLICIT);
+  EXPECT_EQ(defaults.defaults()[2]
+                .overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::VALUE3);
+}
+
+TEST(DefaultsTest, EmbeddedHexArray) {
+  FeatureSetDefaults defaults;
+  ASSERT_TRUE(defaults.ParseFromArray(kDefaultTestEmbeddedHexArray.data(),
+                                      kDefaultTestEmbeddedHexArray.size()))
+      << "Could not parse embedded data";
   ASSERT_EQ(defaults.defaults().size(), 3);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);
   ASSERT_EQ(defaults.maximum_edition(), EDITION_2023);
