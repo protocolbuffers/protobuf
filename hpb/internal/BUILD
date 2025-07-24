@@ -29,7 +29,7 @@ cc_test(
     srcs = ["template_help_test.cc"],
     deps = [
         ":template_help",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_hpb_proto",
+        "//hpb_generator/tests:test_model_hpb_proto",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -78,7 +78,7 @@ cc_test(
         "//hpb",
         "//hpb:arena",
         "//hpb:extension",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_hpb_proto",
+        "//hpb_generator/tests:test_model_hpb_proto",
         "//upb/mem",
         "//upb/mini_table",
         "@abseil-cpp//absl/hash",
