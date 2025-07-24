@@ -98,17 +98,16 @@ cc_library(
     copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":hpb",
+        ":multibackend",
         ":ptr",
-        "//hpb/backend/upb:interop",
-        "//hpb/backend/upb:repeated_field_iterator",
-        "//hpb/internal:template_help",
-        "//upb/base",
-        "//upb/mem",
-        "//upb/message",
-        "//upb/message:copy",
         "@abseil-cpp//absl/strings",
-    ],
+    ] + select({
+        ":hpb_backend_cpp": [
+        ],
+        ":hpb_backend_upb": [
+            "//hpb/backend/upb:repeated_field",
+        ],
+    }),
 )
 
 # Common support code for C++ generated code.

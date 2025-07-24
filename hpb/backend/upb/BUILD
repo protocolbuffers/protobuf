@@ -116,3 +116,20 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "repeated_field",
+    hdrs = ["repeated_field.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        ":interop",
+        ":repeated_field_iterator",
+        "//hpb",
+        "//hpb:multibackend",
+        "//hpb/internal:template_help",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:copy",
+    ],
+)
