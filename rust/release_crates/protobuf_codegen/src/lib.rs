@@ -131,14 +131,6 @@ impl CodeGen {
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
-        let upb_version = std::env::var("DEP_UPB_VERSION").expect("DEP_UPB_VERSION should have been set, make sure that the Protobuf crate is a dependency");
-        if VERSION != upb_version {
-            panic!(
-                "protobuf-codegen version {} does not match protobuf version {}.",
-                VERSION, upb_version
-            );
-        }
-
         let mut version_cmd = std::process::Command::new("protoc");
         let output = version_cmd.arg("--version").output().map_err(|e| {
             format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())
