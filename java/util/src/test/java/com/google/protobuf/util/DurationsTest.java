@@ -145,6 +145,12 @@ public class DurationsTest {
   }
 
   @Test
+  public void testLargeDuration() {
+    // TODO: kak - this should throw an exception
+    assertThat(Durations.isValid(Durations.fromHours(Integer.MAX_VALUE))).isFalse();
+  }
+
+  @Test
   public void testMinMaxAreValid() {
     assertThat(Durations.isValid(Durations.MAX_VALUE)).isTrue();
     assertThat(Durations.isValid(Durations.MIN_VALUE)).isTrue();
