@@ -38,10 +38,22 @@ static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
   Message* message = self->parent->message;
   message->GetReflection()->ClearField(message, self->parent_field_descriptor);
   for (Py_ssize_t i = 0; i < PyList_GET_SIZE(list); ++i) {
+#ifdef Py_GIL_DISABLED
+    PyObject* value = PyList_GetItemRef(list, i);
+    if (value == nullptr) return -1;
+#else
     PyObject* value = PyList_GET_ITEM(list, i);
+#endif
+    
     if (ScopedPyObjectPtr(Append(self, value)) == nullptr) {
+#ifdef Py_GIL_DISABLED
+      Py_DECREF(value);
+#endif
       return -1;
     }
+#ifdef Py_GIL_DISABLED
+    Py_DECREF(value);
+#endif
   }
   return 0;
 }
@@ -542,6 +554,7 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   // Support the old sort_function argument for backwards
   // compatibility.
   if (kwds != nullptr) {
+    // Okay to use thread-unsafe API since kwds cannot be modified concurrently
     PyObject* sort_func = PyDict_GetItemString(kwds, "sort_function");
     if (sort_func != nullptr) {
       // Must set before deleting as sort_func is a borrowed reference
