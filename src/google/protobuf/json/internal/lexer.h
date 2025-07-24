@@ -198,6 +198,8 @@ class JsonLexer {
     JsonLocation loc = json_loc_;
     auto taken = stream_.Take(len);
     RETURN_IF_ERROR(taken.status());
+    json_loc_.offset += len;
+    json_loc_.col += len;
     return LocationWith<MaybeOwnedString>{*std::move(taken), loc};
   }
 
@@ -206,6 +208,9 @@ class JsonLexer {
     JsonLocation loc = json_loc_;
     auto taken = stream_.TakeWhile(std::move(p));
     RETURN_IF_ERROR(taken.status());
+    size_t len = taken->AsView().size();
+    json_loc_.offset += len;
+    json_loc_.col += len;
     return LocationWith<MaybeOwnedString>{*std::move(taken), loc};
   }
 
