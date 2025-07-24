@@ -265,7 +265,7 @@ void Api::clear_options() {
 void Api::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000008U;
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 Api::Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -303,7 +303,7 @@ Api::Api(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.source_context_ = ((cached_has_bits & 0x00000008U) != 0)
+  _impl_.source_context_ = (CheckHasBit(cached_has_bits, 0x00000008U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_)
                 : nullptr;
   _impl_.syntax_ = from._impl_.syntax_;
@@ -499,17 +499,17 @@ PROTOBUF_NOINLINE void Api::Clear() {
   _impl_.options_.Clear();
   _impl_.mixins_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000000fU) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _impl_.version_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _impl_.edition_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000008U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(_impl_.source_context_ != nullptr);
       _impl_.source_context_->Clear();
     }
@@ -538,7 +538,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
   (void)cached_has_bits;
 
   // string name = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -570,7 +570,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
   }
 
   // string version = 4;
-  if ((this_._impl_._has_bits_[0] & 0x00000002U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
     if (!this_._internal_version().empty()) {
       const ::std::string& _s = this_._internal_version();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -581,7 +581,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // .google.protobuf.SourceContext source_context = 5;
-  if ((cached_has_bits & 0x00000008U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         5, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
         stream);
@@ -599,7 +599,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
   }
 
   // .google.protobuf.Syntax syntax = 7;
-  if ((cached_has_bits & 0x00000010U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     if (this_._internal_syntax() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
@@ -608,7 +608,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
   }
 
   // string edition = 8;
-  if ((cached_has_bits & 0x00000004U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     if (!this_._internal_edition().empty()) {
       const ::std::string& _s = this_._internal_edition();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -665,35 +665,35 @@ PROTOBUF_NOINLINE void Api::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000001fU) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     // string name = 1;
-    if ((cached_has_bits & 0x00000001U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_name());
       }
     }
     // string version = 4;
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!this_._internal_version().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_version());
       }
     }
     // string edition = 8;
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!this_._internal_edition().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_edition());
       }
     }
     // .google.protobuf.SourceContext source_context = 5;
-    if ((cached_has_bits & 0x00000008U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
     }
     // .google.protobuf.Syntax syntax = 7;
-    if ((cached_has_bits & 0x00000010U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (this_._internal_syntax() != 0) {
         total_size += 1 +
                       ::_pbi::WireFormatLite::EnumSize(this_._internal_syntax());
@@ -723,8 +723,8 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
   _this->_internal_mutable_mixins()->MergeFrom(
       from._internal_mixins());
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000001fU) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
       } else {
@@ -733,7 +733,7 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
         }
       }
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_version().empty()) {
         _this->_internal_set_version(from._internal_version());
       } else {
@@ -742,7 +742,7 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
         }
       }
     }
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!from._internal_edition().empty()) {
         _this->_internal_set_edition(from._internal_edition());
       } else {
@@ -751,7 +751,7 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
         }
       }
     }
-    if ((cached_has_bits & 0x00000008U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.source_context_ != nullptr);
       if (_this->_impl_.source_context_ == nullptr) {
         _this->_impl_.source_context_ = ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.source_context_);
@@ -759,7 +759,7 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::pro
         _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
       }
     }
-    if ((cached_has_bits & 0x00000010U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (from._internal_syntax() != 0) {
         _this->_impl_.syntax_ = from._impl_.syntax_;
       }
@@ -1034,21 +1034,21 @@ PROTOBUF_NOINLINE void Method::Clear() {
 
   _impl_.options_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000000fU) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _impl_.request_type_url_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _impl_.response_type_url_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000008U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       _impl_.edition_.ClearNonDefaultToEmpty();
     }
   }
-  if ((cached_has_bits & 0x00000070U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000070U)) {
     ::memset(&_impl_.request_streaming_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.syntax_) -
         reinterpret_cast<char*>(&_impl_.request_streaming_)) + sizeof(_impl_.syntax_));
@@ -1076,7 +1076,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   (void)cached_has_bits;
 
   // string name = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1086,7 +1086,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   }
 
   // string request_type_url = 2;
-  if ((this_._impl_._has_bits_[0] & 0x00000002U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
     if (!this_._internal_request_type_url().empty()) {
       const ::std::string& _s = this_._internal_request_type_url();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1096,7 +1096,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   }
 
   // bool request_streaming = 3;
-  if ((this_._impl_._has_bits_[0] & 0x00000010U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000010U)) {
     if (this_._internal_request_streaming() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
@@ -1105,7 +1105,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   }
 
   // string response_type_url = 4;
-  if ((this_._impl_._has_bits_[0] & 0x00000004U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000004U)) {
     if (!this_._internal_response_type_url().empty()) {
       const ::std::string& _s = this_._internal_response_type_url();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1115,7 +1115,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   }
 
   // bool response_streaming = 5;
-  if ((this_._impl_._has_bits_[0] & 0x00000020U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000020U)) {
     if (this_._internal_response_streaming() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
@@ -1135,7 +1135,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   }
 
   // .google.protobuf.Syntax syntax = 7 [deprecated = true];
-  if ((this_._impl_._has_bits_[0] & 0x00000040U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000040U)) {
     if (this_._internal_syntax() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
@@ -1144,7 +1144,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
   }
 
   // string edition = 8 [deprecated = true];
-  if ((this_._impl_._has_bits_[0] & 0x00000008U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000008U)) {
     if (!this_._internal_edition().empty()) {
       const ::std::string& _s = this_._internal_edition();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1187,49 +1187,49 @@ PROTOBUF_NOINLINE void Method::Clear() {
     }
   }
   cached_has_bits = this_._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000007fU) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
     // string name = 1;
-    if ((cached_has_bits & 0x00000001U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_name());
       }
     }
     // string request_type_url = 2;
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!this_._internal_request_type_url().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_request_type_url());
       }
     }
     // string response_type_url = 4;
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!this_._internal_response_type_url().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_response_type_url());
       }
     }
     // string edition = 8 [deprecated = true];
-    if ((cached_has_bits & 0x00000008U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!this_._internal_edition().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_edition());
       }
     }
     // bool request_streaming = 3;
-    if ((cached_has_bits & 0x00000010U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (this_._internal_request_streaming() != 0) {
         total_size += 2;
       }
     }
     // bool response_streaming = 5;
-    if ((cached_has_bits & 0x00000020U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (this_._internal_response_streaming() != 0) {
         total_size += 2;
       }
     }
     // .google.protobuf.Syntax syntax = 7 [deprecated = true];
-    if ((cached_has_bits & 0x00000040U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       if (this_._internal_syntax() != 0) {
         total_size += 1 +
                       ::_pbi::WireFormatLite::EnumSize(this_._internal_syntax());
@@ -1254,8 +1254,8 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
   _this->_internal_mutable_options()->MergeFrom(
       from._internal_options());
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000007fU) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
       } else {
@@ -1264,7 +1264,7 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
         }
       }
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_request_type_url().empty()) {
         _this->_internal_set_request_type_url(from._internal_request_type_url());
       } else {
@@ -1273,7 +1273,7 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
         }
       }
     }
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!from._internal_response_type_url().empty()) {
         _this->_internal_set_response_type_url(from._internal_response_type_url());
       } else {
@@ -1282,7 +1282,7 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
         }
       }
     }
-    if ((cached_has_bits & 0x00000008U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!from._internal_edition().empty()) {
         _this->_internal_set_edition(from._internal_edition());
       } else {
@@ -1291,17 +1291,17 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::
         }
       }
     }
-    if ((cached_has_bits & 0x00000010U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (from._internal_request_streaming() != 0) {
         _this->_impl_.request_streaming_ = from._impl_.request_streaming_;
       }
     }
-    if ((cached_has_bits & 0x00000020U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (from._internal_response_streaming() != 0) {
         _this->_impl_.response_streaming_ = from._impl_.response_streaming_;
       }
     }
-    if ((cached_has_bits & 0x00000040U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       if (from._internal_syntax() != 0) {
         _this->_impl_.syntax_ = from._impl_.syntax_;
       }
@@ -1503,11 +1503,11 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000003U) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _impl_.root_.ClearNonDefaultToEmpty();
     }
   }
@@ -1534,7 +1534,7 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   (void)cached_has_bits;
 
   // string name = 1;
-  if ((this_._impl_._has_bits_[0] & 0x00000001U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1544,7 +1544,7 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   }
 
   // string root = 2;
-  if ((this_._impl_._has_bits_[0] & 0x00000002U) != 0) {
+  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
     if (!this_._internal_root().empty()) {
       const ::std::string& _s = this_._internal_root();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1578,16 +1578,16 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000003U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     // string name = 1;
-    if ((cached_has_bits & 0x00000001U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_name());
       }
     }
     // string root = 2;
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!this_._internal_root().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                         this_._internal_root());
@@ -1610,8 +1610,8 @@ void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::p
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000003U) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!from._internal_name().empty()) {
         _this->_internal_set_name(from._internal_name());
       } else {
@@ -1620,7 +1620,7 @@ void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::p
         }
       }
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_root().empty()) {
         _this->_internal_set_root(from._internal_root());
       } else {
