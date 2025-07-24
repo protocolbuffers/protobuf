@@ -3144,10 +3144,23 @@ struct FieldRangeImpl {
 // parsing because that uses reflection to verify consistency.
 bool ParseNoReflection(absl::string_view from, google::protobuf::MessageLite& to);
 
+PROTOBUF_EXPORT const FeatureSet& GetUnresolvedFeatureSet(
+    const FileDescriptor& descriptor);
+PROTOBUF_EXPORT const FeatureSet& GetUnresolvedFeatureSet(
+    const Descriptor& descriptor);
+PROTOBUF_EXPORT const FeatureSet& GetUnresolvedFeatureSet(
+    const EnumDescriptor& descriptor);
+
+// Gets the default feature set for a given edition.
+absl::StatusOr<FeatureSet> PROTOBUF_EXPORT GetEditionFeatureSetDefaults(
+    Edition edition, const FeatureSetDefaults& defaults);
+
 // The context for these functions under `cpp` is "for the C++ implementation".
 // In particular, questions like "does this field have a has bit?" have a
 // different answer depending on the language.
 namespace cpp {
+
+PROTOBUF_EXPORT const FeatureSetDefaults& GetFeatureSetDefaults();
 
 // The maximum allowed nesting for message declarations.
 // Going over this limit will make the proto definition invalid.
