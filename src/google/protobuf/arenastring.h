@@ -200,8 +200,12 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   void* ptr_;
 };
 
-static_assert(std::is_trivial<TaggedStringPtr>::value,
-              "TaggedStringPtr must be trivial");
+static_assert(std::is_trivially_default_constructible<TaggedStringPtr>::value,
+              "TaggedStringPtr must be trivially default-constructible");
+static_assert(std::is_trivially_destructible<TaggedStringPtr>::value,
+              "TaggedStringPtr must be trivially destructible");
+static_assert(std::is_standard_layout<TaggedStringPtr>::value,
+              "TaggedStringPtr must be standard layout");
 
 // This class encapsulates a pointer to a std::string with or without arena
 // owned contents, tagged by the bottom bits of the string pointer. It is a
