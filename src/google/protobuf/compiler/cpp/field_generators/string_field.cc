@@ -635,7 +635,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
       {{"hazzer",
         [&] {
           if (HasHasbit(field_, options_)) {
-            p->Emit(R"cc(from.$has_hasbit$)cc");
+            p->Emit(R"cc(CheckHasBit(from.$has_bits_array$, $has_mask$))cc");
           } else {
             p->Emit(R"cc(!from._internal_$name$().empty())cc");
           }
