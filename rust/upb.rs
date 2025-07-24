@@ -195,9 +195,8 @@ impl<'msg, T: Message + AssociatedMiniTable> MessageMutInner<'msg, T> {
 
     pub fn from_parent<ParentT>(
         parent_msg: MessageMutInner<'msg, ParentT>,
-        raw_field_ptr: RawMessage,
+        ptr: MessagePtr<T>,
     ) -> Self {
-        let ptr = unsafe { MessagePtr::wrap(raw_field_ptr) };
         MessageMutInner { ptr, arena: parent_msg.arena }
     }
 

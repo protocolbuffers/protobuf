@@ -150,13 +150,13 @@ impl<T: AssociatedMiniTable> MessagePtr<T> {
     /// Returns a mutable message pointer, creating the field if it is not present.
     ///
     /// # Safety
-    /// - `self` must be a legally deferencable to a mutable message.
-    /// - The field at `index` must be a message field.
-    pub unsafe fn get_or_create_mutable_message_at_index(
+    /// - `self` must be a legally dereferenceable to a mutable message.
+    /// - The field at `index` must be a message field of type `ChildT`.
+    pub unsafe fn get_or_create_mutable_message_at_index<ChildT>(
         self,
         index: u32,
         arena: &Arena,
-    ) -> Option<MessagePtr<T>> {
+    ) -> Option<MessagePtr<ChildT>> {
         let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
 
         let raw = unsafe {

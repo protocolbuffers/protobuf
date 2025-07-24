@@ -97,7 +97,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   $msg_type$Mut::from_parent(
                     $pbi$::Private,
                     self.as_message_mut_inner($pbi$::Private),
-                    ptr.raw())
+                    ptr)
                 )rs");
              }
            }},

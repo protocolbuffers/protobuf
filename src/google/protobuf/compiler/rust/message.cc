@@ -112,6 +112,26 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
+void MessageMutFromParent(Context& ctx, const Descriptor& msg) {
+  ctx.Emit({{"MsgPtrType",
+             [&] {
+               ctx.Emit(ctx.is_cpp() ? "$pbr$::RawMessage"
+                                     : "$pbr$::MessagePtr<$Msg$>");
+             }}},
+           R"rs(
+          #[doc(hidden)]
+          pub fn from_parent<ParentT: $pb$::Message>(
+                     _private: $pbi$::Private,
+                     parent: $pbr$::MessageMutInner<'msg, ParentT>,
+                     ptr: $MsgPtrType$)
+            -> Self {
+            Self {
+              inner: $pbr$::MessageMutInner::from_parent(parent, ptr)
+            }
+          }
+      )rs");
+}
+
 void CppMessageExterns(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
 
@@ -613,6 +633,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
+          {"MsgMut::from_parent", [&] { MessageMutFromParent(ctx, msg); }},
           {"default_instance_impl",
            [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
           {"accessor_fns",
@@ -890,16 +911,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         #[allow(dead_code)]
         impl<'msg> $Msg$Mut<'msg> {
-          #[doc(hidden)]
-          pub fn from_parent<ParentT: $pb$::Message>(
-                     _private: $pbi$::Private,
-                     parent: $pbr$::MessageMutInner<'msg, ParentT>,
-                     msg: $pbr$::RawMessage)
-            -> Self {
-            Self {
-              inner: $pbr$::MessageMutInner::from_parent(parent, msg)
-            }
-          }
+          $MsgMut::from_parent$
 
           #[doc(hidden)]
           pub fn new(_private: $pbi$::Private, inner: $pbr$::MessageMutInner<'msg, $Msg$>) -> Self {
