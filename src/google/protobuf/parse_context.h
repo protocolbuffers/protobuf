@@ -701,6 +701,13 @@ T UnalignedLoad(const Void* p) {
   return UnalignedLoad<T>(reinterpret_cast<const char*>(p));
 }
 
+template <typename T>
+T UnalignedLoadAndIncrement(const char** ptr) {
+  T value = UnalignedLoad<T>(*ptr);
+  *ptr += sizeof(T);
+  return value;
+}
+
 PROTOBUF_EXPORT
 std::pair<const char*, uint32_t> VarintParseSlow32(const char* p, uint32_t res);
 PROTOBUF_EXPORT
