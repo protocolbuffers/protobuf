@@ -2435,7 +2435,6 @@ bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
       "google.protobuf.MethodOptions",
       "google.protobuf.OneofOptions",
       "google.protobuf.ServiceOptions",
-      "google.protobuf.StreamOptions",
   });
   return kDescriptorTypes.contains(message_name);
 }
