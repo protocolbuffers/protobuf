@@ -25,7 +25,7 @@
 namespace hpb {
 // upb has a notion of an ExtensionRegistry. We expect most callers to use
 // the generated registry, which utilizes upb linker arrays. It is also possible
-// to call hpb funcs with hpb::ExtensionRegistry::EmptyRegistry().
+// to call hpb funcs with hpb::ExtensionRegistry::empty_registry().
 //
 // Since google::protobuf::cpp only has the generated registry, hpb funcs
 // that use an extension registry must be invoked with
@@ -53,7 +53,7 @@ class ExtensionRegistry {
     }
   }
 
-  static const ExtensionRegistry& EmptyRegistry() {
+  static const ExtensionRegistry& empty_registry() {
     static const ExtensionRegistry* r = new ExtensionRegistry();
     return *r;
   }

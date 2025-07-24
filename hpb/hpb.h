@@ -69,14 +69,14 @@ template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
                                 absl::string_view bytes,
                                 const ExtensionRegistry& extension_registry =
-                                    ExtensionRegistry::EmptyRegistry()) {
+                                    ExtensionRegistry::empty_registry()) {
   return backend::Parse(message, bytes, extension_registry);
 }
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
                         const ExtensionRegistry& extension_registry =
-                            ExtensionRegistry::EmptyRegistry()) {
+                            ExtensionRegistry::empty_registry()) {
   return backend::Parse<T>(bytes, extension_registry);
 }
 
