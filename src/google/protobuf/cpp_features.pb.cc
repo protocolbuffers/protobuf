@@ -280,7 +280,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000007U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     ::memset(&_impl_.string_type_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.enum_name_uses_string_view_) -
         reinterpret_cast<char*>(&_impl_.string_type_)) + sizeof(_impl_.enum_name_uses_string_view_));
@@ -309,21 +309,21 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000002U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         1, this_._internal_legacy_closed_enum(), target);
   }
 
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000001U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         2, this_._internal_string_type(), target);
   }
 
   // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000004U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         3, this_._internal_enum_name_uses_string_view(), target);
@@ -357,7 +357,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   total_size += ::absl::popcount(0x00000006U & cached_has_bits) * 2;
    {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
     }
@@ -378,14 +378,14 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x00000007U) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _this->_impl_.string_type_ = from._impl_.string_type_;
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
     }
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _this->_impl_.enum_name_uses_string_view_ = from._impl_.enum_name_uses_string_view_;
     }
   }

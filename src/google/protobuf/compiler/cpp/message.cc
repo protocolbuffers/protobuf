@@ -121,16 +121,18 @@ void DebugAssertUniformLikelyPresence(
 // to use.
 std::string GenerateConditionMaybeWithProbability(
     uint32_t mask, std::optional<float> probability, bool use_cached_has_bits,
-    std::optional<int> has_array_index) {
+    std::optional<int> has_array_index, bool is_batch = false) {
   std::string condition;
   if (use_cached_has_bits) {
-    condition = absl::StrFormat("(cached_has_bits & 0x%08xU) != 0", mask);
+    condition = absl::StrFormat("%sCheckHasBit(cached_has_bits, 0x%08xU)",
+                                (is_batch ? "Batch" : ""), mask);
   } else {
     // We only use has_array_index when use_cached_has_bits is false, make sure
     // we pas a valid index when we need it.
     ABSL_DCHECK(has_array_index.has_value());
-    condition = absl::StrFormat("(this_._impl_._has_bits_[%d] & 0x%08xU) != 0",
-                                *has_array_index, mask);
+    condition =
+        absl::StrFormat("%sCheckHasBit(this_._impl_._has_bits_[%d], 0x%08xU)",
+                        (is_batch ? "Batch" : ""), *has_array_index, mask);
   }
   if (probability.has_value()) {
     return absl::StrFormat("PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(%s, %.3f)",
@@ -152,10 +154,10 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
     uint32_t mask, const std::vector<const FieldDescriptor*>& fields,
     const Options& options) {
   auto prob = GetFieldGroupPresenceProbability(fields, options);
-  return GenerateConditionMaybeWithProbability(
-      mask, prob,
-      /*use_cached_has_bits*/ true,
-      /*has_array_index*/ std::nullopt);
+  return GenerateConditionMaybeWithProbability(mask, prob,
+                                               /*use_cached_has_bits*/ true,
+                                               /*has_array_index*/ std::nullopt,
+                                               /*is_batch*/ true);
 }
 
 void PrintPresenceCheck(const FieldDescriptor* field,
@@ -567,10 +569,11 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
                 auto v =
                     p->WithVars({{"mask", absl::StrFormat("0x%08xU", mask)}});
                 if (this_word == cached_has_word_index) {
-                  p->Emit("(cached_has_bits & $mask$) != 0");
+                  p->Emit("BatchCheckHasBit(cached_has_bits, $mask$)");
                 } else {
                   p->Emit({{"from", from}, {"word", this_word}},
-                          "($from$_impl_._has_bits_[$word$] & $mask$) != 0");
+                          "BatchCheckHasBit($from$_impl_._has_bits_[$word$], "
+                          "$mask$)");
                 }
               }
             }}},
@@ -1143,7 +1146,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
           inline bool $classname$::has_$name$() const {
             $WeakDescriptorSelfPin$;
             $annotate_has$;
-            bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;
+            bool value = CheckHasBit($has_bits$[$has_array_index$], $has_mask$);
             $ASSUME$;
             return value;
           }
@@ -1234,7 +1237,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                 if (HasHasbit(field, options_)) {
                   auto v = p->WithVars(HasBitVars(field));
                   p->Emit(R"cc(
-                    $has_bits$[$has_array_index$] &= ~$has_mask$;
+                    ClearHasBit($has_bits$[$has_array_index$], $has_mask$);
                   )cc");
                 }
               }
@@ -4403,8 +4406,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           // Check hasbit, not using cached bits.
           auto v = p->WithVars(HasBitVars(field));
           format(
-              "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) "
-              "{\n");
+              "if (CheckHasBit(from.$has_bits$[$has_array_index$], "
+              "$has_mask$)) {\n");
           format.Indent();
           generator.GenerateMergingCode(p);
           format.Outdent();

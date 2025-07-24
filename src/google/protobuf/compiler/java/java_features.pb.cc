@@ -449,7 +449,7 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000001fU) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     ::memset(&_impl_.utf8_validation_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.nest_in_file_class_) -
         reinterpret_cast<char*>(&_impl_.utf8_validation_)) + sizeof(_impl_.nest_in_file_class_));
@@ -478,35 +478,35 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000002U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         1, this_._internal_legacy_closed_enum(), target);
   }
 
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000001U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         2, this_._internal_utf8_validation(), target);
   }
 
   // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000004U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         3, this_._internal_large_enum(), target);
   }
 
   // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if ((cached_has_bits & 0x00000008U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(
         4, this_._internal_use_old_outer_classname_default(), target);
   }
 
   // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-  if ((cached_has_bits & 0x00000010U) != 0) {
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
         5, this_._internal_nest_in_file_class(), target);
@@ -538,14 +538,14 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += ::absl::popcount(0x0000000eU & cached_has_bits) * 2;
-  if ((cached_has_bits & 0x00000011U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00000011U)) {
     // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_utf8_validation());
     }
     // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-    if ((cached_has_bits & 0x00000010U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_nest_in_file_class());
     }
@@ -566,20 +566,20 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   (void) cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if ((cached_has_bits & 0x0000001fU) != 0) {
-    if ((cached_has_bits & 0x00000001U) != 0) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
-    if ((cached_has_bits & 0x00000002U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
     }
-    if ((cached_has_bits & 0x00000004U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       _this->_impl_.large_enum_ = from._impl_.large_enum_;
     }
-    if ((cached_has_bits & 0x00000008U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       _this->_impl_.use_old_outer_classname_default_ = from._impl_.use_old_outer_classname_default_;
     }
-    if ((cached_has_bits & 0x00000010U) != 0) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       _this->_impl_.nest_in_file_class_ = from._impl_.nest_in_file_class_;
     }
   }

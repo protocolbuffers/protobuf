@@ -379,7 +379,7 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
 void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(R"cc(
-    if ((from.$has_hasbit$) != 0) {
+    if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
       _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
@@ -415,7 +415,7 @@ void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
 
   if (HasHasbit(field_, *opts_)) {
     p->Emit(R"cc(
-      if ((this_.$has_hasbit$) != 0) {
+      if (CheckHasBit(this_.$has_bits_array$, $has_mask$)) {
         if (!this_.$field_$->IsInitialized()) return false;
       }
     )cc");

@@ -372,13 +372,13 @@ PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
 
 // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_legacy_closed_enum() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002U) != 0;
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
 }
 inline void CppFeatures::clear_legacy_closed_enum() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = false;
-  _impl_._has_bits_[0] &= ~0x00000002U;
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline bool CppFeatures::legacy_closed_enum() const {
   // @@protoc_insertion_point(field_get:pb.CppFeatures.legacy_closed_enum)
@@ -386,7 +386,7 @@ inline bool CppFeatures::legacy_closed_enum() const {
 }
 inline void CppFeatures::set_legacy_closed_enum(bool value) {
   _internal_set_legacy_closed_enum(value);
-  _impl_._has_bits_[0] |= 0x00000002U;
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.legacy_closed_enum)
 }
 inline bool CppFeatures::_internal_legacy_closed_enum() const {
@@ -400,13 +400,13 @@ inline void CppFeatures::_internal_set_legacy_closed_enum(bool value) {
 
 // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_string_type() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001U) != 0;
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
   return value;
 }
 inline void CppFeatures::clear_string_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.string_type_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000001U;
+  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline ::pb::CppFeatures_StringType CppFeatures::string_type() const {
   // @@protoc_insertion_point(field_get:pb.CppFeatures.string_type)
@@ -414,7 +414,7 @@ inline ::pb::CppFeatures_StringType CppFeatures::string_type() const {
 }
 inline void CppFeatures::set_string_type(::pb::CppFeatures_StringType value) {
   _internal_set_string_type(value);
-  _impl_._has_bits_[0] |= 0x00000001U;
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.string_type)
 }
 inline ::pb::CppFeatures_StringType CppFeatures::_internal_string_type() const {
@@ -431,13 +431,13 @@ inline void CppFeatures::_internal_set_string_type(::pb::CppFeatures_StringType 
 
 // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_enum_name_uses_string_view() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004U) != 0;
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void CppFeatures::clear_enum_name_uses_string_view() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_name_uses_string_view_ = false;
-  _impl_._has_bits_[0] &= ~0x00000004U;
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline bool CppFeatures::enum_name_uses_string_view() const {
   // @@protoc_insertion_point(field_get:pb.CppFeatures.enum_name_uses_string_view)
@@ -445,7 +445,7 @@ inline bool CppFeatures::enum_name_uses_string_view() const {
 }
 inline void CppFeatures::set_enum_name_uses_string_view(bool value) {
   _internal_set_enum_name_uses_string_view(value);
-  _impl_._has_bits_[0] |= 0x00000004U;
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.enum_name_uses_string_view)
 }
 inline bool CppFeatures::_internal_enum_name_uses_string_view() const {

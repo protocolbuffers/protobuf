@@ -334,7 +334,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
 
   if (is_inlined()) {
     p->Emit(R"cc(
-      if (($has_hasbit$) == 0) {
+      if (!$has_hasbit$) {
         return nullptr;
       }
       $clear_hasbit$;
@@ -345,7 +345,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    if (($has_hasbit$) == 0) {
+    if (!$has_hasbit$) {
       return nullptr;
     }
     $clear_hasbit$;
@@ -635,7 +635,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
       {{"hazzer",
         [&] {
           if (HasHasbit(field_, options_)) {
-            p->Emit(R"cc((from.$has_hasbit$) != 0)cc");
+            p->Emit(R"cc(from.$has_hasbit$)cc");
           } else {
             p->Emit(R"cc(!from._internal_$name$().empty())cc");
           }
