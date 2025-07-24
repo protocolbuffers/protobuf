@@ -47,6 +47,7 @@ build --incompatible_check_sharding_support
 build --incompatible_config_setting_private_default_visibility
 build --incompatible_default_to_explicit_init_py
 build --incompatible_disable_native_android_rules
+build --incompatible_disable_starlark_host_transitions
 build --incompatible_disable_target_provider_fields
 build --incompatible_disallow_empty_glob
 build --incompatible_dont_use_javasourceinfoprovider
@@ -60,7 +61,6 @@ build --incompatible_use_cc_configure_from_rules_cc
 
 # We cannot yet build successfully with the following flags:
 #   --incompatible_check_testonly_for_output_files
-#   --incompatible_disable_starlark_host_transitions
 #   --incompatible_disallow_struct_provider_syntax
 #   --incompatible_no_implicit_file_export
 #   --incompatible_no_rule_outputs_param
