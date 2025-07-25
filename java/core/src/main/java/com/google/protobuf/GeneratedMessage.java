@@ -949,6 +949,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       this.extensions = builder.buildExtensions();
     }
 
+    /**
+     * Returns an iterator over the set extensions lazily wrapped in {@link FieldEntry} objects.
+     * Order is unspecified.
+     */
+    public final Iterator<FieldEntry> extensionsIterator() {
+      return new FieldEntryIterator(extensions);
+    }
+
     private void verifyExtensionContainingType(final Extension<? extends MessageT, ?> extension) {
       if (extension.getDescriptor().getContainingType() != getDescriptorForType()) {
         // This can only happen if someone uses unchecked operations.
@@ -1230,6 +1238,45 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     private void verifyContainingType(final FieldDescriptor field) {
       if (field.getContainingType() != getDescriptorForType()) {
         throw new IllegalArgumentException("FieldDescriptor does not match message type.");
+      }
+    }
+
+    /** A wrapper for a field descriptor and its value. */
+    public static final class FieldEntry {
+      private final FieldDescriptor descriptor;
+      private final Object value;
+
+      public FieldDescriptor getDescriptor() {
+        return descriptor;
+      }
+
+      public Object getValue() {
+        return value;
+      }
+
+      FieldEntry(FieldDescriptor descriptor, Object value) {
+        this.descriptor = descriptor;
+        this.value = value;
+      }
+    }
+
+    private static final class FieldEntryIterator implements Iterator<FieldEntry> {
+      private final Iterator<Map.Entry<FieldDescriptor, Object>> iter;
+
+      FieldEntryIterator(FieldSet<FieldDescriptor> fieldSet) {
+        this.iter = fieldSet.iterator();
+      }
+
+      @Override
+      public final boolean hasNext() {
+        return iter.hasNext();
+      }
+
+      @Override
+      public final FieldEntry next() {
+        // Just let the inner iterator throw the NoSuchElementException.
+        Map.Entry<FieldDescriptor, Object> entry = iter.next();
+        return new FieldEntry(entry.getKey(), entry.getValue());
       }
     }
   }
