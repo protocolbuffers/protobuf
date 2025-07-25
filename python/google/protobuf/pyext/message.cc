@@ -2296,6 +2296,7 @@ int InternalSetNonOneofScalar(Message* message,
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      PROTOBUF_CHECK_ENUM_WITH_BOOL(arg, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetEnumValue(message, field_descriptor, value);
       } else {
