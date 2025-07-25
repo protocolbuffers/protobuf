@@ -462,6 +462,7 @@ inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
 }
 
 inline void ArenaStringPtr::Set(const char* s, Arena* arena) {
+  ABSL_DCHECK(s != nullptr);
   Set(absl::string_view{s}, arena);
 }
 
