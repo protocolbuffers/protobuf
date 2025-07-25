@@ -580,6 +580,15 @@ inline void PrefetchToLocalCache(const void* ptr) {
   Prefetch<kOpts>(ptr);
 }
 
+inline void PrefetchToLocalCacheNta(const void* ptr) {
+  static constexpr PrefetchOpts kOpts = {
+      /*num=*/{1, PrefetchOpts::kLines},
+      /*from=*/{0, PrefetchOpts::kLines},
+      /*locality=*/PrefetchOpts::kNta,
+  };
+  Prefetch<kOpts>(ptr);
+}
+
 #else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
 
 template <const PrefetchOpts& kOpts, typename T, typename U>
@@ -587,6 +596,7 @@ PROTOBUF_ALWAYS_INLINE void Prefetch(const void*) {}
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {}
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {}
 inline void PrefetchToLocalCache(const void* ptr) {}
+inline void PrefetchToLocalCacheNta(const void* ptr) {}
 
 #endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
 

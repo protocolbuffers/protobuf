@@ -176,6 +176,9 @@ CppFeatures::~CppFeatures() {
 }
 inline void CppFeatures::SharedDtor(MessageLite& self) {
   CppFeatures& this_ = static_cast<CppFeatures&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.string_type_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.legacy_closed_enum_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.enum_name_uses_string_view_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
