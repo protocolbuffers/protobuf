@@ -73,7 +73,9 @@ cc_library(
     visibility = ["//hpb:__subpackages__"],
     deps = [
         ":interop",
+        "//hpb:ptr",
         "//hpb:status",
+        "//hpb/internal",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
         "//upb/base",
