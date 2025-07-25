@@ -112,7 +112,7 @@ cc_library(
         "enum.h",
         "extension.h",
         "field.h",
-        "field_chunk.h",
+        "field_chunk_abcdefghijklmnopqrstuvwxyz_abcdefghijklmnopqrstuvwxyz.h",
         "field_generators/generators.h",
         "file.h",
         "generator.h",
