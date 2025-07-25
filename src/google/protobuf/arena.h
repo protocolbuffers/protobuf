@@ -678,7 +678,8 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
 
 template <>
 inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string, false>() {
-  return impl_.AllocateFromStringBlock();
+  return AllocateAlignedWithCleanup(sizeof(std::string), alignof(std::string),
+                                    &internal::cleanup::arena_destruct_object<std::string>);
 }
 
 }  // namespace protobuf
