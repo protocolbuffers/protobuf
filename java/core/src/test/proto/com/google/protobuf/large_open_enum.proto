@@ -11,10 +11,10 @@ edition = "2024";
 
 package protobuf_test_messages.edition;
 
-import "google/protobuf/java_features.proto";
-
 option java_package = "com.google.protobuf.large.openenum.edition";
 option features.(pb.java).large_enum = true;
+
+import option "google/protobuf/java_features.proto";
 
 enum LargeOpenEnum {
   LARGE_ENUM_UNSPECIFIED = 0;
