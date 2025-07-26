@@ -92,6 +92,7 @@ namespace protobuf {
 namespace internal {
 
 class InternalMetadata;
+class ExtensionSetHeavyTest;
 
 namespace v2 {
 class TableDrivenMessage;
@@ -599,6 +600,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
   friend class google::protobuf::internal::v2::TableDrivenMessage;
+  friend class ExtensionSetHeavyTest;
 
   friend void internal::InitializeLazyExtensionSet();
 
@@ -694,7 +696,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     auto* f = maybe_create_lazy_extension_.load(std::memory_order_relaxed);
     return f != nullptr ? f(arena) : nullptr;
   }
-  static std::atomic<LazyMessageExtension* (*)(Arena* arena)>
+  static std::atomic<LazyMessageExtension* (*)(Arena * arena)>
       maybe_create_lazy_extension_;
 
   // We can't directly use std::atomic for Extension::cached_size because
@@ -1164,6 +1166,7 @@ class PROTOBUF_EXPORT ExtensionSet {
                                           internal::InternalMetadata* metadata,
                                           const char* ptr,
                                           internal::ParseContext* ctx);
+
   template <typename Msg, typename T>
   const char* ParseMessageSetItemTmpl(const char* ptr, const Msg* extendee,
                                       internal::InternalMetadata* metadata,

@@ -12,21 +12,25 @@
 #include "google/protobuf/extension_set.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
-#include "absl/base/casts.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
@@ -50,6 +54,7 @@ namespace protobuf {
 namespace internal {
 
 extern bool fully_verify_message_sets_opt_out;
+
 
 namespace {
 
@@ -1074,7 +1079,7 @@ TEST(ExtensionSetTest, RepeatedFields) {
            message.GetRepeatedExtension(unittest::repeated_string_extension)
                .end();
        string_iter != string_end; ++string_iter) {
-    ASSERT_TRUE(*string_iter == "testtest");
+    ASSERT_EQ(*string_iter, "testtest");
   }
 
   RepeatedField<unittest::TestAllTypes_NestedEnum>::iterator enum_iter;
@@ -1151,7 +1156,7 @@ TEST(ExtensionSetTest, RepeatedFields) {
   }
   for (const auto& x :
        message.GetRepeatedExtension(unittest::repeated_string_extension)) {
-    ASSERT_TRUE(x == "test_range_based_for");
+    ASSERT_EQ(x, "test_range_based_for");
   }
   // Test one message field.
   for (auto& x : *message.MutableRepeatedExtension(
@@ -1458,6 +1463,7 @@ TEST(ExtensionSetTest, Descriptor) {
             pb::CppFeatures::descriptor()->file()->FindExtensionByName("cpp"));
   EXPECT_NE(GetExtensionReflection(pb::cpp), nullptr);
 }
+
 
 }  // namespace
 }  // namespace internal
