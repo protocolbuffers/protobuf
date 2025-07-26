@@ -4572,11 +4572,14 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
     // lite runtime. In that case, check if the size of the source has changed
     // after Clear.
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "$DCHK$(!::_pbi::IsDescendant(*this, from))\n"
-          "    << \"Source of CopyFrom cannot be a descendant of the "
-          "target.\";\n"
-          "Clear();\n");
+      p->Emit(R"cc(
+        $DCHK$(!::_pbi::IsDescendant(*this, from))
+            << "Source of CopyFrom cannot be a descendant of the target.";
+#ifdef PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
+        $DCHK$(!::_pbi::IsDescendant(from, *this))
+            << "Target of CopyFrom cannot be a descendant of the source.";
+#endif  // PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
+        Clear();)cc");
     } else {
       format(
           "#ifndef NDEBUG\n"
