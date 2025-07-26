@@ -9,6 +9,10 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
+load(
+    "//bazel/tests:protobuf_test_proto_library.bzl",
+    "protobuf_test_proto_library",
+)
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
@@ -980,11 +984,13 @@ filegroup(
         "map_unittest.proto",
         "unittest.proto",
         "unittest_custom_options.proto",
+        "unittest_custom_options_unlinked.proto",
         "unittest_embed_optimize_for.proto",
         "unittest_empty.proto",
         "unittest_enormous_descriptor.proto",
         "unittest_features.proto",
         "unittest_import.proto",
+        "unittest_import_option.proto",
         "unittest_import_public.proto",
         "unittest_invalid_features.proto",
         "unittest_lite_imports_nonlite.proto",
@@ -1298,6 +1304,31 @@ proto_library(
 cc_proto_library(
     name = "unittest_string_view_cc_proto",
     deps = [":unittest_string_view_proto"],
+)
+
+proto_library(
+    name = "unittest_custom_options_unlinked_proto",
+    srcs = ["unittest_custom_options_unlinked.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:descriptor_proto",
+    ],
+)
+
+protobuf_test_proto_library(
+    name = "unittest_import_option_proto",
+    srcs = ["unittest_import_option.proto"],
+    option_deps = [
+        ":test_protos",
+        ":unittest_custom_options_unlinked_proto",
+    ],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "unittest_import_option_cc_proto",
+    deps = [":unittest_import_option_proto"],
 )
 
 cc_test(
@@ -1755,6 +1786,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":test_util",
+        ":unittest_import_option_cc_proto",
         ":unittest_proto3_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
