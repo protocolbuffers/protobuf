@@ -160,6 +160,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as Issue307);
     }
@@ -324,6 +332,14 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override bool Equals(object other) {
           return Equals(other as NestedOnce);
         }
@@ -484,6 +500,14 @@ namespace UnitTest.Issues.TestProtos {
             [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
             public NestedTwice Clone() {
               return new NestedTwice(this);
+            }
+
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+            public void Clear() {
+              if (_unknownFields != null) {
+                _unknownFields.Clear();
+              }
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -658,6 +682,17 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public NegativeEnumMessage Clone() {
       return new NegativeEnumMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.Zero;
+      values_.Clear();
+      packedValues_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "value" field.</summary>
@@ -914,6 +949,14 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as DeprecatedChild);
     }
@@ -1077,6 +1120,22 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public DeprecatedFieldsMessage Clone() {
       return new DeprecatedFieldsMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      primitiveValue_ = 0;
+      primitiveArray_.Clear();
+      if (messageValue_ != null) {
+        messageValue_.Clear();
+      }
+      messageArray_.Clear();
+      enumValue_ = global::UnitTest.Issues.TestProtos.DeprecatedEnum.DeprecatedZero;
+      enumArray_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "PrimitiveValue" field.</summary>
@@ -1446,6 +1505,15 @@ namespace UnitTest.Issues.TestProtos {
       return new ItemField(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      item_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "item" field.</summary>
     public const int ItemFieldNumber = 1;
     private int item_;
@@ -1643,6 +1711,16 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ReservedNames Clone() {
       return new ReservedNames(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      types_ = 0;
+      descriptor_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "types" field.</summary>
@@ -1886,6 +1964,14 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override bool Equals(object other) {
           return Equals(other as SomeNestedType);
         }
@@ -2080,6 +2166,20 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestJsonFieldOrdering Clone() {
       return new TestJsonFieldOrdering(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      plainInt32_ = 0;
+      plainString_ = "";
+      o1Case_ = O1OneofCase.None;
+      o1_ = null;
+      o2Case_ = O2OneofCase.None;
+      o2_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "plain_int32" field.</summary>
@@ -2570,6 +2670,17 @@ namespace UnitTest.Issues.TestProtos {
       return new TestJsonName(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      name_ = "";
+      description_ = "";
+      guid_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
@@ -2854,6 +2965,16 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public OneofMerging Clone() {
       return new OneofMerging(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      valueCase_ = ValueOneofCase.None;
+      value_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "text" field.</summary>
@@ -3147,6 +3268,16 @@ namespace UnitTest.Issues.TestProtos {
           return new Nested(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void Clear() {
+          x_ = 0;
+          y_ = 0;
+          if (_unknownFields != null) {
+            _unknownFields.Clear();
+          }
+        }
+
         /// <summary>Field number for the "x" field.</summary>
         public const int XFieldNumber = 1;
         private int x_;
@@ -3392,6 +3523,16 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public NullValueOutsideStruct Clone() {
       return new NullValueOutsideStruct(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      valueCase_ = ValueOneofCase.None;
+      value_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "string_value" field.</summary>
@@ -3684,6 +3825,15 @@ namespace UnitTest.Issues.TestProtos {
       return new NullValueNotInOneof(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      nullValue_ = global::Google.Protobuf.WellKnownTypes.NullValue.NullValue;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "null_value" field.</summary>
     public const int NullValueFieldNumber = 2;
     private global::Google.Protobuf.WellKnownTypes.NullValue nullValue_ = global::Google.Protobuf.WellKnownTypes.NullValue.NullValue;
@@ -3881,6 +4031,16 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MixedRegularAndOptional Clone() {
       return new MixedRegularAndOptional(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      regularField_ = "";
+      optionalField_ = "";
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "regular_field" field.</summary>
@@ -4137,6 +4297,16 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public OneofWithNoneField Clone() {
       return new OneofWithNoneField(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      testCase_ = TestOneofCase.None;
+      test_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "x" field.</summary>
@@ -4433,6 +4603,16 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public OneofWithNoneName Clone() {
       return new OneofWithNoneName(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      noneCase_ = NoneOneofCase.None;
+      none_ = null;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "x" field.</summary>
@@ -4735,6 +4915,26 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public DisambiguateCommonMembers Clone() {
       return new DisambiguateCommonMembers(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      disambiguateCommonMembers_ = 0;
+      types_ = 0;
+      descriptor_ = 0;
+      equals_ = 0;
+      toString_ = 0;
+      getHashCode_ = 0;
+      writeTo_ = 0;
+      clone_ = 0;
+      calculateSize_ = 0;
+      mergeFrom_ = 0;
+      onConstruction_ = 0;
+      parser_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "disambiguate_common_members" field.</summary>
@@ -5331,6 +5531,17 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public Issue11987Message Clone() {
       return new Issue11987Message(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      a_ = 0;
+      b_ = 0;
+      c_ = 0;
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
     }
 
     /// <summary>Field number for the "a" field.</summary>

@@ -130,6 +130,17 @@ namespace Google.Protobuf
             return ret;
         }
 
+        /// <summary>
+        /// Clear this set
+        /// </summary>
+        public void Clear()
+        {
+            fields.Clear();
+
+            lastFieldNumber = 0;
+            lastField = null;
+        }
+
         // Optimization:  We keep around the last field that was
         // modified so that we can efficiently add to it multiple times in a
         // row (important when parsing an unknown repeated field).
