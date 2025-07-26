@@ -31,8 +31,11 @@ import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
+import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,6 +67,7 @@ import java.util.logging.Logger;
 @CheckReturnValue
 public final class Descriptors {
   private static final Logger logger = Logger.getLogger(Descriptors.class.getName());
+  private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
   private static final int[] EMPTY_INT_ARRAY = new int[0];
   private static final Descriptor[] EMPTY_DESCRIPTORS = new Descriptor[0];
   private static final FieldDescriptor[] EMPTY_FIELD_DESCRIPTORS = new FieldDescriptor[0];
@@ -416,24 +420,124 @@ public final class Descriptors {
       return result;
     }
 
-    private static byte[] latin1Cat(final String[] strings) {
-      // Hack:  We can't embed a raw byte array inside generated Java code
-      //   (at least, not efficiently), but we can embed Strings.  So, the
-      //   protocol compiler embeds the FileDescriptorProto as a giant
-      //   string literal which is passed to this function to construct the
-      //   file's FileDescriptor.  The string literal contains only 8-bit
-      //   characters, each one representing a byte of the FileDescriptorProto's
-      //   serialized form.  So, if we convert it to bytes in ISO-8859-1, we
-      //   should get the original bytes that we want.
-      // Literal strings are limited to 64k, so it may be split into multiple strings.
-      if (strings.length == 1) {
-        return strings[0].getBytes(Internal.ISO_8859_1);
+    private static interface Latin1CodedInputStreamFactory {
+      CodedInputStream newCodedInput(String[] strings);
+    }
+
+    private static final class UnsafeLatin1CodedInputStreamFactory
+        implements Latin1CodedInputStreamFactory {
+      private final Field valueField;
+      private final Field coderField;
+      private final byte latin1;
+
+      private UnsafeLatin1CodedInputStreamFactory(Field valueField, Field coderField, byte latin1) {
+        this.valueField = valueField;
+        this.coderField = coderField;
+        this.latin1 = latin1;
       }
-      StringBuilder descriptorData = new StringBuilder();
-      for (String part : strings) {
-        descriptorData.append(part);
+
+      @Override
+      public CodedInputStream newCodedInput(String[] strings) {
+        if (strings.length == 0) {
+          CodedInputStream input =
+              CodedInputStream.newInstance(EMPTY_BYTE_ARRAY, 0, 0, /* bufferIsImmutable= */ true);
+          input.enableAliasing(true);
+          return input;
+        }
+        if (strings.length == 1) {
+          byte[] bytes = getBytes(strings[0]);
+          CodedInputStream input =
+              CodedInputStream.newInstance(bytes, 0, bytes.length, /* bufferIsImmutable= */ true);
+          input.enableAliasing(true);
+          return input;
+        }
+        ByteBuffer[] buffers = new ByteBuffer[strings.length];
+        for (int index = 0; index < strings.length; ++index) {
+          buffers[index] = ByteBuffer.wrap(getBytes(strings[index])).asReadOnlyBuffer();
+        }
+        CodedInputStream input =
+            CodedInputStream.newInstance(Arrays.asList(buffers), /* bufferIsImmutable= */ true);
+        input.enableAliasing(true);
+        return input;
       }
-      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
+
+      private byte[] getBytes(String string) {
+        try {
+          if ((byte) coderField.get(string) == latin1) {
+            return (byte[]) valueField.get(string);
+          }
+        } catch (IllegalAccessException ignored) {
+          // Fallthrough.
+        }
+        return string.getBytes(Internal.ISO_8859_1);
+      }
+    }
+
+    private static final class SafeLatin1CodedInputStreamFactory
+        implements Latin1CodedInputStreamFactory {
+      @Override
+      public CodedInputStream newCodedInput(String[] strings) {
+        if (strings.length == 0) {
+          CodedInputStream input =
+              CodedInputStream.newInstance(EMPTY_BYTE_ARRAY, 0, 0, /* bufferIsImmutable= */ true);
+          input.enableAliasing(true);
+          return input;
+        }
+        if (strings.length == 1) {
+          byte[] bytes = strings[0].getBytes(Internal.ISO_8859_1);
+          CodedInputStream input =
+              CodedInputStream.newInstance(bytes, 0, bytes.length, /* bufferIsImmutable= */ true);
+          input.enableAliasing(true);
+          return input;
+        }
+        ByteBuffer[] buffers = new ByteBuffer[strings.length];
+        for (int index = 0; index < strings.length; ++index) {
+          buffers[index] =
+              ByteBuffer.wrap(strings[index].getBytes(Internal.ISO_8859_1)).asReadOnlyBuffer();
+        }
+        CodedInputStream input =
+            CodedInputStream.newInstance(Arrays.asList(buffers), /* bufferIsImmutable= */ true);
+        input.enableAliasing(true);
+        return input;
+      }
+    }
+
+    private static volatile Latin1CodedInputStreamFactory latin1CodedInputStreamFactory = null;
+
+    private static Latin1CodedInputStreamFactory getLatin1CodedInputStreamFactory() {
+      Latin1CodedInputStreamFactory factory = latin1CodedInputStreamFactory;
+      if (factory == null) {
+        synchronized (Descriptors.class) {
+          factory = latin1CodedInputStreamFactory;
+          if (factory == null) {
+            try {
+              Field compactStringsField = String.class.getField("COMPACT_STRINGS");
+              compactStringsField.setAccessible(true);
+              if ((boolean) compactStringsField.get(null)) {
+                Field valueField = String.class.getField("value");
+                valueField.setAccessible(true);
+                Field coderField = String.class.getField("coder");
+                coderField.setAccessible(true);
+                Field latin1Field = String.class.getField("LATIN1");
+                latin1Field.setAccessible(true);
+                factory =
+                    new UnsafeLatin1CodedInputStreamFactory(
+                        valueField, coderField, (byte) latin1Field.get(null));
+              } else {
+                factory = new SafeLatin1CodedInputStreamFactory();
+              }
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+              factory = new SafeLatin1CodedInputStreamFactory();
+            }
+            latin1CodedInputStreamFactory = factory;
+          }
+        }
+      }
+      return factory;
+    }
+
+    private static CodedInputStream newLatin1CodedInput(final String[] strings) {
+      return getLatin1CodedInputStreamFactory().newCodedInput(strings);
     }
 
     private static FileDescriptor[] findDescriptors(
@@ -460,12 +564,15 @@ public final class Descriptors {
      */
     public static FileDescriptor internalBuildGeneratedFileFrom(
         final String[] descriptorDataParts, final FileDescriptor[] dependencies) {
-      final byte[] descriptorBytes = latin1Cat(descriptorDataParts);
+      final CodedInputStream descriptorBytes = newLatin1CodedInput(descriptorDataParts);
 
       FileDescriptorProto proto;
       try {
         proto = FileDescriptorProto.parseFrom(descriptorBytes);
       } catch (InvalidProtocolBufferException e) {
+        throw new IllegalArgumentException(
+            "Failed to parse protocol buffer descriptor for generated code.", e);
+      } catch (IOException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
       }
