@@ -8,7 +8,7 @@ pkg_tar(
         ":protobuf_example_files",
         "//:LICENSE",
     ],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 pkg_files(
@@ -34,5 +34,5 @@ filegroup(
             "src/**/*",
         ],
     ),
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
