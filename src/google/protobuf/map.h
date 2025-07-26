@@ -1501,13 +1501,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   PROTOBUF_NOINLINE Node* CloneFromOther(const Map& other) {
     Node* head = nullptr;
     for (const auto& [key, value] : other) {
-      Node* new_node;
-      if constexpr (std::is_base_of_v<MessageLite, mapped_type>) {
-        new_node = CreateNode(key);
-        new_node->kv.second = value;
-      } else {
-        new_node = CreateNode(key, value);
-      }
+      Node* new_node = CreateNode(key, value);
       new_node->next = head;
       head = new_node;
     }
