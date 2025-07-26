@@ -29,6 +29,8 @@ compile_edition_defaults(
     ],
     maximum_edition = "2023",
     minimum_edition = "2023",
+    # Test with HEAD protoc for any behavior change, other usages don't need this.
+    protoc = "//src/google/protobuf/compiler:protoc_minimal",
 )
 
 compile_edition_defaults(
@@ -37,6 +39,8 @@ compile_edition_defaults(
     srcs = ["//src/google/protobuf:unittest_features_proto"],
     maximum_edition = "2023",
     minimum_edition = "2023",
+    # Test with HEAD protoc for any behavior change, other usages don't need this.
+    protoc = "//src/google/protobuf/compiler:protoc_minimal",
 )
 
 compile_edition_defaults(
@@ -45,6 +49,8 @@ compile_edition_defaults(
     srcs = ["//src/google/protobuf:unittest_features_proto"],
     maximum_edition = "99997_TEST_ONLY",
     minimum_edition = "2023",
+    # Test with HEAD protoc for any behavior change, other usages don't need this.
+    protoc = "//src/google/protobuf/compiler:protoc_minimal",
 )
 
 compile_edition_defaults(
@@ -53,6 +59,8 @@ compile_edition_defaults(
     srcs = ["//src/google/protobuf:unittest_features_proto"],
     maximum_edition = "99999_TEST_ONLY",
     minimum_edition = "99997_TEST_ONLY",
+    # Test with HEAD protoc for any behavior change, other usages don't need this.
+    protoc = "//src/google/protobuf/compiler:protoc_minimal",
 )
 
 embed_edition_defaults(
