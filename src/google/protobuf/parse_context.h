@@ -312,7 +312,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res.second;
   }
 
-
   const char* InitFrom(absl::string_view flat) {
     overall_limit_ = 0;
     if (flat.size() > kSlopBytes) {
@@ -652,6 +651,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   int group_depth_ = std::numeric_limits<int16_t>::min();
   Data data_;
 };
+
 
 template <int>
 struct EndianHelper;
