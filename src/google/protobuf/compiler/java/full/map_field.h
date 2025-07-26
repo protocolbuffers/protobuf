@@ -8,7 +8,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MAP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MAP_FIELD_H__
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
