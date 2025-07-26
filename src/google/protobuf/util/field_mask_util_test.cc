@@ -9,10 +9,13 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/field_mask.pb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/log_severity.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 
