@@ -588,7 +588,7 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
 }
 
 void JavaFeatures::CopyFrom(const JavaFeatures& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:pb.JavaFeatures)
+  // @@protoc_insertion_point(class_specific_copy_from_start:pb.JavaFeatures)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

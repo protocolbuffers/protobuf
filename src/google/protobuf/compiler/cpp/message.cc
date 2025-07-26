@@ -4539,7 +4539,6 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
 void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  Formatter format(p);
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     // We don't override the generalized CopyFrom (aka that which
     // takes in the Message base class as a parameter); instead we just
@@ -4554,49 +4553,60 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
   }
 
   // Generate the class-specific CopyFrom.
-  format(
-      "void $classname$::CopyFrom(const $classname$& from) {\n"
-      "// @@protoc_insertion_point(class_specific_copy_from_start:"
-      "$full_name$)\n");
-  format.Indent();
-
-  format("if (&from == this) return;\n");
-
-  if (!options_.opensource_runtime && HasMessageFieldOrExtension(descriptor_)) {
-    // This check is disabled in the opensource release because we're
-    // concerned that many users do not define NDEBUG in their release builds.
-    // It is also disabled if a message has neither message fields nor
-    // extensions, as it's impossible to copy from its descendant.
-    //
-    // Note that IsDescendant is implemented by reflection and not available for
-    // lite runtime. In that case, check if the size of the source has changed
-    // after Clear.
-    if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "$DCHK$(!::_pbi::IsDescendant(*this, from))\n"
-          "    << \"Source of CopyFrom cannot be a descendant of the "
-          "target.\";\n"
-          "Clear();\n");
-    } else {
-      format(
-          "#ifndef NDEBUG\n"
-          "::size_t from_size = from.ByteSizeLong();\n"
-          "#endif\n"
-          "Clear();\n"
-          "#ifndef NDEBUG\n"
-          "$CHK$_EQ(from_size, from.ByteSizeLong())\n"
-          "  << \"Source of CopyFrom changed when clearing target.  Either \"\n"
-          "     \"source is a nested message in target (not allowed), or \"\n"
-          "     \"another thread is modifying the source.\";\n"
-          "#endif\n");
-    }
-  } else {
-    format("Clear();\n");
-  }
-  format("MergeFrom(from);\n");
-
-  format.Outdent();
-  format("}\n");
+  p->Emit(
+      {{"clear",
+        [&] {
+          if (!options_.opensource_runtime &&
+              HasMessageFieldOrExtension(descriptor_)) {
+            // This check is disabled in the open source release because we're
+            // concerned that many users do not define NDEBUG in their release
+            // builds. It is also disabled if a message has neither message
+            // fields nor extensions, as it's impossible to copy from its
+            // descendant.
+            //
+            // Note that IsDescendant is implemented by reflection and not
+            // available for lite runtime. In that case, check if the size of
+            // the source has changed after Clear.
+            if (HasDescriptorMethods(descriptor_->file(), options_)) {
+              p->Emit(R"cc(
+                $DCHK$(!::_pbi::IsDescendant(*this, from))
+                    << "Source of CopyFrom cannot be a descendant of the "
+                       "target.";
+#ifdef PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
+                $DCHK$(!::_pbi::IsDescendant(from, *this))
+                    << "Target of CopyFrom cannot be a descendant of the "
+                       "source.";
+#endif  // PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
+                Clear();)cc");
+            } else {
+              p->Emit(R"cc(
+#ifndef NDEBUG
+                ::size_t from_size = from.ByteSizeLong();
+#endif
+                Clear();
+#ifndef NDEBUG
+                $CHK$_EQ(from_size, from.ByteSizeLong())
+                    << "Source of CopyFrom changed when clearing target.  "
+                       "Either "
+                       "source is a nested message in target (not allowed), or "
+                       "another thread is modifying the source.";
+#endif
+              )cc");
+            }
+          } else {
+            p->Emit(R"cc(
+              Clear();
+            )cc");
+          }
+        }}},
+      R"cc(
+        void $classname$::CopyFrom(const $classname$& from) {
+          // @@protoc_insertion_point(class_specific_copy_from_start:$full_name$)
+          if (&from == this) return;
+          $clear$;
+          MergeFrom(from);
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateVerify(io::Printer* p) {

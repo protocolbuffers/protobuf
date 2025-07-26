@@ -2512,7 +2512,7 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const
 }
 
 void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorSet)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorSet)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -3203,7 +3203,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
 }
 
 void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -3567,7 +3567,7 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
 }
 
 void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRange& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ExtensionRange)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -3850,7 +3850,7 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
 }
 
 void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -4461,7 +4461,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, const :
 }
 
 void DescriptorProto::CopyFrom(const DescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -4860,7 +4860,7 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLit
 }
 
 void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Declaration& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -5258,7 +5258,7 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, c
 }
 
 void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -5821,7 +5821,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
 }
 
 void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldDescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldDescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -6142,7 +6142,7 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, co
 }
 
 void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofDescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofDescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -6423,7 +6423,7 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
 }
 
 void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -6866,7 +6866,7 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, con
 }
 
 void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -7216,7 +7216,7 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
 }
 
 void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueDescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueDescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -7577,7 +7577,7 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, 
 }
 
 void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceDescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceDescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -7996,7 +7996,7 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg, c
 }
 
 void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodDescriptorProto)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodDescriptorProto)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -8808,7 +8808,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
 }
 
 void FileOptions::CopyFrom(const FileOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -9256,7 +9256,7 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
 }
 
 void MessageOptions::CopyFrom(const MessageOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MessageOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MessageOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -9562,7 +9562,7 @@ void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_
 }
 
 void FieldOptions_EditionDefault::CopyFrom(const FieldOptions_EditionDefault& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions.EditionDefault)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions.EditionDefault)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -9908,7 +9908,7 @@ void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_
 }
 
 void FieldOptions_FeatureSupport::CopyFrom(const FieldOptions_FeatureSupport& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions.FeatureSupport)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions.FeatureSupport)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -10516,7 +10516,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
 }
 
 void FieldOptions::CopyFrom(const FieldOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -10864,7 +10864,7 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
 }
 
 void OneofOptions::CopyFrom(const OneofOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -11267,7 +11267,7 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
 }
 
 void EnumOptions::CopyFrom(const EnumOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -11698,7 +11698,7 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const 
 }
 
 void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -12070,7 +12070,7 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
 }
 
 void ServiceOptions::CopyFrom(const ServiceOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -12476,7 +12476,7 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
 }
 
 void MethodOptions::CopyFrom(const MethodOptions& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodOptions)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodOptions)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -12779,7 +12779,7 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to
 }
 
 void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption.NamePart)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption.NamePart)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -13225,7 +13225,7 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg, con
 }
 
 void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -13789,7 +13789,7 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
 }
 
 void FeatureSet::CopyFrom(const FeatureSet& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSet)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSet)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -14137,7 +14137,7 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
 }
 
 void FeatureSetDefaults_FeatureSetEditionDefault::CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -14485,7 +14485,7 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg, cons
 }
 
 void FeatureSetDefaults::CopyFrom(const FeatureSetDefaults& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSetDefaults)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSetDefaults)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -14895,7 +14895,7 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo.Location)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo.Location)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -15173,7 +15173,7 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::
 }
 
 void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -15566,7 +15566,7 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to
 }
 
 void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -15835,7 +15835,7 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg, const
 }
 
 void GeneratedCodeInfo::CopyFrom(const GeneratedCodeInfo& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
