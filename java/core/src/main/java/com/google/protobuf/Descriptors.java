@@ -29,7 +29,6 @@ import com.google.protobuf.DescriptorProtos.OneofDescriptorProto;
 import com.google.protobuf.DescriptorProtos.OneofOptions;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceOptions;
-import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -43,6 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Logger;
 
 /**
@@ -70,8 +73,29 @@ public final class Descriptors {
   private static final EnumDescriptor[] EMPTY_ENUM_DESCRIPTORS = new EnumDescriptor[0];
   private static final ServiceDescriptor[] EMPTY_SERVICE_DESCRIPTORS = new ServiceDescriptor[0];
   private static final OneofDescriptor[] EMPTY_ONEOF_DESCRIPTORS = new OneofDescriptor[0];
-  private static final ConcurrentHashMap<FeatureSet, FeatureSet> FEATURE_CACHE =
-      new ConcurrentHashMap<>();
+  private static final FileDescriptor[] EMPTY_FILE_DESCRIPTORS = new FileDescriptor[0];
+
+  /**
+   * Call this function to ensure this message's descriptor is loaded. This will ensure {@link
+   * DescriptorPool#findMessageTypeByName} succeeds when used with the {@link DescriptorPool}
+   * returned by {@link DescriptorPool#getGenerated}.
+   */
+  public static <T extends GeneratedMessage> void linkMessageReflection(Class<T> object) {
+    if (object == null) {
+      throw new NullPointerException();
+    }
+  }
+
+  /**
+   * Call this function to ensure this message's descriptor is loaded. This will ensure {@link
+   * DescriptorPool#findExtensionByName} succeeds when used with the {@link DescriptorPool} returned
+   * by {@link DescriptorPool#getGenerated}.
+   */
+  public static void linkExtensionReflection(Extension<?, ?> object) {
+    if (object == null) {
+      throw new NullPointerException();
+    }
+  }
 
   @SuppressWarnings("NonFinalStaticField")
   private static volatile FeatureSetDefaults javaEditionDefaults = null;
@@ -109,8 +133,7 @@ public final class Descriptors {
     return javaEditionDefaults;
   }
 
-  static FeatureSet getEditionDefaults(Edition edition) {
-    FeatureSetDefaults javaEditionDefaults = getJavaEditionDefaults();
+  static FeatureSet getEditionDefaults(FeatureSetDefaults javaEditionDefaults, Edition edition) {
     if (edition.getNumber() < javaEditionDefaults.getMinimumEdition().getNumber()) {
       throw new IllegalArgumentException(
           "Edition "
@@ -141,14 +164,6 @@ public final class Descriptors {
     return found.getFixedFeatures().toBuilder().mergeFrom(found.getOverridableFeatures()).build();
   }
 
-  private static FeatureSet internFeatures(FeatureSet features) {
-    FeatureSet cached = FEATURE_CACHE.putIfAbsent(features, features);
-    if (cached == null) {
-      return features;
-    }
-    return cached;
-  }
-
   /**
    * Describes a {@code .proto} file, including everything defined within. That includes, in
    * particular, descriptors for all the messages and file descriptors for all other imported {@code
@@ -171,6 +186,10 @@ public final class Descriptors {
     @Override
     public FileDescriptor getFile() {
       return this;
+    }
+
+    public DescriptorPool getPool() {
+      return pool;
     }
 
     /** Returns the same as getName(). */
@@ -277,7 +296,8 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = tables.findSymbol(name);
+      final GenericDescriptor result =
+          tables != null ? tables.findSymbol(name) : pool.findGenericByName(name);
       if (result instanceof Descriptor && result.getFile() == this) {
         return (Descriptor) result;
       } else {
@@ -301,7 +321,8 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = tables.findSymbol(name);
+      final GenericDescriptor result =
+          tables != null ? tables.findSymbol(name) : pool.findGenericByName(name);
       if (result instanceof EnumDescriptor && result.getFile() == this) {
         return (EnumDescriptor) result;
       } else {
@@ -325,7 +346,8 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = tables.findSymbol(name);
+      final GenericDescriptor result =
+          tables != null ? tables.findSymbol(name) : pool.findGenericByName(name);
       if (result instanceof ServiceDescriptor && result.getFile() == this) {
         return (ServiceDescriptor) result;
       } else {
@@ -347,7 +369,8 @@ public final class Descriptors {
       if (!packageName.isEmpty()) {
         name = packageName + '.' + name;
       }
-      final GenericDescriptor result = tables.findSymbol(name);
+      final GenericDescriptor result =
+          tables != null ? tables.findSymbol(name) : pool.findGenericByName(name);
       if (result instanceof FieldDescriptor && result.getFile() == this) {
         return (FieldDescriptor) result;
       } else {
@@ -363,7 +386,9 @@ public final class Descriptors {
      * @throws DescriptorValidationException {@code proto} is not a valid descriptor. This can occur
      *     for a number of reasons; for instance, because a field has an undefined type or because
      *     two messages were defined with the same name.
+     * @deprecated Use {@link DescriptorPool} instead.
      */
+    @Deprecated
     public static FileDescriptor buildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies)
         throws DescriptorValidationException {
       return buildFrom(proto, dependencies, false);
@@ -380,14 +405,17 @@ public final class Descriptors {
      * @throws DescriptorValidationException {@code proto} is not a valid descriptor. This can occur
      *     for a number of reasons; for instance, because a field has an undefined type or because
      *     two messages were defined with the same name.
+     * @deprecated Use {@link DescriptorPool} instead.
      */
+    @Deprecated
     public static FileDescriptor buildFrom(
         FileDescriptorProto proto, FileDescriptor[] dependencies, boolean allowUnknownDependencies)
         throws DescriptorValidationException {
-      return buildFrom(proto, dependencies, allowUnknownDependencies, false);
+      return buildFrom(null, proto, dependencies, allowUnknownDependencies, false);
     }
 
     private static FileDescriptor buildFrom(
+        DescriptorPool pool,
         FileDescriptorProto proto,
         FileDescriptor[] dependencies,
         boolean allowUnknownDependencies,
@@ -399,13 +427,20 @@ public final class Descriptors {
       // FileDescriptorProto's tree and put all of the descriptors into the
       // FileDescriptorTables's lookup tables.  In the linking step, we look up all
       // type references in the FileDescriptorTables, so that, for example, a
+      // FileDescriptorTables's lookup tables.  In the linking step, we look up all
+      // type references in the FileDescriptorTables, so that, for example, a
       // FieldDescriptor for an embedded message contains a pointer directly
       // to the Descriptor for that message's type.  We also detect undefined
       // types in the linking step.
+      if (pool == null) {
+        pool =
+            DescriptorPool.newOverlay(
+                dependencies, allowUnknownDependencies, allowUnresolvedFeatures);
+      }
       FileDescriptorTables tables =
-          new FileDescriptorTables(dependencies, allowUnknownDependencies);
+          new FileDescriptorTables(pool, dependencies, allowUnknownDependencies);
       FileDescriptor result =
-          new FileDescriptor(proto, dependencies, tables, allowUnknownDependencies);
+          new FileDescriptor(pool, proto, dependencies, tables, allowUnknownDependencies);
       result.crossLink();
       // Skip feature resolution until later for calls from gencode.
       if (!allowUnresolvedFeatures) {
@@ -413,6 +448,12 @@ public final class Descriptors {
         // since dependencies from non-gencode should already be fully feature resolved.
         result.resolveAllFeaturesInternal();
       }
+      // If we are using a pool, clear the tables field so it can be garbage collected. The same
+      // information will be available in the pool aftering calling addFile.
+      tables = result.tables;
+      // We must clear result.tables before adding it to the pool.
+      result.tables = null;
+      pool.addFile(result, tables);
       return result;
     }
 
@@ -473,7 +514,7 @@ public final class Descriptors {
       try {
         // When building descriptors for generated code, we allow unknown
         // dependencies by default and delay feature resolution until later.
-        return buildFrom(proto, dependencies, true, true);
+        return buildFrom(DescriptorPool.getGenerated(), proto, dependencies, true, true);
       } catch (DescriptorValidationException e) {
         throw new IllegalArgumentException(
             "Invalid embedded descriptor for \"" + proto.getName() + "\".", e);
@@ -529,6 +570,7 @@ public final class Descriptors {
       ExtensionRegistry assignDescriptors(FileDescriptor root);
     }
 
+    private final DescriptorPool pool;
     private FileDescriptorProto proto;
     private volatile FileOptions options;
     private final Descriptor[] messageTypes;
@@ -537,19 +579,21 @@ public final class Descriptors {
     private final FieldDescriptor[] extensions;
     private final FileDescriptor[] dependencies;
     private final FileDescriptor[] publicDependencies;
-    private final FileDescriptorTables tables;
+    private FileDescriptorTables tables;
     private volatile boolean featuresResolved;
 
     private FileDescriptor(
+        final DescriptorPool pool,
         final FileDescriptorProto proto,
         final FileDescriptor[] dependencies,
         final FileDescriptorTables tables,
         boolean allowUnknownDependencies)
         throws DescriptorValidationException {
-      this.tables = tables;
       this.proto = proto;
+      this.tables = tables;
       this.dependencies = dependencies.clone();
       this.featuresResolved = false;
+      this.pool = pool;
       HashMap<String, FileDescriptor> nameToFileMap = new HashMap<>();
       for (FileDescriptor file : dependencies) {
         nameToFileMap.put(file.getName(), file);
@@ -610,9 +654,11 @@ public final class Descriptors {
     }
 
     /** Create a placeholder FileDescriptor for a message Descriptor. */
-    FileDescriptor(String packageName, Descriptor message) throws DescriptorValidationException {
+    FileDescriptor(DescriptorPool pool, String packageName, Descriptor message)
+        throws DescriptorValidationException {
+      this.pool = pool;
       this.parent = null;
-      this.tables = new FileDescriptorTables(new FileDescriptor[0], true);
+      this.tables = new FileDescriptorTables(pool, new FileDescriptor[0], true);
       this.proto =
           FileDescriptorProto.newBuilder()
               .setName(message.getFullName() + ".placeholder.proto")
@@ -920,7 +966,11 @@ public final class Descriptors {
      * @return The field's descriptor, or {@code null} if not found.
      */
     public FieldDescriptor findFieldByName(final String name) {
-      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
+      String absoluteName = fullName + '.' + name;
+      final GenericDescriptor result =
+          file.tables != null
+              ? file.tables.findSymbol(absoluteName)
+              : file.pool.findGenericByName(absoluteName);
       if (result instanceof FieldDescriptor) {
         return (FieldDescriptor) result;
       } else {
@@ -946,7 +996,11 @@ public final class Descriptors {
      * @return The types's descriptor, or {@code null} if not found.
      */
     public Descriptor findNestedTypeByName(final String name) {
-      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
+      String absoluteName = fullName + '.' + name;
+      final GenericDescriptor result =
+          file.tables != null
+              ? file.tables.findSymbol(absoluteName)
+              : file.pool.findGenericByName(absoluteName);
       if (result instanceof Descriptor) {
         return (Descriptor) result;
       } else {
@@ -961,7 +1015,11 @@ public final class Descriptors {
      * @return The types's descriptor, or {@code null} if not found.
      */
     public EnumDescriptor findEnumTypeByName(final String name) {
-      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
+      String absoluteName = fullName + '.' + name;
+      final GenericDescriptor result =
+          file.tables != null
+              ? file.tables.findSymbol(absoluteName)
+              : file.pool.findGenericByName(absoluteName);
       if (result instanceof EnumDescriptor) {
         return (EnumDescriptor) result;
       } else {
@@ -987,7 +1045,7 @@ public final class Descriptors {
     private final int[] extensionRangeUpperBounds;
 
     // Used to create a placeholder when the type cannot be found.
-    Descriptor(final String fullname) throws DescriptorValidationException {
+    Descriptor(DescriptorPool pool, final String fullname) throws DescriptorValidationException {
       String name = fullname;
       String packageName = "";
       int pos = fullname.lastIndexOf('.');
@@ -1014,7 +1072,7 @@ public final class Descriptors {
       this.realOneofCount = 0;
 
       // Create a placeholder FileDescriptor to hold this message.
-      this.file = new FileDescriptor(packageName, this);
+      this.file = new FileDescriptor(pool, packageName, this);
       this.parent = this.file;
 
       extensionRangeLowerBounds = new int[] {1};
@@ -2270,7 +2328,11 @@ public final class Descriptors {
      * @return the value's descriptor, or {@code null} if not found
      */
     public EnumValueDescriptor findValueByName(final String name) {
-      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
+      String absoluteName = fullName + '.' + name;
+      final GenericDescriptor result =
+          file.tables != null
+              ? file.tables.findSymbol(absoluteName)
+              : file.pool.findGenericByName(absoluteName);
       if (result instanceof EnumValueDescriptor) {
         return (EnumValueDescriptor) result;
       } else {
@@ -2636,7 +2698,11 @@ public final class Descriptors {
      * @return the method's descriptor, or {@code null} if not found
      */
     public MethodDescriptor findMethodByName(final String name) {
-      final GenericDescriptor result = file.tables.findSymbol(fullName + '.' + name);
+      String absoluteName = fullName + '.' + name;
+      final GenericDescriptor result =
+          file.tables != null
+              ? file.tables.findSymbol(absoluteName)
+              : file.pool.findGenericByName(absoluteName);
       if (result instanceof MethodDescriptor) {
         return (MethodDescriptor) result;
       } else {
@@ -2843,6 +2909,509 @@ public final class Descriptors {
     }
   }
 
+  /** DescriptorPool is used to construct descriptors and provide access to those descriptors. */
+  public static final class DescriptorPool {
+    private static final DescriptorPool[] EMPTY_ARRAY = new DescriptorPool[0];
+
+    public static DescriptorPool newInstance() {
+      return new DescriptorPool();
+    }
+
+    private static DescriptorPool newOverlay(
+        FileDescriptor[] dependencies,
+        boolean allowUnknownDependencies,
+        boolean allowUnresolvedFeatures) {
+      DescriptorPool pool;
+      if (dependencies == null || dependencies.length == 0) {
+        pool = new DescriptorPool();
+      } else {
+        DescriptorPool[] parents = new DescriptorPool[dependencies.length];
+        for (int index = 0; index < dependencies.length; ++index) {
+          DescriptorPool parent = dependencies[index].pool;
+          if (parent == null) {
+            throw new NullPointerException();
+          }
+          parents[index] = parent;
+        }
+        pool = new DescriptorPool(parents);
+      }
+      pool.allowUnknownDependencies = allowUnknownDependencies;
+      pool.allowUnresolvedFeatures = allowUnresolvedFeatures;
+      return pool;
+    }
+
+    private static volatile DescriptorPool generated = null;
+
+    public static DescriptorPool getGenerated() {
+      DescriptorPool generated = DescriptorPool.generated;
+      if (generated == null) {
+        synchronized (DescriptorPool.class) {
+          generated = DescriptorPool.generated;
+          if (generated == null) {
+            generated = new DescriptorPool();
+            generated.allowUnknownDependencies = true;
+            generated.allowUnresolvedFeatures = true;
+            DescriptorPool.generated = generated;
+          }
+        }
+      }
+      return generated;
+    }
+
+    // Protects reads/writes the various maps. When the write lock is acquired, stateLock should
+    // also be held.
+    private final DescriptorPool[] parents;
+    private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+    private final Lock readLock = readWriteLock.readLock();
+    private final Lock writeLock = readWriteLock.writeLock();
+    private final Map<String, FileDescriptor> filesByName = new HashMap<>();
+    private final Map<String, GenericDescriptor> genericsByName = new HashMap<>();
+    private final ConcurrentHashMap<FeatureSet, FeatureSet> featureSets = new ConcurrentHashMap<>();
+    // Protects reads/writes to the below fields during descriptor building.
+    private final Lock stateLock = new ReentrantLock();
+    private FeatureSetDefaults featureSetDefaults = null;
+    private boolean allowUnknownDependencies = false;
+    private boolean allowUnresolvedFeatures = false;
+
+    @CanIgnoreReturnValue
+    public DescriptorPool setAllowUnknownDependencies(boolean allowUnknownDependencies) {
+      if (DescriptorPool.generated == this) {
+        throw new IllegalStateException(
+            "Allowing or disallowing unknown dependencies can not be changed for the generated"
+                + " descriptor pool.");
+      }
+      stateLock.lock();
+      try {
+        if (!isEmpty()) {
+          throw new IllegalStateException(
+              "Allowing or disallowing unknown dependencies can only be done before building any"
+                  + " files.");
+        }
+        this.allowUnknownDependencies = allowUnknownDependencies;
+      } finally {
+        stateLock.unlock();
+      }
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public DescriptorPool setAllowUnresolvedFeatures(boolean allowUnresolvedFeatures) {
+      if (DescriptorPool.generated == this) {
+        throw new IllegalStateException(
+            "Allowing or disallowing unresolved features can not be changed for the generated"
+                + " descriptor pool.");
+      }
+      stateLock.lock();
+      try {
+        if (!isEmpty()) {
+          throw new IllegalStateException(
+              "Allowing or disallowing unresolved features can only be done before building any"
+                  + " files.");
+        }
+        this.allowUnresolvedFeatures = allowUnresolvedFeatures;
+      } finally {
+        stateLock.unlock();
+      }
+      return this;
+    }
+
+    @CanIgnoreReturnValue
+    public DescriptorPool setFeatureSetDefaults(FeatureSetDefaults featureSetDefaults) {
+      if (featureSetDefaults == null) {
+        throw new NullPointerException();
+      }
+
+      if (DescriptorPool.generated == this) {
+        throw new IllegalStateException(
+            "Changing the feature set defaults for the generated descriptor pool is not allowed.");
+      }
+      stateLock.lock();
+      try {
+        if (!isEmpty()) {
+          throw new IllegalStateException(
+              "Changing the feature set defaults can only be done before building any files.");
+        }
+        if (featureSetDefaults.getMinimumEdition().compareTo(featureSetDefaults.getMaximumEdition())
+            > 0) {
+          throw new IllegalArgumentException(
+              "Invalid edition range "
+                  + featureSetDefaults.getMinimumEdition()
+                  + " to "
+                  + featureSetDefaults.getMaximumEdition()
+                  + ".");
+        }
+        Edition prevEdition = Edition.EDITION_UNKNOWN;
+        for (FeatureSetEditionDefault editionDefault : featureSetDefaults.getDefaultsList()) {
+          if (editionDefault.getEdition() == Edition.EDITION_UNKNOWN) {
+            throw new IllegalArgumentException(
+                "Invalid edition " + editionDefault.getEdition() + " specified.");
+          }
+          if (editionDefault.getEdition().compareTo(prevEdition) <= 0) {
+            throw new IllegalArgumentException(
+                "Feature set defaults not strictly increasing. Edition "
+                    + prevEdition
+                    + " is greater than or equal to edition "
+                    + editionDefault.getEdition()
+                    + ".");
+          }
+          prevEdition = editionDefault.getEdition();
+        }
+        this.featureSetDefaults = featureSetDefaults;
+      } finally {
+        stateLock.unlock();
+      }
+      return this;
+    }
+
+    public FileDescriptor buildFile(FileDescriptorProto file) throws DescriptorValidationException {
+      if (file == null) {
+        throw new NullPointerException();
+      }
+      stateLock.lock();
+      try {
+        return FileDescriptor.buildFrom(
+            this, file, getDependencies(file), allowUnknownDependencies, allowUnresolvedFeatures);
+      } finally {
+        stateLock.unlock();
+      }
+    }
+
+    public FileDescriptor findFileByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      FileDescriptor descriptor;
+
+      readLock.lock();
+      try {
+        descriptor = filesByName.get(name);
+      } finally {
+        readLock.unlock();
+      }
+
+      if (descriptor == null) {
+        for (DescriptorPool parent : parents) {
+          descriptor = parent.findFileByName(name);
+          if (descriptor != null) {
+            break;
+          }
+        }
+      }
+
+      return descriptor;
+    }
+
+    public FileDescriptor findFileContaingSymbol(String symbol) {
+      if (symbol == null) {
+        throw new NullPointerException();
+      }
+      GenericDescriptor descriptor = findGenericByName(symbol);
+      if (descriptor == null) {
+        return null;
+      }
+      return descriptor.getFile();
+    }
+
+    public Descriptor findMessageTypeByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      return findGenericByName(name, Descriptor.class);
+    }
+
+    public FieldDescriptor findFieldByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      return findGenericByName(name, FieldDescriptor.class);
+    }
+
+    public FieldDescriptor findExtensionByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      FieldDescriptor field = findGenericByName(name, FieldDescriptor.class);
+      if (field == null || !field.isExtension()) {
+        return null;
+      }
+      return field;
+    }
+
+    public OneofDescriptor findOneofByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      return findGenericByName(name, OneofDescriptor.class);
+    }
+
+    public EnumDescriptor findEnumTypeByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      return findGenericByName(name, EnumDescriptor.class);
+    }
+
+    public EnumValueDescriptor findEnumValueByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      return findGenericByName(name, EnumValueDescriptor.class);
+    }
+
+    public ServiceDescriptor findServiceByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      return findGenericByName(name, ServiceDescriptor.class);
+    }
+
+    public MethodDescriptor findMethodByName(String name) {
+      if (name == null) {
+        throw new NullPointerException();
+      }
+      return findGenericByName(name, MethodDescriptor.class);
+    }
+
+    public FieldDescriptor findExtensionByNumber(Descriptor extendee, int number) {
+      FieldDescriptor field = extendee.findFieldByNumber(number);
+      if (field == null || !field.isExtension() || field.getContainingType() != extendee) {
+        return null;
+      }
+      return field;
+    }
+
+    public FieldDescriptor findExtensionByPrintableName(Descriptor extendee, String printableName) {
+      if (extendee == null || printableName == null) {
+        throw new NullPointerException();
+      }
+      FieldDescriptor descriptor = findExtensionByName(printableName);
+      if (descriptor == null || descriptor.getContainingType() != extendee) {
+        return null;
+      }
+      return descriptor;
+    }
+
+    private boolean isEmpty() {
+      return filesByName.isEmpty() && genericsByName.isEmpty();
+    }
+
+    private FileDescriptor[] getDependencies(FileDescriptorProto file) {
+      final int dependenciesCapacity = file.getDependencyCount() + file.getOptionDependencyCount();
+      if (dependenciesCapacity == 0) {
+        return EMPTY_FILE_DESCRIPTORS;
+      }
+      FileDescriptor[] dependencies = new FileDescriptor[dependenciesCapacity];
+      int dependenciesSize = 0;
+
+      readLock.lock();
+      try {
+        for (String dependencyName : file.getDependencyList()) {
+          FileDescriptor dependency = filesByName.get(dependencyName);
+          if (dependency != null) {
+            dependencies[dependenciesSize++] = dependency;
+          }
+        }
+        for (String dependencyName : file.getOptionDependencyList()) {
+          FileDescriptor dependency = filesByName.get(dependencyName);
+          if (dependency != null) {
+            dependencies[dependenciesSize++] = dependency;
+          }
+        }
+      } finally {
+        readLock.unlock();
+      }
+
+      if (dependenciesSize < dependenciesCapacity) {
+        return Arrays.copyOf(dependencies, dependenciesSize);
+      }
+      return dependencies;
+    }
+
+    private GenericDescriptor findGenericByName(String name) {
+      GenericDescriptor descriptor;
+
+      readLock.lock();
+      try {
+        descriptor = genericsByName.get(name);
+      } finally {
+        readLock.unlock();
+      }
+
+      if (descriptor == null) {
+        for (DescriptorPool parent : parents) {
+          descriptor = parent.findGenericByName(name);
+          if (descriptor != null) {
+            break;
+          }
+        }
+      }
+
+      return descriptor;
+    }
+
+    @SuppressWarnings("unchecked") // We check with isInstance
+    private <T extends GenericDescriptor> T findGenericByName(String name, Class<T> clazz) {
+      GenericDescriptor descriptor = findGenericByName(name);
+      if (descriptor == null || !clazz.isInstance(descriptor)) {
+        return null;
+      }
+      return (T) descriptor;
+    }
+
+    private FeatureSet internFeatures(FeatureSet features) {
+      // This is only called when building descriptors and stateLock is already held when that is
+      // happening.
+      FeatureSet internedFeatures = featureSets.putIfAbsent(features, features);
+      if (internedFeatures != null) {
+        return internedFeatures;
+      }
+      return features;
+    }
+
+    /**
+     * Adds the symbols from the file descriptor tables to the descriptor pool in a single
+     * transaction. If duplicate symbols are somehow detected, the transaction is rolled back. All
+     * callers of the descriptor table will only observe the descriptor pool immediately before the
+     * symbols are added or immediately after, no partials.
+     */
+    private void addFile(FileDescriptor file, FileDescriptorTables tables)
+        throws DescriptorValidationException {
+      String insertedFileDescriptor = null;
+      String[] insertedGenericDescriptors =
+          new String[tables.descriptorsByName.size() + tables.numExtensions];
+      int insertedGenericDescriptorsSize = 0;
+
+      writeLock.lock();
+      try {
+        String key = file.getFullName();
+        FileDescriptor oldFile = filesByName.putIfAbsent(key, file);
+        if (oldFile != null && oldFile != file) {
+          throw new DescriptorValidationException(
+              file, "descriptor collision between " + oldFile + " and " + file);
+        }
+        if (oldFile == null) {
+          insertedFileDescriptor = key;
+        }
+        for (Map.Entry<String, GenericDescriptor> entry : tables.descriptorsByName.entrySet()) {
+          key = entry.getKey();
+          GenericDescriptor descriptor = entry.getValue();
+          if (descriptor instanceof FileDescriptorTables.PackageDescriptor) {
+            // PackageDescriptor is only used to reserve a symbol name to ensure no other
+            // descriptors attempt to use it. We can safely ignore duplicates. Just keep the first.
+            // We could just let put override, but putIfAbsent feels better.
+            GenericDescriptor oldDescriptor = genericsByName.putIfAbsent(key, descriptor);
+            if (oldDescriptor != null
+                && !(oldDescriptor instanceof FileDescriptorTables.PackageDescriptor)) {
+              throw new DescriptorValidationException(
+                  descriptor,
+                  "descriptor collision between "
+                      + oldDescriptor
+                      + " and "
+                      + descriptor
+                      + " for "
+                      + key);
+            }
+            if (oldDescriptor == null) {
+              try {
+                insertedGenericDescriptors[insertedGenericDescriptorsSize] = key;
+              } catch (Error | RuntimeException e) {
+                genericsByName.remove(key);
+                throw e;
+              }
+              ++insertedGenericDescriptorsSize;
+            }
+          } else {
+            GenericDescriptor oldDescriptor = genericsByName.putIfAbsent(key, descriptor);
+            if (oldDescriptor != null && oldDescriptor != descriptor) {
+              throw new DescriptorValidationException(
+                  descriptor,
+                  "descriptor collision between "
+                      + oldDescriptor
+                      + " and "
+                      + descriptor
+                      + " for "
+                      + key);
+            }
+            if (oldDescriptor == null) {
+              try {
+                insertedGenericDescriptors[insertedGenericDescriptorsSize] = key;
+              } catch (Error | RuntimeException e) {
+                genericsByName.remove(key);
+                throw e;
+              }
+              ++insertedGenericDescriptorsSize;
+            }
+            if (descriptor instanceof FieldDescriptor) {
+              FieldDescriptor fieldDescriptor = (FieldDescriptor) descriptor;
+              if (fieldDescriptor.isExtension()) {
+                // FileDescriptorTables does not include the printable name of the extension. Add it
+                // to the symbol table here.
+                Descriptor extensionScope = fieldDescriptor.getExtensionScope();
+                String printableName;
+                if (extensionScope == null) {
+                  printableName = fieldDescriptor.getFile().getPackage();
+                } else {
+                  printableName = extensionScope.getFullName();
+                }
+                if (printableName.isEmpty()) {
+                  printableName = fieldDescriptor.getName();
+                } else {
+                  printableName = printableName + '.' + fieldDescriptor.getName();
+                }
+                oldDescriptor = genericsByName.putIfAbsent(printableName, descriptor);
+                if (oldDescriptor != null && oldDescriptor != descriptor) {
+                  throw new DescriptorValidationException(
+                      descriptor,
+                      "descriptor collision between "
+                          + oldDescriptor
+                          + " and "
+                          + descriptor
+                          + " for "
+                          + printableName);
+                }
+                if (oldDescriptor == null) {
+                  try {
+                    insertedGenericDescriptors[insertedGenericDescriptorsSize] = printableName;
+                  } catch (Error | RuntimeException e) {
+                    genericsByName.remove(printableName);
+                    throw e;
+                  }
+                  ++insertedGenericDescriptorsSize;
+                }
+              }
+            }
+          }
+        }
+      } catch (DescriptorValidationException | Error | RuntimeException e) {
+        for (; insertedGenericDescriptorsSize > 0; --insertedGenericDescriptorsSize) {
+          genericsByName.remove(insertedGenericDescriptors[insertedGenericDescriptorsSize - 1]);
+        }
+        if (insertedFileDescriptor != null) {
+          filesByName.remove(insertedFileDescriptor);
+        }
+        throw e;
+      } finally {
+        writeLock.unlock();
+      }
+    }
+
+    private FeatureSetDefaults getEditionDefaults() {
+      FeatureSetDefaults featureSetDefaults = this.featureSetDefaults;
+      if (featureSetDefaults == null) {
+        featureSetDefaults = getJavaEditionDefaults();
+      }
+      return featureSetDefaults;
+    }
+
+    private DescriptorPool() {
+      this(EMPTY_ARRAY);
+    }
+
+    private DescriptorPool(DescriptorPool[] parents) {
+      this.parents = parents;
+    }
+  }
+
   // =================================================================
 
   private static String computeFullName(
@@ -2914,16 +3483,23 @@ public final class Descriptors {
         }
       }
 
-      FeatureSet.Builder features;
+      FeatureSet.Builder featuresBuilder;
       if (this.parent == null) {
         Edition edition = getFile().getEdition();
-        features = getEditionDefaults(edition).toBuilder();
+        FeatureSetDefaults featureSetDefaults;
+        if (getFile().pool != null) {
+          featureSetDefaults = getFile().pool.getEditionDefaults();
+        } else {
+          featureSetDefaults = getJavaEditionDefaults();
+        }
+        featuresBuilder = getEditionDefaults(featureSetDefaults, edition).toBuilder();
       } else {
-        features = this.parent.features.toBuilder();
+        featuresBuilder = this.parent.features.toBuilder();
       }
-      features.mergeFrom(inferLegacyProtoFeatures());
-      features.mergeFrom(unresolvedFeatures);
-      this.features = internFeatures(features.build());
+      featuresBuilder.mergeFrom(inferLegacyProtoFeatures());
+      featuresBuilder.mergeFrom(unresolvedFeatures);
+      FeatureSet features = featuresBuilder.build();
+      this.features = getFile().pool.internFeatures(features);
       validateFeatures();
     }
 
@@ -3027,7 +3603,11 @@ public final class Descriptors {
       ALL_SYMBOLS
     }
 
-    FileDescriptorTables(final FileDescriptor[] dependencies, boolean allowUnknownDependencies) {
+    FileDescriptorTables(
+        final DescriptorPool pool,
+        final FileDescriptor[] dependencies,
+        boolean allowUnknownDependencies) {
+      this.pool = pool;
       this.dependencies =
           Collections.newSetFromMap(
               new IdentityHashMap<FileDescriptor, Boolean>(dependencies.length));
@@ -3059,10 +3639,11 @@ public final class Descriptors {
       }
     }
 
+    private final DescriptorPool pool;
     private final Set<FileDescriptor> dependencies;
-    private final boolean allowUnknownDependencies;
-
     private final Map<String, GenericDescriptor> descriptorsByName = new HashMap<>();
+    private int numExtensions = 0;
+    private final boolean allowUnknownDependencies;
 
     /** Find a generic descriptor by fully-qualified name. */
     GenericDescriptor findSymbol(final String fullName) {
@@ -3084,7 +3665,14 @@ public final class Descriptors {
       }
 
       for (final FileDescriptor dependency : dependencies) {
-        result = dependency.tables.descriptorsByName.get(fullName);
+        if (dependency.tables != null) {
+          result = dependency.tables.descriptorsByName.get(fullName);
+        } else {
+          result = dependency.pool.findGenericByName(fullName);
+          if (result != null && !dependencies.contains(result.getFile())) {
+            result = null;
+          }
+        }
         if (result != null) {
           if ((filter == SearchFilter.ALL_SYMBOLS)
               || ((filter == SearchFilter.TYPES_ONLY) && isType(result))
@@ -3200,7 +3788,7 @@ public final class Descriptors {
           // DescriptorValidationException will be thrown later. In either
           // case, the code works as expected: we allow unknown message types
           // but not unknown enum types.
-          result = new Descriptor(fullname);
+          result = new Descriptor(pool, fullname);
           // Add the placeholder file as a dependency so we can find the
           // placeholder symbol when resolving other references.
           this.dependencies.add(result.getFile());
@@ -3248,6 +3836,13 @@ public final class Descriptors {
                   + "\" is already defined in file \""
                   + old.getFile().getName()
                   + "\".");
+        }
+      }
+
+      if (descriptor instanceof FieldDescriptor) {
+        FieldDescriptor fieldDescriptor = (FieldDescriptor) descriptor;
+        if (fieldDescriptor.isExtension()) {
+          ++numExtensions;
         }
       }
     }
