@@ -672,15 +672,13 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
             if (oneof) {
               p->Emit(absl::StrCat("_Internal::kOneofCaseOffset + ",
                                    4 * oneof->index(), ","));
-            } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
+            } else {
               std::string hb_content =
                   entry.hasbit_idx >= 0
                       ? absl::StrCat("_Internal::kHasBitsOffset + ",
                                      entry.hasbit_idx, ",")
                       : absl::StrCat(entry.hasbit_idx, ",");
               p->Emit(hb_content);
-            } else {
-              p->Emit("0,");
             }
           }},
          {"aux_idx", entry.aux_idx},
