@@ -5,11 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <utility>
+
 #include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
 
 #if LANG_CXX11
 #include <type_traits>
