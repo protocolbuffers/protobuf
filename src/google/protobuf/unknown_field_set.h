@@ -121,6 +121,7 @@ class PROTOBUF_EXPORT UnknownField {
   } data_;
 };
 
+
 // An UnknownFieldSet contains fields that were encountered while parsing a
 // message but were not defined by its type.  Keeping track of these can be
 // useful, especially in that they may be written if the message is serialized
