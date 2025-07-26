@@ -13,6 +13,7 @@
 #include <string>
 #include <tuple>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
