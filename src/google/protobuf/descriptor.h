@@ -2918,6 +2918,8 @@ inline const Descriptor* FieldDescriptor::extension_scope() const {
 }
 
 inline FieldDescriptor::Label FieldDescriptor::label() const {
+  ABSL_LOG(FATAL) << "Label is deprecated.";
+
   if (is_required()) {
     return LABEL_REQUIRED;
   } else if (is_repeated()) {
