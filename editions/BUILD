@@ -98,8 +98,6 @@ cc_binary(
     name = "internal_defaults_escape",
     srcs = ["internal_defaults_escape.cc"],
     malloc = "@bazel_tools//tools/cpp:malloc",
-    # This needs to be public for users of embed_edition_defaults.
-    visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
         "@abseil-cpp//absl/flags:flag",
