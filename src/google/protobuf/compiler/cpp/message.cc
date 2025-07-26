@@ -3012,6 +3012,16 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   };
   p->Emit(
       {
+          {"nta_prefetches",
+           [&] {
+             for (const auto* field : optimized_order_) {
+               bool should_split = ShouldSplit(field, options_);
+               p->Emit({{"field", FieldMemberName(field, should_split)}},
+                       R"cc(
+                         $pbi$::PrefetchToLocalCacheNta(&this_.$field$);
+                       )cc");
+             }
+           }},
           {"has_bit_consistency",
            [&] { GenerateVerifyHasBitConsistency(p, "this_."); }},
           {"field_dtors", [&] { emit_field_dtors(/* split_fields= */ false); }},
@@ -3055,6 +3065,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
       R"cc(
         inline void $classname$::SharedDtor(MessageLite& self) {
           $classname$& this_ = static_cast<$classname$&>(self);
+          $nta_prefetches$;
           $has_bit_consistency$;
           this_._internal_metadata_.Delete<$unknown_fields_type$>();
           $DCHK$(this_.GetArena() == nullptr);
