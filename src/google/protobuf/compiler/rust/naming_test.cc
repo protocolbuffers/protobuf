@@ -1,12 +1,7 @@
 #include "google/protobuf/compiler/rust/naming.h"
 
-#include <string>
-#include <vector>
-
 #include <gtest/gtest.h>
-#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 using google::protobuf::compiler::rust::CamelToSnakeCase;
 using google::protobuf::compiler::rust::RustInternalModuleName;
