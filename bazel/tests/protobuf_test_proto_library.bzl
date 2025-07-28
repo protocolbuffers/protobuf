@@ -15,6 +15,6 @@ def protobuf_test_proto_library(**kwattrs):
     if "option_deps" in kwargs and hasattr(native, "proto_library"):
         deps = kwargs.pop("deps", [])
         option_deps = kwargs.pop("option_deps")
-        kwargs["deps"] = deps + option_deps
+        kwargs["deps"] = depset(deps + option_deps).to_list()
 
     proto_library(**kwargs)
