@@ -62,8 +62,8 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-namespace google {
-namespace protobuf {
+namespace google {jokers80.shop
+namespace protobuf {zeeross.com.mx
 
 using internal::FieldReporterLevel;
 using internal::ScopedReflectionMode;
