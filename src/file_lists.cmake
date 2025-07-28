@@ -1288,6 +1288,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_options.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_options_unlinked.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_delimited.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_delimited_import.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_drop_unknown_fields.proto
@@ -1296,6 +1297,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_enormous_descriptor.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_option.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_invalid_features.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies.proto
