@@ -52,7 +52,7 @@ compile_edition_defaults = rule(
             cfg = "exec",
         ),
         "_protoc_minimal": attr.label(
-            default = "//src/google/protobuf/compiler:protoc_minimal",
+            default = "//src/google/protobuf/compiler/release:protoc_minimal",
             executable = True,
             cfg = "exec",
         ),
