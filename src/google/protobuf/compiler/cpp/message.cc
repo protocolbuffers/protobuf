@@ -4304,237 +4304,281 @@ bool MessageGenerator::RequiresArena(GeneratorFunction function) const {
 
 void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
-  // cast.
-  Formatter format(p);
-  format(
-      "void $classname$::MergeImpl($pb$::MessageLite& to_msg, const "
-      "$pb$::MessageLite& from_msg) {\n"
-      "$WeakDescriptorSelfPin$"
-      "  auto* const _this = static_cast<$classname$*>(&to_msg);\n"
-      "  auto& from = static_cast<const $classname$&>(from_msg);\n");
-  format.Indent();
-  GenerateVerifyHasBitConsistency(p, "from.");
-  if (RequiresArena(GeneratorFunction::kMergeFrom)) {
-    p->Emit(R"cc(
-      $pb$::Arena* arena = _this->GetArena();
-    )cc");
-  }
-  format(
-      "$annotate_mergefrom$"
-      "// @@protoc_insertion_point(class_specific_merge_from_start:"
-      "$full_name$)\n");
-  format("$DCHK$_NE(&from, _this);\n");
 
-  format(
-      "$uint32$ cached_has_bits = 0;\n"
-      "(void) cached_has_bits;\n\n");
-
-  if (ShouldSplit(descriptor_, options_)) {
-    format(
-        "if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {\n"
-        "  _this->PrepareSplitMessageForWrite();\n"
-        "}\n");
-  }
-
-  std::vector<FieldChunk> chunks = CollectFields(
-      optimized_order_, options_,
-      [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
-        return HasByteIndex(a) == HasByteIndex(b) &&
-               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
-               ShouldSplit(a, options_) == ShouldSplit(b, options_);
-      });
-
-  auto it = chunks.begin();
-  auto end = chunks.end();
   // cached_has_word_index maintains that:
   //   cached_has_bits = from._has_bits_[cached_has_word_index]
   // for cached_has_word_index >= 0
   int cached_has_word_index = -1;
-  while (it != end) {
-    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check =
-        MaybeEmitHaswordsCheck(it, next, options_, has_bit_indices_,
-                               cached_has_word_index, "from.", p);
+  auto emit_merge_chunk = [&](const std::vector<const FieldDescriptor*>&
+                                  fields) {
+    const bool cache_has_bits = HasByteIndex(fields.front()) != kNoHasbit;
+    const bool check_has_byte = cache_has_bits && fields.size() > 1 &&
+                                !IsLikelyPresent(fields.back(), options_);
 
-    while (it != next) {
-      const std::vector<const FieldDescriptor*>& fields = it->fields;
-      const bool cache_has_bits = HasByteIndex(fields.front()) != kNoHasbit;
-      const bool check_has_byte = cache_has_bits && fields.size() > 1 &&
-                                  !IsLikelyPresent(fields.back(), options_);
+    DebugAssertUniformLikelyPresence(fields, options_);
 
-      DebugAssertUniformLikelyPresence(fields, options_);
-
-      if (cache_has_bits &&
-          cached_has_word_index != HasWordIndex(fields.front())) {
-        cached_has_word_index = HasWordIndex(fields.front());
-        format("cached_has_bits = from.$has_bits$[$1$];\n",
-               cached_has_word_index);
-      }
-
-      if (check_has_byte) {
-        // Emit an if() that will let us skip the whole chunk if none are set.
-        uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
-
-        // Check (up to) 8 has_bits at a time if we have more than one field in
-        // this chunk.  Due to field layout ordering, we may check
-        // _has_bits_[last_chunk * 8 / 32] multiple times.
-        ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-        ABSL_DCHECK_GE(8, popcnt(chunk_mask));
-
-        format("if ($1$) {\n", GenerateConditionMaybeWithProbabilityForGroup(
-                                   chunk_mask, fields, options_));
-        format.Indent();
-      }
-
-      // Go back and emit merging code for each of the fields we processed.
-      for (const auto* field : fields) {
-        const auto& generator = field_generators_.get(field);
-
-        if (field->is_repeated()) {
-          generator.GenerateMergingCode(p);
-        } else if (!field->is_required() && !field->is_repeated() &&
-                   !HasHasbit(field, options_)) {
-          // Merge semantics without true field presence: primitive fields are
-          // merged only if non-zero (numeric) or non-empty (string).
-          MayEmitMutableIfNonDefaultCheck(
-              p, "from.", field, ShouldSplit(field, options_), options_,
-              /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
-              /*with_enclosing_braces_always=*/true);
-        } else if (field->options().weak() ||
-                   cached_has_word_index != HasWordIndex(field)) {
-          // Check hasbit, not using cached bits.
-          auto v = p->WithVars(HasBitVars(field));
-          format(
-              "if (CheckHasBit(from.$has_bits$[$has_array_index$], "
-              "$has_mask$)) {\n");
-          format.Indent();
-          generator.GenerateMergingCode(p);
-          format.Outdent();
-          format("}\n");
-        } else {
-          // Check hasbit, using cached bits.
-          ABSL_CHECK(HasHasbit(field, options_));
-          int has_bit_index = has_bit_indices_[field->index()];
-          format("if ($1$) {\n", GenerateConditionMaybeWithProbabilityForField(
-                                     has_bit_index, field, options_));
-          format.Indent();
-
-          if (GetFieldHasbitMode(field, options_) == HasbitMode::kHintHasbit) {
-            // Merge semantics without true field presence: primitive fields are
-            // merged only if non-zero (numeric) or non-empty (string).
-            MayEmitMutableIfNonDefaultCheck(
-                p, "from.", field, ShouldSplit(field, options_), options_,
-                /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
-                /*with_enclosing_braces_always=*/false);
-          } else {
-            ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
-                        HasbitMode::kTrueHasbit);
-            if (check_has_byte && IsPOD(field)) {
-              generator.GenerateCopyConstructorCode(p);
-            } else {
-              generator.GenerateMergingCode(p);
-            }
-          }
-
-          format.Outdent();
-          format("}\n");
-        }
-      }
-
-      if (check_has_byte) {
-        format.Outdent();
-        format("}\n");
-      }
-
-      // To next chunk.
-      ++it;
+    if (cache_has_bits &&
+        cached_has_word_index != HasWordIndex(fields.front())) {
+      cached_has_word_index = HasWordIndex(fields.front());
+      p->Emit({{"cached_has_word_index", cached_has_word_index}},
+              R"cc(
+                cached_has_bits = from.$has_bits$[$cached_has_word_index$];
+              )cc");
     }
 
-    if (has_haswords_check) {
+    if (check_has_byte) {
+      // Emit an if() that will let us skip the whole chunk if none are set.
+      uint32_t chunk_mask = GenChunkMask(fields, has_bit_indices_);
+
+      // Check (up to) 8 has_bits at a time if we have more than one field in
+      // this chunk.  Due to field layout ordering, we may check
+      // _has_bits_[last_chunk * 8 / 32] multiple times.
+      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+
+      p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
+                                 chunk_mask, fields, options_)}},
+              R"cc(
+                if ($condition$) {
+              )cc");
+      p->Indent();
+    }
+
+    // Go back and emit merging code for each of the fields we processed.
+    for (const auto* field : fields) {
+      const auto& generator = field_generators_.get(field);
+
+      if (field->is_repeated()) {
+        generator.GenerateMergingCode(p);
+      } else if (!field->is_required() && !field->is_repeated() &&
+                 !HasHasbit(field, options_)) {
+        // Merge semantics without true field presence: primitive fields are
+        // merged only if non-zero (numeric) or non-empty (string).
+        MayEmitMutableIfNonDefaultCheck(
+            p, "from.", field, ShouldSplit(field, options_), options_,
+            /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
+            /*with_enclosing_braces_always=*/true);
+      } else if (field->options().weak() ||
+                 cached_has_word_index != HasWordIndex(field)) {
+        // Check hasbit, not using cached bits.
+        auto v = p->WithVars(HasBitVars(field));
+        p->Emit(
+            {{"merge_field", [&] { generator.GenerateMergingCode(p); }}}, R"cc(
+              if (CheckHasBit(from.$has_bits$[$has_array_index$], $has_mask$)) {
+                $merge_field$;
+              }
+            )cc");
+      } else {
+        // Check hasbit, using cached bits.
+        ABSL_CHECK(HasHasbit(field, options_));
+        int has_bit_index = has_bit_indices_[field->index()];
+
+        p->Emit(
+            {{"condition", GenerateConditionMaybeWithProbabilityForField(
+                               has_bit_index, field, options_)},
+             {"merge_field",
+              [&] {
+                if (GetFieldHasbitMode(field, options_) ==
+                    HasbitMode::kHintHasbit) {
+                  // Merge semantics without true field presence: primitive
+                  // fields are merged only if non-zero (numeric) or
+                  // non-empty (string).
+                  MayEmitMutableIfNonDefaultCheck(
+                      p, "from.", field, ShouldSplit(field, options_), options_,
+                      /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
+                      /*with_enclosing_braces_always=*/false);
+                } else {
+                  ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
+                              HasbitMode::kTrueHasbit);
+                  if (check_has_byte && IsPOD(field)) {
+                    generator.GenerateCopyConstructorCode(p);
+                  } else {
+                    generator.GenerateMergingCode(p);
+                  }
+                }
+              }}},
+            R"cc(
+              if ($condition$) {
+                $merge_field$;
+              }
+            )cc");
+      }
+    }
+
+    if (check_has_byte) {
       p->Outdent();
       p->Emit(R"cc(
         }
       )cc");
-
-      // Reset here as it may have been updated in just closed if statement.
-      cached_has_word_index = -1;
     }
-  }
+  };
 
-  if (HasBitsSize() == 1) {
-    // Optimization to avoid a load. Assuming that most messages have fewer than
-    // 32 fields, this seems useful.
-    p->Emit(R"cc(
-      _this->$has_bits$[0] |= cached_has_bits;
-    )cc");
-  } else if (HasBitsSize() > 1) {
-    p->Emit(R"cc(
-      _this->$has_bits$.Or(from.$has_bits$);
-    )cc");
-  }
-
-  // Merge oneof fields. Oneof field requires oneof case check.
-  for (auto oneof : OneOfRange(descriptor_)) {
-    p->Emit({{"name", oneof->name()},
-             {"NAME", absl::AsciiStrToUpper(oneof->name())},
-             {"index", oneof->index()},
-             {"cases",
-              [&] {
-                for (const auto* field : FieldRange(oneof)) {
-                  p->Emit(
-                      {{"Label", UnderscoresToCamelCase(field->name(), true)},
-                       {"body",
-                        [&] {
-                          field_generators_.get(field).GenerateMergingCode(p);
-                        }}},
-                      R"cc(
-                        case k$Label$: {
-                          $body$;
-                          break;
-                        }
-                      )cc");
-                }
-              }}},
-            R"cc(
-              if (const uint32_t oneof_from_case = from.$oneof_case$[$index$]) {
-                const uint32_t oneof_to_case = _this->$oneof_case$[$index$];
-                const bool oneof_needs_init = oneof_to_case != oneof_from_case;
-                if (oneof_needs_init) {
-                  if (oneof_to_case != 0) {
-                    _this->clear_$name$();
-                  }
-                  _this->$oneof_case$[$index$] = oneof_from_case;
-                }
-
-                switch (oneof_from_case) {
-                  $cases$;
-                  case $NAME$_NOT_SET:
-                    break;
-                }
-              }
+  // Generate the class-specific MergeFrom, which avoids the ABSL_CHECK and
+  // cast.
+  p->Emit(
+      {{"has_bit_consistency",
+        [&] { GenerateVerifyHasBitConsistency(p, "from."); }},
+       {"get_arena",
+        [&] {
+          if (RequiresArena(GeneratorFunction::kMergeFrom)) {
+            p->Emit(R"cc(
+              $pb$::Arena* arena = _this->GetArena();
             )cc");
-  }
-  if (num_weak_fields_) {
-    format(
-        "_this->$weak_field_map$.MergeFrom(from.$weak_field_map$);"
-        "\n");
-  }
+          }
+        }},
+       {"maybe_prepare_split_message_for_write",
+        [&] {
+          if (ShouldSplit(descriptor_, options_)) {
+            p->Emit(
+                R"cc(
+                  if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
+                    _this->PrepareSplitMessageForWrite();
+                  }
+                )cc");
+          }
+        }},
+       {"merge_fields",
+        [&] {
+          std::vector<FieldChunk> chunks = CollectFields(
+              optimized_order_, options_,
+              [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
+                return HasByteIndex(a) == HasByteIndex(b) &&
+                       IsLikelyPresent(a, options_) ==
+                           IsLikelyPresent(b, options_) &&
+                       ShouldSplit(a, options_) == ShouldSplit(b, options_);
+              });
 
-  // Merging of extensions and unknown fields is done last, to maximize
-  // the opportunity for tail calls.
-  if (descriptor_->extension_range_count() > 0) {
-    p->Emit(R"cc(
-      _this->$extensions$.MergeFrom(&default_instance(), from.$extensions$);
-    )cc");
-  }
+          auto it = chunks.begin();
+          auto end = chunks.end();
+          while (it != end) {
+            auto next =
+                FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
+            bool has_haswords_check =
+                MaybeEmitHaswordsCheck(it, next, options_, has_bit_indices_,
+                                       cached_has_word_index, "from.", p);
 
-  format(
-      "_this->_internal_metadata_.MergeFrom<$unknown_fields_type$>("
-      "from._internal_metadata_);\n");
+            while (it != next) {
+              emit_merge_chunk(it->fields);
+              ++it;
+            }
 
-  format.Outdent();
-  format("}\n");
+            if (has_haswords_check) {
+              p->Outdent();
+              p->Emit(R"cc(
+                }
+              )cc");
+
+              // Reset here as it may have been updated in just closed if
+              // statement.
+              cached_has_word_index = -1;
+            }
+          }
+        }},
+       {"merge_hasbits",
+        [&] {
+          if (HasBitsSize() == 1) {
+            // Optimization to avoid a load. Assuming that most messages have
+            // fewer than 32 fields, this seems useful.
+            p->Emit(R"cc(
+              _this->$has_bits$[0] |= cached_has_bits;
+            )cc");
+          } else if (HasBitsSize() > 1) {
+            p->Emit(R"cc(
+              _this->$has_bits$.Or(from.$has_bits$);
+            )cc");
+          }
+        }},
+       {"merge_oneof",
+        [&] {
+          // Merge oneof fields. Oneof field requires oneof case check.
+          for (auto oneof : OneOfRange(descriptor_)) {
+            p->Emit(
+                {{"name", oneof->name()},
+                 {"NAME", absl::AsciiStrToUpper(oneof->name())},
+                 {"index", oneof->index()},
+                 {"cases",
+                  [&] {
+                    for (const auto* field : FieldRange(oneof)) {
+                      p->Emit(
+                          {{"Label",
+                            UnderscoresToCamelCase(field->name(), true)},
+                           {"body",
+                            [&] {
+                              field_generators_.get(field).GenerateMergingCode(
+                                  p);
+                            }}},
+                          R"cc(
+                            case k$Label$: {
+                              $body$;
+                              break;
+                            }
+                          )cc");
+                    }
+                  }}},
+                R"cc(
+                  if (const uint32_t oneof_from_case =
+                          from.$oneof_case$[$index$]) {
+                    const uint32_t oneof_to_case = _this->$oneof_case$[$index$];
+                    const bool oneof_needs_init = oneof_to_case != oneof_from_case;
+                    if (oneof_needs_init) {
+                      if (oneof_to_case != 0) {
+                        _this->clear_$name$();
+                      }
+                      _this->$oneof_case$[$index$] = oneof_from_case;
+                    }
+
+                    switch (oneof_from_case) {
+                      $cases$;
+                      case $NAME$_NOT_SET:
+                        break;
+                    }
+                  }
+                )cc");
+          }
+        }},
+       {"merge_weak_fields",
+        [&] {
+          if (num_weak_fields_) {
+            p->Emit(R"cc(
+              _this->$weak_field_map$.MergeFrom(from.$weak_field_map$);
+            )cc");
+          }
+        }},
+       {"merge_extensions",
+        [&] {
+          // Merging of extensions and unknown fields is done last, to maximize
+          // the opportunity for tail calls.
+          if (descriptor_->extension_range_count() > 0) {
+            p->Emit(R"cc(
+              _this->$extensions$.MergeFrom(&default_instance(),
+                                            from.$extensions$);
+            )cc");
+          }
+        }}},
+      R"cc(
+        void $classname$::MergeImpl($pb$::MessageLite& to_msg,
+                                    const $pb$::MessageLite& from_msg) {
+          $WeakDescriptorSelfPin$ auto* const _this =
+              static_cast<$classname$*>(&to_msg);
+          auto& from = static_cast<const $classname$&>(from_msg);
+          $has_bit_consistency$;
+          $get_arena$;
+          $annotate_mergefrom$;
+          // @@protoc_insertion_point(class_specific_merge_from_start:$full_name$)
+          $DCHK$_NE(&from, _this);
+          $uint32$ cached_has_bits = 0;
+          (void)cached_has_bits;
+
+          $maybe_prepare_split_message_for_write$;
+          $merge_fields$;
+          $merge_hasbits$;
+          $merge_oneof$;
+          $merge_weak_fields$;
+          $merge_extensions$;
+          _this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(
+              from._internal_metadata_);
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
