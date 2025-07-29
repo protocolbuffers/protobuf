@@ -859,6 +859,12 @@ UPB_API_INLINE bool upb_Message_SetUInt64(struct upb_Message* msg,
              : (upb_Message_SetBaseFieldUInt64(msg, f, value), true);
 }
 
+UPB_API_INLINE uint32_t upb_Message_Size(struct upb_Message* msg,
+                                         const upb_MiniTable* m) {
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  return in->size;
+}
+
 UPB_API_INLINE void upb_Message_Clear(struct upb_Message* msg,
                                       const upb_MiniTable* m) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
