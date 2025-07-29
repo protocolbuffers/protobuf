@@ -329,8 +329,10 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<SourceContext*>(&to_msg);
+void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<SourceContext*>(&to_msg);
   auto& from = static_cast<const SourceContext&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -338,7 +340,7 @@ void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -351,7 +353,8 @@ void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void SourceContext::CopyFrom(const SourceContext& from) {

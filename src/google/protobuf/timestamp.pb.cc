@@ -341,8 +341,10 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<Timestamp*>(&to_msg);
+void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<Timestamp*>(&to_msg);
   auto& from = static_cast<const Timestamp&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -350,7 +352,7 @@ void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
@@ -366,7 +368,8 @@ void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void Timestamp::CopyFrom(const Timestamp& from) {

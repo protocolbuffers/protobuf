@@ -571,8 +571,10 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<DoubleValue*>(&to_msg);
+void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<DoubleValue*>(&to_msg);
   auto& from = static_cast<const DoubleValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -580,7 +582,7 @@ void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -589,7 +591,8 @@ void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void DoubleValue::CopyFrom(const DoubleValue& from) {
@@ -813,8 +816,10 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<FloatValue*>(&to_msg);
+void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<FloatValue*>(&to_msg);
   auto& from = static_cast<const FloatValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -822,7 +827,7 @@ void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -831,7 +836,8 @@ void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void FloatValue::CopyFrom(const FloatValue& from) {
@@ -1056,8 +1062,10 @@ PROTOBUF_NOINLINE void Int64Value::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<Int64Value*>(&to_msg);
+void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<Int64Value*>(&to_msg);
   auto& from = static_cast<const Int64Value&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -1065,7 +1073,7 @@ void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1074,7 +1082,8 @@ void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void Int64Value::CopyFrom(const Int64Value& from) {
@@ -1299,8 +1308,10 @@ PROTOBUF_NOINLINE void UInt64Value::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<UInt64Value*>(&to_msg);
+void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<UInt64Value*>(&to_msg);
   auto& from = static_cast<const UInt64Value&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -1308,7 +1319,7 @@ void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1317,7 +1328,8 @@ void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void UInt64Value::CopyFrom(const UInt64Value& from) {
@@ -1542,8 +1554,10 @@ PROTOBUF_NOINLINE void Int32Value::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<Int32Value*>(&to_msg);
+void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<Int32Value*>(&to_msg);
   auto& from = static_cast<const Int32Value&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -1551,7 +1565,7 @@ void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1560,7 +1574,8 @@ void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void Int32Value::CopyFrom(const Int32Value& from) {
@@ -1785,8 +1800,10 @@ PROTOBUF_NOINLINE void UInt32Value::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<UInt32Value*>(&to_msg);
+void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<UInt32Value*>(&to_msg);
   auto& from = static_cast<const UInt32Value&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -1794,7 +1811,7 @@ void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1803,7 +1820,8 @@ void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void UInt32Value::CopyFrom(const UInt32Value& from) {
@@ -2027,8 +2045,10 @@ PROTOBUF_NOINLINE void BoolValue::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<BoolValue*>(&to_msg);
+void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<BoolValue*>(&to_msg);
   auto& from = static_cast<const BoolValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -2036,7 +2056,7 @@ void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -2045,7 +2065,8 @@ void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::googl
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void BoolValue::CopyFrom(const BoolValue& from) {
@@ -2291,8 +2312,10 @@ PROTOBUF_NOINLINE void StringValue::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<StringValue*>(&to_msg);
+void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<StringValue*>(&to_msg);
   auto& from = static_cast<const StringValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -2300,7 +2323,7 @@ void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -2313,7 +2336,8 @@ void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goo
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void StringValue::CopyFrom(const StringValue& from) {
@@ -2556,8 +2580,10 @@ PROTOBUF_NOINLINE void BytesValue::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<BytesValue*>(&to_msg);
+void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<BytesValue*>(&to_msg);
   auto& from = static_cast<const BytesValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -2565,7 +2591,7 @@ void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -2578,7 +2604,8 @@ void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::goog
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void BytesValue::CopyFrom(const BytesValue& from) {
