@@ -312,7 +312,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res.second;
   }
 
-
   const char* InitFrom(absl::string_view flat) {
     overall_limit_ = 0;
     if (flat.size() > kSlopBytes) {
