@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
 #include "absl/strings/cord.h"
@@ -1544,6 +1545,7 @@ TEST(ExtensionSetTest, Descriptor) {
             pb::CppFeatures::descriptor()->file()->FindExtensionByName("cpp"));
   EXPECT_NE(GetExtensionReflection(pb::cpp), nullptr);
 }
+
 
 TEST_P(FindExtensionTest,
        FindExtensionInfoFromFieldNumber_FindExistingExtension) {
