@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package upb_text_test;
+
+message Proto2StringMessage {
+  optional string str = 1;
+}
