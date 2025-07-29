@@ -449,7 +449,7 @@ Struct::_table_ = {
     65535, 65535
   }}, {{
     // map<string, .google.protobuf.Value> fields = 1;
-    {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
+    {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
   }},
   {{
       {::_pbi::TcParser::GetMapAuxInfo(1, 0, 0,
@@ -1208,7 +1208,7 @@ ListValue::_table_ = {
     65535, 65535
   }}, {{
     // repeated .google.protobuf.Value values = 1;
-    {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
       {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
