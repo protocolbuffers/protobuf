@@ -59,7 +59,7 @@ TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   static_assert(std::is_same<It::iterator_category,
                              std::random_access_iterator_tag>::value,
                 "");
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");
@@ -95,7 +95,7 @@ TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
   static_assert(std::is_same<It::iterator_category,
                              std::random_access_iterator_tag>::value,
                 "");
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");

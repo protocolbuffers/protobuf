@@ -446,11 +446,7 @@ Error, UINTPTR_MAX is undefined
 #if defined(__cplusplus)
 #if defined(__clang__) || UPB_GNUC_MIN(6, 0)
 // https://gcc.gnu.org/gcc-6/changes.html
-#if __cplusplus >= 201402L
 #define UPB_DEPRECATED [[deprecated]]
-#else
-#define UPB_DEPRECATED __attribute__((deprecated))
-#endif
 #else
 #define UPB_DEPRECATED
 #endif

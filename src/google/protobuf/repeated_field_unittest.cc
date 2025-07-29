@@ -66,7 +66,7 @@ TEST(RepeatedFieldIterator, Traits) {
   EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
   EXPECT_TRUE((std::is_same<It::iterator_category,
                             std::random_access_iterator_tag>::value));
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   EXPECT_TRUE((
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
 #else
@@ -83,7 +83,7 @@ TEST(ConstRepeatedFieldIterator, Traits) {
   EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
   EXPECT_TRUE((std::is_same<It::iterator_category,
                             std::random_access_iterator_tag>::value));
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   EXPECT_TRUE((
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
 #else

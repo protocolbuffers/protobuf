@@ -1641,13 +1641,6 @@ void ExtensionSet::InternalReserveSmallCapacityFromEmpty(
   map_.flat = AllocateFlatMap(arena_, new_flat_capacity);
 }
 
-#if (__cplusplus < 201703) && \
-    (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-// static
-constexpr uint16_t ExtensionSet::kMaximumFlatCapacity;
-#endif  //  (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900
-        //  && _MSC_VER < 1912))
-
 void ExtensionSet::Erase(int key) {
   if (ABSL_PREDICT_FALSE(is_large())) {
     map_.large->erase(key);
