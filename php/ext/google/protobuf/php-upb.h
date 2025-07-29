@@ -16720,3 +16720,6 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_HAS_BUILTIN
 #undef UPB_HAS_EXTENSION
 #undef UPB_HAS_FEATURE
+#undef UPB_XSAN_MEMBER
+#undef UPB_XSAN
+#undef UPB_XSAN_STRUCT_SIZE
