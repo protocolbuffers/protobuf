@@ -12,6 +12,7 @@
 #include <type_traits>
 
 #include "absl/base/attributes.h"
+#include "absl/status/statusor.h"
 #include "hpb/arena.h"
 #include "hpb/backend/upb/extension.h"
 #include "hpb/backend/upb/interop.h"

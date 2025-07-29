@@ -189,5 +189,6 @@ cc_library(
         "//upb/message",
         "//upb/mini_table",
         "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/status:statusor",
     ],
 )
