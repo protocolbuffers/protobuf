@@ -554,8 +554,10 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
                                              &this_._impl_._cached_size_);
 }
 
-void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::google::protobuf::MessageLite& from_msg) {
-  auto* const _this = static_cast<JavaFeatures*>(&to_msg);
+void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
+                            const ::google::protobuf::MessageLite& from_msg) {
+   auto* const _this =
+      static_cast<JavaFeatures*>(&to_msg);
   auto& from = static_cast<const JavaFeatures&>(from_msg);
   if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
     from.VerifyHasBitConsistency();
@@ -563,7 +565,7 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.JavaFeatures)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
-  (void) cached_has_bits;
+  (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
@@ -584,7 +586,8 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::go
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+      from._internal_metadata_);
 }
 
 void JavaFeatures::CopyFrom(const JavaFeatures& from) {
