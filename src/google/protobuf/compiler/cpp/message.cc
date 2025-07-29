@@ -51,6 +51,7 @@
 #include "google/protobuf/compiler/cpp/tracker.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -64,13 +65,12 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+using ::google::protobuf::internal::kNoHasbit;
 using ::google::protobuf::internal::WireFormat;
 using ::google::protobuf::internal::WireFormatLite;
 using ::google::protobuf::internal::cpp::HasbitMode;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
-
-static constexpr int kNoHasbit = -1;
 
 // Create an expression that evaluates to
 //  "for all i, (_has_bits_[i] & masks[i]) == masks[i]"

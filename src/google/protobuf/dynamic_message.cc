@@ -61,6 +61,7 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
@@ -897,8 +898,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
         type_info->has_bits_offset = size;
         uint32_t* has_bits_indices = new uint32_t[type->field_count()];
         for (int j = 0; j < type->field_count(); j++) {
-          // Initialize to -1, fields that need a hasbit will overwrite.
-          has_bits_indices[j] = static_cast<uint32_t>(-1);
+          // Initialize to kNoHasbit, fields that need a hasbit will overwrite.
+          has_bits_indices[j] = static_cast<uint32_t>(internal::kNoHasbit);
         }
         type_info->has_bits_indices.reset(has_bits_indices);
       }

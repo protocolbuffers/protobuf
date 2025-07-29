@@ -14,6 +14,7 @@
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
@@ -246,7 +247,8 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
       }
     } else {
       auto index = has_bits_indices[i];
-      bool check_hasbits = has_bits && index != static_cast<uint32_t>(-1);
+      bool check_hasbits =
+          has_bits && index != static_cast<uint32_t>(kNoHasbit);
       if (ABSL_PREDICT_TRUE(check_hasbits)) {
         if ((has_bits[index / 32] & (1u << (index % 32))) == 0) continue;
       } else {

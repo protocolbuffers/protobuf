@@ -44,6 +44,7 @@
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/inlined_string_field.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -69,6 +70,7 @@ using google::protobuf::internal::ExtensionSet;
 using google::protobuf::internal::GenericTypeHandler;
 using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
+using google::protobuf::internal::kNoHasbit;
 using google::protobuf::internal::LazyField;
 using google::protobuf::internal::MapFieldBase;
 using google::protobuf::internal::MicroString;
@@ -1308,7 +1310,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
       const uint32_t has_bit_index = schema_.HasBitIndex(field);
-      if (has_bit_index != static_cast<uint32_t>(-1)) {
+      if (has_bit_index != static_cast<uint32_t>(kNoHasbit)) {
         max_has_bit_index = std::max(max_has_bit_index, has_bit_index);
       }
     }
@@ -1785,7 +1787,8 @@ void Reflection::ListFields(const Message& message,
             field->number()) {
           append_to_output(field);
         }
-      } else if (has_bits && has_bits_indices[i] != static_cast<uint32_t>(-1)) {
+      } else if (has_bits &&
+                 has_bits_indices[i] != static_cast<uint32_t>(kNoHasbit)) {
         // Equivalent to: HasFieldSingular(message, field)
         if (IsFieldPresentGivenHasbits(message, field, has_bits,
                                        has_bits_indices[i])) {
@@ -3144,7 +3147,7 @@ bool Reflection::IsFieldPresentGivenHasbits(const Message& message,
 bool Reflection::HasFieldSingular(const Message& message,
                                   const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
-  if (schema_.HasBitIndex(field) != static_cast<uint32_t>(-1)) {
+  if (schema_.HasBitIndex(field) != static_cast<uint32_t>(kNoHasbit)) {
     return IsFieldPresentGivenHasbits(message, field, GetHasBits(message),
                                       schema_.HasBitIndex(field));
   }
@@ -3174,7 +3177,7 @@ void Reflection::SetHasBit(Message* message,
                            const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
-  if (index == static_cast<uint32_t>(-1)) return;
+  if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] |=
       (static_cast<uint32_t>(1) << (index % 32));
 }
@@ -3183,7 +3186,7 @@ void Reflection::ClearHasBit(Message* message,
                              const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
-  if (index == static_cast<uint32_t>(-1)) return;
+  if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] &=
       ~(static_cast<uint32_t>(1) << (index % 32));
 }
@@ -3609,7 +3612,6 @@ void Reflection::PopulateTcParseFieldAux(
 const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   using TcParseTableBase = internal::TcParseTableBase;
 
-  constexpr int kNoHasbit = -1;
   std::vector<internal::TailCallTableInfo::FieldOptions> fields;
   fields.reserve(descriptor_->field_count());
   for (int i = 0; i < descriptor_->field_count(); ++i) {

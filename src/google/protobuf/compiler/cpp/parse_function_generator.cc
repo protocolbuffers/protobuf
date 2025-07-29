@@ -26,6 +26,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/has_bits.h"
 
 namespace google {
 namespace protobuf {
@@ -90,7 +91,8 @@ ParseFunctionGenerator::BuildFieldOptions(
     size_t index = static_cast<size_t>(field->index());
     fields.push_back({
         field,
-        index < has_bit_indices.size() ? has_bit_indices[index] : -1,
+        index < has_bit_indices.size() ? has_bit_indices[index]
+                                       : internal::kNoHasbit,
         GetPresenceProbability(field, options)
             .value_or(kUnknownPresenceProbability),
         GetLazyStyle(field, options, scc_analyzer),

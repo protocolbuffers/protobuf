@@ -25,6 +25,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+static constexpr int kNoHasbit = -1;
+
 template <int doublewords>
 class HasBits {
  public:
