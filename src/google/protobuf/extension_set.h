@@ -92,6 +92,7 @@ namespace protobuf {
 namespace internal {
 
 class InternalMetadata;
+class FindExtensionTest;
 
 namespace v2 {
 class TableDrivenMessage;
@@ -209,8 +210,23 @@ class PROTOBUF_EXPORT GeneratedExtensionFinder {
   const MessageLite* extendee_;
 };
 
-// Note:  extension_set_heavy.cc defines DescriptorPoolExtensionFinder for
-// finding extensions from a DescriptorPool.
+// Implementation of ExtensionFinder which finds extensions in a given
+// DescriptorPool, using the given MessageFactory to construct sub-objects.
+// This class is only implemented in extension_set_heavy.cc.
+class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
+ public:
+  DescriptorPoolExtensionFinder(const DescriptorPool* pool,
+                                MessageFactory* factory,
+                                const Descriptor* extendee)
+      : pool_(pool), factory_(factory), containing_type_(extendee) {}
+
+  bool Find(int number, ExtensionInfo* output);
+
+ private:
+  const DescriptorPool* pool_;
+  MessageFactory* factory_;
+  const Descriptor* containing_type_;
+};
 
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,
@@ -601,6 +617,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend class google::protobuf::internal::v2::TableDrivenMessage;
 
   friend void internal::InitializeLazyExtensionSet();
+  friend class google::protobuf::internal::FindExtensionTest;
 
   // The repeated field type for T.
   template <typename T>
@@ -1134,10 +1151,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     return FindExtensionInfoFromFieldNumber(wire_type, field, &finder,
                                             extension, was_packed_on_wire);
   }
-  inline bool FindExtension(int wire_type, uint32_t field,
-                            const Message* extendee,
-                            const internal::ParseContext* ctx,
-                            ExtensionInfo* extension, bool* was_packed_on_wire);
+  bool FindExtension(int wire_type, uint32_t field, const Message* extendee,
+                     const internal::ParseContext* ctx,
+                     ExtensionInfo* extension, bool* was_packed_on_wire);
   // Used for MessageSet only
   const char* ParseFieldMaybeLazily(uint64_t tag, const char* ptr,
                                     const MessageLite* extendee,

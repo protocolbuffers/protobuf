@@ -44,24 +44,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Implementation of ExtensionFinder which finds extensions in a given
-// DescriptorPool, using the given MessageFactory to construct sub-objects.
-// This class is implemented in extension_set_heavy.cc.
-class DescriptorPoolExtensionFinder {
- public:
-  DescriptorPoolExtensionFinder(const DescriptorPool* pool,
-                                MessageFactory* factory,
-                                const Descriptor* extendee)
-      : pool_(pool), factory_(factory), containing_type_(extendee) {}
-
-  bool Find(int number, ExtensionInfo* output);
-
- private:
-  const DescriptorPool* pool_;
-  MessageFactory* factory_;
-  const Descriptor* containing_type_;
-};
-
 void ExtensionSet::AppendToList(
     const Descriptor* extendee, const DescriptorPool* pool,
     std::vector<const FieldDescriptor*>* output) const {
@@ -273,6 +255,7 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
   if (extension == nullptr) {
     return false;
   } else {
+    output->number = extension->number();
     output->type = extension->type();
     output->is_repeated = extension->is_repeated();
     output->is_packed = extension->is_packed();
