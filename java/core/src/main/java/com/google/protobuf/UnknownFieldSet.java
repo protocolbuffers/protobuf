@@ -401,7 +401,7 @@ public final class UnknownFieldSet implements MessageLite {
      * {@code other}'s values for that field will be appended to the values in this set.
      */
     public Builder mergeFrom(UnknownFieldSet other) {
-      if (other != getDefaultInstance()) {
+      if (other != null && other != getDefaultInstance()) {
         for (Map.Entry<Integer, Field> entry : other.fields.entrySet()) {
           mergeField(entry.getKey(), entry.getValue());
         }
