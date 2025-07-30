@@ -1,1 +1,1 @@
-revert: Relax dependency version constraints in python/requirements.txt
+refactor: Remove deprecated SpaceUsed() from message.h
