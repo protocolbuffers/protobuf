@@ -239,6 +239,9 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
        DescriptorTableName(descriptor_->containing_type()->file(), options_)},
       {"extendee_index", find_index(descriptor_->containing_type())},
       {"preregister", priority == kInitPriority101},
+      {"require_utf8_validation", descriptor_->requires_utf8_validation()
+                                      ? "/*requires_utf8_validation=*/true"
+                                      : "/*requires_utf8_validation=*/false"},
   }});
   switch (descriptor_->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -317,10 +320,10 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                {{&$extendee_table$, $extendee_index$}}, $preregister$)
                ? ::_pbi::ExtensionSet::RegisterExtension(
-                     ::_pbi::GetPrototypeForWeakDescriptor(&$extendee_table$,
-                                                           $extendee_index$,
-                                                           true),
-                     $number$, $field_type$, $repeated$, $packed$)
+                     ::_pbi::GetPrototypeForWeakDescriptor(
+                         &$extendee_table$, $extendee_index$, true),
+                     $number$, $field_type$, $repeated$, $packed$,
+                     $require_utf8_validation$)
                : (void)0),
         )cc");
       } else if (priority == kInitPriority102) {
@@ -328,7 +331,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
             R"cc(
               ::_pbi::ExtensionSet::RegisterExtension(
                   &$extendee$::default_instance(), $number$, $field_type$,
-                  $repeated$, $packed$),
+                  $repeated$, $packed$, $require_utf8_validation$),
             )cc");
       }
 

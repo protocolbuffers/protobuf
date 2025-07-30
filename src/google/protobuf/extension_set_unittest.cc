@@ -44,6 +44,7 @@
 #include "google/protobuf/unittest_proto3_extensions.pb.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -1713,6 +1714,53 @@ INSTANTIATE_TEST_SUITE_P(
       absl::c_replace_if(name, [](char c) { return !std::isalnum(c); }, '_');
       return name;
     });
+
+TEST(ExtensionSet, StringWithInvalidUTF8FailsToParse) {
+  // Sanity check that the extension field is marked as requiring UTF-8
+  // validation. `requires_utf8_validation` can only be true for string fields
+  // where feature.utf8_validation = VERIFY.
+  const google::protobuf::DescriptorPool* pool = google::protobuf::DescriptorPool::generated_pool();
+  ASSERT_NE(pool, nullptr);
+  const google::protobuf::FieldDescriptor* string_ext_fd = pool->FindExtensionByName(
+      "proto2_unittest.optional_utf8_string_extension");
+  ASSERT_NE(string_ext_fd, nullptr);
+  ASSERT_TRUE(string_ext_fd->requires_utf8_validation());
+  std::string invalid_utf8 = "\xFF";
+  ASSERT_FALSE(utf8_range::IsStructurallyValid(invalid_utf8));
+
+  proto2_unittest::TestAllExtensions test_message;
+  // It is reasonable to debate that UTF-8 validation should be checked in the
+  // setter, but it is not currently done because the setter doesn't have a way
+  // to report errors.
+  test_message.SetExtension(proto2_unittest::optional_utf8_string_extension,
+                            invalid_utf8);
+  std::string data;
+  ASSERT_TRUE(test_message.SerializeToString(&data));
+  proto2_unittest::TestAllExtensions parsed_message;
+  ASSERT_FALSE(parsed_message.ParseFromString(data));
+}
+
+TEST(ExtensionSet, BytesWithInvalidUTF8Succeeds) {
+  // Sanity check that the extension field is not marked as requiring UTF-8
+  // validation. `requires_utf8_validation` can only be true for string fields.
+  const google::protobuf::DescriptorPool* pool = google::protobuf::DescriptorPool::generated_pool();
+  ASSERT_NE(pool, nullptr);
+  const google::protobuf::FieldDescriptor* string_ext_fd =
+      pool->FindExtensionByName("proto2_unittest.optional_bytes_extension");
+  ASSERT_NE(string_ext_fd, nullptr);
+  ASSERT_FALSE(string_ext_fd->requires_utf8_validation());
+  std::string invalid_utf8 = "\xFF";
+  ASSERT_FALSE(utf8_range::IsStructurallyValid(invalid_utf8));
+
+  proto2_unittest::TestAllExtensions test_message;
+  test_message.SetExtension(proto2_unittest::optional_bytes_extension,
+                            invalid_utf8);
+  std::string data;
+  ASSERT_TRUE(test_message.SerializeToString(&data));
+  proto2_unittest::TestAllExtensions parsed_message;
+  EXPECT_TRUE(parsed_message.ParseFromString(data));
+  EXPECT_THAT(parsed_message, testing::EqualsProto(test_message));
+}
 
 }  // namespace
 }  // namespace internal
