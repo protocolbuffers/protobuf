@@ -16,7 +16,7 @@ load("//upb/cmake:build_defs.bzl", "staleness_test")
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_csharp.txt",
-    maximum_edition = "2023",
+    maximum_edition = "2024",
     testee = "//conformance:conformance_csharp",
 )
 
@@ -127,7 +127,7 @@ compile_edition_defaults(
     srcs = [
         "//:descriptor_proto",
     ],
-    maximum_edition = "2023",
+    maximum_edition = "2024",
     minimum_edition = "PROTO2",
 )
 
