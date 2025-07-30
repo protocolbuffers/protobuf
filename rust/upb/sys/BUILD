@@ -34,6 +34,9 @@ rust_library(
         "wire/mod.rs",
         "wire/wire.rs",
     ],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     rustc_flags = ["--cfg=bzl"],
     visibility = ["//rust/upb:__subpackages__"],
     deps = [":upb_c_api"],
@@ -50,6 +53,9 @@ rust_test(
 cc_library(
     name = "upb_c_api",
     srcs = ["upb_api.c"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+    ],
     deps = [
         "//upb/mem",
         "//upb/message",
