@@ -767,6 +767,101 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   for (auto& t : threads) t.join();
 }
 
+TEST(ArenaTest, ArenaRef) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_HasRef(arena1, arena2));
+  EXPECT_FALSE(upb_Arena_HasRef(arena2, arena1));
+
+  upb_Arena_Free(arena1);
+  upb_Arena_Free(arena2);
+}
+
+TEST(ArenaTest, ArenaRefPreventsFree) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  // arena2 has refcount 1.
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // arena1 now owns a ref to arena2. arena2 has refcount 2.
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
+
+  // User of arena2 frees it. Refcount goes to 1. Arena is not freed.
+  upb_Arena_Free(arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // We can still allocate on arena2.
+  EXPECT_NE(nullptr, upb_Arena_Malloc(arena2, 1));
+
+  // When arena1 is freed, it releases its ref on arena2, which is then freed.
+  upb_Arena_Free(arena1);
+}
+
+TEST(ArenaTest, ArenaOwnerFreedFirst) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  // arena2 has refcount 1.
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // arena1 now owns a ref to arena2. arena2 has refcount 2.
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
+
+  // Freeing the owner releases its ref on arena2. Refcount goes to 1.
+  upb_Arena_Free(arena1);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // Now when we free arena2, it is actually freed.
+  upb_Arena_Free(arena2);
+}
+
+TEST(ArenaDeathTest, ArenaRefCycle) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_RefArena(arena2, arena1);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaDuplicateRef) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaRefCycleThroughFuse) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena* arena3 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_Fuse(arena2, arena3);
+        upb_Arena_RefArena(arena3, arena1);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+        upb_Arena_Free(arena3);
+      },
+      "");
+}
+
 #endif  // UPB_SUPPRESS_MISSING_ATOMICS
 
 }  // namespace
