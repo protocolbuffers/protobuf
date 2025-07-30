@@ -74,12 +74,14 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
 
                    $class_name$() = default;
 
-                   $type$* msg() const { return msg_; }
-
                   private:
                    $class_name$($type$* msg) : msg_(msg) {}
 
                    $type$* msg_;
+
+                   $type$* msg() const { return msg_; }
+
+                   friend struct ::hpb::internal::PrivateAccess;
                  };
                  }  // namespace $namespace$
                )cc");

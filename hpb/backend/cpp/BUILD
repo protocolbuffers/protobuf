@@ -22,3 +22,11 @@ cc_library(
         "@abseil-cpp//absl/strings:string_view",
     ],
 )
+
+cc_library(
+    name = "interop",
+    hdrs = ["interop.h"],
+    deps = [
+        "//hpb/internal",
+    ],
+)
