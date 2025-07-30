@@ -8690,7 +8690,7 @@ TEST_F(FeaturesTest, Proto2Features) {
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_EQ(
       GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/false),
-      Utf8CheckMode::kVerify);
+      Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
             Utf8CheckMode::kNone);
   EXPECT_EQ(GetCoreFeatures(message->FindFieldByName("cord"))
@@ -11115,11 +11115,11 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
   EXPECT_FALSE(expanded_field->is_packed());
   EXPECT_FALSE(utf8_verify_field->requires_utf8_validation());
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/false),
-            Utf8CheckMode::kVerify);
+            Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
             Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/false),
-            Utf8CheckMode::kVerify);
+            Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
             Utf8CheckMode::kNone);
 }

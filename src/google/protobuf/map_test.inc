@@ -4360,7 +4360,6 @@ TEST(NonUtf8Test, StringValuePassesInProto2) {
   (*message.mutable_map_string())[1] = "\xFF";
 
   auto serialized = message.SerializeAsString();
-  // Parsing passes, but a failure is logged in debug mode.
   ASSERT_TRUE(message.ParseFromString(serialized));
   EXPECT_EQ((*message.mutable_map_string())[1], "\xFF");
 }

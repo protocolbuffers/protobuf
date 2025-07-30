@@ -10717,8 +10717,6 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
                                FieldDescriptor::TYPE_STRING))) {
     if (IsStrictUtf8(field)) {
       return Utf8CheckMode::kStrict;
-    } else if (IsVerifyUtf8(field, is_lite)) {
-      return Utf8CheckMode::kVerify;
     }
   }
   return Utf8CheckMode::kNone;
