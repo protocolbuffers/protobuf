@@ -1784,4 +1784,13 @@ public class DescriptorsTest {
           .isEqualTo(5);
     }
   }
+
+  public static class Latin1CodedInputStreamFactoryTest {
+
+    @Test
+    public void testGetLatin1CodedInputStreamFactory() throws Exception {
+      assertThat(Descriptors.getLatin1CodedInputStreamFactory())
+          .isInstanceOf(Descriptors.SafeLatin1CodedInputStreamFactory.class);
+    }
+  }
 }
