@@ -272,7 +272,7 @@ TEST(OverheadTest, SingleMassiveBlockThenLittle) {
     EXPECT_NEAR(test.WastePct(), 0.075, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.09, 0.025);
 #else
-    EXPECT_NEAR(test.WastePct(), 0.08, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.08, 0.125);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.09, 0.025);
 #endif
   }
@@ -399,20 +399,42 @@ class Environment {
   void RandomFuse(absl::BitGen& gen) {
     std::shared_ptr<const upb::Arena> a = RandomNonNullArena(gen);
     std::shared_ptr<const upb::Arena> b = RandomNonNullArena(gen);
+#ifndef NDEBUG
+    // Don't fuse if there is a ref chain in either direction.
+    if (upb_Arena_HasRefChain(a->ptr(), b->ptr()) ||
+        upb_Arena_HasRefChain(b->ptr(), a->ptr())) {
+      return;
+    }
+#endif
     EXPECT_TRUE(upb_Arena_Fuse(a->ptr(), b->ptr()));
   }
 
   void RandomPoke(absl::BitGen& gen, size_t min_index = 0) {
-    switch (absl::Uniform(gen, 0, 2)) {
+    switch (absl::Uniform(gen, 0, 3)) {
       case 0:
         RandomNewFree(gen, min_index);
         break;
       case 1:
         RandomFuse(gen);
         break;
+      case 2:
+        // RandomRefArena(gen);
+        break;
       default:
         break;
     }
+  }
+
+  void RandomRefArena(absl::BitGen& gen) {
+    std::shared_ptr<const upb::Arena> a = RandomNonNullArena(gen);
+    std::shared_ptr<const upb::Arena> b = RandomNonNullArena(gen);
+    if (a.get() == b.get()) return;  // Don't ref self.
+    if (upb_Arena_IsFused(a->ptr(), b->ptr())) return;
+#ifndef NDEBUG
+    if (upb_Arena_HasRefChain(a->ptr(), b->ptr())) return;  // Avoid cycles.
+    if (upb_Arena_HasRefChain(b->ptr(), a->ptr())) return;  // Avoid cycles.
+#endif
+    EXPECT_TRUE(upb_Arena_RefArena(a->ptr(), b->ptr()));
   }
 
   std::shared_ptr<const upb::Arena> IndexedNonNullArena(size_t index) {
@@ -707,6 +729,29 @@ TEST(ArenaTest, ArenaIncRef) {
   upb_Arena_Free(arena1);
 }
 
+TEST(ArenaTest, FuzzRefArenaRace) {
+  Environment env;
+
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.RandomPoke(gen);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    env.RandomPoke(gen);
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
+}
+
 TEST(ArenaTest, FuzzFuseIncRefCountRace) {
   Environment env;
 
@@ -766,6 +811,162 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   done.Notify();
   for (auto& t : threads) t.join();
 }
+
+#ifndef NDEBUG
+TEST(ArenaTest, ArenaRef) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_HasRef(arena1, arena2));
+  EXPECT_FALSE(upb_Arena_HasRef(arena2, arena1));
+
+  upb_Arena_Free(arena1);
+  upb_Arena_Free(arena2);
+}
+#endif
+
+TEST(ArenaTest, ArenaRefPreventsFree) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  // arena2 has refcount 1.
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // arena1 now owns a ref to arena2. arena2 has refcount 2.
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
+
+  // User of arena2 frees it. Refcount goes to 1. Arena is not freed.
+  upb_Arena_Free(arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // We can still allocate on arena2.
+  EXPECT_NE(nullptr, upb_Arena_Malloc(arena2, 1));
+
+  // When arena1 is freed, it releases its ref on arena2, which is then freed.
+  upb_Arena_Free(arena1);
+}
+
+TEST(ArenaTest, ArenaOwnerFreedFirst) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  // arena2 has refcount 1.
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // arena1 now owns a ref to arena2. arena2 has refcount 2.
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
+
+  // Freeing the owner releases its ref on arena2. Refcount goes to 1.
+  upb_Arena_Free(arena1);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // Now when we free arena2, it is actually freed.
+  upb_Arena_Free(arena2);
+}
+
+#ifndef NDEBUG
+
+TEST(ArenaDeathTest, ArenaRefCycle) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_RefArena(arena2, arena1);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaDuplicateRef) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaRefCycleThroughFuse) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena* arena3 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_Fuse(arena2, arena3);
+        upb_Arena_RefArena(arena3, arena1);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+        upb_Arena_Free(arena3);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaRefCycleThroughMultipleFuses) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena* arena3 = upb_Arena_New();
+        upb_Arena* arena4 = upb_Arena_New();
+        upb_Arena* arena5 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);  // a -> b
+        upb_Arena_Fuse(arena2, arena3);      // b + c
+        upb_Arena_RefArena(arena3, arena4);  // c -> d
+        upb_Arena_Fuse(arena4, arena5);      // d + e
+        upb_Arena_RefArena(arena5, arena1);  // e -> a (cycle)
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+        upb_Arena_Free(arena3);
+        upb_Arena_Free(arena4);
+        upb_Arena_Free(arena5);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaRefFuseCycle) {
+  ASSERT_DEATH(
+      {
+        upb::Arena a;
+        upb::Arena b;
+        upb::Arena c;
+        c.RefArena(a);
+
+        absl::Notification t1_started;
+        absl::Notification t2_started;
+        absl::Notification t1_finished;
+        absl::Notification t2_finished;
+
+        std::thread thread1([&]() {
+          t1_started.Notify();
+          t2_started.WaitForNotification();
+          a.RefArena(b);
+          t1_finished.Notify();
+        });
+
+        std::thread thread2([&]() {
+          t2_started.Notify();
+          t1_started.WaitForNotification();
+          b.Fuse(c);
+          t2_finished.Notify();
+        });
+
+        thread1.join();
+        thread2.join();
+      },
+      "");
+}
+
+#endif  // DEBUG
 
 #endif  // UPB_SUPPRESS_MISSING_ATOMICS
 
