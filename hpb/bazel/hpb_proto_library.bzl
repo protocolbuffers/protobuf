@@ -144,7 +144,7 @@ _hpb_proto_library_aspect = aspect(
             default = "//hpb:hpb_proto_library_copts",
         ),
         "_hpb_lang_toolchain": attr.label(
-            default = "//src/google/protobuf/compiler/hpb:toolchain",
+            default = "//hpb_generator:toolchain",
         ),
         "_upbprotos": attr.label_list(
             default = [
