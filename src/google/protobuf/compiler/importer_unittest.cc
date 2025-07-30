@@ -36,9 +36,6 @@ bool FileExists(const std::string& path) {
   return File::Exists(path);
 }
 
-#define EXPECT_SUBSTRING(needle, haystack) \
-  EXPECT_PRED_FORMAT2(testing::IsSubstring, (needle), (haystack))
-
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
   MockErrorCollector() {}
@@ -518,6 +515,201 @@ TEST_F(DiskSourceTreeTest, VirtualFileToDiskFile) {
   // Accept NULL as output parameter.
   EXPECT_TRUE(source_tree_.VirtualFileToDiskFile("bar/foo", nullptr));
   EXPECT_FALSE(source_tree_.VirtualFileToDiskFile("baz/foo", nullptr));
+}
+
+class SourceTreeDescriptorDatabaseTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    source_tree_.AddFile("foo.proto", R"(
+      edition = "2023";
+      package proto2_unittest;
+      message Foo {
+        extensions 1 to 10;
+        extensions 20 to max;
+      }
+    )");
+  }
+
+  MockSourceTree source_tree_;
+};
+
+TEST_F(SourceTreeDescriptorDatabaseTest, ExtensionDeclarations) {
+  source_tree_.AddFile("extension_declarations1.txtpb", R"pb(
+    declaration {
+      number: 1
+      full_name: ".proto2_unittest.foo_extension1"
+      type: ".proto2_unittest.Message1"
+    }
+  )pb");
+  source_tree_.AddFile("extension_declarations2.txtpb", R"pb(
+    declaration {
+      number: 30
+      full_name: ".proto2_unittest.foo_extension2"
+      type: ".proto2_unittest.Message2"
+    }
+  )pb");
+  SourceTreeDescriptorDatabase database(&source_tree_);
+  database.AddExtensionDeclarationsFile("foo.proto", "Foo",
+                                        "extension_declarations1.txtpb");
+  database.AddExtensionDeclarationsFile("foo.proto", "Foo",
+                                        "extension_declarations2.txtpb");
+
+  FileDescriptorProto file_proto;
+  ASSERT_TRUE(database.FindFileByName("foo.proto", &file_proto));
+  ASSERT_EQ(file_proto.message_type_size(), 1);
+  const DescriptorProto& descriptor = file_proto.message_type(0);
+  ASSERT_EQ(descriptor.extension_range_size(), 2);
+
+  // First extension range
+  {
+    const DescriptorProto::ExtensionRange& range =
+        descriptor.extension_range(0);
+    ASSERT_EQ(range.options().declaration_size(), 1);
+    const ExtensionRangeOptions::Declaration& declaration =
+        range.options().declaration(0);
+    EXPECT_EQ(declaration.number(), 1);
+    EXPECT_EQ(declaration.full_name(), ".proto2_unittest.foo_extension1");
+    EXPECT_EQ(declaration.type(), ".proto2_unittest.Message1");
+  }
+
+  // Second extension range
+  {
+    const DescriptorProto::ExtensionRange& range =
+        descriptor.extension_range(1);
+    ASSERT_EQ(range.options().declaration_size(), 1);
+    const ExtensionRangeOptions::Declaration& declaration =
+        range.options().declaration(0);
+    EXPECT_EQ(declaration.number(), 30);
+    EXPECT_EQ(declaration.full_name(), ".proto2_unittest.foo_extension2");
+    EXPECT_EQ(declaration.type(), ".proto2_unittest.Message2");
+  }
+}
+
+TEST_F(SourceTreeDescriptorDatabaseTest, ExtensionDeclarationsMissing) {
+  SourceTreeDescriptorDatabase database(&source_tree_);
+  database.AddExtensionDeclarationsFile("foo.proto", "Foo",
+                                        "extension_declarations.txtpb");
+
+  // The descriptor database should read the .proto file successfully even if
+  // the .txtpb file was not present.
+  FileDescriptorProto file_proto;
+  EXPECT_TRUE(database.FindFileByName("foo.proto", &file_proto));
+  ASSERT_EQ(file_proto.message_type_size(), 1);
+  const DescriptorProto& descriptor = file_proto.message_type(0);
+  ASSERT_EQ(descriptor.extension_range_size(), 2);
+  EXPECT_EQ(descriptor.extension_range(0).options().declaration_size(), 0);
+  EXPECT_EQ(descriptor.extension_range(1).options().declaration_size(), 0);
+}
+
+TEST_F(SourceTreeDescriptorDatabaseTest, ExtensionDeclarationsSyntaxError) {
+  source_tree_.AddFile("extension_declarations.txtpb", R"pb(
+    invalid {}
+  )pb");
+  SourceTreeDescriptorDatabase database(&source_tree_);
+  MockErrorCollector error_collector;
+  database.RecordErrorsTo(&error_collector);
+  database.AddExtensionDeclarationsFile("foo.proto", "Foo",
+                                        "extension_declarations.txtpb");
+
+  FileDescriptorProto file_proto;
+  EXPECT_FALSE(database.FindFileByName("foo.proto", &file_proto));
+  EXPECT_EQ(
+      error_collector.text_,
+      "extension_declarations.txtpb:1:12: Message type "
+      "\"google.protobuf.ExtensionRangeOptions\" has no field named \"invalid\".\n");
+}
+
+TEST_F(SourceTreeDescriptorDatabaseTest, ExtensionDeclarationsMessageNotFound) {
+  source_tree_.AddFile("extension_declarations.txtpb", R"pb(
+    declaration {
+      number: 1
+      full_name: ".proto2_unittest.foo_extension"
+      type: ".proto2_unittest.Foo"
+    }
+  )pb");
+  SourceTreeDescriptorDatabase database(&source_tree_);
+  MockErrorCollector error_collector;
+  database.RecordErrorsTo(&error_collector);
+  database.AddExtensionDeclarationsFile("foo.proto", "Bar",
+                                        "extension_declarations.txtpb");
+
+  FileDescriptorProto file_proto;
+  EXPECT_FALSE(database.FindFileByName("foo.proto", &file_proto));
+  EXPECT_EQ(error_collector.text_,
+            "extension_declarations.txtpb:1:1: Message Bar not found in "
+            "foo.proto.\n");
+}
+
+TEST_F(SourceTreeDescriptorDatabaseTest, ExtensionDeclarationsRangeNotFound) {
+  source_tree_.AddFile("extension_declarations.txtpb", R"pb(
+    declaration {
+      number: 11
+      full_name: ".proto2_unittest.foo_extension"
+      type: ".proto2_unittest.Foo"
+    }
+  )pb");
+  SourceTreeDescriptorDatabase database(&source_tree_);
+  MockErrorCollector error_collector;
+  database.RecordErrorsTo(&error_collector);
+  database.AddExtensionDeclarationsFile("foo.proto", "Foo",
+                                        "extension_declarations.txtpb");
+
+  FileDescriptorProto file_proto;
+  EXPECT_FALSE(database.FindFileByName("foo.proto", &file_proto));
+  EXPECT_EQ(error_collector.text_,
+            "extension_declarations.txtpb:1:1: No extension range found for "
+            "number 11 in message Foo.\n");
+}
+
+namespace {
+
+class FakeDescriptorPoolErrorCollector : public DescriptorPool::ErrorCollector {
+ public:
+  void RecordError(absl::string_view filename, absl::string_view element_name,
+                   const Message* descriptor, ErrorLocation location,
+                   absl::string_view message) override {
+    absl::SubstituteAndAppend(&text_, "$0: $1: $2\n", filename, element_name,
+                              message);
+  }
+
+  absl::string_view text() { return text_; }
+
+ private:
+  std::string text_;
+};
+
+}  // namespace
+
+TEST_F(SourceTreeDescriptorDatabaseTest,
+       ExtensionDeclarationsCrossingRangeBoundary) {
+  // All extensions in the .txtpb file need to be part of the same extension
+  // range. SourceTreeDescriptorDatabase does not enforce this, but
+  // DescriptorPool does.
+  source_tree_.AddFile("extension_declarations.txtpb", R"pb(
+    declaration {
+      number: 10
+      full_name: ".proto2_unittest.foo_extension1"
+      type: ".proto2_unittest.Foo1"
+    }
+    declaration {
+      number: 20
+      full_name: ".proto2_unittest.foo_extension2"
+      type: ".proto2_unittest.Foo2"
+    }
+  )pb");
+  SourceTreeDescriptorDatabase database(&source_tree_);
+  database.AddExtensionDeclarationsFile("foo.proto", "Foo",
+                                        "extension_declarations.txtpb");
+
+  FileDescriptorProto file_proto;
+  EXPECT_TRUE(database.FindFileByName("foo.proto", &file_proto));
+
+  DescriptorPool pool;
+  FakeDescriptorPoolErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text(),
+            "foo.proto: proto2_unittest.Foo: Extension declaration number 20 "
+            "is not in the extension range.\n");
 }
 
 }  // namespace

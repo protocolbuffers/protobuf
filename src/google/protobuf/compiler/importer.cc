@@ -32,8 +32,10 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/text_format.h"
 
 #ifdef _WIN32
 #include "absl/strings/str_replace.h"
@@ -156,7 +158,9 @@ bool SourceTreeDescriptorDatabase::FindFileByName(StringViewArg filename,
 
   // Parse it.
   output->set_name(filename);
-  return parser.Parse(&tokenizer, output) && !file_error_collector.had_errors();
+  return parser.Parse(&tokenizer, output) &&
+         !file_error_collector.had_errors() &&
+         ReadExtensionDeclarations(filename, output);
 }
 
 bool SourceTreeDescriptorDatabase::FindFileContainingSymbol(
@@ -168,6 +172,88 @@ bool SourceTreeDescriptorDatabase::FindFileContainingExtension(
     StringViewArg containing_type, int field_number,
     FileDescriptorProto* output) {
   return false;
+}
+
+namespace {
+
+// Returns a pointer to the message of the given name in the
+// FileDescriptorProto, or else nullptr if it is not found.
+DescriptorProto* FindMessage(absl::string_view name,
+                             FileDescriptorProto& file_proto) {
+  for (DescriptorProto& descriptor : *file_proto.mutable_message_type()) {
+    if (descriptor.name() == name) {
+      return &descriptor;
+    }
+  }
+  return nullptr;
+}
+
+// Returns a pointer to the extension range associated with the given field
+// number, or nullptr if no such range exists.
+DescriptorProto::ExtensionRange* FindExtensionRange(int field_number,
+                                                    DescriptorProto& message) {
+  for (auto& range : *message.mutable_extension_range()) {
+    if (range.start() <= field_number && field_number < range.end()) {
+      return &range;
+    }
+  }
+  return nullptr;
+}
+
+}  // namespace
+
+bool SourceTreeDescriptorDatabase::ReadExtensionDeclarations(
+    absl::string_view filename, FileDescriptorProto* output) const {
+  auto it = declarations_files_.find(filename);
+  if (it == declarations_files_.end()) {
+    return true;
+  }
+
+  for (const auto& [message_name, declarations_file_name] : it->second) {
+    std::unique_ptr<io::ZeroCopyInputStream> declarations(
+        source_tree_->Open(declarations_file_name));
+    if (declarations == nullptr) {
+      continue;
+    }
+    TextFormat::Parser text_parser;
+    SingleFileErrorCollector error_collector(declarations_file_name,
+                                             error_collector_);
+    text_parser.RecordErrorsTo(&error_collector);
+    ExtensionRangeOptions options;
+    if (!text_parser.Parse(declarations.get(), &options)) {
+      return false;
+    }
+
+    DescriptorProto* message = FindMessage(message_name, *output);
+    if (message == nullptr) {
+      error_collector.RecordError(
+          1, 1,
+          absl::StrCat("Message ", message_name, " not found in ", filename,
+                       "."));
+      return false;
+    }
+
+    if (!options.declaration().empty()) {
+      // We find the matching extension range by looking at the number of the
+      // first declaration. If the declarations are spread across multiple
+      // ranges, that is an error which will be caught later by the
+      // DescriptorPool.
+      int number = options.declaration(0).number();
+      DescriptorProto::ExtensionRange* range =
+          FindExtensionRange(number, *message);
+      if (range == nullptr) {
+        error_collector.RecordError(
+            1, 1,
+            absl::StrCat("No extension range found for number ", number,
+                         " in message ", message_name, "."));
+        return false;
+      }
+      range->mutable_options()->mutable_declaration()->MergeFrom(
+          options.declaration());
+    }
+  }
+
+  return true;
 }
 
 // -------------------------------------------------------------------
