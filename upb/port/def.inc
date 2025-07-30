@@ -303,6 +303,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ASSERT(expr) assert(expr)
 #endif
 
+#if !defined(NDEBUG) && !defined(UPB_TSAN)
+#define UPB_ENABLE_REF_CYCLE_CHECKS 1
+#else
+#define UPB_ENABLE_REF_CYCLE_CHECKS 0
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_UNREACHABLE()    \
   do {                       \
