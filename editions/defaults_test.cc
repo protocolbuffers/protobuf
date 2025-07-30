@@ -275,7 +275,7 @@ TEST_F(OverridableDefaultsTest, Proto3) {
 TEST_F(OverridableDefaultsTest, Edition2023) {
   auto feature_defaults = ReadDefaults("protobuf_defaults");
   ASSERT_OK(feature_defaults);
-  ASSERT_GE(feature_defaults->defaults().size(), 3);
+  ASSERT_GE(feature_defaults->defaults().size(), 4);
   auto defaults = feature_defaults->defaults(2);
   ASSERT_EQ(defaults.edition(), EDITION_2023);
 
@@ -289,6 +289,39 @@ TEST_F(OverridableDefaultsTest, Edition2023) {
                 json_format: ALLOW
                 [pb.cpp] { legacy_closed_enum: false string_type: STRING }
                 [pb.java] { legacy_closed_enum: false utf8_validation: DEFAULT }
+              )pb"));
+}
+
+// Lock down that 2024 overridable defaults never change.  Once Edition 2024 has
+// been released this test should never need to be touched.
+TEST_F(OverridableDefaultsTest, Edition2024) {
+  auto feature_defaults = ReadDefaults("protobuf_defaults");
+  ASSERT_OK(feature_defaults);
+  ASSERT_GE(feature_defaults->defaults().size(), 4);
+  auto defaults = feature_defaults->defaults(3);
+  ASSERT_EQ(defaults.edition(), EDITION_2024);
+
+
+  EXPECT_THAT(defaults.overridable_features(), EqualsProto(R"pb(
+                field_presence: EXPLICIT
+                enum_type: OPEN
+                repeated_field_encoding: PACKED
+                utf8_validation: VERIFY
+                message_encoding: LENGTH_PREFIXED
+                json_format: ALLOW
+                enforce_naming_style: STYLE2024
+                default_symbol_visibility: EXPORT_TOP_LEVEL
+                [pb.cpp] {
+                  legacy_closed_enum: false
+                  string_type: VIEW
+                  enum_name_uses_string_view: true
+                }
+                [pb.java] {
+                  legacy_closed_enum: false
+                  utf8_validation: DEFAULT
+                  large_enum: false
+                  nest_in_file_class: NO
+                }
               )pb"));
 }
 

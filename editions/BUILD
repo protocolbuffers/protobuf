@@ -27,7 +27,7 @@ compile_edition_defaults(
         "//java/core:java_features_proto",
         "//src/google/protobuf:cpp_features_proto",
     ],
-    maximum_edition = "2023",
+    maximum_edition = "2024",
     minimum_edition = "2023",
     # Test with HEAD protoc for any behavior change, other usages don't need this.
     protoc = "//src/google/protobuf/compiler:protoc_minimal",
