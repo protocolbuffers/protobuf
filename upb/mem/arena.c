@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include "upb/port/sanitizers.h"
+#include "upb/port/thread.h"
 
 #ifdef UPB_TRACING_ENABLED
 #include <stdatomic.h>
@@ -34,9 +35,18 @@ void upb_Arena_SetMaxBlockSize(size_t max) {
 typedef struct upb_MemBlock {
   struct upb_MemBlock* next;
   // Size of the actual allocation.
+  // Size of 0 means this is a upb_ArenaRef.
   size_t size;
   // Data follows.
 } upb_MemBlock;
+
+// A special block type that indicates a reference to another arena.
+// When this arena is freed, a ref is released on the referenced arena.
+// size must be 0.
+typedef struct {
+  upb_MemBlock prefix;  // size is always zero
+  const upb_Arena* arena;
+} upb_ArenaRef;
 
 typedef struct upb_ArenaInternal {
   // upb_alloc* together with a low bit which signals if there is an initial
@@ -103,6 +113,9 @@ typedef struct {
 
 static const size_t kUpb_MemblockReserve =
     UPB_ALIGN_MALLOC(sizeof(upb_MemBlock));
+
+static const size_t kUpb_ArenaRefReserve =
+    UPB_ALIGN_MALLOC(sizeof(upb_ArenaRef));
 
 // Extracts the (upb_ArenaInternal*) from a (upb_Arena*)
 static upb_ArenaInternal* upb_Arena_Internal(const upb_Arena* a) {
@@ -303,6 +316,32 @@ uint32_t upb_Arena_DebugRefCount(const upb_Arena* a) {
   return (uint32_t)_upb_Arena_RefCountFromTagged(tagged);
 }
 
+#ifndef NDEBUG
+
+bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(from);
+  upb_ArenaInternal* current = _upb_Arena_FindRoot(ai).root;
+  // Traverse all the arenas in the fuse group, and for each arena, check if
+  // it has a ref chain to the target arena.
+  while (current != NULL) {
+    upb_MemBlock* block = current->blocks;
+    while (block != NULL) {
+      if (block->size == 0) {
+        upb_ArenaRef* ref = (upb_ArenaRef*)block;
+        if (ref->arena == to || upb_Arena_IsFused(ref->arena, to) ||
+            upb_Arena_HasRefChain(ref->arena, to)) {
+          return true;
+        }
+      }
+      block = block->next;
+    }
+    current = current->next;
+  }
+  return false;
+}
+
+#endif
+
 // Adds an allocated block to the head of the list.
 static void _upb_Arena_AddBlock(upb_Arena* a, void* ptr, size_t offset,
                                 size_t block_size) {
@@ -343,8 +382,8 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   size_t target_size = UPB_MIN(last_size * 2, max_block_size);
   size_t future_free = UPB_MAX(size, target_size - kUpb_MemblockReserve) - size;
   // We want to preserve exponential growth in block size without wasting too
-  // much unused space at the end of blocks. Once the head of our blocks list is
-  // large enough to always trigger a max-sized block for all subsequent
+  // much unused space at the end of blocks. Once the head of our blocks list
+  // is large enough to always trigger a max-sized block for all subsequent
   // allocations, allocate blocks that would net reduce free space behind it.
   if (last_block && current_free > future_free &&
       target_size < max_block_size) {
@@ -359,13 +398,14 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   // restoring the size of our allocated block if we add another.
   if (last_block && current_free >= future_free) {
     // If we're still going to net reduce free space with this new block, then
-    // only allocate the precise size requested and keep the current last block
-    // as the active block for future allocations.
+    // only allocate the precise size requested and keep the current last
+    // block as the active block for future allocations.
     insert_after_head = true;
     target_size = size + kUpb_MemblockReserve;
     // Add something to our previous size each time, so that eventually we
-    // will reach the max block size. Allocations larger than the max block size
-    // will always get their own backing allocation, so don't include them.
+    // will reach the max block size. Allocations larger than the max block
+    // size will always get their own backing allocation, so don't include
+    // them.
     if (target_size <= max_block_size) {
       ai->size_hint = UPB_MIN(ai->size_hint + (size >> 1), max_block_size >> 1);
     }
@@ -381,10 +421,10 @@ void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(upb_Arena* a, size_t size) {
   upb_MemBlock* block = alloc_result.p;
   size_t actual_block_size = alloc_result.n;
 
-  // Atomic add not required here, as threads won't race allocating blocks, plus
-  // atomic fetch-add is slower than load/add/store on arm devices compiled
-  // targetting pre-v8.1. Relaxed order is safe as nothing depends on order of
-  // size allocated.
+  // Atomic add not required here, as threads won't race allocating blocks,
+  // plus atomic fetch-add is slower than load/add/store on arm devices
+  // compiled targetting pre-v8.1. Relaxed order is safe as nothing depends on
+  // order of size allocated.
 
   uintptr_t old_space_allocated =
       upb_Atomic_Load(&ai->space_allocated, memory_order_relaxed);
@@ -452,7 +492,8 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   upb_ArenaState* a;
 
   if (mem) {
-    /* Align initial pointer up so that we return properly-aligned pointers. */
+    /* Align initial pointer up so that we return properly-aligned pointers.
+     */
     void* aligned = (void*)UPB_ALIGN_MALLOC((uintptr_t)mem);
     size_t delta = (uintptr_t)aligned - (uintptr_t)mem;
     n = delta <= n ? n - delta : 0;
@@ -506,7 +547,14 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
     while (block != NULL) {
       // Load first since we are deleting block.
       upb_MemBlock* next_block = block->next;
-      upb_free_sized(block_alloc, block, block->size);
+      if (block->size == 0) {
+        // If the block is an arena ref, then we need to release our ref on the
+        // referenced arena.
+        upb_ArenaRef* ref = (upb_ArenaRef*)block;
+        upb_Arena_DecRefFor((upb_Arena*)ref->arena, ai);
+      } else {
+        upb_free_sized(block_alloc, block, block->size);
+      }
       block = next_block;
     }
     if (alloc_cleanup != NULL) {
@@ -758,9 +806,17 @@ static bool _upb_Arena_FixupRefs(upb_ArenaInternal* new_root,
                                           with_refs, memory_order_relaxed,
                                           memory_order_relaxed);
 }
-
 bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
-  if (a1 == a2) return true;  // trivial fuse
+  if (a1 == a2) {
+    upb_unlock_global();
+    return true;  // trivial fuse
+  }
+
+  upb_lock_global();
+#if UPB_ENABLE_REF_CYCLE_CHECKS
+  UPB_ASSERT(!upb_Arena_HasRefChain(a1, a2));
+  UPB_ASSERT(!upb_Arena_HasRefChain(a2, a1));
+#endif
 
 #ifdef UPB_TRACING_ENABLED
   upb_Arena_LogFuse(a1, a2);
@@ -773,6 +829,7 @@ bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
   // Any other fuse scenario is allowed.
   if (_upb_ArenaInternal_HasInitialBlock(ai1) ||
       _upb_ArenaInternal_HasInitialBlock(ai2)) {
+    upb_unlock_global();
     return false;
   }
 
@@ -781,6 +838,7 @@ bool upb_Arena_Fuse(const upb_Arena* a1, const upb_Arena* a2) {
   while (true) {
     upb_ArenaInternal* new_root = _upb_Arena_DoFuse(&ai1, &ai2, &ref_delta);
     if (new_root != NULL && _upb_Arena_FixupRefs(new_root, ref_delta)) {
+      upb_unlock_global();
       return true;
     }
   }
@@ -828,6 +886,59 @@ retry:
 
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner) {
   upb_Arena_Free((upb_Arena*)a);
+}
+
+bool upb_Arena_RefArena(upb_Arena* from, const upb_Arena* to) {
+  upb_lock_global();
+  UPB_ASSERT(!upb_Arena_IsFused(from, to));
+#if UPB_ENABLE_REF_CYCLE_CHECKS
+  UPB_ASSERT(!upb_Arena_HasRefChain(from, to));  // Forbid duplicate refs.
+  UPB_ASSERT(!upb_Arena_HasRefChain(to, from));  // Forbid cycles.
+#endif
+  // We can't increment a ref to `to`, so return early.
+  if (_upb_ArenaInternal_HasInitialBlock(upb_Arena_Internal(to))) return false;
+
+  upb_ArenaInternal* ai = upb_Arena_Internal(from);
+  upb_ArenaRef* ref = upb_Arena_Malloc(from, kUpb_ArenaRefReserve);
+
+  if (!ref) {
+    upb_unlock_global();
+    return false;
+  }
+
+  // When 'from' is freed, a ref on 'to' will be released.
+  // Intentionally ignore return value, since we already check up above if this
+  // call will succeed.
+  UPB_ASSERT(upb_Arena_IncRefFor(to, from));
+
+  // When we add a reference from `from` to `to`, we need to keep track of the
+  // ref in the `from` arena's linked list of refs. This allows us to
+  // walk all refs for `from` when `from` is freed, and thus allows us to
+  // decrement the refcount on `to` when `from` is freed.
+  ref->prefix.next = ai->blocks;
+  ref->prefix.size = 0;
+  ref->arena = to;
+  ai->blocks = (upb_MemBlock*)ref;
+
+  upb_unlock_global();
+
+  return true;
+}
+
+bool upb_Arena_HasRef(const upb_Arena* from, const upb_Arena* to) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(from);
+  upb_MemBlock* block = ai->blocks;
+  while (block != NULL) {
+    upb_MemBlock* next_block = block->next;
+    if (block->size == 0) {
+      upb_ArenaRef* ref = (upb_ArenaRef*)block;
+      if (upb_Arena_IsFused(ref->arena, to)) {
+        return true;
+      }
+    }
+    block = next_block;
+  }
+  return false;
 }
 
 upb_alloc* upb_Arena_GetUpbAlloc(upb_Arena* a) {

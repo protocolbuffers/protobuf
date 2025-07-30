@@ -40,6 +40,8 @@ class Arena {
     return upb_Arena_IsFused(ptr(), other.ptr());
   }
 
+  void RefArena(const Arena& to) { upb_Arena_RefArena(ptr(), to.ptr()); }
+
  protected:
   std::unique_ptr<upb_Arena, decltype(&upb_Arena_Free)> ptr_;
 };

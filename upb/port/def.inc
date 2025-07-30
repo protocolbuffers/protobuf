@@ -361,6 +361,19 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ATOMIC(T) T
 #endif
 
+#if defined(_POSIX_THREADS) && _POSIX_THREADS > 0
+#define UPB_USE_PTHREADS
+#elif (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) && \
+       !defined(__STDC_NO_THREADS__))
+#define UPB_USE_C11_THREADS
+#endif
+
+#if !defined(NDEBUG) && !defined(UPB_TSAN)
+#define UPB_ENABLE_REF_CYCLE_CHECKS 1
+#else
+#define UPB_ENABLE_REF_CYCLE_CHECKS 0
+#endif
+
 /* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
 #define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
 
