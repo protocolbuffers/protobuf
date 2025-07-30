@@ -586,7 +586,8 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #error PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED was previously defined
 #endif
 #if defined(__GNUC__) && defined(__clang__) && !defined(__APPLE__) && \
-    !defined(_MSC_VER) && !defined(_WIN32)
+    !defined(_MSC_VER) && !defined(_WIN32) && !defined(__wasm__) &&   \
+    !defined(__EMSCRIPTEN__)
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 
