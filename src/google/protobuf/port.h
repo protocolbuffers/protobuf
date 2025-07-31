@@ -777,9 +777,9 @@ PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
 #if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
 #elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
-  return BoundsCheckMode::kReturnDefault;
+  return BoundsCheckMode::kAbort;
 #else
-  return BoundsCheckMode::kNoEnforcement;
+  return BoundsCheckMode::kAbort;
 #endif
 }
 
