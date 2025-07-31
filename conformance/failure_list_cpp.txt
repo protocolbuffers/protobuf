@@ -36,3 +36,4 @@ Recommended.*.JsonInput.FieldMaskInvalidCharacter                               
 Required.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
 Required.*.JsonInput.SingleValueForRepeatedFieldMessage                                                            # Should have failed to parse, but didn't.
 
+Recommended.Editions.ProtobufInput.RejectInvalidUtf8.String.Extension                                              # Should have failed to parse, but didn't.

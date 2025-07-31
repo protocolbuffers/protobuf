@@ -1,0 +1,1 @@
+Recommended.Editions.ProtobufInput.RejectInvalidUtf8.String.Extension # Should have failed to parse, but didn't.
