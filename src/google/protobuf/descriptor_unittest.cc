@@ -66,6 +66,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -3286,24 +3287,30 @@ INSTANTIATE_TEST_SUITE_P(
                                /*expected_has_hasbit=*/true,
                            }},
         // Test case: proto2 repeated fields
-        HasHasbitTestParam{R"pb(name: 'foo.proto'
-                                package: 'foo'
-                                syntax: 'proto2'
-                                message_type {
-                                  name: 'FooMessage'
-                                  field {
-                                    name: 'f'
-                                    number: 1
-                                    type: TYPE_STRING
-                                    label: LABEL_REPEATED
-                                  }
-                                }
-                           )pb",
-                           /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
-                               /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
-                           }},
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'proto2'
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     label: LABEL_REPEATED
+                   }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields()
+                    ? HasbitMode::kHintHasbit
+                    : HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+            }},
         // Test case: proto3 singular fields
         HasHasbitTestParam{R"pb(name: 'foo.proto'
                                 package: 'foo'
@@ -3347,24 +3354,30 @@ INSTANTIATE_TEST_SUITE_P(
                 /*expected_has_hasbit=*/true,
             }},
         // Test case: proto3 repeated fields
-        HasHasbitTestParam{R"pb(name: 'foo.proto'
-                                package: 'foo'
-                                syntax: 'proto3'
-                                message_type {
-                                  name: 'FooMessage'
-                                  field {
-                                    name: 'f'
-                                    number: 1
-                                    type: TYPE_STRING
-                                    label: LABEL_REPEATED
-                                  }
-                                }
-                           )pb",
-                           /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
-                               /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
-                           }},
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'proto3'
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     label: LABEL_REPEATED
+                   }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields()
+                    ? HasbitMode::kHintHasbit
+                    : HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+            }},
         // Test case: proto2 extension fields.
         // Note that extension fields don't have hasbits.
         HasHasbitTestParam{
@@ -3495,25 +3508,31 @@ INSTANTIATE_TEST_SUITE_P(
             }},
         // Test case: repeated fields.
         // Note that repeated fields can't specify presence.
-        HasHasbitTestParam{R"pb(name: 'foo.proto'
-                                package: 'foo'
-                                syntax: 'editions'
-                                edition: EDITION_2023
-                                message_type {
-                                  name: 'FooMessage'
-                                  field {
-                                    name: 'f'
-                                    number: 1
-                                    type: TYPE_STRING
-                                    label: LABEL_REPEATED
-                                  }
-                                }
-                           )pb",
-                           /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
-                               /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
-                           }},
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     label: LABEL_REPEATED
+                   }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields()
+                    ? HasbitMode::kHintHasbit
+                    : HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+            }},
         // Test case: extension fields.
         // Note that extension fields don't have hasbits.
         HasHasbitTestParam{

@@ -316,9 +316,13 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                                    : "_impl_._has_bits_";
 
   auto has_bits_array = absl::StrFormat("%s[%d]", has_bits, index);
-  auto has = absl::StrFormat("CheckHasBit(%s, %s)", has_bits_array, mask);
-  auto set = absl::StrFormat("SetHasBit(%s, %s);", has_bits_array, mask);
-  auto clr = absl::StrFormat("ClearHasBit(%s, %s);", has_bits_array, mask);
+  auto for_repeated = field->is_repeated() ? "ForRepeated" : "";
+  auto has = absl::StrFormat("CheckHasBit%s(%s, %s)", for_repeated,
+                             has_bits_array, mask);
+  auto set = absl::StrFormat("SetHasBit%s(%s, %s);", for_repeated,
+                             has_bits_array, mask);
+  auto clr = absl::StrFormat("ClearHasBit%s(%s, %s);", for_repeated,
+                             has_bits_array, mask);
 
   vars.emplace_back("has_bits_array", has_bits_array);
   vars.emplace_back("has_mask", mask);

@@ -16,6 +16,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -78,8 +79,31 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::DoOptimizeLayout(
   return ordered_fields;
 }
 
+// This function determines the order of the field hotness groups in the
+// message. The higher the number, the closer to the front of the message.
 constexpr size_t MessageLayoutHelper::FieldHotnessIndex(FieldHotness hotness) {
-  return static_cast<size_t>(hotness);
+  if constexpr (internal::EnableExperimentalHintHasBitsForRepeatedFields()) {
+    // Swap kFastParse and kRepeated so fast-parse fields are assigned the
+    // lowest hasbit indices.
+    switch (hotness) {
+      case FieldHotness::kSplit:
+        return 0;
+      case FieldHotness::kCold:
+        return 1;
+      case FieldHotness::kWarm:
+        return 2;
+      case FieldHotness::kHot:
+        return 3;
+      case FieldHotness::kRepeated:
+        return 4;
+      case FieldHotness::kFastParse:
+        return 5;
+      case FieldHotness::kMaxHotness:
+        internal::Unreachable();
+    }
+  } else {
+    return static_cast<size_t>(hotness);
+  }
 }
 
 MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
@@ -147,11 +171,13 @@ MessageLayoutHelper::BuildFieldAlignmentGroups(
       hotness = FieldHotness::kRepeated;
     } else {
       hotness = GetFieldHotness(field, options, scc_analyzer);
+    }
 
-      if (FieldHotness::kCold < hotness &&
-          IsFastPathField(field, fast_path_fields)) {
-        hotness = FieldHotness::kFastParse;
-      }
+    if (FieldHotness::kCold < hotness &&
+        IsFastPathField(field, fast_path_fields) &&
+        (internal::EnableExperimentalHintHasBitsForRepeatedFields() ||
+         !field->is_repeated())) {
+      hotness = FieldHotness::kFastParse;
     }
 
     FieldGroup fg = SingleFieldGroup(field);
