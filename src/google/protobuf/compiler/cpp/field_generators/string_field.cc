@@ -263,7 +263,7 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
               )cc");
             }}},
           R"cc(
-            $DEPRECATED$ const ::std::string& $name$() const;
+            [[nodiscard]] $DEPRECATED$ const ::std::string& $name$() const;
             //~ Using `Arg_ = const std::string&` will make the type of `arg`
             //~ default to `const std::string&`, due to reference collapse. This
             //~ is necessary because there are a handful of users that rely on
@@ -839,14 +839,15 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ const ::std::string& $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ const ::std::string& $name$(int index) const;
     $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$(int index);
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void set_$name$(int index, Arg_&& value, Args_... args);
     $DEPRECATED$ ::std::string* $nonnull$ $add_name$();
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
-    $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>&
+    $name$() const;
     $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>* $nonnull$ $mutable_name$();
 
     private:

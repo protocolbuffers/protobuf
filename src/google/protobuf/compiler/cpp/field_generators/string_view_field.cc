@@ -253,7 +253,7 @@ void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
               )cc");
             }}},
           R"cc(
-            $DEPRECATED$ ::absl::string_view $name$() const;
+            [[nodiscard]] $DEPRECATED$ ::absl::string_view $name$() const;
             template <typename Arg_ = ::std::string&&>
             $DEPRECATED$ void $set_name$(Arg_&& arg);
 
@@ -712,12 +712,13 @@ void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ ::absl::string_view $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ ::absl::string_view $name$(int index) const;
     template <typename Arg_ = ::std::string&&>
     $DEPRECATED$ void set_$name$(int index, Arg_&& value);
     template <typename Arg_ = ::std::string&&>
     $DEPRECATED$ void add_$name$(Arg_&& value);
-    $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>&
+    $name$() const;
     $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>* $nonnull$ $mutable_name$();
 
     private:

@@ -167,7 +167,7 @@ void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
-    $DEPRECATED$ $Type$ $name$() const;
+    [[nodiscard]] $DEPRECATED$ $Type$ $name$() const;
     $DEPRECATED$ void $set_name$($Type$ value);
 
     private:
@@ -469,10 +469,10 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
   auto va =
       p->WithVars(AnnotatedAccessors(field_, {"mutable_"}, Semantic::kAlias));
   p->Emit(R"cc(
-    $DEPRECATED$ $Type$ $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ $Type$ $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, $Type$ value);
     $DEPRECATED$ void $add_name$($Type$ value);
-    $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$() const;
     $DEPRECATED$ $pb$::RepeatedField<$Type$>* $nonnull$ $mutable_name$();
 
     private:

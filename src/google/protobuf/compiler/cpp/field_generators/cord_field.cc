@@ -156,8 +156,10 @@ void CordFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
 void CordFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$deprecated_attr$const ::absl::Cord& ${1$$name$$}$() const;\n",
-         field_);
+  format(
+      "[[nodiscard]] $deprecated_attr$const ::absl::Cord& ${1$$name$$}$() "
+      "const;\n",
+      field_);
   format(
       "$deprecated_attr$void ${1$set_$name$$}$(const ::absl::Cord& value);\n"
       "$deprecated_attr$void ${1$set_$name$$}$(::absl::string_view value);\n",

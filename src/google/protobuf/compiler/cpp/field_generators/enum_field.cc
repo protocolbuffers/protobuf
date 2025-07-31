@@ -151,7 +151,7 @@ void SingularEnum::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
-    $DEPRECATED$ $Enum$ $name$() const;
+    [[nodiscard]] $DEPRECATED$ $Enum$ $name$() const;
     $DEPRECATED$ void $set_name$($Enum$ value);
 
     private:
@@ -405,10 +405,10 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
 
   p->Emit(R"cc(
     public:
-    $DEPRECATED$ $Enum$ $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ $Enum$ $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, $Enum$ value);
     $DEPRECATED$ void $add_name$($Enum$ value);
-    $DEPRECATED$ const $pb$::RepeatedField<int>& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<int>& $name$() const;
     $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
 
     private:
