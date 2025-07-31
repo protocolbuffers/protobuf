@@ -134,7 +134,6 @@ cc_library(
         "//upb_generator/common:cpp_to_upb_def",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
-        "@abseil-cpp//absl/types:source_location",
         "@abseil-cpp//absl/types:span",
     ],
 )
