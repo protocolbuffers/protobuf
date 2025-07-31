@@ -713,7 +713,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     auto* f = maybe_create_lazy_extension_.load(std::memory_order_relaxed);
     return f != nullptr ? f(arena) : nullptr;
   }
-  static std::atomic<LazyMessageExtension* (*)(Arena* arena)>
+  static std::atomic<LazyMessageExtension* (*)(Arena * arena)>
       maybe_create_lazy_extension_;
 
   // We can't directly use std::atomic for Extension::cached_size because
