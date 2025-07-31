@@ -29,6 +29,20 @@ namespace cpp {
 
 class MessageSCCAnalyzer;
 
+// TODO: Merge kCold and kSplit once all field types can be
+// split.
+enum class FieldHotness {
+  kSplit,
+  kCold,
+  kWarm,
+  kHot,
+  kFastParse,  // Fast-parse eligible fields.
+  kRepeated,   // Non-split repeated fields.
+  kMaxHotness,
+};
+
+bool operator<(FieldHotness h1, FieldHotness h2);
+
 class FieldGroup {
  public:
   FieldGroup()
@@ -97,17 +111,8 @@ class MessageLayoutHelper {
   }
 
  protected:
-  // TODO: Merge kCold and kSplit once all field types can be
-  // split.
-  enum FieldHotness {
-    kSplit,
-    kCold,
-    kWarm,
-    kHot,
-    kFastParse,  // Fast-parse eligible fields.
-    kRepeated,   // Non-split repeated fields.
-    kMaxHotness,
-  };
+  static constexpr size_t kMaxHotness =
+      static_cast<size_t>(FieldHotness::kMaxHotness);
 
   // Reorder 'fields' so that if the fields are output into a C++ class in the
   // new order, fields of similar family (see below) are together and within
