@@ -44,9 +44,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
     Internal.EnumLiteMap<?> getEnumType();
 
+    boolean internalMessageIsImmutable(Object message);
+
     // If getLiteJavaType() == MESSAGE, this merges a message object of the
-    // type into a builder of the type.  Returns {@code to}.
-    MessageLite.Builder internalMergeFrom(MessageLite.Builder to, MessageLite from);
+    // type into a mutable message of the type.  Requires that isMessageImmutable(to) is false.
+    // builder.
+    void internalMergeFrom(Object to, Object from);
   }
 
   private final SmallSortedMap<T, Object> fields;
@@ -569,11 +572,13 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           // Extract the actual value for lazy fields.
           otherValue = ((LazyField) otherValue).getValue();
         }
-          value =
-              descriptor
-                  .internalMergeFrom(((MessageLite) value).toBuilder(), (MessageLite) otherValue)
-                  .build();
-        fields.put(descriptor, value);
+        if (descriptor.internalMessageIsImmutable(value)) {
+          MessageLite.Builder builder = ((MessageLite) value).toBuilder();
+          descriptor.internalMergeFrom(builder, otherValue);
+          fields.put(descriptor, builder.build());
+        } else {
+          descriptor.internalMergeFrom(value, otherValue);
+        }
       }
     } else {
       if (isLazyField) {
@@ -1385,14 +1390,13 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
             // Extract the actual value for lazy fields.
             otherValue = ((LazyField) otherValue).getValue();
           }
-          if (value instanceof MessageLite.Builder) {
-            descriptor.internalMergeFrom((MessageLite.Builder) value, (MessageLite) otherValue);
-          } else {
-            value =
-                descriptor
-                    .internalMergeFrom(((MessageLite) value).toBuilder(), (MessageLite) otherValue)
-                    .build();
+          if (descriptor.internalMessageIsImmutable(value)) {
+            MessageLite.Builder builder = ((MessageLite) value).toBuilder();
+            descriptor.internalMergeFrom(builder, otherValue);
+            value = builder.build();
             fields.put(descriptor, value);
+          } else {
+            descriptor.internalMergeFrom(value, otherValue);
           }
         }
       } else {

@@ -2134,12 +2134,16 @@ public final class Descriptors {
       resolveFeatures(proto.getOptions().getFeatures());
     }
 
+    @Override
+    public boolean internalMessageIsImmutable(Object message) {
+      return message instanceof MessageLite;
+    }
+
     /** For internal use only. This is to satisfy the FieldDescriptorLite interface. */
     @Override
-    public MessageLite.Builder internalMergeFrom(MessageLite.Builder to, MessageLite from) {
-      // FieldDescriptors are only used with non-lite messages so we can just
-      // down-cast and call mergeFrom directly.
-      return ((Message.Builder) to).mergeFrom((Message) from);
+    public void internalMergeFrom(Object to, Object from) {
+
+      ((Message.Builder) to).mergeFrom((Message) from);
     }
   }
 
