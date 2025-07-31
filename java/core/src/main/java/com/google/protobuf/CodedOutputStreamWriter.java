@@ -23,7 +23,7 @@ final class CodedOutputStreamWriter implements Writer {
 
   public static CodedOutputStreamWriter forCodedOutput(CodedOutputStream output) {
     if (output.wrapper != null) {
-      return output.wrapper;
+      return (CodedOutputStreamWriter) output.wrapper;
     }
     return new CodedOutputStreamWriter(output);
   }

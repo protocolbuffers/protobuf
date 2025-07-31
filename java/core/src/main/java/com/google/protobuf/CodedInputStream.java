@@ -53,7 +53,7 @@ public abstract class CodedInputStream {
   int sizeLimit = DEFAULT_SIZE_LIMIT;
 
   /** Used to adapt to the experimental {@link Reader} interface. */
-  CodedInputStreamReader wrapper;
+  Object wrapper;
 
   /** Create a new CodedInputStream wrapping the given InputStream. */
   public static CodedInputStream newInstance(final InputStream input) {

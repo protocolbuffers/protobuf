@@ -39,7 +39,7 @@ public abstract class CodedOutputStream extends ByteOutput {
   private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS = UnsafeUtil.hasUnsafeArrayOperations();
 
   /** Used to adapt to the experimental {@link Writer} interface. */
-  CodedOutputStreamWriter wrapper;
+  Object wrapper;
 
   /**
    * @deprecated Use {@link #computeFixed32SizeNoTag(int)} instead.
