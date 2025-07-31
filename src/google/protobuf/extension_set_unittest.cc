@@ -1564,7 +1564,7 @@ TEST_P(FindExtensionTest,
   EXPECT_FALSE(was_packed_on_wire);
 }
 
-TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumber_ExtensionNotFound) {
+TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumberExtensionNotFound) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = 9999;  // Non-existent field number
@@ -1576,7 +1576,7 @@ TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumber_ExtensionNotFound) {
       wire_type, field_number, &extension_info, &was_packed_on_wire));
 }
 
-TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumber_WireTypeMismatch) {
+TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumberWireTypeMismatch) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = unittest::kOptionalInt32ExtensionFieldNumber;
@@ -1588,7 +1588,7 @@ TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumber_WireTypeMismatch) {
       wire_type, field_number, &extension_info, &was_packed_on_wire));
 }
 
-TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumber_PackedExtension) {
+TEST_P(FindExtensionTest, FindExtensionInfoFromFieldNumberPackedExtension) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = unittest::kPackedInt32ExtensionFieldNumber;
@@ -1625,7 +1625,7 @@ TEST_P(FindExtensionTest,
   EXPECT_FALSE(was_packed_on_wire);
 }
 
-TEST_P(FindExtensionTest, FindExtension_FindExistingExtension) {
+TEST_P(FindExtensionTest, FindExtensionFindExistingExtension) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = unittest::kOptionalInt32ExtensionFieldNumber;
@@ -1641,7 +1641,7 @@ TEST_P(FindExtensionTest, FindExtension_FindExistingExtension) {
   EXPECT_FALSE(was_packed_on_wire);
 }
 
-TEST_P(FindExtensionTest, FindExtension_ExtensionNotFound) {
+TEST_P(FindExtensionTest, FindExtensionExtensionNotFound) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = 9999;  // Non-existent field number
@@ -1653,7 +1653,7 @@ TEST_P(FindExtensionTest, FindExtension_ExtensionNotFound) {
                                  &was_packed_on_wire));
 }
 
-TEST_P(FindExtensionTest, FindExtension_WireTypeMismatch) {
+TEST_P(FindExtensionTest, FindExtensionWireTypeMismatch) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = unittest::kOptionalInt32ExtensionFieldNumber;
@@ -1665,7 +1665,7 @@ TEST_P(FindExtensionTest, FindExtension_WireTypeMismatch) {
                                  &was_packed_on_wire));
 }
 
-TEST_P(FindExtensionTest, FindExtension_PackedExtension) {
+TEST_P(FindExtensionTest, FindExtensionPackedExtension) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = unittest::kPackedInt32ExtensionFieldNumber;
@@ -1684,7 +1684,7 @@ TEST_P(FindExtensionTest, FindExtension_PackedExtension) {
   EXPECT_TRUE(was_packed_on_wire);
 }
 
-TEST_P(FindExtensionTest, FindExtension_UnpackedRepeatedExtension) {
+TEST_P(FindExtensionTest, FindExtensionUnpackedRepeatedExtension) {
   ExtensionInfo extension_info;
   bool was_packed_on_wire;
   const int field_number = unittest::kRepeatedInt32ExtensionFieldNumber;

@@ -1099,10 +1099,10 @@ class PROTOBUF_EXPORT ExtensionSet {
 
     ABSL_DCHECK(extension->type > 0 &&
                 extension->type <= WireFormatLite::MAX_FIELD_TYPE);
-    auto real_type = static_cast<WireFormatLite::FieldType>(extension->type);
+    auto schema_type = static_cast<WireFormatLite::FieldType>(extension->type);
 
     WireFormatLite::WireType expected_wire_type =
-        WireFormatLite::WireTypeForFieldType(real_type);
+        WireFormatLite::WireTypeForFieldType(schema_type);
 
     // Check if this is a packed field.
     *was_packed_on_wire = false;
