@@ -29,6 +29,8 @@ config_setting(
     name = "windows",
     constraint_values = ["@platforms//os:windows"],
     visibility = [
+        "//hpb:__subpackages__",
+        "//hpb_generator:__subpackages__",
         "//lua:__pkg__",
         "//python:__pkg__",
         "//upb:__subpackages__",
