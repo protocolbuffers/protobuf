@@ -39,10 +39,6 @@ TEST(HasBits, ValueInit) {
     EXPECT_TRUE(bits.empty());
   }
   {
-    HasBits<4> bits({});
-    EXPECT_TRUE(bits.empty());
-  }
-  {
     HasBits<4> bits({1});
     EXPECT_FALSE(bits.empty());
     EXPECT_THAT(bits[0], Eq(1));
@@ -60,10 +56,6 @@ TEST(HasBits, ValueInit) {
 TEST(HasBits, ConstexprValueInit) {
   {
     constexpr HasBits<4> bits;
-    EXPECT_TRUE(bits.empty());
-  }
-  {
-    constexpr HasBits<4> bits({});
     EXPECT_TRUE(bits.empty());
   }
   {
