@@ -48,6 +48,8 @@ config_setting(
     name = "fasttable_enabled_setting",
     flag_values = {"//upb:fasttable_enabled": "true"},
     visibility = [
+        "//hpb:__subpackages__",
+        "//hpb_generator:__subpackages__",
         "//lua:__pkg__",
         "//python:__pkg__",
         "//upb:__subpackages__",
