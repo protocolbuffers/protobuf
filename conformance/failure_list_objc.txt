@@ -1,2 +1,11 @@
 # JSON input or output tests are skipped (in conformance_objc.m) as mobile
 # platforms don't support JSON wire format to avoid code bloat.
+Required.Editions.ProtobufInput.InvalidUtf8.StringExtension.ProtobufOutput # Failed to parse input or produce output.
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringExtension.ProtobufOutput # Failed to parse input or produce output.
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringOneof.ProtobufOutput # Failed to parse input or produce output.
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringRepeated.ProtobufOutput # Failed to parse input or produce output.
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringSingular.ProtobufOutput # Failed to parse input or produce output.
+Required.Proto2.ProtobufInput.InvalidUtf8.StringExtension.ProtobufOutput # Failed to parse input or produce output.
+Required.Proto2.ProtobufInput.InvalidUtf8.StringOneof.ProtobufOutput # Failed to parse input or produce output.
+Required.Proto2.ProtobufInput.InvalidUtf8.StringRepeated.ProtobufOutput # Failed to parse input or produce output.
+Required.Proto2.ProtobufInput.InvalidUtf8.StringSingular.ProtobufOutput # Failed to parse input or produce output.

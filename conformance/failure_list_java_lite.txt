@@ -6,3 +6,12 @@
 
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE                               # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE                                  # Should have failed to parse, but didn't.
+Required.Editions.ProtobufInput.InvalidUtf8.StringExtension.ProtobufOutput # Output was not equivalent to reference message: modified: (protobuf_test_messages.editions.extension_string): "\240\260\300\320"
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringExtension.ProtobufOutput # Output was not equivalent to reference message: Expect: \252\010\004\240\260\300\320, but got: \252\010\014\357\277\275\357\277\
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringOneof.ProtobufOutput # Output was not equivalent to reference message: Expect: \212\007\004\240\260\300\320, but got: \212\007\014\357\277\275\357\277\
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringRepeated.ProtobufOutput # Output was not equivalent to reference message: Expect: \342\002\004\240\260\300\320, but got: \342\002\014\357\277\275\357\277\
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringSingular.ProtobufOutput # Output was not equivalent to reference message: Expect: \162\004\240\260\300\320, but got: \162\014\357\277\275\357\277\275\357\
+Required.Proto2.ProtobufInput.InvalidUtf8.StringExtension.ProtobufOutput # Output was not equivalent to reference message: Expect: \252\010\004\240\260\300\320, but got: \252\010\014\357\277\275\357\277\
+Required.Proto2.ProtobufInput.InvalidUtf8.StringOneof.ProtobufOutput # Output was not equivalent to reference message: Expect: \212\007\004\240\260\300\320, but got: \212\007\014\357\277\275\357\277\
+Required.Proto2.ProtobufInput.InvalidUtf8.StringRepeated.ProtobufOutput # Output was not equivalent to reference message: Expect: \342\002\004\240\260\300\320, but got: \342\002\014\357\277\275\357\277\
+Required.Proto2.ProtobufInput.InvalidUtf8.StringSingular.ProtobufOutput # Output was not equivalent to reference message: Expect: \162\004\240\260\300\320, but got: \162\014\357\277\275\357\277\275\357\
