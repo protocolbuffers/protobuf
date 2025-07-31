@@ -17,7 +17,9 @@ on:
         type: string
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test staleness
