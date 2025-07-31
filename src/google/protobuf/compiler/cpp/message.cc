@@ -694,10 +694,13 @@ MessageGenerator::MessageGenerator(
 
 bool MessageGenerator::ShouldGenerateEnclosingIf(
     const FieldDescriptor& field) const {
-  return HasBitIndex(&field) != kNoHasbit &&
-         (field.is_repeated() ||
-          field.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-          field.cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+  if (HasBitIndex(&field) == kNoHasbit) return false;
+  // Always check hasbits for repeated fields since likely repeated fields,
+  // which aren't assigned hasbits, would bail in the previous check.
+  if (field.is_repeated()) return true;
+  // Always check hasbits for message and string fields before clearing them.
+  return field.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+         field.cpp_type() == FieldDescriptor::CPPTYPE_STRING;
 }
 
 size_t MessageGenerator::HasBitsSize() const {
@@ -3304,8 +3307,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto generate_copy_fields = [&] {
     for (auto it = begin; it != end; ++it) {
-      const auto& gen = field_generators_.get(*it);
-      auto v = p->WithVars(FieldVars(*it, options_));
+      const auto* field = *it;
+      const auto& gen = field_generators_.get(field);
+      auto v = p->WithVars(FieldVars(field, options_));
 
       // Non trivial field values are copy constructed
       if (!gen.has_trivial_value() || gen.should_split()) {
@@ -3315,9 +3319,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
       if (gen.is_message()) {
         emit_pending_copy_fields(it, false);
-        emit_copy_message(*it);
+        emit_copy_message(field);
       } else if (first == nullptr) {
-        first = *it;
+        first = field;
       }
     }
     emit_pending_copy_fields(end, false);

@@ -114,7 +114,8 @@ absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
                           msg->GetTypeName(), FieldNumber(table, &entry)));
     };
     const auto cardinality = entry.type_card & fl::kFcMask;
-    if (cardinality == fl::kFcSingular || cardinality == fl::kFcOneof) {
+    if (cardinality == fl::kFcSingular || cardinality == fl::kFcOneof ||
+        entry.has_idx == kNoHasbit) {
       continue;
     }
     if (!EnableExperimentalHintHasBitsForRepeatedFields() &&

@@ -3265,7 +3265,8 @@ void Reflection::ClearHasBit(Message* message,
 void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
                                  const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
-  if (!schema_.HasHasbits()) {
+  if (!schema_.HasHasbits() ||
+      schema_.HasBitIndex(field) == static_cast<uint32_t>(kNoHasbit)) {
     return;
   }
   const Reflection* r1 = message1->GetReflection();
@@ -3621,7 +3622,9 @@ void Reflection::PopulateTcParseEntries(
       entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
     } else if (schema_.HasHasbits()) {
       entries->has_idx =
-          static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
+          entry.hasbit_idx >= 0
+              ? static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx)
+              : kNoHasbit;
     } else {
       entries->has_idx = 0;
     }
