@@ -38,7 +38,15 @@ auto FindIncompleteBlock(std::vector<FieldGroup>& aligned_to_8) {
   });
 }
 
+constexpr size_t FieldHotnessIndex(FieldHotness hotness) {
+  return static_cast<size_t>(hotness);
+}
+
 }  // namespace
+
+bool operator<(FieldHotness h1, FieldHotness h2) {
+  return FieldHotnessIndex(h1) < FieldHotnessIndex(h2);
+}
 
 void FieldGroup::Append(const FieldGroup& other) {
   UpdatePreferredLocationAndInsertOtherFields(other);
@@ -138,27 +146,31 @@ MessageLayoutHelper::BuildFieldAlignmentGroups(
 
     FieldHotness hotness;
     if (ShouldSplit(field, options)) {
-      hotness = kSplit;
+      hotness = FieldHotness::kSplit;
     } else if (field->is_repeated()) {
-      hotness = kRepeated;
+      hotness = FieldHotness::kRepeated;
     } else {
       hotness = GetFieldHotness(field, options, scc_analyzer);
 
-      if (hotness != kCold && IsFastPathField(field, fast_path_fields)) {
-        hotness = kFastParse;
+      if (FieldHotness::kCold < hotness &&
+          IsFastPathField(field, fast_path_fields)) {
+        hotness = FieldHotness::kFastParse;
       }
     }
 
     FieldGroup fg = SingleFieldGroup(field);
     switch (EstimateAlignmentSize(field)) {
       case 1:
-        field_alignment_groups.aligned_to_1[f][hotness].push_back(fg);
+        field_alignment_groups.aligned_to_1[f][FieldHotnessIndex(hotness)]
+            .push_back(fg);
         break;
       case 4:
-        field_alignment_groups.aligned_to_4[f][hotness].push_back(fg);
+        field_alignment_groups.aligned_to_4[f][FieldHotnessIndex(hotness)]
+            .push_back(fg);
         break;
       case 8:
-        field_alignment_groups.aligned_to_8[f][hotness].push_back(fg);
+        field_alignment_groups.aligned_to_8[f][FieldHotnessIndex(hotness)]
+            .push_back(fg);
         break;
       default:
         ABSL_LOG(FATAL) << "Unknown alignment size "
@@ -356,16 +368,19 @@ void MessageLayoutHelper::FillPaddingFromPartition(
 
 void MessageLayoutHelper::MaybeMergeHotIntoFast(
     FieldPartitionArray& field_groups) {
+  const size_t kFastParseIdx = FieldHotnessIndex(FieldHotness::kFastParse);
+  const size_t kHotIdx = FieldHotnessIndex(FieldHotness::kHot);
+
   size_t num_fast_fields = 0;
   for (size_t f = 0; f < kMaxFamily; ++f) {
-    for (const auto& group : field_groups[f][kFastParse]) {
+    for (const auto& group : field_groups[f][kFastParseIdx]) {
       num_fast_fields += group.num_fields();
     }
   }
 
   size_t num_hot_fields = 0;
   for (size_t f = 0; f < kMaxFamily; ++f) {
-    for (const auto& group : field_groups[f][kHot]) {
+    for (const auto& group : field_groups[f][kHotIdx]) {
       num_hot_fields += group.num_fields();
     }
   }
@@ -373,18 +388,18 @@ void MessageLayoutHelper::MaybeMergeHotIntoFast(
   if (num_fast_fields + num_hot_fields <=
       internal::TailCallTableInfo::kMaxFastFieldHasbitIndex + 1) {
     for (size_t f = 0; f < kMaxFamily; ++f) {
-      if (field_groups[f][kHot].empty()) {
+      if (field_groups[f][kHotIdx].empty()) {
         continue;
       }
 
-      FillPaddingFromPartition(field_groups[f][kFastParse],
-                               field_groups[f][kHot], /*alignment=*/8);
+      FillPaddingFromPartition(field_groups[f][kFastParseIdx],
+                               field_groups[f][kHotIdx], /*alignment=*/8);
 
       // Append all remaining hot fields to the end of the fast parse group.
-      field_groups[f][kFastParse].insert(field_groups[f][kFastParse].end(),
-                                         field_groups[f][kHot].begin(),
-                                         field_groups[f][kHot].end());
-      field_groups[f][kHot].clear();
+      field_groups[f][kFastParseIdx].insert(
+          field_groups[f][kFastParseIdx].end(),
+          field_groups[f][kHotIdx].begin(), field_groups[f][kHotIdx].end());
+      field_groups[f][kHotIdx].clear();
     }
   }
 }

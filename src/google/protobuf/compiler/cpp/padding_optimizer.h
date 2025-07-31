@@ -39,7 +39,7 @@ class PaddingOptimizer final : public MessageLayoutHelper {
       const FieldDescriptor* field, const Options& options,
       MessageSCCAnalyzer* scc_analyzer) const override {
     // Assume all fields are hot.
-    return kHot;
+    return FieldHotness::kHot;
   }
 
   FieldGroup SingleFieldGroup(const FieldDescriptor* field) const override {
