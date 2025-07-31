@@ -177,7 +177,7 @@ def build_targets(name):
     compile_edition_defaults(
         name = "python_edition_defaults",
         srcs = ["//:descriptor_proto"],
-        maximum_edition = "2023",
+        maximum_edition = "2024",
         minimum_edition = "PROTO2",
     )
 
