@@ -332,8 +332,8 @@ JavaFeatures::~JavaFeatures() {
 }
 inline void JavaFeatures::SharedDtor(MessageLite& self) {
   JavaFeatures& this_ = static_cast<JavaFeatures&>(self);
-  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
-    this_.VerifyHasBitConsistency();
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
@@ -469,8 +469,8 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   const JavaFeatures& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
-    this_.VerifyHasBitConsistency();
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    this_.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(serialize_to_array_start:pb.JavaFeatures)
   ::uint32_t cached_has_bits = 0;
@@ -559,8 +559,8 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
    auto* const _this =
       static_cast<JavaFeatures*>(&to_msg);
   auto& from = static_cast<const JavaFeatures&>(from_msg);
-  if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
-    from.VerifyHasBitConsistency();
+  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+    from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.JavaFeatures)
   ABSL_DCHECK_NE(&from, _this);
