@@ -27,9 +27,15 @@ load("@bazel_features//:deps.bzl", "bazel_features_deps")
 
 bazel_features_deps()
 
-load("@rules_python//python:repositories.bzl", "py_repositories")
+load("@rules_python//python:repositories.bzl", "py_repositories", "python_register_toolchains")
 
 py_repositories()
+
+python_register_toolchains(
+    name = "python_latest",
+    python_version = "3.12",
+)
+#register_toolchains("@rules_python//python/runtime_env_toolchains:all")
 
 # Bazel platform rules.
 http_archive(
