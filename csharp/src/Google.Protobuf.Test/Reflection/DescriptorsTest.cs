@@ -27,6 +27,23 @@ namespace Google.Protobuf.Reflection
     public class DescriptorsTest
     {
         [Test]
+        public void CreateTemplate_Typed()
+        {
+            var wktStructParser = WellKnownTypes.Struct.Parser;
+            var template = wktStructParser.CreateTemplate();
+            Assert.AreEqual(template, new WellKnownTypes.Struct());
+        }
+
+        [Test]
+        public void CreateTemplate_Untyped()
+        {
+            IMessage original = new WellKnownTypes.Struct();
+            var parser = original.Descriptor.Parser;
+            var template = parser.CreateTemplate();
+            Assert.AreEqual(template, new WellKnownTypes.Struct());
+        }
+
+        [Test]
         public void FileDescriptor_GeneratedCode()
         {
             TestFileDescriptor(
