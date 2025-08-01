@@ -313,6 +313,9 @@ PyObject* CheckString(PyObject* arg, const FieldDescriptor* descriptor);
 bool CheckAndSetString(PyObject* arg, Message* message,
                        const FieldDescriptor* descriptor,
                        const Reflection* reflection, bool append, int index);
+// TODO: raise error in 2026 Q1 release
+// FormatTypeError(arg, "int");
+void CheckIntegerWithBool(PyObject* arg, const FieldDescriptor* field_des);
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
                          absl::string_view value);
 
