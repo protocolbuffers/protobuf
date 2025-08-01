@@ -80,8 +80,8 @@ def _proto_library_impl(ctx):
             if not proto.allow_exports[_PackageSpecificationInfo].contains(ctx.label):
                 fail("proto_library '%s' can't be reexported in package '//%s'" % (proto.direct_descriptor_set.owner, ctx.label.package))
 
-    if len(ctx.attr.extension_declarations) > 0 and ctx.label.package != "net/proto2/bridge/proto":
-        fail("extension_declarations: this attribute is only allowed on //net/proto2/bridge/proto:message_set")
+    if len(ctx.attr.extension_declarations) > 0 and not ctx.label.package.startswith("net/proto2/"):
+        fail("extension_declarations: this attribute is only allowed on protos under net/proto2/")
 
     proto_path, virtual_srcs = _process_srcs(ctx, srcs, import_prefix, strip_import_prefix)
     descriptor_set = ctx.actions.declare_file(ctx.label.name + "-descriptor-set.proto.bin")

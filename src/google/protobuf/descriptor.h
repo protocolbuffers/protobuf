@@ -2682,11 +2682,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   // just the global and C++ features, but can be overridden for other runtimes.
   std::unique_ptr<FeatureSetDefaults> feature_set_defaults_spec_;
 
-  // Returns true if the field extends an option message of descriptor.proto.
-  bool IsReadyForCheckingDescriptorExtDecl(
-      absl::string_view message_name) const;
-
-
   bool ResolvesFeaturesForImpl(int extension_number) const;
 
   const FeatureSetDefaults& GetFeatureSetDefaults() const;
