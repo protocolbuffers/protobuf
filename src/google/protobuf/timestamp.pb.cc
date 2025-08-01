@@ -373,7 +373,7 @@ void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Timestamp::CopyFrom(const Timestamp& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Timestamp)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Timestamp)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

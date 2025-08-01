@@ -596,7 +596,7 @@ void DoubleValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void DoubleValue::CopyFrom(const DoubleValue& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DoubleValue)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DoubleValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -841,7 +841,7 @@ void FloatValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void FloatValue::CopyFrom(const FloatValue& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FloatValue)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FloatValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1087,7 +1087,7 @@ void Int64Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Int64Value::CopyFrom(const Int64Value& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Int64Value)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Int64Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1333,7 +1333,7 @@ void UInt64Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void UInt64Value::CopyFrom(const UInt64Value& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UInt64Value)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UInt64Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1579,7 +1579,7 @@ void Int32Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Int32Value::CopyFrom(const Int32Value& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Int32Value)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Int32Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1825,7 +1825,7 @@ void UInt32Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void UInt32Value::CopyFrom(const UInt32Value& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UInt32Value)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UInt32Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2070,7 +2070,7 @@ void BoolValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void BoolValue::CopyFrom(const BoolValue& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.BoolValue)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.BoolValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2341,7 +2341,7 @@ void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void StringValue::CopyFrom(const StringValue& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.StringValue)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.StringValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2609,7 +2609,7 @@ void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void BytesValue::CopyFrom(const BytesValue& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.BytesValue)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.BytesValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

@@ -773,7 +773,7 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Api::CopyFrom(const Api& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Api)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Api)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1318,7 +1318,7 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Method::CopyFrom(const Method& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Method)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Method)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1644,7 +1644,7 @@ void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Mixin::CopyFrom(const Mixin& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Mixin)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Mixin)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

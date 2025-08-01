@@ -358,7 +358,7 @@ void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void SourceContext::CopyFrom(const SourceContext& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceContext)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceContext)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

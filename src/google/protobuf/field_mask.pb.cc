@@ -345,7 +345,7 @@ void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void FieldMask::CopyFrom(const FieldMask& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldMask)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldMask)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

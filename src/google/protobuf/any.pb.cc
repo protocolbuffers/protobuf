@@ -418,7 +418,7 @@ void Any::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Any::CopyFrom(const Any& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Any)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Any)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

@@ -578,7 +578,7 @@ void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Struct::CopyFrom(const Struct& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Struct)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Struct)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1049,7 +1049,7 @@ void Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Value::CopyFrom(const Value& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Value)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1313,7 +1313,7 @@ void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void ListValue::CopyFrom(const ListValue& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ListValue)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ListValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

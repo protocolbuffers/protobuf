@@ -860,7 +860,7 @@ void Type::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Type::CopyFrom(const Type& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Type)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Type)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1462,7 +1462,7 @@ void Field::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Field::CopyFrom(const Field& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Field)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Field)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1943,7 +1943,7 @@ void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Enum::CopyFrom(const Enum& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Enum)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Enum)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2302,7 +2302,7 @@ void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void EnumValue::CopyFrom(const EnumValue& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValue)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2626,7 +2626,7 @@ void Option::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Option::CopyFrom(const Option& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Option)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Option)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

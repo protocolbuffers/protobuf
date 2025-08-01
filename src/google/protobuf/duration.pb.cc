@@ -373,7 +373,7 @@ void Duration::MergeImpl(::google::protobuf::MessageLite& to_msg,
 }
 
 void Duration::CopyFrom(const Duration& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Duration)
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Duration)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
