@@ -22,6 +22,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 
 #ifndef PyVarObject_HEAD_INIT
 #define PyVarObject_HEAD_INIT(type, size) PyObject_HEAD_INIT(type) size,
@@ -596,6 +597,18 @@ bool CheckAndGetBool(PyObject* arg, bool* value) {
   *value = static_cast<bool>(long_value);
 
   return true;
+}
+
+void CheckIntegerWithBool(PyObject* arg, const FieldDescriptor* field_des) {
+  static int bool_warning_count = 100;
+  if (bool_warning_count > 0 && (!strcmp(Py_TYPE(arg)->tp_name, "bool"))) {
+    --bool_warning_count;
+    std::string error_msg =
+        absl::StrCat(field_des->full_name(),
+                     ": Expected an int, got a boolean. This "
+                     "will be rejected in 7.34.0, please fix it before that");
+    PyErr_WarnEx(PyExc_DeprecationWarning, error_msg.c_str(), 3);
+  }
 }
 
 // Checks whether the given object (which must be "bytes" or "unicode") contains
@@ -2254,21 +2267,25 @@ int InternalSetNonOneofScalar(Message* message,
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetUInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetUInt64(message, field_descriptor, value);
       break;
     }
@@ -2296,6 +2313,7 @@ int InternalSetNonOneofScalar(Message* message,
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetEnumValue(message, field_descriptor, value);
       } else {

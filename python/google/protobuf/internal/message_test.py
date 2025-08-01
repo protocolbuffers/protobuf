@@ -1431,6 +1431,115 @@ class MessageTest(unittest.TestCase):
         'TestAllTypes.NestedMessage', nested.__class__.__qualname__
     )
 
+  def testAssignBoolToEnum(self, message_module):
+    # TODO: change warning into error in 2026 Q1
+    # with self.assertRaises(TypeError):
+    with warnings.catch_warnings(record=True) as w:
+      m = message_module.TestAllTypes(optional_nested_enum=True)
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.optional_nested_enum, 1)
+
+    m = message_module.TestAllTypes(optional_nested_enum=2)
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_nested_enum = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.optional_nested_enum, 1)
+
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_nested_enum = 2
+      self.assertFalse(w)
+    self.assertEqual(m.optional_nested_enum, 2)
+
+  def testBoolToRepeatedEnum(self, message_module):
+    with warnings.catch_warnings(record=True) as w:
+      m = message_module.TestAllTypes(repeated_nested_enum=[True])
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.repeated_nested_enum, [1])
+
+    m = message_module.TestAllTypes()
+    with warnings.catch_warnings(record=True) as w:
+      m.repeated_nested_enum.append(True)
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.repeated_nested_enum, [1])
+
+  def testBoolToOneofEnum(self, message_module):
+    m = unittest_pb2.TestOneof2()
+    with warnings.catch_warnings(record=True) as w:
+      m.foo_enum = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.foo_enum, 1)
+
+  def testBoolToMapEnum(self, message_module):
+    m = map_unittest_pb2.TestMap()
+    with warnings.catch_warnings(record=True) as w:
+      m.map_int32_enum[10] = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.map_int32_enum[10], 1)
+
+  def testBoolToExtensionEnum(self, message_module):
+    m = unittest_pb2.TestAllExtensions()
+    with warnings.catch_warnings(record=True) as w:
+      m.Extensions[unittest_pb2.optional_nested_enum_extension] = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(
+        m.Extensions[unittest_pb2.optional_nested_enum_extension], 1
+    )
+
+  def testAssignBoolToInt(self, message_module):
+    with warnings.catch_warnings(record=True) as w:
+      m = message_module.TestAllTypes(optional_int32=True)
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.optional_int32, 1)
+
+    m = message_module.TestAllTypes(optional_uint32=123)
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_uint32 = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.optional_uint32, 1)
+
+    with warnings.catch_warnings(record=True) as w:
+      m.optional_uint32 = 321
+      self.assertFalse(w)
+    self.assertEqual(m.optional_uint32, 321)
+
+  def testAssignBoolToRepeatedInt(self, message_module):
+    with warnings.catch_warnings(record=True) as w:
+      m = message_module.TestAllTypes(repeated_int64=[True])
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.repeated_int64, [1])
+
+    m = message_module.TestAllTypes()
+    with warnings.catch_warnings(record=True) as w:
+      m.repeated_int64.append(True)
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.repeated_int64, [1])
+
+  def testAssignBoolToOneofInt(self, message_module):
+    m = unittest_pb2.TestOneof2()
+    with warnings.catch_warnings(record=True) as w:
+      m.foo_int = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.foo_int, 1)
+
+  def testAssignBoolToMapInt(self, message_module):
+    m = map_unittest_pb2.TestMap()
+    with warnings.catch_warnings(record=True) as w:
+      m.map_int32_int32[10] = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.map_int32_int32[10], 1)
+
+    with warnings.catch_warnings(record=True) as w:
+      m.map_int32_int32[True] = 1
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.map_int32_int32[1], 1)
+
+  def testAssignBoolToExtensionInt(self, message_module):
+    m = unittest_pb2.TestAllExtensions()
+    with warnings.catch_warnings(record=True) as w:
+      m.Extensions[unittest_pb2.optional_int32_extension] = True
+      self.assertIn('bool', str(w[0].message))
+    self.assertEqual(m.Extensions[unittest_pb2.optional_int32_extension], 1)
+
 
 @testing_refleaks.TestCase
 class TestRecursiveGroup(unittest.TestCase):
