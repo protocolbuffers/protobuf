@@ -1855,8 +1855,14 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   //    (Message, Message)            # for regular messages
   //    (Message, Message, WktBase)   # For well-known types
   PyObject* wkt_bases = PyUpb_GetWktBases(state);
+#ifdef Py_GIL_DISABLED
+  PyObject* wkt_base;
+  status = PyDict_GetItemStringRef(wkt_bases, upb_MessageDef_FullName(msgdef), &wkt_base);
+  if (status == -1) return NULL;
+#else
   PyObject* wkt_base =
       PyDict_GetItemString(wkt_bases, upb_MessageDef_FullName(msgdef));
+#endif
   PyObject* args;
   if (wkt_base == NULL) {
     args = Py_BuildValue("s(OO)O", name, state->cmessage_type,
@@ -1865,6 +1871,9 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
     args = Py_BuildValue("s(OOO)O", name, state->cmessage_type,
                          state->message_class, wkt_base, dict);
   }
+#ifdef Py_GIL_DISABLED
+  Py_DECREF(wkt_base);
+#endif
 
   PyObject* ret = cpython_bits.type_new(state->message_meta_type, args, NULL);
   Py_DECREF(args);
@@ -1906,7 +1915,13 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
   }
 
   // Check dict['DESCRIPTOR']
+#ifdef Py_GIL_DISABLED
+  PyObject* py_descriptor;
+  int status = PyDict_GetItemStringRef(dict, "DESCRIPTOR", &py_descriptor);
+  if (status == -1) return NULL;
+#else
   PyObject* py_descriptor = PyDict_GetItemString(dict, "DESCRIPTOR");
+#endif
   if (py_descriptor == NULL) {
     PyErr_SetString(PyExc_TypeError, "Message class has no DESCRIPTOR");
     return NULL;
@@ -1915,7 +1930,12 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
   const upb_MessageDef* m = PyUpb_Descriptor_GetDef(py_descriptor);
   PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
   if (ret) return ret;
-  return PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
+
+  PyObject* cls = PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
+#ifdef Py_GIL_DISABLED
+  Py_DECREF(py_descriptor);
+#endif
+  return cls;
 }
 
 static void PyUpb_MessageMeta_Dealloc(PyObject* self) {
