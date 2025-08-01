@@ -263,7 +263,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename T>
   PROTOBUF_NDEBUG_INLINE static T* PROTOBUF_NONNULL
   CreateArray(Arena* PROTOBUF_NULLABLE arena, size_t num_elements) {
-    static_assert(std::is_trivial<T>::value,
+    static_assert(std::is_trivially_default_constructible<T>::value,
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
