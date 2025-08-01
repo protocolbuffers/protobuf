@@ -291,25 +291,38 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
 
+  struct WireFormatNoOpSink {
+    void Flush(const char* p) {}
+    void Append(absl::string_view view) {}
+    void Reset(const char* p) {}
+  };
+
  protected:
   // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded, it returns true and ptr is set to null.
-  template <bool kExperimentalV2>
-  bool DoneWithCheck(const char** ptr, int d) {
+  template <bool kExperimentalV2, typename SinkT>
+  bool DoneWithCheck(const char** ptr, int d, SinkT& sink) {
     ABSL_DCHECK(*ptr);
     if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
     int overrun = static_cast<int>(*ptr - buffer_end_);
     ABSL_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
         limit_) {  //  No need to flip buffers if we ended on a limit.
+      // Flush up to *ptr since we're done with it.
+      sink.Flush(*ptr);
+      sink.Reset(*ptr);
       // If we actually overrun the buffer and next_chunk_ is null, it means
       // the stream ended and we passed the stream end.
       if (overrun > 0 && next_chunk_ == nullptr) *ptr = nullptr;
       return true;
     }
+    // Flush up to *ptr before updating it.
+    sink.Flush(*ptr);
     auto res = DoneFallback<kExperimentalV2>(overrun, d);
     *ptr = res.first;
+    // Reset the sink to the new start pointer.
+    sink.Reset(res.first);
     return res.second;
   }
 
@@ -562,7 +575,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // Done should only be called when the parsing pointer is pointing to the
   // beginning of field data - that is, at a tag.  Or if it is NULL.
   bool Done(const char** ptr) {
-    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_);
+    WireFormatNoOpSink sink;
+    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_, sink);
   }
 
 
