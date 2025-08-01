@@ -274,6 +274,14 @@ inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
   return EnableStableExperiments();
 }
 
+// Returns true if hasbits for repeated fields are enabled (b/391445226). This
+// flag-gates the rollout of the feature, and if disabled will disable the
+// feature. This will be removed once the feature is fully rolled out and
+// verified.
+inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
+  return false;
+}
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {

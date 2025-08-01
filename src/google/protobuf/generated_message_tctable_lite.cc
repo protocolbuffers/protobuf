@@ -16,6 +16,7 @@
 #include <string>
 #include <type_traits>
 
+#include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
@@ -88,6 +89,7 @@ PROTOBUF_ALWAYS_INLINE void SetCachedHasBit(uint64_t& cached_hasbits,
 
 }  // namespace
 
+// TODO Add tests for this function.
 void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
                                        const TcParseTableBase* table) {
   namespace fl = internal::field_layout;
@@ -101,16 +103,32 @@ void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
       return absl::StrFormat("Type=%s Field=%d\n", msg->GetTypeName(),
                              FieldNumber(table, &entry));
     };
-    if ((entry.type_card & fl::kFcMask) != fl::kFcOptional) return;
+    const auto cardinality = entry.type_card & fl::kFcMask;
+    if (cardinality == fl::kFcSingular || cardinality == fl::kFcOneof) {
+      continue;
+    }
+    if (!EnableExperimentalHintHasBitsForRepeatedFields() &&
+        cardinality == fl::kFcRepeated) {
+      continue;
+    }
     const bool has_bit = ReadHas(entry, msg);
     const void* base = msg;
     const void* default_base = table->default_instance();
-    if ((entry.type_card & field_layout::kSplitMask) ==
-        field_layout::kSplitTrue) {
+    const bool is_split = (entry.type_card & field_layout::kSplitMask) ==
+                          field_layout::kSplitTrue;
+    if (is_split) {
       const size_t offset = table->field_aux(kSplitOffsetAuxIdx)->offset;
       base = TcParser::RefAt<const void*>(base, offset);
       default_base = TcParser::RefAt<const void*>(default_base, offset);
     }
+
+    if (cardinality == fl::kFcRepeated) {
+      ABSL_CHECK(has_bit ||
+                 RepeatedFieldIsEmpty(msg, table, entry, base, is_split))
+          << print_error();
+      continue;
+    }
+
     switch (entry.type_card & fl::kFkMask) {
       case fl::kFkVarint:
       case fl::kFkFixed:
@@ -191,6 +209,80 @@ void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
         // All other types are not `optional`.
         Unreachable();
     }
+  }
+}
+
+bool TcParser::RepeatedFieldIsEmpty(const MessageLite* msg,
+                                    const TcParseTableBase* table,
+                                    const FieldEntry& entry, const void* base,
+                                    bool is_split) {
+  namespace fl = internal::field_layout;
+
+  switch (entry.type_card & fl::kFkMask) {
+    case fl::kFkVarint:
+    case fl::kFkPackedVarint:
+    case fl::kFkFixed:
+    case fl::kFkPackedFixed:
+      switch (entry.type_card & fl::kRepMask) {
+        case fl::kRep8Bits: {
+          const auto& repeated_field =
+              GetRepeatedFieldAt<RepeatedField<uint8_t>>(base, entry.offset,
+                                                         msg, is_split);
+          return repeated_field.empty();
+        }
+        case fl::kRep32Bits: {
+          const auto& repeated_field =
+              GetRepeatedFieldAt<RepeatedField<uint32_t>>(base, entry.offset,
+                                                          msg, is_split);
+          return repeated_field.empty();
+        }
+        case fl::kRep64Bits: {
+          const auto& repeated_field =
+              GetRepeatedFieldAt<RepeatedField<uint64_t>>(base, entry.offset,
+                                                          msg, is_split);
+          return repeated_field.empty();
+        }
+        default:
+          Unreachable();
+      }
+      break;
+    case fl::kFkString: {
+      switch (entry.type_card & fl::kRepMask) {
+        case fl::kRepSPiece:
+        case fl::kRepSString:
+          // Fall through to the RepeatedPtrFieldBase case.
+          break;
+        case fl::kRepIString: {
+          // Inline strings cannot be repeated.
+          Unreachable();
+        }
+        case fl::kRepCord: {
+          const auto& repeated_field =
+              GetRepeatedFieldAt<RepeatedField<absl::Cord>>(base, entry.offset,
+                                                            msg, is_split);
+          return repeated_field.empty();
+        }
+        default:
+          Unreachable();
+      }
+      ABSL_FALLTHROUGH_INTENDED;
+    }
+    case fl::kFkMessage: {
+      const auto& repeated_field = GetRepeatedFieldAt<RepeatedPtrFieldBase>(
+          base, entry.offset, msg, is_split);
+      return repeated_field.empty();
+    }
+    case fl::kFkMap: {
+      const auto* aux = table->field_aux(&entry);
+      const auto map_info = aux[0].map_info;
+      const UntypedMapBase& map_field =
+          map_info.use_lite
+              ? RefAt<const UntypedMapBase>(base, entry.offset)
+              : RefAt<const MapFieldBaseForParse>(base, entry.offset).GetMap();
+      return map_field.empty();
+    }
+    default:
+      Unreachable();
   }
 }
 
