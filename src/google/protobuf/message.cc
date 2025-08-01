@@ -108,6 +108,10 @@ void Message::CopyFrom(const Message& from) {
     // Fail if "from" is a descendant of "to" as such copy is not allowed.
     ABSL_DCHECK(!internal::IsDescendant(*this, from))
         << "Source of CopyFrom cannot be a descendant of the target.";
+#ifdef PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
+    ABSL_DCHECK(!internal::IsDescendant(from, *this))
+        << "Target of CopyFrom cannot be a descendant of the source.";
+#endif  // PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
     Clear();
     class_to->full().merge_to_from(*this, from);
   } else {
