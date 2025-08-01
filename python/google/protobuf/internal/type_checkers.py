@@ -145,8 +145,9 @@ class IntValueChecker(object):
   """Checker used for integer fields.  Performs type-check and range check."""
 
   def CheckValue(self, proposed_value):
+    global _BoolWarningCount
     if type(proposed_value) == bool and _BoolWarningCount > 0:
-      --_BoolWarningCount
+      _BoolWarningCount -= 1
       message = (
           '%.1024r has type %s, but expected one of: %s. This warning '
           'will turn into error in 7.34.0, please fix it before that.'
@@ -185,8 +186,9 @@ class EnumValueChecker(object):
     self._enum_type = enum_type
 
   def CheckValue(self, proposed_value):
+    global _BoolWarningCount
     if type(proposed_value) == bool and _BoolWarningCount > 0:
-      --_BoolWarningCount
+      _BoolWarningCount -= 1
       message = (
           '%.1024r has type %s, but expected one of: %s. This warning '
           'will turn into error in 7.34.0, please fix it before that.'
