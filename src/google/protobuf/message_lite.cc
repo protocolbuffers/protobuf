@@ -72,8 +72,8 @@ void MessageLite::DeleteInstance() {
   internal::SizedDelete(ptr, size);
 }
 
-void MessageLite::VerifyHasBitConsistency() const {
-  internal::TcParser::VerifyHasBitConsistency(this, GetTcParseTable());
+void MessageLite::CheckHasBitConsistency() const {
+  internal::TcParser::CheckHasBitConsistency(this, GetTcParseTable());
 }
 
 void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
