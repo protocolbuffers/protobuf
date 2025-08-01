@@ -231,6 +231,11 @@ bool ExtensionSet::HasLazy(int number) const {
   return Has(number) && FindOrNull(number)->is_lazy;
 }
 
+bool ExtensionSet::LazyHasUnparsed(int number) const {
+  ABSL_DCHECK(HasLazy(number));
+  return FindOrNull(number)->ptr.lazymessage_value->HasUnparsed();
+}
+
 int ExtensionSet::NumExtensions() const {
   int result = 0;
   ForEachNoPrefetch([&result](int /* number */, const Extension& ext) {
