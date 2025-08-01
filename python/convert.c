@@ -6,7 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "python/convert.h"
-
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/message/compare.h"
@@ -62,7 +61,22 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
   }
 }
 
-static bool PyUpb_GetInt64(PyObject* obj, int64_t* val) {
+// TODO: raise error in 2026 Q1 release
+static void WarnBool(const upb_FieldDef* f) {
+  static int bool_warning_count = 100;
+  if (bool_warning_count > 0) {
+    --bool_warning_count;
+    PyErr_WarnFormat(PyExc_DeprecationWarning, 3,
+                     "Field %s: Expected an int, got a boolean. This "
+                     "will be rejected in 7.34.0, please fix it before that",
+                     upb_FieldDef_FullName(f));
+  }
+}
+
+static bool PyUpb_GetInt64(PyObject* obj, const upb_FieldDef* f, int64_t* val) {
+  if (PyBool_Check(obj)) {
+    WarnBool(f);
+  }
   // We require that the value is either an integer or has an __index__
   // conversion.
   obj = PyNumber_Index(obj);
@@ -81,7 +95,11 @@ static bool PyUpb_GetInt64(PyObject* obj, int64_t* val) {
   return ok;
 }
 
-static bool PyUpb_GetUint64(PyObject* obj, uint64_t* val) {
+static bool PyUpb_GetUint64(PyObject* obj, const upb_FieldDef* f,
+                            uint64_t* val) {
+  if (PyBool_Check(obj)) {
+    WarnBool(f);
+  }
   // We require that the value is either an integer or has an __index__
   // conversion.
   obj = PyNumber_Index(obj);
@@ -98,9 +116,9 @@ static bool PyUpb_GetUint64(PyObject* obj, uint64_t* val) {
   return ok;
 }
 
-static bool PyUpb_GetInt32(PyObject* obj, int32_t* val) {
+static bool PyUpb_GetInt32(PyObject* obj, const upb_FieldDef* f, int32_t* val) {
   int64_t i64;
-  if (!PyUpb_GetInt64(obj, &i64)) return false;
+  if (!PyUpb_GetInt64(obj, f, &i64)) return false;
   if (i64 < INT32_MIN || i64 > INT32_MAX) {
     PyErr_Format(PyExc_ValueError, "Value out of range: %S", obj);
     return false;
@@ -109,9 +127,10 @@ static bool PyUpb_GetInt32(PyObject* obj, int32_t* val) {
   return true;
 }
 
-static bool PyUpb_GetUint32(PyObject* obj, uint32_t* val) {
+static bool PyUpb_GetUint32(PyObject* obj, const upb_FieldDef* f,
+                            uint32_t* val) {
   uint64_t u64;
-  if (!PyUpb_GetUint64(obj, &u64)) return false;
+  if (!PyUpb_GetUint64(obj, f, &u64)) return false;
   if (u64 > UINT32_MAX) {
     PyErr_Format(PyExc_ValueError, "Value out of range: %S", obj);
     return false;
@@ -164,8 +183,9 @@ const char* upb_FieldDef_TypeString(const upb_FieldDef* f) {
   UPB_UNREACHABLE();
 }
 
-static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_EnumDef* e,
+static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_FieldDef* f,
                               upb_MessageValue* val) {
+  const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
   if (PyUnicode_Check(obj)) {
     Py_ssize_t size;
     const char* name = PyUnicode_AsUTF8AndSize(obj, &size);
@@ -178,8 +198,11 @@ static bool PyUpb_PyToUpbEnum(PyObject* obj, const upb_EnumDef* e,
     val->int32_val = upb_EnumValueDef_Number(ev);
     return true;
   } else {
+    if (PyBool_Check(obj)) {
+      WarnBool(f);
+    }
     int32_t i32;
-    if (!PyUpb_GetInt32(obj, &i32)) return false;
+    if (!PyUpb_GetInt32(obj, f, &i32)) return false;
     if (upb_EnumDef_IsClosed(e) && !upb_EnumDef_CheckNumber(e, i32)) {
       PyErr_Format(PyExc_ValueError, "invalid enumerator %d", (int)i32);
       return false;
@@ -238,15 +261,15 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
                    upb_Arena* arena) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Enum:
-      return PyUpb_PyToUpbEnum(obj, upb_FieldDef_EnumSubDef(f), val);
+      return PyUpb_PyToUpbEnum(obj, f, val);
     case kUpb_CType_Int32:
-      return PyUpb_GetInt32(obj, &val->int32_val);
+      return PyUpb_GetInt32(obj, f, &val->int32_val);
     case kUpb_CType_Int64:
-      return PyUpb_GetInt64(obj, &val->int64_val);
+      return PyUpb_GetInt64(obj, f, &val->int64_val);
     case kUpb_CType_UInt32:
-      return PyUpb_GetUint32(obj, &val->uint32_val);
+      return PyUpb_GetUint32(obj, f, &val->uint32_val);
     case kUpb_CType_UInt64:
-      return PyUpb_GetUint64(obj, &val->uint64_val);
+      return PyUpb_GetUint64(obj, f, &val->uint64_val);
     case kUpb_CType_Float:
       if (!PyFloat_Check(obj) && PyUpb_IsNumpyNdarray(obj, f)) return false;
       val->float_val = PyFloat_AsDouble(obj);
