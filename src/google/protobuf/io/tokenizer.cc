@@ -188,7 +188,7 @@ inline char TranslateEscape(char c) {
 
 }  // anonymous namespace
 
-ErrorCollector::~ErrorCollector() {}
+ErrorCollector::~ErrorCollector() = default;
 
 // ===================================================================
 
