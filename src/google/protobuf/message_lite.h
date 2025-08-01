@@ -308,6 +308,7 @@ class ParseContext;
 struct DescriptorTable;
 class DescriptorPoolExtensionFinder;
 class ExtensionSet;
+class HasBitsTest;
 class LazyField;
 class RepeatedPtrFieldBase;
 class TcParser;
@@ -1009,7 +1010,7 @@ class PROTOBUF_EXPORT MessageLite {
     return (cached_has_bits & batch_has_bits_mask) != 0;
   }
 
-  void VerifyHasBitConsistency() const;
+  void CheckHasBitConsistency() const;
 
  public:
   enum ParseFlags {
@@ -1075,6 +1076,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class compiler::cpp::MessageTableTester;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
+  friend class internal::HasBitsTest;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;

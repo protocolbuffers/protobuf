@@ -150,6 +150,7 @@ struct FuzzPeer;
 struct DescriptorTable;
 template <bool is_oneof>
 struct DynamicFieldInfoHelper;
+class HasBitsTest;
 class MapFieldBase;
 class MessageUtil;
 class ReflectionVisit;
@@ -981,6 +982,11 @@ class PROTOBUF_EXPORT Reflection final {
   MessageFactory* GetMessageFactory() const;
 
  private:
+  const internal::ReflectionSchema& Schema() const { return schema_; }
+
+  bool IsRepeatedOrMapFieldEmpty(const Message& message,
+                                 const FieldDescriptor* field) const;
+
   template <typename T>
   const RepeatedField<T>& GetRepeatedFieldInternal(
       const Message& message, const FieldDescriptor* field) const;
@@ -1077,6 +1083,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
+  friend class internal::HasBitsTest;
   friend class internal::ReflectionVisit;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
@@ -1271,10 +1278,10 @@ class PROTOBUF_EXPORT Reflection final {
     return schema_.IsFieldMicroString(field);
   }
 
-  // For "proto3 non-optional" primitive fields, aka implicit-presence fields,
-  // returns true if the field is populated, i.e., nonzero. False otherwise.
-  bool IsSingularFieldNonEmpty(const Message& message,
-                               const FieldDescriptor* field) const;
+  // For implicit-presence or repeated fields, returns true if the field is
+  // populated, i.e., nonzero/nonempty. False otherwise.
+  bool IsImplicitPresenceFieldNonEmpty(const Message& message,
+                                       const FieldDescriptor* field) const;
   // Returns whether the field is present if there are usable hasbits in the
   // field schema. (Note that in some cases hasbits are merely a hint to
   // indicate "possible presence", and another empty-check is required).
@@ -1283,14 +1290,15 @@ class PROTOBUF_EXPORT Reflection final {
                                   const uint32_t* hasbits,
                                   uint32_t hasbit_index) const;
   // Returns true if the field is considered to be present.
-  // Requires the input to be 'singular' i.e. non-extension, non-oneof, non-weak
-  // field.
+  // Requires the input to be non-extension, non-oneof, non-weak.
   // For explicit presence fields, a field is present iff the hasbit is set.
-  // For implicit presence fields, a field is present iff it is nonzero.
-  bool HasFieldSingular(const Message& message,
-                        const FieldDescriptor* field) const;
+  // For implicit presence fields, a field is present iff it is
+  // nonzero/nonempty. The hasbit may be checked as a shortcut in the empty
+  // case.
+  bool HasFieldSingularOrRepeated(const Message& message,
+                                  const FieldDescriptor* field) const;
   void SetHasBit(Message* message, const FieldDescriptor* field) const;
-  inline void ClearHasBit(Message* message, const FieldDescriptor* field) const;
+  void ClearHasBit(Message* message, const FieldDescriptor* field) const;
   // Naively swaps the hasbit without checking for field existence.
   // For explicit presence fields, the hasbit is swapped normally.
   // For implicit presence fields, the hasbit is swapped without checking for

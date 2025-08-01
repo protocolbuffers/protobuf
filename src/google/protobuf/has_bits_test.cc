@@ -7,33 +7,69 @@
 
 #include "google/protobuf/has_bits.h"
 
+#include <cstdint>
+#include <utility>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
+#include "absl/status/status.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/unittest.pb.h"
+
 
 namespace google {
 namespace protobuf {
 namespace internal {
-namespace {
 
+using ::proto2_unittest::TestAllTypes;
+using ::proto2_unittest::TestMap;
 using ::testing::Eq;
 
-template <int n>
-void TestDefaultInit() {
-  HasBits<n> bits;
-  EXPECT_TRUE(bits.empty());
-  for (int i = 0; i < n; ++i) {
-    EXPECT_THAT(bits[i], Eq(0));
+class HasBitsTest : public testing::Test {
+ public:
+  template <int kNumHasWords>
+  void TestDefaultInit() {
+    HasBits<kNumHasWords> bits;
+    EXPECT_TRUE(bits.empty());
+    for (int i = 0; i < kNumHasWords; ++i) {
+      EXPECT_THAT(bits[i], Eq(0));
+    }
   }
-}
 
-TEST(HasBits, DefaultInit) {
+  static void SetHasBit(Message* msg, const FieldDescriptor* field) {
+    const auto* ref = msg->GetReflection();
+    ABSL_DCHECK_NE(ref->Schema().HasBitIndex(field),
+                   static_cast<uint32_t>(kNoHasbit));
+    ref->SetHasBit(msg, field);
+  }
+
+  static void ClearHasBit(Message* msg, const FieldDescriptor* field) {
+    const auto* ref = msg->GetReflection();
+    ABSL_DCHECK_NE(ref->Schema().HasBitIndex(field),
+                   static_cast<uint32_t>(kNoHasbit));
+    ref->ClearHasBit(msg, field);
+  }
+};
+
+namespace {
+
+TEST_F(HasBitsTest, DefaultInit) {
   TestDefaultInit<1>();
   TestDefaultInit<2>();
   TestDefaultInit<3>();
   TestDefaultInit<4>();
 }
 
-TEST(HasBits, ValueInit) {
+TEST_F(HasBitsTest, ValueInit) {
   {
     HasBits<4> bits;
     EXPECT_TRUE(bits.empty());
@@ -53,7 +89,7 @@ TEST(HasBits, ValueInit) {
   }
 }
 
-TEST(HasBits, ConstexprValueInit) {
+TEST_F(HasBitsTest, ConstexprValueInit) {
   {
     constexpr HasBits<4> bits;
     EXPECT_TRUE(bits.empty());
@@ -73,7 +109,7 @@ TEST(HasBits, ConstexprValueInit) {
   }
 }
 
-TEST(HasBits, operator_equal) {
+TEST_F(HasBitsTest, operator_equal) {
   EXPECT_FALSE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({0, 2, 3, 4}));
   EXPECT_FALSE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({1, 0, 3, 4}));
   EXPECT_FALSE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({1, 2, 0, 4}));
@@ -81,14 +117,14 @@ TEST(HasBits, operator_equal) {
   EXPECT_TRUE(HasBits<4>({1, 2, 3, 4}) == HasBits<4>({1, 2, 3, 4}));
 }
 
-TEST(HasBits, Or) {
+TEST_F(HasBitsTest, Or) {
   HasBits<4> bits1({1, 2, 4, 8});
   HasBits<4> bits2({16, 32, 64, 128});
   bits1.Or(bits2);
   EXPECT_TRUE(bits1 == HasBits<4>({17, 34, 68, 136}));
 }
 
-TEST(HasBits, Copy) {
+TEST_F(HasBitsTest, Copy) {
   HasBits<4> bits1({1, 2, 4, 8});
   HasBits<4> bits2(bits1);
   EXPECT_TRUE(bits1 == bits2);
