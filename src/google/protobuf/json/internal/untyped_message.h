@@ -1,7 +1,9 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_UNTYPED_MESSAGE_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_UNTYPED_MESSAGE_H__
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_check.h"
+#include "absl/status/statusor.h"
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -71,6 +73,9 @@ class ResolverPool {
 
     const Message& parent() const { return *parent_; }
     const google::protobuf::Field& proto() const { return *raw_; }
+    const FeatureSet& features() const {
+      return features_ != nullptr ? *features_ : FeatureSet::default_instance();
+    }
 
    private:
     friend class ResolverPool;
@@ -81,6 +86,7 @@ class ResolverPool {
     const google::protobuf::Field* raw_ = nullptr;
     const Message* parent_ = nullptr;
     mutable const void* type_ = nullptr;
+    std::unique_ptr<google::protobuf::FeatureSet> features_;
   };
 
   class Message {
@@ -106,6 +112,7 @@ class ResolverPool {
     mutable absl::flat_hash_map<absl::string_view, const Field*>
         fields_by_name_;
     mutable absl::flat_hash_map<int32_t, const Field*> fields_by_number_;
+    std::unique_ptr<google::protobuf::FeatureSet> features_;
   };
 
   class Enum {
@@ -125,6 +132,7 @@ class ResolverPool {
     google::protobuf::Enum raw_;
     mutable absl::flat_hash_map<absl::string_view, google::protobuf::EnumValue*>
         values_;
+    std::unique_ptr<google::protobuf::FeatureSet> features_;
   };
 
   explicit ResolverPool(google::protobuf::util::TypeResolver* resolver)
@@ -137,8 +145,18 @@ class ResolverPool {
   absl::StatusOr<const Enum*> FindEnum(absl::string_view url);
 
  private:
+  static absl::StatusOr<Edition> ParseEdition(absl::string_view edition_suffix);
+
+  absl::StatusOr<const FeatureSet*> GetDefaultFeatureSet(Edition edition);
+
+  static absl::StatusOr<FeatureSet> GetFeatureSet(
+      const RepeatedPtrField<google::protobuf::Option>& options,
+      absl::string_view option_name, absl::string_view oss_option_name);
+
   absl::flat_hash_map<std::string, std::unique_ptr<Message>> messages_;
   absl::flat_hash_map<std::string, std::unique_ptr<Enum>> enums_;
+  absl::flat_hash_map<Edition, std::unique_ptr<FeatureSet>>
+      default_feature_sets_;
   google::protobuf::util::TypeResolver* resolver_;
 };
 
