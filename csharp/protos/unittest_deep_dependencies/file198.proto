@@ -1,0 +1,8 @@
+syntax = "proto3";
+package unittest_deep_dependencies;
+import "unittest_deep_dependencies/file14.proto";
+import "unittest_deep_dependencies/file21.proto";
+import "unittest_deep_dependencies/file130.proto";
+import "unittest_deep_dependencies/file173.proto";
+import "unittest_deep_dependencies/file205.proto";
+import "unittest_deep_dependencies/file183.proto";
