@@ -33,8 +33,6 @@ namespace protobuf {
 
 namespace internal {
 
-using proto2_unittest::TestAllTypes;
-
 struct MapFieldTestPeer {
   static auto GetArena(const RepeatedPtrFieldBase& v) { return v.GetArena(); }
   template <typename T>
