@@ -42,7 +42,7 @@
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
-#include "google/protobuf/compiler/cpp/field_chunk.h"
+#include "google/protobuf/compiler/cpp/field_chunk_abcdefghijklmnopqrstuvwxyz_abcdefghijklmnopqrstuvwxyz.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
