@@ -21,6 +21,7 @@
 
 #include "google/protobuf/generated_message_reflection.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -1757,6 +1758,48 @@ TEST(GeneratedMessageReflection, IsDescendantOneof) {
       IsDescendant(msg1, msg2.foo_message().optional_nested_message()));
   EXPECT_FALSE(
       IsDescendant(msg1, msg2.foo_message().repeated_foreign_message(0)));
+}
+
+TEST(GeneratedMessageReflection, IsDescendantDirtyMap) {
+  proto2_unittest::TestMap msg;
+  ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
+      R"pb(
+        map_int32_all_types {
+          key: 123
+          value: { optional_int32: 123 }
+        }
+      )pb",
+      &msg));
+
+  msg.mutable_map_int32_all_types()->insert({789, unittest::TestAllTypes()});
+
+  size_t msg_size = msg.SpaceUsedLong();
+
+  proto2_unittest::TestAllTypes msg2;
+  EXPECT_FALSE(IsDescendant(msg, msg2));
+
+  EXPECT_EQ(msg_size, msg.SpaceUsedLong());
+}
+
+// Tests that a map field with in state `STATE_MODIFIED_REPEATED` does not force
+// a sync to the map.
+TEST(GeneratedMessageReflection, IsDescendantInvalidMap) {
+  proto2_unittest::TestMap msg;
+  ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
+      R"pb(
+        map_int32_all_types {
+          key: 123
+          value: { optional_int32: 123 }
+        }
+      )pb",
+      &msg));
+
+  size_t msg_size = msg.SpaceUsedLong();
+
+  proto2_unittest::TestAllTypes msg2;
+  EXPECT_FALSE(IsDescendant(msg, msg2));
+
+  EXPECT_EQ(msg_size, msg.SpaceUsedLong());
 }
 
 TEST(GeneratedMessageReflection, ListFieldsSorted) {
