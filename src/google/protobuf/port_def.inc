@@ -157,6 +157,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
+// Removes the ability to copy messages into themselves.
+// Owner: cknittel@, mkruskal@
+#define PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY 1
+
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
