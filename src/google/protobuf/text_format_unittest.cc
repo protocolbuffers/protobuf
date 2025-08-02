@@ -947,8 +947,8 @@ TEST_F(TextFormatTest, MultilineStringPrinter) {
 
 class CustomNestedMessagePrinter : public TextFormat::MessagePrinter {
  public:
-  CustomNestedMessagePrinter() {}
-  ~CustomNestedMessagePrinter() override {}
+  CustomNestedMessagePrinter() = default;
+  ~CustomNestedMessagePrinter() override = default;
   void Print(const Message& message, bool single_line_mode,
              TextFormat::BaseTextGenerator* generator) const override {
     generator->PrintLiteral("// custom\n");
@@ -1846,8 +1846,8 @@ class TextFormatParserTest : public testing::Test {
   // block of text which can be checked.
   class MockErrorCollector : public io::ErrorCollector {
    public:
-    MockErrorCollector() {}
-    ~MockErrorCollector() override {}
+    MockErrorCollector() = default;
+    ~MockErrorCollector() override = default;
 
     std::string text_;
 
