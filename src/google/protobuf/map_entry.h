@@ -89,8 +89,8 @@ class MapEntry : public Message {
     // We don't want to instantiate the template with every unique derived type.
     // The assertion is in the destructor because we need `Value` to be
     // complete to test it.
-    static_assert(!std::is_base_of<Message, Value>::value ||
-                      std::is_same<Message, Value>::value,
+    static_assert(!std::is_base_of_v<Message, Value> ||
+                      std::is_same_v<Message, Value>,
                   "");
 
     if (GetArena() != nullptr) return;
