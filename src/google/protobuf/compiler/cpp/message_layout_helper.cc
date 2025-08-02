@@ -267,12 +267,13 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::BuildFieldDescriptorOrder(
       }
     }
 
-    if (!fields.empty() &&
-        (EndsWithMsgPtr(fields, options, scc_analyzer) ||
-         CanInitializeByZeroing(fields.back(), options, scc_analyzer))) {
-      recipe = kZeroFirst;
-    } else {
-      recipe = kZeroLast;
+    if (!fields.empty()) {
+      if ((EndsWithMsgPtr(fields, options, scc_analyzer) ||
+           CanInitializeByZeroing(fields.back(), options, scc_analyzer))) {
+        recipe = kZeroFirst;
+      } else {
+        recipe = kZeroLast;
+      }
     }
   }
 
