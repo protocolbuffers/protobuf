@@ -28,8 +28,8 @@ namespace {
 
 class TestGenerator : public CodeGenerator {
  public:
-  TestGenerator() {}
-  ~TestGenerator() override {}
+  TestGenerator() = default;
+  ~TestGenerator() override = default;
 
   bool Generate(const FileDescriptor* file, const std::string& parameter,
                 GeneratorContext* context, std::string* error) const override {

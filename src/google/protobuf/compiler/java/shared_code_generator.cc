@@ -37,7 +37,7 @@ SharedCodeGenerator::SharedCodeGenerator(const FileDescriptor* file,
       file_(file),
       options_(options) {}
 
-SharedCodeGenerator::~SharedCodeGenerator() {}
+SharedCodeGenerator::~SharedCodeGenerator() = default;
 
 void SharedCodeGenerator::Generate(
     GeneratorContext* context, std::vector<std::string>* file_list,
