@@ -98,7 +98,7 @@ ImmutableMessageFieldGenerator::ImmutableMessageFieldGenerator(
                       name_resolver_, &variables_, context);
 }
 
-ImmutableMessageFieldGenerator::~ImmutableMessageFieldGenerator() {}
+ImmutableMessageFieldGenerator::~ImmutableMessageFieldGenerator() = default;
 
 int ImmutableMessageFieldGenerator::GetMessageBitIndex() const {
   return message_bit_index_;
@@ -458,7 +458,8 @@ ImmutableMessageOneofFieldGenerator::ImmutableMessageOneofFieldGenerator(
   SetCommonOneofVariables(descriptor, info, &variables_);
 }
 
-ImmutableMessageOneofFieldGenerator::~ImmutableMessageOneofFieldGenerator() {}
+ImmutableMessageOneofFieldGenerator::~ImmutableMessageOneofFieldGenerator() =
+    default;
 
 void ImmutableMessageOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -742,7 +743,7 @@ RepeatedImmutableMessageFieldGenerator::RepeatedImmutableMessageFieldGenerator(
                                      builderBitIndex, context) {}
 
 RepeatedImmutableMessageFieldGenerator::
-    ~RepeatedImmutableMessageFieldGenerator() {}
+    ~RepeatedImmutableMessageFieldGenerator() = default;
 
 int RepeatedImmutableMessageFieldGenerator::GetNumBitsForMessage() const {
   return 0;
