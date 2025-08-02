@@ -182,7 +182,7 @@ std::string GetLegacySyntaxName(Edition edition) {
 
 Generator::Generator() : file_(nullptr) {}
 
-Generator::~Generator() {}
+Generator::~Generator() = default;
 
 GeneratorOptions Generator::ParseParameter(absl::string_view parameter,
                                            std::string* error) const {
