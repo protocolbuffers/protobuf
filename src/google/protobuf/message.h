@@ -327,9 +327,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // include a random fuzz factor to prevent these dependencies.
   size_t SpaceUsedLong() const;
 
-  [[deprecated("Please use SpaceUsedLong() instead")]] int SpaceUsed() const {
-    return internal::ToIntSize(SpaceUsedLong());
-  }
+  
 
   // Debugging & Testing----------------------------------------------
 
