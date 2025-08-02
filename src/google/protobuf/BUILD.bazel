@@ -702,6 +702,7 @@ cc_library(
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/meta:type_traits",
         "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:internal",
