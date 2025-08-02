@@ -88,8 +88,8 @@ PROTOBUF_ALWAYS_INLINE void SetCachedHasBit(uint64_t& cached_hasbits,
 
 }  // namespace
 
-void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
-                                       const TcParseTableBase* table) {
+void TcParser::CheckHasBitConsistency(const MessageLite* msg,
+                                      const TcParseTableBase* table) {
   namespace fl = internal::field_layout;
   if (table->has_bits_offset == 0) {
     // Nothing to check
@@ -101,7 +101,7 @@ void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
       return absl::StrFormat("Type=%s Field=%d\n", msg->GetTypeName(),
                              FieldNumber(table, &entry));
     };
-    if ((entry.type_card & fl::kFcMask) != fl::kFcOptional) return;
+    if ((entry.type_card & fl::kFcMask) != fl::kFcOptional) continue;
     const bool has_bit = ReadHas(entry, msg);
     const void* base = msg;
     const void* default_base = table->default_instance();
@@ -115,7 +115,7 @@ void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
       case fl::kFkVarint:
       case fl::kFkFixed:
         // Numerics can have any value when the has bit is on.
-        if (has_bit) return;
+        if (has_bit) break;
         switch (entry.type_card & fl::kRepMask) {
           case fl::kRep8Bits:
             ABSL_CHECK_EQ(RefAt<bool>(base, entry.offset),
