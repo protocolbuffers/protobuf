@@ -1513,8 +1513,8 @@ template <typename T>
 class Utf8ValidationTest : public ::testing::Test,
                            protected TestUtil::TestUtilTraits<T> {
  protected:
-  Utf8ValidationTest() {}
-  ~Utf8ValidationTest() override {}
+  Utf8ValidationTest() = default;
+  ~Utf8ValidationTest() override = default;
 
   static constexpr absl::string_view kInvalidUTF8String =
       "Invalid UTF-8: \xA0\xB0\xC0\xD0";
