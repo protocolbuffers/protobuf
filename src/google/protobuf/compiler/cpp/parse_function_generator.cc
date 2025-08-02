@@ -460,7 +460,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
           p->Emit(
               {
                   {"strict", utf8_check == Utf8CheckMode::kStrict},
-                  {"verify", utf8_check == Utf8CheckMode::kVerify},
+                  // TODO: Remove this.
+                  {"verify", false},
                   {"validate", validated_enum},
                   {"key_wire", map_key->type()},
                   {"value_wire", map_value->type()},
