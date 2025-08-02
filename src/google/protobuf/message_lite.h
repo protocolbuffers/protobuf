@@ -1009,7 +1009,7 @@ class PROTOBUF_EXPORT MessageLite {
     return (cached_has_bits & batch_has_bits_mask) != 0;
   }
 
-  void VerifyHasBitConsistency() const;
+  void CheckHasBitConsistency() const;
 
  public:
   enum ParseFlags {
