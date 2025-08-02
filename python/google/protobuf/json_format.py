@@ -26,6 +26,7 @@ import json
 import math
 from operator import methodcaller
 import re
+import warnings
 
 from google.protobuf import descriptor
 from google.protobuf import message_factory
@@ -191,6 +192,11 @@ class _Printer(object):
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
     if float_precision:
+      warnings.warn(
+          'float_precision option is deprecated for json_format. '
+          'This will turn into error in 7.34.0, please remove it '
+          'before that.'
+      )
       self.float_format = '.{}g'.format(float_precision)
     else:
       self.float_format = None
