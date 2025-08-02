@@ -729,8 +729,8 @@ void ThreadSafeArena::UnpoisonAllArenaBlocks() const {
 
 void ThreadSafeArena::Init() {
   tag_and_id_ = GetNextLifeCycleId();
-  arena_stats_ = Sample();
   head_.store(SentrySerialArenaChunk(), std::memory_order_relaxed);
+  arena_stats_ = Sample();
   first_owner_ = &thread_cache();
 
   // Record allocation for the first block that was either user-provided or
