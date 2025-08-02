@@ -38,6 +38,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/serial_arena.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/varint_shuffle.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
@@ -115,7 +116,7 @@ void TcParser::VerifyHasBitConsistency(const MessageLite* msg,
       case fl::kFkVarint:
       case fl::kFkFixed:
         // Numerics can have any value when the has bit is on.
-        if (has_bit) return;
+        if (has_bit) break;
         switch (entry.type_card & fl::kRepMask) {
           case fl::kRep8Bits:
             ABSL_CHECK_EQ(RefAt<bool>(base, entry.offset),
