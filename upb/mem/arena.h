@@ -72,10 +72,43 @@ bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
 // This operation is safe to use concurrently from multiple threads.
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
+// Creates a reference between the arenas `from` and `to`, guaranteeing that
+// the latter will not be freed until `from` is freed.
+//
+// Users must avoid all of the following error conditions, which will be
+// checked in debug mode but are UB in opt:
+//
+// - Creating reference cycles between arenas.
+// - Creating a reference between two arenas that are fused, either now
+//   or in the future.
+// - Creating a reference multiple times between the same two arenas.
+//
+// Note that `from` is not `const`, so it may not be called concurrently
+// with any other function on `from`.
+bool upb_Arena_RefArena(upb_Arena* from, const upb_Arena* to);
+
+// Returns true if upb_Arena_RefArena(from, to) was previously called.
+// Note that this does not take fuses into account, and it does not follow
+// chains of references; it must have been these two arenas exactly that
+// created a reference.
+bool upb_Arena_HasRef(const upb_Arena* from, const upb_Arena* to);
+
 // This operation is safe to use concurrently from multiple threads.
 uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* a, size_t* fused_count);
 // This operation is safe to use concurrently from multiple threads.
 uint32_t upb_Arena_DebugRefCount(const upb_Arena* a);
+
+// Returns true if there is a chain of arena refs that spans `from` -> `to`.
+// Fused arenas are taken into account; for example, this series of calls
+// will cause the function to return true:
+//
+// 1. upb_Arena_Fuse(a, b)
+// 2. upb_Arena_RefArena(from, a)
+// 3. upb_Arena_RefArena(b, to)
+//
+// However this function does not return true if `from` and `to` are directly
+// fused.
+bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to);
 
 UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
   return upb_Arena_Init(NULL, 0, &upb_alloc_global);
