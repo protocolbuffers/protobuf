@@ -37,7 +37,7 @@ ImmutableExtensionGenerator::ImmutableExtensionGenerator(
   }
 }
 
-ImmutableExtensionGenerator::~ImmutableExtensionGenerator() {}
+ImmutableExtensionGenerator::~ImmutableExtensionGenerator() = default;
 
 // Initializes the vars referenced in the generated code templates.
 void ExtensionGenerator::InitTemplateVars(

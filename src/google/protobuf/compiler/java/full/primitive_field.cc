@@ -204,7 +204,7 @@ ImmutablePrimitiveFieldGenerator::ImmutablePrimitiveFieldGenerator(
                         name_resolver_, &variables_, context);
 }
 
-ImmutablePrimitiveFieldGenerator::~ImmutablePrimitiveFieldGenerator() {}
+ImmutablePrimitiveFieldGenerator::~ImmutablePrimitiveFieldGenerator() = default;
 
 int ImmutablePrimitiveFieldGenerator::GetMessageBitIndex() const {
   return message_bit_index_;
@@ -494,7 +494,7 @@ ImmutablePrimitiveOneofFieldGenerator::ImmutablePrimitiveOneofFieldGenerator(
 }
 
 ImmutablePrimitiveOneofFieldGenerator::
-    ~ImmutablePrimitiveOneofFieldGenerator() {}
+    ~ImmutablePrimitiveOneofFieldGenerator() = default;
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -644,7 +644,7 @@ RepeatedImmutablePrimitiveFieldGenerator::
                                        builder_bit_index, context) {}
 
 RepeatedImmutablePrimitiveFieldGenerator::
-    ~RepeatedImmutablePrimitiveFieldGenerator() {}
+    ~RepeatedImmutablePrimitiveFieldGenerator() = default;
 
 int RepeatedImmutablePrimitiveFieldGenerator::GetNumBitsForMessage() const {
   return 0;

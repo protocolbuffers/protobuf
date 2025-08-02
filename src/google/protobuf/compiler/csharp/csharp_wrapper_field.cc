@@ -36,8 +36,7 @@ WrapperFieldGenerator::WrapperFieldGenerator(const FieldDescriptor* descriptor,
   }
 }
 
-WrapperFieldGenerator::~WrapperFieldGenerator() {
-}
+WrapperFieldGenerator::~WrapperFieldGenerator() = default;
 
 void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
@@ -192,8 +191,7 @@ WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(
     SetCommonOneofFieldVariables(&variables_);
 }
 
-WrapperOneofFieldGenerator::~WrapperOneofFieldGenerator() {
-}
+WrapperOneofFieldGenerator::~WrapperOneofFieldGenerator() = default;
 
 void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   // Note: deliberately _oneof_$name$_codec, not _$oneof_name$_codec... we have one codec per field.

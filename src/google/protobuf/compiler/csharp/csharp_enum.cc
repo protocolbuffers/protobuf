@@ -31,8 +31,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor, const Options* op
     descriptor_(descriptor) {
 }
 
-EnumGenerator::~EnumGenerator() {
-}
+EnumGenerator::~EnumGenerator() = default;
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, options(), descriptor_);

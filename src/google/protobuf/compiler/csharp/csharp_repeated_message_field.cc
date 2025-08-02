@@ -29,9 +29,7 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
 }
 
-RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {
-
-}
+RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() = default;
 
 void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(

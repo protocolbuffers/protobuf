@@ -33,7 +33,7 @@ ImmutableServiceGenerator::ImmutableServiceGenerator(
       context_(context),
       name_resolver_(context->GetNameResolver()) {}
 
-ImmutableServiceGenerator::~ImmutableServiceGenerator() {}
+ImmutableServiceGenerator::~ImmutableServiceGenerator() = default;
 
 void ImmutableServiceGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
