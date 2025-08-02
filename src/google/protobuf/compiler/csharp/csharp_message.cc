@@ -64,7 +64,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
   }
 }
 
-MessageGenerator::~MessageGenerator() {}
+MessageGenerator::~MessageGenerator() = default;
 
 std::string MessageGenerator::class_name() {
   return std::string(descriptor_->name());

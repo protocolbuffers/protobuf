@@ -137,8 +137,7 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* descriptor,
   SetCommonFieldVariables(&variables_);
 }
 
-FieldGeneratorBase::~FieldGeneratorBase() {
-}
+FieldGeneratorBase::~FieldGeneratorBase() = default;
 
 void FieldGeneratorBase::GenerateFreezingCode(io::Printer* printer) {
   // No-op: only message fields and repeated fields need

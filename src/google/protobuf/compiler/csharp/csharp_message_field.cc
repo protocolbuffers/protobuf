@@ -32,9 +32,7 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
   }
 }
 
-MessageFieldGenerator::~MessageFieldGenerator() {
-
-}
+MessageFieldGenerator::~MessageFieldGenerator() = default;
 
 void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
@@ -185,9 +183,7 @@ MessageOneofFieldGenerator::MessageOneofFieldGenerator(
   SetCommonOneofFieldVariables(&variables_);
 }
 
-MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {
-
-}
+MessageOneofFieldGenerator::~MessageOneofFieldGenerator() = default;
 
 void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   WritePropertyDocComment(printer, options(), descriptor_);
