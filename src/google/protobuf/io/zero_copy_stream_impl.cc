@@ -243,7 +243,8 @@ IstreamInputStream::CopyingIstreamInputStream::CopyingIstreamInputStream(
     std::istream* input)
     : input_(input) {}
 
-IstreamInputStream::CopyingIstreamInputStream::~CopyingIstreamInputStream() {}
+IstreamInputStream::CopyingIstreamInputStream::~CopyingIstreamInputStream() =
+    default;
 
 int IstreamInputStream::CopyingIstreamInputStream::Read(void* buffer,
                                                         int size) {
@@ -274,8 +275,8 @@ OstreamOutputStream::CopyingOstreamOutputStream::CopyingOstreamOutputStream(
     std::ostream* output)
     : output_(output) {}
 
-OstreamOutputStream::CopyingOstreamOutputStream::~CopyingOstreamOutputStream() {
-}
+OstreamOutputStream::CopyingOstreamOutputStream::~CopyingOstreamOutputStream() =
+    default;
 
 bool OstreamOutputStream::CopyingOstreamOutputStream::Write(const void* buffer,
                                                             int size) {
