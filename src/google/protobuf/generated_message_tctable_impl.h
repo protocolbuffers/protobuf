@@ -829,8 +829,8 @@ class PROTOBUF_EXPORT TcParser final {
     };
   }
 
-  static void VerifyHasBitConsistency(const MessageLite* msg,
-                                      const TcParseTableBase* table);
+  static void CheckHasBitConsistency(const MessageLite* msg,
+                                     const TcParseTableBase* table);
 
  private:
   // Optimized small tag varint parser for int32/int64
@@ -1163,7 +1163,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseLoop(
     return table->post_loop_handler(msg, ptr, ctx);
   }
   if (ABSL_PREDICT_FALSE(PerformDebugChecks() && ptr == nullptr)) {
-    VerifyHasBitConsistency(msg, table);
+    CheckHasBitConsistency(msg, table);
   }
   return ptr;
 }
