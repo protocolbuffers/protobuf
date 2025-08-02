@@ -34,8 +34,8 @@ namespace compiler {
 namespace java {
 
 
-JavaGenerator::JavaGenerator() {}
-JavaGenerator::~JavaGenerator() {}
+JavaGenerator::JavaGenerator() = default;
+JavaGenerator::~JavaGenerator() = default;
 
 uint64_t JavaGenerator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |

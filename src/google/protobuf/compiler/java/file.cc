@@ -198,7 +198,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
   }
 }
 
-FileGenerator::~FileGenerator() {}
+FileGenerator::~FileGenerator() = default;
 
 bool FileGenerator::Validate(std::string* error) {
   // Check that no class name matches the file's class name.  This is a common
