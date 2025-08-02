@@ -14,13 +14,14 @@
 //
 // LINT: ALLOW_GROUPS, LEGACY_NAMES
 
-edition = "2023";
+edition = "2024";
 
-import "google/protobuf/cpp_features.proto";
+import "google/protobuf/unittest_import.proto";
+
+import option "google/protobuf/cpp_features.proto";
 
 option features.field_presence = EXPLICIT;
 option features.enum_type = CLOSED;
-option features.(pb.cpp).string_type = VIEW;
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default
@@ -28,8 +29,6 @@ option cc_generic_services = true;     // auto-added
 option java_generic_services = true;   // auto-added
 option py_generic_services = true;     // auto-added
 option cc_enable_arenas = true;
-
-import "google/protobuf/unittest_import.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -89,9 +88,9 @@ message TestAllTypes {
   ForeignEnum                          optional_foreign_enum    = 22;
   proto2_unittest_import.ImportEnum    optional_import_enum     = 23;
 
-  string optional_string_piece = 24 [ctype=STRING_PIECE];
-  string optional_cord = 25 [ctype=CORD];
-  bytes optional_bytes_cord = 86 [ctype=CORD];
+  string optional_string_piece = 24;
+  string optional_cord = 25 [features.(pb.cpp).string_type=CORD];
+  bytes optional_bytes_cord = 86 [features.(pb.cpp).string_type=CORD];
 
   // Defined in unittest_import_public.proto
   proto2_unittest_import.PublicImportMessage
@@ -131,8 +130,8 @@ message TestAllTypes {
   repeated ForeignEnum                          repeated_foreign_enum    = 52;
   repeated proto2_unittest_import.ImportEnum    repeated_import_enum     = 53;
 
-  repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
-  repeated string repeated_cord = 55 [ctype=CORD];
+  repeated string repeated_string_piece = 54;
+  repeated string repeated_cord = 55 [features.(pb.cpp).string_type=CORD];
 
   repeated NestedMessage repeated_lazy_message = 57 ;
 
@@ -158,8 +157,8 @@ message TestAllTypes {
   proto2_unittest_import.ImportEnum
       default_import_enum = 83 [default = IMPORT_BAR];
 
-  string default_string_piece = 84 [ctype=STRING_PIECE,default="abc"];
-  string default_cord = 85 [ctype=CORD,default="123"];
+  string default_string_piece = 84 [default="abc"];
+  string default_cord = 85 [features.(pb.cpp).string_type=CORD,default="123"];
 
   // For oneof test
   oneof oneof_field {
@@ -167,8 +166,8 @@ message TestAllTypes {
     NestedMessage oneof_nested_message = 112;
     string oneof_string = 113;
     bytes oneof_bytes = 114;
-    string oneof_cord = 115 [ctype=CORD];
-    string oneof_string_piece = 116 [ctype=STRING_PIECE];
+    string oneof_cord = 115 [features.(pb.cpp).string_type=CORD];
+    string oneof_string_piece = 116;
     NestedMessage oneof_lazy_nested_message = 117 [lazy=true];
   }
 }
@@ -224,13 +223,17 @@ message TestAllExtensions {
   extensions 1 to max;
 }
 
-  message OptionalGroup_extension {
-    int32 a = 17;
-  }
+message OptionalGroup_extension {
+  option features.enforce_naming_style = STYLE_LEGACY;
 
-  message RepeatedGroup_extension {
-    int32 a = 47;
-  }
+  int32 a = 17;
+}
+
+message RepeatedGroup_extension {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
+  int32 a = 47;
+}
 
 extend TestAllExtensions {
   // Singular
@@ -263,7 +266,7 @@ extend TestAllExtensions {
   proto2_unittest_import.ImportEnum
     optional_import_enum_extension = 23;
 
-  string optional_string_piece_extension = 24 [ctype=STRING_PIECE];
+  string optional_string_piece_extension = 24;
   // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   string optional_cord_extension = 25;
@@ -307,7 +310,7 @@ extend TestAllExtensions {
   repeated proto2_unittest_import.ImportEnum
     repeated_import_enum_extension = 53;
 
-  repeated string repeated_string_piece_extension = 54 [ctype=STRING_PIECE];
+  repeated string repeated_string_piece_extension = 54;
   // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   repeated string repeated_cord_extension = 55;
@@ -339,8 +342,7 @@ extend TestAllExtensions {
   proto2_unittest_import.ImportEnum
     default_import_enum_extension = 83 [default = IMPORT_BAR];
 
-  string default_string_piece_extension = 84
-      [ctype=STRING_PIECE, default="abc"];
+  string default_string_piece_extension = 84 [default="abc"];
   // TODO: ctype=CORD is not supported for extension. Add
   // ctype=CORD option back after it is supported.
   string default_cord_extension = 85 [default="123"];
@@ -387,9 +389,12 @@ message TestNestedExtension {
     string nested_string_extension = 1003;
   }
 
-    message OptionalGroup_extension {
-      int32 a = 17;
-    }
+  message OptionalGroup_extension {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
+    int32 a = 17;
+  }
+
   extend TestGroupExtension {
     OptionalGroup_extension optionalgroup_extension = 16
         [features.message_encoding = DELIMITED];
@@ -461,6 +466,7 @@ message TestRequiredEnumMulti {
     BAR = 2;
     BAZ = 100;
   }
+  option features.enforce_naming_style = STYLE_LEGACY;
 
   // Intentionally placed in descending field number to force sorting in closed
   // enum verification.
@@ -477,6 +483,7 @@ message TestRequiredNoMaskMulti {
     BAR = 2;
     BAZ = 100;
   }
+  option features.enforce_naming_style = STYLE_LEGACY;
 
   // Intentionally placed in descending field number to force sorting in closed
   // enum verification. Also, using large field numbers to use tag only
@@ -713,19 +720,21 @@ enum TestSparseEnum {
 // Test message with CamelCase field names.  This violates Protocol Buffer
 // standard style.
 message TestCamelCaseFieldNames {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
   int32 PrimitiveField = 1;
   string StringField = 2;
   ForeignEnum EnumField = 3;
   ForeignMessage MessageField = 4;
-  string StringPieceField = 5 [ctype=STRING_PIECE];
-  string CordField = 6 [ctype=CORD];
+  string StringPieceField = 5;
+  string CordField = 6 [features.(pb.cpp).string_type=CORD];
 
   repeated int32 RepeatedPrimitiveField = 7;
   repeated string RepeatedStringField = 8;
   repeated ForeignEnum RepeatedEnumField = 9;
   repeated ForeignMessage RepeatedMessageField = 10;
-  repeated string RepeatedStringPieceField = 11 [ctype=STRING_PIECE];
-  repeated string RepeatedCordField = 12 [ctype=CORD];
+  repeated string RepeatedStringPieceField = 11;
+  repeated string RepeatedCordField = 12 [features.(pb.cpp).string_type=CORD];
 }
 
 
@@ -815,9 +824,8 @@ message TestExtremeDefaultValues {
   // String defaults containing the character '\000'
   string string_with_zero       = 23 [default = "hel\000lo"];
    bytes bytes_with_zero        = 24 [default = "wor\000ld"];
-  string string_piece_with_zero = 25 [ctype=STRING_PIECE,
-                                               default="ab\000c"];
-  string cord_with_zero         = 26 [ctype=CORD,
+  string string_piece_with_zero = 25 [default="ab\000c"];
+  string cord_with_zero         = 26 [features.(pb.cpp).string_type=CORD,
                                                default="12\0003"];
   string replacement_string     = 27 [default="${unknown}"];
 }
@@ -932,27 +940,26 @@ message TestOneof2 {
   oneof foo {
     int32 foo_int = 1;
     string foo_string = 2;
-    string foo_cord = 3 [ctype=CORD];
-    string foo_string_piece = 4 [ctype=STRING_PIECE];
+    string foo_cord = 3 [features.(pb.cpp).string_type=CORD];
+    string foo_string_piece = 4;
     bytes foo_bytes = 5;
     NestedEnum foo_enum = 6;
     NestedMessage foo_message = 7;
     FooGroup foogroup = 8 [features.message_encoding = DELIMITED];
     NestedMessage foo_lazy_message = 11 [lazy=true];
-    bytes foo_bytes_cord = 30 [ctype=CORD];
+    bytes foo_bytes_cord = 30 [features.(pb.cpp).string_type=CORD];
   }
 
   oneof bar {
     int32 bar_int = 12 [default = 5];
     string bar_string = 13 [default = "STRING"];
-    string bar_cord = 14 [ctype=CORD, default = "CORD"];
-    string bar_string_piece = 15 [ctype=STRING_PIECE, default = "SPIECE"];
+    string bar_cord = 14 [features.(pb.cpp).string_type=CORD, default = "CORD"];
+    string bar_string_piece = 15 [default = "SPIECE"];
     bytes bar_bytes = 16 [default = "BYTES"];
     NestedEnum bar_enum = 17 [default = BAR];
     string bar_string_with_empty_default = 20 [default = ""];
-    string bar_cord_with_empty_default = 21 [ctype=CORD, default = ""];
-    string bar_string_piece_with_empty_default = 22
-        [ctype=STRING_PIECE, default = ""];
+    string bar_cord_with_empty_default = 21 [features.(pb.cpp).string_type=CORD, default = ""];
+    string bar_string_piece_with_empty_default = 22 [default = ""];
     bytes bar_bytes_with_empty_default = 23 [default = ""];
   }
 
@@ -1197,17 +1204,17 @@ message BarResponse {}
 
 message TestJsonName {
   int32 field_name1 = 1;
-  int32 fieldName2 = 2;
-  int32 FieldName3 = 3;
-  int32 _field_name4 = 4;
-  int32 FIELD_NAME5 = 5;
+  int32 fieldName2 = 2 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 FieldName3 = 3 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 _field_name4 = 4 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 FIELD_NAME5 = 5 [features.enforce_naming_style = STYLE_LEGACY];
   int32 field_name6 = 6 [json_name = "@type"];
   int32 fieldname7 = 7;
 }
 
 message TestHugeFieldNumbers {
   int32 optional_int32 = 536870000;
-  int32 fixed_32 = 536870001;
+  int32 fixed_32 = 536870001 [features.enforce_naming_style = STYLE_LEGACY];
   repeated int32 repeated_int32 = 536870002 [features.repeated_field_encoding = EXPANDED];
   repeated int32 packed_int32 = 536870003 [features.repeated_field_encoding = PACKED];
 
@@ -1293,6 +1300,8 @@ extend TestNestedGroupExtensionOuter.Layer1OptionalGroup.Layer2RepeatedGroup {
 }
 
 enum VeryLargeEnum {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
   ENUM_LABEL_DEFAULT = 0;
   ENUM_LABEL_1 = 1;
   ENUM_LABEL_2 = 2;
@@ -1425,6 +1434,8 @@ message TestExtensionRangeSerialize {
 }
 
 message TestVerifyInt32Simple {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     int32 optional_int32_1 = 1;
     int32 optional_int32_2 = 2;
     int32 optional_int32_63 = 63;
@@ -1432,6 +1443,8 @@ message TestVerifyInt32Simple {
 }
 
 message TestVerifyInt32 {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     int32 optional_int32_1 = 1;
     int32 optional_int32_2 = 2;
     int32 optional_int32_63 = 63;
@@ -1442,6 +1455,8 @@ message TestVerifyInt32 {
 }
 
 message TestVerifyMostlyInt32 {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     int64 optional_int64_30 = 30;
 
     int32 optional_int32_1 = 1;
@@ -1456,6 +1471,8 @@ message TestVerifyMostlyInt32 {
 }
 
 message TestVerifyMostlyInt32BigFieldNumber {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     int64 optional_int64_30 = 30;
     int32 optional_int32_300 = 300;
 
@@ -1471,6 +1488,8 @@ message TestVerifyMostlyInt32BigFieldNumber {
 }
 
 message TestVerifyUint32Simple {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     uint32 optional_uint32_1 = 1;
     uint32 optional_uint32_2 = 2;
     uint32 optional_uint32_63 = 63;
@@ -1478,6 +1497,8 @@ message TestVerifyUint32Simple {
 }
 
 message TestVerifyUint32 {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     uint32 optional_uint32_1 = 1;
     uint32 optional_uint32_2 = 2;
     uint32 optional_uint32_63 = 63;
@@ -1488,6 +1509,8 @@ message TestVerifyUint32 {
 }
 
 message TestVerifyOneUint32 {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     uint32 optional_uint32_1 = 1;
     int32 optional_int32_2 = 2;
     int32 optional_int32_63 = 63;
@@ -1498,6 +1521,8 @@ message TestVerifyOneUint32 {
 }
 
 message TestVerifyOneInt32BigFieldNumber {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     int32 optional_int32_65 = 65;
 
     int64 optional_int64_1 = 1;
@@ -1510,6 +1535,8 @@ message TestVerifyOneInt32BigFieldNumber {
 }
 
 message TestVerifyInt32BigFieldNumber {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     int32 optional_int32_1000 = 1000;
     int32 optional_int32_65 = 65;
 
@@ -1523,6 +1550,8 @@ message TestVerifyInt32BigFieldNumber {
 }
 
 message TestVerifyUint32BigFieldNumber {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     uint32 optional_uint32_1000 = 1000;
     uint32 optional_uint32_65 = 65;
 
@@ -1537,6 +1566,8 @@ message TestVerifyUint32BigFieldNumber {
 
 message TestVerifyBigFieldNumberUint32 {
   message Nested {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     uint32 optional_uint32_5000 = 5000;
     uint32 optional_uint32_1000 = 1000;
     uint32 optional_uint32_66 = 66;
@@ -1556,6 +1587,8 @@ message TestVerifyBigFieldNumberUint32 {
 // This message contains different kind of enums to exercise the different
 // parsers in table-driven.
 message EnumParseTester {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
   enum SeqSmall0 {
     SEQ_SMALL_0_DEFAULT = 0;
     SEQ_SMALL_0_1 = 1;
@@ -1594,6 +1627,8 @@ message EnumParseTester {
       [features.repeated_field_encoding = PACKED];
 
   enum SeqLarge {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     SEQ_LARGE_DEFAULT = -1;
     SEQ_LARGE_0 = 0;
     SEQ_LARGE_1 = 1;
@@ -1784,7 +1819,7 @@ message StringParseTester {
 }
 
 message BadFieldNames{
-  int32 OptionalInt32 = 1;
+  int32 OptionalInt32 = 1 [features.enforce_naming_style = STYLE_LEGACY];
   int32 for = 2;
 }
 
@@ -1808,8 +1843,8 @@ message RedactedFields {
 }
 
 message TestCord{
-  bytes optional_bytes_cord = 1 [ctype=CORD];
-  bytes optional_bytes_cord_default = 2 [ctype=CORD, default = "hello"];
+  bytes optional_bytes_cord = 1 [features.(pb.cpp).string_type = CORD];
+  bytes optional_bytes_cord_default = 2 [features.(pb.cpp).string_type = CORD, default = "hello"];
 }
 
 message TestPackedEnumSmallRange {
@@ -1883,6 +1918,8 @@ message EnumsForBenchmark {
 }
 
 message TestMessageWithManyRepeatedPtrFields {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
   repeated string repeated_string_1 = 1;
   repeated string repeated_string_2 = 2;
   repeated string repeated_string_3 = 3;

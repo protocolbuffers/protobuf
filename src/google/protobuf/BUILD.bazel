@@ -1053,7 +1053,7 @@ filegroup(
     visibility = ["//:__subpackages__"],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "test_protos",
     srcs = [
         "any_test.proto",
@@ -1094,6 +1094,10 @@ proto_library(
         "unittest_string_type.proto",
         "unittest_string_view.proto",
         "unittest_well_known_types.proto",
+    ],
+    option_deps = [
+        ":cpp_features_proto",
+        "//:java_features_proto",
     ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
@@ -1190,9 +1194,10 @@ cc_proto_library(
     deps = [":unittest_features_proto"],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "generic_test_protos",
     srcs = [":test_proto_srcs"],
+    option_deps = [":cpp_features_proto"],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -1211,9 +1216,13 @@ proto_library(
     ],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "generic_test_editions_protos",
     srcs = [":test_proto_editions_srcs"],
+    option_deps = [
+        ":cpp_features_proto",
+        "//:java_features_proto",
+    ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
