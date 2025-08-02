@@ -175,8 +175,7 @@ class MessageGenerator {
   // Generates the clear_foo() method for a field.
   void GenerateFieldClear(const FieldDescriptor* field, bool is_inline,
                           io::Printer* p);
-  void GenerateVerifyHasBitConsistency(io::Printer* p,
-                                       absl::string_view prefix);
+  void GenerateCheckHasBitConsistency(io::Printer* p, absl::string_view prefix);
 
   // Returns true if any of the fields needs an `arena` variable containing
   // the current message's arena, reducing `GetArena()` call churn.

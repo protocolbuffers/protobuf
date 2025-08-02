@@ -1252,12 +1252,12 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
           )cc");
 }
 
-void MessageGenerator::GenerateVerifyHasBitConsistency(
+void MessageGenerator::GenerateCheckHasBitConsistency(
     io::Printer* p, absl::string_view prefix) {
   p->Emit({{"prefix", prefix}},
           R"cc(
-            if constexpr (::_pbi::DebugHardenVerifyHasBitConsistency()) {
-              $prefix$VerifyHasBitConsistency();
+            if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
+              $prefix$CheckHasBitConsistency();
             }
           )cc");
 }
@@ -3013,7 +3013,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
   p->Emit(
       {
           {"has_bit_consistency",
-           [&] { GenerateVerifyHasBitConsistency(p, "this_."); }},
+           [&] { GenerateCheckHasBitConsistency(p, "this_."); }},
           {"field_dtors", [&] { emit_field_dtors(/* split_fields= */ false); }},
           {"split_field_dtors",
            [&] {
@@ -4417,7 +4417,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   // cast.
   p->Emit(
       {{"has_bit_consistency",
-        [&] { GenerateVerifyHasBitConsistency(p, "from."); }},
+        [&] { GenerateCheckHasBitConsistency(p, "from."); }},
        {"get_arena",
         [&] {
           if (RequiresArena(GeneratorFunction::kMergeFrom)) {
@@ -4791,7 +4791,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
   p->Emit(
       {
           {"has_bit_consistency",
-           [&] { GenerateVerifyHasBitConsistency(p, "this_."); }},
+           [&] { GenerateCheckHasBitConsistency(p, "this_."); }},
           {"ndebug", [&] { GenerateSerializeWithCachedSizesBody(p); }},
           {"debug", [&] { GenerateSerializeWithCachedSizesBodyShuffled(p); }},
           {"ifdef",
