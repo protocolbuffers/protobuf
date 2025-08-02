@@ -201,6 +201,11 @@ class MessageLayoutHelper {
       const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
           fast_path_fields);
 
+  static bool ShouldPromoteToFastParse(
+      const FieldDescriptor* field, FieldHotness hotness,
+      const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
+          fast_path_fields);
+
   // Groups fields into alignment equivalence classes (1, 4, and 8). Within
   // each alignment equivalence class, fields are partitioned by `FieldFamily`
   // and `FieldHotness`.
