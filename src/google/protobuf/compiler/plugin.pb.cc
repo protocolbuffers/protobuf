@@ -1013,11 +1013,17 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
-  _this->_internal_mutable_proto_file()->MergeFrom(
-      from._internal_proto_file());
-  _this->_internal_mutable_source_file_descriptors()->MergeFrom(
-      from._internal_source_file_descriptors());
+  {
+    _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
+  }
+  {
+    _this->_internal_mutable_proto_file()->MergeFrom(
+        from._internal_proto_file());
+  }
+  {
+    _this->_internal_mutable_source_file_descriptors()->MergeFrom(
+        from._internal_source_file_descriptors());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1791,8 +1797,10 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(
-      from._internal_file());
+  {
+    _this->_internal_mutable_file()->MergeFrom(
+        from._internal_file());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {

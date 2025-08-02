@@ -10691,12 +10691,15 @@ HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
     return HasbitMode::kTrueHasbit;
   }
 
-  // Implicit presence fields.
-  if (!field->is_repeated()) {
+  if (EnableExperimentalHintHasBitsForRepeatedFields()) {
+    // Both implicit-presence and repeated/map fields have hint hasbits.
     return HasbitMode::kHintHasbit;
+  } else if (field->is_repeated()) {
+    return HasbitMode::kNoHasbit;
   }
-  // We currently don't implement hasbits for implicit repeated fields.
-  return HasbitMode::kNoHasbit;
+
+  // Implicit-presence fields have hint hasbits.
+  return HasbitMode::kHintHasbit;
 }
 
 bool HasHasbitWithoutProfile(const FieldDescriptor* field) {
