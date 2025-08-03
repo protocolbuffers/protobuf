@@ -463,6 +463,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $PrepareSplitMessageForWrite$;
+      $update_hasbit$;
       ::std::string* _s = _internal_mutable_$name_internal$();
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
@@ -475,14 +476,12 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
     inline void $Msg$::_internal_set_$name_internal$(const ::std::string& value) {
       $TsanDetectConcurrentMutation$;
-      $update_hasbit$;
       //~ Don't use $Set$ here; we always want the std::string variant
       //~ regardless of whether this is a `bytes` field.
       $field_$.Set(value, $set_args$);
     }
     inline ::std::string* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
-      $update_hasbit$;
       return $field_$.Mutable($lazy_args$, $set_args$);
     }
     inline ::std::string* $nullable$ $Msg$::$release_name$() {
