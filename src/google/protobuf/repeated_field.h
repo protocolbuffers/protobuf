@@ -35,6 +35,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
@@ -1249,6 +1250,8 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
       memcpy(static_cast<void*>(pnew), pold, old_size * sizeof(Element));
     } else {
       for (Element* end = pnew + old_size; pnew != end; ++pnew, ++pold) {
+        absl::PrefetchToLocalCache(pold + 4);
+        absl::PrefetchToLocalCacheForWrite(pnew + 4);
         ::new (static_cast<void*>(pnew)) Element(std::move(*pold));
         pold->~Element();
       }
