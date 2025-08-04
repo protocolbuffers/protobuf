@@ -8731,8 +8731,6 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       return;
     }
 
-    // TODO: b/396020109 - Check for MessageSet extensions in separate .txtpb
-    // file.
     if (pool_->ShouldEnforceExtensionDeclaration(*field)) {
       for (const auto& declaration : extension_range->options_->declaration()) {
         if (declaration.number() != field->number()) continue;
