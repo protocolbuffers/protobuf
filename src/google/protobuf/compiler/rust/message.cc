@@ -137,10 +137,12 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
 
   ctx.Emit(
       {{"new_thunk", ThunkName(ctx, msg, "new")},
-       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
+       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
+       {"downcast_message_thunk", ThunkName(ctx, msg, "downcast_message")}},
       R"rs(
       fn $new_thunk$() -> $pbr$::RawMessage;
       fn $default_instance_thunk$() -> $pbr$::RawMessage;
+      fn $downcast_message_thunk$(msg: $pbr$::RawMessage) -> $pbr$::RawMessage;
     )rs");
 }
 
@@ -1085,8 +1087,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
 
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}},
-             R"rs(
+    ctx.Emit(
+        {{"Msg", RsSafeName(msg.name())},
+         {"downcast_message_thunk", ThunkName(ctx, msg, "downcast_message")}},
+        R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
             msg: &'a mut *mut $std$::ffi::c_void) -> Self {
@@ -1121,6 +1125,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         fn __unstable_leak_raw_message(self) -> *mut $std$::ffi::c_void {
           let s = $std$::mem::ManuallyDrop::new(self);
           s.raw_msg().as_ptr() as *mut _
+        }
+
+        unsafe fn __unstable_downcast_from_proto2_message(message_lite: *mut $std$::ffi::c_void) -> Self {
+          let raw = $downcast_message_thunk$($pbr$::RawMessage::new(message_lite as *mut _).unwrap());
+          let inner = unsafe { $pbr$::OwnedMessageInner::<$Msg$>::wrap_raw(raw) };
+          Self { inner }
         }
       }
 
@@ -1204,12 +1214,19 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
   ctx.Emit(
       {{"QualifiedMsg", cpp::QualifiedClassName(&msg)},
        {"new_thunk", ThunkName(ctx, msg, "new")},
-       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
+       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
+       {"downcast_message_thunk", ThunkName(ctx, msg, "downcast_message")}},
       R"cc(
         void* $new_thunk$() { return new $QualifiedMsg$(); }
 
         const google::protobuf::MessageLite* $default_instance_thunk$() {
           return &$QualifiedMsg$::default_instance();
+        }
+
+        $QualifiedMsg$* $downcast_message_thunk$(void* msg) {
+          google::protobuf::MessageLite* typed_msg = reinterpret_cast<google::protobuf::MessageLite*>(msg);
+          $QualifiedMsg$* downcast = google::protobuf::DownCastMessage<$QualifiedMsg$>(typed_msg);
+          return downcast;
         }
       )cc");
 
