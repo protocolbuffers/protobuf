@@ -336,7 +336,7 @@ constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
   return false;
 }
 
-inline constexpr bool DebugHardenVerifyHasBitConsistency() {
+inline constexpr bool DebugHardenCheckHasBitConsistency() {
 #if !defined(NDEBUG) || defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
     defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
   return true;
