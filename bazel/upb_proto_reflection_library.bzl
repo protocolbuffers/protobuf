@@ -34,9 +34,6 @@ _upb_proto_reflection_library_aspect = aspect(
             default = Label("//upb_generator/reflection:toolchain"),
             cfg = getattr(proto_common, "proto_lang_toolchain_cfg", "target"),
         ),
-        "_cc_toolchain": attr.label(
-            default = "@bazel_tools//tools/cpp:current_cc_toolchain",
-        ),
     },
     implementation = _upb_proto_reflection_library_aspect_impl,
     requires = [upb_minitable_proto_library_aspect],
