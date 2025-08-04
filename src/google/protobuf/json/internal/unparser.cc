@@ -625,7 +625,7 @@ absl::Status WriteTimestamp(JsonWriter& writer, const Msg<Traits>& msg,
   }
 
   size_t digits = 9;
-  uint32_t frac_seconds = std::abs(*nanos);
+  uint32_t frac_seconds = std::abs(static_cast<int64_t>(*nanos));
   while (frac_seconds % 1000 == 0) {
     frac_seconds /= 1000;
     digits -= 3;
@@ -671,7 +671,7 @@ absl::Status WriteDuration(JsonWriter& writer, const Msg<Traits>& msg,
   }
 
   size_t digits = 9;
-  uint32_t frac_seconds = std::abs(*nanos);
+  uint32_t frac_seconds = std::abs(static_cast<int64_t>(*nanos));
   while (frac_seconds % 1000 == 0) {
     frac_seconds /= 1000;
     digits -= 3;
