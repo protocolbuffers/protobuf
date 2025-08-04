@@ -638,6 +638,16 @@ public class GeneratedMessageTest {
   }
 
   @Test
+  public void testReflectionRepeatedSettersWithEmptyList() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    reflectionTester.setRepeatedFieldsToEmptyListViaReflection(builder);
+
+    TestAllTypes message = builder.build();
+    TestUtil.assertClear(message);
+    assertThat(message).isEqualTo(TestAllTypes.getDefaultInstance());
+  }
+
+  @Test
   public void testReflectionRepeatedSettersRejectNull() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     reflectionTester.assertReflectionRepeatedSettersRejectNull(builder);
