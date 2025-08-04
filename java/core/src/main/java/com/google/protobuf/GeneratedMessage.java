@@ -30,11 +30,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * All generated protocol message classes extend this class. This class implements most of the
@@ -51,6 +54,8 @@ import java.util.TreeMap;
  */
 public abstract class GeneratedMessage extends AbstractMessage implements Serializable {
   private static final long serialVersionUID = 1L;
+
+  private static final Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
 
   /**
    * For testing. Allows a test to disable the optimization that avoids using field builders for
@@ -392,6 +397,59 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
   protected static IntList emptyIntList() {
     return IntArrayList.emptyList();
+  }
+
+  static final String PRE22_GENCODE_SILENCE_PROPERTY =
+      "com.google.protobuf.use_unsafe_pre22_gencode";
+  static final String PRE22_GENCODE_ERROR_PROPERTY =
+      "com.google.protobuf.error_on_unsafe_pre22_gencode";
+
+  static final String PRE22_GENCODE_VULNERABILITY_MESSAGE =
+      "As of 2022/09/29 (release 21.7) makeExtensionsImmutable should not be called from protobuf"
+          + " gencode. If you are seeing this message, your gencode is vulnerable to a denial of"
+          + " service attack. You should regenerate your code using protobuf 25.6 or later. Use the"
+          + " latest version that meets your needs. However, if you understand the risks and wish"
+          + " to continue with vulnerable gencode, you can set the system property"
+          + " `-Dcom.google.protobuf.use_unsafe_pre22_gencode` on the command line to silence this"
+          + " warning. You also can set"
+          + " `-Dcom.google.protobuf.error_on_unsafe_pre22_gencode` to throw an error instead. See"
+          + " security vulnerability:"
+          + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
+
+  protected static final Set<String> loggedPre22TypeNames =
+      Collections.synchronizedSet(new HashSet<String>());
+
+  static void warnPre22Gencode(Class<?> messageClass) {
+    if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
+      return;
+    }
+    String messageName = messageClass.getName();
+    String vulnerabilityMessage =
+        "Vulnerable protobuf generated type in use: "
+            + messageName
+            + "\n"
+            + PRE22_GENCODE_VULNERABILITY_MESSAGE;
+
+    if (System.getProperty(PRE22_GENCODE_ERROR_PROPERTY) != null) {
+      throw new UnsupportedOperationException(vulnerabilityMessage);
+    }
+
+    if (!loggedPre22TypeNames.add(messageName)) {
+      return;
+    }
+
+    logger.warning(vulnerabilityMessage);
+  }
+
+  /**
+   * This method only exists as a shim for pre-22 gencode. This function is a no-op other than
+   * warning or throwing an error for messages that are not extendable.
+   *
+   * @throws UnsupportedOperationException if the {@link #PRE22_GENCODE_ERROR_PROPERTY} system
+   *     property is set.
+   */
+  protected void makeExtensionsImmutable() {
+    warnPre22Gencode(getClass());
   }
 
   protected static LongList emptyLongList() {
@@ -1043,6 +1101,16 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @Override
     public boolean isInitialized() {
       return super.isInitialized() && extensionsAreInitialized();
+    }
+
+    /**
+     * This method only exists as a shim for pre-22 gencode (see {@link
+     * GeneratedMessage.warnPre22Gencode}.
+     */
+    @Override
+    protected void makeExtensionsImmutable() {
+      GeneratedMessage.warnPre22Gencode(getClass());
+      extensions.makeImmutable();
     }
 
     /**
