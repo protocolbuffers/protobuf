@@ -1976,4 +1976,104 @@ public class GeneratedMessageTest {
     builder.clearField(repeatedMsgField);
     assertThat(list).hasSize(1);
   }
+
+  private TestUtil.TestLogHandler setupLogger() {
+    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
+    Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
+    logger.addHandler(logHandler);
+    logHandler.setLevel(Level.ALL);
+    return logHandler;
+  }
+
+  static class TestMessageBaseForPre22WarningsTests extends GeneratedMessage {
+    @Override
+    protected FieldAccessorTable internalGetFieldAccessorTable() {
+      return null;
+    }
+
+    @Override
+    protected Message.Builder newBuilderForType(BuilderParent parent) {
+      return null;
+    }
+
+    @Override
+    public Message.Builder newBuilderForType() {
+      return null;
+    }
+
+    @Override
+    public Message.Builder toBuilder() {
+      return null;
+    }
+
+    @Override
+    public Message getDefaultInstanceForType() {
+      return null;
+    }
+  }
+
+  @Test
+  public void generatedMessage_makeExtensionsImmutableShouldLog() {
+    TestUtil.TestLogHandler logHandler = setupLogger();
+    GeneratedMessage.loggedPre22TypeNames.clear();
+
+    class TestMessage1 extends TestMessageBaseForPre22WarningsTests {}
+    class TestMessage2 extends TestMessageBaseForPre22WarningsTests {}
+
+    TestMessage1 msg = new TestMessage1();
+    TestMessage2 msg2 = new TestMessage2();
+
+    msg.makeExtensionsImmutable();
+    List<LogRecord> logs = logHandler.getStoredLogRecords();
+    assertThat(logs).hasSize(1);
+    String message = logs.get(0).getMessage();
+    // The generated type
+    assertThat(message)
+        .contains(
+            "Vulnerable protobuf generated type in use: "
+                + "com.google.protobuf.GeneratedMessageTest$1TestMessage1");
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
+
+    // Subsequent calls for the same type do not log again.
+    msg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(1);
+
+    // A call on a second type does log for that type.
+    msg2.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(2);
+    // And not again (only once per type).
+    msg2.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(2);
+  }
+
+  @Test
+  public void extendableMessage_makeExtensionsImmutableShouldThrowWhenOptedIn() {
+    System.setProperty("com.google.protobuf.error_on_unsafe_pre22_gencode", "true");
+    GeneratedMessage.loggedPre22TypeNames.clear();
+
+    class TestMessage3 extends TestMessageBaseForPre22WarningsTests {}
+    TestMessage3 msg = new TestMessage3();
+    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+
+    // When opting into throwing, it should throw every time, not just the first time.
+    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+
+    System.clearProperty("com.google.protobuf.error_on_unsafe_pre22_gencode");
+  }
+
+  @Test
+  public void extendableMessage_makeExtensionsImmutableShouldBeSilentWhenOptedIn() {
+    System.setProperty("com.google.protobuf.use_unsafe_pre22_gencode", "true");
+    TestUtil.TestLogHandler logHandler = setupLogger();
+    GeneratedMessage.loggedPre22TypeNames.clear();
+
+    class TestMessage4 extends TestMessageBaseForPre22WarningsTests {}
+    TestMessage4 msg = new TestMessage4();
+    msg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).isEmpty();
+
+    System.clearProperty("com.google.protobuf.use_unsafe_pre22_gencode");
+  }
 }
