@@ -292,6 +292,12 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   }
   CMessageClass* newtype = reinterpret_cast<CMessageClass*>(result.get());
 
+  // Cache the descriptor, both as Python object and as C++ pointer.
+  const Descriptor* descriptor =
+      PyMessageDescriptor_AsDescriptor(py_descriptor);
+  if (descriptor == nullptr) {
+    return nullptr;
+  }
   newtype->py_message_descriptor = py_descriptor;
   newtype->message_descriptor = descriptor;
   // TODO: Don't always use the canonical pool of the descriptor,
