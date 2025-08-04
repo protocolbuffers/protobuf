@@ -3711,7 +3711,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   // Validation to make sure we used all the bytes correctly.
   ABSL_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
                     reinterpret_cast<char*>(res),
-                byte_size);
+                byte_size)
+      << "message = " << descriptor_->full_name();
 
   return res;
 }
