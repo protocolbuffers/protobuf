@@ -1981,8 +1981,6 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTests() {
                    "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
-  // NOTE: The spec for JSON support is still being sorted out, these may not
-  // all be correct.
   RunJsonTestsForFieldNameConvention();
   RunJsonTestsForNonRepeatedTypes();
   RunJsonTestsForRepeatedTypes();
@@ -2902,6 +2900,14 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "RepeatedFieldWrongElementTypeExpectingMessagesGotString", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1}, "2"]})");
+
+  // A singular field where a repeated field was expected is not allowed, even
+  // if it is the right type.
+  ExpectParseFailureForJson("SingleValueForRepeatedFieldInt32", REQUIRED,
+                            R"({"repeatedInt32": 1})");
+  ExpectParseFailureForJson("SingleValueForRepeatedFieldMessage", REQUIRED,
+                            R"({"repeatedNestedMessage": {"a": 1}})");
+
   // Trailing comma in the repeated field is not allowed.
   ExpectParseFailureForJson("RepeatedFieldTrailingComma", RECOMMENDED,
                             R"({"repeatedInt32": [1, 2, 3, 4,]})");

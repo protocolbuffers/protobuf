@@ -35,3 +35,5 @@ Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                             
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
 Required.*.TimestampProtoNanoTooLarge.JsonOutput                                                                   # Should have failed to serialize, but didn't.
 Required.*.TimestampProtoNegativeNanos.JsonOutput                                                                  # Should have failed to serialize, but didn't.
+Required.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.SingleValueForRepeatedFieldMessage                                                            # Should have failed to parse, but didn't.
