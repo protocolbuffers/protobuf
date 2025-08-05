@@ -308,6 +308,7 @@ class ParseContext;
 struct DescriptorTable;
 class DescriptorPoolExtensionFinder;
 class ExtensionSet;
+class HasBitsTestPeer;
 class LazyField;
 class RepeatedPtrFieldBase;
 class TcParser;
@@ -1075,6 +1076,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class compiler::cpp::MessageTableTester;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
+  friend class internal::HasBitsTestPeer;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;

@@ -16,6 +16,7 @@
 
 #include "absl/base/optimization.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/extension_set.h"
@@ -828,6 +829,9 @@ class PROTOBUF_EXPORT TcParser final {
         validated_enum_value,
     };
   }
+
+  static absl::Status VerifyHasBitConsistency(const MessageLite* msg,
+                                              const TcParseTableBase* table);
 
   static void CheckHasBitConsistency(const MessageLite* msg,
                                      const TcParseTableBase* table);

@@ -21,6 +21,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
+#include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -88,20 +89,23 @@ PROTOBUF_ALWAYS_INLINE void SetCachedHasBit(uint64_t& cached_hasbits,
 
 }  // namespace
 
-void TcParser::CheckHasBitConsistency(const MessageLite* msg,
-                                      const TcParseTableBase* table) {
+absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
+                                               const TcParseTableBase* table) {
   namespace fl = internal::field_layout;
   if (table->has_bits_offset == 0) {
     // Nothing to check
-    return;
+    return absl::OkStatus();
   }
 
   for (const auto& entry : table->field_entries()) {
-    const auto print_error = [&] {
-      return absl::StrFormat("Type=%s Field=%d\n", msg->GetTypeName(),
-                             FieldNumber(table, &entry));
+    const auto make_error_status = [&] {
+      return absl::InternalError(
+          absl::StrFormat("Has bits mismatch for Type=%s Field=%d\n",
+                          msg->GetTypeName(), FieldNumber(table, &entry)));
     };
-    if ((entry.type_card & fl::kFcMask) != fl::kFcOptional) return;
+    if ((entry.type_card & fl::kFcMask) != fl::kFcOptional) {
+      continue;
+    }
     const bool has_bit = ReadHas(entry, msg);
     const void* base = msg;
     const void* default_base = table->default_instance();
@@ -115,22 +119,25 @@ void TcParser::CheckHasBitConsistency(const MessageLite* msg,
       case fl::kFkVarint:
       case fl::kFkFixed:
         // Numerics can have any value when the has bit is on.
-        if (has_bit) return;
+        if (has_bit) break;
         switch (entry.type_card & fl::kRepMask) {
           case fl::kRep8Bits:
-            ABSL_CHECK_EQ(RefAt<bool>(base, entry.offset),
-                          RefAt<bool>(default_base, entry.offset))
-                << print_error();
+            if (RefAt<bool>(base, entry.offset) !=
+                RefAt<bool>(default_base, entry.offset)) {
+              return make_error_status();
+            }
             break;
           case fl::kRep32Bits:
-            ABSL_CHECK_EQ(RefAt<uint32_t>(base, entry.offset),
-                          RefAt<uint32_t>(default_base, entry.offset))
-                << print_error();
+            if (RefAt<uint32_t>(base, entry.offset) !=
+                RefAt<uint32_t>(default_base, entry.offset)) {
+              return make_error_status();
+            }
             break;
           case fl::kRep64Bits:
-            ABSL_CHECK_EQ(RefAt<uint64_t>(base, entry.offset),
-                          RefAt<uint64_t>(default_base, entry.offset))
-                << print_error();
+            if (RefAt<uint64_t>(base, entry.offset) !=
+                RefAt<uint64_t>(default_base, entry.offset)) {
+              return make_error_status();
+            }
             break;
         }
         break;
@@ -138,10 +145,10 @@ void TcParser::CheckHasBitConsistency(const MessageLite* msg,
       case fl::kFkString:
         switch (entry.type_card & fl::kRepMask) {
           case field_layout::kRepAString:
-            if (has_bit) {
-              // Must not point to the default.
-              ABSL_CHECK(!RefAt<ArenaStringPtr>(base, entry.offset).IsDefault())
-                  << print_error();
+            // Must not point to the default if the has bit is on.
+            if (has_bit &&
+                RefAt<ArenaStringPtr>(base, entry.offset).IsDefault()) {
+              return make_error_status();
             } else {
               // We should technically check that the value matches the default
               // value of the field, but the prototype does not actually contain
@@ -149,20 +156,18 @@ void TcParser::CheckHasBitConsistency(const MessageLite* msg,
             }
             break;
           case field_layout::kRepCord:
-            if (!has_bit) {
-              // If the has bit is off, it must match the default.
-              ABSL_CHECK_EQ(RefAt<absl::Cord>(base, entry.offset),
-                            RefAt<absl::Cord>(default_base, entry.offset))
-                  << print_error();
+            // If the has bit is off, it must match the default.
+            if (!has_bit && (RefAt<absl::Cord>(base, entry.offset) !=
+                             RefAt<absl::Cord>(default_base, entry.offset))) {
+              return make_error_status();
             }
             break;
           case field_layout::kRepIString:
-            if (!has_bit) {
-              // If the has bit is off, it must match the default.
-              ABSL_CHECK_EQ(
-                  RefAt<InlinedStringField>(base, entry.offset).Get(),
-                  RefAt<InlinedStringField>(default_base, entry.offset).Get())
-                  << print_error();
+            // If the has bit is off, it must match the default.
+            if (!has_bit &&
+                (RefAt<InlinedStringField>(base, entry.offset).Get() !=
+                 RefAt<InlinedStringField>(default_base, entry.offset).Get())) {
+              return make_error_status();
             }
             break;
           case field_layout::kRepSString:
@@ -173,13 +178,11 @@ void TcParser::CheckHasBitConsistency(const MessageLite* msg,
         switch (entry.type_card & fl::kRepMask) {
           case fl::kRepMessage:
           case fl::kRepGroup:
-            if (has_bit) {
-              ABSL_CHECK(RefAt<const MessageLite*>(base, entry.offset) !=
-                         nullptr)
-                  << print_error();
-            } else {
-              // An off has_bit does not imply a null pointer.
-              // We might have a previous instance that we cached.
+            // Note: An off has_bit does not imply a null pointer. We might have
+            // a previous instance that we cached.
+            if (has_bit &&
+                RefAt<const MessageLite*>(base, entry.offset) == nullptr) {
+              return make_error_status();
             }
             break;
           default:
@@ -192,6 +195,13 @@ void TcParser::CheckHasBitConsistency(const MessageLite* msg,
         Unreachable();
     }
   }
+
+  return absl::OkStatus();
+}
+
+void TcParser::CheckHasBitConsistency(const MessageLite* msg,
+                                      const TcParseTableBase* table) {
+  ABSL_CHECK_OK(VerifyHasBitConsistency(msg, table));
 }
 
 //////////////////////////////////////////////////////////////////////////////

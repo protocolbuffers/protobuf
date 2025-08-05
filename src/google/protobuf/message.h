@@ -150,6 +150,7 @@ struct FuzzPeer;
 struct DescriptorTable;
 template <bool is_oneof>
 struct DynamicFieldInfoHelper;
+class HasBitsTestPeer;
 class MapFieldBase;
 class MessageUtil;
 class ReflectionVisit;
@@ -981,6 +982,8 @@ class PROTOBUF_EXPORT Reflection final {
   MessageFactory* GetMessageFactory() const;
 
  private:
+  const internal::ReflectionSchema& Schema() const { return schema_; }
+
   template <typename T>
   const RepeatedField<T>& GetRepeatedFieldInternal(
       const Message& message, const FieldDescriptor* field) const;
@@ -1077,6 +1080,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   friend class FastReflectionBase;
   friend class FastReflectionMessageMutator;
+  friend class internal::HasBitsTestPeer;
   friend class internal::ReflectionVisit;
   friend bool internal::IsDescendant(const Message& root,
                                      const Message& message);
@@ -1290,7 +1294,7 @@ class PROTOBUF_EXPORT Reflection final {
   bool HasFieldSingular(const Message& message,
                         const FieldDescriptor* field) const;
   void SetHasBit(Message* message, const FieldDescriptor* field) const;
-  inline void ClearHasBit(Message* message, const FieldDescriptor* field) const;
+  void ClearHasBit(Message* message, const FieldDescriptor* field) const;
   // Naively swaps the hasbit without checking for field existence.
   // For explicit presence fields, the hasbit is swapped normally.
   // For implicit presence fields, the hasbit is swapped without checking for
