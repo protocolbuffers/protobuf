@@ -7,15 +7,17 @@
 
 // A proto file used to test a message type with no explicit field presence.
 
-edition = "2023";
+edition = "2024";
+
+import "google/protobuf/unittest.proto";
+
+import option "google/protobuf/cpp_features.proto";
 
 // Treat all fields as implicit present by default (proto3 behavior).
 option features.field_presence = IMPLICIT;
 
 // We want to test embedded proto2 messages, so include some proto2 types.
 package proto2_nofieldpresence_unittest;
-
-import "google/protobuf/unittest.proto";
 
 // This proto includes every type of field in both singular and repeated
 // forms.
@@ -46,8 +48,8 @@ message TestAllTypes {
   float optional_float = 11;
   double optional_double = 12;
   bool optional_bool = 13;
-  string optional_string = 14;
-  bytes optional_bytes = 15;
+  string optional_string = 14 [features.(pb.cpp).string_type = STRING];
+  bytes optional_bytes = 15 [features.(pb.cpp).string_type = STRING];
 
   NestedMessage optional_nested_message = 18;
   ForeignMessage optional_foreign_message = 19;
@@ -60,8 +62,8 @@ message TestAllTypes {
   // optional proto2_unittest.ForeignEnum          optional_proto2_enum     =
   // 23;
 
-  string optional_string_piece = 24 [ctype = STRING_PIECE];
-  string optional_cord = 25 [ctype = CORD];
+  string optional_string_piece = 24;
+  string optional_cord = 25 [features.(pb.cpp).string_type = CORD];
 
   NestedMessage optional_lazy_message = 30 [lazy = true];
 
@@ -89,8 +91,8 @@ message TestAllTypes {
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnum repeated_foreign_enum = 52;
 
-  repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
-  repeated string repeated_cord = 55 [ctype = CORD];
+  repeated string repeated_string_piece = 54;
+  repeated string repeated_cord = 55 [features.(pb.cpp).string_type = CORD];
 
   repeated NestedMessage repeated_lazy_message = 57;
 

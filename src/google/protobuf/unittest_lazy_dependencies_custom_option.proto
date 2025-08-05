@@ -11,7 +11,7 @@
 //
 // A proto file we will use for unit testing.
 
-edition = "2023";
+edition = "2024";
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/unittest_lazy_dependencies_enum.proto";

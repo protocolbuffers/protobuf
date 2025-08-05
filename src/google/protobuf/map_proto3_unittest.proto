@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-edition = "2023";
+edition = "2024";
 
 // Treat all fields as implicit present by default (proto3 behavior).
 option features.field_presence = IMPLICIT;
@@ -23,5 +23,7 @@ message TestProto3BytesMap {
 }
 
 message TestI32StrMap {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
   map<int32, string> m_32_str = 1;
 }

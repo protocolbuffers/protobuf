@@ -217,7 +217,10 @@ cc_proto_library(
 filegroup(
     name = "java_features_proto_srcs",
     srcs = ["src/main/resources/google/protobuf/java_features.proto"],
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//python:__pkg__",
+    ],
 )
 
 compile_edition_defaults(
