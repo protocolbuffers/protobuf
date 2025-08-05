@@ -1,12 +1,8 @@
-edition = "2023";
+edition = "2024";
 
 package proto2_unittest;
 
-import "google/protobuf/cpp_features.proto";
-
-option java_multiple_files = true;
 option optimize_for = SPEED;
-option features.(pb.cpp).string_type = VIEW;
 
 // NEXT_TAG = 6;
 message TestStringView {
