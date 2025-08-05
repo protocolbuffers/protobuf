@@ -9,7 +9,7 @@ pkg_tar(
         "//:LICENSE",
         "//rust/proto_proc_macro:rust_protobuf_macros_src_dir",
     ],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 pkg_files(
@@ -29,5 +29,5 @@ filegroup(
         "Cargo.toml",
         "README.md",
     ],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
