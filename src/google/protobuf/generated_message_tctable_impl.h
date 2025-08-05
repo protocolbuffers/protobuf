@@ -765,6 +765,29 @@ class PROTOBUF_EXPORT TcParser final {
   static MessageLite* AddMessage(const TcParseTableBase* table,
                                  RepeatedPtrFieldBase& field);
 
+  template <typename T>
+  static inline const T& GetFieldAtMaybeSplit(const void* x, size_t offset,
+                                              const MessageLite* msg,
+                                              bool is_split) {
+    if (ABSL_PREDICT_TRUE(!is_split)) return RefAt<const T>(x, offset);
+    return *RefAt<const T*>(x, offset);
+  }
+
+  template <typename T>
+  static inline const T& GetRepeatedFieldAt(const void* x, size_t offset,
+                                            const MessageLite* msg,
+                                            bool is_split) {
+    return GetFieldAtMaybeSplit<T>(x, offset, msg, is_split);
+  }
+
+  static inline const UntypedMapBase& GetMapFieldAt(const void* x,
+                                                    size_t offset,
+                                                    const MessageLite* msg) {
+    return GetFieldAtMaybeSplit<MapFieldBaseForParse>(x, offset, msg,
+                                                      /*is_split=*/false)
+        .GetMap();
+  }
+
   template <typename T, bool is_split>
   static inline T& MaybeCreateRepeatedRefAt(void* x, size_t offset,
                                             MessageLite* msg) {
@@ -833,10 +856,19 @@ class PROTOBUF_EXPORT TcParser final {
   static absl::Status VerifyHasBitConsistency(const MessageLite* msg,
                                               const TcParseTableBase* table);
 
+  // Test-only function to verify that all hasbits are set correctly in the
+  // message.
   static void CheckHasBitConsistency(const MessageLite* msg,
                                      const TcParseTableBase* table);
 
  private:
+  // Returns true if the repeated field is empty. This method is not
+  // well-optimized, so it should only be called in debug builds.
+  static bool RepeatedFieldIsEmptySlow(
+      const MessageLite* msg, const TcParseTableBase* table,
+      const TcParseTableBase::FieldEntry& entry, const void* base,
+      bool is_split);
+
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
   PROTOBUF_CC static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
