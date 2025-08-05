@@ -21,7 +21,7 @@ load(
     _upb_proto_reflection_library = "upb_proto_reflection_library",
 )
 load(
-    "//bazel/private:upb_proto_library_internal/aspect.bzl",
+    "//bazel/private/upb_proto_library_internal:aspect.bzl",
     _GeneratedSrcsInfo = "GeneratedSrcsInfo",
 )
 
