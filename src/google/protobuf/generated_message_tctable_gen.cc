@@ -225,9 +225,6 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
         case cpp::Utf8CheckMode::kStrict:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastU);
           break;
-        case cpp::Utf8CheckMode::kVerify:
-          picked = PROTOBUF_PICK_STRING_FUNCTION(kFastS);
-          break;
         case cpp::Utf8CheckMode::kNone:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
           break;
@@ -627,9 +624,6 @@ uint16_t MakeTypeCardForField(
       switch (utf8_check_mode) {
         case cpp::Utf8CheckMode::kStrict:
           type_card |= fl::kUtf8String;
-          break;
-        case cpp::Utf8CheckMode::kVerify:
-          type_card |= fl::kRawString;
           break;
         case cpp::Utf8CheckMode::kNone:
           type_card |= fl::kBytes;

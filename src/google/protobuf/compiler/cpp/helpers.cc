@@ -1535,20 +1535,6 @@ static void GenerateUtf8CheckCode(io::Printer* p, const FieldDescriptor* field,
       }
       break;
 
-    case internal::cpp::Utf8CheckMode::kVerify:
-      if (for_parse) {
-        p->Emit(R"cc(
-          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::PARSE,
-                                      "$pkg.Msg.field$");
-        )cc");
-      } else {
-        p->Emit(R"cc(
-          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::SERIALIZE,
-                                      "$pkg.Msg.field$");
-        )cc");
-      }
-      break;
-
     case internal::cpp::Utf8CheckMode::kNone:
       break;
   }

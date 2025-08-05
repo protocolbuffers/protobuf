@@ -10701,11 +10701,6 @@ bool HasHasbitWithoutProfile(const FieldDescriptor* field) {
   return GetFieldHasbitModeWithoutProfile(field) != HasbitMode::kNoHasbit;
 }
 
-static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {
-  if (is_lite) return false;
-  return true;
-}
-
 // Which level of UTF-8 enforcemant is placed on this file.
 Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
   if (field->type() == FieldDescriptor::TYPE_STRING ||
@@ -10715,8 +10710,6 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
                                FieldDescriptor::TYPE_STRING))) {
     if (IsStrictUtf8(field)) {
       return Utf8CheckMode::kStrict;
-    } else if (IsVerifyUtf8(field, is_lite)) {
-      return Utf8CheckMode::kVerify;
     }
   }
   return Utf8CheckMode::kNone;

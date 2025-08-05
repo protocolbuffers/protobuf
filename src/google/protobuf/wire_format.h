@@ -240,9 +240,11 @@ class PROTOBUF_EXPORT WireFormat {
   // Verifies that a string field is valid UTF8, logging an error if not.
   // This function will not be called by newly generated protobuf code
   // but remains present to support existing code.
+  ABSL_DEPRECATE_AND_INLINE()
   static void VerifyUTF8String(const char* data, int size, Operation op);
   // The NamedField variant takes a field name in order to produce an
   // informative error message if verification fails.
+  ABSL_DEPRECATE_AND_INLINE()
   static void VerifyUTF8StringNamedField(const char* data, int size,
                                          Operation op,
                                          absl::string_view field_name);
@@ -316,34 +318,12 @@ inline size_t WireFormat::TagSize(int field_number,
       static_cast<WireFormatLite::FieldType>(absl::implicit_cast<int>(type)));
 }
 
-inline void WireFormat::VerifyUTF8String(const char* data, int size,
-                                         WireFormat::Operation op) {
-#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormatLite::VerifyUtf8String(data, size,
-                                   static_cast<WireFormatLite::Operation>(op),
-                                   /* field_name = */ "");
-#else
-  // Avoid the compiler warning about unused variables.
-  (void)data;
-  (void)size;
-  (void)op;
-#endif
-}
+inline void WireFormat::VerifyUTF8String(const char*, int,
+                                         WireFormat::Operation) {}
 
-inline void WireFormat::VerifyUTF8StringNamedField(
-    const char* data, int size, WireFormat::Operation op,
-    const absl::string_view field_name) {
-#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormatLite::VerifyUtf8String(
-      data, size, static_cast<WireFormatLite::Operation>(op), field_name);
-#else
-  // Avoid the compiler warning about unused variables.
-  (void)data;
-  (void)size;
-  (void)op;
-  (void)field_name;
-#endif
-}
+inline void WireFormat::VerifyUTF8StringNamedField(const char*, int,
+                                                   WireFormat::Operation,
+                                                   const absl::string_view) {}
 
 
 inline uint8_t* InternalSerializeUnknownMessageSetItemsToArray(

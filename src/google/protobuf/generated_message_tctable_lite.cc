@@ -1592,19 +1592,13 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   }
   switch (utf8) {
     case kNoUtf8:
-#ifdef NDEBUG
-    case kUtf8ValidateOnly:
-#endif
       break;
-    default:
+    case kUtf8:
       if (ABSL_PREDICT_TRUE(IsValidUTF8(field))) {
         break;
       }
       ReportFastUtf8Error(FastDecodeTag(saved_tag), table);
-      if (utf8 == kUtf8) {
-        PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-      }
-      break;
+      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1618,14 +1612,13 @@ PROTOBUF_NOINLINE const char* TcParser::FastBS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
+// TODO: Consolidate these into FastBS1/FastBS2.
 PROTOBUF_NOINLINE const char* TcParser::FastSS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint8_t, ArenaStringPtr,
-                                          kUtf8ValidateOnly>(
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, ArenaStringPtr, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr,
-                                          kUtf8ValidateOnly>(
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastUS1(PROTOBUF_TC_PARAM_DECL) {
@@ -1688,13 +1681,11 @@ PROTOBUF_NOINLINE const char* TcParser::FastBmS2(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSmS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString,
-                                          kUtf8ValidateOnly>(
+  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSmS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString,
-                                          kUtf8ValidateOnly>(
+  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastUmS1(PROTOBUF_TC_PARAM_DECL) {
@@ -1718,18 +1709,14 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   const auto validate_last_string = [expected_tag, table, &field] {
     switch (utf8) {
       case kNoUtf8:
-#ifdef NDEBUG
-      case kUtf8ValidateOnly:
-#endif
         return true;
-      default:
+      case kUtf8:
         if (ABSL_PREDICT_TRUE(
                 utf8_range::IsStructurallyValid(field[field.size() - 1]))) {
           return true;
         }
         ReportFastUtf8Error(FastDecodeTag(expected_tag), table);
-        if (utf8 == kUtf8) return false;
-        return true;
+        return false;
     }
   };
 
@@ -1773,13 +1760,11 @@ PROTOBUF_NOINLINE const char* TcParser::FastBR2(PROTOBUF_TC_PARAM_DECL) {
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSR1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return RepeatedString<
-      uint8_t, RepeatedPtrField<std::string>, kUtf8ValidateOnly>(
-      PROTOBUF_TC_PARAM_PASS);
+      uint8_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastSR2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return RepeatedString<
-      uint16_t, RepeatedPtrField<std::string>, kUtf8ValidateOnly>(
-      PROTOBUF_TC_PARAM_PASS);
+      uint16_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastUR1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return RepeatedString<uint8_t,

@@ -332,7 +332,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<2, 4,
-                                   0, 47,
+                                   0, 0,
                                    2>
       _table_;
 
@@ -582,7 +582,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<2, 4,
-                                   1, 86,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -858,7 +858,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   1, 60,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -1139,7 +1139,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   3, 79,
+                                   3, 0,
                                    2>
       _table_;
 

@@ -1178,7 +1178,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<1, 2,
-                                   0, 62,
+                                   0, 0,
                                    2>
       _table_;
 
@@ -1454,7 +1454,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   0, 106,
+                                   0, 0,
                                    2>
       _table_;
 
@@ -1733,7 +1733,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   1, 64,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -1971,7 +1971,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<2, 4,
-                                   3, 71,
+                                   3, 0,
                                    2>
       _table_;
 
@@ -2183,7 +2183,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<1, 2,
-                                   1, 57,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -3215,7 +3215,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 5,
-                                   0, 71,
+                                   0, 0,
                                    2>
       _table_;
 
@@ -3920,7 +3920,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 7,
-                                   1, 75,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -7196,7 +7196,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<5, 21,
-                                   3, 202,
+                                   3, 0,
                                    12>
       _table_;
 
@@ -9691,7 +9691,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<1, 2,
-                                   1, 49,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -9968,7 +9968,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 6,
-                                   1, 71,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -10376,7 +10376,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<4, 11,
-                                   3, 96,
+                                   3, 0,
                                    2>
       _table_;
 
@@ -10616,7 +10616,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<2, 3,
-                                   1, 53,
+                                   1, 0,
                                    2>
       _table_;
 
@@ -11081,7 +11081,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<2, 3,
-                                   2, 51,
+                                   2, 0,
                                    2>
       _table_;
 
@@ -11373,7 +11373,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<3, 6,
-                                   4, 61,
+                                   4, 0,
                                    2>
       _table_;
 
@@ -11759,7 +11759,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<4, 11,
-                                   9, 65,
+                                   9, 0,
                                    2>
       _table_;
 
@@ -12205,7 +12205,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<4, 14,
-                                   7, 96,
+                                   7, 0,
                                    2>
       _table_;
 

@@ -998,7 +998,7 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
 
   // Implementations for fast string field parsing functions:
-  enum Utf8Type { kNoUtf8 = 0, kUtf8 = 1, kUtf8ValidateOnly = 2 };
+  enum Utf8Type { kNoUtf8 = 0, kUtf8 = 1 };
   template <typename TagType, typename FieldType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* SingularString(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, typename FieldType, Utf8Type utf8>
