@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -18,8 +19,12 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/unittest.pb.h"
 
 
@@ -30,6 +35,7 @@ namespace internal {
 namespace {
 
 using ::proto2_unittest::TestAllTypes;
+using ::proto2_unittest::TestMap;
 using ::testing::Eq;
 
 }  // namespace
