@@ -25,10 +25,12 @@ namespace LegacyFeaturesUnittest {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ci5nb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfbGVnYWN5X2ZlYXR1cmVzLnBy",
-            "b3RvEhhsZWdhY3lfZmVhdHVyZXNfdW5pdHRlc3QigwEKE1Rlc3RFZGl0aW9u",
+            "b3RvEhhsZWdhY3lfZmVhdHVyZXNfdW5pdHRlc3QijAEKE1Rlc3RFZGl0aW9u",
             "c01lc3NhZ2USHQoOcmVxdWlyZWRfZmllbGQYASABKAVCBaoBAggDEk0KD2Rl",
             "bGltaXRlZF9maWVsZBgCIAEoCzItLmxlZ2FjeV9mZWF0dXJlc191bml0dGVz",
-            "dC5UZXN0RWRpdGlvbnNNZXNzYWdlQgWqAQIoAmIIZWRpdGlvbnNw6Ac="));
+            "dC5UZXN0RWRpdGlvbnNNZXNzYWdlQgWqAQIoAjoHYgXKPgIoAkIYQhZVbml0",
+            "dGVzdExlZ2FjeUZlYXR1cmVzYghlZGl0aW9uc3DpB3ojZ29vZ2xlL3Byb3Rv",
+            "YnVmL2phdmFfZmVhdHVyZXMucHJvdG8="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
