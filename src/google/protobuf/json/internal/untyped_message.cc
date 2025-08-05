@@ -18,14 +18,17 @@
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/util/type_resolver.h"
@@ -75,6 +78,18 @@ absl::Span<const ResolverPool::Field> ResolverPool::Message::FieldsByIndex()
       fields_[i].pool_ = pool_;
       fields_[i].raw_ = &raw_.fields(i);
       fields_[i].parent_ = this;
+      if (features_ != nullptr) {
+        fields_[i].features_ = std::make_unique<FeatureSet>(*features_);
+        auto status_or_features = GetFeatureSet(
+            fields_[i].raw_->options(), "google.protobuf.FieldOptions.features",
+            "google.protobuf.FieldOptions.features");
+        if (status_or_features.ok()) {
+          fields_[i].features_->MergeFrom(*status_or_features);
+        } else {
+          // We cannot do much here.
+          status_or_features.IgnoreError();
+        }
+      }
     }
   }
 
@@ -137,6 +152,17 @@ absl::StatusOr<const ResolverPool::Message*> ResolverPool::FindMessage(
   auto msg = absl::WrapUnique(new Message(this));
   std::string url_buf(url);
   RETURN_IF_ERROR(resolver_->ResolveMessageType(url_buf, &msg->raw_));
+  if (msg->raw_.syntax() == google::protobuf::SYNTAX_EDITIONS) {
+    ASSIGN_OR_RETURN(auto edition, ParseEdition(msg->raw_.edition()));
+    ASSIGN_OR_RETURN(const auto* default_feature_set,
+                     GetDefaultFeatureSet(edition));
+    msg->features_ = std::make_unique<google::protobuf::FeatureSet>(*default_feature_set);
+    ASSIGN_OR_RETURN(
+        auto features,
+        GetFeatureSet(msg->raw_.options(), "google.protobuf.MessageOptions.features",
+                      "google.protobuf.MessageOptions.features"));
+    msg->features_->MergeFrom(features);
+  }
 
   return messages_.try_emplace(std::move(url_buf), std::move(msg))
       .first->second.get();
@@ -152,9 +178,77 @@ absl::StatusOr<const ResolverPool::Enum*> ResolverPool::FindEnum(
   auto enoom = absl::WrapUnique(new Enum(this));
   std::string url_buf(url);
   RETURN_IF_ERROR(resolver_->ResolveEnumType(url_buf, &enoom->raw_));
+  if (enoom->raw_.syntax() == google::protobuf::SYNTAX_EDITIONS) {
+    ASSIGN_OR_RETURN(auto edition, ParseEdition(enoom->raw_.edition()));
+    ASSIGN_OR_RETURN(const auto* default_feature_set,
+                     GetDefaultFeatureSet(edition));
+    enoom->features_ = std::make_unique<FeatureSet>(*default_feature_set);
+    ASSIGN_OR_RETURN(
+        auto features,
+        GetFeatureSet(enoom->raw_.options(), "google.protobuf.EnumOptions.features",
+                      "google.protobuf.EnumOptions.features"));
+    enoom->features_->MergeFrom(features);
+  }
 
   return enums_.try_emplace(std::move(url_buf), std::move(enoom))
       .first->second.get();
+}
+
+absl::StatusOr<Edition> ResolverPool::ParseEdition(
+    absl::string_view edition_suffix) {
+  Edition edition;
+  if (!Edition_Parse(absl::StrCat("EDITION_", edition_suffix), &edition)) {
+    return absl::InvalidArgumentError(
+        absl::StrCat("unknown edition: %s", edition_suffix));
+  }
+  return edition;
+}
+
+absl::StatusOr<const FeatureSet*> ResolverPool::GetDefaultFeatureSet(
+    Edition edition) {
+  auto it = default_feature_sets_.find(edition);
+  if (it != default_feature_sets_.end()) {
+    return it->second.get();
+  }
+  ASSIGN_OR_RETURN(
+      auto feature_set,
+      internal::GetEditionFeatureSetDefaults(
+          edition, google::protobuf::internal::cpp::GetFeatureSetDefaults()));
+  auto feature_set_ptr =
+      absl::WrapUnique(new FeatureSet(std::move(feature_set)));
+  return default_feature_sets_.try_emplace(edition, std::move(feature_set_ptr))
+      .first->second.get();
+}
+
+absl::StatusOr<FeatureSet> ResolverPool::GetFeatureSet(
+    const RepeatedPtrField<google::protobuf::Option>& options,
+    absl::string_view option_name, absl::string_view oss_option_name) {
+  auto option = absl::c_find_if(
+      options, [option_name, oss_option_name](const auto& option) {
+        return option.name() == "features" || option.name() == option_name ||
+               option.name() == oss_option_name;
+      });
+  if (option == options.end()) {
+    return FeatureSet();
+  }
+  absl::string_view type_url = option->value().type_url();
+  auto type_url_slash = type_url.find('/');
+  if (type_url_slash == absl::string_view::npos || type_url_slash == 0) {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "type_url must contain at least one / and a nonempty host; got: ",
+        type_url));
+  }
+  absl::string_view type_name = type_url.substr(type_url_slash + 1);
+  if (type_name != "google.protobuf.FeatureSet") {
+    return absl::InvalidArgumentError(absl::StrCat(
+        "expected type name for option value to be google.protobuf.FeatureSet; got: ",
+        type_name));
+  }
+  FeatureSet feature_set;
+  if (!feature_set.MergeFromString(option->value().value())) {
+    return absl::UnknownError("failed to merge feature set");
+  }
+  return feature_set;
 }
 
 PROTOBUF_NOINLINE static absl::Status MakeEndGroupWithoutGroupError(
