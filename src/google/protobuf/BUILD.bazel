@@ -1186,9 +1186,10 @@ cc_proto_library(
     deps = [":unittest_proto3_optional_proto"],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "unittest_features_proto",
     srcs = ["unittest_features.proto"],
+    option_deps = ["//:java_features_proto"],
     strip_import_prefix = "/src",
     visibility = ["//editions:__subpackages__"],
     deps = [
@@ -1205,7 +1206,10 @@ cc_proto_library(
 protobuf_test_proto_library(
     name = "generic_test_protos",
     srcs = [":test_proto_srcs"],
-    option_deps = [":cpp_features_proto"],
+    option_deps = [
+        ":cpp_features_proto",
+        "//:java_features_proto",
+    ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [

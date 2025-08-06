@@ -55,6 +55,7 @@
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/notification.h"
+#include "google/protobuf/java_features.pb.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/parser.h"
 #include "google/protobuf/cpp_features.pb.h"
@@ -9076,6 +9077,7 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
 
 TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9134,6 +9136,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
 
 TEST_F(FeaturesTest, RestoresOptionsRoundTrip) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9356,6 +9359,7 @@ TEST_F(FeaturesTest, ReusesFeaturesFromDifferentFile) {
 
 TEST_F(FeaturesTest, ReusesFeaturesExtension) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file1 = BuildFile(R"pb(
     name: "foo.proto"
@@ -9539,6 +9543,7 @@ TEST_F(FeaturesTest, FileFeatures) {
 
 TEST_F(FeaturesTest, FileFeaturesExtension) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9564,6 +9569,7 @@ TEST_F(FeaturesTest, FileFeaturesExtension) {
 
 TEST_F(FeaturesTest, FileFeaturesExtensionOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9636,6 +9642,7 @@ TEST_F(FeaturesTest, MessageFeaturesInherit) {
 
 TEST_F(FeaturesTest, MessageFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9664,6 +9671,7 @@ TEST_F(FeaturesTest, MessageFeaturesOverride) {
 
 TEST_F(FeaturesTest, NestedMessageFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9735,6 +9743,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
 
 TEST_F(FeaturesTest, FieldFeaturesInherit) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9766,6 +9775,7 @@ TEST_F(FeaturesTest, FieldFeaturesInherit) {
 
 TEST_F(FeaturesTest, FieldFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9810,6 +9820,7 @@ TEST_F(FeaturesTest, FieldFeaturesOverride) {
 
 TEST_F(FeaturesTest, OneofFieldFeaturesInherit) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9855,6 +9866,7 @@ TEST_F(FeaturesTest, OneofFieldFeaturesInherit) {
 
 TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -9909,6 +9921,7 @@ TEST_F(FeaturesTest, OneofFieldFeaturesOverride) {
 
 TEST_F(FeaturesTest, MapFieldFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = ParseAndBuildFile("foo.proto", R"schema(
     edition = "2023";
@@ -10323,6 +10336,7 @@ TEST_F(FeaturesTest, MapFieldFeaturesInheritedMessageEncoding) {
 
 TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -10364,6 +10378,7 @@ TEST_F(FeaturesTest, RootExtensionFeaturesOverride) {
 
 TEST_F(FeaturesTest, MessageExtensionFeaturesOverride) {
   BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::JavaFeatures::descriptor()->file());
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
   const FileDescriptor* file = BuildFile(R"pb(
     name: "foo.proto"
@@ -12511,6 +12526,8 @@ TEST_P(FeaturesDebugStringTest, RoundTrip) {
 
   LoadFile("google/protobuf/descriptor.proto",
            DescriptorProto::GetDescriptor()->file()->DebugString());
+  LoadFile("third_party/java/protobuf/java_features.proto",
+           pb::JavaFeatures::GetDescriptor()->file()->DebugString());
   LoadFile("google/protobuf/unittest_features.proto",
            pb::TestFeatures::GetDescriptor()->file()->DebugString());
   const FileDescriptor* roundtripped =

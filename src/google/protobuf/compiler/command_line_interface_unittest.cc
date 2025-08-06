@@ -22,6 +22,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_invalid_features.pb.h"
@@ -1539,6 +1540,8 @@ TEST_F(CommandLineInterfaceTest, FeatureTargetError) {
 TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestInvalidFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
@@ -1638,6 +1641,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedEdition) {
 TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedFeature) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
@@ -1658,6 +1663,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedFeature) {
 TEST_F(CommandLineInterfaceTest, Plugin_TransitiveDeprecatedFeature) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   CreateTempFile("unused.proto",
@@ -1843,6 +1850,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_RuntimeFeatures) {
 TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
@@ -1903,6 +1912,8 @@ TEST_F(CommandLineInterfaceTest, Plugin_SourceFeatures) {
 TEST_F(CommandLineInterfaceTest, GeneratorFeatureLifetimeError) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
@@ -1927,6 +1938,8 @@ TEST_F(CommandLineInterfaceTest, GeneratorFeatureLifetimeError) {
 TEST_F(CommandLineInterfaceTest, PluginFeatureLifetimeError) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
@@ -2280,6 +2293,8 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
 TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
@@ -2329,6 +2344,8 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
 TEST_F(CommandLineInterfaceTest, EditionDefaultsDependencyManifest) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("third_party/java/protobuf/java_features.proto",
+                 pb::JavaFeatures::descriptor()->file()->DebugString());
   CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
 
