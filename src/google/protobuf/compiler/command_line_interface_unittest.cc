@@ -1448,7 +1448,7 @@ TEST_F(CommandLineInterfaceTest, FeaturesEditionZero) {
 TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
-  CreateTempFile("features.proto",
+  CreateTempFile("google/protobuf/unittest_features.proto",
                  R"schema(
     syntax = "proto2";
     package pb;
@@ -1466,7 +1466,7 @@ TEST_F(CommandLineInterfaceTest, FeatureExtensions) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "features.proto";
+    import "google/protobuf/unittest_features.proto";
     message Foo {
       int32 bar = 1;
       int32 baz = 2 [features.(pb.test).int_feature = 5];
@@ -1539,12 +1539,12 @@ TEST_F(CommandLineInterfaceTest, FeatureTargetError) {
 TEST_F(CommandLineInterfaceTest, FeatureExtensionError) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
-  CreateTempFile("features.proto",
+  CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestInvalidFeatures::descriptor()->file()->DebugString());
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2023";
-    import "features.proto";
+    import "google/protobuf/unittest_features.proto";
     message Foo {
       int32 bar = 1;
       int32 baz = 2 [features.(pb.test_invalid).repeated_feature = 5];
@@ -2280,12 +2280,13 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
 TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
-  CreateTempFile("features.proto",
+  CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
   Run("protocol_compiler --proto_path=$tmpdir "
       "--edition_defaults_out=$tmpdir/defaults "
       "--edition_defaults_maximum=99999_TEST_ONLY "
-      "features.proto google/protobuf/descriptor.proto");
+      "google/protobuf/unittest_features.proto "
+      "google/protobuf/descriptor.proto");
   ExpectNoErrors();
 
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
@@ -2328,30 +2329,30 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
 TEST_F(CommandLineInterfaceTest, EditionDefaultsDependencyManifest) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
-  CreateTempFile("features.proto",
+  CreateTempFile("google/protobuf/unittest_features.proto",
                  pb::TestFeatures::descriptor()->file()->DebugString());
 
   Run("protocol_compiler --dependency_out=$tmpdir/manifest "
       "--edition_defaults_out=$tmpdir/defaults "
-      "--proto_path=$tmpdir features.proto");
+      "--proto_path=$tmpdir google/protobuf/unittest_features.proto");
 
   ExpectNoErrors();
 
-  ExpectFileContent(
-      "manifest",
-      "$tmpdir/defaults: "
-      "$tmpdir/google/protobuf/descriptor.proto\\\n $tmpdir/features.proto");
+  ExpectFileContent("manifest",
+                    "$tmpdir/defaults: "
+                    "$tmpdir/google/protobuf/descriptor.proto\\\n "
+                    "$tmpdir/google/protobuf/unittest_features.proto");
 }
 #endif  // _WIN32
 
 TEST_F(CommandLineInterfaceTest, EditionDefaultsInvalidMissingDescriptor) {
-  CreateTempFile("features.proto", R"schema(
+  CreateTempFile("google/protobuf/unittest_features.proto", R"schema(
     syntax = "proto2";
     message Foo {}
   )schema");
   Run("protocol_compiler --proto_path=$tmpdir "
       "--edition_defaults_out=$tmpdir/defaults "
-      "features.proto");
+      "google/protobuf/unittest_features.proto");
   ExpectErrorSubstring("Could not find FeatureSet in descriptor pool");
 }
 

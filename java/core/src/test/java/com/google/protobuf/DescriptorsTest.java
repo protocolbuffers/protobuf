@@ -38,6 +38,7 @@ import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
 import com.google.protobuf.test.UnittestImport.ImportEnumForMap;
 import legacy_features_unittest.UnittestLegacyFeatures;
+import pb.EnumFeature;
 import pb.UnittestFeatures;
 import proto2_unittest.TestCustomOptions;
 import proto2_unittest.UnittestCustomOptions;
@@ -1541,7 +1542,7 @@ public class DescriptorsTest {
       features.setExtension(
           UnittestFeatures.test,
           features.getExtension(UnittestFeatures.test).toBuilder()
-              .setMultipleFeature(UnittestFeatures.EnumFeature.forNumber(value))
+              .setMultipleFeature(EnumFeature.forNumber(value))
               .build());
     }
 
