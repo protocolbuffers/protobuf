@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use protobuf_codegen::CodeGen;
+
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {
@@ -19,4 +21,14 @@ fn main() {
         .file("libupb/third_party/utf8_range/utf8_range.c")
         .define("UPB_BUILD_API", Some("1"))
         .compile("libupb");
+
+    CodeGen::new()
+        .inputs([
+            "rust/test/map_unittest.proto",
+            "rust/test/unittest.proto",
+            "rust/test/unittest_import.proto",
+        ])
+        .include("tests")
+        .generate_and_compile()
+        .unwrap();
 }

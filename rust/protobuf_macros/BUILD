@@ -10,7 +10,7 @@ load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 PROC_MACRO_SRCS = ["proto_proc_macro_impl.rs"]
 
 rust_proc_macro(
-    name = "proto_proc_macro",
+    name = "protobuf_macros",
     srcs = PROC_MACRO_SRCS,
     visibility = ["//rust:__subpackages__"],
     deps = [
@@ -22,7 +22,7 @@ rust_proc_macro(
 pkg_files(
     name = "rust_protobuf_macros_src",
     srcs = PROC_MACRO_SRCS,
-    strip_prefix = strip_prefix.from_root("rust/proto_proc_macro"),
+    strip_prefix = strip_prefix.from_root("rust/protobuf_macros"),
 )
 
 pkg_filegroup(
