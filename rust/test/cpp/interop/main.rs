@@ -40,6 +40,8 @@ extern "C" {
     fn GetBytesExtension(msg: *const c_void) -> PtrAndLen;
 
     fn GetConstStaticInteropTestMessage() -> *const c_void;
+
+    fn GetInteropTestMessageAsProto2Message() -> *mut c_void;
 }
 
 #[gtest]
@@ -154,4 +156,14 @@ fn view_of_const_static() {
     };
     assert_eq!(view.i64(), 0);
     assert_eq!(view.default_int32(), 41);
+}
+
+#[gtest]
+fn downcast_from_proto2_message() {
+    let msg = unsafe {
+        InteropTestMessage::__unstable_downcast_from_base_message(
+            GetInteropTestMessageAsProto2Message(),
+        )
+    };
+    assert_eq!(msg.i64(), 1234);
 }
