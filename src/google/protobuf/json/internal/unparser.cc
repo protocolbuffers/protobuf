@@ -576,34 +576,41 @@ template <typename Traits>
 absl::Status WriteTimestamp(JsonWriter& writer, const Msg<Traits>& msg,
                             const Desc<Traits>& desc) {
   auto secs_field = Traits::MustHaveField(desc, 1);
-  auto secs = Traits::GetSize(secs_field, msg) > 0
-                  ? Traits::GetInt64(secs_field, msg)
-                  : 0;
-  RETURN_IF_ERROR(secs.status());
+  auto status_or_secs = Traits::GetSize(secs_field, msg) > 0
+                            ? Traits::GetInt64(secs_field, msg)
+                            : 0;
+  RETURN_IF_ERROR(status_or_secs.status());
+  int64_t secs = *status_or_secs;
 
-  if (*secs < -62135596800) {
+  if (secs < -62135596800) {
     return absl::InvalidArgumentError(
         "minimum acceptable time value is 0001-01-01T00:00:00Z");
-  } else if (*secs > 253402300799) {
+  } else if (secs > 253402300799) {
     return absl::InvalidArgumentError(
         "maximum acceptable time value is 9999-12-31T23:59:59Z");
   }
 
   // Ensure seconds is positive.
-  *secs += 62135596800;
+  secs += 62135596800;
 
   auto nanos_field = Traits::MustHaveField(desc, 2);
-  auto nanos = Traits::GetSize(nanos_field, msg) > 0
-                   ? Traits::GetInt32(nanos_field, msg)
-                   : 0;
-  RETURN_IF_ERROR(nanos.status());
+  auto status_or_nanos = Traits::GetSize(nanos_field, msg) > 0
+                             ? Traits::GetInt32(nanos_field, msg)
+                             : 0;
+  RETURN_IF_ERROR(status_or_nanos.status());
+  int32_t nanos = *status_or_nanos;
+
+  if (nanos < 0 || nanos > 999999999) {
+    return absl::InvalidArgumentError(
+        "nanos must be in range [0, +999,999,999]");
+  }
 
   // Julian Day -> Y/M/D, Algorithm from:
   // Fliegel, H. F., and Van Flandern, T. C., "A Machine Algorithm for
   //   Processing Calendar Dates," Communications of the Association of
   //   Computing Machines, vol. 11 (1968), p. 657.
   int32_t L, N, I, J, K;
-  L = static_cast<int32_t>(*secs / 86400) - 719162 + 68569 + 2440588;
+  L = static_cast<int32_t>(secs / 86400) - 719162 + 68569 + 2440588;
   N = 4 * L / 146097;
   L = L - (146097 * N + 3) / 4;
   I = 4000 * (L + 1) / 1461001;
@@ -614,18 +621,18 @@ absl::Status WriteTimestamp(JsonWriter& writer, const Msg<Traits>& msg,
   J = J + 2 - 12 * L;
   I = 100 * (N - 49) + I + L;
 
-  int32_t sec = *secs % 60;
-  int32_t min = (*secs / 60) % 60;
-  int32_t hour = (*secs / 3600) % 24;
+  int32_t sec = secs % 60;
+  int32_t min = (secs / 60) % 60;
+  int32_t hour = (secs / 3600) % 24;
 
-  if (*nanos == 0) {
+  if (nanos == 0) {
     writer.Write(absl::StrFormat(R"("%04d-%02d-%02dT%02d:%02d:%02dZ")", I, J, K,
                                  hour, min, sec));
     return absl::OkStatus();
   }
 
   size_t digits = 9;
-  uint32_t frac_seconds = std::abs(*nanos);
+  uint32_t frac_seconds = std::abs(nanos);
   while (frac_seconds % 1000 == 0) {
     frac_seconds /= 1000;
     digits -= 3;
@@ -640,45 +647,47 @@ template <typename Traits>
 absl::Status WriteDuration(JsonWriter& writer, const Msg<Traits>& msg,
                            const Desc<Traits>& desc) {
   constexpr int64_t kMaxSeconds = int64_t{3652500} * 86400;
-  constexpr int64_t kMaxNanos = 999999999;
+  constexpr int32_t kMaxNanos = 999999999;
 
   auto secs_field = Traits::MustHaveField(desc, 1);
-  auto secs = Traits::GetSize(secs_field, msg) > 0
-                  ? Traits::GetInt64(secs_field, msg)
-                  : 0;
-  RETURN_IF_ERROR(secs.status());
+  auto status_or_secs = Traits::GetSize(secs_field, msg) > 0
+                            ? Traits::GetInt64(secs_field, msg)
+                            : 0;
+  RETURN_IF_ERROR(status_or_secs.status());
+  int64_t secs = *status_or_secs;
 
-  if (*secs > kMaxSeconds || *secs < -kMaxSeconds) {
+  if (secs > kMaxSeconds || secs < -kMaxSeconds) {
     return absl::InvalidArgumentError("duration out of range");
   }
 
   auto nanos_field = Traits::MustHaveField(desc, 2);
-  auto nanos = Traits::GetSize(nanos_field, msg) > 0
-                   ? Traits::GetInt32(nanos_field, msg)
-                   : 0;
-  RETURN_IF_ERROR(nanos.status());
+  auto status_or_nanos = Traits::GetSize(nanos_field, msg) > 0
+                             ? Traits::GetInt32(nanos_field, msg)
+                             : 0;
+  RETURN_IF_ERROR(status_or_nanos.status());
+  int32_t nanos = *status_or_nanos;
 
-  if (*nanos > kMaxNanos || *nanos < -kMaxNanos) {
+  if (nanos > kMaxNanos || nanos < -kMaxNanos) {
     return absl::InvalidArgumentError("duration out of range");
   }
-  if ((*secs != 0) && (*nanos != 0) && ((*secs < 0) != (*nanos < 0))) {
+  if ((secs != 0) && (nanos != 0) && ((secs < 0) != (nanos < 0))) {
     return absl::InvalidArgumentError("nanos and seconds signs do not match");
   }
 
-  if (*nanos == 0) {
-    writer.Write(absl::StrFormat(R"("%ds")", *secs));
+  if (nanos == 0) {
+    writer.Write(absl::StrFormat(R"("%ds")", secs));
     return absl::OkStatus();
   }
 
   size_t digits = 9;
-  uint32_t frac_seconds = std::abs(*nanos);
+  uint32_t frac_seconds = std::abs(nanos);
   while (frac_seconds % 1000 == 0) {
     frac_seconds /= 1000;
     digits -= 3;
   }
 
-  absl::string_view sign = ((*secs < 0) || (*nanos < 0)) ? "-" : "";
-  writer.Write(absl::StrFormat(R"("%s%d.%.*ds")", sign, std::abs(*secs), digits,
+  absl::string_view sign = ((secs < 0) || (nanos < 0)) ? "-" : "";
+  writer.Write(absl::StrFormat(R"("%s%d.%.*ds")", sign, std::abs(secs), digits,
                                frac_seconds));
   return absl::OkStatus();
 }
