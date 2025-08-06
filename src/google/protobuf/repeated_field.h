@@ -534,8 +534,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
 
   // Destroys all elements in [begin, end).
   // This function does nothing if `Element` is trivial.
-  static void Destroy(const Element* begin, const Element* end) {
-    if (!std::is_trivial<Element>::value) {
+  static void Destroy([[maybe_unused]] const Element* begin,
+                      [[maybe_unused]] const Element* end) {
+    if constexpr (!std::is_trivially_destructible<Element>::value) {
       std::for_each(begin, end, [&](const Element& e) { e.~Element(); });
     }
   }
@@ -1244,8 +1245,8 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
   if (old_size > 0) {
     Element* pnew = static_cast<Element*>(new_rep->elements());
     Element* pold = elements(was_soo);
-    // TODO: add absl::is_trivially_relocatable<Element>
-    if (std::is_trivial<Element>::value) {
+    if constexpr (std::is_trivially_copyable<Element>::value ||
+                  absl::is_trivially_relocatable<Element>::value) {
       memcpy(static_cast<void*>(pnew), pold, old_size * sizeof(Element));
     } else {
       for (Element* end = pnew + old_size; pnew != end; ++pnew, ++pold) {
