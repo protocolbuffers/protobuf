@@ -55,6 +55,8 @@ class MessageFactory;
 
 namespace internal {
 
+class LazyField;
+
 // Template code below needs to know about the existence of these functions.
 PROTOBUF_EXPORT void WriteVarint(uint32_t num, uint64_t val, std::string* s);
 PROTOBUF_EXPORT void WriteLengthDelimited(uint32_t num, absl::string_view val,
