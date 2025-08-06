@@ -11,10 +11,6 @@ load(
     "//hpb/bazel:hpb_proto_library.bzl",
     "hpb_proto_library_copts",
 )
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -51,7 +47,6 @@ cc_library(
     hdrs = [
         "hpb.h",
     ],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":arena",
@@ -95,7 +90,6 @@ cc_library(
     hdrs = [
         "repeated_field.h",
     ],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":multibackend",
@@ -113,7 +107,6 @@ cc_library(
 # Common support code for C++ generated code.
 cc_library(
     name = "generated_hpb_support",
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = [
         "//hpb/bazel:__pkg__",
         "//src/google/protobuf/compiler/hpb:__pkg__",
@@ -128,7 +121,6 @@ cc_library(
 
 hpb_proto_library_copts(
     name = "hpb_proto_library_copts",
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb/bazel:__pkg__"],
 )
 

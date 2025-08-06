@@ -7,10 +7,6 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -54,7 +50,6 @@ cc_library(
 cc_test(
     name = "interop_test",
     srcs = ["interop_test.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":interop",
         "//hpb_generator/tests:test_model_hpb_proto",

@@ -7,17 +7,12 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
 
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "template_help",
     hdrs = ["template_help.h"],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb:__subpackages__"],
     deps = [
         "//hpb:ptr",
@@ -53,7 +48,6 @@ cc_library(
     hdrs = [
         "message_lock.h",
     ],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = [
         "//hpb:__subpackages__",
     ],
