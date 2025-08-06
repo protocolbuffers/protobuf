@@ -452,9 +452,8 @@ Struct::_table_ = {
     {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
   }},
   {{
-      {::_pbi::TcParser::GetMapAuxInfo(1, 0, 0,
-                                       9, 11,
-                                       0)},
+      {::_pbi::TcParser::GetMapAuxInfo(
+          1, 0, 9, 11, 0)},
       {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
   }},
   {{
