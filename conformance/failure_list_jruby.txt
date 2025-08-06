@@ -144,3 +144,6 @@ Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
+Required.*.JsonInput.DurationTooManyNanoDigits # Should have failed to parse, but didn't.
+Required.*.JsonInput.DurationTooManyNanoDititsNegative # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampWithTooManyNanoDigits # Should have failed to parse, but didn't.
