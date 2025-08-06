@@ -132,7 +132,11 @@ def cc_proto_compile_and_link(ctx, deps, sources, headers, disallow_dynamic_libr
     if bazel_features.cc.protobuf_on_allowlist:
         debug_context = cc_common.merge_debug_context(
             [cc_common.create_debug_context(compilation_outputs)] +
-            [dep[CcInfo].debug_context() for dep in deps if CcInfo in dep],
+            [
+                dep[CcInfo]._debug_context if hasattr(dep[CcInfo], "_debug_context") else dep[CcInfo].debug_context()
+                for dep in deps
+                if CcInfo in dep
+            ],
         )
         temps = compilation_outputs.temps()
 
