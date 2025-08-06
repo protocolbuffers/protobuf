@@ -79,7 +79,7 @@ namespace Pb {
             "GiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5nEiUKFlZBTFVF",
             "X0xJRkVUSU1FX1JFTU9WRUQQBhoJIgcQ6AcgnY0GOjwKBHRlc3QSGy5nb29n",
             "bGUucHJvdG9idWYuRmVhdHVyZVNldBiPTiABKAsyEC5wYi5UZXN0RmVhdHVy",
-            "ZXNiCGVkaXRpb25zcOgH"));
+            "ZXNCEkIQVW5pdHRlc3RGZWF0dXJlc2IIZWRpdGlvbnNw6Qc="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), typeof(global::Pb.ValueLifetimeFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
