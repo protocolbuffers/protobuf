@@ -231,7 +231,7 @@ void BadInner(absl::string_view json, ParseOptions opts = {}) {
 void DoLegacy(absl::string_view json, std::function<void(const Value&)> test) {
   Do(json, [&](io::ZeroCopyInputStream* stream) {
     ParseOptions options;
-    options.allow_legacy_syntax = true;
+    options.allow_legacy_nonconformant_behavior = true;
     auto value = Value::Parse(stream, options);
     ASSERT_OK(value);
     test(*value);
@@ -242,7 +242,7 @@ void DoLegacy(absl::string_view json, std::function<void(const Value&)> test) {
 // Like Bad, but ensures json fails to parse in both modes.
 void Bad(absl::string_view json) {
   ParseOptions options;
-  options.allow_legacy_syntax = true;
+  options.allow_legacy_nonconformant_behavior = true;
   BadInner(json, options);
   BadInner(json);
 }

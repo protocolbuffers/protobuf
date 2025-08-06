@@ -129,7 +129,7 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
     case FieldDescriptor::TYPE_FLOAT: {
       auto x = Traits::GetFloat(field, std::forward<Args>(args)...);
       RETURN_IF_ERROR(x.status());
-      if (writer.options().allow_legacy_syntax && is_default &&
+      if (writer.options().allow_legacy_nonconformant_behavior && is_default &&
           !std::isfinite(*x)) {
         *x = 0;
       }
@@ -139,7 +139,7 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
     case FieldDescriptor::TYPE_DOUBLE: {
       auto x = Traits::GetDouble(field, std::forward<Args>(args)...);
       RETURN_IF_ERROR(x.status());
-      if (writer.options().allow_legacy_syntax && is_default &&
+      if (writer.options().allow_legacy_nonconformant_behavior && is_default &&
           !std::isfinite(*x)) {
         *x = 0;
       }
@@ -203,7 +203,7 @@ absl::Status WriteSingular(JsonWriter& writer, Field<Traits> field,
       auto x = Traits::GetString(field, writer.ScratchBuf(),
                                  std::forward<Args>(args)...);
       RETURN_IF_ERROR(x.status());
-      if (writer.options().allow_legacy_syntax && is_default) {
+      if (writer.options().allow_legacy_nonconformant_behavior && is_default) {
         // Although difficult to verify, it appears that the original ESF parser
         // fails to unescape the contents of a
         // google.protobuf.Field.default_value, which may potentially be
@@ -417,7 +417,7 @@ absl::Status WriteField(JsonWriter& writer, const Msg<Traits>& msg,
     // with an uppercase letter, and the Json name does not, we uppercase it.
     absl::string_view original_name = Traits::FieldName(field);
     absl::string_view json_name = Traits::FieldJsonName(field);
-    if (writer.options().allow_legacy_syntax &&
+    if (writer.options().allow_legacy_nonconformant_behavior &&
         absl::ascii_isupper(original_name[0]) &&
         !absl::ascii_isupper(json_name[0])) {
       writer.Write(MakeQuoted(absl::ascii_toupper(original_name[0]),
@@ -712,10 +712,11 @@ absl::Status WriteFieldMask(JsonWriter& writer, const Msg<Traits>& msg,
       } else if (absl::ascii_isdigit(c) || absl::ascii_islower(c) || c == '.') {
         writer.Write(c);
       } else if (c == '_' &&
-                 (!saw_under || writer.options().allow_legacy_syntax)) {
+                 (!saw_under ||
+                  writer.options().allow_legacy_nonconformant_behavior)) {
         saw_under = true;
         continue;
-      } else if (!writer.options().allow_legacy_syntax) {
+      } else if (!writer.options().allow_legacy_nonconformant_behavior) {
         return absl::InvalidArgumentError("unexpected character in FieldMask");
       } else {
         if (saw_under) {
@@ -744,7 +745,8 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
     return absl::OkStatus();
   } else if (!has_type_url) {
     return absl::InvalidArgumentError("broken Any: missing type URL");
-  } else if (!has_value && !writer.options().allow_legacy_syntax) {
+  } else if (!has_value &&
+             !writer.options().allow_legacy_nonconformant_behavior) {
     return absl::InvalidArgumentError("broken Any: missing value");
   }
 

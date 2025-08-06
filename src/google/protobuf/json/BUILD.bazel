@@ -18,8 +18,10 @@ cc_library(
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
+        ":lexer",
         ":parser",
         ":unparser",
+        ":writer",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/io",

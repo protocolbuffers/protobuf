@@ -247,6 +247,16 @@ TEST_P(JsonTest, TestAlwaysPrintFieldsWithNoPresence) {
           R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[]})"));
 }
 
+TEST_P(JsonTest, TestDisableLegacyNonconformantBehavior) {
+  EXPECT_THAT(ToProto<TestMessage>("{\"repeated_bool_value\": true}"),
+              StatusIs(absl::StatusCode::kOk));
+
+  ParseOptions options;
+  options.allow_legacy_nonconformant_behavior = false;
+  EXPECT_THAT(ToProto<TestMessage>("{\"repeated_bool_value\": true}", options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
   TestMessage m;
   m.mutable_message_value();

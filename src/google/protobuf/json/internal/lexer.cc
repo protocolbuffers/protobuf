@@ -376,7 +376,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
   // This is a non-standard extension accepted by the ESF parser that we will
   // need to accept for backwards-compat.
   bool is_single_quote = stream_.PeekChar() == '\'';
-  if (!options_.allow_legacy_syntax && is_single_quote) {
+  if (!options_.allow_legacy_nonconformant_behavior && is_single_quote) {
     return Invalid("expected '\"'");
   }
 
@@ -423,14 +423,16 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
 
         char c = stream_.PeekChar();
         RETURN_IF_ERROR(Advance(1));
-        if (c == 'u' || (c == 'U' && options_.allow_legacy_syntax)) {
+        if (c == 'u' ||
+            (c == 'U' && options_.allow_legacy_nonconformant_behavior)) {
           // Ensure there is actual space to scribble the UTF-8 onto.
           on_heap.resize(on_heap.size() + 4);
           auto written = ParseUnicodeEscape(&on_heap[on_heap.size() - 4]);
           RETURN_IF_ERROR(written.status());
           on_heap.resize(on_heap.size() - 4 + *written);
         } else {
-          char escape = ParseSimpleEscape(c, options_.allow_legacy_syntax);
+          char escape = ParseSimpleEscape(
+              c, options_.allow_legacy_nonconformant_behavior);
           if (escape == 0) {
             return Invalid(absl::StrFormat("invalid escape char: '%c'", c));
           }
@@ -444,7 +446,8 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         // If people have newlines in their strings, that's their problem; it
         // is too difficult to support correctly in our location tracking, and
         // is out of spec, so users will get slightly wrong locations in errors.
-        if ((uc < 0x20 || uc == 0xff) && !options_.allow_legacy_syntax) {
+        if ((uc < 0x20 || uc == 0xff) &&
+            !options_.allow_legacy_nonconformant_behavior) {
           return Invalid(absl::StrFormat(
               "invalid control character 0x%02x in string", uc));
         }
