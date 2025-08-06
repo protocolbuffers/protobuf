@@ -14,7 +14,17 @@
 # Once we have a couple of these tests we will investigate ways to remove boilerplate (for example
 # by introducing a build macro that registers 2 rust_test targets).
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_rust//rust:defs.bzl", "rust_test")
+
+pkg_files(
+    name = "test_srcs",
+    srcs = [
+        "proto_macro_test.rs",
+    ],
+    prefix = "tests",
+    visibility = ["//rust:__subpackages__"],
+)
 
 rust_test(
     name = "ctype_cord_upb_test",

@@ -26,6 +26,7 @@ googletest = "0.14.2"
 
 [build-dependencies]
 cc = "1.1.6"
+protobuf-codegen = { version = "{VERSION}", path = "../protobuf_codegen", package = "protobuf-codegen" }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(bzl)', 'cfg(cpp_kernel)', 'cfg(upb_kernel)'] }

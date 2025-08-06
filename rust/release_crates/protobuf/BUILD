@@ -9,6 +9,8 @@ pkg_tar(
         "//:LICENSE",
         "//rust:rust_protobuf_libupb_src",
         "//rust:rust_protobuf_src_dir",
+        "//rust/test:test_proto_srcs",
+        "//rust/test/shared:test_srcs",
     ],
     visibility = ["//rust:__subpackages__"],
 )

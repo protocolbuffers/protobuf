@@ -10,6 +10,14 @@
 // Extra parens intentional as part of flexing the macro edge cases.
 #![allow(unused_parens, unused_braces)]
 
+mod unittest_rust_proto {
+include!(concat!(env!("OUT_DIR"), "/protobuf_generated/rust/test/generated.rs"));
+}
+
+mod map_unittest_rust_proto {
+    pub use super::unittest_rust_proto::*;
+}
+
 use googletest::prelude::*;
 use protobuf::proto;
 use unittest_rust_proto::{
@@ -113,17 +121,17 @@ fn single_nested_message() {
 
     // empty nested message should be present
     // make sure that qualified path names work
-    let msg = proto!(::unittest_rust_proto::TestAllTypes {
+    let msg = proto!(crate::unittest_rust_proto::TestAllTypes {
         optional_nested_message: unittest_rust_proto::test_all_types::NestedMessage {}
     });
     assert_that!(msg.has_optional_nested_message(), eq(true));
 
-    let msg = proto!(::unittest_rust_proto::TestAllTypes {
-        optional_nested_message: ::unittest_rust_proto::test_all_types::NestedMessage {}
+    let msg = proto!(crate::unittest_rust_proto::TestAllTypes {
+        optional_nested_message: crate::unittest_rust_proto::test_all_types::NestedMessage {}
     });
     assert_that!(msg.has_optional_nested_message(), eq(true));
 
-    let msg = proto!(::unittest_rust_proto::TestAllTypes { optional_nested_message: __ {} });
+    let msg = proto!(crate::unittest_rust_proto::TestAllTypes { optional_nested_message: __ {} });
     assert_that!(msg.has_optional_nested_message(), eq(true));
 }
 
