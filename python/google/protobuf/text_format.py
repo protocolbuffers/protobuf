@@ -25,6 +25,7 @@ import encodings.unicode_escape  # pylint: disable=unused-import
 import io
 import math
 import re
+import warnings
 
 from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
@@ -416,6 +417,10 @@ class _Printer(object):
     self.use_index_order = use_index_order
     self.float_format = float_format
     if double_format is not None:
+      warnings.warn(
+          'double_format is deprecated for text_format. This will '
+          'turn into error in 7.34.0, please remove it before that.'
+      )
       self.double_format = double_format
     else:
       self.double_format = float_format
@@ -652,6 +657,11 @@ class _Printer(object):
         out.write('false')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
       if self.float_format is not None:
+        warnings.warn(
+            'float_format is deprecated for text_format. This '
+            'will turn into error in 7.34.0, please remove it '
+            'before that.'
+        )
         out.write('{1:{0}}'.format(self.float_format, value))
       else:
         if math.isnan(value):
