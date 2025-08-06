@@ -838,7 +838,6 @@ class PROTOBUF_EXPORT TcParser final {
 
   // For `map` mini parsing generate a type card for the key/value.
   static constexpr MapAuxInfo GetMapAuxInfo(bool fail_on_utf8_failure,
-                                            bool log_debug_utf8_failure,
                                             bool validated_enum_value,
                                             int key_type, int value_type,
                                             bool is_lite) {
@@ -848,7 +847,6 @@ class PROTOBUF_EXPORT TcParser final {
         true,
         is_lite,
         fail_on_utf8_failure,
-        log_debug_utf8_failure,
         validated_enum_value,
     };
   }

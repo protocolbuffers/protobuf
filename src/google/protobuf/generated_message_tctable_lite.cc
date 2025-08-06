@@ -2916,9 +2916,6 @@ const char* TcParser::ParseOneMapEntry(
           ptr = ctx->ReadString(ptr, size, str);
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
           bool do_utf8_check = map_info.fail_on_utf8_failure;
-#ifndef NDEBUG
-          do_utf8_check |= map_info.log_debug_utf8_failure;
-#endif
           if (type_card.is_utf8() && do_utf8_check &&
               !utf8_range::IsStructurallyValid(*str)) {
             PrintUTF8ErrorLog(MessageName(table), FieldName(table, &entry),

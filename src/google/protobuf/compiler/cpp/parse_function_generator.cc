@@ -460,8 +460,6 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
           p->Emit(
               {
                   {"strict", utf8_check == Utf8CheckMode::kStrict},
-                  // TODO: Remove this.
-                  {"verify", false},
                   {"validate", validated_enum},
                   {"key_wire", map_key->type()},
                   {"value_wire", map_value->type()},
@@ -469,9 +467,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
                    !HasDescriptorMethods(aux_entry.field->file(), options_)},
               },
               R"cc(
-                {::_pbi::TcParser::GetMapAuxInfo($strict$, $verify$, $validate$,
-                                                 $key_wire$, $value_wire$,
-                                                 $is_lite$)},
+                {::_pbi::TcParser::GetMapAuxInfo(
+                    $strict$, $validate$, $key_wire$, $value_wire$, $is_lite$)},
               )cc");
           break;
         }
