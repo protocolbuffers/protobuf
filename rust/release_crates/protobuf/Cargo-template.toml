@@ -19,6 +19,7 @@ path = "src/shared.rs"
 
 [dependencies]
 paste = "1.0.15"
+protobuf-macros = { version = "{VERSION}", path = "../protobuf_macros", package = "protobuf-macros" }
 
 [dev-dependencies]
 googletest = "0.14.2"

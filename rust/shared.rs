@@ -14,12 +14,10 @@ use std::fmt;
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 
-// Temporarily use the proc macro implementation of the proto! macro only with blazel,
-// and the macro_rules impl with Cargo builds.
 #[cfg(bzl)]
 pub use proto_proc_macro::proto_proc as proto;
 #[cfg(not(bzl))]
-mod proto_macro;
+pub use protobuf_macros::proto_proc as proto;
 
 pub use crate::codegen_traits::{
     create::Parse,

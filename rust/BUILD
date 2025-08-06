@@ -266,7 +266,7 @@ config_setting(
 
 pkg_files(
     name = "rust_protobuf_src",
-    srcs = ALL_RUST_SRCS + ["proto_macro.rs"],
+    srcs = ALL_RUST_SRCS,
     strip_prefix = strip_prefix.from_root("rust"),
 )
 
