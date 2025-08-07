@@ -342,7 +342,7 @@ message TestAllRequiredTypesEdition {
       [features.field_presence = LEGACY_REQUIRED];
 
   string required_string_piece = 24
-  // [features.field_presence = LEGACY_REQUIRED];
+      [features.field_presence = LEGACY_REQUIRED];
   string required_cord = 25 [
     features.(pb.cpp).string_type = CORD,
     features.field_presence = LEGACY_REQUIRED
