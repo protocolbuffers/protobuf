@@ -8,7 +8,6 @@ Most users should depend upon public aliases in the root:
     //:well_known_types_py_pb2
 """
 
-load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
@@ -80,11 +79,8 @@ def build_targets(name):
         copts = COPTS + [
             "-DPYTHON_PROTO2_CPP_IMPL_V2",
         ],
-        linkopts = selects.with_or({
-            (
-                "//python/dist:osx_x86_64",
-                "//python/dist:osx_aarch64",
-            ): ["-Wl,-undefined,dynamic_lookup"],
+        linkopts = select({
+            "@platforms//os:osx": ["-Wl,-undefined,dynamic_lookup"],
             "//conditions:default": [],
         }),
         linkshared = 1,
@@ -120,11 +116,8 @@ def build_targets(name):
             "//conditions:default": [],
             ":allow_oversize_protos": ["-DPROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS=1"],
         }),
-        linkopts = selects.with_or({
-            (
-                "//python/dist:osx_x86_64",
-                "//python/dist:osx_aarch64",
-            ): ["-Wl,-undefined,dynamic_lookup"],
+        linkopts = select({
+            "@platforms//os:osx": ["-Wl,-undefined,dynamic_lookup"],
             "//conditions:default": [],
         }),
         includes = ["."],
