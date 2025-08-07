@@ -57,6 +57,8 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
   void RunDelimitedFieldTests();
 
+  void RunUtf8ValidationTests();
+
   void RunMessageSetTests();
 
   template <typename MessageType>
@@ -153,6 +155,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestIllegalTags();
   void TestUnmatchedGroup();
   void TestUnknownWireType();
+  void TestInvalidUtf8String();
   void TestOneofMessage();
   void TestUnknownMessage();
   void TestUnknownOrdering();

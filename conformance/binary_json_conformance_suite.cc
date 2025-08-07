@@ -325,7 +325,10 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         this, /*run_proto3_tests=*/true);
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
-    RunDelimitedFieldTests();
+    if (!this->performance_) {
+      RunDelimitedFieldTests();
+      RunUtf8ValidationTests();
+    }
   }
 }
 
@@ -381,6 +384,21 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunUtf8ValidationTests() {
+  TestAllTypesEdition2023 prototype;
+
+  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
+      absl::StrCat("InvalidUtf8.StringExtension"), REQUIRED,
+      len(133, "\xA0\xB0\xC0\xD0"),
+      R"pb([protobuf_test_messages.editions
+                .extension_string]: "\xA0\xB0\xC0\xD0")pb");
+  RunValidBinaryProtobufTest<
+      TestAllTypesEdition2023>(absl::StrCat("InvalidUtf8.BytesExtension"),
+                               REQUIRED, len(134, "\xA0\xB0\xC0\xD0"),
+                               R"pb([protobuf_test_messages.editions
+                                         .extension_bytes]: "\xA0\xB0\xC0\xD0")pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
@@ -1489,6 +1507,27 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestInvalidUtf8String() {
+  if (run_proto3_tests_) {
+    ExpectParseFailureForProto(len(14, "\xA0\xB0\xC0\xD0"),
+                               "InvalidUtf8.StringSingular", REQUIRED);
+    ExpectParseFailureForProto(len(44, "\xA0\xB0\xC0\xD0"),
+                               "InvalidUtf8.StringRepeated", REQUIRED);
+    ExpectParseFailureForProto(len(113, "\xA0\xB0\xC0\xD0"),
+                               "InvalidUtf8.StringOneof", REQUIRED);
+  } else {
+    RunValidBinaryProtobufTest("InvalidUtf8.StringSingular", REQUIRED,
+                               len(14, "\xA0\xB0\xC0\xD0"));
+    RunValidBinaryProtobufTest("InvalidUtf8.StringRepeated", REQUIRED,
+                               len(44, "\xA0\xB0\xC0\xD0"));
+    RunValidBinaryProtobufTest("InvalidUtf8.StringOneof", REQUIRED,
+                               len(113, "\xA0\xB0\xC0\xD0"));
+    RunValidBinaryProtobufTest("InvalidUtf8.StringExtension", REQUIRED,
+                               len(133, "\xA0\xB0\xC0\xD0"));
+  }
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
   MessageType message;
   message.set_oneof_uint32(0);
@@ -1659,6 +1698,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     TestIllegalTags();
     TestUnmatchedGroup();
     TestUnknownWireType();
+    TestInvalidUtf8String();
 
     int64_t kInt64Min = -9223372036854775808ULL;
     int64_t kInt64Max = 9223372036854775807ULL;

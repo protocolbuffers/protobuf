@@ -37,3 +37,9 @@ Recommended.Editions_Proto3.ValueRejectNanNumberValue.JsonOutput
 Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
 
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringOneof.ProtobufOutput # Failed to parse input or produce output.
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringRepeated.ProtobufOutput # Failed to parse input or produce output.
+Required.Editions_Proto2.ProtobufInput.InvalidUtf8.StringSingular.ProtobufOutput # Failed to parse input or produce output.
+Required.Proto2.ProtobufInput.InvalidUtf8.StringOneof.ProtobufOutput # Failed to parse input or produce output.
+Required.Proto2.ProtobufInput.InvalidUtf8.StringRepeated.ProtobufOutput # Failed to parse input or produce output.
+Required.Proto2.ProtobufInput.InvalidUtf8.StringSingular.ProtobufOutput # Failed to parse input or produce output.

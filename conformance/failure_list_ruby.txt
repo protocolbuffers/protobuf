@@ -3,3 +3,4 @@ Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1 # Should have failed 
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2 # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldQuotedExponentialValue.*     # Failed to parse input or produce output.
 Required.*.JsonInput.AnyWithNoType.*
+Required.Editions.ProtobufInput.InvalidUtf8.StringExtension.ProtobufOutput # Failed to parse input or produce output.
