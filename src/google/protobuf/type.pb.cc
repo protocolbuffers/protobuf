@@ -652,8 +652,9 @@ PROTOBUF_NOINLINE void Type::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  cached_has_bits = this_._impl_._has_bits_[0];
   // string name = 1;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -692,7 +693,6 @@ PROTOBUF_NOINLINE void Type::Clear() {
             target, stream);
   }
 
-  cached_has_bits = this_._impl_._has_bits_[0];
   // .google.protobuf.SourceContext source_context = 5;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
@@ -1177,8 +1177,9 @@ PROTOBUF_NOINLINE void Field::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  cached_has_bits = this_._impl_._has_bits_[0];
   // .google.protobuf.Field.Kind kind = 1;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000010U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     if (this_._internal_kind() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
@@ -1187,7 +1188,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // .google.protobuf.Field.Cardinality cardinality = 2;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000020U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
     if (this_._internal_cardinality() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
@@ -1196,7 +1197,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // int32 number = 3;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000040U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000040U)) {
     if (this_._internal_number() != 0) {
       target =
           ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
@@ -1205,7 +1206,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // string name = 4;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1215,7 +1216,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // string type_url = 6;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     if (!this_._internal_type_url().empty()) {
       const ::std::string& _s = this_._internal_type_url();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1225,7 +1226,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // int32 oneof_index = 7;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000080U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000080U)) {
     if (this_._internal_oneof_index() != 0) {
       target =
           ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<7>(
@@ -1234,7 +1235,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // bool packed = 8;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000100U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000100U)) {
     if (this_._internal_packed() != 0) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
@@ -1254,7 +1255,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // string json_name = 10;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000004U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     if (!this_._internal_json_name().empty()) {
       const ::std::string& _s = this_._internal_json_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1264,7 +1265,7 @@ PROTOBUF_NOINLINE void Field::Clear() {
   }
 
   // string default_value = 11;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000008U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
     if (!this_._internal_default_value().empty()) {
       const ::std::string& _s = this_._internal_default_value();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1753,8 +1754,9 @@ PROTOBUF_NOINLINE void Enum::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  cached_has_bits = this_._impl_._has_bits_[0];
   // string name = 1;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1785,7 +1787,6 @@ PROTOBUF_NOINLINE void Enum::Clear() {
             target, stream);
   }
 
-  cached_has_bits = this_._impl_._has_bits_[0];
   // .google.protobuf.SourceContext source_context = 4;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
@@ -2180,8 +2181,9 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  cached_has_bits = this_._impl_._has_bits_[0];
   // string name = 1;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -2191,7 +2193,7 @@ PROTOBUF_NOINLINE void EnumValue::Clear() {
   }
 
   // int32 number = 2;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     if (this_._internal_number() != 0) {
       target =
           ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
@@ -2525,8 +2527,9 @@ PROTOBUF_NOINLINE void Option::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  cached_has_bits = this_._impl_._has_bits_[0];
   // string name = 1;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_name().empty()) {
       const ::std::string& _s = this_._internal_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -2535,7 +2538,6 @@ PROTOBUF_NOINLINE void Option::Clear() {
     }
   }
 
-  cached_has_bits = this_._impl_._has_bits_[0];
   // .google.protobuf.Any value = 2;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(

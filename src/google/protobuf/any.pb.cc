@@ -315,8 +315,9 @@ PROTOBUF_NOINLINE void Any::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  cached_has_bits = this_._impl_._has_bits_[0];
   // string type_url = 1;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_type_url().empty()) {
       const ::std::string& _s = this_._internal_type_url();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -326,7 +327,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
   }
 
   // bytes value = 2;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000002U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     if (!this_._internal_value().empty()) {
       const ::std::string& _s = this_._internal_value();
       target = stream->WriteBytesMaybeAliased(2, _s, target);

@@ -282,8 +282,9 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
+  cached_has_bits = this_._impl_._has_bits_[0];
   // string file_name = 1;
-  if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
+  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!this_._internal_file_name().empty()) {
       const ::std::string& _s = this_._internal_file_name();
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
