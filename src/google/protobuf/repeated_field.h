@@ -822,13 +822,7 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  if constexpr (internal::GetBoundsCheckMode() ==
-                internal::BoundsCheckMode::kAbort) {
     internal::RuntimeAssertInBounds(index, size());
-  } else {
-    ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, size());
-  }
   return elements(is_soo())[index];
 }
 
@@ -851,13 +845,7 @@ inline Element& RepeatedField<Element>::at(int index)
 template <typename Element>
 inline Element* RepeatedField<Element>::Mutable(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  if constexpr (internal::GetBoundsCheckMode() ==
-                internal::BoundsCheckMode::kAbort) {
     internal::RuntimeAssertInBounds(index, size());
-  } else {
-    ABSL_DCHECK_GE(index, 0);
-    ABSL_DCHECK_LT(index, size());
-  }
   return &elements(is_soo())[index];
 }
 
