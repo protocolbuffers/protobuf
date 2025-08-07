@@ -929,7 +929,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Api_cla
 inline void Api::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Api::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1090,7 +1091,8 @@ Api::_internal_mutable_options() {
 inline void Api::clear_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.version_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline const ::std::string& Api::version() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1298,7 +1300,8 @@ Api::_internal_mutable_mixins() {
 inline void Api::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000010U);
 }
 inline ::google::protobuf::Syntax Api::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.syntax)
@@ -1322,7 +1325,8 @@ inline void Api::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Api::clear_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
 }
 inline const ::std::string& Api::edition() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1391,7 +1395,8 @@ inline void Api::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) {
 inline void Method::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Method::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1456,7 +1461,8 @@ inline void Method::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 inline void Method::clear_request_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.request_type_url_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline const ::std::string& Method::request_type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1521,7 +1527,8 @@ inline void Method::set_allocated_request_type_url(::std::string* PROTOBUF_NULLA
 inline void Method::clear_request_streaming() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.request_streaming_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000010U);
 }
 inline bool Method::request_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.request_streaming)
@@ -1545,7 +1552,8 @@ inline void Method::_internal_set_request_streaming(bool value) {
 inline void Method::clear_response_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_type_url_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
 }
 inline const ::std::string& Method::response_type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1610,7 +1618,8 @@ inline void Method::set_allocated_response_type_url(::std::string* PROTOBUF_NULL
 inline void Method::clear_response_streaming() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.response_streaming_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000020U);
 }
 inline bool Method::response_streaming() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.response_streaming)
@@ -1680,7 +1689,8 @@ Method::_internal_mutable_options() {
 inline void Method::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000040U);
 }
 inline ::google::protobuf::Syntax Method::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.syntax)
@@ -1704,7 +1714,8 @@ inline void Method::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Method::clear_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
 }
 inline const ::std::string& Method::edition() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1773,7 +1784,8 @@ inline void Method::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value
 inline void Mixin::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Mixin::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1838,7 +1850,8 @@ inline void Mixin::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 inline void Mixin::clear_root() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.root_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline const ::std::string& Mixin::root() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {

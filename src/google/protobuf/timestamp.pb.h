@@ -291,7 +291,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Timesta
 inline void Timestamp::clear_seconds() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.seconds_ = ::int64_t{0};
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::int64_t Timestamp::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.seconds)
@@ -315,7 +316,8 @@ inline void Timestamp::_internal_set_seconds(::int64_t value) {
 inline void Timestamp::clear_nanos() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nanos_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline ::int32_t Timestamp::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.nanos)

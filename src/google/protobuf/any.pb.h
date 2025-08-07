@@ -360,7 +360,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Any_cla
 inline void Any::clear_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_url_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Any::type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -425,7 +426,8 @@ inline void Any::set_allocated_type_url(::std::string* PROTOBUF_NULLABLE value) 
 inline void Any::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline const ::std::string& Any::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {

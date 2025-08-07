@@ -265,7 +265,8 @@ void Api::clear_options() {
 void Api::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
 }
 Api::Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -718,12 +719,18 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_methods()->MergeFrom(
-      from._internal_methods());
-  _this->_internal_mutable_options()->MergeFrom(
-      from._internal_options());
-  _this->_internal_mutable_mixins()->MergeFrom(
-      from._internal_mixins());
+  {
+    _this->_internal_mutable_methods()->MergeFrom(
+        from._internal_methods());
+  }
+  {
+    _this->_internal_mutable_options()->MergeFrom(
+        from._internal_options());
+  }
+  {
+    _this->_internal_mutable_mixins()->MergeFrom(
+        from._internal_mixins());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1257,8 +1264,10 @@ void Method::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_options()->MergeFrom(
-      from._internal_options());
+  {
+    _this->_internal_mutable_options()->MergeFrom(
+        from._internal_options());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {

@@ -284,7 +284,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull SourceC
 inline void SourceContext::clear_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& SourceContext::file_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {

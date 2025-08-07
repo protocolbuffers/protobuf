@@ -1849,7 +1849,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull BoolVal
 inline void DoubleValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline double DoubleValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DoubleValue.value)
@@ -1877,7 +1878,8 @@ inline void DoubleValue::_internal_set_value(double value) {
 inline void FloatValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline float FloatValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FloatValue.value)
@@ -1905,7 +1907,8 @@ inline void FloatValue::_internal_set_value(float value) {
 inline void Int64Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = ::int64_t{0};
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::int64_t Int64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int64Value.value)
@@ -1933,7 +1936,8 @@ inline void Int64Value::_internal_set_value(::int64_t value) {
 inline void UInt64Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = ::uint64_t{0u};
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::uint64_t UInt64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt64Value.value)
@@ -1961,7 +1965,8 @@ inline void UInt64Value::_internal_set_value(::uint64_t value) {
 inline void Int32Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::int32_t Int32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int32Value.value)
@@ -1989,7 +1994,8 @@ inline void Int32Value::_internal_set_value(::int32_t value) {
 inline void UInt32Value::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = 0u;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::uint32_t UInt32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt32Value.value)
@@ -2017,7 +2023,8 @@ inline void UInt32Value::_internal_set_value(::uint32_t value) {
 inline void BoolValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline bool BoolValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.BoolValue.value)
@@ -2045,7 +2052,8 @@ inline void BoolValue::_internal_set_value(bool value) {
 inline void StringValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& StringValue::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2114,7 +2122,8 @@ inline void StringValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE va
 inline void BytesValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.value_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& BytesValue::value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {

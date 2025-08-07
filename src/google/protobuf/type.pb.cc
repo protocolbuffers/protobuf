@@ -391,7 +391,8 @@ class Type::_Internal {
 void Type::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
 }
 Type::Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -815,11 +816,17 @@ void Type::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_fields()->MergeFrom(
-      from._internal_fields());
-  _this->_internal_mutable_oneofs()->MergeFrom(from._internal_oneofs());
-  _this->_internal_mutable_options()->MergeFrom(
-      from._internal_options());
+  {
+    _this->_internal_mutable_fields()->MergeFrom(
+        from._internal_fields());
+  }
+  {
+    _this->_internal_mutable_oneofs()->MergeFrom(from._internal_oneofs());
+  }
+  {
+    _this->_internal_mutable_options()->MergeFrom(
+        from._internal_options());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1391,8 +1398,10 @@ void Field::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_options()->MergeFrom(
-      from._internal_options());
+  {
+    _this->_internal_mutable_options()->MergeFrom(
+        from._internal_options());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1505,7 +1514,8 @@ class Enum::_Internal {
 void Enum::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
 }
 Enum::Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -1900,10 +1910,14 @@ void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_enumvalue()->MergeFrom(
-      from._internal_enumvalue());
-  _this->_internal_mutable_options()->MergeFrom(
-      from._internal_options());
+  {
+    _this->_internal_mutable_enumvalue()->MergeFrom(
+        from._internal_enumvalue());
+  }
+  {
+    _this->_internal_mutable_options()->MergeFrom(
+        from._internal_options());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -2279,8 +2293,10 @@ void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_options()->MergeFrom(
-      from._internal_options());
+  {
+    _this->_internal_mutable_options()->MergeFrom(
+        from._internal_options());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -2338,7 +2354,8 @@ class Option::_Internal {
 void Option::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.value_ != nullptr) _impl_.value_->Clear();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 Option::Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)

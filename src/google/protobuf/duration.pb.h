@@ -291,7 +291,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Duratio
 inline void Duration::clear_seconds() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.seconds_ = ::int64_t{0};
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::int64_t Duration::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Duration.seconds)
@@ -315,7 +316,8 @@ inline void Duration::_internal_set_seconds(::int64_t value) {
 inline void Duration::clear_nanos() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nanos_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline ::int32_t Duration::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Duration.nanos)

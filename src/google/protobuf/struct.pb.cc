@@ -571,7 +571,9 @@ void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
+  {
+    _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
+  }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -1305,8 +1307,10 @@ void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_values()->MergeFrom(
-      from._internal_values());
+  {
+    _this->_internal_mutable_values()->MergeFrom(
+        from._internal_values());
+  }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }

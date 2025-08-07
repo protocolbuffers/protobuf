@@ -1659,7 +1659,8 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_cl
 inline void Type::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Type::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1981,7 +1982,8 @@ inline void Type::set_allocated_source_context(::google::protobuf::SourceContext
 inline void Type::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
 }
 inline ::google::protobuf::Syntax Type::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.syntax)
@@ -2005,7 +2007,8 @@ inline void Type::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Type::clear_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline const ::std::string& Type::edition() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2074,7 +2077,8 @@ inline void Type::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) 
 inline void Field::clear_kind() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.kind_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000010U);
 }
 inline ::google::protobuf::Field_Kind Field::kind() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.kind)
@@ -2098,7 +2102,8 @@ inline void Field::_internal_set_kind(::google::protobuf::Field_Kind value) {
 inline void Field::clear_cardinality() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cardinality_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000020U);
 }
 inline ::google::protobuf::Field_Cardinality Field::cardinality() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.cardinality)
@@ -2122,7 +2127,8 @@ inline void Field::_internal_set_cardinality(::google::protobuf::Field_Cardinali
 inline void Field::clear_number() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000040U);
 }
 inline ::int32_t Field::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.number)
@@ -2146,7 +2152,8 @@ inline void Field::_internal_set_number(::int32_t value) {
 inline void Field::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Field::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2211,7 +2218,8 @@ inline void Field::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 inline void Field::clear_type_url() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.type_url_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline const ::std::string& Field::type_url() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2276,7 +2284,8 @@ inline void Field::set_allocated_type_url(::std::string* PROTOBUF_NULLABLE value
 inline void Field::clear_oneof_index() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.oneof_index_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000080U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000080U);
 }
 inline ::int32_t Field::oneof_index() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.oneof_index)
@@ -2300,7 +2309,8 @@ inline void Field::_internal_set_oneof_index(::int32_t value) {
 inline void Field::clear_packed() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.packed_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000100U);
 }
 inline bool Field::packed() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.packed)
@@ -2374,7 +2384,8 @@ Field::_internal_mutable_options() {
 inline void Field::clear_json_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.json_name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000004U);
 }
 inline const ::std::string& Field::json_name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2439,7 +2450,8 @@ inline void Field::set_allocated_json_name(::std::string* PROTOBUF_NULLABLE valu
 inline void Field::clear_default_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.default_value_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
 }
 inline const ::std::string& Field::default_value() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2508,7 +2520,8 @@ inline void Field::set_allocated_default_value(::std::string* PROTOBUF_NULLABLE 
 inline void Enum::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Enum::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2766,7 +2779,8 @@ inline void Enum::set_allocated_source_context(::google::protobuf::SourceContext
 inline void Enum::clear_syntax() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.syntax_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
 }
 inline ::google::protobuf::Syntax Enum::syntax() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.syntax)
@@ -2790,7 +2804,8 @@ inline void Enum::_internal_set_syntax(::google::protobuf::Syntax value) {
 inline void Enum::clear_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline const ::std::string& Enum::edition() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2859,7 +2874,8 @@ inline void Enum::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) 
 inline void EnumValue::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& EnumValue::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2924,7 +2940,8 @@ inline void EnumValue::set_allocated_name(::std::string* PROTOBUF_NULLABLE value
 inline void EnumValue::clear_number() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.number_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
 }
 inline ::int32_t EnumValue::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.number)
@@ -3002,7 +3019,8 @@ EnumValue::_internal_mutable_options() {
 inline void Option::clear_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.name_.ClearToEmpty();
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::std::string& Option::name() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {

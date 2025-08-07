@@ -339,7 +339,9 @@ void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_paths()->MergeFrom(from._internal_paths());
+  {
+    _this->_internal_mutable_paths()->MergeFrom(from._internal_paths());
+  }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
