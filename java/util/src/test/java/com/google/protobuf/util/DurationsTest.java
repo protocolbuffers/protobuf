@@ -146,8 +146,18 @@ public class DurationsTest {
 
   @Test
   public void testLargeDuration() {
-    // TODO: kak - this should throw an exception
-    assertThat(Durations.isValid(Durations.fromHours(Integer.MAX_VALUE))).isFalse();
+    try {
+      Durations.fromHours(Integer.MAX_VALUE);
+      fail();
+    } catch (IllegalArgumentException expected) {
+      assertThat(expected)
+          .hasMessageThat()
+          .isEqualTo(
+              "Duration is not valid. See proto definition for valid values. Seconds"
+                  + " (7730941129200) must be in range [-315,576,000,000, +315,576,000,000]. Nanos"
+                  + " (0) must be in range [-999,999,999, +999,999,999]. Nanos must have the same"
+                  + " sign as seconds");
+    }
   }
 
   @Test

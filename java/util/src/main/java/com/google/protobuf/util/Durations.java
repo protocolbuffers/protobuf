@@ -301,28 +301,19 @@ public final class Durations {
   /** Create a Duration from the number of days. */
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static Duration fromDays(long days) {
-    return Duration.newBuilder()
-        .setSeconds(multiplyExact(days, SECONDS_PER_DAY))
-        .setNanos(0)
-        .build();
+    return Durations.fromSeconds(multiplyExact(days, SECONDS_PER_DAY));
   }
 
   /** Create a Duration from the number of hours. */
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static Duration fromHours(long hours) {
-    return Duration.newBuilder()
-        .setSeconds(multiplyExact(hours, SECONDS_PER_HOUR))
-        .setNanos(0)
-        .build();
+    return Durations.fromSeconds(multiplyExact(hours, SECONDS_PER_HOUR));
   }
 
   /** Create a Duration from the number of minutes. */
   @SuppressWarnings("GoodTime") // this is a legacy conversion API
   public static Duration fromMinutes(long minutes) {
-    return Duration.newBuilder()
-        .setSeconds(multiplyExact(minutes, SECONDS_PER_MINUTE))
-        .setNanos(0)
-        .build();
+    return Durations.fromSeconds(multiplyExact(minutes, SECONDS_PER_MINUTE));
   }
 
   /** Create a Duration from the number of seconds. */
