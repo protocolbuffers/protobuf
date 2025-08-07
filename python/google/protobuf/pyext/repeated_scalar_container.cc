@@ -87,21 +87,25 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedInt32(message, field_descriptor, index, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedInt64(message, field_descriptor, index, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedUInt32(message, field_descriptor, index, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedUInt64(message, field_descriptor, index, value);
       break;
     }
@@ -129,6 +133,7 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetRepeatedEnumValue(message, field_descriptor, index,
                                          value);
@@ -312,21 +317,25 @@ PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddUInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddUInt64(message, field_descriptor, value);
       break;
     }
@@ -354,6 +363,7 @@ PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->AddEnumValue(message, field_descriptor, value);
       } else {
