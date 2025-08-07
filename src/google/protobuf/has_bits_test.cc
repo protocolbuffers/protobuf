@@ -37,10 +37,26 @@ using ::proto2_unittest::TestAllTypes;
 using ::proto2_unittest::TestMap;
 using ::testing::Eq;
 
+bool IsIndexInHasBitSet(const uint32_t* has_bit_set, uint32_t has_bit_index) {
+  ABSL_DCHECK_NE(has_bit_index, static_cast<uint32_t>(kNoHasbit));
+  return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
+          static_cast<uint32_t>(1)) != 0;
+}
+
 }  // namespace
 
 class HasBitsTestPeer {
  public:
+  static bool HasBitSet(const Message& msg, const FieldDescriptor* field) {
+    const auto* ref = msg.GetReflection();
+    uint32_t has_bit_idx = ref->Schema().HasBitIndex(field);
+    return IsIndexInHasBitSet(ref->GetHasBits(msg), has_bit_idx);
+  }
+
+  static bool HasBitSet(const Message& msg, absl::string_view field_name) {
+    return HasBitSet(msg, msg.GetDescriptor()->FindFieldByName(field_name));
+  }
+
   static void SetHasBit(Message* msg, const FieldDescriptor* field) {
     const auto* ref = msg->GetReflection();
     ABSL_DCHECK_NE(ref->Schema().HasBitIndex(field),
@@ -132,6 +148,103 @@ TEST(HasBitsTest, Copy) {
   HasBits<4> bits1({1, 2, 4, 8});
   HasBits<4> bits2(bits1);
   EXPECT_TRUE(bits1 == bits2);
+}
+
+TEST(HasBitsTest, HasBitsUnsetForDefaultRepeatedField) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestAllTypes msg;
+  EXPECT_FALSE(HasBitsTestPeer::HasBitSet(msg, "repeated_int32"));
+}
+
+TEST(HasBitsTest, HasBitsSetOnMutable) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestAllTypes msg;
+  msg.mutable_repeated_int32();
+  EXPECT_TRUE(HasBitsTestPeer::HasBitSet(msg, "repeated_int32"));
+}
+
+TEST(HasBitsTest, HasBitsClearedOnFieldClear) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestAllTypes msg;
+  msg.mutable_repeated_int32();
+  msg.clear_repeated_int32();
+  EXPECT_FALSE(HasBitsTestPeer::HasBitSet(msg, "repeated_int32"));
+}
+
+TEST(HasBitsTest, HasBitsSetOnMutableWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestAllTypes msg;
+  msg.GetReflection()->GetMutableRepeatedFieldRef<int32_t>(
+      &msg, msg.GetDescriptor()->FindFieldByName("repeated_int32"));
+  EXPECT_TRUE(HasBitsTestPeer::HasBitSet(msg, "repeated_int32"));
+}
+
+TEST(HasBitsTest, HasBitsClearedOnFieldClearWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestAllTypes msg;
+  msg.mutable_repeated_int32();
+  msg.GetReflection()->ClearField(
+      &msg, msg.GetDescriptor()->FindFieldByName("repeated_int32"));
+  EXPECT_FALSE(HasBitsTestPeer::HasBitSet(msg, "repeated_int32"));
+}
+
+TEST(HasBitsTest, HasBitsSetOnMutableMap) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestMap msg;
+  msg.mutable_map_int32_int32();
+  EXPECT_TRUE(HasBitsTestPeer::HasBitSet(msg, "map_int32_int32"));
+}
+
+TEST(HasBitsTest, HasBitsClearedOnMapFieldClear) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestMap msg;
+  msg.mutable_map_int32_int32();
+  msg.clear_map_int32_int32();
+  EXPECT_FALSE(HasBitsTestPeer::HasBitSet(msg, "map_int32_int32"));
+}
+
+TEST(HasBitsTest, HasBitsSetOnMutableMapWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestMap msg;
+  msg.GetReflection()->GetMutableRepeatedFieldRef<Message>(
+      &msg, msg.GetDescriptor()->FindFieldByName("map_int32_int32"));
+  EXPECT_TRUE(HasBitsTestPeer::HasBitSet(msg, "map_int32_int32"));
+}
+
+TEST(HasBitsTest, HasBitsClearedOnMapFieldClearWithReflection) {
+  if constexpr (!EnableExperimentalHintHasBitsForRepeatedFields()) {
+    GTEST_SKIP()
+        << "Test only applies with hasbits for repeated fields enabled";
+  }
+  TestMap msg;
+  msg.mutable_map_int32_int32();
+  msg.GetReflection()->ClearField(
+      &msg, msg.GetDescriptor()->FindFieldByName("map_int32_int32"));
+  EXPECT_FALSE(HasBitsTestPeer::HasBitSet(msg, "map_int32_int32"));
 }
 
 }  // namespace
