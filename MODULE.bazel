@@ -54,7 +54,7 @@ bazel_dep(name = "rules_python", version = "1.4.1")
 # rules_proto is needed for @com_google_protobuf_v25 used in //compatibility/... tests
 bazel_dep(name = "rules_proto", version = "7.1.0")
 
-bazel_dep(name = "rules_rust", version = "0.56.0", dev_dependency = True)
+bazel_dep(name = "rules_rust", version = "0.63.0", dev_dependency = True)
 bazel_dep(name = "rules_ruby", version = "0.17.3", dev_dependency = True)
 
 # Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230

@@ -249,6 +249,8 @@ load("@fuzzing_py_deps//:requirements.bzl", fuzzing_py_deps_install_deps = "inst
 
 fuzzing_py_deps_install_deps()
 
+# This version of rules_rust is older than the one in MODULE.bazel, but we
+# cannot upgrade any further without breaking the WORKSPACE-based build.
 http_archive(
     name = "rules_rust",
     integrity = "sha256-8TBqrAsli3kN8BrZq8arsN8LZUFsdLTvJ/Sqsph4CmQ=",
