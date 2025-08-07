@@ -837,8 +837,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         && !descriptor.isRepeated()
         && !descriptor.isPacked()) {
       if (value instanceof LazyField) {
-        return CodedOutputStream.computeLazyFieldMessageSetExtensionSize(
-            entry.getKey().getNumber(), (LazyField) value);
+        return ((LazyField) value).computeMessageSetExtensionSize(entry.getKey().getNumber());
       } else {
         return CodedOutputStream.computeMessageSetExtensionSize(
             entry.getKey().getNumber(), (MessageLite) value);
@@ -921,7 +920,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
       case MESSAGE:
         if (value instanceof LazyField) {
-          return CodedOutputStream.computeLazyFieldSizeNoTag((LazyField) value);
+          return ((LazyField) value).computeSizeNoTag();
         } else {
           return CodedOutputStream.computeMessageSizeNoTag((MessageLite) value);
         }
