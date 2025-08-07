@@ -1,14 +1,14 @@
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("//rust/release_crates:substitute_rust_release_version.bzl", "substitute_rust_release_version")
 
-pkg_tar(
+pkg_filegroup(
     name = "protobuf_example_crate",
     srcs = [
         ":protobuf_example_files",
-        "//:LICENSE",
+        "//rust/release_crates:license",
     ],
     visibility = ["//rust:__subpackages__"],
+    prefix = "protobuf_example",
 )
 
 pkg_files(
