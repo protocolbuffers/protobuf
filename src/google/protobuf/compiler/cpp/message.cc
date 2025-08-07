@@ -121,18 +121,21 @@ void DebugAssertUniformLikelyPresence(
 // to use.
 std::string GenerateConditionMaybeWithProbability(
     uint32_t mask, std::optional<float> probability, bool use_cached_has_bits,
-    std::optional<int> has_array_index, bool is_batch = false) {
+    std::optional<int> has_array_index, bool is_batch, bool is_repeated) {
+  ABSL_DCHECK(!is_batch || !is_repeated);
   std::string condition;
   if (use_cached_has_bits) {
-    condition = absl::StrFormat("%sCheckHasBit(cached_has_bits, 0x%08xU)",
-                                (is_batch ? "Batch" : ""), mask);
+    condition = absl::StrFormat("%sCheckHasBit%s(cached_has_bits, 0x%08xU)",
+                                (is_batch ? "Batch" : ""),
+                                (is_repeated ? "ForRepeated" : ""), mask);
   } else {
     // We only use has_array_index when use_cached_has_bits is false, make sure
     // we pas a valid index when we need it.
     ABSL_DCHECK(has_array_index.has_value());
-    condition =
-        absl::StrFormat("%sCheckHasBit(this_._impl_._has_bits_[%d], 0x%08xU)",
-                        (is_batch ? "Batch" : ""), *has_array_index, mask);
+    condition = absl::StrFormat(
+        "%sCheckHasBit%s(this_._impl_._has_bits_[%d], 0x%08xU)",
+        (is_batch ? "Batch" : ""), (is_repeated ? "ForRepeated" : ""),
+        *has_array_index, mask);
   }
   if (probability.has_value()) {
     return absl::StrFormat("PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(%s, %.3f)",
@@ -142,12 +145,13 @@ std::string GenerateConditionMaybeWithProbability(
 }
 
 std::string GenerateConditionMaybeWithProbabilityForField(
-    int has_bit_index, const FieldDescriptor* field, const Options& options) {
+    int has_bit_index, const FieldDescriptor* field, const Options& options,
+    bool is_repeated) {
   auto prob = GetPresenceProbability(field, options);
-  return GenerateConditionMaybeWithProbability(
-      1u << (has_bit_index % 32), prob,
-      /*use_cached_has_bits*/ true,
-      /*has_array_index*/ std::nullopt);
+  return GenerateConditionMaybeWithProbability(1u << (has_bit_index % 32), prob,
+                                               /*use_cached_has_bits*/ true,
+                                               /*has_array_index*/ std::nullopt,
+                                               /*is_batch=*/false, is_repeated);
 }
 
 std::string GenerateConditionMaybeWithProbabilityForGroup(
@@ -157,7 +161,8 @@ std::string GenerateConditionMaybeWithProbabilityForGroup(
   return GenerateConditionMaybeWithProbability(mask, prob,
                                                /*use_cached_has_bits*/ true,
                                                /*has_array_index*/ std::nullopt,
-                                               /*is_batch*/ true);
+                                               /*is_batch*/ true,
+                                               /*is_repeated*/ false);
 }
 
 void PrintPresenceCheck(const FieldDescriptor* field,
@@ -172,8 +177,9 @@ void PrintPresenceCheck(const FieldDescriptor* field,
                 cached_has_bits = $has_bits$[$index$];
               )cc");
     }
-    p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                               has_bit_index, field, options)}},
+    p->Emit({{"condition",
+              GenerateConditionMaybeWithProbabilityForField(
+                  has_bit_index, field, options, field->is_repeated())}},
             R"cc(
               if ($condition$) {
             )cc");
@@ -684,6 +690,14 @@ MessageGenerator::MessageGenerator(
       descriptor_, max_has_bit_index_, has_bit_indices_,
       inlined_string_indices_, options_, scc_analyzer_, variables_,
       index_in_file_messages_);
+}
+
+bool MessageGenerator::ShouldGenerateEnclosingIf(
+    const FieldDescriptor& field) const {
+  return HasBitIndex(&field) != kNoHasbit &&
+         (field.is_repeated() ||
+          field.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+          field.cpp_type() == FieldDescriptor::CPPTYPE_STRING);
 }
 
 size_t MessageGenerator::HasBitsSize() const {
@@ -1236,9 +1250,13 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                 field_generators_.get(field).GenerateClearingCode(p);
                 if (HasHasbit(field, options_)) {
                   auto v = p->WithVars(HasBitVars(field));
-                  p->Emit(R"cc(
-                    ClearHasBit($has_bits$[$has_array_index$], $has_mask$);
-                  )cc");
+                  p->Emit({{"clear_has_bit", field->is_repeated()
+                                                 ? "ClearHasBitForRepeated"
+                                                 : "ClearHasBit"}},
+                          R"cc(
+                            $clear_has_bit$($has_bits$[$has_array_index$],
+                                            $has_mask$);
+                          )cc");
                 }
               }
             }}},
@@ -1345,8 +1363,9 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                             has_bit_index, field, options_)},
+  p->Emit({{"condition",
+            GenerateConditionMaybeWithProbabilityForField(
+                has_bit_index, field, options_, field->is_repeated())},
            {"check_nondefault_and_emit_body",
             [&] {
               // Note that it's possible that the field has explicit presence.
@@ -3265,8 +3284,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
       p->Emit("from.$field$ != nullptr");
     } else {
       int has_bit_index = has_bit_indices_[field->index()];
-      p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                                 has_bit_index, field, options_)}},
+      p->Emit({{"condition",
+                GenerateConditionMaybeWithProbabilityForField(
+                    has_bit_index, field, options_, /*is_repeated=*/false)}},
               "$condition$");
     }
   };
@@ -3630,7 +3650,6 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         // (memset) per chunk, and if present it will be at the beginning.
         bool same =
             HasByteIndex(a) == HasByteIndex(b) &&
-            a->is_repeated() == b->is_repeated() &&
             IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
             ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
             (CanClearByZeroing(a) == CanClearByZeroing(b) ||
@@ -3727,10 +3746,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         // clear strings and messages if they were set.
         //
         // TODO:  Let the CppFieldGenerator decide this somehow.
-        bool have_enclosing_if =
-            HasBitIndex(field) != kNoHasbit &&
-            (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-             field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
+        const bool have_enclosing_if = ShouldGenerateEnclosingIf(*field);
 
         if (have_enclosing_if) {
           PrintPresenceCheck(field, has_bit_indices_, p, &cached_has_word_index,
@@ -4348,10 +4364,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
     for (const auto* field : fields) {
       const auto& generator = field_generators_.get(field);
 
-      if (field->is_repeated()) {
-        generator.GenerateMergingCode(p);
-      } else if (!field->is_required() && !field->is_repeated() &&
-                 !HasHasbit(field, options_)) {
+      if (!field->is_required() && !HasHasbit(field, options_)) {
         // Merge semantics without true field presence: primitive fields are
         // merged only if non-zero (numeric) or non-empty (string).
         MayEmitMutableIfNonDefaultCheck(
@@ -4363,8 +4376,12 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         // Check hasbit, not using cached bits.
         auto v = p->WithVars(HasBitVars(field));
         p->Emit(
-            {{"merge_field", [&] { generator.GenerateMergingCode(p); }}}, R"cc(
-              if (CheckHasBit(from.$has_bits$[$has_array_index$], $has_mask$)) {
+            {{"check_has_bit",
+              field->is_repeated() ? "CheckHasBitForRepeated" : "CheckHasBit"},
+             {"merge_field", [&] { generator.GenerateMergingCode(p); }}},
+            R"cc(
+              if ($check_has_bit$(from.$has_bits$[$has_array_index$],
+                                  $has_mask$)) {
                 $merge_field$;
               }
             )cc");
@@ -4374,8 +4391,9 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         int has_bit_index = has_bit_indices_[field->index()];
 
         p->Emit(
-            {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                               has_bit_index, field, options_)},
+            {{"condition",
+              GenerateConditionMaybeWithProbabilityForField(
+                  has_bit_index, field, options_, field->is_repeated())},
              {"merge_field",
               [&] {
                 if (GetFieldHasbitMode(field, options_) ==
@@ -4719,10 +4737,12 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
                                         std::move(emit_body),
                                         /*with_enclosing_braces_always=*/false);
              }},
-            {"cond", GenerateConditionMaybeWithProbability(
-                         1u << (has_bit_index % 32),
-                         GetPresenceProbability(field, options_),
-                         use_cached_has_bits, has_word_index)},
+            {"cond",
+             GenerateConditionMaybeWithProbability(
+                 1u << (has_bit_index % 32),
+                 GetPresenceProbability(field, options_), use_cached_has_bits,
+                 has_word_index, /*is_batch=*/false,
+                 /*is_repeated=*/field->is_repeated())},
         },
         R"cc(
           if ($cond$) {
@@ -5245,7 +5265,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   std::vector<FieldChunk> chunks =
       CollectFields(rest, options_, [&](const auto* a, const auto* b) {
         return a->is_required() == b->is_required() &&
-               a->is_repeated() == b->is_repeated() &&
                HasByteIndex(a) == HasByteIndex(b) &&
                IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
                ShouldSplit(a, options_) == ShouldSplit(b, options_);
@@ -5560,8 +5579,9 @@ void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
-                             has_bit_index, field, options_)},
+  p->Emit({{"condition",
+            GenerateConditionMaybeWithProbabilityForField(
+                has_bit_index, field, options_, field->is_repeated())},
            {"check_nondefault_and_emit_body",
             [&] {
               // Note that it's possible that the field has explicit presence.

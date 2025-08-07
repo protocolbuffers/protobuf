@@ -2508,8 +2508,10 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_file()->MergeFrom(
-      from._internal_file());
+  {
+    _this->_internal_mutable_file()->MergeFrom(
+        from._internal_file());
+  }
   _this->_impl_._extensions_.MergeFrom(&default_instance(),
                                 from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -3145,18 +3147,34 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_dependency()->MergeFrom(from._internal_dependency());
-  _this->_internal_mutable_message_type()->MergeFrom(
-      from._internal_message_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(
-      from._internal_enum_type());
-  _this->_internal_mutable_service()->MergeFrom(
-      from._internal_service());
-  _this->_internal_mutable_extension()->MergeFrom(
-      from._internal_extension());
-  _this->_internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
-  _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
-  _this->_internal_mutable_option_dependency()->MergeFrom(from._internal_option_dependency());
+  {
+    _this->_internal_mutable_dependency()->MergeFrom(from._internal_dependency());
+  }
+  {
+    _this->_internal_mutable_message_type()->MergeFrom(
+        from._internal_message_type());
+  }
+  {
+    _this->_internal_mutable_enum_type()->MergeFrom(
+        from._internal_enum_type());
+  }
+  {
+    _this->_internal_mutable_service()->MergeFrom(
+        from._internal_service());
+  }
+  {
+    _this->_internal_mutable_extension()->MergeFrom(
+        from._internal_extension());
+  }
+  {
+    _this->_internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
+  }
+  {
+    _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
+  }
+  {
+    _this->_internal_mutable_option_dependency()->MergeFrom(from._internal_option_dependency());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -4415,21 +4433,37 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_field()->MergeFrom(
-      from._internal_field());
-  _this->_internal_mutable_nested_type()->MergeFrom(
-      from._internal_nested_type());
-  _this->_internal_mutable_enum_type()->MergeFrom(
-      from._internal_enum_type());
-  _this->_internal_mutable_extension_range()->MergeFrom(
-      from._internal_extension_range());
-  _this->_internal_mutable_extension()->MergeFrom(
-      from._internal_extension());
-  _this->_internal_mutable_oneof_decl()->MergeFrom(
-      from._internal_oneof_decl());
-  _this->_internal_mutable_reserved_range()->MergeFrom(
-      from._internal_reserved_range());
-  _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
+  {
+    _this->_internal_mutable_field()->MergeFrom(
+        from._internal_field());
+  }
+  {
+    _this->_internal_mutable_nested_type()->MergeFrom(
+        from._internal_nested_type());
+  }
+  {
+    _this->_internal_mutable_enum_type()->MergeFrom(
+        from._internal_enum_type());
+  }
+  {
+    _this->_internal_mutable_extension_range()->MergeFrom(
+        from._internal_extension_range());
+  }
+  {
+    _this->_internal_mutable_extension()->MergeFrom(
+        from._internal_extension());
+  }
+  {
+    _this->_internal_mutable_oneof_decl()->MergeFrom(
+        from._internal_oneof_decl());
+  }
+  {
+    _this->_internal_mutable_reserved_range()->MergeFrom(
+        from._internal_reserved_range());
+  }
+  {
+    _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -5223,10 +5257,14 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_declaration()->MergeFrom(
-      from._internal_declaration());
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_declaration()->MergeFrom(
+        from._internal_declaration());
+  }
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -6811,11 +6849,17 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_value()->MergeFrom(
-      from._internal_value());
-  _this->_internal_mutable_reserved_range()->MergeFrom(
-      from._internal_reserved_range());
-  _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
+  {
+    _this->_internal_mutable_value()->MergeFrom(
+        from._internal_value());
+  }
+  {
+    _this->_internal_mutable_reserved_range()->MergeFrom(
+        from._internal_reserved_range());
+  }
+  {
+    _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -7524,8 +7568,10 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_method()->MergeFrom(
-      from._internal_method());
+  {
+    _this->_internal_mutable_method()->MergeFrom(
+        from._internal_method());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -8659,8 +8705,10 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -9157,8 +9205,10 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -10392,11 +10442,17 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_targets()->MergeFrom(from._internal_targets());
-  _this->_internal_mutable_edition_defaults()->MergeFrom(
-      from._internal_edition_defaults());
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_targets()->MergeFrom(from._internal_targets());
+  }
+  {
+    _this->_internal_mutable_edition_defaults()->MergeFrom(
+        from._internal_edition_defaults());
+  }
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -10786,8 +10842,10 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     ABSL_DCHECK(from._impl_.features_ != nullptr);
@@ -11182,8 +11240,10 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -11612,8 +11672,10 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -11999,8 +12061,10 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -12406,8 +12470,10 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_uninterpreted_option()->MergeFrom(
-      from._internal_uninterpreted_option());
+  {
+    _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+        from._internal_uninterpreted_option());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -13146,8 +13212,10 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_name()->MergeFrom(
-      from._internal_name());
+  {
+    _this->_internal_mutable_name()->MergeFrom(
+        from._internal_name());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -14428,8 +14496,10 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_defaults()->MergeFrom(
-      from._internal_defaults());
+  {
+    _this->_internal_mutable_defaults()->MergeFrom(
+        from._internal_defaults());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -14829,9 +14899,15 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_path()->MergeFrom(from._internal_path());
-  _this->_internal_mutable_span()->MergeFrom(from._internal_span());
-  _this->_internal_mutable_leading_detached_comments()->MergeFrom(from._internal_leading_detached_comments());
+  {
+    _this->_internal_mutable_path()->MergeFrom(from._internal_path());
+  }
+  {
+    _this->_internal_mutable_span()->MergeFrom(from._internal_span());
+  }
+  {
+    _this->_internal_mutable_leading_detached_comments()->MergeFrom(from._internal_leading_detached_comments());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -15120,8 +15196,10 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_location()->MergeFrom(
-      from._internal_location());
+  {
+    _this->_internal_mutable_location()->MergeFrom(
+        from._internal_location());
+  }
   _this->_impl_._extensions_.MergeFrom(&default_instance(),
                                 from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
@@ -15498,7 +15576,9 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_path()->MergeFrom(from._internal_path());
+  {
+    _this->_internal_mutable_path()->MergeFrom(from._internal_path());
+  }
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -15785,8 +15865,10 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  _this->_internal_mutable_annotation()->MergeFrom(
-      from._internal_annotation());
+  {
+    _this->_internal_mutable_annotation()->MergeFrom(
+        from._internal_annotation());
+  }
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }

@@ -1005,6 +1005,24 @@ class PROTOBUF_EXPORT MessageLite {
     return (cached_has_bits & has_bit_mask) != 0;
   }
 
+  // The following methods should be used to access has bits for repeated
+  // fields.
+  // TODO: Remove these methods once measurement is complete.
+  static PROTOBUF_ALWAYS_INLINE constexpr void SetHasBitForRepeated(
+      uint32_t& cached_has_bits, uint32_t has_bit_mask) {
+    SetHasBit(cached_has_bits, has_bit_mask);
+  }
+
+  static PROTOBUF_ALWAYS_INLINE constexpr void ClearHasBitForRepeated(
+      uint32_t& cached_has_bits, uint32_t has_bit_mask) {
+    ClearHasBit(cached_has_bits, has_bit_mask);
+  }
+
+  static PROTOBUF_ALWAYS_INLINE constexpr bool CheckHasBitForRepeated(
+      uint32_t cached_has_bits, uint32_t has_bit_mask) {
+    return CheckHasBit(cached_has_bits, has_bit_mask);
+  }
+
   static PROTOBUF_ALWAYS_INLINE constexpr bool BatchCheckHasBit(
       uint32_t cached_has_bits, uint32_t batch_has_bits_mask) {
     return (cached_has_bits & batch_has_bits_mask) != 0;
