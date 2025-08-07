@@ -256,6 +256,8 @@ void PyiGenerator::PrintImports() const {
   } else {
     if (file_->service_count() > 0) {
       printer_->Print(
+          "from google3.net.rpc.python import legacy_stream_token as "
+          "_legacy_stream_token\n"
           "from google3.net.rpc.python import proto_python_api_2_stub as "
           "_proto_python_api_2_stub\n"
           "from google3.net.rpc.python import pywraprpc as _pywraprpc\n"
