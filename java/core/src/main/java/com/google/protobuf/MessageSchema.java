@@ -2601,166 +2601,164 @@ final class MessageSchema<T> implements Schema<T> {
           break;
         case 18: // DOUBLE_LIST:
           SchemaUtil.writeDoubleList(
-              numberAt(pos),
+              number,
               (List<Double>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 19: // FLOAT_LIST:
           SchemaUtil.writeFloatList(
-              numberAt(pos),
+              number,
               (List<Float>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 20: // INT64_LIST:
           SchemaUtil.writeInt64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 21: // UINT64_LIST:
           SchemaUtil.writeUInt64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 22: // INT32_LIST:
           SchemaUtil.writeInt32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 23: // FIXED64_LIST:
           SchemaUtil.writeFixed64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 24: // FIXED32_LIST:
           SchemaUtil.writeFixed32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 25: // BOOL_LIST:
           SchemaUtil.writeBoolList(
-              numberAt(pos),
+              number,
               (List<Boolean>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 26: // STRING_LIST:
           SchemaUtil.writeStringList(
-              numberAt(pos),
-              (List<String>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
-              writer);
+              number, (List<String>) UnsafeUtil.getObject(message, offset(typeAndOffset)), writer);
           break;
         case 27: // MESSAGE_LIST:
           SchemaUtil.writeMessageList(
-              numberAt(pos),
+              number,
               (List<?>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               getMessageFieldSchema(pos));
           break;
         case 28: // BYTES_LIST:
           SchemaUtil.writeBytesList(
-              numberAt(pos),
+              number,
               (List<ByteString>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer);
           break;
         case 29: // UINT32_LIST:
           SchemaUtil.writeUInt32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 30: // ENUM_LIST:
           SchemaUtil.writeEnumList(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 31: // SFIXED32_LIST:
           SchemaUtil.writeSFixed32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 32: // SFIXED64_LIST:
           SchemaUtil.writeSFixed64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 33: // SINT32_LIST:
           SchemaUtil.writeSInt32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 34: // SINT64_LIST:
           SchemaUtil.writeSInt64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               false);
           break;
         case 35: // DOUBLE_LIST_PACKED:
           SchemaUtil.writeDoubleList(
-              numberAt(pos),
+              number,
               (List<Double>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 36: // FLOAT_LIST_PACKED:
           SchemaUtil.writeFloatList(
-              numberAt(pos),
+              number,
               (List<Float>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 37: // INT64_LIST_PACKED:
           SchemaUtil.writeInt64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 38: // UINT64_LIST_PACKED:
           SchemaUtil.writeUInt64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 39: // INT32_LIST_PACKED:
           SchemaUtil.writeInt32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 40: // FIXED64_LIST_PACKED:
           SchemaUtil.writeFixed64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 41: // FIXED32_LIST_PACKED:
           SchemaUtil.writeFixed32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
@@ -2768,56 +2766,56 @@ final class MessageSchema<T> implements Schema<T> {
           break;
         case 42: // BOOL_LIST_PACKED:
           SchemaUtil.writeBoolList(
-              numberAt(pos),
+              number,
               (List<Boolean>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 43: // UINT32_LIST_PACKED:
           SchemaUtil.writeUInt32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 44: // ENUM_LIST_PACKED:
           SchemaUtil.writeEnumList(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 45: // SFIXED32_LIST_PACKED:
           SchemaUtil.writeSFixed32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 46: // SFIXED64_LIST_PACKED:
           SchemaUtil.writeSFixed64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 47: // SINT32_LIST_PACKED:
           SchemaUtil.writeSInt32List(
-              numberAt(pos),
+              number,
               (List<Integer>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 48: // SINT64_LIST_PACKED:
           SchemaUtil.writeSInt64List(
-              numberAt(pos),
+              number,
               (List<Long>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               true);
           break;
         case 49: // GROUP_LIST:
           SchemaUtil.writeGroupList(
-              numberAt(pos),
+              number,
               (List<?>) UnsafeUtil.getObject(message, offset(typeAndOffset)),
               writer,
               getMessageFieldSchema(pos));
