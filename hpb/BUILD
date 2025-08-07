@@ -109,7 +109,7 @@ cc_library(
     name = "generated_hpb_support",
     visibility = [
         "//hpb/bazel:__pkg__",
-        "//src/google/protobuf/compiler/hpb:__pkg__",
+        "//hpb_generator:__pkg__",
     ],
     deps = [
         ":hpb",

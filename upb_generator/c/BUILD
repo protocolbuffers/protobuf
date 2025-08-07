@@ -21,7 +21,7 @@ cc_library(
     name = "names",
     srcs = ["names.cc"],
     hdrs = ["names.h"],
-    visibility = ["//src/google/protobuf/compiler/hpb:__pkg__"],
+    visibility = ["//hpb_generator:__pkg__"],
     deps = [
         ":names_internal",
         "@abseil-cpp//absl/container:flat_hash_map",

@@ -28,7 +28,7 @@ cc_library(
     srcs = ["cpp_to_upb_def.cc"],
     hdrs = ["cpp_to_upb_def.h"],
     visibility = [
-        "//src/google/protobuf/compiler/hpb:__subpackages__",
+        "//hpb_generator:__subpackages__",
         "//third_party/kotlin/protobuf/generator/native:__subpackages__",
     ],
     deps = [

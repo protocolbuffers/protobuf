@@ -57,7 +57,7 @@ cc_library(
     srcs = ["names.cc"],
     hdrs = ["names.h"],
     visibility = [
-        "//src/google/protobuf/compiler/hpb:__pkg__",
+        "//hpb_generator:__pkg__",
         "//src/google/protobuf/compiler/rust:__pkg__",
         "//third_party/kotlin/protobuf/generator/native:__pkg__",
         "//upb_generator:__subpackages__",
