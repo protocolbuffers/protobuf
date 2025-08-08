@@ -1732,15 +1732,6 @@ PROTOBUF_NOINLINE const char* TcParser::FastBS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
-// TODO: Consolidate these into FastBS1/FastBS2.
-PROTOBUF_NOINLINE const char* TcParser::FastSS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint8_t, ArenaStringPtr, kNoUtf8>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-PROTOBUF_NOINLINE const char* TcParser::FastSS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint16_t, ArenaStringPtr, kNoUtf8>(
-      PROTOBUF_TC_PARAM_PASS);
-}
 PROTOBUF_NOINLINE const char* TcParser::FastUS1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularString<uint8_t, ArenaStringPtr, kUtf8>(
       PROTOBUF_TC_PARAM_PASS);
@@ -1758,12 +1749,6 @@ const char* TcParser::FastBiS1(PROTOBUF_TC_PARAM_DECL) {
 const char* TcParser::FastBiS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
-const char* TcParser::FastSiS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
-const char* TcParser::FastSiS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
 const char* TcParser::FastUiS1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
@@ -1776,12 +1761,6 @@ const char* TcParser::FastBcS1(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastBcS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
-const char* TcParser::FastScS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-}
-const char* TcParser::FastScS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 const char* TcParser::FastUcS1(PROTOBUF_TC_PARAM_DECL) {
@@ -1797,14 +1776,6 @@ PROTOBUF_NOINLINE const char* TcParser::FastBmS1(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastBmS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString, kNoUtf8>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-PROTOBUF_NOINLINE const char* TcParser::FastSmS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularString<uint8_t, MicroString, kNoUtf8>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-PROTOBUF_NOINLINE const char* TcParser::FastSmS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularString<uint16_t, MicroString, kNoUtf8>(
       PROTOBUF_TC_PARAM_PASS);
 }
@@ -1876,14 +1847,6 @@ PROTOBUF_NOINLINE const char* TcParser::FastBR1(PROTOBUF_TC_PARAM_DECL) {
       uint8_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastBR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedString<
-      uint16_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
-}
-PROTOBUF_NOINLINE const char* TcParser::FastSR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedString<
-      uint8_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
-}
-PROTOBUF_NOINLINE const char* TcParser::FastSR2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return RepeatedString<
       uint16_t, RepeatedPtrField<std::string>, kNoUtf8>(PROTOBUF_TC_PARAM_PASS);
 }

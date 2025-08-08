@@ -348,16 +348,12 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr0)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_PACKED(FastEr1)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastB)                 \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastS)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)                  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSi)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUi)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)                  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSc)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBm)                  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastSm)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUm)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGt)                \
@@ -613,7 +609,7 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
 
   // Functions referenced by generated fast tables (string types):
-  //   B: bytes      S: string     U: UTF-8 string
+  //   B: bytes      U: UTF-8 string
   //   (empty): ArenaStringPtr   i: InlinedString   c: Cord   m: MicroString
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
@@ -624,14 +620,6 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBR1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBR2(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSS1(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSS2(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSR1(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSR2(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUS1(
       PROTOBUF_TC_PARAM_DECL);
@@ -646,10 +634,6 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBiS2(
       PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSiS1(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSiS2(
-      PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUiS1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUiS2(
@@ -659,10 +643,6 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBcS2(
       PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastScS1(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastScS2(
-      PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcS1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcS2(
@@ -671,10 +651,6 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBmS1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBmS2(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSmS1(
-      PROTOBUF_TC_PARAM_DECL);
-  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastSmS2(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUmS1(
       PROTOBUF_TC_PARAM_DECL);
