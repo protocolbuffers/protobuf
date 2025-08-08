@@ -75,6 +75,7 @@ cc_test(
         "//hpb_generator/tests:test_model_hpb_proto",
         "//upb/mem",
         "//upb/mini_table",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/hash",
         "@abseil-cpp//absl/log:absl_check",
         "@googletest//:gtest",

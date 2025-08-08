@@ -13,6 +13,7 @@
 #include <thread>
 
 #include <gtest/gtest.h>
+#include "absl/base/thread_annotations.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "hpb_generator/tests/test_model.hpb.h"
@@ -49,8 +50,13 @@ std::string GenerateTestData() {
 }
 
 std::mutex m[8];
-void unlock_func(const void* msg) { m[absl::HashOf(msg) & 0x7].unlock(); }
-::hpb::internal::UpbExtensionUnlocker lock_func(const void* msg) {
+void unlock_func(const void* msg)
+    ABSL_UNLOCK_FUNCTION(m[absl::HashOf(msg) & 0x7]) {
+  m[absl::HashOf(msg) & 0x7].unlock();
+}
+
+::hpb::internal::UpbExtensionUnlocker lock_func(const void* msg)
+    ABSL_EXCLUSIVE_LOCK_FUNCTION(m[absl::HashOf(msg) & 0x7]) {
   m[absl::HashOf(msg) & 0x7].lock();
   return &unlock_func;
 }
