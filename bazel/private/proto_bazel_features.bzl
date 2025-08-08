@@ -14,6 +14,9 @@ _PROTO_BAZEL_FEATURES = """bazel_features = struct(
   proto = struct(
     starlark_proto_info = {starlark_proto_info},
   ),
+  rules = struct(
+    analysis_tests_can_transition_on_experimental_incompatible_flags = {analysis_tests_can_transition_on_experimental_incompatible_flags},
+  ),
   globals = struct(
     PackageSpecificationInfo = {PackageSpecificationInfo},
     ProtoInfo = getattr(getattr(native, 'legacy_globals', None), 'ProtoInfo', {ProtoInfo}),
@@ -53,6 +56,8 @@ exports_files(["features.bzl"])
         protobuf_on_allowlist = repr(protobuf_on_allowlist),
         ProtoInfo = ProtoInfo,
         cc_proto_aspect = cc_proto_aspect,
+        analysis_tests_can_transition_on_experimental_incompatible_flags =
+            "True" if major_version_int > 8 or (major_version_int == 8 and minor_version_int >= 2) else "False",
     ))
 
 proto_bazel_features = repository_rule(
