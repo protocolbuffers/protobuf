@@ -3145,6 +3145,10 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectSerializeFailureForJson(
       "DurationProtoNanosTooLarge", REQUIRED,
       "optional_duration: {seconds: 1 nanos: 1000000000}");
+  ExpectParseFailureForJson("DurationTooManyNanoDigits", REQUIRED,
+                            R"({"optionalDuration": "1.0987654321s"})");
+  ExpectParseFailureForJson("DurationTooManyNanoDititsNegative", REQUIRED,
+                            R"({"optionalDuration": "-1.0987654321s"})");
 
   RunValidJsonTestWithValidator(
       "DurationHasZeroFractionalDigit", RECOMMENDED,
@@ -3234,6 +3238,9 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "TimestampWithMissingColonInOffset", REQUIRED,
       R"({"optionalTimestamp": "1970-01-01T08:00:01+0800"})");
+  ExpectParseFailureForJson(
+      "TimestampWithTooManyNanoDigits", REQUIRED,
+      R"({"optionalTimestamp": "0001-01-01T00:00:00.0987654321Z"})");
   ExpectSerializeFailureForJson("TimestampProtoInputTooSmall", REQUIRED,
                                 "optional_timestamp: {seconds: -62135596801}");
   ExpectSerializeFailureForJson("TimestampProtoInputTooLarge", REQUIRED,

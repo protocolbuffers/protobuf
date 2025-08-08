@@ -35,6 +35,8 @@ Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput                          
 Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                                                               # Should have failed to serialize, but didn't.
 Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.DurationTooManyNanoDigits                                                                     # Should have failed to parse, but didn't.
+Required.*.JsonInput.DurationTooManyNanoDititsNegative                                                             # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldNotQuoted                                                                            # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldLeadingZero                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldNegativeWithLeadingZero                                                             # Should have failed to parse, but didn't.
@@ -42,4 +44,5 @@ Required.*.JsonInput.Int32FieldPlusSign                                         
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.StringFieldNotAString                                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.TimestampWithTooManyNanoDigits                                                                # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.UnknownOrdering.ProtobufOutput                                                            # Unknown field mismatch
