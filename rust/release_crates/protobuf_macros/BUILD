@@ -7,7 +7,7 @@ pkg_tar(
     srcs = [
         ":crate_root_files",
         "//:LICENSE",
-        "//rust/proto_proc_macro:rust_protobuf_macros_src_dir",
+        "//rust/protobuf_macros:rust_protobuf_macros_src_dir",
     ],
     visibility = ["//rust:__subpackages__"],
 )

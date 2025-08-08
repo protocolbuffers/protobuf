@@ -77,9 +77,14 @@ tar -xvf $WELL_KNOWN_TYPES_TAR -C $WELL_KNOWN_TYPES_ROOT
 # Put the Bazel-built protoc at the beginning of $PATH
 PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
 
+# Ideally we would like to do a "cargo publish --dry-run" on each crate.
+# However, we cannot do this yet for the crates that depend on other crates we
+# own. Cargo checks that the versions of all dependencies are published on
+# crates.io, which they are definitely not in this case.
+# See also https://github.com/rust-lang/cargo/issues/1169.
+
 cd $CRATE_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
-CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 
 cd $CODEGEN_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
@@ -94,9 +99,3 @@ CARGO_HOME=$CARGO_HOME cargo publish --dry-run
 
 cd $WELL_KNOWN_TYPES_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
-
-# TODO: Cannot enable this dry-run yet because it checks that the versions of
-# its dependencies are published on crates.io, which they are definitely not
-# in this case.
-# See also https://github.com/rust-lang/cargo/issues/1169.
-# CARGO_HOME=$CARGO_HOME cargo publish --dry-run
