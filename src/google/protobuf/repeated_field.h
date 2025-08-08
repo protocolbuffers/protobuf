@@ -767,7 +767,12 @@ template <typename Element>
 inline void RepeatedField<Element>::AddAlreadyReserved(Element value) {
   const bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
-  ABSL_DCHECK_LT(old_size, Capacity(is_soo));
+  if constexpr (internal::GetBoundsCheckMode() ==
+                internal::BoundsCheckMode::kAbort) {
+    internal::RuntimeAssertInBounds(old_size, Capacity(is_soo));
+  } else {
+    ABSL_DCHECK_LT(old_size, Capacity(is_soo));
+  }
   void* p = elements(is_soo) + ExchangeCurrentSize(is_soo, old_size + 1);
   ::new (p) Element(std::move(value));
 }
@@ -777,7 +782,12 @@ inline Element* RepeatedField<Element>::AddAlreadyReserved()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   const bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
-  ABSL_DCHECK_LT(old_size, Capacity(is_soo));
+  if constexpr (internal::GetBoundsCheckMode() ==
+                internal::BoundsCheckMode::kAbort) {
+    internal::RuntimeAssertInBounds(old_size, Capacity(is_soo));
+  } else {
+    ABSL_DCHECK_LT(old_size, Capacity(is_soo));
+  }
   // new (p) <TrivialType> compiles into nothing: this is intentional as this
   // function is documented to return uninitialized data for trivial types.
   void* p = elements(is_soo) + ExchangeCurrentSize(is_soo, old_size + 1);
@@ -790,7 +800,12 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
   const bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
   [[maybe_unused]] const int capacity = Capacity(is_soo);
-  ABSL_DCHECK_GE(capacity - old_size, n) << capacity << ", " << old_size;
+  if constexpr (internal::GetBoundsCheckMode() ==
+                internal::BoundsCheckMode::kAbort) {
+    internal::RuntimeAssertInBounds(old_size + n, Capacity(is_soo));
+  } else {
+    ABSL_DCHECK_GE(capacity - old_size, n) << capacity << ", " << old_size;
+  }
   Element* p =
       unsafe_elements(is_soo) + ExchangeCurrentSize(is_soo, old_size + n);
   for (Element *begin = p, *end = p + n; begin != end; ++begin) {
