@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <iterator>
 #include <limits>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -42,6 +43,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "util/gtl/env.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -106,7 +108,11 @@ PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
                                                               int size);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
   if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
-    LogIndexOutOfBoundsAndAbort(index, size);
+    std::optional<std::string> enable_hardening =
+        gtl::GetEnv("ENABLE_PROTOBUF_HARDENING");
+    if (enable_hardening.has_value() && *enable_hardening == "true") {
+      LogIndexOutOfBoundsAndAbort(index, size);
+    }
   }
 }
 
