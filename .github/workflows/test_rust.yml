@@ -30,7 +30,10 @@ jobs:
 
           # Override cases with custom images
           - config: { name: Cargo }
-            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-1.79.0-d271543f317955b5732ce19b2be672a195e96508"
+            # We currently need to be on nightly to have access to the
+            # multi-package publishing feature. This will be stabilized in
+            # 1.90, so we should switch to that as soon as it is released.
+            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-nightly-2025-08-07-f0d1e209ed9369f69d93ce418990ecff3aa08d6f"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
 
@@ -55,3 +58,23 @@ jobs:
             ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite  --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --@rules_rust//rust/settings:experimental_use_cc_common_link=True
             ${{ matrix.targets }} ${{ matrix.config.flags }}
 
+  windows:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Windows Cargo
+    runs-on: windows-2022
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v4
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Install Rust
+        shell: bash
+        run: rustup default nightly-2025-08-07
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v4
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel: run //rust/release_crates:cargo_test
+          bazel-cache: windows-cargo
+          version: 8.0.1
