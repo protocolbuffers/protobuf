@@ -341,6 +341,9 @@ proto_lang_toolchain(
         "//:wrappers_proto",
     ],
     command_line = "--java_out=$(OUT)",
+    # plugin = "//src/google/protobuf/compiler/java:protoc-gen-java",
+    # plugin_format_flag = "--plugin=protoc-gen-java=%s",
+    # protoc_minimal_do_not_use = "//src/google/protobuf/compiler:protoc_minimal",
     runtime = ":core",
     visibility = ["//visibility:public"],
 )
@@ -551,6 +554,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/FieldPresenceTest.java",
     "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
     "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    "src/test/java/com/google/protobuf/ImportOptionTest.java",
     "src/test/java/com/google/protobuf/LazilyParsedMessageSetTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
     "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
@@ -640,6 +644,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/UnredactedDebugFormatForTestTest.java",
             "src/test/java/com/google/protobuf/LargeEnumTest.java",
             "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
+            "src/test/java/com/google/protobuf/ImportOptionTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
@@ -692,6 +697,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/FieldPresenceTest.java",
             "src/test/java/com/google/protobuf/LargeEnumTest.java",
             "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
+            "src/test/java/com/google/protobuf/ImportOptionTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",

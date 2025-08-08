@@ -281,6 +281,19 @@ cc_test(
     ],
 )
 
+# TODO: Leave this for another CL probably.
+cc_binary(
+    name = "protoc-gen-java",
+    srcs = ["plugin_main.cc"],
+    visibility = [
+        "//java/core:__pkg__",
+    ],
+    deps = [
+        ":java",
+        "//src/google/protobuf/compiler:plugin",
+    ],
+)
+
 cc_test(
     name = "plugin_unittest",
     srcs = ["plugin_unittest.cc"],
