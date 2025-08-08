@@ -332,6 +332,12 @@ JavaFeatures::~JavaFeatures() {
 }
 inline void JavaFeatures::SharedDtor(MessageLite& self) {
   JavaFeatures& this_ = static_cast<JavaFeatures&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.utf8_validation_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.legacy_closed_enum_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.large_enum_);
+  ::_pbi::PrefetchToLocalCacheNta(
+      &this_._impl_.use_old_outer_classname_default_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.nest_in_file_class_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
