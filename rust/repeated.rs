@@ -159,7 +159,7 @@ where
     ///
     /// Returns `None` if `index >= len`.
     #[inline]
-    pub fn get(&self, index: usize) -> Option<View<T>> {
+    pub fn get(&self, index: usize) -> Option<View<'_, T>> {
         self.as_view().get(index)
     }
 
@@ -198,7 +198,7 @@ where
     /// # Safety
     /// Undefined behavior if `index >= len`.
     #[inline]
-    pub unsafe fn get_unchecked(&self, index: usize) -> View<T> {
+    pub unsafe fn get_unchecked(&self, index: usize) -> View<'_, T> {
         // SAFETY: in-bounds as promised
         unsafe { self.as_view().get_unchecked(index) }
     }
@@ -232,7 +232,7 @@ where
     }
 
     /// Iterates over the values in the repeated field.
-    pub fn iter(&self) -> RepeatedIter<T> {
+    pub fn iter(&self) -> RepeatedIter<'_, T> {
         self.as_view().into_iter()
     }
 
@@ -251,7 +251,7 @@ impl<T> Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    pub fn as_view(&self) -> View<Repeated<T>> {
+    pub fn as_view(&self) -> View<'_, Repeated<T>> {
         RepeatedView { raw: self.inner.raw(), _phantom: PhantomData }
     }
 

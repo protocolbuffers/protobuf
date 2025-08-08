@@ -44,7 +44,7 @@ pub struct MapMut<'msg, K: ?Sized, V: ?Sized> {
 }
 
 impl<'msg, K: ?Sized, V: ?Sized> MapMut<'msg, K, V> {
-    pub fn inner(&self, _private: Private) -> InnerMapMut {
+    pub fn inner(&self, _private: Private) -> InnerMapMut<'_> {
         self.inner
     }
 }
@@ -346,14 +346,14 @@ where
         V::map_clear(self.as_mut())
     }
 
-    pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<V>>
+    pub fn get<'a>(&self, key: impl Into<View<'a, K>>) -> Option<View<'_, V>>
     where
         K: 'a,
     {
         V::map_get(self.as_view(), key.into())
     }
 
-    pub fn get_mut<'a>(&mut self, key: impl Into<View<'a, K>>) -> Option<Mut<V>>
+    pub fn get_mut<'a>(&mut self, key: impl Into<View<'a, K>>) -> Option<Mut<'_, V>>
     where
         K: 'a,
         V: Message,
@@ -377,7 +377,7 @@ where
     /// Returns an iterator visiting all key-value pairs in arbitrary order.
     ///
     /// The iterator element type is `(View<K>, View<V>)`.
-    pub fn iter(&self) -> MapIter<K, V> {
+    pub fn iter(&self) -> MapIter<'_, K, V> {
         self.into_iter()
     }
 
