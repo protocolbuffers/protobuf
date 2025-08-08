@@ -1861,6 +1861,19 @@ PROTOBUF_NOINLINE const char* TcParser::FastUR2(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 
+PROTOBUF_NOINLINE const char* TcParser::FastBcR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastBcR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastUcR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+PROTOBUF_NOINLINE const char* TcParser::FastUcR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // Mini parsing
 //////////////////////////////////////////////////////////////////////////////

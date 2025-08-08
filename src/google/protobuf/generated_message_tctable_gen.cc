@@ -151,7 +151,7 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
 
 #define PROTOBUF_PICK_STRING_FUNCTION(fn)                                 \
   (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                                   \
+       ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##c)                         \
    : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
            options.use_micro_string                                       \
        ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
@@ -737,27 +737,6 @@ bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
   if (field->is_map() || field->real_containing_oneof() ||
       field->options().weak()) {
     return false;
-  }
-
-  switch (field->type()) {
-      // Some bytes fields can be handled on fast path.
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES: {
-      auto ctype = field->cpp_string_type();
-      if (ctype == FieldDescriptor::CppStringType::kString ||
-          ctype == FieldDescriptor::CppStringType::kView) {
-        // strings are fine...
-      } else if (ctype == FieldDescriptor::CppStringType::kCord) {
-        // Cords are worth putting into the fast table, if they're not repeated
-        if (field->is_repeated()) return false;
-      } else {
-        return false;
-      }
-      break;
-    }
-
-    default:
-      break;
   }
 
   // The largest tag that can be read by the tailcall parser is two bytes

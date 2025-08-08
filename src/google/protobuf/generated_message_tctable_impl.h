@@ -351,8 +351,8 @@ inline void AlignFail(std::integral_constant<size_t, 1>,
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastU)                 \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBi)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUi)                  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBc)                  \
-  PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUc)                  \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastBc)                \
+  PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastUc)                \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastBm)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_SINGLE(FastUm)                  \
   PROTOBUF_TC_PARSE_FUNCTION_LIST_REPEATED(FastGd)                \
@@ -646,6 +646,15 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcS1(
       PROTOBUF_TC_PARAM_DECL);
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcS2(
+      PROTOBUF_TC_PARAM_DECL);
+
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBcR1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBcR2(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcR1(
+      PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUcR2(
       PROTOBUF_TC_PARAM_DECL);
 
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastBmS1(
@@ -1013,6 +1022,8 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_CC static inline const char* SingularString(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, typename FieldType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType, Utf8Type utf8>
+  PROTOBUF_CC static inline const char* RepeatedCord(PROTOBUF_TC_PARAM_DECL);
 
   static inline const char* ParseRepeatedStringOnce(
       const char* ptr, SerialArena* serial_arena, ParseContext* ctx,
