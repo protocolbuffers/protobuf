@@ -1098,8 +1098,11 @@ std::optional<float> GetFieldGroupPresenceProbability(
 
 HasbitMode GetFieldHasbitMode(const FieldDescriptor* field,
                               const Options& options) {
-  // TODO: Use profile data to determine the hasbit mode for fields
-  // with optional hasbits.
+  if (IsProfileDriven(options) && field->is_repeated() &&
+      IsLikelyPresent(field, options)) {
+    return HasbitMode::kNoHasbit;
+  }
+
   return internal::cpp::GetFieldHasbitModeWithoutProfile(field);
 }
 
