@@ -274,9 +274,9 @@ class FieldMaskTree {
   Node root_;
 };
 
-FieldMaskTree::FieldMaskTree() {}
+FieldMaskTree::FieldMaskTree() = default;
 
-FieldMaskTree::~FieldMaskTree() {}
+FieldMaskTree::~FieldMaskTree() = default;
 
 void FieldMaskTree::MergeFromFieldMask(const FieldMask& mask) {
   for (int i = 0; i < mask.paths_size(); ++i) {
