@@ -1009,13 +1009,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
             $pb$::ClearAndParse::clear_and_parse_dont_enforce_required(&mut msg, data).map(|_| msg)
           }
 
-          pub fn as_view(&self) -> $Msg$View {
+          pub fn as_view(&self) -> $Msg$View<'_> {
             $Msg$View::new(
                 $pbi$::Private,
                 $pbr$::MessageViewInner::view_of_owned(&self.inner))
           }
 
-          pub fn as_mut(&mut self) -> $Msg$Mut {
+          pub fn as_mut(&mut self) -> $Msg$Mut<'_> {
             let inner = $pbr$::MessageMutInner::mut_of_owned(&mut self.inner);
             $Msg$Mut::new($pbi$::Private, inner)
           }
@@ -1039,14 +1039,14 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         impl $pb$::AsView for $Msg$ {
           type Proxied = Self;
-          fn as_view(&self) -> $Msg$View {
+          fn as_view(&self) -> $Msg$View<'_> {
             self.as_view()
           }
         }
 
         impl $pb$::AsMut for $Msg$ {
           type MutProxied = Self;
-          fn as_mut(&mut self) -> $Msg$Mut {
+          fn as_mut(&mut self) -> $Msg$Mut<'_> {
             self.as_mut()
           }
         }

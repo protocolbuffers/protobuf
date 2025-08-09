@@ -77,6 +77,8 @@ tar -xvf $WELL_KNOWN_TYPES_TAR -C $WELL_KNOWN_TYPES_ROOT
 # Put the Bazel-built protoc at the beginning of $PATH
 PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
 
+export RUSTFLAGS="-Dmismatched-lifetime-syntaxes"
+
 cd $CRATE_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
 CARGO_HOME=$CARGO_HOME cargo publish --dry-run
