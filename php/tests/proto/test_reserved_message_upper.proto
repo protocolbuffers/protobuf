@@ -49,8 +49,11 @@ message INTERFACE {}
 message ISSET {}
 message LIST {}
 message MATCH {}
+message MIXED {}
 message NAMESPACE {}
+message NEVER {}
 message NEW {}
+message OBJECT {}
 message OR {}
 message PARENT {}
 message PRINT {}

@@ -50,8 +50,11 @@ enum NotAllowed {
   isset = 44;
   list = 45;
   match = 46;
+  mixed = 81;
   namespace = 47;
+  never = 82;
   new = 48;
+  object = 83;
   or = 49;
   parent = 77;
   print = 50;
