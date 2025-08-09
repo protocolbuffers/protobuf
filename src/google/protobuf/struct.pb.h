@@ -1010,6 +1010,12 @@ PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg, Args_... args) {
 }
 inline ::std::string* PROTOBUF_NONNULL Value::mutable_string_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  if (kind_case() != kStringValue) {
+    clear_kind();
+
+    set_has_string_value();
+    _impl_.kind_.string_value_.InitDefault();
+  }
   ::std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
   return _s;
@@ -1023,22 +1029,10 @@ inline const ::std::string& Value::_internal_string_value() const {
 }
 inline void Value::_internal_set_string_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (kind_case() != kStringValue) {
-    clear_kind();
-
-    set_has_string_value();
-    _impl_.kind_.string_value_.InitDefault();
-  }
   _impl_.kind_.string_value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL Value::_internal_mutable_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (kind_case() != kStringValue) {
-    clear_kind();
-
-    set_has_string_value();
-    _impl_.kind_.string_value_.InitDefault();
-  }
   return _impl_.kind_.string_value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE Value::release_string_value() {

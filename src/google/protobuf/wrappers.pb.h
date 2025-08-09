@@ -2069,6 +2069,7 @@ PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg, Args_... args) {
 }
 inline ::std::string* PROTOBUF_NONNULL StringValue::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.StringValue.value)
   return _s;
@@ -2079,12 +2080,10 @@ inline const ::std::string& StringValue::_internal_value() const {
 }
 inline void StringValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL StringValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE StringValue::release_value() {
@@ -2139,6 +2138,7 @@ PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg, Args_... args) {
 }
 inline ::std::string* PROTOBUF_NONNULL BytesValue::mutable_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.BytesValue.value)
   return _s;
@@ -2149,12 +2149,10 @@ inline const ::std::string& BytesValue::_internal_value() const {
 }
 inline void BytesValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.value_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL BytesValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.value_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE BytesValue::release_value() {

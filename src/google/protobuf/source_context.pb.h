@@ -301,6 +301,7 @@ PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg, Args_... ar
 }
 inline ::std::string* PROTOBUF_NONNULL SourceContext::mutable_file_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   ::std::string* _s = _internal_mutable_file_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
   return _s;
@@ -311,12 +312,10 @@ inline const ::std::string& SourceContext::_internal_file_name() const {
 }
 inline void SourceContext::_internal_set_file_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.file_name_.Set(value, GetArena());
 }
 inline ::std::string* PROTOBUF_NONNULL SourceContext::_internal_mutable_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   return _impl_.file_name_.Mutable( GetArena());
 }
 inline ::std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
