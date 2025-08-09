@@ -1,5 +1,7 @@
 """Creates config_setting that allows selecting based on 'compiler' value."""
 
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+
 def create_compiler_config_setting(name, value, visibility = None):
     # The "do_not_use_tools_cpp_compiler_present" attribute exists to
     # distinguish between older versions of Bazel that do not support
