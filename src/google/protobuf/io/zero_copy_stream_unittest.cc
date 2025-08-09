@@ -1561,7 +1561,7 @@ class MsvcDebugDisabler {
 #else
   // Dummy constructor and destructor to ensure that GCC doesn't complain
   // that debug_disabler is an unused variable.
-  MsvcDebugDisabler() {}
+  MsvcDebugDisabler() = default;
   ~MsvcDebugDisabler() {}
 #endif
 };
