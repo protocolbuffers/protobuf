@@ -50,7 +50,7 @@ MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
   }
 }
 
-MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() {}
+MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() = default;
 
 void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_, context_->options());

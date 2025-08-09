@@ -67,7 +67,7 @@ ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
   }
 }
 
-ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() {}
+ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() = default;
 
 void ImmutableMessageLiteGenerator::GenerateStaticVariables(
     io::Printer* printer, int* bytecode_estimate) {

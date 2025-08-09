@@ -149,7 +149,7 @@ ImmutableMapFieldLiteGenerator::ImmutableMapFieldLiteGenerator(
                       &variables_);
 }
 
-ImmutableMapFieldLiteGenerator::~ImmutableMapFieldLiteGenerator() {}
+ImmutableMapFieldLiteGenerator::~ImmutableMapFieldLiteGenerator() = default;
 
 int ImmutableMapFieldLiteGenerator::GetNumBitsForMessage() const { return 0; }
 

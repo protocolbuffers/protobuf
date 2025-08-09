@@ -54,7 +54,7 @@ EnumLiteGenerator::EnumLiteGenerator(const EnumDescriptor* descriptor,
   }
 }
 
-EnumLiteGenerator::~EnumLiteGenerator() {}
+EnumLiteGenerator::~EnumLiteGenerator() = default;
 
 void EnumLiteGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_, context_->options());
