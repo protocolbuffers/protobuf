@@ -15,6 +15,7 @@ cc_library(
     hdrs = [
         "atomic.h",
         "sanitizers.h",
+        "thread.h",
         "vsnprintf_compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,

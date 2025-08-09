@@ -46,7 +46,10 @@ absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
 void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
                        const upb_MiniTableExtension* ext,
                        upb_Message* extension, upb_Arena* extension_arena) {
-  ABSL_CHECK(upb_Arena_IsFused(message_arena, extension_arena));
+#ifndef NDEBUG
+  ABSL_CHECK(upb_Arena_IsFused(message_arena, extension_arena) ||
+             upb_Arena_HasRef(message_arena, extension_arena));
+#endif
   upb_Message_SetExtension(message, ext, &extension, message_arena);
 }
 }  // namespace hpb::internal
