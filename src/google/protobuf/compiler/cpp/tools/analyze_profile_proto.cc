@@ -571,7 +571,7 @@ ParallelRunResults RunInParallel(
         const absl::Duration duration = absl::Now() - start;
 
         // Synchronous section.
-        absl::MutexLock lock(&mu);
+        absl::MutexLock lock(mu);
         ++results.num_done;
         ++(status.ok() ? results.num_succeeded : results.num_failed);
         results.status.Update(status);
@@ -619,7 +619,7 @@ absl::Status AnalyzeAndAggregateProfileProtosToText(
                          AnalyzeProfileProto(substream, path, options));
 
         // Synchronous section.
-        absl::MutexLock lock(&mu);
+        absl::MutexLock lock(mu);
         Aggregate(stats, merged_stats);
         if (!options.sort_output_by_file_name) {
           stream << substream.str() << std::endl;
