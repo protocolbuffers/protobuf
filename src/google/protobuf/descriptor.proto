@@ -659,6 +659,8 @@ message MessageOptions {
   // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 12;
 
+  optional bool disable_release = 13 [default = false];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

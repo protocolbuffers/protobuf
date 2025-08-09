@@ -82,7 +82,9 @@ class SingularMessage : public FieldGeneratorBase {
       : FieldGeneratorBase(field, opts, scc),
         opts_(&opts),
         has_required_(scc->HasRequiredFields(field->message_type())),
-        has_hasbit_(HasHasbit(field, opts)) {}
+        has_hasbit_(HasHasbit(field, opts)),
+        disable_release_(
+            field->containing_type()->options().disable_release()) {}
 
   ~SingularMessage() override = default;
 
@@ -141,6 +143,7 @@ class SingularMessage : public FieldGeneratorBase {
   const Options* opts_;
   bool has_required_;
   bool has_hasbit_;
+  bool disable_release_;
 };
 
 void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
@@ -188,6 +191,12 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
            }
          )cc");
        }},
+      {"ReleaseAbort",
+       [&] {
+         if (disable_release_) {
+           p->Emit(R"cc(std::abort();)cc");
+         }
+       }},
   };
   absl::string_view code = R"cc(
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
@@ -204,7 +213,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
     inline void $Msg$::unsafe_arena_set_allocated_$name$(
         $Submsg$* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
       //~ If we're not on an arena, free whatever we were holding before.
@@ -218,7 +227,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
     }
     inline $Submsg$* $nullable$ $Msg$::$release_name$() {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
       $annotate_release$;
@@ -241,7 +250,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return released;
     }
     inline $Submsg$* $nullable$ $Msg$::unsafe_arena_release_$name$() {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $annotate_release$;
       // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
@@ -277,7 +286,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     //~ We handle the most common case inline, and delegate less common
     //~ cases to the slow fallback function.
     inline void $Msg$::set_allocated_$name$($Submsg$* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $pb$::Arena* message_arena = GetArena();
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
@@ -459,7 +468,9 @@ class OneofMessage : public SingularMessage {
  public:
   OneofMessage(const FieldDescriptor* descriptor, const Options& options,
                MessageSCCAnalyzer* scc_analyzer)
-      : SingularMessage(descriptor, options, scc_analyzer) {
+      : SingularMessage(descriptor, options, scc_analyzer),
+        disable_release_(
+            descriptor->containing_type()->options().disable_release()) {
     auto* oneof = descriptor->containing_oneof();
     num_message_fields_in_oneof_ = 0;
     for (int i = 0; i < oneof->field_count(); ++i) {
@@ -512,6 +523,7 @@ class OneofMessage : public SingularMessage {
 
  private:
   int num_message_fields_in_oneof_;
+  bool disable_release_;
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
@@ -538,9 +550,18 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       p->WithVars({{"release_name", SafeFunctionName(field_->containing_type(),
                                                      field_, "release_")}});
 
-  p->Emit(R"cc(
+  std::vector<Sub> subs = {
+      {"ReleaseAbort",
+       [&] {
+         if (disable_release_) {
+           p->Emit(R"cc(std::abort();)cc");
+         }
+       }},
+  };
+
+  p->Emit(subs, R"cc(
     inline $Submsg$* $nullable$ $Msg$::$release_name$() {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $annotate_release$;
       // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
       $StrongRef$;
@@ -571,9 +592,9 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_$name_internal$();
     }
   )cc");
-  p->Emit(R"cc(
+  p->Emit(subs, R"cc(
     inline $Submsg$* $nullable$ $Msg$::unsafe_arena_release_$name$() {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $annotate_release$;
       // @@protoc_insertion_point(field_unsafe_arena_release:$pkg.Msg.field$)
       $StrongRef$;
@@ -587,10 +608,10 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       }
     }
   )cc");
-  p->Emit(R"cc(
+  p->Emit(subs, R"cc(
     inline void $Msg$::unsafe_arena_set_allocated_$name$(
         $Submsg$* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       // We rely on the oneof clear method to free the earlier contents
       // of this oneof. We can directly use the pointer we're given to
       // set the new value.
