@@ -2061,18 +2061,18 @@ FieldComparator::ComparisonResult MessageDifferencer::GetFieldComparisonResult(
 
 // ===========================================================================
 
-MessageDifferencer::Reporter::Reporter() {}
-MessageDifferencer::Reporter::~Reporter() {}
+MessageDifferencer::Reporter::Reporter() = default;
+MessageDifferencer::Reporter::~Reporter() = default;
 
 // ===========================================================================
 
-MessageDifferencer::MapKeyComparator::MapKeyComparator() {}
-MessageDifferencer::MapKeyComparator::~MapKeyComparator() {}
+MessageDifferencer::MapKeyComparator::MapKeyComparator() = default;
+MessageDifferencer::MapKeyComparator::~MapKeyComparator() = default;
 
 // ===========================================================================
 
-MessageDifferencer::IgnoreCriteria::IgnoreCriteria() {}
-MessageDifferencer::IgnoreCriteria::~IgnoreCriteria() {}
+MessageDifferencer::IgnoreCriteria::IgnoreCriteria() = default;
+MessageDifferencer::IgnoreCriteria::~IgnoreCriteria() = default;
 
 // ===========================================================================
 
