@@ -107,7 +107,9 @@ def MessageToString(
     indent=0,
     message_formatter=None,
     print_unknown_fields=False,
-    force_colon=False) -> str:
+    force_colon=False,
+    print_full_name=False,
+) -> str:
   """Convert protobuf message to text format.
 
   Double values can be formatted compactly with 15 digits of
@@ -144,6 +146,7 @@ def MessageToString(
     print_unknown_fields: If True, unknown fields will be printed.
     force_colon: If set, a colon will be added after the field name even if the
       field is a proto message.
+    print_full_name: If True, print the full name of the message in a comment.
 
   Returns:
     str: A string of the text formatted protocol buffer message.
@@ -163,7 +166,9 @@ def MessageToString(
       descriptor_pool,
       message_formatter,
       print_unknown_fields=print_unknown_fields,
-      force_colon=force_colon)
+      force_colon=force_colon,
+      print_full_name=print_full_name,
+  )
   printer.PrintMessage(message)
   result = out.getvalue()
   out.close()
@@ -373,7 +378,9 @@ class _Printer(object):
       descriptor_pool=None,
       message_formatter=None,
       print_unknown_fields=False,
-      force_colon=False):
+      force_colon=False,
+      print_full_name=False,
+  ):
     """Initialize the Printer.
 
     Double values can be formatted compactly with 15 digits of precision
@@ -407,6 +414,8 @@ class _Printer(object):
       print_unknown_fields: If True, unknown fields will be printed.
       force_colon: If set, a colon will be added after the field name even if
         the field is a proto message.
+      print_full_name: If True, print the full name of the message in a comment
+        before the message fields. This only works if as_one_line is False.
     """
     self.out = out
     self.indent = indent
@@ -429,6 +438,11 @@ class _Printer(object):
     self.message_formatter = message_formatter
     self.print_unknown_fields = print_unknown_fields
     self.force_colon = force_colon
+    if print_full_name and as_one_line:
+      raise ValueError(
+          'print_full_name is not supported with as_one_line.'
+      )
+    self.print_full_name = print_full_name
 
   def _TryPrintAsAnyMessage(self, message):
     """Serializes if message is a google.protobuf.Any field."""
@@ -472,6 +486,9 @@ class _Printer(object):
     if self.use_index_order:
       fields.sort(
           key=lambda x: x[0].number if x[0].is_extension else x[0].index)
+    if self.print_full_name:
+      self.out.write(' ' * self.indent + f'# {message.DESCRIPTOR.full_name}\n')
+
     for field, value in fields:
       if _IsMapEntry(field):
         for key in sorted(value):
