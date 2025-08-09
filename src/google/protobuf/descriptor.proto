@@ -236,7 +236,8 @@ message ExtensionRangeOptions {
       [default = UNVERIFIED, retention = RETENTION_SOURCE];
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 }
 
 // Describes a field within a message.
@@ -576,7 +577,8 @@ message FileOptions {
 
   // Clients can define custom options in extensions of this message.
   // See the documentation for the "Options" section above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 
   reserved 38;
 }
@@ -663,7 +665,8 @@ message MessageOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 }
 
 message FieldOptions {
@@ -829,7 +832,8 @@ message FieldOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 
   reserved 4;   // removed jtype
   reserved 18;  // reserve target, target_obsolete_do_not_use
@@ -846,7 +850,8 @@ message OneofOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 }
 
 message EnumOptions {
@@ -881,7 +886,8 @@ message EnumOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 }
 
 message EnumValueOptions {
@@ -909,7 +915,8 @@ message EnumValueOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 }
 
 message ServiceOptions {
@@ -935,7 +942,8 @@ message ServiceOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 }
 
 message MethodOptions {
@@ -972,7 +980,8 @@ message MethodOptions {
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
-  extensions 1000 to max;
+  extensions 1000 to 524999999;
+  extensions 525000000 to max;
 }
 
 // A message representing a option the parser does not recognize. This only
