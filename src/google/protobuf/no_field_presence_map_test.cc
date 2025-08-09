@@ -25,15 +25,11 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::proto2_nofieldpresence_unittest::ExplicitForeignMessage;
 using ::proto2_nofieldpresence_unittest::FOREIGN_BAZ;
 using ::proto2_nofieldpresence_unittest::FOREIGN_FOO;
-using ::proto2_nofieldpresence_unittest::ForeignMessage;
 using ::proto2_nofieldpresence_unittest::TestAllMapTypes;
 using ::testing::Eq;
-using ::testing::Gt;
 using ::testing::Not;
-using ::testing::StrEq;
 using ::testing::UnorderedPointwise;
 
 // Custom gmock matchers to simplify testing for map entries.
