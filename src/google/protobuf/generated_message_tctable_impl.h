@@ -154,7 +154,6 @@ enum TransformValidation : uint16_t {
   kTvEnum      = 2 << kTvShift,  // validate using ValidateEnum()
   kTvRange     = 3 << kTvShift,  // validate using FieldAux::enum_range
   // String fields:
-  kTvUtf8Debug = 1 << kTvShift,  // proto2
   kTvUtf8      = 2 << kTvShift,  // proto3
 
   // Message fields:
@@ -241,7 +240,6 @@ enum FieldType : uint16_t {
 
   // String types:
   kBytes           = 0 | kFkString | kFmtArray,
-  kRawString       = 0 | kFkString | kFmtUtf8  | kTvUtf8Debug,
   kUtf8String      = 0 | kFkString | kFmtUtf8  | kTvUtf8,
 
   // Message types:
