@@ -118,7 +118,7 @@ ImmutableEnumFieldLiteGenerator::ImmutableEnumFieldLiteGenerator(
                    &variables_, context);
 }
 
-ImmutableEnumFieldLiteGenerator::~ImmutableEnumFieldLiteGenerator() {}
+ImmutableEnumFieldLiteGenerator::~ImmutableEnumFieldLiteGenerator() = default;
 
 int ImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
@@ -328,7 +328,8 @@ ImmutableEnumOneofFieldLiteGenerator::ImmutableEnumOneofFieldLiteGenerator(
   SetCommonOneofVariables(descriptor, info, &variables_);
 }
 
-ImmutableEnumOneofFieldLiteGenerator::~ImmutableEnumOneofFieldLiteGenerator() {}
+ImmutableEnumOneofFieldLiteGenerator::~ImmutableEnumOneofFieldLiteGenerator() =
+    default;
 
 void ImmutableEnumOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -497,7 +498,7 @@ RepeatedImmutableEnumFieldLiteGenerator::
 }
 
 RepeatedImmutableEnumFieldLiteGenerator::
-    ~RepeatedImmutableEnumFieldLiteGenerator() {}
+    ~RepeatedImmutableEnumFieldLiteGenerator() = default;
 
 int RepeatedImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
   return 0;
