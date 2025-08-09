@@ -178,7 +178,8 @@ ImmutablePrimitiveFieldLiteGenerator::ImmutablePrimitiveFieldLiteGenerator(
                         name_resolver_, &variables_, context);
 }
 
-ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() {}
+ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() =
+    default;
 
 int ImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
@@ -357,7 +358,7 @@ ImmutablePrimitiveOneofFieldLiteGenerator::
 }
 
 ImmutablePrimitiveOneofFieldLiteGenerator::
-    ~ImmutablePrimitiveOneofFieldLiteGenerator() {}
+    ~ImmutablePrimitiveOneofFieldLiteGenerator() = default;
 
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -475,7 +476,7 @@ RepeatedImmutablePrimitiveFieldLiteGenerator::
 }
 
 RepeatedImmutablePrimitiveFieldLiteGenerator::
-    ~RepeatedImmutablePrimitiveFieldLiteGenerator() {}
+    ~RepeatedImmutablePrimitiveFieldLiteGenerator() = default;
 
 int RepeatedImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
   return 0;

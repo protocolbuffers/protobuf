@@ -95,7 +95,8 @@ ImmutableMessageFieldLiteGenerator::ImmutableMessageFieldLiteGenerator(
                       name_resolver_, &variables_, context);
 }
 
-ImmutableMessageFieldLiteGenerator::~ImmutableMessageFieldLiteGenerator() {}
+ImmutableMessageFieldLiteGenerator::~ImmutableMessageFieldLiteGenerator() =
+    default;
 
 int ImmutableMessageFieldLiteGenerator::GetNumBitsForMessage() const {
   // TODO: We don't need a has bit for messages as they have null
@@ -276,7 +277,7 @@ ImmutableMessageOneofFieldLiteGenerator::
 }
 
 ImmutableMessageOneofFieldLiteGenerator::
-    ~ImmutableMessageOneofFieldLiteGenerator() {}
+    ~ImmutableMessageOneofFieldLiteGenerator() = default;
 
 void ImmutableMessageOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
@@ -429,7 +430,7 @@ RepeatedImmutableMessageFieldLiteGenerator::
 }
 
 RepeatedImmutableMessageFieldLiteGenerator::
-    ~RepeatedImmutableMessageFieldLiteGenerator() {}
+    ~RepeatedImmutableMessageFieldLiteGenerator() = default;
 
 int RepeatedImmutableMessageFieldLiteGenerator::GetNumBitsForMessage() const {
   return 0;
