@@ -53,15 +53,15 @@ bool WithinFractionOrMargin(const T x, const T y, const T fraction,
 
 }  // namespace
 
-FieldComparator::FieldComparator() {}
-FieldComparator::~FieldComparator() {}
+FieldComparator::FieldComparator() = default;
+FieldComparator::~FieldComparator() = default;
 
 SimpleFieldComparator::SimpleFieldComparator()
     : float_comparison_(EXACT),
       treat_nan_as_equal_(false),
       has_default_tolerance_(false) {}
 
-SimpleFieldComparator::~SimpleFieldComparator() {}
+SimpleFieldComparator::~SimpleFieldComparator() = default;
 
 FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
     const Message& message_1, const Message& message_2,
