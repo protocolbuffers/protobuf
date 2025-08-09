@@ -126,6 +126,15 @@ public class DynamicMessageTest {
   }
 
   @Test
+  public void testDynamicMessageRepeatedSettersWithEmptyList() throws Exception {
+    Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
+    reflectionTester.setRepeatedFieldsToEmptyListViaReflection(builder);
+    Message message = builder.build();
+    reflectionTester.assertClearViaReflection(message);
+    assertThat(message).isEqualTo(DynamicMessage.getDefaultInstance(TestAllTypes.getDescriptor()));
+  }
+
+  @Test
   public void testDynamicMessageRepeatedSettersRejectNull() throws Exception {
     Message.Builder builder = DynamicMessage.newBuilder(TestAllTypes.getDescriptor());
     reflectionTester.assertReflectionRepeatedSettersRejectNull(builder);
