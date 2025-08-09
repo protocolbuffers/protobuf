@@ -206,7 +206,7 @@ class PROTOBUF_EXPORT Importer {
 // it reports them to a MultiFileErrorCollector.
 class PROTOBUF_EXPORT MultiFileErrorCollector {
  public:
-  MultiFileErrorCollector() {}
+  MultiFileErrorCollector() = default;
   MultiFileErrorCollector(const MultiFileErrorCollector&) = delete;
   MultiFileErrorCollector& operator=(const MultiFileErrorCollector&) = delete;
   virtual ~MultiFileErrorCollector();
@@ -228,7 +228,7 @@ class PROTOBUF_EXPORT MultiFileErrorCollector {
 // below.
 class PROTOBUF_EXPORT SourceTree {
  public:
-  SourceTree() {}
+  SourceTree() = default;
   SourceTree(const SourceTree&) = delete;
   SourceTree& operator=(const SourceTree&) = delete;
   virtual ~SourceTree();
