@@ -17,7 +17,6 @@
 namespace google::protobuf::hpb_generator {
 
 static const absl::string_view kKeywordList[] = {
-    //
     "NULL",
     "alignas",
     "alignof",
