@@ -58,3 +58,23 @@ jobs:
             ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite  --cxxopt=-std=c++17 --host_cxxopt=-std=c++17 --@rules_rust//rust/settings:experimental_use_cc_common_link=True
             ${{ matrix.targets }} ${{ matrix.config.flags }}
 
+  windows:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+    name: Windows Cargo
+    runs-on: windows-2022
+    steps:
+      - name: Checkout pending changes
+        uses: protocolbuffers/protobuf-ci/checkout@v4
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Install Rust
+        shell: bash
+        run: rustup default nightly-2025-08-07
+      - name: Run tests
+        uses: protocolbuffers/protobuf-ci/bazel@v4
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel: run //rust/release_crates:cargo_test
+          bazel-cache: windows-cargo
+          version: 8.0.1

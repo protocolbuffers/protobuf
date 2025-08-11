@@ -7,7 +7,7 @@
 
 # --- begin runfiles.bash initialization ---
 # Copy-pasted from Bazel's Bash runfiles library (tools/bash/runfiles/runfiles.bash).
-set -euo pipefail
+set -euxo pipefail
 if [[ ! -d "${RUNFILES_DIR:-/dev/null}" && ! -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
     if [[ -f "$0.runfiles_manifest" ]]; then
     export RUNFILES_MANIFEST_FILE="$0.runfiles_manifest"
@@ -40,7 +40,13 @@ mkdir $WORKSPACE_ROOT
 WORKSPACE_TAR=$(rlocation com_google_protobuf/rust/release_crates/workspace.tar)
 
 echo "Expanding Cargo workspace tar"
-tar -xvf $WORKSPACE_TAR -C $WORKSPACE_ROOT
+
+# The tar binary on Windows does not know how to handle file paths that start
+# with C:\ or similar, so we go a little out of our way here to avoid passing
+# any paths as arguments to tar.
+pushd $WORKSPACE_ROOT
+tar -xv < $WORKSPACE_TAR
+popd
 
 # Put the Bazel-built protoc at the beginning of $PATH
 PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
