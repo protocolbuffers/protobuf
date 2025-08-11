@@ -17,7 +17,7 @@ load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
-load(":internal.bzl", "internal_copy_files", "internal_py_test")
+load(":internal.bzl", "internal_copy_files", "internal_is_windows", "internal_py_test")
 
 def build_targets(name):
     """
@@ -61,6 +61,12 @@ def build_targets(name):
             "//editions:__pkg__",
             "//upb:__subpackages__",
         ],
+    )
+
+    # Visibility needs to be public per https://github.com/bazelbuild/bazel-skylib/pull/584
+    internal_is_windows(
+        name = "is_windows",
+        visibility = ["//visibility:public"],
     )
 
     internal_copy_files(
