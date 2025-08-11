@@ -15,7 +15,6 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "absl/types/source_location.h"
 #include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -23,7 +22,17 @@
 #include "upb/reflection/def.hpp"
 #include "upb_generator/common/cpp_to_upb_def.h"
 
-namespace google::protobuf::hpb_generator {
+// This type exists to work around an absl type that has not yet been
+// released.
+struct SourceLocation {
+  static SourceLocation current() { return {}; }
+  absl::string_view file_name() { return "<unknown>"; }
+  int line() { return 0; }
+};
+
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 enum class Backend { UPB, CPP };
 
@@ -144,7 +153,8 @@ void WrapNamespace(const google::protobuf::FileDescriptor* file, Context& ctx, T
         )cc");
   }
 }
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_CONTEXT_H__
