@@ -298,5 +298,5 @@ pkg_filegroup(
 
 alias(
     name = "release",
-    actual = "//rust/release_crates:crates",
+    actual = "//rust/release_crates:workspace",
 )
