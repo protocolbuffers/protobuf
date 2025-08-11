@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <string>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
