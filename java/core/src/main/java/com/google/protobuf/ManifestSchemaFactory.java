@@ -125,7 +125,7 @@ final class ManifestSchemaFactory implements SchemaFactory {
       };
 
   private static MessageInfoFactory getDescriptorMessageInfoFactory() {
-    if (Protobuf.assumeLiteRuntime) {
+    if (Android.assumeLiteRuntime) {
       return EMPTY_FACTORY;
     }
     try {
@@ -137,6 +137,6 @@ final class ManifestSchemaFactory implements SchemaFactory {
   }
 
   private static boolean useLiteRuntime(Class<?> messageType) {
-    return Protobuf.assumeLiteRuntime || GeneratedMessageLite.class.isAssignableFrom(messageType);
+    return Android.assumeLiteRuntime || GeneratedMessageLite.class.isAssignableFrom(messageType);
   }
 }

@@ -38,7 +38,7 @@ final class SchemaUtil {
     // TODO decide if we're keeping support for Full in schema classes and handle this
     // better.
     if (!GeneratedMessageLite.class.isAssignableFrom(messageType)
-        && !Protobuf.assumeLiteRuntime
+        && !Android.assumeLiteRuntime
         && GENERATED_MESSAGE_CLASS != null
         && !GENERATED_MESSAGE_CLASS.isAssignableFrom(messageType)) {
       throw new IllegalArgumentException(
@@ -820,7 +820,7 @@ final class SchemaUtil {
   }
 
   private static Class<?> getGeneratedMessageClass() {
-    if (Protobuf.assumeLiteRuntime) {
+    if (Android.assumeLiteRuntime) {
       return null;
     }
     try {
@@ -833,7 +833,7 @@ final class SchemaUtil {
   }
 
   private static Class<?> getUnknownFieldSetSchemaClass() {
-    if (Protobuf.assumeLiteRuntime) {
+    if (Android.assumeLiteRuntime) {
       return null;
     }
     try {

@@ -15,6 +15,13 @@ final class Android {
   @SuppressWarnings("ConstantField")
   private static boolean ASSUME_ANDROID;
 
+  // short circuit the full runtime support via assumevalues trickery
+  // this value should only be set to true via ProGuard -assumevalues
+  // directives when doing whole program optimization of Android applications
+  // to enable discarding of full runtime support.
+  @SuppressWarnings({"JavaOptionalSuggestions", "NonFinalStaticField"})
+  static boolean assumeLiteRuntime = false;
+
   private static final Class<?> MEMORY_CLASS = getClassForName("libcore.io.Memory");
 
   private static final boolean IS_ROBOLECTRIC =
