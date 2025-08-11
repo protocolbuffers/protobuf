@@ -9,7 +9,9 @@
 #define GOOGLE_PROTOBUF_HPB_STATUS_H__
 
 #include <cstdint>
+#include <optional>
 
+#include "absl/log/absl_check.h"
 #include "absl/status/status.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
@@ -35,6 +37,35 @@ absl::Status ExtensionNotFoundError(
 
 absl::Status MessageDecodeError(upb_DecodeStatus status,
                                 SourceLocation loc = SourceLocation::current());
+
+// -----------------------------------------------------------------------------
+// hpb::StatusOr is lightweight and guarantees zero heap allocations (including
+// string allocs).
+// If the status is valid, a <T> is provided. Otherwise, the error code
+// is returned in the form of an enum.
+enum class Status { MALFORMED, UNKNOWN };
+
+template <typename T>
+class StatusOr {
+ public:
+  explicit StatusOr(const T& value) : value_(value) {}
+  explicit StatusOr(T&& value) : value_(value) {}
+  explicit StatusOr(const Status& status) : status_(status) {}
+
+  bool ok() const { return value_.has_value(); }
+  T& value() {
+    ABSL_CHECK(value_.has_value());
+    return *value_;
+  }
+  const T& value() const {
+    ABSL_CHECK(value_.has_value());
+    return *value_;
+  }
+
+ private:
+  std::optional<T> value_;
+  Status status_ = Status::UNKNOWN;
+};
 }  // namespace hpb
 
 #endif  // GOOGLE_PROTOBUF_HPB_STATUS_H__
