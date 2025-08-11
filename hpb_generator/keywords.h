@@ -12,12 +12,14 @@
 
 #include "absl/strings/string_view.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 // Resolves proto field name conflict with C++ reserved keywords.
 std::string ResolveKeywordConflict(absl::string_view name);
-
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_KEYWORDS_H__
