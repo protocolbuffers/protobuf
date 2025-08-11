@@ -7,6 +7,7 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load(
     "//hpb/bazel:hpb_proto_library.bzl",
     "hpb_proto_library_copts",
@@ -160,8 +161,22 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb/wire",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "status_test",
+    srcs = ["status_test.cc"],
+    deps = [
+        ":status",
+        "//hpb:ptr",
+        "//hpb_generator/tests:test_model_hpb_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
