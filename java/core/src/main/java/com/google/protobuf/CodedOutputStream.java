@@ -616,11 +616,13 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode an embedded message in lazy field,
-   * including tag.
+   * Compute the number of bytes that would be needed to encode an embedded message in lazy
+   * field, including tag.
    */
+  @Deprecated
+  @InlineMe(replacement = "value.computeSize(fieldNumber)")
   public static int computeLazyFieldSize(final int fieldNumber, final LazyFieldLite value) {
-    return computeTagSize(fieldNumber) + computeLazyFieldSizeNoTag(value);
+    return value.computeSize(fieldNumber);
   }
 
   /**
@@ -653,14 +655,15 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
-   * Compute the number of bytes that would be needed to encode a lazily parsed MessageSet extension
-   * field to the stream. For historical reasons, the wire format differs from normal fields.
+   * Compute the number of bytes that would be needed to encode a lazily parsed MessageSet
+   * extension field to the stream. For historical reasons, the wire format differs from normal
+   * fields.
    */
+  @Deprecated
+  @InlineMe(replacement = "value.computeMessageSetExtensionSize(fieldNumber)")
   public static int computeLazyFieldMessageSetExtensionSize(
       final int fieldNumber, final LazyFieldLite value) {
-    return computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2
-        + computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber)
-        + computeLazyFieldSize(WireFormat.MESSAGE_SET_MESSAGE, value);
+    return value.computeMessageSetExtensionSize(fieldNumber);
   }
 
   // -----------------------------------------------------------------
@@ -814,12 +817,11 @@ public abstract class CodedOutputStream extends ByteOutput {
     return computeLengthDelimitedFieldSize(length);
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode an embedded message stored in lazy
-   * field.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
+  @Deprecated
+  @InlineMe(replacement = "value.computeSizeNoTag()")
   public static int computeLazyFieldSizeNoTag(final LazyFieldLite value) {
-    return computeLengthDelimitedFieldSize(value.getSerializedSize());
+    return value.computeSizeNoTag();
   }
 
   /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */

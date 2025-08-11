@@ -646,7 +646,7 @@ final class SchemaUtil {
 
   static int computeSizeMessage(int fieldNumber, Object value, Schema<?> schema) {
     if (value instanceof LazyFieldLite) {
-      return CodedOutputStream.computeLazyFieldSize(fieldNumber, (LazyFieldLite) value);
+      return ((LazyFieldLite) value).computeSize(fieldNumber);
     } else {
       return computeMessageSize(fieldNumber, (AbstractMessageLite) value, schema);
     }
@@ -678,7 +678,7 @@ final class SchemaUtil {
     for (int i = 0; i < length; i++) {
       Object value = list.get(i);
       if (value instanceof LazyFieldLite) {
-        size += CodedOutputStream.computeLazyFieldSizeNoTag((LazyFieldLite) value);
+        size += ((LazyFieldLite) value).computeSizeNoTag();
       } else {
         size += CodedOutputStream.computeMessageSizeNoTag((MessageLite) value);
       }
@@ -695,7 +695,7 @@ final class SchemaUtil {
     for (int i = 0; i < length; i++) {
       Object value = list.get(i);
       if (value instanceof LazyFieldLite) {
-        size += CodedOutputStream.computeLazyFieldSizeNoTag((LazyFieldLite) value);
+        size += ((LazyFieldLite) value).computeSizeNoTag();
       } else {
         size += computeMessageSizeNoTag((AbstractMessageLite) value, schema);
       }
