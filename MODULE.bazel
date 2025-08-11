@@ -180,6 +180,12 @@ register_toolchains(
     dev_dependency = True,
 )
 
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
+rust.toolchain(
+    edition = "2021",
+    versions = [ "1.79.0" ],
+)
+
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
 crate.spec(
     package = "googletest",
