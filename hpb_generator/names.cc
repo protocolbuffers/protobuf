@@ -9,11 +9,14 @@
 
 #include <string>
 
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "hpb_generator/context.h"
 #include "hpb_generator/keywords.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google::protobuf::hpb_generator {
 namespace protobuf = ::proto2;
