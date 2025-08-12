@@ -5,7 +5,7 @@ pkg_filegroup(
     name = "protobuf_macros_crate",
     srcs = [
         ":crate_root_files",
-        "//rust/proto_proc_macro:rust_protobuf_macros_src_dir",
+        "//rust/protobuf_macros:rust_protobuf_macros_src_dir",
         "//rust/release_crates:license",
     ],
     prefix = "protobuf_macros",
