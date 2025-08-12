@@ -88,6 +88,8 @@ impl CodeGen {
 
     pub fn output_dir(&mut self, output_dir: impl AsRef<Path>) -> &mut Self {
         self.output_dir = output_dir.as_ref().to_owned();
+        // Make sure output_dir and its parent directories exist
+        std::fs::create_dir_all(&self.output_dir).unwrap();
         self
     }
 

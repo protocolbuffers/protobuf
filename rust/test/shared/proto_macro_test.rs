@@ -10,6 +10,11 @@
 // Extra parens intentional as part of flexing the macro edge cases.
 #![allow(unused_parens, unused_braces)]
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 use protobuf::proto;
 use unittest_rust_proto::{
@@ -112,18 +117,22 @@ fn single_nested_message() {
     assert_that!(msg.has_optional_nested_message(), eq(false));
 
     // empty nested message should be present
-    // make sure that qualified path names work
-    let msg = proto!(::unittest_rust_proto::TestAllTypes {
-        optional_nested_message: unittest_rust_proto::test_all_types::NestedMessage {}
-    });
+    let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage {} });
     assert_that!(msg.has_optional_nested_message(), eq(true));
 
+    let msg = proto!(TestAllTypes { optional_nested_message: NestedMessage {} });
+    assert_that!(msg.has_optional_nested_message(), eq(true));
+
+    let msg = proto!(TestAllTypes { optional_nested_message: __ {} });
+    assert_that!(msg.has_optional_nested_message(), eq(true));
+}
+
+#[cfg(bzl)]
+#[gtest]
+fn test_qualified_names() {
     let msg = proto!(::unittest_rust_proto::TestAllTypes {
         optional_nested_message: ::unittest_rust_proto::test_all_types::NestedMessage {}
     });
-    assert_that!(msg.has_optional_nested_message(), eq(true));
-
-    let msg = proto!(::unittest_rust_proto::TestAllTypes { optional_nested_message: __ {} });
     assert_that!(msg.has_optional_nested_message(), eq(true));
 }
 
