@@ -2596,8 +2596,8 @@ bool Parser::ParseVisibility(const FileDescriptorProto* containing_file,
 
 // ===================================================================
 
-SourceLocationTable::SourceLocationTable() {}
-SourceLocationTable::~SourceLocationTable() {}
+SourceLocationTable::SourceLocationTable() = default;
+SourceLocationTable::~SourceLocationTable() = default;
 
 bool SourceLocationTable::Find(
     const Message* descriptor,
