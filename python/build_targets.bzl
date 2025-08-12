@@ -98,7 +98,7 @@ def build_targets(name):
         ],
         deps = select({
             "//conditions:default": [],
-            ":use_fast_cpp_protos": ["@system_python//:python_headers"],
+            ":use_fast_cpp_protos": ["@rules_python//python/cc:current_py_cc_headers"],
         }),
     )
 
