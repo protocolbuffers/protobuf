@@ -47,20 +47,20 @@ bool Generator::Generate(const FileDescriptor* file,
 
   struct Options cli_options;
 
-  for (size_t i = 0; i < options.size(); i++) {
-    if (options[i].first == "file_extension") {
-      cli_options.file_extension = options[i].second;
-    } else if (options[i].first == "base_namespace") {
-      cli_options.base_namespace = options[i].second;
+  for (auto & option : options) {
+    if (option.first == "file_extension") {
+      cli_options.file_extension = option.second;
+    } else if (option.first == "base_namespace") {
+      cli_options.base_namespace = option.second;
       cli_options.base_namespace_specified = true;
-    } else if (options[i].first == "internal_access") {
+    } else if (option.first == "internal_access") {
       cli_options.internal_access = true;
-    } else if (options[i].first == "serializable") {
+    } else if (option.first == "serializable") {
       cli_options.serializable = true;
-    } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
+    } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       cli_options.strip_nonfunctional_codegen = true;
     } else {
-      *error = absl::StrCat("Unknown generator option: ", options[i].first);
+      *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
     }
   }
