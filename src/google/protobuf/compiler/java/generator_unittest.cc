@@ -12,12 +12,14 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/java_features.pb.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
+
 
 namespace google {
 namespace protobuf {
@@ -26,6 +28,7 @@ namespace java {
 namespace {
 
 #define PACKAGE_PREFIX ""
+#define PACKAGE_IMPORT_PREFIX ""
 
 class JavaGeneratorTest : public CommandLineInterfaceTester {
  protected:
@@ -44,6 +47,16 @@ class JavaGeneratorTest : public CommandLineInterfaceTester {
   bool FileGenerated(absl::string_view filename) {
     std::string path = absl::StrCat(temp_directory(), "/", filename);
     return File::Exists(path);
+  }
+
+  bool FileContainsSubstring(absl::string_view filename,
+                             absl::string_view substring) {
+    std::string path = absl::StrCat(temp_directory(), "/", filename);
+    std::string contents;
+    if (!File::GetContents(path, &contents, true).ok()) {
+      return false;
+    }
+    return contents.find(substring) != std::string::npos;
   }
 };
 
@@ -365,6 +378,8 @@ TEST_F(JavaGeneratorTest,
       "class name, \"TestFileNameProto\", matches the name "
       "of one of the types declared inside it");
 }
+
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler
