@@ -789,6 +789,99 @@ TEST_F(CommandLineInterfaceTest, MultipleInputsWithOptionImport) {
                                     "bar.proto", "Bar");
 }
 
+TEST_F(CommandLineInterfaceTest,
+       ExtensionsPublicImportsTransitiveImportNotAllowed) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      extend google.protobuf.FileOptions {
+        int32 transitive_import_file_opt = 9997;
+      }
+      )schema");
+  CreateTempFile("import_public2.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      import "custom_option.proto";
+      extend google.protobuf.FileOptions {
+        int32 public_import_file_opt = 9998;
+      }
+      )schema");
+  CreateTempFile("import_public1.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "import_public1.proto";
+      message MyMessage {}
+      )schema");
+  CreateTempFile("foo.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      import public "import_public2.proto";
+
+      option (transitive_import_file_opt) = 123;
+      option (public_import_file_opt) = 123;
+      option (file_opt) = 123;
+
+      extend google.protobuf.FileOptions {
+        int32 file_opt = 9999;
+      }
+      )schema");
+  Run("protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "foo.proto");
+  ExpectErrorSubstring("Option \"(transitive_import_file_opt)\" unknown.");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ExtensionsPublicImportsTransitiveOptionImportNotAllowed) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      extend google.protobuf.FileOptions {
+        int32 transitive_option_import_file_opt = 9997;
+      }
+      )schema");
+  CreateTempFile("import_public2.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      import option "custom_option.proto";
+      extend google.protobuf.FileOptions {
+        int32 public_import_file_opt = 9998;
+      }
+      )schema");
+  CreateTempFile("import_public1.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "import_public1.proto";
+      message MyMessage {}
+      )schema");
+  CreateTempFile("foo.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import "google/protobuf/descriptor.proto";
+      import public "import_public2.proto";
+
+      option (transitive_option_import_file_opt) = 123;
+      option (public_import_file_opt) = 123;
+      option (file_opt) = 123;
+
+      extend google.protobuf.FileOptions {
+        int32 file_opt = 9999;
+      }
+      )schema");
+  Run("protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "foo.proto");
+  ExpectErrorSubstring(
+      "Option \"(transitive_option_import_file_opt)\" unknown.");
+}
+
 
 TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport_DescriptorSetIn) {
   // Test parsing multiple input files with an import of a separate file.

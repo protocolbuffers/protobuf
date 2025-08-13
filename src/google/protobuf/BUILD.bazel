@@ -992,7 +992,6 @@ filegroup(
         "map_unittest.proto",
         "unittest.proto",
         "unittest_custom_options.proto",
-        "unittest_custom_options_unlinked.proto",
         "unittest_embed_optimize_for.proto",
         "unittest_empty.proto",
         "unittest_enormous_descriptor.proto",
@@ -1018,6 +1017,12 @@ filegroup(
         "unittest_string_type.proto",
         "unittest_well_known_types.proto",
     ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "unittest_custom_options_unlinked_proto_srcs",
+    srcs = ["unittest_custom_options_unlinked.proto"],
     visibility = ["//:__subpackages__"],
 )
 
@@ -1112,7 +1117,6 @@ protobuf_test_proto_library(
     deps = [
         ":any_proto",
         ":api_proto",
-        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -1205,7 +1209,11 @@ cc_proto_library(
 protobuf_test_proto_library(
     name = "generic_test_protos",
     srcs = [":test_proto_srcs"],
-    option_deps = [":cpp_features_proto"],
+    option_deps = [
+        "//:java_features_proto",
+        ":cpp_features_proto",
+        ":unittest_custom_options_unlinked_proto",
+    ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
