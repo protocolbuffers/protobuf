@@ -409,8 +409,8 @@ void Convert_UpbToPhp(upb_MessageValue upb_val, zval* php_val, TypeInfo type,
       ZVAL_LONG(php_val, upb_val.int64_val);
 #else
     {
-      char buf[20];
-      int size = sprintf(buf, "%lld", upb_val.int64_val);
+      char buf[40];
+      int size = snprintf(buf, sizeof(buf), "%lld", upb_val.int64_val);
       ZVAL_NEW_STR(php_val, zend_string_init(buf, size, 0));
     }
 #endif
@@ -420,8 +420,9 @@ void Convert_UpbToPhp(upb_MessageValue upb_val, zval* php_val, TypeInfo type,
       ZVAL_LONG(php_val, upb_val.uint64_val);
 #else
     {
-      char buf[20];
-      int size = sprintf(buf, "%lld", (int64_t)upb_val.uint64_val);
+      char buf[40];
+      int size =
+          snprintf(buf, sizeof(buf), "%lld", (int64_t)upb_val.uint64_val);
       ZVAL_NEW_STR(php_val, zend_string_init(buf, size, 0));
     }
 #endif
