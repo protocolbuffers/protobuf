@@ -1112,7 +1112,6 @@ protobuf_test_proto_library(
     deps = [
         ":any_proto",
         ":api_proto",
-        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -1211,7 +1210,6 @@ protobuf_test_proto_library(
     deps = [
         ":any_proto",
         ":api_proto",
-        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -1236,7 +1234,6 @@ protobuf_test_proto_library(
     deps = [
         ":any_proto",
         ":api_proto",
-        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -1315,7 +1312,6 @@ proto_library(
     name = "unittest_string_view_proto",
     srcs = ["unittest_string_view.proto"],
     strip_import_prefix = "/src",
-    deps = [":cpp_features_proto"],
 )
 
 cc_proto_library(
