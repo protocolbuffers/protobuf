@@ -2506,6 +2506,6 @@ cc_library(
     ],
     deps = [
         ":port",
-        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/numeric:bits",
     ],
 )
