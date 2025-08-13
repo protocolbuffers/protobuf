@@ -1288,7 +1288,6 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_options.proto
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_options_unlinked.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_delimited.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_delimited_import.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_drop_unknown_fields.proto
