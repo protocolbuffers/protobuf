@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -70,10 +71,13 @@ using FieldDescriptorSet =
 // Recursively searches the given message to collect extensions.
 // Returns true if all the extensions can be recognized. The extensions will be
 // appended in to the extensions parameter.
-// Unknown extensions may be present in the case of option imports and will be
-// ignored.
-void CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
+// Returns false when there are unknown fields, in which case the data in the
+// extensions output parameter is not reliable and should be discarded.
+bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   const Reflection* reflection = message.GetReflection();
+
+  // There are unknown fields that could be extensions, thus this call fails.
+  if (reflection->GetUnknownFields(message).field_count() > 0) return false;
 
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
@@ -89,13 +93,24 @@ void CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
         for (int j = 0; j < size; j++) {
           const Message& sub_message =
               reflection->GetRepeatedMessage(message, fields[i], j);
-          CollectExtensions(sub_message, extensions);
+          if (!CollectExtensions(sub_message, extensions)) return false;
         }
       } else {
         const Message& sub_message = reflection->GetMessage(message, fields[i]);
-        CollectExtensions(sub_message, extensions);
+        if (!CollectExtensions(sub_message, extensions)) return false;
       }
     }
+  }
+
+  return true;
+}
+
+void CollectPublicDependencies(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>* dependencies) {
+  if (file == nullptr || !dependencies->insert(file).second) return;
+  for (int i = 0; file != nullptr && i < file->public_dependency_count(); i++) {
+    CollectPublicDependencies(file->public_dependency(i), dependencies);
   }
 }
 
@@ -123,6 +138,20 @@ void CollectExtensions(const FileDescriptor& file,
   extensions->clear();
   // Unknown extensions are ok and expected in the case of option imports.
   CollectExtensions(*dynamic_file_proto, extensions);
+
+  // TODO: Remove descriptor pool pollution from protoc full.
+  // Check against dependencies to handle option dependencies polluting pool
+  // from using protoc_full with built-in generators instead of plugins.
+  // Option dependencies and transitive dependencies are not allowed, except in
+  // the case of import public.
+  absl::flat_hash_set<const FileDescriptor*> dependencies;
+  dependencies.insert(&file);
+  for (int i = 0; i < file.dependency_count(); i++) {
+    CollectPublicDependencies(file.dependency(i), &dependencies);
+  }
+  absl::erase_if(*extensions, [&](const FieldDescriptor* fieldDescriptor) {
+    return !dependencies.contains(fieldDescriptor->file());
+  });
 }
 
 // Our static initialization methods can become very, very large.

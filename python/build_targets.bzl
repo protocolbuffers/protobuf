@@ -272,9 +272,22 @@ def build_targets(name):
         ],
         strip_prefix = "java/core/src/main/resources",
     )
+
+    internal_copy_files(
+        name = "copied_unittest_custom_options_unlinked_proto_files",
+        srcs = [
+            "//src/google/protobuf:unittest_custom_options_unlinked_proto_srcs",
+        ],
+        strip_prefix = "src",
+    )
+
     internal_py_proto_library(
         name = "test_dependency_proto_py_pb2",
-        srcs = [":copied_cpp_features_test_dependency_proto_files", ":copied_java_features_test_dependency_proto_files"],
+        srcs = [
+            ":copied_cpp_features_test_dependency_proto_files",
+            ":copied_java_features_test_dependency_proto_files",
+            ":copied_unittest_custom_options_unlinked_proto_files",
+        ],
         include = ".",
         default_runtime = "",
         protoc = "//:protoc",
