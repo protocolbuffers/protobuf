@@ -14,6 +14,16 @@
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
 
+#ifndef PROTO2_OPENSOURCE
+#ifdef __ANDROID__
+#include <zconf.h>
+#include <zlib.h>
+#else
+#include "third_party/zlib/rust/zconf.h"
+#include "third_party/zlib/rust/zlib.h"
+#endif
+#endif
+
 #include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
