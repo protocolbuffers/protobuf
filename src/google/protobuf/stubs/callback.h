@@ -346,7 +346,7 @@ class FunctionResultCallback_1_1 : public ResultCallback1<R, A1> {
 
 template <typename T>
 struct InternalConstRef {
-  typedef typename std::remove_reference<T>::type base_type;
+  typedef std::remove_reference_t<T>base_type;
   typedef const base_type& type;
 };
 
@@ -402,12 +402,12 @@ class MethodResultCallback_6_2 : public ResultCallback2<R, A1, A2> {
   T* object_;
   MethodType method_;
   bool self_deleting_;
-  typename std::remove_reference<P1>::type p1_;
-  typename std::remove_reference<P2>::type p2_;
-  typename std::remove_reference<P3>::type p3_;
-  typename std::remove_reference<P4>::type p4_;
-  typename std::remove_reference<P5>::type p5_;
-  typename std::remove_reference<P6>::type p6_;
+  std::remove_reference_t<P1>p1_;
+  std::remove_reference_t<P2>p2_;
+  std::remove_reference_t<P3>p3_;
+  std::remove_reference_t<P4>p4_;
+  std::remove_reference_t<P5>p5_;
+  std::remove_reference_t<P6>p6_;
 };
 
 }  // namespace internal

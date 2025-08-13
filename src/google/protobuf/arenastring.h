@@ -200,7 +200,7 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   void* ptr_;
 };
 
-static_assert(std::is_trivial<TaggedStringPtr>::value,
+static_assert(std::is_trivial_v<TaggedStringPtr>,
               "TaggedStringPtr must be trivial");
 
 // This class encapsulates a pointer to a std::string with or without arena
