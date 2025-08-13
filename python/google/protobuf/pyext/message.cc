@@ -1085,17 +1085,54 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
         ScopedPyObjectPtr next;
         while ((next.reset(PyIter_Next(iter.get()))) != nullptr) {
           PyObject* kwargs = (PyDict_Check(next.get()) ? next.get() : nullptr);
-          ScopedPyObjectPtr new_msg(
-              repeated_composite_container::Add(rc_container, nullptr, kwargs));
-          if (new_msg == nullptr) {
-            return -1;
-          }
-          if (kwargs == nullptr) {
-            // next was not a dict, it's a message we need to merge
-            ScopedPyObjectPtr merged(MergeFrom(
-                reinterpret_cast<CMessage*>(new_msg.get()), next.get()));
-            if (merged.get() == nullptr) {
+          if ((kwargs != nullptr) &&
+              (descriptor->message_type()->well_known_type() ==
+               Descriptor::WELLKNOWNTYPE_STRUCT)) {
+            ScopedPyObjectPtr new_msg(repeated_composite_container::Add(
+                rc_container, nullptr, nullptr));
+            ScopedPyObjectPtr ok(
+                PyObject_CallMethod(new_msg.get(), "update", "O", kwargs));
+            if (ok.get() == nullptr && PyDict_Size(kwargs) == 1) {
+              ScopedPyObjectPtr fields_str(PyUnicode_FromString("fields"));
+              if (PyDict_Contains(kwargs, fields_str.get())) {
+                PyErr_Clear();
+                PyObject* tmp =
+                    Clear(reinterpret_cast<CMessage*>(new_msg.get()));
+                Py_DECREF(tmp);
+                if (InitAttributes(reinterpret_cast<CMessage*>(new_msg.get()),
+                                   nullptr, kwargs) < 0) {
+                  return -1;
+                }
+              }
+            }
+          } else {
+            ScopedPyObjectPtr new_msg(repeated_composite_container::Add(
+                rc_container, nullptr, kwargs));
+            if (new_msg == nullptr) {
               return -1;
+            }
+            if (kwargs == nullptr) {
+              if (PyObject_TypeCheck(next.get(), CMessage_Type)) {
+                // next was not a dict, it's a message we need to merge
+                ScopedPyObjectPtr merged(MergeFrom(
+                    reinterpret_cast<CMessage*>(new_msg.get()), next.get()));
+                if (merged.get() == nullptr) {
+                  return -1;
+                }
+              } else if (descriptor->message_type()->well_known_type() !=
+                             Descriptor::WELLKNOWNTYPE_UNSPECIFIED &&
+                         PyObject_HasAttrString(new_msg.get(),
+                                                "_internal_assign")) {
+                ScopedPyObjectPtr ok(PyObject_CallMethod(
+                    new_msg.get(), "_internal_assign", "O", next.get()));
+                if (ok.get() == nullptr) {
+                  return -1;
+                }
+              } else {
+                PyErr_Format(PyExc_TypeError, "Fail to init repeated field %s",
+                             std::string(descriptor->name()).c_str());
+                return -1;
+              }
             }
           }
         }

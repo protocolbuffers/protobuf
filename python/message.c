@@ -191,6 +191,7 @@ typedef struct PyUpb_Message {
 } PyUpb_Message;
 
 static PyObject* PyUpb_Message_GetAttr(PyObject* _self, PyObject* attr);
+static PyObject* PyUpb_Message_Clear(PyUpb_Message* self);
 
 bool PyUpb_Message_IsStub(PyUpb_Message* msg) { return msg->def & 1; }
 
@@ -383,16 +384,45 @@ static bool PyUpb_Message_InitRepeatedMessageAttribute(PyObject* _self,
   }
   PyObject* e = NULL;
   PyObject* m = NULL;
+  const upb_MessageDef* m_def = upb_FieldDef_MessageSubDef(f);
   while ((e = PyIter_Next(it)) != NULL) {
     if (PyDict_Check(e)) {
-      m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, e);
-      if (!m) goto err;
+      if (upb_MessageDef_WellKnownType(m_def) == kUpb_WellKnown_Struct) {
+        m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, NULL);
+        if (!m) goto err;
+        bool ok = PyObject_CallMethod(m, "update", "O", e);
+        if (!ok && PyDict_Size(e) == 1) {
+          PyObject* fields_str = PyUnicode_FromString("fields");
+          if (PyDict_Contains(e, fields_str)) {
+            // Fall back to init as normal message field.
+            PyErr_Clear();
+            PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)m);
+            Py_DECREF(tmp);
+            ok = PyUpb_Message_InitAttributes(m, NULL, e) >= 0;
+          }
+          Py_DECREF(fields_str);
+        }
+        if (!ok) goto err;
+      } else {
+        m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, e);
+        if (!m) goto err;
+      }
     } else {
       m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, NULL);
       if (!m) goto err;
-      PyObject* merged = PyUpb_Message_MergeFrom(m, e);
-      if (!merged) goto err;
-      Py_DECREF(merged);
+      if (PyObject_TypeCheck(e, Py_TYPE(m))) {
+        PyObject* merged = PyUpb_Message_MergeFrom(m, e);
+        if (!merged) goto err;
+        Py_DECREF(merged);
+      } else if (upb_MessageDef_WellKnownType(m_def) !=
+                     kUpb_WellKnown_Unspecified &&
+                 PyObject_HasAttrString(m, "_internal_assign")) {
+        if (!PyObject_CallMethod(m, "_internal_assign", "O", e)) goto err;
+      } else {
+        PyErr_Format(PyExc_TypeError, "Fail to init repeated field %s",
+                     upb_FieldDef_FullName(f));
+        goto err;
+      }
     }
     Py_DECREF(e);
     Py_DECREF(m);
