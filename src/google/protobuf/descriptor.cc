@@ -96,7 +96,8 @@ namespace google {
 namespace protobuf {
 namespace {
 
-const int kPackageLimit = 100;
+constexpr int kPackageLimit = 100;
+constexpr int kMaxFieldsPerMessage = 65535;
 
 
 size_t CamelCaseSize(const absl::string_view input) {
@@ -6870,6 +6871,16 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
       });
     }
   }
+
+  if (result->field_count() > kMaxFieldsPerMessage) {
+    AddError(
+        result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE, [&] {
+          return absl::StrCat(result->field_count(), " fields in ",
+                              result->full_name(), " exceeds the limit of ",
+                              kMaxFieldsPerMessage);
+        });
+  }
+
   // Check that fields aren't using reserved names or numbers and that they
   // aren't using extension numbers.
   for (int i = 0; i < result->field_count(); i++) {

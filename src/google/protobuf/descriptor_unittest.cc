@@ -13786,6 +13786,27 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
       "aaaaaaaa: NAME: Package name is too long\n");
 }
 
+TEST_F(ValidationErrorTest, TooManyFieldsInMessage) {
+  FileDescriptorProto file = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "proto2"
+    package: "test"
+    message_type { name: "Foo" }
+  )pb");
+
+  for (int i = 0; i < 70000; ++i) {
+    FieldDescriptorProto* field = file.mutable_message_type(0)->add_field();
+    field->set_name(absl::StrCat("field", i));
+    field->set_number(i + 1);
+    field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    field->set_type(FieldDescriptorProto::TYPE_INT32);
+  }
+  BuildFileWithErrors(
+      file,
+      "foo.proto: test.Foo: TYPE: 70000 fields in test.Foo exceeds the limit "
+      "of 65535\n");
+}
+
 
 // ===================================================================
 // DescriptorDatabase
