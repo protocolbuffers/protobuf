@@ -13,6 +13,8 @@ import "google/protobuf/descriptor.proto";
 
 option java_outer_classname = "UnittestFeatures";
 
+import option "google/protobuf/java_features.proto";
+
 extend google.protobuf.FeatureSet {
   TestFeatures test = 9999;
 }
@@ -29,6 +31,8 @@ message TestMessage {
 }
 
 enum EnumFeature {
+  option features.(pb.java).nest_in_file_class = YES;
+
   TEST_ENUM_FEATURE_UNKNOWN = 0;
   VALUE1 = 1;
   VALUE2 = 2;
