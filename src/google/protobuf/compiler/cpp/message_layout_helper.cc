@@ -160,9 +160,8 @@ bool MessageLayoutHelper::ShouldPromoteToFastParse(
         fast_path_fields) {
   // Only promote warm and hot fields to fast-parse.
   if (hotness < FieldHotness::kWarm) return false;
-  // If hasbits for repeated fields is disabled, don't promote repeated fields.
-  if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-      field->is_repeated()) {
+  // Don't promote repeated fields.
+  if (field->is_repeated()) {
     return false;
   }
   return IsFastPathField(field, fast_path_fields);
