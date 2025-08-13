@@ -2459,14 +2459,6 @@ bool TcParser::MpVerifyUtf8(absl::string_view wire_bytes,
     }
     return true;
   }
-#ifndef NDEBUG
-  if (xform_val == field_layout::kTvUtf8Debug) {
-    if (!utf8_range::IsStructurallyValid(wire_bytes)) {
-      PrintUTF8ErrorLog(MessageName(table), FieldName(table, &entry), "parsing",
-                        false);
-    }
-  }
-#endif  // NDEBUG
   return true;
 }
 bool TcParser::MpVerifyUtf8(const absl::Cord& wire_bytes,
@@ -3114,7 +3106,6 @@ std::string TypeCardToString(uint16_t type_card) {
     case fl::kFkString: {
       switch (type_card & ~fl::kFcMask & ~fl::kRepMask & ~fl::kSplitMask) {
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Bytes);
-        PROTOBUF_INTERNAL_TYPE_CARD_CASE(RawString);
         PROTOBUF_INTERNAL_TYPE_CARD_CASE(Utf8String);
         default:
           ABSL_LOG(FATAL) << "Unknown type_card: 0x" << type_card;
