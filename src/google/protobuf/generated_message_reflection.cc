@@ -4036,6 +4036,33 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
   }
 }
 
+bool ContainsAnyMessageOfType(const Descriptor* root, const Descriptor* target,
+                              absl::flat_hash_set<const Descriptor*>& seen) {
+  if (root == target) {
+    return true;
+  }
+  if (!seen.insert(root).second) {
+    // We've already seen this type.
+    return false;
+  }
+  for (int i = 0; i < root->field_count(); ++i) {
+    const FieldDescriptor* field = root->field(i);
+    if (field->type() != FieldDescriptor::TYPE_MESSAGE) {
+      continue;
+    }
+    if (ContainsAnyMessageOfType(field->message_type(), target, seen)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ContainsAnyMessageOfType(const Descriptor* root,
+                              const Descriptor* target) {
+  absl::flat_hash_set<const Descriptor*> seen;
+  return ContainsAnyMessageOfType(root, target, seen);
+}
+
 bool IsDescendant(const Message& root, const Message& message) {
   const Reflection* reflection = root.GetReflection();
   std::vector<const FieldDescriptor*> fields;
@@ -4044,6 +4071,12 @@ bool IsDescendant(const Message& root, const Message& message) {
   for (const auto* field : fields) {
     // Skip non-message fields.
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+
+    // This submessage does not contain the type of thing we're looking for.
+    if (!ContainsAnyMessageOfType(field->message_type(),
+                                  message.GetDescriptor())) {
+      continue;
+    }
 
     // Optional messages.
     if (!field->is_repeated()) {
@@ -4061,6 +4094,11 @@ bool IsDescendant(const Message& root, const Message& message) {
       const FieldDescriptor* val_field = field->message_type()->field(kValIdx);
       // Skip map fields whose value type is not message.
       if (val_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
+
+      if (!ContainsAnyMessageOfType(val_field->message_type(),
+                                    message.GetDescriptor())) {
+        continue;
+      }
 
       const auto& map = reflection->GetRaw<MapFieldBase>(root, field);
       if (map.IsMapValid()) {
