@@ -12,10 +12,12 @@
 #include <string>
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 namespace google {
 namespace protobuf {
@@ -148,7 +150,15 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
                                 info.descriptor);
         int size = ReadSize(&ptr);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        return ctx->ReadString(ptr, size, value);
+        if (info.require_utf8_validation) {
+          ptr = ctx->ReadString(ptr, size, value);
+          if ABSL_PREDICT_FALSE (!utf8_range::IsStructurallyValid(*value)) {
+            return nullptr;
+          }
+          return ptr;
+        } else {
+          return ctx->ReadString(ptr, size, value);
+        }
       }
 
       case WireFormatLite::TYPE_GROUP: {
