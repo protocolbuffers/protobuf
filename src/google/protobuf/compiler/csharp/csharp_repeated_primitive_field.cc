@@ -102,6 +102,11 @@ void RepeatedPrimitiveFieldGenerator::GenerateCloningCode(io::Printer* printer) 
     "$name$_ = other.$name$_.Clone();\n");
 }
 
+void RepeatedPrimitiveFieldGenerator::GenerateClearCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_.Clear();\n");
+}
+
 void RepeatedPrimitiveFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
 }
 
