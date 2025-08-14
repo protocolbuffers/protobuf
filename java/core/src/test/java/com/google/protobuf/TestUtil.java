@@ -3355,6 +3355,40 @@ public final class TestUtil {
     // -------------------------------------------------------------------
 
     /**
+     * Set the repeated fields of {@code message} to an empty list, using the {@link
+     * Message.Builder} reflection interface.
+     */
+    void setRepeatedFieldsToEmptyListViaReflection(Message.Builder message) {
+      message.setField(f("repeated_int32"), new ArrayList<>());
+      message.setField(f("repeated_int64"), new ArrayList<>());
+      message.setField(f("repeated_uint32"), new ArrayList<>());
+      message.setField(f("repeated_uint64"), new ArrayList<>());
+      message.setField(f("repeated_sint32"), new ArrayList<>());
+      message.setField(f("repeated_sint64"), new ArrayList<>());
+      message.setField(f("repeated_fixed32"), new ArrayList<>());
+      message.setField(f("repeated_fixed64"), new ArrayList<>());
+      message.setField(f("repeated_sfixed32"), new ArrayList<>());
+      message.setField(f("repeated_sfixed64"), new ArrayList<>());
+      message.setField(f("repeated_float"), new ArrayList<>());
+      message.setField(f("repeated_double"), new ArrayList<>());
+      message.setField(f("repeated_bool"), new ArrayList<>());
+      message.setField(f("repeated_string"), new ArrayList<>());
+      message.setField(f("repeated_bytes"), new ArrayList<>());
+      message.setField(f("repeatedgroup"), new ArrayList<>());
+      message.setField(f("repeated_nested_message"), new ArrayList<>());
+      message.setField(f("repeated_foreign_message"), new ArrayList<>());
+      message.setField(f("repeated_import_message"), new ArrayList<>());
+      message.setField(f("repeated_lazy_message"), new ArrayList<>());
+      message.setField(f("repeated_nested_enum"), new ArrayList<>());
+      message.setField(f("repeated_foreign_enum"), new ArrayList<>());
+      message.setField(f("repeated_import_enum"), new ArrayList<>());
+      message.setField(f("repeated_string_piece"), new ArrayList<>());
+      message.setField(f("repeated_cord"), new ArrayList<>());
+    }
+
+    // -------------------------------------------------------------------
+
+    /**
      * Assert (using {@code junit.framework.Assert}} that all fields of {@code message} are set to
      * the values assigned by {@code setAllFields}, using the {@link Message} reflection interface.
      */
