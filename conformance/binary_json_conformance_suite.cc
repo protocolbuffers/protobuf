@@ -325,7 +325,10 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
         this, /*run_proto3_tests=*/true);
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
-    RunDelimitedFieldTests();
+    if (!this->performance_) {
+      RunDelimitedFieldTests();
+      RunUtf8ValidationTests();
+    }
   }
 }
 
@@ -381,6 +384,18 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunUtf8ValidationTests() {
+  ExpectParseFailureForProto<TestAllTypesEdition2023>(
+      len(133, "\xA0\xB0\xC0\xD0"), "RejectInvalidUtf8.String.Extension",
+      RECOMMENDED);
+  RunValidBinaryProtobufTest<
+      TestAllTypesEdition2023>(absl::StrCat(
+                                   "AcceptInvalidUtf8.Bytes.Extension"),
+                               REQUIRED, len(134, "\xA0\xB0\xC0\xD0"),
+                               R"pb([protobuf_test_messages.editions
+                                         .extension_bytes]: "\xA0\xB0\xC0\xD0")pb");
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
@@ -470,10 +485,9 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                               const std::string& test_name,
-                                               ConformanceLevel level) {
+void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
+    const std::string& proto, const std::string& test_name,
+    ConformanceLevel level) {
   MessageType prototype;
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -487,20 +501,28 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       absl::StrCat(setting.ConformanceLevelToString(level), ".",
                    setting.GetSyntaxIdentifier(), ".ProtobufInput.", test_name);
 
-  if (!suite_.RunTest(effective_test_name, request, &response)) {
+  if (!RunTest(effective_test_name, request, &response)) {
     return;
   }
 
   TestStatus test;
   test.set_name(effective_test_name);
   if (response.result_case() == ConformanceResponse::kParseError) {
-    suite_.ReportSuccess(test);
+    ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(test, request, response);
+    ReportSkip(test, request, response);
   } else {
     test.set_failure_message("Should have failed to parse, but didn't.");
-    suite_.ReportFailure(test, level, request, response);
+    ReportFailure(test, level, request, response);
   }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
+                                               const std::string& test_name,
+                                               ConformanceLevel level) {
+  suite_.ExpectParseFailureForProto<MessageType>(proto, test_name, level);
 }
 
 // Expect that this precise protobuf will cause a parse error.
@@ -1489,6 +1511,29 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestInvalidUtf8String() {
+  if (run_proto3_tests_) {
+    ExpectParseFailureForProto(len(14, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Singular",
+                               RECOMMENDED);
+    ExpectParseFailureForProto(len(44, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Repeated",
+                               RECOMMENDED);
+    ExpectParseFailureForProto(len(113, "\xA0\xB0\xC0\xD0"),
+                               "RejectInvalidUtf8.String.Oneof", RECOMMENDED);
+  } else {
+    RunValidBinaryProtobufTest("AcceptInvalidUtf8.String.Singular", RECOMMENDED,
+                               len(14, "\xA0\xB0\xC0\xD0"));
+    RunValidBinaryProtobufTest("AcceptInvalidUtf8.String.Repeated", RECOMMENDED,
+                               len(44, "\xA0\xB0\xC0\xD0"));
+    RunValidBinaryProtobufTest("AcceptInvalidUtf8.String.Oneof", RECOMMENDED,
+                               len(113, "\xA0\xB0\xC0\xD0"));
+    RunValidBinaryProtobufTest("AcceptInvalidUtf8.String.Extension",
+                               RECOMMENDED, len(133, "\xA0\xB0\xC0\xD0"));
+  }
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
   MessageType message;
   message.set_oneof_uint32(0);
@@ -1659,6 +1704,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     TestIllegalTags();
     TestUnmatchedGroup();
     TestUnknownWireType();
+    TestInvalidUtf8String();
 
     int64_t kInt64Min = -9223372036854775808ULL;
     int64_t kInt64Max = 9223372036854775807ULL;
