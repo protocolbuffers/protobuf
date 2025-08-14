@@ -13,7 +13,6 @@ import static java.lang.Math.subtractExact;
 
 import com.google.common.annotations.GwtIncompatible;
 import com.google.common.annotations.J2ktIncompatible;
-import com.google.common.base.Strings;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CompileTimeConstant;
 import com.google.j2objc.annotations.J2ObjCIncompatible;
@@ -170,11 +169,13 @@ public final class Timestamps {
     int nanos = timestamp.getNanos();
     if (!isValid(seconds, nanos)) {
       throw new IllegalArgumentException(
-          Strings.lenientFormat(
-              "Timestamp is not valid. See proto definition for valid values. "
-                  + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]. "
-                  + "Nanos (%s) must be in range [0, +999,999,999].",
-              seconds, nanos));
+          "Timestamp is not valid. See proto definition for valid values. "
+              + "Seconds ("
+              + seconds
+              + ") must be in range [-62,135,596,800, +253,402,300,799]. "
+              + "Nanos ("
+              + nanos
+              + ") must be in range [0, +999,999,999].");
     }
     return timestamp;
   }
@@ -504,10 +505,10 @@ public final class Timestamps {
     // when normalized.
     if (!isValidSeconds(seconds)) {
       throw new IllegalArgumentException(
-          Strings.lenientFormat(
-              "Timestamp is not valid. Input seconds is too large. "
-                  + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]. ",
-              seconds));
+          "Timestamp is not valid. Input seconds is too large. "
+              + "Seconds ("
+              + seconds
+              + ") must be in range [-62,135,596,800, +253,402,300,799]. ");
     }
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = addExact(seconds, nanos / NANOS_PER_SECOND);
