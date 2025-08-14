@@ -50,7 +50,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 # Note that this deliberately does *not* include old_extensions1.proto
 # and old_extensions2.proto, which are generated with an older version
 # of protoc.
-$PROTOC -Isrc -I. \
+$PROTOC -Isrc -I. -Ijava/core/src/main/resources/ \
     --experimental_allow_proto3_optional \
     --experimental_editions \
     --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \

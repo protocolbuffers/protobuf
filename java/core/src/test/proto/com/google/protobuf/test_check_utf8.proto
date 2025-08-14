@@ -12,7 +12,7 @@ edition = "2024";
 
 package proto2_test_check_utf8;
 
-import "google/protobuf/java_features.proto";
+import option "google/protobuf/java_features.proto";
 
 option features.utf8_validation = NONE;
 option features.(pb.java).utf8_validation = VERIFY;

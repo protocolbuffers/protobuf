@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -104,6 +105,15 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   return true;
 }
 
+void CollectPublicDependencies(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>* dependencies) {
+  if (file == nullptr || !dependencies->insert(file).second) return;
+  for (int i = 0; file != nullptr && i < file->public_dependency_count(); i++) {
+    CollectPublicDependencies(file->public_dependency(i), dependencies);
+  }
+}
+
 // Finds all extensions for custom options in the given file descriptor with the
 // builder pool which resolves Java features instead of the generated pool.
 void CollectExtensions(const FileDescriptor& file,
@@ -115,7 +125,7 @@ void CollectExtensions(const FileDescriptor& file,
       file_proto.GetDescriptor()->full_name());
 
   // descriptor.proto is not found in the builder pool, meaning there are no
-  // custom options.
+  // custom options or they are option imported and not reachable.
   if (file_proto_desc == nullptr) return;
 
   DynamicMessageFactory factory;
@@ -124,14 +134,24 @@ void CollectExtensions(const FileDescriptor& file,
   ABSL_CHECK(dynamic_file_proto.get() != nullptr);
   ABSL_CHECK(dynamic_file_proto->ParseFromString(file_data));
 
-  // Collect the extensions again from the dynamic message.
+  // Collect the extensions from the dynamic message.
   extensions->clear();
-  ABSL_CHECK(CollectExtensions(*dynamic_file_proto, extensions))
-      << "Found unknown fields in FileDescriptorProto when building "
-      << file_proto.name()
-      << ". It's likely that those fields are custom options, however, "
-         "those options cannot be recognized in the builder pool. "
-         "This normally should not happen. Please report a bug.";
+  // Unknown extensions are ok and expected in the case of option imports.
+  CollectExtensions(*dynamic_file_proto, extensions);
+
+  // TODO: Remove descriptor pool pollution from protoc full.
+  // Check against dependencies to handle option dependencies polluting pool
+  // from using protoc_full with built-in generators instead of plugins.
+  // Option dependencies and transitive dependencies are not allowed, except in
+  // the case of import public.
+  absl::flat_hash_set<const FileDescriptor*> dependencies;
+  dependencies.insert(&file);
+  for (int i = 0; i < file.dependency_count(); i++) {
+    CollectPublicDependencies(file.dependency(i), &dependencies);
+  }
+  absl::erase_if(*extensions, [&](const FieldDescriptor* fieldDescriptor) {
+    return !dependencies.contains(fieldDescriptor->file());
+  });
 }
 
 // Our static initialization methods can become very, very large.
