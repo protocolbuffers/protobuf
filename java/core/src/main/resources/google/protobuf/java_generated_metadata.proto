@@ -1,0 +1,107 @@
+
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package pb;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "JavaGeneratedMetadataProto";
+
+message JavaGeneratedMetadata {
+  // Describes where a GeneratedExtension is defined in the java files.
+  message Extension {
+    // The fully qualified proto name of the extension.
+    optional string name = 1;
+    // The extension field number.
+    optional int32 number = 2;
+    // The fully qualified proto name of the extended type.
+    optional string extended_type = 3;
+    // A colon separated path of the name of the Java class in which the
+    // generated extension is defined and the extension variable name.
+    // e.g. OuterClass$NestedClass:myExtension
+    optional string load_path = 4;
+    // Whether the extension is for the immutable API.
+    // For api_version = 1, this will always be false.
+    // For api_version >= 2, there are both mutable and immutable variants.
+    optional bool immutable = 5 [default = true];
+    // Whether we should also use the scope of the extension as an alternative
+    // name. This is useful for the MessageSet to comply with the Proto1 text
+    // format.
+    // e.g.
+    //   package foo;
+    //   message MyMessage {
+    //     extend google.protobuf.bridge.MessageSet {
+    //       optional MyMessage message_set_extension = 1234567;
+    //     }
+    //   }
+    // We will add [foo.MyMessage] as an alternative name for the message set
+    // extension in the GeneratedExtensionRegistry.
+    optional bool use_scope_as_alt_name = 6;
+
+    // An extension is buildable if its singular type is an immutable
+    // Message/Group.
+    optional bool is_buildable = 8;
+  }
+  // List of all the GeneratedExtension location information so we can
+  // automatically load all the extensions of a certain message type in the
+  // runtime.
+  repeated Extension extensions = 2;
+
+  // Describes where a generated message is defined in the java files.
+  message Message {
+    // The fully qualified proto name of the message.
+    optional string name = 1;
+    // The path of the name of the generated Java class.
+    // e.g. OuterClass$NestedClass
+    optional string load_path = 2;
+    // Whether the message is for the immutable API.
+    optional bool immutable = 3 [default = true];
+  }
+  // List of all the generated message location information so we can call
+  // getDefaultInstance() of the corresponding class  in runtime.
+  repeated Message messages = 3;
+
+  // Describes where a generated enum is defined in the java files
+  message Enum {
+    // The fully qualified proto name of the enum.
+    optional string name = 1;
+    // The path of the name of the generated Java class.
+    // e.g. OuterClass$NestedClass
+    optional string load_path = 2;
+    // Whether the enum is for the immutable API.
+    optional bool immutable = 3 [default = true];
+  }
+  // List of all the generated enum location information so we can call
+  // getDefaultInstance() of the corresponding class at runtime.
+  repeated Enum enums = 4;
+
+  // Describes where a generated service is defined in the java files.
+  message Service {
+    // The fully qualified proto name of the service.
+    optional string name = 1;
+    // The path of the name of the generated Java class.
+    // e.g. OuterClass$NestedClass
+    optional string load_path = 2;
+    // Whether the service is for the immutable API.
+    optional bool immutable = 3 [default = true];
+  }
+  // List of all the generated service location information so we can call
+  // getDefaultInstance() of the corresponding class  in runtime.
+  repeated Service services = 5;
+
+  message File {
+    optional string name = 1;
+
+    optional string load_path = 2;
+    // Whether the service is for the immutable API.
+    optional bool immutable = 3 [default = true];
+  }
+
+  repeated File files = 6;
+}
