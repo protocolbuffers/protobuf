@@ -251,7 +251,6 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
- protected:
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from);
   Version(
@@ -487,7 +486,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
- protected:
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from);
   CodeGeneratorResponse_File(
@@ -737,7 +735,6 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
- protected:
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from);
   CodeGeneratorResponse(
@@ -1019,7 +1016,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
- protected:
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from);
   CodeGeneratorRequest(

@@ -1121,7 +1121,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption.NamePart"; }
 
- protected:
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption_NamePart& from);
   UninterpretedOption_NamePart(
@@ -1331,7 +1330,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo.Location"; }
 
- protected:
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo_Location& from);
   SourceCodeInfo_Location(
@@ -1612,7 +1610,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo.Annotation"; }
 
- protected:
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo_Annotation& from);
   GeneratedCodeInfo_Annotation(
@@ -1890,7 +1887,6 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.FeatureSupport"; }
 
- protected:
   explicit FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_FeatureSupport& from);
   FieldOptions_FeatureSupport(
@@ -2126,7 +2122,6 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.EditionDefault"; }
 
- protected:
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_EditionDefault& from);
   FieldOptions_EditionDefault(
@@ -2308,7 +2303,6 @@ class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::prot
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet.VisibilityFeature"; }
 
- protected:
   explicit FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_VisibilityFeature& from);
   FeatureSet_VisibilityFeature(
@@ -2499,7 +2493,6 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet"; }
 
- protected:
   explicit FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet& from);
   FeatureSet(
@@ -3117,7 +3110,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions.Declaration"; }
 
- protected:
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions_Declaration& from);
   ExtensionRangeOptions_Declaration(
@@ -3371,7 +3363,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto.EnumReservedRange"; }
 
- protected:
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from);
   EnumDescriptorProto_EnumReservedRange(
@@ -3576,7 +3567,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ReservedRange"; }
 
- protected:
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from);
   DescriptorProto_ReservedRange(
@@ -3786,7 +3776,6 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption"; }
 
- protected:
   explicit UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption& from);
   UninterpretedOption(
@@ -4083,7 +4072,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo"; }
 
- protected:
   explicit SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo& from);
   SourceCodeInfo(
@@ -4467,7 +4455,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo"; }
 
- protected:
   explicit GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo& from);
   GeneratedCodeInfo(
@@ -4670,7 +4657,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault"; }
 
- protected:
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
   FeatureSetDefaults_FeatureSetEditionDefault(
@@ -4901,7 +4887,6 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceOptions"; }
 
- protected:
   explicit ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceOptions& from);
   ServiceOptions(
@@ -5320,7 +5305,6 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofOptions"; }
 
- protected:
   explicit OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofOptions& from);
   OneofOptions(
@@ -5726,7 +5710,6 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodOptions"; }
 
- protected:
   explicit MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodOptions& from);
   MethodOptions(
@@ -6179,7 +6162,6 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MessageOptions"; }
 
- protected:
   explicit MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MessageOptions& from);
   MessageOptions(
@@ -6650,7 +6632,6 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileOptions"; }
 
- protected:
   explicit FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileOptions& from);
   FileOptions(
@@ -7374,7 +7355,6 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions"; }
 
- protected:
   explicit FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions& from);
   FieldOptions(
@@ -8047,7 +8027,6 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults"; }
 
- protected:
   explicit FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults& from);
   FeatureSetDefaults(
@@ -8277,7 +8256,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions"; }
 
- protected:
   explicit ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions& from);
   ExtensionRangeOptions(
@@ -8736,7 +8714,6 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueOptions"; }
 
- protected:
   explicit EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueOptions& from);
   EnumValueOptions(
@@ -9185,7 +9162,6 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumOptions"; }
 
- protected:
   explicit EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumOptions& from);
   EnumOptions(
@@ -9630,7 +9606,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofDescriptorProto"; }
 
- protected:
   explicit OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofDescriptorProto& from);
   OneofDescriptorProto(
@@ -9849,7 +9824,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodDescriptorProto"; }
 
- protected:
   explicit MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodDescriptorProto& from);
   MethodDescriptorProto(
@@ -10130,7 +10104,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldDescriptorProto"; }
 
- protected:
   explicit FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldDescriptorProto& from);
   FieldDescriptorProto(
@@ -10543,7 +10516,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueDescriptorProto"; }
 
- protected:
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueDescriptorProto& from);
   EnumValueDescriptorProto(
@@ -10775,7 +10747,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ExtensionRange"; }
 
- protected:
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ExtensionRange& from);
   DescriptorProto_ExtensionRange(
@@ -11002,7 +10973,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceDescriptorProto"; }
 
- protected:
   explicit ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceDescriptorProto& from);
   ServiceDescriptorProto(
@@ -11240,7 +11210,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto"; }
 
- protected:
   explicit EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto& from);
   EnumDescriptorProto(
@@ -11535,7 +11504,6 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto"; }
 
- protected:
   explicit DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto& from);
   DescriptorProto(
@@ -11926,7 +11894,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorProto"; }
 
- protected:
   explicit FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorProto& from);
   FileDescriptorProto(
@@ -12375,7 +12342,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorSet"; }
 
- protected:
   explicit FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorSet& from);
   FileDescriptorSet(

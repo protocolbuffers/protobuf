@@ -247,7 +247,6 @@ class PROTOC_EXPORT JavaFeatures_NestInFileClassFeature final : public ::google:
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures.NestInFileClassFeature"; }
 
- protected:
   explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures_NestInFileClassFeature& from);
   JavaFeatures_NestInFileClassFeature(
@@ -432,7 +431,6 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
- protected:
   explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
   JavaFeatures(

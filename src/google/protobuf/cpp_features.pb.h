@@ -232,7 +232,6 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
 
- protected:
   explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
   CppFeatures(

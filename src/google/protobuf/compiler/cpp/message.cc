@@ -2315,10 +2315,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
           $decl_annotate$;
 
-          //~ TODO Make this private! Currently people are
-          //~ deriving from protos to give access to this constructor,
-          //~ breaking the invariants we rely on.
-         protected:
           explicit $classname$($pb$::Arena* $nullable$ arena);
           $classname$($pb$::Arena* $nullable$ arena, const $classname$& from);
           $classname$(
