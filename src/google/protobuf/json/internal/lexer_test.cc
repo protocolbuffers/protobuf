@@ -20,6 +20,7 @@
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
 #include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -39,6 +40,9 @@ namespace google {
 namespace protobuf {
 namespace json_internal {
 namespace {
+
+using ::absl_testing::IsOkAndHolds;
+using ::absl_testing::StatusIs;
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Field;
@@ -47,27 +51,6 @@ using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::VariantWith;
-
-// TODO: Use the gtest versions once that's available in OSS.
-MATCHER_P(IsOkAndHolds, inner,
-          absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
-  if (!arg.ok()) {
-    *result_listener << arg.status();
-    return false;
-  }
-  return testing::ExplainMatchResult(inner, *arg, result_listener);
-}
-
-// absl::Status GetStatus(const absl::Status& s) { return s; }
-template <typename T>
-absl::Status GetStatus(const absl::StatusOr<T>& s) {
-  return s.status();
-}
-
-MATCHER_P(StatusIs, status,
-          absl::StrCat(".status() is ", testing::PrintToString(status))) {
-  return GetStatus(arg).code() == status;
-}
 
 #define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk))
 #define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
@@ -733,6 +716,31 @@ TEST(LexerTest, ObjectRecursion) {
                 StatusIs(absl::StatusCode::kInvalidArgument));
   }
 }
+
+TEST(LexerTest, ErrorLineHasStablePrefix) {
+  absl::string_view json_with_missing_comma = R"json({
+    "foo": 0
+    "bar": null
+  })json";
+
+  io::ArrayInputStream stream(json_with_missing_comma.data(),
+                              json_with_missing_comma.size());
+  JsonLexer lex(&stream, {});
+  EXPECT_THAT(lex.SkipValue(), StatusIs(absl::StatusCode::kInvalidArgument,
+                                        HasSubstr("invalid JSON")));
+}
+
+TEST(LexerTest, ErrorOffset) {
+  absl::string_view invalid_json =
+      R"({"foo": 123,
+      "bar": "\u0000" null})";
+
+  io::ArrayInputStream stream(invalid_json.data(), invalid_json.size());
+  JsonLexer lex(&stream, {});
+  EXPECT_THAT(lex.SkipValue(),
+              StatusIs(absl::StatusCode::kInvalidArgument, HasSubstr("2:23")));
+}
+
 }  // namespace
 }  // namespace json_internal
 }  // namespace protobuf
