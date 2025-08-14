@@ -352,7 +352,6 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Option"; }
 
- protected:
   explicit Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Option& from);
   Option(
@@ -565,7 +564,6 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Field"; }
 
- protected:
   explicit Field(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Field(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Field& from);
   Field(
@@ -950,7 +948,6 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValue"; }
 
- protected:
   explicit EnumValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValue& from);
   EnumValue(
@@ -1177,7 +1174,6 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Type"; }
 
- protected:
   explicit Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Type& from);
   Type(
@@ -1481,7 +1477,6 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Enum"; }
 
- protected:
   explicit Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Enum& from);
   Enum(

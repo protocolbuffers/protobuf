@@ -190,7 +190,6 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldMask"; }
 
- protected:
   explicit FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldMask& from);
   FieldMask(

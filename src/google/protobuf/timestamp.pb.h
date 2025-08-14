@@ -190,7 +190,6 @@ class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Timestamp"; }
 
- protected:
   explicit Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Timestamp(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Timestamp& from);
   Timestamp(

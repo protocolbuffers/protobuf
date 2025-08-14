@@ -249,7 +249,6 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Any"; }
 
- protected:
   explicit Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Any& from);
   Any(

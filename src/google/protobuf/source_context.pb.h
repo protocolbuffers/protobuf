@@ -190,7 +190,6 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceContext"; }
 
- protected:
   explicit SourceContext(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   SourceContext(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceContext& from);
   SourceContext(

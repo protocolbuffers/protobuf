@@ -163,7 +163,6 @@ class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFie
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
 
- protected:
   explicit Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Empty& from);
   Empty(

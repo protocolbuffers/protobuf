@@ -200,7 +200,6 @@ class PROTOBUF_EXPORT Mixin final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Mixin"; }
 
- protected:
   explicit Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Mixin& from);
   Mixin(
@@ -413,7 +412,6 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Method"; }
 
- protected:
   explicit Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Method& from);
   Method(
@@ -715,7 +713,6 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Api"; }
 
- protected:
   explicit Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Api& from);
   Api(

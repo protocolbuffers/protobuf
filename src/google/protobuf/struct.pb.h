@@ -247,7 +247,6 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.ListValue"; }
 
- protected:
   explicit ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ListValue& from);
   ListValue(
@@ -444,7 +443,6 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Struct"; }
 
- protected:
   explicit Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Struct& from);
   Struct(
@@ -690,7 +688,6 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Value"; }
 
- protected:
   explicit Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Value& from);
   Value(

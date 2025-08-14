@@ -222,7 +222,6 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt64Value"; }
 
- protected:
   explicit UInt64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UInt64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UInt64Value& from);
   UInt64Value(
@@ -413,7 +412,6 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.UInt32Value"; }
 
- protected:
   explicit UInt32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UInt32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UInt32Value& from);
   UInt32Value(
@@ -604,7 +602,6 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.StringValue"; }
 
- protected:
   explicit StringValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   StringValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const StringValue& from);
   StringValue(
@@ -800,7 +797,6 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int64Value"; }
 
- protected:
   explicit Int64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Int64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Int64Value& from);
   Int64Value(
@@ -991,7 +987,6 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.Int32Value"; }
 
- protected:
   explicit Int32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Int32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Int32Value& from);
   Int32Value(
@@ -1182,7 +1177,6 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.FloatValue"; }
 
- protected:
   explicit FloatValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FloatValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FloatValue& from);
   FloatValue(
@@ -1373,7 +1367,6 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.DoubleValue"; }
 
- protected:
   explicit DoubleValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DoubleValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DoubleValue& from);
   DoubleValue(
@@ -1564,7 +1557,6 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.BytesValue"; }
 
- protected:
   explicit BytesValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   BytesValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const BytesValue& from);
   BytesValue(
@@ -1760,7 +1752,6 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
   friend ::absl::string_view(::google::protobuf::internal::GetAnyMessageName)();
   static ::absl::string_view FullMessageName() { return "google.protobuf.BoolValue"; }
 
- protected:
   explicit BoolValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   BoolValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const BoolValue& from);
   BoolValue(
