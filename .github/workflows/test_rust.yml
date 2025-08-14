@@ -30,9 +30,9 @@ jobs:
 
           # Override cases with custom images
           - config: { name: Cargo }
-            # We currently need to be on nightly to have access to the
-            # multi-package publishing feature. This will be stabilized in
-            # 1.90, so we should switch to that as soon as it is released.
+            # TODO: b/437934240 - switch to Rust 1.90 when that version is
+            # released. We currently need to be on nightly to have access to
+            # the multi-package publishing feature.
             image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-nightly-2025-08-07-f0d1e209ed9369f69d93ce418990ecff3aa08d6f"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
@@ -70,6 +70,8 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
       - name: Install Rust
         shell: bash
+        # TODO: b/437934240 - switch to Rust 1.90 when that version is
+        # released.
         run: rustup default nightly-2025-08-07
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v4
