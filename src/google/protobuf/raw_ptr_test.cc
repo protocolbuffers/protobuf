@@ -44,7 +44,8 @@ TEST(RawPtr, Basic) {
 }
 
 TEST(RawPtr, Constexpr) {
-  constexpr RawPtr<Obj> raw;
+  static constexpr Obj global_obj = Obj(666);
+  constexpr RawPtr<Obj> raw = RawPtr<Obj>(&global_obj);
   EXPECT_EQ(raw->i, 0);
   EXPECT_EQ((*raw).i, 0);
   EXPECT_EQ(static_cast<void*>(&raw->i), kZeroBuffer);
