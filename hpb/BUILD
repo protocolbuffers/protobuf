@@ -160,6 +160,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb/wire",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings:str_format",
     ],
