@@ -12,10 +12,10 @@ use protos::*;
 
 use googletest::prelude::*;
 
-use unittest_rust_proto::{TestAllTypes, TestCord};
-
 #[gtest]
 fn test_bytes_cord() {
+    use unittest_rust_proto::TestCord;
+
     let mut msg = TestCord::new();
     assert_that!(msg.has_optional_bytes_cord(), eq(false));
     assert_that!(msg.optional_bytes_cord(), eq("".as_bytes()));

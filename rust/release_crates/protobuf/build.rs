@@ -5,8 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-const VERSION: &str = env!("CARGO_PKG_VERSION");
-
 fn main() {
     cc::Build::new()
         .flag("-std=c99")

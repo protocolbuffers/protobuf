@@ -31,6 +31,7 @@ extern "C" {
 }
 
 /// Encoding options.
+#[allow(dead_code)]
 pub mod text_encode_options {
     /// When set, prints everything on a single line.
     pub const SINGLE_LINE: i32 = 1;
