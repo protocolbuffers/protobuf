@@ -343,12 +343,12 @@ static void ReportReflectionUsageEnumTypeError(
 Reflection::Reflection(const Descriptor* descriptor,
                        const internal::ReflectionSchema& schema,
                        const DescriptorPool* pool, MessageFactory* factory)
-    : descriptor_(descriptor),
-      schema_(schema),
+    : last_non_weak_field_index_(-1),
+      descriptor_(descriptor),
+      message_factory_(factory),
       descriptor_pool_(
           (pool == nullptr) ? DescriptorPool::internal_generated_pool() : pool),
-      message_factory_(factory),
-      last_non_weak_field_index_(-1) {
+      schema_(schema) {
   last_non_weak_field_index_ = descriptor_->field_count() - 1;
 }
 

@@ -141,17 +141,20 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   uint64_t tag_and_id_ = 0;
 
   TaggedAllocationPolicyPtr alloc_policy_;  // Tagged pointer to AllocPolicy.
+
+  // Pointer to a linked list of SerialArenaChunk.
+  std::atomic<SerialArenaChunk*> head_{nullptr};
+
   ThreadSafeArenaStatsHandle arena_stats_;
 
   // Adding a new chunk to head_ must be protected by mutex_.
   absl::Mutex mutex_;
-  // Pointer to a linked list of SerialArenaChunk.
-  std::atomic<SerialArenaChunk*> head_{nullptr};
 
-  void* first_owner_;
   // Must be declared after alloc_policy_; otherwise, it may lose info on
   // user-provided initial block.
   SerialArena first_arena_;
+
+  void* first_owner_;
 
   static_assert(std::is_trivially_destructible<SerialArena>{},
                 "SerialArena needs to be trivially destructible.");

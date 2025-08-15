@@ -1093,20 +1093,21 @@ class PROTOBUF_EXPORT Reflection final {
                                      const Message& message);
   friend void internal::MaybePoisonAfterClear(Message* root);
 
-  const Descriptor* const descriptor_;
-  const internal::ReflectionSchema schema_;
-  const DescriptorPool* const descriptor_pool_;
-  MessageFactory* const message_factory_;
-
   // Last non weak field index. This is an optimization when most weak fields
   // are at the end of the containing message. If a message proto doesn't
   // contain weak fields, then this field equals descriptor_->field_count().
   int last_non_weak_field_index_;
-
   // The table-driven parser table.
   // This table is generated on demand for Message types that did not override
   // _InternalParse. It uses the reflection information to do so.
   mutable absl::once_flag tcparse_table_once_;
+
+  const Descriptor* const descriptor_;
+  MessageFactory* const message_factory_;
+  const DescriptorPool* const descriptor_pool_;
+
+  const internal::ReflectionSchema schema_;
+
   using TcParseTableBase = internal::TcParseTableBase;
   mutable const TcParseTableBase* tcparse_table_ = nullptr;
 
