@@ -23,6 +23,10 @@
 #include <type_traits>
 #include <typeinfo>
 
+#if defined(__ARM_FEATURE_CRC32)
+#include <arm_acle.h>
+#endif
+
 #include "absl/base/optimization.h"
 
 
@@ -802,9 +806,7 @@ inline uint32_t Crc32(uint32_t crc, uint64_t v) {
 #elif defined(__ARM_FEATURE_CRC32)
 
 constexpr bool HasCrc32() { return true; }
-inline uint32_t Crc32(uint32_t crc, uint64_t v) {
-  return __builtin_arm_crc32cd(crc, v);
-}
+inline uint32_t Crc32(uint32_t crc, uint64_t v) { return __crc32cd(crc, v); }
 
 #else
 
