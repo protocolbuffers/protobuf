@@ -37,6 +37,7 @@ using type_info = ::type_info;
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
 
+
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
@@ -340,7 +341,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     impl_.AddCleanup(object, destruct);
   }
 
-
   template <typename T>
   class InternalHelper {
    private:
@@ -440,6 +440,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     friend class Arena;
     friend class TestUtil::ReflectionTester;
   };
+
 
   // Provides access to protected GetArena to generated messages.
   // For internal use only.
