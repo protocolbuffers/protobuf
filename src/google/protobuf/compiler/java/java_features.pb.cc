@@ -41,8 +41,8 @@ struct JavaFeatures_NestInFileClassFeatureDefaultTypeInternal {
   };
 };
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeatures_NestInFileClassFeatureDefaultTypeInternal _JavaFeatures_NestInFileClassFeature_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY const PROTOBUF_CONSTINIT
+    PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeatures_NestInFileClassFeatureDefaultTypeInternal _JavaFeatures_NestInFileClassFeature_default_instance_;
 
 inline constexpr JavaFeatures::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
@@ -70,8 +70,8 @@ struct JavaFeaturesDefaultTypeInternal {
   };
 };
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY const PROTOBUF_CONSTINIT
+    PROTOC_EXPORT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
 }  // namespace pb
 static const ::_pb::EnumDescriptor* PROTOBUF_NONNULL
     file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto[2];
