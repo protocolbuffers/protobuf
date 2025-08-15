@@ -224,8 +224,9 @@ class UntypedMapIterator {
 };
 
 // These properties are depended upon by Rust FFI.
-static_assert(std::is_trivial<UntypedMapIterator>::value,
-              "UntypedMapIterator must be a trivial type.");
+static_assert(
+    std::is_trivially_default_constructible<UntypedMapIterator>::value,
+    "UntypedMapIterator must be trivially default-constructible.");
 static_assert(std::is_trivially_copyable<UntypedMapIterator>::value,
               "UntypedMapIterator must be trivially copyable.");
 static_assert(std::is_trivially_destructible<UntypedMapIterator>::value,
