@@ -1122,7 +1122,8 @@ inline ::google::protobuf::Struct* PROTOBUF_NULLABLE Value::release_struct_value
   }
 }
 inline const ::google::protobuf::Struct& Value::_internal_struct_value() const {
-  return kind_case() == kStructValue ? *_impl_.kind_.struct_value_ : reinterpret_cast<::google::protobuf::Struct&>(::google::protobuf::_Struct_default_instance_);
+  return kind_case() == kStructValue ? static_cast<const ::google::protobuf::Struct&>(*_impl_.kind_.struct_value_)
+                     : reinterpret_cast<const ::google::protobuf::Struct&>(::google::protobuf::_Struct_default_instance_);
 }
 inline const ::google::protobuf::Struct& Value::struct_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.struct_value)
@@ -1203,7 +1204,8 @@ inline ::google::protobuf::ListValue* PROTOBUF_NULLABLE Value::release_list_valu
   }
 }
 inline const ::google::protobuf::ListValue& Value::_internal_list_value() const {
-  return kind_case() == kListValue ? *_impl_.kind_.list_value_ : reinterpret_cast<::google::protobuf::ListValue&>(::google::protobuf::_ListValue_default_instance_);
+  return kind_case() == kListValue ? static_cast<const ::google::protobuf::ListValue&>(*_impl_.kind_.list_value_)
+                     : reinterpret_cast<const ::google::protobuf::ListValue&>(::google::protobuf::_ListValue_default_instance_);
 }
 inline const ::google::protobuf::ListValue& Value::list_value() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.list_value)
