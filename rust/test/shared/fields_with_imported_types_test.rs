@@ -5,6 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 /// Tests covering that fields with types that are defined in imported .proto
 /// files are generated. In particular where the imported .proto file is part of
 /// a separate proto_library target.

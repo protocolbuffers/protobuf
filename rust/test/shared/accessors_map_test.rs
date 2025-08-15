@@ -5,6 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use enums_rust_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
 use map_unittest_rust_proto::{MapEnum, TestMap, TestMapWithMessages};

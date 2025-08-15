@@ -10,43 +10,116 @@ use protobuf_codegen::{CodeGen, Dependency};
 use std::path::Path;
 use std::path::PathBuf;
 
+// Given "a/b/c.proto", returns "c".
+fn short_name(proto_file_name: &str) -> String {
+    proto_file_name.rsplit('/').next().unwrap().strip_suffix(".proto").unwrap().to_string()
+}
+
 fn main() {
-    CodeGen::new()
-        .inputs(["rust/test/unittest_import.proto"])
-        .output_dir(
-            PathBuf::from(std::env::var("OUT_DIR").unwrap())
-                .join("protobuf_generated/unittest_import"),
-        )
-        .include("proto")
-        .generate_and_compile()
-        .unwrap();
+    // All proto files needed for testing, grouped by protoc invocation.
+    let proto_files = vec![
+        vec!["rust/test/bad_names.proto".to_string()],
+        vec!["rust/test/bad_names.proto".to_string()],
+        vec!["rust/test/child.proto".to_string()],
+        vec!["google/protobuf/cpp_features.proto".to_string()],
+        vec!["google/protobuf/descriptor.proto".to_string()],
+        vec!["rust/test/dots_in_package.proto".to_string()],
+        vec!["rust/test/edition2023.proto".to_string()],
+        vec!["rust/test/enums.proto".to_string()],
+        vec!["rust/test/fields_with_imported_types.proto".to_string()],
+        vec!["rust/test/imported_types.proto".to_string()],
+        vec!["rust/test/import_public_grandparent.proto".to_string()],
+        vec!["rust/test/import_public_non_primary_src1.proto".to_string()],
+        vec!["rust/test/import_public_non_primary_src2.proto".to_string()],
+        vec!["rust/test/import_public_primary_src.proto".to_string()],
+        vec![
+            "rust/test/import_public.proto".to_string(),
+            "rust/test/import_public2.proto".to_string(),
+        ],
+        vec!["rust/test/map_unittest.proto".to_string()],
+        vec!["rust/test/nested.proto".to_string()],
+        vec!["rust/test/no_package_import.proto".to_string()],
+        vec![
+            "rust/test/no_package.proto".to_string(),
+            "rust/test/no_package_other.proto".to_string(),
+        ],
+        vec!["rust/test/package_disabiguation1.proto".to_string()],
+        vec!["rust/test/package_disabiguation2.proto".to_string()],
+        vec!["rust/test/package_import.proto".to_string()],
+        vec![
+            "rust/test/package.proto".to_string(),
+            "rust/test/package_other.proto".to_string(),
+            "rust/test/package_other_different.proto".to_string(),
+        ],
+        vec!["rust/test/parent.proto".to_string()],
+        vec!["rust/test/srcsless_library_test_child.proto".to_string()],
+        vec!["rust/test/srcsless_library_test_parent.proto".to_string()],
+        vec!["rust/test/unittest_import.proto".to_string()],
+        vec!["rust/test/unittest.proto".to_string()],
+        vec!["rust/test/unittest_proto3_optional.proto".to_string()],
+        vec!["rust/test/unittest_proto3.proto".to_string()],
+        vec!["rust/test/bad_names.proto".to_string()],
+        vec!["rust/test/child.proto".to_string()],
+        vec!["google/protobuf/cpp_features.proto".to_string()],
+        vec!["google/protobuf/descriptor.proto".to_string()],
+        vec!["rust/test/dots_in_package.proto".to_string()],
+        vec!["rust/test/edition2023.proto".to_string()],
+        vec!["rust/test/enums.proto".to_string()],
+        vec!["rust/test/fields_with_imported_types.proto".to_string()],
+        vec!["rust/test/imported_types.proto".to_string()],
+        vec!["rust/test/import_public_grandparent.proto".to_string()],
+        vec!["rust/test/import_public_non_primary_src1.proto".to_string()],
+        vec!["rust/test/import_public_non_primary_src2.proto".to_string()],
+        vec!["rust/test/import_public_primary_src.proto".to_string()],
+        vec![
+            "rust/test/import_public.proto".to_string(),
+            "rust/test/import_public2.proto".to_string(),
+        ],
+        vec!["rust/test/map_unittest.proto".to_string()],
+        vec!["rust/test/nested.proto".to_string()],
+        vec!["rust/test/no_package_import.proto".to_string()],
+        vec![
+            "rust/test/no_package.proto".to_string(),
+            "rust/test/no_package_other.proto".to_string(),
+        ],
+        vec!["rust/test/package_disabiguation1.proto".to_string()],
+        vec!["rust/test/package_disabiguation2.proto".to_string()],
+        vec!["rust/test/package_import.proto".to_string()],
+        vec![
+            "rust/test/package.proto".to_string(),
+            "rust/test/package_other.proto".to_string(),
+            "rust/test/package_other_different.proto".to_string(),
+        ],
+        vec!["rust/test/parent.proto".to_string()],
+        vec!["rust/test/srcsless_library_test_child.proto".to_string()],
+        vec!["rust/test/srcsless_library_test_parent.proto".to_string()],
+        vec!["rust/test/unittest_import.proto".to_string()],
+        vec!["rust/test/unittest.proto".to_string()],
+        vec!["rust/test/unittest_proto3_optional.proto".to_string()],
+        vec!["rust/test/unittest_proto3.proto".to_string()],
+    ];
 
-    CodeGen::new()
-        .inputs(["rust/test/unittest.proto"])
-        .dependency(vec![Dependency {
-            crate_name: "crate::protos::unittest_import_rust_proto".to_string(),
+    let mut deps: Vec<Dependency> = vec![];
+    for target in &proto_files {
+        let name = short_name(&target[0]);
+        deps.push(Dependency {
+            crate_name: format!("crate::protos::{name}_rust_proto"),
             proto_import_paths: vec![Path::new(env!("CARGO_MANIFEST_DIR")).join("proto")],
-            proto_files: vec!["rust/test/unittest_import.proto".to_string()],
-        }])
-        .output_dir(
-            PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("protobuf_generated/unittest"),
-        )
-        .include("proto")
-        .generate_and_compile()
-        .unwrap();
+            proto_files: target.to_vec(),
+        });
+    }
 
-    CodeGen::new()
-        .inputs(["rust/test/map_unittest.proto"])
-        .dependency(vec![Dependency {
-            crate_name: "crate::protos::unittest_rust_proto".to_string(),
-            proto_import_paths: vec![Path::new(env!("CARGO_MANIFEST_DIR")).join("proto")],
-            proto_files: vec!["rust/test/unittest.proto".to_string()],
-        }])
-        .output_dir(
-            PathBuf::from(std::env::var("OUT_DIR").unwrap())
-                .join("protobuf_generated/map_unittest"),
-        )
-        .include("proto")
-        .generate_and_compile()
-        .unwrap();
+    for target in proto_files {
+        let name = short_name(&target[0]);
+        CodeGen::new()
+            .inputs(target)
+            .dependency(deps.clone())
+            .output_dir(
+                PathBuf::from(std::env::var("OUT_DIR").unwrap())
+                    .join(format!("protobuf_generated/{name}")),
+            )
+            .include("proto")
+            .generate_and_compile()
+            .unwrap();
+    }
 }

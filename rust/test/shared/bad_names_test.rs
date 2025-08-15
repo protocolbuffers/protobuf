@@ -5,6 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use bad_names_rust_proto::*;
 use googletest::prelude::*;
 use protobuf::proto;

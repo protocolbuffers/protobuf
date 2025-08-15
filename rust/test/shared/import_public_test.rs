@@ -7,6 +7,11 @@
 
 //! Tests covering codegen of import public statements.
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 
 #[gtest]

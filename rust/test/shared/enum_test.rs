@@ -7,6 +7,11 @@
 
 //! Tests covering enum type generation.
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use enums_rust_proto::*;
 use googletest::prelude::*;
 use protobuf::Enum;

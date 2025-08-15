@@ -6,6 +6,7 @@ pkg_filegroup(
     srcs = [
         ":crate_root_files",
         "//rust/release_crates:license",
+        "//rust/test:google_protobuf_proto_srcs",
         "//rust/test:test_proto_srcs",
         "//rust/test/shared:test_srcs",
     ],

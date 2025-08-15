@@ -18,13 +18,19 @@ package(
 
 pkg_files(
     name = "test_proto_srcs",
-    srcs = [
-        "map_unittest.proto",
-        "unittest.proto",
-        "unittest_import.proto",
-    ],
+    srcs = glob(["*.proto"]),
     prefix = "proto",
     strip_prefix = strip_prefix.from_root(""),
+)
+
+pkg_files(
+    name = "google_protobuf_proto_srcs",
+    srcs = [
+        "//src/google/protobuf:cpp_features_proto_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
+    prefix = "proto",
+    strip_prefix = strip_prefix.from_root("src"),
 )
 
 proto_library(
