@@ -362,17 +362,15 @@ void MessageLayoutHelper::FillPaddingFromPartition(
   // previously left off.
 
   // Sort dst_partition by size in ascending order.
-  std::stable_sort(dst_partition.begin(), dst_partition.end(),
-                   [](const FieldGroup& fg1, const FieldGroup& fg2) {
-                     return fg1.estimated_memory_size() <
-                            fg2.estimated_memory_size();
-                   });
+  absl::c_stable_sort(
+      dst_partition, [](const FieldGroup& fg1, const FieldGroup& fg2) {
+        return fg1.estimated_memory_size() < fg2.estimated_memory_size();
+      });
   // Sort src_partition by size in descending order.
-  std::stable_sort(src_partition.begin(), src_partition.end(),
-                   [](const FieldGroup& fg1, const FieldGroup& fg2) {
-                     return fg1.estimated_memory_size() >
-                            fg2.estimated_memory_size();
-                   });
+  absl::c_stable_sort(
+      src_partition, [](const FieldGroup& fg1, const FieldGroup& fg2) {
+        return fg1.estimated_memory_size() > fg2.estimated_memory_size();
+      });
 
   // Iterate through dst_partition and combine each group with the largest group
   // from src_partition that fits.

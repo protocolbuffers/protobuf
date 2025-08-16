@@ -79,6 +79,7 @@ cc_library(
         "//upb_generator:file_layout",
         "//upb_generator/c:names",
         "//upb_generator/minitable:names",
+        "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/strings",
     ],

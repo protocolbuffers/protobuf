@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/algorithm/container.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
@@ -105,11 +106,10 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Context& ctx) {
   for (int i = 0; i < value_count; i++) {
     values.push_back(desc->value(i));
   }
-  std::stable_sort(values.begin(), values.end(),
-                   [](const protobuf::EnumValueDescriptor* a,
-                      const protobuf::EnumValueDescriptor* b) {
-                     return a->number() < b->number();
-                   });
+  absl::c_stable_sort(values, [](const protobuf::EnumValueDescriptor* a,
+                                 const protobuf::EnumValueDescriptor* b) {
+    return a->number() < b->number();
+  });
 
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];
