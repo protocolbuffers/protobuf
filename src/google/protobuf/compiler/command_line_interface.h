@@ -26,6 +26,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/port.h"
@@ -295,6 +296,25 @@ class PROTOC_EXPORT CommandLineInterface {
       const std::vector<const FileDescriptor*>& parsed_files,
       const std::string& plugin_name, const std::string& parameter,
       GeneratorContext* generator_context, std::string* error);
+  bool GenerateBuiltInOutput(
+      const std::vector<const FileDescriptor*>& parsed_files,
+      const OutputDirective& output_directive,
+      GeneratorContext* generator_context, std::string* error);
+
+  // Common code to generate a CodeGeneratorRequest for both plugins and
+  // built-in generators.
+  struct CodeGeneratorRequestParams {
+    std::vector<const FileDescriptor*> parsed_files;
+    std::string parameter;
+    bool calculate_json_name = false;
+    bool bootstrap = false;
+  };
+  CodeGeneratorRequest CreateCodeGeneratorRequest(
+      CodeGeneratorRequestParams params) const;
+  bool GenerateCodeFromResponse(const CodeGeneratorResponse& response,
+                                GeneratorContext* generator_context,
+                                bool bootstrap, std::string plugin_name,
+                                std::string* error);
 
   // Implements --encode and --decode.
   bool EncodeOrDecode(const DescriptorPool* pool);
@@ -342,7 +362,7 @@ class PROTOC_EXPORT CommandLineInterface {
       absl::flat_hash_set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output,
       const TransitiveDependencyOptions& options =
-          TransitiveDependencyOptions());
+          TransitiveDependencyOptions()) const;
 
 
   // -----------------------------------------------------------------
