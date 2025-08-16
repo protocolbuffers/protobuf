@@ -123,6 +123,7 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Solidity: https://github.com/celer-network/pb3-gen-sol
 *   Swift: https://github.com/alexeyxo/protobuf-swift
 *   Swift: https://github.com/apple/swift-protobuf/
+*   Typescript: https://github.com/improbable-eng/ts-protoc-gen
 *   Typescript: https://github.com/thesayyn/protoc-gen-ts
 *   Typescript: https://github.com/pbkit/pbkit
 *   Vala: https://launchpad.net/protobuf-vala
