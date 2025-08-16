@@ -536,8 +536,19 @@ def _AddInitMethod(message_descriptor, cls):
             for val in field_value:
               if isinstance(val, dict):
                 field_copy.add(**val)
-              else:
+              elif isinstance(val, message_mod.Message):
                 field_copy.add().MergeFrom(val)
+              elif (
+                  field.message_type.full_name == 'google.protobuf.Timestamp'
+                  or field.message_type.full_name == 'google.protobuf.Duration'
+              ):
+                field_copy.add()._internal_assign(val)
+              else:
+                raise TypeError(
+                    'Fail to init repeated field {0}.{1}.'.format(
+                        message_descriptor.name, field_name
+                    )
+                )
         else:  # Scalar
           if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
             field_value = [_GetIntegerEnumValue(field.enum_type, val)
