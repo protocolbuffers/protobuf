@@ -319,7 +319,7 @@ PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
 
 inline void JavaFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, utf8_validation_),
            0,
            offsetof(Impl_, nest_in_file_class_) -
