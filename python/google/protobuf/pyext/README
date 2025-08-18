@@ -1,6 +1,0 @@
-This is the 'v2' C++ implementation for python proto2.
-
-It is active when:
-
-PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
-PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION_VERSION=2
