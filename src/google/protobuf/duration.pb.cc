@@ -142,7 +142,7 @@ PROTOBUF_NDEBUG_INLINE Duration::Impl_::Impl_(
 
 inline void Duration::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, seconds_),
            0,
            offsetof(Impl_, nanos_) -

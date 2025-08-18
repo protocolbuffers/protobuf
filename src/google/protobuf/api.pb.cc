@@ -324,7 +324,7 @@ PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
 
 inline void Api::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, source_context_),
            0,
            offsetof(Impl_, syntax_) -
@@ -858,9 +858,9 @@ Method::Method(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, request_streaming_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, request_streaming_),
            offsetof(Impl_, syntax_) -
                offsetof(Impl_, request_streaming_) +
@@ -880,7 +880,7 @@ PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
 
 inline void Method::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, request_streaming_),
            0,
            offsetof(Impl_, syntax_) -

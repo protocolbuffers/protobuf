@@ -448,7 +448,7 @@ PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
 
 inline void Type::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, source_context_),
            0,
            offsetof(Impl_, syntax_) -
@@ -940,9 +940,9 @@ Field::Field(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, kind_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, kind_),
            offsetof(Impl_, packed_) -
                offsetof(Impl_, kind_) +
@@ -962,7 +962,7 @@ PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
 
 inline void Field::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, kind_),
            0,
            offsetof(Impl_, packed_) -
@@ -1569,7 +1569,7 @@ PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
 
 inline void Enum::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, source_context_),
            0,
            offsetof(Impl_, syntax_) -
