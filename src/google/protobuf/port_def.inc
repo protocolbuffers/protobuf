@@ -751,7 +751,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef GID_MAX
 #endif  // defined(ANDROID) || defined(__ANDROID__)
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__OpenBSD__)
 // Inconvenient macro names from /usr/include/sys/param.h.
 #pragma push_macro("TRUE")
 #undef TRUE
@@ -762,7 +762,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #undef UID_MAX
 #pragma push_macro("GID_MAX")
 #undef GID_MAX
-#endif  // __FreeBSD__
+#endif  // defined(__FreeBSD__) || defined(__OpenBSD__)
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 // Don't let Objective-C Macros interfere with proto identifiers with the same
