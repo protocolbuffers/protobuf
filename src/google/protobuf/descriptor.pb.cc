@@ -2625,7 +2625,7 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
 
 inline void FileDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, options_),
            0,
            offsetof(Impl_, edition_) -
@@ -3309,9 +3309,9 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, start_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, start_),
            offsetof(Impl_, end_) -
                offsetof(Impl_, start_) +
@@ -3326,7 +3326,7 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
 
 inline void DescriptorProto_ExtensionRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, options_),
            0,
            offsetof(Impl_, end_) -
@@ -3646,7 +3646,7 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto_ReservedRange::Impl_::Impl_(
 
 inline void DescriptorProto_ReservedRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, start_),
            0,
            offsetof(Impl_, end_) -
@@ -3959,7 +3959,7 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
 
 inline void DescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, options_),
            0,
            offsetof(Impl_, visibility_) -
@@ -4581,9 +4581,9 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, number_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, number_),
            offsetof(Impl_, repeated_) -
                offsetof(Impl_, number_) +
@@ -4600,7 +4600,7 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
 
 inline void ExtensionRangeOptions_Declaration::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, number_),
            0,
            offsetof(Impl_, repeated_) -
@@ -5373,9 +5373,9 @@ FieldDescriptorProto::FieldDescriptorProto(
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000020U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, number_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, number_),
            offsetof(Impl_, type_) -
                offsetof(Impl_, number_) +
@@ -5397,7 +5397,7 @@ PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
 
 inline void FieldDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, options_),
            0,
            offsetof(Impl_, proto3_optional_) -
@@ -6220,7 +6220,7 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
 
 inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, start_),
            0,
            offsetof(Impl_, end_) -
@@ -6523,7 +6523,7 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
 
 inline void EnumDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, options_),
            0,
            offsetof(Impl_, visibility_) -
@@ -6977,7 +6977,7 @@ PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
 
 inline void EnumValueDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, options_),
            0,
            offsetof(Impl_, number_) -
@@ -7669,9 +7669,9 @@ MethodDescriptorProto::MethodDescriptorProto(
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000008U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.options_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, client_streaming_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, client_streaming_),
            offsetof(Impl_, server_streaming_) -
                offsetof(Impl_, client_streaming_) +
@@ -7689,7 +7689,7 @@ PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
 
 inline void MethodDescriptorProto::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, options_),
            0,
            offsetof(Impl_, server_streaming_) -
@@ -8094,9 +8094,9 @@ FileOptions::FileOptions(
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000400U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, java_multiple_files_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, java_multiple_files_),
            offsetof(Impl_, cc_enable_arenas_) -
                offsetof(Impl_, java_multiple_files_) +
@@ -8125,7 +8125,7 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
 
 inline void FileOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, features_),
            0,
            offsetof(Impl_, java_string_check_utf8_) -
@@ -8884,9 +8884,9 @@ MessageOptions::MessageOptions(
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, message_set_wire_format_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, message_set_wire_format_),
            offsetof(Impl_, deprecated_legacy_json_field_conflicts_) -
                offsetof(Impl_, message_set_wire_format_) +
@@ -8903,7 +8903,7 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
 
 inline void MessageOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, features_),
            0,
            offsetof(Impl_, deprecated_legacy_json_field_conflicts_) -
@@ -9607,9 +9607,9 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, edition_introduced_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, edition_introduced_),
            offsetof(Impl_, edition_removed_) -
                offsetof(Impl_, edition_introduced_) +
@@ -9625,7 +9625,7 @@ PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
 
 inline void FieldOptions_FeatureSupport::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, edition_introduced_),
            0,
            offsetof(Impl_, edition_removed_) -
@@ -9967,9 +9967,9 @@ FieldOptions::FieldOptions(
   _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, ctype_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, ctype_),
            offsetof(Impl_, retention_) -
                offsetof(Impl_, ctype_) +
@@ -9988,7 +9988,7 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
 
 inline void FieldOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, features_),
            0,
            offsetof(Impl_, retention_) -
@@ -10941,9 +10941,9 @@ EnumOptions::EnumOptions(
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, allow_alias_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, allow_alias_),
            offsetof(Impl_, deprecated_legacy_json_field_conflicts_) -
                offsetof(Impl_, allow_alias_) +
@@ -10960,7 +10960,7 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
 
 inline void EnumOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, features_),
            0,
            offsetof(Impl_, deprecated_legacy_json_field_conflicts_) -
@@ -11358,9 +11358,9 @@ EnumValueOptions::EnumValueOptions(
   _impl_.feature_support_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.feature_support_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, deprecated_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, deprecated_),
            offsetof(Impl_, debug_redact_) -
                offsetof(Impl_, deprecated_) +
@@ -11377,7 +11377,7 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
 
 inline void EnumValueOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, features_),
            0,
            offsetof(Impl_, debug_redact_) -
@@ -11805,7 +11805,7 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
 
 inline void ServiceOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, features_),
            0,
            offsetof(Impl_, deprecated_) -
@@ -12170,9 +12170,9 @@ MethodOptions::MethodOptions(
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
                 : nullptr;
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, deprecated_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, deprecated_),
            offsetof(Impl_, idempotency_level_) -
                offsetof(Impl_, deprecated_) +
@@ -12189,7 +12189,7 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
 
 inline void MethodOptions::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, features_),
            0,
            offsetof(Impl_, idempotency_level_) -
@@ -12871,9 +12871,9 @@ UninterpretedOption::UninterpretedOption(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, positive_int_value_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, positive_int_value_),
            offsetof(Impl_, double_value_) -
                offsetof(Impl_, positive_int_value_) +
@@ -12892,7 +12892,7 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
 
 inline void UninterpretedOption::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, positive_int_value_),
            0,
            offsetof(Impl_, double_value_) -
@@ -13427,9 +13427,9 @@ FeatureSet::FeatureSet(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, field_presence_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, field_presence_),
            offsetof(Impl_, default_symbol_visibility_) -
                offsetof(Impl_, field_presence_) +
@@ -13445,7 +13445,7 @@ PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
 
 inline void FeatureSet::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, field_presence_),
            0,
            offsetof(Impl_, default_symbol_visibility_) -
@@ -13899,7 +13899,7 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_
 
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, overridable_features_),
            0,
            offsetof(Impl_, edition_) -
@@ -14235,9 +14235,9 @@ FeatureSetDefaults::FeatureSetDefaults(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, minimum_edition_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, minimum_edition_),
            offsetof(Impl_, maximum_edition_) -
                offsetof(Impl_, minimum_edition_) +
@@ -14253,7 +14253,7 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
 
 inline void FeatureSetDefaults::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, minimum_edition_),
            0,
            offsetof(Impl_, maximum_edition_) -
@@ -15274,9 +15274,9 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, begin_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, begin_),
            offsetof(Impl_, semantic_) -
                offsetof(Impl_, begin_) +
@@ -15294,7 +15294,7 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
 
 inline void GeneratedCodeInfo_Annotation::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, begin_),
            0,
            offsetof(Impl_, semantic_) -

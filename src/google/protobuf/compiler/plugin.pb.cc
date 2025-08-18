@@ -323,9 +323,9 @@ Version::Version(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, major_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, major_),
            offsetof(Impl_, patch_) -
                offsetof(Impl_, major_) +
@@ -341,7 +341,7 @@ PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
 
 inline void Version::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, major_),
            0,
            offsetof(Impl_, patch_) -
@@ -1465,9 +1465,9 @@ CodeGeneratorResponse::CodeGeneratorResponse(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char *>(&_impl_) +
+  ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, supported_features_),
-           reinterpret_cast<const char *>(&from._impl_) +
+           reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, supported_features_),
            offsetof(Impl_, maximum_edition_) -
                offsetof(Impl_, supported_features_) +
@@ -1484,7 +1484,7 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
 
 inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, supported_features_),
            0,
            offsetof(Impl_, maximum_edition_) -

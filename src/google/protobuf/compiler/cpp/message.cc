@@ -1366,23 +1366,23 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit({{"condition",
-            GenerateConditionMaybeWithProbabilityForField(
-                has_bit_index, field, options_, field->is_repeated())},
-           {"check_nondefault_and_emit_body",
-            [&] {
-              // Note that it's possible that the field has explicit presence.
-              // In that case, nondefault check will not be emitted but
-              // emit_body will still be emitted.
-              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
-                                       std::move(emit_body),
-                                       /*with_enclosing_braces_always=*/false);
-            }}},
-          R"cc(
-            if ($condition$) {
-              $check_nondefault_and_emit_body$;
-            }
-          )cc");
+  p->Emit(
+      {{"condition", GenerateConditionMaybeWithProbabilityForField(
+                         has_bit_index, field, options_, field->is_repeated())},
+       {"check_nondefault_and_emit_body",
+        [&] {
+          // Note that it's possible that the field has explicit presence.
+          // In that case, nondefault check will not be emitted but
+          // emit_body will still be emitted.
+          MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                   std::move(emit_body),
+                                   /*with_enclosing_braces_always=*/false);
+        }}},
+      R"cc(
+        if ($condition$) {
+          $check_nondefault_and_emit_body$;
+        }
+      )cc");
 }
 
 void MessageGenerator::MaybeEmitUpdateCachedHasbits(
@@ -2795,7 +2795,7 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
                  {"Impl", "Impl_"},
                  {"impl", "_impl_"}},
                 R"cc(
-                  ::memset(reinterpret_cast<char *>(&$impl$) +
+                  ::memset(reinterpret_cast<char*>(&$impl$) +
                                offsetof($Impl$, $first$_),
                            0,
                            offsetof($Impl$, $last$_) -
@@ -3248,9 +3248,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
                  {"pdst", split ? "_impl_._split_" : "&_impl_"},
                  {"psrc", split ? "from._impl_._split_" : "&from._impl_"}},
                 R"cc(
-                  ::memcpy(reinterpret_cast<char *>($pdst$) +
+                  ::memcpy(reinterpret_cast<char*>($pdst$) +
                                offsetof($Impl$, $first$_),
-                           reinterpret_cast<const char *>($psrc$) +
+                           reinterpret_cast<const char*>($psrc$) +
                                offsetof($Impl$, $first$_),
                            offsetof($Impl$, $last$_) -
                                offsetof($Impl$, $first$_) +
@@ -5579,23 +5579,23 @@ void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
   }
 
   int has_bit_index = has_bit_indices_[field->index()];
-  p->Emit({{"condition",
-            GenerateConditionMaybeWithProbabilityForField(
-                has_bit_index, field, options_, field->is_repeated())},
-           {"check_nondefault_and_emit_body",
-            [&] {
-              // Note that it's possible that the field has explicit presence.
-              // In that case, nondefault check will not be emitted but
-              // emit_body will still be emitted.
-              MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
-                                       std::move(emit_body),
-                                       /*with_enclosing_braces_always=*/false);
-            }}},
-          R"cc(
-            if ($condition$) {
-              $check_nondefault_and_emit_body$;
-            }
-          )cc");
+  p->Emit(
+      {{"condition", GenerateConditionMaybeWithProbabilityForField(
+                         has_bit_index, field, options_, field->is_repeated())},
+       {"check_nondefault_and_emit_body",
+        [&] {
+          // Note that it's possible that the field has explicit presence.
+          // In that case, nondefault check will not be emitted but
+          // emit_body will still be emitted.
+          MayEmitIfNonDefaultCheck(p, "this_.", field, options_,
+                                   std::move(emit_body),
+                                   /*with_enclosing_braces_always=*/false);
+        }}},
+      R"cc(
+        if ($condition$) {
+          $check_nondefault_and_emit_body$;
+        }
+      )cc");
 }
 
 void MessageGenerator::GenerateSerializeV2(io::Printer* p) {

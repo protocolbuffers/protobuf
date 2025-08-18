@@ -163,7 +163,7 @@ PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
 
 inline void CppFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
-  ::memset(reinterpret_cast<char *>(&_impl_) +
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, string_type_),
            0,
            offsetof(Impl_, enum_name_uses_string_view_) -
