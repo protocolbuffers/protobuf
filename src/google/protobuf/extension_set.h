@@ -301,6 +301,11 @@ class PROTOBUF_EXPORT ExtensionSet {
   void AppendToList(const Descriptor* extendee, const DescriptorPool* pool,
                     std::vector<const FieldDescriptor*>* output) const;
 
+  // Whether there are any fields which are currently present. Note that this
+  // is different from IsCompletelyEmpty(), which returns true if the list has
+  // any capacity; and Size(), which also accounts for cleared fields.
+  bool IsEmpty() const;
+
   // =================================================================
   // Accessors
   //

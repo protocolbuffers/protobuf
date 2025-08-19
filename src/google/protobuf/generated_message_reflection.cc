@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <new>  // IWYU pragma: keep for operator delete
@@ -1755,13 +1756,22 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field) {
 }  // namespace internal
 using internal::CreateUnknownEnumValues;
 
-void Reflection::ListFields(const Message& message,
-                            std::vector<const FieldDescriptor*>* output) const {
-  output->clear();
 
-  // Optimization:  The default instance never has any fields set.
-  if (schema_.IsDefaultInstance(message)) return;
-
+// Common functionality shared by IsEmpty and ListFields for iterating over
+// all set fields.
+//
+// If kForIsEmpty=true, returns 0 if the message is empty, and 1 otherwise.
+//
+// If kForIsEmpty=false, populates output with all filled fields. Return value
+// is the last field set, or 0 if the field is empty.
+template <bool kForIsEmpty, typename MaybeFieldDescriptorVec>
+inline int32_t Reflection::IsEmptyOrCollectSetFields(
+    const Message& message,
+    // Cached locally rather than a member variable for performance.
+    const Descriptor& descriptor, MaybeFieldDescriptorVec output) const {
+  // Output should be null only if we are not computing the full output list.
+  static_assert(kForIsEmpty ==
+                std::is_same_v<MaybeFieldDescriptorVec, std::nullptr_t>);
   // Optimization: Avoid calling GetHasBits() and HasOneofField() many times
   // within the field loop.  We allow this violation of ReflectionSchema
   // encapsulation because this function takes a noticeable about of CPU
@@ -1770,17 +1780,31 @@ void Reflection::ListFields(const Message& message,
   const uint32_t* const has_bits =
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
   const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
-  const Descriptor* const descriptor = descriptor_;
-  output->reserve(descriptor->field_count());
+  if constexpr (!kForIsEmpty) {
+    output->reserve(descriptor.field_count());
+  }
+  uint32_t last = 0;
   // Fields in messages are usually added with the increasing tags.
-  uint32_t last = 0;  // UINT32_MAX if out-of-order
-  auto append_to_output = [&last, &output](const FieldDescriptor* field) {
-    CheckInOrder(field, &last);
-    output->push_back(field);
+  auto append_to_output = [&last, output](const FieldDescriptor& field) {
+    if constexpr (!kForIsEmpty) {
+      CheckInOrder(&field, &last);
+      output->push_back(&field);
+    }
   };
+  // Core functionality difference depending on the value of kForIsEmpty. If we
+  // encounter a set field, either return 1, or push it back into the vector.
+#define PROTO_REFLECTION_APPEND_OR_RETURN() \
+  do {                                      \
+    if constexpr (kForIsEmpty) {            \
+      return 1;                             \
+    } else {                                \
+      append_to_output(field);              \
+    }                                       \
+  } while (false)
+
   int i = -1;
   for (const FieldDescriptor& field :
-       absl::MakeSpan(descriptor->fields_, last_non_weak_field_index_ + 1)) {
+       absl::MakeSpan(descriptor.fields_, last_non_weak_field_index_ + 1)) {
     ++i;
     const OneofDescriptor* containing_oneof = field.containing_oneof();
     // If the hasbits for repeated fields experiment is disabled, we can
@@ -1789,7 +1813,7 @@ void Reflection::ListFields(const Message& message,
     if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
         field.is_repeated()) {
       if (FieldSize(message, &field) > 0) {
-        append_to_output(&field);
+        PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (schema_.InRealOneof(&field)) {
       const uint32_t* const oneof_case_array =
@@ -1798,20 +1822,33 @@ void Reflection::ListFields(const Message& message,
       // Equivalent to: HasOneofField(message, field)
       if (static_cast<int64_t>(oneof_case_array[containing_oneof->index()]) ==
           field.number()) {
-        append_to_output(&field);
+        PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (has_bits &&
                has_bits_indices[i] != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
       if (IsFieldPresentGivenHasbits(message, &field, has_bits,
                                      has_bits_indices[i])) {
-        append_to_output(&field);
+        PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (HasFieldWithHasbits(message, &field)) {
-      // Fall back on proto3-style HasBit.
-      append_to_output(&field);
+      PROTO_REFLECTION_APPEND_OR_RETURN();
     }
   }
+#undef PROTO_REFLECTION_APPEND_OR_RETURN
+  // Last will be 0 if no fields were encountered. Otherwise it contains the
+  // last encountered field.
+  return last;
+}
+
+void Reflection::ListFields(const Message& message,
+                            std::vector<const FieldDescriptor*>* output) const {
+  output->clear();
+  // Optimization:  The default instance never has any fields set.
+  if (schema_.IsDefaultInstance(message)) return;
+  const Descriptor* const descriptor = descriptor_;
+  uint32_t last = IsEmptyOrCollectSetFields</*kForIsEmpty=*/false>(
+      message, *descriptor, output);
 
   // Descriptors of ExtensionSet are appended in their increasing tag
   // order and they are usually bigger than the field tags so if all fields are
@@ -1837,6 +1874,30 @@ void Reflection::ListFields(const Message& message,
     // ListFields() must sort output by field number.
     std::sort(output->begin(), output->end(), FieldNumberSorter());
   }
+}
+
+bool Reflection::IsEmptyIgnoringUnknownFieldsImpl(
+    const Message& message) const {
+  const Descriptor* const descriptor = descriptor_;
+  if (IsEmptyOrCollectSetFields</*kForIsEmpty=*/true>(message, *descriptor,
+                                                      nullptr) != 0) {
+    return false;
+  }
+  return
+      !(schema_.HasExtensionSet() && !GetExtensionSet(message).IsEmpty());
+}
+
+bool Reflection::IsEmptyIgnoringUnknownFields(const Message& message) const {
+  // Optimization:  The default instance never has any fields set.
+  if (schema_.IsDefaultInstance(message)) return true;
+  return IsEmptyIgnoringUnknownFieldsImpl(message);
+}
+
+bool Reflection::IsEmpty(const Message& message) const {
+  // Optimization:  The default instance never has any fields set.
+  if (schema_.IsDefaultInstance(message)) return true;
+  return IsEmptyIgnoringUnknownFieldsImpl(message) &&
+         GetUnknownFields(message).empty();
 }
 
 // -------------------------------------------------------------------
