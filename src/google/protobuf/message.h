@@ -571,6 +571,10 @@ class PROTOBUF_EXPORT Reflection final {
   void ListFields(const Message& message,
                   std::vector<const FieldDescriptor*>* output) const;
 
+  // Returns true if no fields are set, false otherwise.
+  bool IsEmpty(const Message& message) const;
+
+
   // Singular field getters ------------------------------------------
   // These get the value of a non-repeated field.  They return the default
   // value for fields that aren't set.
@@ -1125,6 +1129,11 @@ class PROTOBUF_EXPORT Reflection final {
                               TcParseTableBase::FieldEntry* entries) const;
   void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,
                                TcParseTableBase::FieldAux* field_aux) const;
+
+  template <bool kForIsEmpty>
+  bool IsEmptyOrCollectSetFields(const Message& message,
+                                 std::vector<const FieldDescriptor*>* output,
+                                 uint32_t* last) const;
 
   template <typename T, typename Enable>
   friend class RepeatedFieldRef;
