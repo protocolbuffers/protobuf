@@ -1129,8 +1129,15 @@ class PROTOBUF_EXPORT MessageLite {
   // REQUIRES: Both `this` and `other` are the exact same class as represented
   // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
   // in release builds (probably a crash).
-  void MergeFromWithClassData(const MessageLite& other,
-                              const internal::ClassData* data);
+  inline void MergeFromWithClassData(const MessageLite& other,
+                                     const internal::ClassData* data) {
+    ABSL_DCHECK(data != nullptr);
+    ABSL_DCHECK(GetClassData() == data && other.GetClassData() == data)
+        << "Invalid call to " << __func__ << ": this=" << GetTypeName()
+        << " other=" << other.GetTypeName()
+        << " data=" << data->prototype->GetTypeName();
+    data->merge_to_from(*this, other);
+  }
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 
@@ -1219,8 +1226,10 @@ template <typename T>
 PROTOBUF_NDEBUG_INLINE const ClassData* GetClassData(const T& msg) {
   static_assert(std::is_base_of_v<MessageLite, T>);
   if constexpr (std::is_same_v<T, MessageLite> || std::is_same_v<Message, T>) {
+    PROTOBUF_DEBUG_COUNTER("GetClassData.Virtual").Inc();
     return msg.GetClassData();
   } else {
+    PROTOBUF_DEBUG_COUNTER("GetClassData.Constexpr").Inc();
     return MessageTraits<T>::class_data();
   }
 }
