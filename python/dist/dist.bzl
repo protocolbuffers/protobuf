@@ -33,7 +33,7 @@ def _get_suffix(limited_api, python_version, cpu):
         }
 
         return ".cpython-{}-{}.{}".format(
-            python_version,
+            '314t', # python_version,
             abis[cpu],
             "so" if limited_api else "abi3.so",
         )

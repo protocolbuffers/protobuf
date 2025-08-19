@@ -330,7 +330,7 @@ py_wheel(
     name = "binary_wheel",
     abi = select({
         "//python:full_api_3.9": "cp39",
-        "//conditions:default": "abi3",
+        "//conditions:default": "cp314t",
     }),
     author = "protobuf@googlegroups.com",
     author_email = "protobuf@googlegroups.com",
