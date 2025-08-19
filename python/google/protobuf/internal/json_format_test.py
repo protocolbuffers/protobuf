@@ -183,6 +183,30 @@ class JsonFormatTest(JsonFormatBase):
     json_format.ParseDict(message_dict, parsed_message)
     self.assertEqual(message, parsed_message)
 
+  def testRepeatedScalarExtensionToDictAndBack(self):
+    message = unittest_pb2.TestAllExtensions()
+    ext1 = unittest_pb2.repeated_int32_extension
+    message.Extensions[ext1].extend([1, 2, 3])
+    message_dict = json_format.MessageToDict(message)
+    self.assertIn('[proto2_unittest.repeated_int32_extension]', message_dict)
+    parsed_message = unittest_pb2.TestAllExtensions()
+    json_format.ParseDict(message_dict, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+
+  def testRepeatedMessageExtensionToDictAndBack(self):
+    message = unittest_pb2.TestAllExtensions()
+    ext1 = unittest_pb2.repeated_nested_message_extension
+    sub = unittest_pb2.TestAllTypes.NestedMessage()
+    sub.bb = 1
+    message.Extensions[ext1].append(sub)
+    message_dict = json_format.MessageToDict(message)
+    self.assertIn('[proto2_unittest.repeated_nested_message_extension]',
+                  message_dict)
+    parsed_message = unittest_pb2.TestAllExtensions()
+    json_format.ParseDict(message_dict, parsed_message)
+    self.assertEqual(message, parsed_message)
+
   def testJsonParseDictToAnyDoesNotAlterInput(self):
     orig_dict = {
         'int32Value': 20,
