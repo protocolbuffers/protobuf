@@ -76,6 +76,7 @@ class ZeroCopyOutputStream;
 
 namespace compiler {
 namespace cpp {
+class MessageGenerator;
 class MessageTableTester;
 }  // namespace cpp
 }  // namespace compiler
@@ -1105,6 +1106,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class Message;
   friend class Reflection;
   friend class TypeId;
+  friend class compiler::cpp::MessageGenerator;
   friend class compiler::cpp::MessageTableTester;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;

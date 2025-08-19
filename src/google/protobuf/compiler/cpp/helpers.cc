@@ -88,8 +88,8 @@ const absl::flat_hash_set<absl::string_view>& MessageKnownMethodsCamelCase() {
   static constexpr const char* kMessageKnownMethods[] = {
       "GetDescriptor", "GetReflection",   "default_instance",
       "Swap",          "UnsafeArenaSwap", "New",
-      "CopyFrom",      "MergeFrom",       "IsInitialized",
-      "GetMetadata",   "Clear",
+      "CopyFrom",      "MergeFrom",       "MergeFromWithClassData",
+      "IsInitialized", "GetMetadata",     "Clear",
   };
   static const auto* const methods = new absl::flat_hash_set<absl::string_view>(
       std::begin(kMessageKnownMethods), std::end(kMessageKnownMethods));
