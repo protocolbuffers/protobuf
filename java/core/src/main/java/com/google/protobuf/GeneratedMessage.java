@@ -1015,12 +1015,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       return new FieldEntryIterator(extensions);
     }
 
-    private void verifyExtensionContainingType(final Extension<? extends MessageT, ?> extension) {
-      if (extension.getDescriptor().getContainingType() != getDescriptorForType()) {
+    private void verifyExtensionContainingType(final FieldDescriptor descriptor) {
+      if (descriptor.getContainingType() != getDescriptorForType()) {
         // This can only happen if someone uses unchecked operations.
         throw new IllegalArgumentException(
             "Extension is for type \""
-                + extension.getDescriptor().getContainingType().getFullName()
+                + descriptor.getContainingType().getFullName()
                 + "\" which does not match message type \""
                 + getDescriptorForType().getFullName()
                 + "\".");
@@ -1033,8 +1033,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         final ExtensionLite<? extends MessageT, T> extensionLite) {
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
-      return extensions.hasField(extension.getDescriptor());
+      final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
+      return extensions.hasField(descriptor);
     }
 
     /** Get the number of elements in a repeated extension. */
@@ -1043,8 +1044,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         final ExtensionLite<? extends MessageT, List<T>> extensionLite) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
       final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
       return extensions.getRepeatedFieldCount(descriptor);
     }
 
@@ -1054,8 +1055,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     public final <T> T getExtension(final ExtensionLite<? extends MessageT, T> extensionLite) {
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
-      FieldDescriptor descriptor = extension.getDescriptor();
+      final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
       final Object value = extensions.getField(descriptor);
       T result = null;
       if (value == null) {
@@ -1086,8 +1087,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         final ExtensionLite<? extends MessageT, List<T>> extensionLite, final int index) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
-      FieldDescriptor descriptor = extension.getDescriptor();
+      final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
       return (T)
           extension.singularFromReflectionType(extensions.getRepeatedField(descriptor, index));
     }
