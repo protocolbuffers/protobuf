@@ -405,6 +405,10 @@ PyMODINIT_FUNC PyInit__message(void) {
   PyObject* m = PyModule_Create(&module_def);
   if (!m) return NULL;
 
+#ifdef Py_GIL_DISABLED
+  PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
+
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
 
   state->allow_oversize_protos = false;
