@@ -279,14 +279,13 @@ class Timestamp(object):
     # manipulated into a long value of seconds.  During the conversion from
     # struct_time to long, the source date in UTC, and so it follows that the
     # correct transformation is calendar.timegm()
-    try:
-      seconds = calendar.timegm(dt.utctimetuple())
-      nanos = dt.microsecond * _NANOS_PER_MICROSECOND
-    except AttributeError as e:
-      raise AttributeError(
-          'Fail to convert to Timestamp. Expected a datetime like '
-          'object got {0} : {1}'.format(type(dt).__name__, e)
-      ) from e
+    if not isinstance(dt, datetime.datetime):
+      raise TypeError(
+          'Fail to convert to Timestamp. Expected a datetime object '
+          'got {0}'.format(type(dt).__name__)
+      )
+    seconds = calendar.timegm(dt.utctimetuple())
+    nanos = dt.microsecond * _NANOS_PER_MICROSECOND
     _CheckTimestampValid(seconds, nanos)
     self.seconds = seconds
     self.nanos = nanos
@@ -445,16 +444,15 @@ class Duration(object):
 
   def FromTimedelta(self, td):
     """Converts timedelta to Duration."""
-    try:
-      self._NormalizeDuration(
-          td.seconds + td.days * _SECONDS_PER_DAY,
-          td.microseconds * _NANOS_PER_MICROSECOND,
+    if not isinstance(td, datetime.timedelta):
+      raise TypeError(
+          'Fail to convert to Duration. Expected a timedelta object '
+          'got {0}'.format(type(td).__name__)
       )
-    except AttributeError as e:
-      raise AttributeError(
-          'Fail to convert to Duration. Expected a timedelta like '
-          'object got {0}: {1}'.format(type(td).__name__, e)
-      ) from e
+    self._NormalizeDuration(
+        td.seconds + td.days * _SECONDS_PER_DAY,
+        td.microseconds * _NANOS_PER_MICROSECOND,
+    )
 
   def _internal_assign(self, td):
     self.FromTimedelta(td)
