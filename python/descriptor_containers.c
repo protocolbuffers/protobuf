@@ -232,10 +232,17 @@ static int PyUpb_GenericSequence_IsEqual(PyUpb_GenericSequence* self,
   PyObject* item1;
   for (int i = 0; i < n; i++) {
     item1 = PyUpb_GenericSequence_GetItem((PyObject*)self, i);
+#ifdef Py_GIL_DISABLED
+    PyObject* item2 = PyList_GetItemRef(other, i);
+#else
     PyObject* item2 = PyList_GetItem(other, i);
+#endif
     if (!item1 || !item2) goto error;
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
     Py_DECREF(item1);
+#ifdef Py_GIL_DISABLED
+    Py_DECREF(item2);
+#endif
     if (cmp != 1) return cmp;
   }
   // All items were found and equal

@@ -468,13 +468,27 @@ static bool PyUpb_RepeatedContainer_Assign(PyObject* _self, PyObject* list) {
   bool submsg = upb_FieldDef_IsSubMessage(f);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   for (Py_ssize_t i = 0; i < size; ++i) {
+#ifdef Py_GIL_DISABLED
+    PyObject* obj = PyList_GetItemRef(list, i);
+#else
     PyObject* obj = PyList_GetItem(list, i);
+#endif
+    if (!obj) {
+      return false;
+    }
+
     upb_MessageValue msgval;
     if (submsg) {
       msgval.msg_val = PyUpb_Message_GetIfReified(obj);
       assert(msgval.msg_val);
     } else {
-      if (!PyUpb_PyToUpb(obj, f, &msgval, arena)) return false;
+      bool status = PyUpb_PyToUpb(obj, f, &msgval, arena);
+#ifdef Py_GIL_DISABLED
+      Py_DECREF(obj);
+#endif
+      if (!status) {
+        return false;
+      }
     }
     upb_Array_Set(arr, i, msgval);
   }
@@ -486,6 +500,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   // Support the old sort_function argument for backwards
   // compatibility.
   if (kwds != NULL) {
+    // Okay to use thread-unsafe API since kwds cannot be modified concurrently
     PyObject* sort_func = PyDict_GetItemString(kwds, "sort_function");
     if (sort_func != NULL) {
       // Must set before deleting as sort_func is a borrowed reference
