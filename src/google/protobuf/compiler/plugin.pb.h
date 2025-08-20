@@ -1039,9 +1039,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   enum : int {
     kFileToGenerateFieldNumber = 1,
     kProtoFileFieldNumber = 15,
-    kSourceFileDescriptorsFieldNumber = 17,
     kParameterFieldNumber = 2,
     kCompilerVersionFieldNumber = 3,
+    kSourceFileDescriptorsFieldNumber = 17,
   };
   // repeated string file_to_generate = 1;
   int file_to_generate_size() const;
@@ -1082,23 +1082,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_proto_file();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& proto_file() const;
-  // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
-  int source_file_descriptors_size() const;
-  private:
-  int _internal_source_file_descriptors_size() const;
-
-  public:
-  void clear_source_file_descriptors() ;
-  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL mutable_source_file_descriptors();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
-  public:
-  const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
-  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_source_file_descriptors();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& source_file_descriptors() const;
   // optional string parameter = 2;
   bool has_parameter() const;
   void clear_parameter() ;
@@ -1130,6 +1113,23 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   ::google::protobuf::compiler::Version* PROTOBUF_NONNULL _internal_mutable_compiler_version();
 
   public:
+  // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+  int source_file_descriptors_size() const;
+  private:
+  int _internal_source_file_descriptors_size() const;
+
+  public:
+  void clear_source_file_descriptors() ;
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL mutable_source_file_descriptors();
+
+  private:
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
+  public:
+  const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
+  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_source_file_descriptors();
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& source_file_descriptors() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
   class _Internal;
@@ -1158,9 +1158,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField<::std::string> file_to_generate_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > source_file_descriptors_;
     ::google::protobuf::internal::ArenaStringPtr parameter_;
     ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE compiler_version_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > source_file_descriptors_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -1355,11 +1355,14 @@ inline int CodeGeneratorRequest::file_to_generate_size() const {
 inline void CodeGeneratorRequest::clear_file_to_generate() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_to_generate_.Clear();
+  ClearHasBitForRepeated(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::std::string* PROTOBUF_NONNULL CodeGeneratorRequest::add_file_to_generate()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::std::string* _s = _internal_mutable_file_to_generate()->Add();
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _s;
 }
@@ -1385,6 +1388,7 @@ inline void CodeGeneratorRequest::add_file_to_generate(Arg_&& value, Args_... ar
   ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_file_to_generate(),
                                ::std::forward<Arg_>(value),
                                args... );
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline const ::google::protobuf::RepeatedPtrField<::std::string>& CodeGeneratorRequest::file_to_generate()
@@ -1394,6 +1398,7 @@ inline const ::google::protobuf::RepeatedPtrField<::std::string>& CodeGeneratorR
 }
 inline ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
 CodeGeneratorRequest::mutable_file_to_generate() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_file_to_generate();
@@ -1411,14 +1416,14 @@ CodeGeneratorRequest::_internal_mutable_file_to_generate() {
 
 // optional string parameter = 2;
 inline bool CodeGeneratorRequest::has_parameter() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void CodeGeneratorRequest::clear_parameter() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.parameter_.ClearToEmpty();
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000001U);
+                  0x00000004U);
 }
 inline const ::std::string& CodeGeneratorRequest::parameter() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1428,13 +1433,13 @@ inline const ::std::string& CodeGeneratorRequest::parameter() const
 template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void CodeGeneratorRequest::set_parameter(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   _impl_.parameter_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 inline ::std::string* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_parameter()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   ::std::string* _s = _internal_mutable_parameter();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return _s;
@@ -1454,10 +1459,10 @@ inline ::std::string* PROTOBUF_NONNULL CodeGeneratorRequest::_internal_mutable_p
 inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorRequest::release_parameter() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000004U)) {
     return nullptr;
   }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   auto* released = _impl_.parameter_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
     _impl_.parameter_.Set("", GetArena());
@@ -1467,9 +1472,9 @@ inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorRequest::release_parameter(
 inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+    SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+    ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
   _impl_.parameter_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.parameter_.IsDefault()) {
@@ -1492,6 +1497,7 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_proto_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_proto_file();
@@ -1505,6 +1511,7 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_proto_file()->Add();
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _add;
 }
@@ -1538,6 +1545,7 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_source_file_descriptors()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_source_file_descriptors();
@@ -1551,6 +1559,7 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_source_file_descriptors()->Add();
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _add;
 }
@@ -1572,7 +1581,7 @@ CodeGeneratorRequest::_internal_mutable_source_file_descriptors() {
 
 // optional .google.protobuf.compiler.Version compiler_version = 3;
 inline bool CodeGeneratorRequest::has_compiler_version() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   PROTOBUF_ASSUME(!value || _impl_.compiler_version_ != nullptr);
   return value;
 }
@@ -1580,7 +1589,7 @@ inline void CodeGeneratorRequest::clear_compiler_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.compiler_version_ != nullptr) _impl_.compiler_version_->Clear();
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+                  0x00000008U);
 }
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::_internal_compiler_version() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
@@ -1599,16 +1608,16 @@ inline void CodeGeneratorRequest::unsafe_arena_set_allocated_compiler_version(
   }
   _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
   if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 }
 inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorRequest::release_compiler_version() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   ::google::protobuf::compiler::Version* released = _impl_.compiler_version_;
   _impl_.compiler_version_ = nullptr;
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
@@ -1628,7 +1637,7 @@ inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorReq
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   ::google::protobuf::compiler::Version* temp = _impl_.compiler_version_;
   _impl_.compiler_version_ = nullptr;
   return temp;
@@ -1643,7 +1652,7 @@ inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequ
 }
 inline ::google::protobuf::compiler::Version* PROTOBUF_NONNULL CodeGeneratorRequest::mutable_compiler_version()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   ::google::protobuf::compiler::Version* _msg = _internal_mutable_compiler_version();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
   return _msg;
@@ -1660,9 +1669,9 @@ inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::proto
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
-    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+    SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+    ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
 
   _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
@@ -1979,14 +1988,14 @@ inline void CodeGeneratorResponse_File::set_allocated_generated_code_info(::goog
 
 // optional string error = 1;
 inline bool CodeGeneratorResponse::has_error() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000001U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
 }
 inline void CodeGeneratorResponse::clear_error() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.error_.ClearToEmpty();
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000001U);
+                  0x00000002U);
 }
 inline const ::std::string& CodeGeneratorResponse::error() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1996,13 +2005,13 @@ inline const ::std::string& CodeGeneratorResponse::error() const
 template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void CodeGeneratorResponse::set_error(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   _impl_.error_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 inline ::std::string* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_error()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   ::std::string* _s = _internal_mutable_error();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
   return _s;
@@ -2022,10 +2031,10 @@ inline ::std::string* PROTOBUF_NONNULL CodeGeneratorResponse::_internal_mutable_
 inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse::release_error() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.error)
-  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000001U)) {
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
     return nullptr;
   }
-  ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   auto* released = _impl_.error_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
     _impl_.error_.Set("", GetArena());
@@ -2035,9 +2044,9 @@ inline ::std::string* PROTOBUF_NULLABLE CodeGeneratorResponse::release_error() {
 inline void CodeGeneratorResponse::set_allocated_error(::std::string* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (value != nullptr) {
-    SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   } else {
-    ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
   _impl_.error_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.error_.IsDefault()) {
@@ -2048,14 +2057,14 @@ inline void CodeGeneratorResponse::set_allocated_error(::std::string* PROTOBUF_N
 
 // optional uint64 supported_features = 2;
 inline bool CodeGeneratorResponse::has_supported_features() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void CodeGeneratorResponse::clear_supported_features() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.supported_features_ = ::uint64_t{0u};
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+                  0x00000004U);
 }
 inline ::uint64_t CodeGeneratorResponse::supported_features() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
@@ -2063,7 +2072,7 @@ inline ::uint64_t CodeGeneratorResponse::supported_features() const {
 }
 inline void CodeGeneratorResponse::set_supported_features(::uint64_t value) {
   _internal_set_supported_features(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
 }
 inline ::uint64_t CodeGeneratorResponse::_internal_supported_features() const {
@@ -2077,14 +2086,14 @@ inline void CodeGeneratorResponse::_internal_set_supported_features(::uint64_t v
 
 // optional int32 minimum_edition = 3;
 inline bool CodeGeneratorResponse::has_minimum_edition() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;
 }
 inline void CodeGeneratorResponse::clear_minimum_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.minimum_edition_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+                  0x00000008U);
 }
 inline ::int32_t CodeGeneratorResponse::minimum_edition() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
@@ -2092,7 +2101,7 @@ inline ::int32_t CodeGeneratorResponse::minimum_edition() const {
 }
 inline void CodeGeneratorResponse::set_minimum_edition(::int32_t value) {
   _internal_set_minimum_edition(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.minimum_edition)
 }
 inline ::int32_t CodeGeneratorResponse::_internal_minimum_edition() const {
@@ -2106,14 +2115,14 @@ inline void CodeGeneratorResponse::_internal_set_minimum_edition(::int32_t value
 
 // optional int32 maximum_edition = 4;
 inline bool CodeGeneratorResponse::has_maximum_edition() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
   return value;
 }
 inline void CodeGeneratorResponse::clear_maximum_edition() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.maximum_edition_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+                  0x00000010U);
 }
 inline ::int32_t CodeGeneratorResponse::maximum_edition() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
@@ -2121,7 +2130,7 @@ inline ::int32_t CodeGeneratorResponse::maximum_edition() const {
 }
 inline void CodeGeneratorResponse::set_maximum_edition(::int32_t value) {
   _internal_set_maximum_edition(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.maximum_edition)
 }
 inline ::int32_t CodeGeneratorResponse::_internal_maximum_edition() const {
@@ -2143,6 +2152,8 @@ inline int CodeGeneratorResponse::file_size() const {
 inline void CodeGeneratorResponse::clear_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.file_.Clear();
+  ClearHasBitForRepeated(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2151,6 +2162,7 @@ inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNUL
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL CodeGeneratorResponse::mutable_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorResponse.file)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_file();
@@ -2164,6 +2176,7 @@ inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNUL
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::compiler::CodeGeneratorResponse_File* _add = _internal_mutable_file()->Add();
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _add;
 }
