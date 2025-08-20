@@ -16,6 +16,13 @@
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
 
+#ifdef Py_GIL_DISABLED
+// needed for PyUpb_Mutex
+#include "upb/port/atomic.h"
+// Must be last.
+#include "upb/port/def.inc"
+#endif
+
 static upb_Arena* PyUpb_NewArena(void);
 
 static void PyUpb_ModuleDealloc(void* module) {
@@ -93,6 +100,52 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
 
   return state->wkt_bases;
 }
+
+// -----------------------------------------------------------------------------
+// Recursive mutex
+// -----------------------------------------------------------------------------
+
+#ifdef Py_GIL_DISABLED
+// recursive mutex, similar to _PyRecursiveMutex
+typedef struct {
+  PyMutex mutex;
+  UPB_ATOMIC(unsigned long) owner;
+  size_t level;
+} PyUpb_Mutex;
+
+static void PyUpb_MutexLock(PyUpb_Mutex *m)
+{
+  unsigned long thread = PyThread_get_thread_ident();
+  if (upb_Atomic_Load(&m->owner, memory_order_acquire) == thread) {
+    m->level++;
+    return;
+  }
+  PyMutex_Lock(&m->mutex);
+  upb_Atomic_Store(&m->owner, thread, memory_order_release);
+  assert(m->level == 0);
+}
+
+static void PyUpb_MutexUnlock(PyUpb_Mutex *m)
+{
+  unsigned long thread = PyThread_get_thread_ident();
+  if (upb_Atomic_Load(&m->owner, memory_order_acquire) != thread) {
+    assert(0 && "mutex not owned by current thread");
+  }
+  if (m->level > 0) {
+    m->level--;
+    return;
+  }
+  upb_Atomic_Store(&m->owner, 0, memory_order_release);
+  PyMutex_Unlock(&m->mutex);
+}
+
+static bool PyUpb_MutexIsLocked(PyUpb_Mutex *m)
+{
+  return PyMutex_IsLocked(&m->mutex);
+}
+
+#endif // Py_GIL_DISABLED
+
 
 // -----------------------------------------------------------------------------
 // WeakMap
