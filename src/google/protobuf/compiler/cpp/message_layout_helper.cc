@@ -101,6 +101,9 @@ constexpr size_t MessageLayoutHelper::FieldHotnessIndex(FieldHotness hotness) {
       case FieldHotness::kMaxHotness:
         internal::Unreachable();
     }
+
+    // Make the compiler happy.
+    return 0;
   } else {
     return static_cast<size_t>(hotness);
   }
