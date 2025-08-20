@@ -37,7 +37,7 @@ ImmutableExtensionLiteGenerator::ImmutableExtensionLiteGenerator(
   }
 }
 
-ImmutableExtensionLiteGenerator::~ImmutableExtensionLiteGenerator() {}
+ImmutableExtensionLiteGenerator::~ImmutableExtensionLiteGenerator() = default;
 
 void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
