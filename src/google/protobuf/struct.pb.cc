@@ -29,8 +29,8 @@ namespace protobuf {
 
 inline constexpr ListValue::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        values_{} {}
+      : values_{},
+        _cached_size_{0} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR ListValue::ListValue(::_pbi::ConstantInitialized)
@@ -54,8 +54,8 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 
 inline constexpr Struct::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        fields_{} {}
+      : fields_{},
+        _cached_size_{0} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR Struct::Struct(::_pbi::ConstantInitialized)
@@ -136,11 +136,8 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct_FieldsEntry_DoNotUse, _impl_.value_),
         0,
         1,
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_._has_bits_),
-        4, // hasbit index offset
+        0x000, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_),
-        0,
         0x004, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_._oneof_case_[0]),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
@@ -150,19 +147,16 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::Value, _impl_.kind_),
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_._has_bits_),
-        4, // hasbit index offset
+        0x000, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_),
-        0,
 };
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::Struct_FieldsEntry_DoNotUse)},
         {7, sizeof(::google::protobuf::Struct)},
-        {12, sizeof(::google::protobuf::Value)},
-        {21, sizeof(::google::protobuf::ListValue)},
+        {9, sizeof(::google::protobuf::Value)},
+        {18, sizeof(::google::protobuf::ListValue)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_Struct_FieldsEntry_DoNotUse_default_instance_._instance,
@@ -315,10 +309,6 @@ Struct_FieldsEntry_DoNotUse::_table_ = {
 
 class Struct::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<Struct>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(Struct, _impl_._has_bits_);
 };
 
 Struct::Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -334,9 +324,8 @@ PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::Struct& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0},
-        fields_{visibility, arena, from.fields_} {}
+      : fields_{visibility, arena, from.fields_},
+        _cached_size_{0} {}
 
 Struct::Struct(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -357,8 +346,8 @@ Struct::Struct(
 PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        fields_{visibility, arena} {}
+      : fields_{visibility, arena},
+        _cached_size_{0} {}
 
 inline void Struct::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -439,7 +428,7 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 1, 2, 37, 2>
 Struct::_table_ = {
   {
-    PROTOBUF_FIELD_OFFSET(Struct, _impl_._has_bits_),
+    0,  // no _has_bits_
     0, // no _extensions_
     1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
@@ -460,7 +449,7 @@ Struct::_table_ = {
     65535, 65535
   }}, {{
     // map<string, .google.protobuf.Value> fields = 1;
-    {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
+    {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
   }},
   {{
       {::_pbi::TcParser::GetMapAuxInfo(
@@ -480,11 +469,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.fields_.Clear();
-  }
-  _impl_._has_bits_.Clear();
+  _impl_.fields_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -506,32 +491,29 @@ PROTOBUF_NOINLINE void Struct::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  cached_has_bits = this_._impl_._has_bits_[0];
   // map<string, .google.protobuf.Value> fields = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    if (!this_._internal_fields().empty()) {
-      using MapType = ::google::protobuf::Map<::std::string, ::google::protobuf::Value>;
-      using WireHelper = _pbi::MapEntryFuncs<::std::string, ::google::protobuf::Value,
-                                     _pbi::WireFormatLite::TYPE_STRING,
-                                     _pbi::WireFormatLite::TYPE_MESSAGE>;
-      const auto& field = this_._internal_fields();
+  if (!this_._internal_fields().empty()) {
+    using MapType = ::google::protobuf::Map<::std::string, ::google::protobuf::Value>;
+    using WireHelper = _pbi::MapEntryFuncs<::std::string, ::google::protobuf::Value,
+                                   _pbi::WireFormatLite::TYPE_STRING,
+                                   _pbi::WireFormatLite::TYPE_MESSAGE>;
+    const auto& field = this_._internal_fields();
 
-      if (stream->IsSerializationDeterministic() && field.size() > 1) {
-        for (const auto& entry : ::google::protobuf::internal::MapSorterPtr<MapType>(field)) {
-          target = WireHelper::InternalSerialize(
-              1, entry.first, entry.second, target, stream);
-          ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-              entry.first.data(), static_cast<int>(entry.first.length()),
+    if (stream->IsSerializationDeterministic() && field.size() > 1) {
+      for (const auto& entry : ::google::protobuf::internal::MapSorterPtr<MapType>(field)) {
+        target = WireHelper::InternalSerialize(
+            1, entry.first, entry.second, target, stream);
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            entry.first.data(), static_cast<int>(entry.first.length()),
  ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Struct.fields");
-        }
-      } else {
-        for (const auto& entry : field) {
-          target = WireHelper::InternalSerialize(
-              1, entry.first, entry.second, target, stream);
-          ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-              entry.first.data(), static_cast<int>(entry.first.length()),
+      }
+    } else {
+      for (const auto& entry : field) {
+        target = WireHelper::InternalSerialize(
+            1, entry.first, entry.second, target, stream);
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            entry.first.data(), static_cast<int>(entry.first.length()),
  ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Struct.fields");
-        }
       }
     }
   }
@@ -562,8 +544,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
    {
     // map<string, .google.protobuf.Value> fields = 1;
-    cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_fields_size());
       for (const auto& entry : this_._internal_fields()) {
@@ -590,11 +571,9 @@ void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  {
     _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -610,7 +589,6 @@ void Struct::CopyFrom(const Struct& from) {
 void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.fields_.InternalSwap(&other->_impl_.fields_);
 }
 
@@ -1093,10 +1071,6 @@ void Value::InternalSwap(Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 
 class ListValue::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<ListValue>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(ListValue, _impl_._has_bits_);
 };
 
 ListValue::ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -1112,9 +1086,8 @@ PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ListValue& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0},
-        values_{visibility, arena, from.values_} {}
+      : values_{visibility, arena, from.values_},
+        _cached_size_{0} {}
 
 ListValue::ListValue(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -1135,8 +1108,8 @@ ListValue::ListValue(
 PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        values_{visibility, arena} {}
+      : values_{visibility, arena},
+        _cached_size_{0} {}
 
 inline void ListValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -1213,7 +1186,7 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 1, 1, 0, 2>
 ListValue::_table_ = {
   {
-    PROTOBUF_FIELD_OFFSET(ListValue, _impl_._has_bits_),
+    0,  // no _has_bits_
     0, // no _extensions_
     1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
@@ -1231,12 +1204,12 @@ ListValue::_table_ = {
   }, {{
     // repeated .google.protobuf.Value values = 1;
     {::_pbi::TcParser::FastMtR1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_)}},
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_)}},
   }}, {{
     65535, 65535
   }}, {{
     // repeated .google.protobuf.Value values = 1;
-    {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
+    {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
       {::_pbi::TcParser::GetTable<::google::protobuf::Value>()},
@@ -1251,11 +1224,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.values_.Clear();
-  }
-  _impl_._has_bits_.Clear();
+  _impl_.values_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -1277,18 +1246,15 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  cached_has_bits = this_._impl_._has_bits_[0];
   // repeated .google.protobuf.Value values = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_values_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_values().Get(i);
-      target =
-          ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-              1, repfield, repfield.GetCachedSize(),
-              target, stream);
-    }
+  for (unsigned i = 0, n = static_cast<unsigned>(
+                           this_._internal_values_size());
+       i < n; i++) {
+    const auto& repfield = this_._internal_values().Get(i);
+    target =
+        ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            1, repfield, repfield.GetCachedSize(),
+            target, stream);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -1317,8 +1283,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
    {
     // repeated .google.protobuf.Value values = 1;
-    cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    {
       total_size += 1UL * this_._internal_values_size();
       for (const auto& msg : this_._internal_values()) {
         total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
@@ -1342,12 +1307,10 @@ void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  {
     _this->_internal_mutable_values()->MergeFrom(
         from._internal_values());
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -1363,7 +1326,6 @@ void ListValue::CopyFrom(const ListValue& from) {
 void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.values_.InternalSwap(&other->_impl_.values_);
 }
 

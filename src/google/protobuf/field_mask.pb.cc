@@ -29,8 +29,8 @@ namespace protobuf {
 
 inline constexpr FieldMask::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
-      : _cached_size_{0},
-        paths_{} {}
+      : paths_{},
+        _cached_size_{0} {}
 
 template <typename>
 PROTOBUF_CONSTEXPR FieldMask::FieldMask(::_pbi::ConstantInitialized)
@@ -60,11 +60,8 @@ static constexpr const ::_pb::ServiceDescriptor *PROTOBUF_NONNULL *PROTOBUF_NULL
 const ::uint32_t
     TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
-        0x081, // bitmap
-        PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_._has_bits_),
-        4, // hasbit index offset
+        0x000, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_),
-        0,
 };
 
 static const ::_pbi::MigrationSchema
@@ -106,10 +103,6 @@ namespace protobuf {
 
 class FieldMask::_Internal {
  public:
-  using HasBits =
-      decltype(::std::declval<FieldMask>()._impl_._has_bits_);
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._has_bits_);
 };
 
 FieldMask::FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -125,9 +118,8 @@ PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldMask& from_msg)
-      : _has_bits_{from._has_bits_},
-        _cached_size_{0},
-        paths_{visibility, arena, from.paths_} {}
+      : paths_{visibility, arena, from.paths_},
+        _cached_size_{0} {}
 
 FieldMask::FieldMask(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -148,8 +140,8 @@ FieldMask::FieldMask(
 PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
-        paths_{visibility, arena} {}
+      : paths_{visibility, arena},
+        _cached_size_{0} {}
 
 inline void FieldMask::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -226,7 +218,7 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 1, 0, 39, 2>
 FieldMask::_table_ = {
   {
-    PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._has_bits_),
+    0,  // no _has_bits_
     0, // no _extensions_
     1, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
@@ -244,12 +236,12 @@ FieldMask::_table_ = {
   }, {{
     // repeated string paths = 1;
     {::_pbi::TcParser::FastUR1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_)}},
+     {10, 63, 0, PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_)}},
   }}, {{
     65535, 65535
   }}, {{
     // repeated string paths = 1;
-    {PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kUtf8String | ::_fl::kRepSString)},
+    {PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_), -1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kUtf8String | ::_fl::kRepSString)},
   }},
   // no aux_entries
   {{
@@ -265,11 +257,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _impl_.paths_.Clear();
-  }
-  _impl_._has_bits_.Clear();
+  _impl_.paths_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
 
@@ -291,15 +279,12 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  cached_has_bits = this_._impl_._has_bits_[0];
   // repeated string paths = 1;
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    for (int i = 0, n = this_._internal_paths_size(); i < n; ++i) {
-      const auto& s = this_._internal_paths().Get(i);
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.FieldMask.paths");
-      target = stream->WriteString(1, s, target);
-    }
+  for (int i = 0, n = this_._internal_paths_size(); i < n; ++i) {
+    const auto& s = this_._internal_paths().Get(i);
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+        s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.FieldMask.paths");
+    target = stream->WriteString(1, s, target);
   }
 
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
@@ -328,8 +313,7 @@ PROTOBUF_NOINLINE void FieldMask::Clear() {
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
    {
     // repeated string paths = 1;
-    cached_has_bits = this_._impl_._has_bits_[0];
-    if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+    {
       total_size +=
           1 * ::google::protobuf::internal::FromIntSize(this_._internal_paths().size());
       for (int i = 0, n = this_._internal_paths().size(); i < n; ++i) {
@@ -355,11 +339,9 @@ void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg,
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
-  cached_has_bits = from._impl_._has_bits_[0];
-  if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
+  {
     _this->_internal_mutable_paths()->MergeFrom(from._internal_paths());
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -375,7 +357,6 @@ void FieldMask::CopyFrom(const FieldMask& from) {
 void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.paths_.InternalSwap(&other->_impl_.paths_);
 }
 
