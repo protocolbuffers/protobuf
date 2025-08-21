@@ -311,8 +311,9 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
         const ListValue& from_msg);
-    ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -505,11 +506,12 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
         const Struct& from_msg);
+    ::google::protobuf::internal::HasBits<1> _has_bits_;
+    ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, ::std::string, ::google::protobuf::Value,
                       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
                       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
         fields_;
-    ::google::protobuf::internal::CachedSize _cached_size_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -885,6 +887,8 @@ inline int Struct::fields_size() const {
 inline void Struct::clear_fields() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.fields_.Clear();
+  ClearHasBitForRepeated(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& Struct::_internal_fields() const {
   ::google::protobuf::internal::TSanRead(&_impl_);
@@ -900,6 +904,7 @@ inline ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOB
 }
 inline ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL Struct::mutable_fields()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_map:google.protobuf.Struct.fields)
   return _internal_mutable_fields();
 }
@@ -1273,6 +1278,8 @@ inline int ListValue::values_size() const {
 inline void ListValue::clear_values() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.values_.Clear();
+  ClearHasBitForRepeated(_impl_._has_bits_[0],
+                  0x00000001U);
 }
 inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::mutable_values(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1281,6 +1288,7 @@ inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::mutable_values(int
 }
 inline ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL ListValue::mutable_values()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.ListValue.values)
   ::google::protobuf::internal::TSanWrite(&_impl_);
   return _internal_mutable_values();
@@ -1294,6 +1302,7 @@ inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::add_values()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   ::google::protobuf::Value* _add = _internal_mutable_values()->Add();
+  SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
   return _add;
 }
