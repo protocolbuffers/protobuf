@@ -283,7 +283,7 @@ inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
 // feature. This will be removed once the feature is fully rolled out and
 // verified.
 inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
-  return true;
+  return false;
 }
 
 // Returns true if debug hardening for clearing oneof message on arenas is
