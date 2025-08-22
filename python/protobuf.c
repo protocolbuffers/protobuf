@@ -271,6 +271,13 @@ void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
 }
 
 void PyUpb_ObjCache_DeleteLockHeld(const void* key) {
+  assert(PyUpb_ObjCache_IsLocked());
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  assert(state != NULL);
+  PyUpb_WeakMap_Delete(state->obj_cache, key);
+}
+
+void PyUpb_ObjCache_Delete(const void* key) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
   if (!state) {
     // During the shutdown sequence, our object's Dealloc() methods can be
@@ -279,11 +286,6 @@ void PyUpb_ObjCache_DeleteLockHeld(const void* key) {
     // map.
     return;
   }
-  assert(PyUpb_ObjCache_IsLocked());
-  PyUpb_WeakMap_Delete(state->obj_cache, key);
-}
-
-void PyUpb_ObjCache_Delete(const void* key) {
   PyUpb_ObjCache_Lock();
   PyUpb_ObjCache_DeleteLockHeld(key);
   PyUpb_ObjCache_Unlock();
