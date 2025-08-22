@@ -38,8 +38,8 @@ bool FileExists(const std::string& path) {
 
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
-  MockErrorCollector() {}
-  ~MockErrorCollector() override {}
+  MockErrorCollector() = default;
+  ~MockErrorCollector() override = default;
 
   std::string text_;
   std::string warning_text_;
@@ -63,8 +63,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
 // A dummy implementation of SourceTree backed by a simple map.
 class MockSourceTree : public SourceTree {
  public:
-  MockSourceTree() {}
-  ~MockSourceTree() override {}
+  MockSourceTree() = default;
+  ~MockSourceTree() override = default;
 
   void AddFile(absl::string_view name, const char* contents) {
     files_[name] = contents;
