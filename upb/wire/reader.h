@@ -36,8 +36,9 @@ extern "C" {
 // REQUIRES: there must be at least 10 bytes of data available at `ptr`.
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
-UPB_FORCEINLINE const char* upb_WireReader_ReadTag(const char* ptr,
-                                                   uint32_t* tag) {
+UPB_FORCEINLINE const char* upb_WireReader_ReadTag(
+    const char* ptr, uint32_t* tag, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBoundsCheckedOp)(stream);
   uint64_t val;
   ptr = UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, &val, 5, UINT32_MAX);
   if (!ptr) return NULL;
@@ -51,8 +52,9 @@ UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
 // Given a tag, returns the wire type.
 UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag);
 
-UPB_INLINE const char* upb_WireReader_ReadVarint(const char* ptr,
-                                                 uint64_t* val) {
+UPB_INLINE const char* upb_WireReader_ReadVarint(
+    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBoundsCheckedOp)(stream);
   return UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, val, 10, UINT64_MAX);
 }
 
@@ -62,9 +64,10 @@ UPB_INLINE const char* upb_WireReader_ReadVarint(const char* ptr,
 // REQUIRES: there must be at least 10 bytes of data available at `ptr`.
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
-UPB_INLINE const char* upb_WireReader_SkipVarint(const char* ptr) {
+UPB_INLINE const char* upb_WireReader_SkipVarint(
+    const char* ptr, upb_EpsCopyInputStream* stream) {
   uint64_t val;
-  return upb_WireReader_ReadVarint(ptr, &val);
+  return upb_WireReader_ReadVarint(ptr, &val, stream);
 }
 
 // Reads a varint indicating the size of a delimited field into `size`, or
@@ -73,9 +76,10 @@ UPB_INLINE const char* upb_WireReader_SkipVarint(const char* ptr) {
 // REQUIRES: there must be at least 10 bytes of data available at `ptr`.
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
-UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size) {
+UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size,
+                                               upb_EpsCopyInputStream* stream) {
   uint64_t size64;
-  ptr = upb_WireReader_ReadVarint(ptr, &size64);
+  ptr = upb_WireReader_ReadVarint(ptr, &size64, stream);
   if (!ptr || size64 >= INT32_MAX) return NULL;
   *size = size64;
   return ptr;
@@ -86,7 +90,9 @@ UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size) {
 // REQUIRES: there must be at least 4 bytes of data available at `ptr`.
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
-UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
+UPB_INLINE const char* upb_WireReader_ReadFixed32(
+    const char* ptr, void* val, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBoundsCheckedOp)(stream);
   uint32_t uval;
   memcpy(&uval, ptr, 4);
   uval = upb_BigEndian32(uval);
@@ -99,7 +105,9 @@ UPB_INLINE const char* upb_WireReader_ReadFixed32(const char* ptr, void* val) {
 // REQUIRES: there must be at least 4 bytes of data available at `ptr`.
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
-UPB_INLINE const char* upb_WireReader_ReadFixed64(const char* ptr, void* val) {
+UPB_INLINE const char* upb_WireReader_ReadFixed64(
+    const char* ptr, void* val, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBoundsCheckedOp)(stream);
   uint64_t uval;
   memcpy(&uval, ptr, 8);
   uval = upb_BigEndian64(uval);
@@ -130,14 +138,16 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
     upb_EpsCopyInputStream* stream) {
   switch (upb_WireReader_GetWireType(tag)) {
     case kUpb_WireType_Varint:
-      return upb_WireReader_SkipVarint(ptr);
+      return upb_WireReader_SkipVarint(ptr, stream);
     case kUpb_WireType_32Bit:
+      UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBoundsCheckedOp)(stream);
       return ptr + 4;
     case kUpb_WireType_64Bit:
+      UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBoundsCheckedOp)(stream);
       return ptr + 8;
     case kUpb_WireType_Delimited: {
       int size;
-      ptr = upb_WireReader_ReadSize(ptr, &size);
+      ptr = upb_WireReader_ReadSize(ptr, &size, stream);
       if (!ptr || !upb_EpsCopyInputStream_CheckSize(stream, ptr, size)) {
         return NULL;
       }
