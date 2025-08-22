@@ -153,15 +153,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       GenericTypeHandler<MessageLite>, TypeHandler>::type;
 
   constexpr RepeatedPtrFieldBase()
-      : tagged_rep_or_elem_(nullptr),
-        current_size_(0),
-        capacity_proxy_(0),
-        arena_(nullptr) {}
+      : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(nullptr) {}
   explicit RepeatedPtrFieldBase(Arena* arena)
-      : tagged_rep_or_elem_(nullptr),
-        current_size_(0),
-        capacity_proxy_(0),
-        arena_(arena) {}
+      : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(arena) {}
 
   RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = delete;
   RepeatedPtrFieldBase& operator=(const RepeatedPtrFieldBase&) = delete;
@@ -182,7 +176,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   //   * prefer `SizeAtCapacity()` to `size() == Capacity()`;
   //   * prefer `AllocatedSizeAtCapacity()` to `allocated_size() == Capacity()`.
-  int Capacity() const { return capacity_proxy_ + kSSOCapacity; }
+  int Capacity() const { return using_sso() ? kSSOCapacity : rep()->capacity; }
 
   template <typename TypeHandler>
   const Value<TypeHandler>& at(int index) const {
@@ -642,7 +636,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   using CopyFn = void* (*)(Arena*, const void*);
 
   struct Rep {
+    // The number of elements allocated in the elements array (including cleared
+    // elements). This is always >= current_size.
     int allocated_size;
+    // The size of the elements array, in number of elements.
+    int capacity;
     // Here we declare a huge array as a way of approximating C's "flexible
     // array member" feature without relying on undefined behavior.
     void* elements[(std::numeric_limits<int>::max() - 2 * sizeof(int)) /
@@ -661,11 +659,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
     ABSL_DCHECK_LE(allocated_size(), Capacity());
-    // This is equivalent to `current_size_ == Capacity()`.
-    // Assuming `Capacity()` function is inlined, compiler is likely to optimize
-    // away "+ kSSOCapacity" and reduce it to "current_size_ > capacity_proxy_"
-    // which is an instruction less than "current_size_ == capacity_proxy_ + 1".
-    return current_size_ >= Capacity();
+    return current_size_ == Capacity();
   }
   inline bool AllocatedSizeAtCapacity() const {
     // Harden invariant size() <= allocated_size() <= Capacity().
@@ -788,7 +782,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // significant performance for memory-sensitive workloads.
   void* tagged_rep_or_elem_;
   int current_size_;
-  int capacity_proxy_;  // we store `capacity - kSSOCapacity` as an optimization
   Arena* arena_;
 };
 

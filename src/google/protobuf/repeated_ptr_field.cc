@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <new>
 #include <string>
 
 #include "absl/base/optimization.h"
@@ -52,9 +51,10 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   const int old_capacity = Capacity();
   Arena* arena = GetArena();
   Rep* new_rep = nullptr;
+
+  int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
+      old_capacity, old_capacity + extend_amount);
   {
-    int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
-        old_capacity, old_capacity + extend_amount);
     ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
         << "New capacity is too large to fit into internal representation";
     const size_t new_size = kRepHeaderSize + kPtrSize * new_capacity;
@@ -66,21 +66,25 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
       auto* alloc = Arena::CreateArray<char>(arena, new_size);
       new_rep = reinterpret_cast<Rep*>(alloc);
     }
-    capacity_proxy_ = new_capacity - kSSOCapacity;
   }
 
   if (using_sso()) {
     new_rep->allocated_size = tagged_rep_or_elem_ != nullptr ? 1 : 0;
+    new_rep->capacity = new_capacity;
     new_rep->elements[0] = tagged_rep_or_elem_;
   } else {
     Rep* old_rep = rep();
-    memcpy(new_rep, old_rep,
-           old_rep->allocated_size * kPtrSize + kRepHeaderSize);
-    size_t old_size = old_capacity * kPtrSize + kRepHeaderSize;
+    const size_t old_allocated_size = old_rep->allocated_size;
+    new_rep->allocated_size = old_allocated_size;
+    new_rep->capacity = new_capacity;
+    memcpy(reinterpret_cast<char*>(new_rep) + kRepHeaderSize,
+           reinterpret_cast<char*>(old_rep) + kRepHeaderSize,
+           old_allocated_size * kPtrSize);
+    size_t old_total_size = old_capacity * kPtrSize + kRepHeaderSize;
     if (arena == nullptr) {
-      internal::SizedDelete(old_rep, old_size);
+      internal::SizedDelete(old_rep, old_total_size);
     } else {
-      arena->ReturnArrayMemory(old_rep, old_size);
+      arena->ReturnArrayMemory(old_rep, old_total_size);
     }
   }
 
