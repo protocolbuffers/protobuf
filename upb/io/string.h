@@ -104,7 +104,7 @@ UPB_INLINE bool upb_String_AppendFmtV(upb_String* s, const char* fmt,
   for (;;) {
     const int n = _upb_vsnprintf(buf, capacity, fmt, args);
     if (n < 0) break;
-    if (n < capacity) {
+    if ((unsigned int)n < capacity) {
       out = upb_String_Append(s, buf, n);
       break;
     }
