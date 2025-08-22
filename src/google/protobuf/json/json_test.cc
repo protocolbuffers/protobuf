@@ -7,12 +7,9 @@
 
 #include "google/protobuf/json/json.h"
 
-#include <algorithm>
 #include <cstdint>
-#include <list>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "google/protobuf/duration.pb.h"
 #include "google/protobuf/field_mask.pb.h"
@@ -23,11 +20,11 @@
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
@@ -68,6 +65,7 @@ MATCHER_P(IsOkAndHolds, inner,
 }
 
 absl::Status GetStatus(const absl::Status& s) { return s; }
+
 template <typename T>
 absl::Status GetStatus(const absl::StatusOr<T>& s) {
   return s.status();
@@ -200,7 +198,8 @@ TEST_P(JsonTest, TestAlwaysPrintFieldsWithNoPresence) {
                                                R"("repeatedStringValue":[],)"
                                                R"("repeatedBytesValue":[],)"
                                                R"("repeatedEnumValue":[],)"
-                                               R"("repeatedMessageValue":[])"
+                                               R"("repeatedMessageValue":[],)"
+                                               R"("NonStandardName":0)"
                                                "}"));
 
   m.set_string_value("i am a test string value");
@@ -232,7 +231,8 @@ TEST_P(JsonTest, TestAlwaysPrintFieldsWithNoPresence) {
                            R"("repeatedMessageValue":[],)"
                            R"("optionalBoolValue":false,)"
                            R"("optionalStringValue":"",)"
-                           R"("optionalBytesValue":"")"
+                           R"("optionalBytesValue":"",)"
+                           R"("NonStandardName":0)"
                            "}"));
 
   EXPECT_THAT(

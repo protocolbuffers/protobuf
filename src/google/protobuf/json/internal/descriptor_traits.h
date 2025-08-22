@@ -178,7 +178,7 @@ struct Proto2Descriptor {
 
     for (int i = 0; i < d.field_count(); ++i) {
       const auto* field = d.field(i);
-      if (field->has_json_name() && field->json_name() == name) {
+      if (field->json_name() == name) {
         return field;
       }
     }
@@ -206,9 +206,7 @@ struct Proto2Descriptor {
   /// Functions for introspecting fields. ///
 
   static absl::string_view FieldName(Field f) { return f->name(); }
-  static absl::string_view FieldJsonName(Field f) {
-    return f->has_json_name() ? f->json_name() : f->camelcase_name();
-  }
+  static absl::string_view FieldJsonName(Field f) { return f->json_name(); }
   static absl::string_view FieldFullName(Field f) { return f->full_name(); }
 
   static absl::string_view FieldTypeName(Field f) {
