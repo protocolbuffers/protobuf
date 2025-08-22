@@ -232,22 +232,14 @@ namespace protobuf {
 
 bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
     const ConformanceResponse& response, Message* test_message) {
-  std::string binary_protobuf;
+  json::ParseOptions options;
+  options.allow_legacy_nonconformant_behavior = false;
   absl::Status status =
-      json::JsonToBinaryString(type_resolver_.get(), type_url_,
-                               response.json_payload(), &binary_protobuf);
-
+      json::JsonStringToMessage(response.json_payload(), test_message);
   if (!status.ok()) {
     ABSL_LOG(ERROR) << status;
     return false;
   }
-
-  if (!test_message->ParseFromString(binary_protobuf)) {
-    ABSL_LOG(FATAL) << "INTERNAL ERROR: internal JSON->protobuf transcode "
-                    << "yielded unparseable proto.";
-    return false;
-  }
-
   return true;
 }
 
