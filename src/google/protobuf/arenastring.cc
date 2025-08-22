@@ -33,7 +33,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-namespace  {
+namespace {
 
 // TaggedStringPtr::Flags uses the lower 2 bits as tags.
 // Enforce that allocated data aligns to at least 4 bytes, and that
@@ -72,15 +72,6 @@ const std::string& LazyString::Init() const {
 namespace {
 
 
-#if defined(NDEBUG) || !defined(GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL)
-
-class ScopedCheckPtrInvariants {
- public:
-  explicit ScopedCheckPtrInvariants(const TaggedStringPtr*) {}
-};
-
-#endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
-
 // Creates a heap allocated std::string value.
 inline TaggedStringPtr CreateString(absl::string_view value) {
   TaggedStringPtr res;
@@ -101,37 +92,18 @@ TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
 
 }  // namespace
 
+class ScopedCheckPtrInvariants {
+ public:
+  explicit ScopedCheckPtrInvariants(const TaggedStringPtr*) {}
+};
+#endif  // PROTOPUF_OPENSOURCE
+
 TaggedStringPtr TaggedStringPtr::ForceCopy(Arena* arena) const {
   return arena != nullptr ? CreateArenaString(*arena, *Get())
                           : CreateString(*Get());
 }
 
 void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
-  ScopedCheckPtrInvariants check(&tagged_ptr_);
-  if (IsDefault()) {
-    // If we're not on an arena, skip straight to a true string to avoid
-    // possible copy cost later.
-    tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
-                                   : CreateString(value);
-  } else {
-    if (internal::DebugHardenForceCopyDefaultString()) {
-      if (arena == nullptr) {
-        auto* old = tagged_ptr_.GetIfAllocated();
-        tagged_ptr_ = CreateString(value);
-        delete old;
-      } else {
-        auto* old = UnsafeMutablePointer();
-        tagged_ptr_ = CreateArenaString(*arena, value);
-        old->assign("garbagedata");
-      }
-    } else {
-      UnsafeMutablePointer()->assign(value.data(), value.length());
-    }
-  }
-}
-
-template <>
-void ArenaStringPtr::Set(const std::string& value, Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (IsDefault()) {
     // If we're not on an arena, skip straight to a true string to avoid
@@ -243,9 +215,7 @@ void ArenaStringPtr::SetAllocated(std::string* value, Arena* arena) {
   }
 }
 
-void ArenaStringPtr::Destroy() {
-  delete tagged_ptr_.GetIfAllocated();
-}
+void ArenaStringPtr::Destroy() { delete tagged_ptr_.GetIfAllocated(); }
 
 void ArenaStringPtr::ClearToEmpty() {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
