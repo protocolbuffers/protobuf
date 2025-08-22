@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/macros.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -258,10 +259,9 @@ void DumpEnumValues(upb::EnumDefPtr desc, Output& output) {
   for (int i = 0; i < desc.value_count(); i++) {
     values.push_back(desc.value(i));
   }
-  std::stable_sort(values.begin(), values.end(),
-                   [](upb::EnumValDefPtr a, upb::EnumValDefPtr b) {
-                     return a.number() < b.number();
-                   });
+  absl::c_stable_sort(values, [](upb::EnumValDefPtr a, upb::EnumValDefPtr b) {
+    return a.number() < b.number();
+  });
 
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];

@@ -26,6 +26,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/macros.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
@@ -2514,8 +2515,8 @@ MapEntries MapFieldPrinterHelper::SortMap(const Message& message,
     }
   }
 
-  std::stable_sort(all_entries.begin(), all_entries.end(),
-                   MapEntryMessageComparator(field->message_type()));
+  absl::c_stable_sort(all_entries,
+                      MapEntryMessageComparator(field->message_type()));
   return {std::move(owned_entries), std::move(all_entries)};
 }
 
