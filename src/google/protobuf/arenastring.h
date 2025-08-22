@@ -207,6 +207,11 @@ static_assert(std::is_trivially_destructible<TaggedStringPtr>::value,
 static_assert(std::is_standard_layout<TaggedStringPtr>::value,
               "TaggedStringPtr must be standard layout");
 
+class ScopedCheckPtrInvariants {
+ public:
+  explicit ScopedCheckPtrInvariants(const TaggedStringPtr*) {}
+};
+
 // This class encapsulates a pointer to a std::string with or without arena
 // owned contents, tagged by the bottom bits of the string pointer. It is a
 // high-level wrapper that almost directly corresponds to the interface required
