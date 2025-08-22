@@ -37,6 +37,7 @@ cc_library(
     hdrs = ["interop.h"],
     visibility = [
         "//hpb:__subpackages__",
+        "//hpb_generator/tests:__pkg__",
         "//src/google/protobuf/compiler:__subpackages__",
     ],
     deps = [
