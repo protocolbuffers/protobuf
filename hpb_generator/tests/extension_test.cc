@@ -13,6 +13,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
+#include "absl/status/status_matchers.h"
 #include "hpb_generator/tests/child_model.hpb.h"
 #include "hpb_generator/tests/test_extension.hpb.h"
 #include "hpb_generator/tests/test_model.hpb.h"
@@ -43,7 +44,7 @@ using ::hpb_unittest::someotherpackage::protos::string_trigraph_ext;
 using ::hpb_unittest::someotherpackage::protos::uint32_ext;
 using ::hpb_unittest::someotherpackage::protos::uint64_ext;
 
-using ::testing::status::IsOkAndHolds;
+using ::absl_testing::IsOkAndHolds;
 
 TEST(CppGeneratedCode, HasExtension) {
   TestModel model;
