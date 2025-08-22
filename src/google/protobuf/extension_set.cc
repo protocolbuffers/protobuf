@@ -17,13 +17,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <variant>
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/overload.h"
 #include "absl/hash/hash.h"
@@ -910,13 +910,14 @@ void ExtensionSet::InternalExtensionMergeFromIntoUninitializedExtension(
   }
 }
 
+
 void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
                                               int number,
                                               const Extension& other_extension,
                                               Arena* other_arena) {
   Extension* dst_extension;
-  bool is_new =
-      MaybeNewExtension(number, other_extension.descriptor, &dst_extension);
+  bool is_new = MaybeNewExtension(
+      number, other_extension.descriptor_or_prototype, &dst_extension);
   if (is_new) {
     InternalExtensionMergeFromIntoUninitializedExtension(
         *dst_extension, extendee, number, other_extension, other_arena);
@@ -978,9 +979,12 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
       ABSL_DCHECK(!dst_extension->is_repeated);
       if (other_extension.is_lazy) {
         if (dst_extension->is_lazy) {
+          const MessageLite* prototype =
+              other_extension.descriptor_or_prototype.AsPrototype();
+          ABSL_DCHECK_NE(prototype, nullptr);
           dst_extension->ptr.lazymessage_value->MergeFrom(
-              GetPrototypeForLazyMessage(extendee, number),
-              *other_extension.ptr.lazymessage_value, arena_, other_arena);
+              prototype, *other_extension.ptr.lazymessage_value, arena_,
+              other_arena);
         } else {
           dst_extension->ptr.message_value->CheckTypeAndMergeFrom(
               other_extension.ptr.lazymessage_value->GetMessage(
@@ -1208,12 +1212,14 @@ size_t ExtensionSet::ByteSize() const {
 // Defined in extension_set_heavy.cc.
 // int ExtensionSet::SpaceUsedExcludingSelf() const
 
-bool ExtensionSet::MaybeNewExtension(int number,
-                                     const FieldDescriptor* descriptor,
-                                     Extension** result) {
-  bool extension_is_new = false;
-  std::tie(*result, extension_is_new) = Insert(number);
-  (*result)->descriptor = descriptor;
+bool ExtensionSet::MaybeNewExtension(
+    int number, Extension::DescriptorOrPrototype descriptor_or_prototype,
+    Extension** result_ptr) {
+  auto [result, extension_is_new] = Insert(number);
+  *result_ptr = result;
+  if (extension_is_new) {
+    result->descriptor_or_prototype = descriptor_or_prototype;
+  }
   return extension_is_new;
 }
 
@@ -1510,8 +1516,7 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
 
   if (!is_lazy) return ptr.message_value->IsInitialized();
 
-  const MessageLite* prototype =
-      ext_set->GetPrototypeForLazyMessage(extendee, number);
+  const MessageLite* prototype = descriptor_or_prototype.AsPrototype();
   ABSL_DCHECK_NE(prototype, nullptr)
       << "extendee: " << extendee->GetTypeName() << "; number: " << number;
   return ptr.lazymessage_value->IsInitialized(prototype, arena);
@@ -1811,8 +1816,8 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
         break;
       case WireFormatLite::TYPE_MESSAGE:
         if (is_lazy) {
-          const auto* prototype =
-              extension_set->GetPrototypeForLazyMessage(extendee, number);
+          const auto* prototype = descriptor_or_prototype.AsPrototype();
+          ABSL_DCHECK_NE(prototype, nullptr);
           target = ptr.lazymessage_value->WriteMessageToArray(prototype, number,
                                                               target, stream);
         } else {
@@ -1826,7 +1831,7 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
   return target;
 }
 
-const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
+const MessageLite* ExtensionSet::FindPrototypeForLazyMessage(
     const MessageLite* extendee, int number) const {
   GeneratedExtensionFinder finder(extendee);
   bool was_packed_on_wire = false;
@@ -1861,8 +1866,8 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
       WireFormatLite::kMessageSetTypeIdNumber, number, target);
   // Write message.
   if (is_lazy) {
-    const auto* prototype =
-        extension_set->GetPrototypeForLazyMessage(extendee, number);
+    const auto* prototype = descriptor_or_prototype.AsPrototype();
+    ABSL_DCHECK_NE(prototype, nullptr);
     target = ptr.lazymessage_value->WriteMessageToArray(
         prototype, WireFormatLite::kMessageSetMessageNumber, target, stream);
   } else {
