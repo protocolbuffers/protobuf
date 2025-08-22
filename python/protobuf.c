@@ -139,9 +139,10 @@ static void PyUpb_MutexUnlock(PyUpb_Mutex *m)
   PyMutex_Unlock(&m->mutex);
 }
 
-static bool PyUpb_MutexIsLocked(PyUpb_Mutex *m)
+static bool PyUpb_MutexIsLockedByCurrentThread(PyUpb_Mutex *m)
 {
-  return PyMutex_IsLocked(&m->mutex);
+  unsigned long thread = PyThread_get_thread_ident();
+  return upb_Atomic_Load(&m->owner, memory_order_acquire) == thread;
 }
 
 #endif // Py_GIL_DISABLED
@@ -233,10 +234,12 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
   return state->obj_cache;
 }
 
+// Return true if ObjCache is locked by the current thread.  This always returns
+// true if free-threading is disabled.
 bool PyUpb_ObjCache_IsLocked(void) {
 #ifdef Py_GIL_DISABLED
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  return PyUpb_MutexIsLocked(&state->obj_cache->mutex);
+  return PyUpb_MutexIsLockedByCurrentThread(&state->obj_cache->mutex);
 #else
   return true;
 #endif
