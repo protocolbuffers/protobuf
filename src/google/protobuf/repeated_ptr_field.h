@@ -1020,6 +1020,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
       : RepeatedPtrField(arena, rhs) {}
 
   // TODO: make constructor private
+  [[deprecated("Use Arena::Create<RepeatedPtrField<...>>(Arena*) instead")]]
   explicit RepeatedPtrField(Arena* arena);
 
   template <typename Iter,
