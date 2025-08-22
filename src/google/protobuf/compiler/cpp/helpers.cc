@@ -1356,7 +1356,9 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
 bool IsV2CodegenEnabled(const Options& options) {
-  return !options.opensource_runtime && !options.bootstrap;
+  return !options.lite_implicit_weak_fields &&
+         !options.descriptor_implicit_weak_messages &&
+         !options.opensource_runtime && !options.bootstrap;
 }
 
 bool IsEditionsGoldenProto(const Descriptor* descriptor) {
