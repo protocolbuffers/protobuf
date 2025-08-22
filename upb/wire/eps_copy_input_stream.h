@@ -36,6 +36,9 @@ typedef struct {
   int limit;                 // Submessage limit relative to end
   bool error;                // To distinguish between EOF and error.
   bool aliasing;
+#ifndef NDEBUG
+  int remaining_bounds_checked_ops;
+#endif
   char patch[kUpb_EpsCopyInputStream_SlopBytes * 2];
 } upb_EpsCopyInputStream;
 
@@ -51,6 +54,29 @@ typedef const char* upb_EpsCopyInputStream_BufferFlipCallback(
 
 typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
     upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+    upb_EpsCopyInputStream* e) {
+#ifndef NDEBUG
+  e->remaining_bounds_checked_ops = 2;
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(
+    upb_EpsCopyInputStream* e) {
+#ifndef NDEBUG
+  e->remaining_bounds_checked_ops = 0;
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBoundsCheckedOp)(
+    upb_EpsCopyInputStream* e) {
+#ifndef NDEBUG
+  if (e) {
+    UPB_ASSERT(e->remaining_bounds_checked_ops--);
+  }
+#endif
+}
 
 // Initializes a upb_EpsCopyInputStream using the contents of the buffer
 // [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
@@ -74,6 +100,7 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
   e->aliasing = enable_aliasing;
   e->limit_ptr = e->end;
   e->error = false;
+  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
 }
 
 typedef enum {
@@ -94,10 +121,13 @@ UPB_INLINE upb_IsDoneStatus upb_EpsCopyInputStream_IsDoneStatus(
     upb_EpsCopyInputStream* e, const char* ptr, int* overrun) {
   *overrun = ptr - e->end;
   if (UPB_LIKELY(ptr < e->limit_ptr)) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
     return kUpb_IsDoneStatus_NotDone;
   } else if (UPB_LIKELY(*overrun == e->limit)) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(e);
     return kUpb_IsDoneStatus_Done;
   } else {
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(e);
     return kUpb_IsDoneStatus_NeedFallback;
   }
 }
@@ -115,11 +145,18 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDoneWithCallback(
   int overrun;
   switch (upb_EpsCopyInputStream_IsDoneStatus(e, *ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done:
+      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(e);
       return true;
     case kUpb_IsDoneStatus_NotDone:
+      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
       return false;
     case kUpb_IsDoneStatus_NeedFallback:
       *ptr = func(e, *ptr, overrun);
+      if (*ptr) {
+        UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+      } else {
+        UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(e);
+      }
       return *ptr == NULL;
   }
   UPB_UNREACHABLE();
