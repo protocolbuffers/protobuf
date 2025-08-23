@@ -390,9 +390,21 @@ static bool PyUpb_Message_InitRepeatedMessageAttribute(PyObject* _self,
     } else {
       m = PyUpb_RepeatedCompositeContainer_Add(repeated, NULL, NULL);
       if (!m) goto err;
-      PyObject* merged = PyUpb_Message_MergeFrom(m, e);
-      if (!merged) goto err;
-      Py_DECREF(merged);
+      const upb_MessageDef* m_def = upb_FieldDef_MessageSubDef(f);
+      if (PyObject_TypeCheck(e, Py_TYPE(m))) {
+        PyObject* merged = PyUpb_Message_MergeFrom(m, e);
+        if (!merged) goto err;
+        Py_DECREF(merged);
+      } else if (upb_MessageDef_WellKnownType(m_def) ==
+                     kUpb_WellKnown_Timestamp ||
+                 upb_MessageDef_WellKnownType(m_def) ==
+                     kUpb_WellKnown_Duration) {
+        if (!PyObject_CallMethod(m, "_internal_assign", "O", e)) goto err;
+      } else {
+        PyErr_Format(PyExc_TypeError, "Fail to init repeated field %s",
+                     upb_FieldDef_FullName(f));
+        goto err;
+      }
     }
     Py_DECREF(e);
     Py_DECREF(m);

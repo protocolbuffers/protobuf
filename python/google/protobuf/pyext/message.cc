@@ -1091,10 +1091,25 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             return -1;
           }
           if (kwargs == nullptr) {
-            // next was not a dict, it's a message we need to merge
-            ScopedPyObjectPtr merged(MergeFrom(
-                reinterpret_cast<CMessage*>(new_msg.get()), next.get()));
-            if (merged.get() == nullptr) {
+            if (PyObject_TypeCheck(next.get(), CMessage_Type)) {
+              // next was not a dict, it's a message we need to merge
+              ScopedPyObjectPtr merged(MergeFrom(
+                  reinterpret_cast<CMessage*>(new_msg.get()), next.get()));
+              if (merged.get() == nullptr) {
+                return -1;
+              }
+            } else if (descriptor->message_type()->well_known_type() ==
+                           Descriptor::WELLKNOWNTYPE_TIMESTAMP ||
+                       descriptor->message_type()->well_known_type() ==
+                           Descriptor::WELLKNOWNTYPE_DURATION) {
+              ScopedPyObjectPtr ok(PyObject_CallMethod(
+                  new_msg.get(), "_internal_assign", "O", next.get()));
+              if (ok.get() == nullptr) {
+                return -1;
+              }
+            } else {
+              PyErr_Format(PyExc_TypeError, "Fail to init repeated field %s",
+                           std::string(descriptor->name()).c_str());
               return -1;
             }
           }
