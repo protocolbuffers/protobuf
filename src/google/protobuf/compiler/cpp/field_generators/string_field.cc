@@ -70,7 +70,10 @@ class SingularString : public FieldGeneratorBase {
  public:
   SingularString(const FieldDescriptor* field, const Options& opts,
                  MessageSCCAnalyzer* scc)
-      : FieldGeneratorBase(field, opts, scc), opts_(&opts) {}
+      : FieldGeneratorBase(field, opts, scc),
+        opts_(&opts),
+        disable_release_(
+            field->containing_type()->options().disable_release()) {}
   ~SingularString() override = default;
 
   std::vector<Sub> MakeVars() const override { return Vars(field_, *opts_); }
@@ -205,6 +208,7 @@ class SingularString : public FieldGeneratorBase {
   void SetAllocatedImpl(io::Printer* p) const;
 
   const Options* opts_;
+  bool disable_release_;
 };
 
 void SingularString::GenerateStaticMembers(io::Printer* p) const {
@@ -438,6 +442,12 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
        SafeFunctionName(field_->containing_type(), field_, "release_")},
       {"release_impl", [&] { ReleaseImpl(p); }},
       {"set_allocated_impl", [&] { SetAllocatedImpl(p); }},
+      {"ReleaseAbort",
+       [&] {
+         if (disable_release_) {
+           p->Emit(R"cc(std::abort();)cc");
+         }
+       }},
   };
   absl::string_view code =
       R"cc(
@@ -485,7 +495,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return $field_$.Mutable($lazy_args$, $set_args$);
     }
     inline ::std::string* $nullable$ $Msg$::$release_name$() {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $annotate_release$;
       $PrepareSplitMessageForWrite$;
@@ -493,7 +503,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $release_impl$;
     }
     inline void $Msg$::set_allocated_$name$(::std::string* $nullable$ value) {
-      $WeakDescriptorSelfPin$;
+      $ReleaseAbort$ $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
       $set_allocated_impl$;
