@@ -1754,12 +1754,19 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field) {
 }  // namespace internal
 using internal::CreateUnknownEnumValues;
 
-void Reflection::ListFields(const Message& message,
-                            std::vector<const FieldDescriptor*>* output) const {
-  output->clear();
 
+// Common functionality shared by IsEmpty and ListFields for iterating over
+// all set fields.
+//
+// If kForIsEmpty=true, returns true if all fields are empty, false otherwise.
+// If kForIsEmpty=false, populates output with all filled fields, and last with
+// the last filled field number.
+template <bool kForIsEmpty>
+bool Reflection::IsEmptyOrCollectSetFields(
+    const Message& message, std::vector<const FieldDescriptor*>* output,
+    uint32_t* last) const {
   // Optimization:  The default instance never has any fields set.
-  if (schema_.IsDefaultInstance(message)) return;
+  if (schema_.IsDefaultInstance(message)) return true;
 
   // Optimization: Avoid calling GetHasBits() and HasOneofField() many times
   // within the field loop.  We allow this violation of ReflectionSchema
@@ -1769,14 +1776,25 @@ void Reflection::ListFields(const Message& message,
   const uint32_t* const has_bits =
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
   const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
-  output->reserve(descriptor_->field_count());
+  if constexpr (!kForIsEmpty) {
+    output->reserve(descriptor_->field_count());
+  }
   const int last_non_weak_field_index = last_non_weak_field_index_;
   // Fields in messages are usually added with the increasing tags.
-  uint32_t last = 0;  // UINT32_MAX if out-of-order
-  auto append_to_output = [&last, &output](const FieldDescriptor* field) {
-    CheckInOrder(field, &last);
+  auto append_to_output = [last, output](const FieldDescriptor* field) {
+    CheckInOrder(field, last);
     output->push_back(field);
   };
+  // Core functionality difference depending on the value of kForIsEmpty. If we
+  // encounter a set field, either return true, or push it back into the vector.
+#define PROTO_REFLECTION_APPEND_OR_RETURN() \
+  do {                                      \
+    if constexpr (kForIsEmpty) {            \
+      return false;                         \
+    } else {                                \
+      append_to_output(field);              \
+    }                                       \
+  } while (false)
   for (int i = 0; i <= last_non_weak_field_index; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     const OneofDescriptor* containing_oneof = field->containing_oneof();
@@ -1786,7 +1804,7 @@ void Reflection::ListFields(const Message& message,
     if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
         field->is_repeated()) {
       if (FieldSize(message, field) > 0) {
-        append_to_output(field);
+        PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (schema_.InRealOneof(field)) {
       const uint32_t* const oneof_case_array =
@@ -1795,20 +1813,31 @@ void Reflection::ListFields(const Message& message,
       // Equivalent to: HasOneofField(message, field)
       if (static_cast<int64_t>(oneof_case_array[containing_oneof->index()]) ==
           field->number()) {
-        append_to_output(field);
+        PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (has_bits &&
                has_bits_indices[i] != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
       if (IsFieldPresentGivenHasbits(message, field, has_bits,
                                      has_bits_indices[i])) {
-        append_to_output(field);
+        PROTO_REFLECTION_APPEND_OR_RETURN();
       }
     } else if (HasFieldWithHasbits(message, field)) {
       // Fall back on proto3-style HasBit.
-      append_to_output(field);
+      PROTO_REFLECTION_APPEND_OR_RETURN();
     }
   }
+#undef PROTO_REFLECTION_APPEND_OR_RETURN
+  // If ListFields() is called, we don't care about the return value. Otherwise,
+  // we've exited the loop without finding any set fields; return true.
+  return true;
+}
+
+void Reflection::ListFields(const Message& message,
+                            std::vector<const FieldDescriptor*>* output) const {
+  output->clear();
+  uint32_t last = 0;
+  IsEmptyOrCollectSetFields</*kForIsEmpty=*/false>(message, output, &last);
 
   // Descriptors of ExtensionSet are appended in their increasing tag
   // order and they are usually bigger than the field tags so if all fields are
@@ -1835,6 +1864,11 @@ void Reflection::ListFields(const Message& message,
     // ListFields() must sort output by field number.
     std::sort(output->begin(), output->end(), FieldNumberSorter());
   }
+}
+
+bool Reflection::IsEmpty(const Message& message) const {
+  return IsEmptyOrCollectSetFields</*kForIsEmpty=*/true>(message, nullptr,
+                                                         nullptr);
 }
 
 // -------------------------------------------------------------------
