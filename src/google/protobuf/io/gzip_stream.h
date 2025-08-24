@@ -174,6 +174,7 @@ class PROTOBUF_EXPORT GzipOutputStream final : public ZeroCopyOutputStream {
 }  // namespace protobuf
 }  // namespace google
 
+
 #include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_IO_GZIP_STREAM_H__
