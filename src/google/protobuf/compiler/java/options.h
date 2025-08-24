@@ -55,6 +55,8 @@ struct Options {
   // If true, the generated DSL code will only utilize concrete types, never
   // referring to the OrBuilder interfaces.
   bool dsl_use_concrete_types;
+
+  bool bootstrap = false;
 };
 
 }  // namespace java
