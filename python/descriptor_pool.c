@@ -304,9 +304,12 @@ static PyObject* PyUpb_DescriptorPool_DoAdd(PyObject* _self,
       PyUpb_Message_SerializeToString(file_desc, subargs, NULL);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
-  PyObject* ret = PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized);
+  PyObject *result;
+  Py_BEGIN_CRITICAL_SECTION(_self);
+  result = PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized);
+  Py_END_CRITICAL_SECTION();
   Py_DECREF(serialized);
-  return ret;
+  return result;
 }
 
 /*
@@ -327,7 +330,11 @@ static PyObject* PyUpb_DescriptorPool_AddSerializedFile(
         "DescriptorDatabase. Add your file to the underlying database.");
     return false;
   }
-  return PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized_pb);
+  PyObject *result;
+  Py_BEGIN_CRITICAL_SECTION(self);
+  result = PyUpb_DescriptorPool_DoAddSerializedFile(_self, serialized_pb);
+  Py_END_CRITICAL_SECTION();
+  return result;
 }
 
 static PyObject* PyUpb_DescriptorPool_Add(PyObject* _self,

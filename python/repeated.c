@@ -58,6 +58,7 @@ static upb_Array* PyUpb_RepeatedContainer_GetIfReified(
 upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
                                          PyUpb_WeakMap* subobj_map,
                                          intptr_t iter) {
+  assert(PyUpb_ObjCache_IsLocked());
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   assert(PyUpb_RepeatedContainer_IsStub(self));
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
@@ -71,7 +72,7 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
     PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f,
                                     (upb_MessageValue){.array_val = arr});
   }
-  PyUpb_ObjCache_Add(arr, &self->ob_base);
+  PyUpb_ObjCache_AddLockHeld(arr, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.arr = arr;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
@@ -80,24 +81,31 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
 }
 
 upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
+  PyUpb_ObjCache_Lock();
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
-  if (arr) return arr;  // Already writable.
+  if (arr) goto out;  // Already writable.
 
-  return PyUpb_RepeatedContainer_Reify((PyObject*)self, NULL, NULL, 0);
+  arr = PyUpb_RepeatedContainer_Reify((PyObject*)self, NULL, NULL, 0);
+
+out:
+  PyUpb_ObjCache_Unlock();
+  return arr;
 }
 
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   Py_DECREF(self->arena);
+  PyUpb_ObjCache_Lock();
   if (PyUpb_RepeatedContainer_IsStub(self)) {
     PyUpb_Message_CacheDelete(self->ptr.parent,
                               PyUpb_RepeatedContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
   } else {
-    PyUpb_ObjCache_Delete(self->ptr.arr);
+    PyUpb_ObjCache_DeleteLockHeld(self->ptr.arr);
   }
   Py_DECREF(PyUpb_RepeatedContainer_GetFieldDescriptor(self));
+  PyUpb_ObjCache_Unlock();
   PyUpb_Dealloc(self);
 }
 
@@ -133,8 +141,9 @@ PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
 PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
                                                      const upb_FieldDef* f,
                                                      PyObject* arena) {
+  PyUpb_ObjCache_Lock();
   PyObject* ret = PyUpb_ObjCache_Get(arr);
-  if (ret) return ret;
+  if (ret) goto out;
 
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
@@ -143,7 +152,10 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
   repeated->ptr.arr = arr;
   ret = &repeated->ob_base;
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(arr, ret);
+  PyUpb_ObjCache_AddLockHeld(arr, ret);
+
+out:
+  PyUpb_ObjCache_Unlock();
   return ret;
 }
 
@@ -468,13 +480,27 @@ static bool PyUpb_RepeatedContainer_Assign(PyObject* _self, PyObject* list) {
   bool submsg = upb_FieldDef_IsSubMessage(f);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   for (Py_ssize_t i = 0; i < size; ++i) {
+#ifdef Py_GIL_DISABLED
+    PyObject* obj = PyList_GetItemRef(list, i);
+#else
     PyObject* obj = PyList_GetItem(list, i);
+#endif
+    if (!obj) {
+      return false;
+    }
+
     upb_MessageValue msgval;
     if (submsg) {
       msgval.msg_val = PyUpb_Message_GetIfReified(obj);
       assert(msgval.msg_val);
     } else {
-      if (!PyUpb_PyToUpb(obj, f, &msgval, arena)) return false;
+      bool status = PyUpb_PyToUpb(obj, f, &msgval, arena);
+#ifdef Py_GIL_DISABLED
+      Py_DECREF(obj);
+#endif
+      if (!status) {
+        return false;
+      }
     }
     upb_Array_Set(arr, i, msgval);
   }
@@ -486,6 +512,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   // Support the old sort_function argument for backwards
   // compatibility.
   if (kwds != NULL) {
+    // Okay to use thread-unsafe API since kwds cannot be modified concurrently
     PyObject* sort_func = PyDict_GetItemString(kwds, "sort_function");
     if (sort_func != NULL) {
       // Must set before deleting as sort_func is a borrowed reference
