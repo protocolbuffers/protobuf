@@ -13,7 +13,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "hpb_generator/context.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -44,7 +46,8 @@ std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
 std::string MessageProxyType(const protobuf::FieldDescriptor* field,
                              bool is_const);
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_NAMES_H__
