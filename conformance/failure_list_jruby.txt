@@ -144,3 +144,4 @@ Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
+Recommended.*.ProtobufInput.AcceptInvalidUtf8.String.*.ProtobufOutput                                 # Output was not equivalent to reference message:

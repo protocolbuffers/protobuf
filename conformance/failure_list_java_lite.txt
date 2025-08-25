@@ -6,3 +6,5 @@
 
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE                               # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE                                  # Should have failed to parse, but didn't.
+Recommended.Editions.ProtobufInput.RejectInvalidUtf8.String.Extension                                              # Should have failed to parse, but didn't.
+Recommended.*.ProtobufInput.AcceptInvalidUtf8.String.*.ProtobufOutput                                              # Output was not equivalent to reference message
