@@ -1,0 +1,4 @@
+syntax = "proto3";
+package unittest_deep_dependencies;
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/duration.proto";
