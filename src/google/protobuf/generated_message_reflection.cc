@@ -1769,7 +1769,8 @@ void Reflection::ListFields(const Message& message,
   const uint32_t* const has_bits =
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
   const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
-  output->reserve(descriptor_->field_count());
+  const Descriptor* descriptor = descriptor_;
+  output->reserve(descriptor->field_count());
   const int last_non_weak_field_index = last_non_weak_field_index_;
   // Fields in messages are usually added with the increasing tags.
   uint32_t last = 0;  // UINT32_MAX if out-of-order
@@ -1778,7 +1779,7 @@ void Reflection::ListFields(const Message& message,
     output->push_back(field);
   };
   for (int i = 0; i <= last_non_weak_field_index; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
+    const FieldDescriptor* field = descriptor->field(i);
     const OneofDescriptor* containing_oneof = field->containing_oneof();
     // If the hasbits for repeated fields experiment is disabled, we can
     // shortcut to checking the field size, since we know the field doesn't have
@@ -1820,8 +1821,7 @@ void Reflection::ListFields(const Message& message,
   size_t last_size = output->size();
   if (schema_.HasExtensionSet()) {
     // Descriptors of ExtensionSet are appended in their increasing order.
-    GetExtensionSet(message).AppendToList(descriptor_, descriptor_pool_,
-                                          output);
+    GetExtensionSet(message).AppendToList(descriptor, descriptor_pool_, output);
     ABSL_DCHECK(std::is_sorted(output->begin() + last_size, output->end(),
                                FieldNumberSorter()));
     if (output->size() != last_size) {
