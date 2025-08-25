@@ -1492,25 +1492,15 @@ class MessageTest(unittest.TestCase):
     m.ParseFromString(b'\xa8\x01\x7f')
     unknown = unknown_fields.UnknownFieldSet(m)
 
-    # All implementations put the data into unknown fields.
+    # The data is present in unknown fields.
     self.assertEqual(unknown[0].field_number, 21)
     self.assertEqual(unknown[0].wire_type, wire_format.WIRETYPE_VARINT)
     self.assertEqual(unknown[0].data, 0x7f)
 
-    if api_implementation.Type() == 'upb':
-      # upb incorrectly leaves a '0' value in the actual extension field.
-      # TODO: fix upb to not do this.
-      self.assertTrue(
-          m.HasExtension(unittest_pb2.optional_nested_enum_extension)
-      )
-      self.assertEqual(
-          m.Extensions[unittest_pb2.optional_nested_enum_extension], 0
-      )
-    else:
-      # Pure python and cpp extensions correctly have no extension present.
-      self.assertFalse(
-          m.HasExtension(unittest_pb2.optional_nested_enum_extension)
-      )
+    # There is no extension present.
+    self.assertFalse(
+        m.HasExtension(unittest_pb2.optional_nested_enum_extension)
+    )
 
   def testAssignBoolToInt(self, message_module):
     with warnings.catch_warnings(record=True) as w:
