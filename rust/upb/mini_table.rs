@@ -10,6 +10,7 @@ use super::AssociatedMiniTable;
 use core::marker::PhantomData;
 
 pub type MiniTable = mt_sys::upb_MiniTable;
+pub type MiniTableEnum = mt_sys::upb_MiniTableEnum;
 
 pub struct MiniTableFieldPtr<T> {
     _raw: *const mt_sys::upb_MiniTableField,

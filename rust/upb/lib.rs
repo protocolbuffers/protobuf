@@ -20,7 +20,7 @@ mod message;
 pub use message::MessagePtr;
 
 mod mini_table;
-pub use mini_table::{MiniTable, MiniTableFieldPtr};
+pub use mini_table::{MiniTable, MiniTableEnum, MiniTableFieldPtr};
 
 mod owned_arena_box;
 pub use owned_arena_box::OwnedArenaBox;
@@ -54,6 +54,6 @@ pub use sys::message::message::{
 };
 pub use sys::message::message_value::upb_MessageValue;
 pub use sys::mini_table::mini_table::{
-    upb_MiniTable, upb_MiniTableEnum, upb_MiniTableEnum_Build, upb_MiniTable_Build,
-    upb_MiniTable_GetFieldByIndex, upb_MiniTable_Link, upb_MiniTable_SubMessage, upb_Status,
+    upb_MiniTableEnum_Build, upb_MiniTable_Build, upb_MiniTable_GetFieldByIndex,
+    upb_MiniTable_Link, upb_MiniTable_SubMessage, upb_Status,
 };

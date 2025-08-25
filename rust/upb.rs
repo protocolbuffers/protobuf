@@ -25,9 +25,28 @@ extern crate upb;
 #[cfg(not(bzl))]
 use crate::upb;
 
-// Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
+// Temporarily 'pub' since a lot of gencode is directly calling many of the ffi
 // fns.
-pub use upb::*;
+pub use upb::debug_string;
+pub use upb::upb_MessageValue;
+pub use upb::upb_Message_GetMap;
+pub use upb::upb_Message_GetOrCreateMutableMap;
+pub use upb::upb_Message_SetBaseField;
+pub use upb::upb_Message_WhichOneofFieldNumber;
+pub use upb::upb_MiniTableEnum_Build;
+pub use upb::upb_MiniTable_Build;
+pub use upb::upb_MiniTable_GetFieldByIndex;
+pub use upb::upb_MiniTable_Link;
+pub use upb::upb_MiniTable_SubMessage;
+pub use upb::wire;
+pub use upb::Arena;
+pub use upb::AssociatedMiniTable;
+pub use upb::AssociatedMiniTableEnum;
+pub use upb::CType;
+pub use upb::MessagePtr;
+pub use upb::MiniTable;
+pub use upb::MiniTableEnum;
+use upb::*;
 
 pub type RawArena = upb::RawArena;
 pub type RawMessage = upb::RawMessage;
@@ -38,12 +57,12 @@ pub type PtrAndLen = upb::StringView;
 // This struct represents a raw minitable pointer. We need it to be Send and Sync so that we can
 // store it in a static OnceLock for lazy initialization of minitables. It should not be used for
 // any other purpose.
-pub struct MiniTablePtr(pub *mut upb_MiniTable);
+pub struct MiniTablePtr(pub *mut upb::MiniTable);
 unsafe impl Send for MiniTablePtr {}
 unsafe impl Sync for MiniTablePtr {}
 
 // Same as above, but for enum minitables.
-pub struct MiniTableEnumPtr(pub *const upb_MiniTableEnum);
+pub struct MiniTableEnumPtr(pub *const upb::MiniTableEnum);
 unsafe impl Send for MiniTableEnumPtr {}
 unsafe impl Sync for MiniTableEnumPtr {}
 
@@ -638,7 +657,7 @@ impl_repeated_bytes!((ProtoString, upb::CType::String), (ProtoBytes, upb::CType:
 pub unsafe fn repeated_message_copy_from<T: ProxiedInRepeated>(
     src: View<Repeated<T>>,
     mut dest: Mut<Repeated<T>>,
-    minitable: *const upb_MiniTable,
+    minitable: *const upb::MiniTable,
 ) {
     // SAFETY:
     // - `src.as_raw()` is a valid `const upb_Array*`.

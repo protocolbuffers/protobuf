@@ -250,7 +250,7 @@ void UpbMiniTableLinking(Context& ctx, const Descriptor& msg,
       ];
       assert!($pbr$::upb_MiniTable_Link(
           $minitable_symbol_name$.0,
-          submessages.as_ptr() as *const *const $pbr$::upb_MiniTable,
+          submessages.as_ptr() as *const *const $pbr$::MiniTable,
           submessages.len(), subenums.as_ptr(), subenums.len()));
   )rs");
 }
@@ -316,7 +316,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
       // lock-free.
       R"rs(
       unsafe impl $pbr$::AssociatedMiniTable for $name$ {
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $pbr$::MiniTable {
           static ONCE_LOCK: $std$::sync::OnceLock<$pbr$::MiniTablePtr> =
               $std$::sync::OnceLock::new();
           ONCE_LOCK.get_or_init(|| unsafe {
@@ -339,14 +339,14 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
 
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $pbr$::MiniTable {
           <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
         }
       }
 
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> *const $pbr$::MiniTable {
           <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
         }
       }
