@@ -284,6 +284,15 @@ namespace Google.Protobuf.WellKnownTypes {
       return new FieldMask(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void Clear() {
+      paths_.Clear();
+      if (_unknownFields != null) {
+        _unknownFields.Clear();
+      }
+    }
+
     /// <summary>Field number for the "paths" field.</summary>
     public const int PathsFieldNumber = 1;
     private static readonly pb::FieldCodec<string> _repeated_paths_codec
