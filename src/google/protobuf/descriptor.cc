@@ -2424,23 +2424,6 @@ void DescriptorPool::AddDirectInputFile(absl::string_view file_name,
   direct_input_files_[file_name] = is_error;
 }
 
-bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
-    absl::string_view message_name) const {
-  static const auto& kDescriptorTypes = *new absl::flat_hash_set<std::string>({
-      "google.protobuf.EnumOptions",
-      "google.protobuf.EnumValueOptions",
-      "google.protobuf.ExtensionRangeOptions",
-      "google.protobuf.FieldOptions",
-      "google.protobuf.FileOptions",
-      "google.protobuf.MessageOptions",
-      "google.protobuf.MethodOptions",
-      "google.protobuf.OneofOptions",
-      "google.protobuf.ServiceOptions",
-  });
-  return kDescriptorTypes.contains(message_name);
-}
-
-
 void DescriptorPool::ClearDirectInputFiles() { direct_input_files_.clear(); }
 
 bool DescriptorPool::InternalIsFileLoaded(absl::string_view filename) const {
@@ -4849,7 +4832,6 @@ class DescriptorBuilder {
 
   bool IsEnumNamespaceMessage(const EnumDescriptor& enm) const;
 
-
   // Checks that the extension field matches what is declared.
   void CheckExtensionDeclaration(const FieldDescriptor& field,
                                  const FieldDescriptorProto& proto,
@@ -6774,7 +6756,6 @@ bool IsNonMessageType(absl::string_view type) {
 }
 }  // namespace
 
-
 void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                      const Descriptor* parent,
                                      Descriptor* result,
@@ -7873,7 +7854,6 @@ void DescriptorBuilder::CheckExtensionDeclarationFieldType(
   }
 }
 
-
 void DescriptorBuilder::CheckExtensionDeclaration(
     const FieldDescriptor& field, const FieldDescriptorProto& proto,
     absl::string_view declared_full_name, absl::string_view declared_type_name,
@@ -8228,7 +8208,6 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
         AddWarning(field->full_name(), proto,
                    DescriptorPool::ErrorCollector::NUMBER, make_error);
       }
-
     }
   }
 }
@@ -8730,10 +8709,6 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
   // If this is a declared extension, validate that the actual name and type
   // match the declaration.
   if (field->is_extension()) {
-    if (pool_->IsReadyForCheckingDescriptorExtDecl(
-            field->containing_type()->full_name())) {
-      return;
-    }
     const Descriptor::ExtensionRange* extension_range =
         field->containing_type()->FindExtensionRangeContainingNumber(
             field->number());
