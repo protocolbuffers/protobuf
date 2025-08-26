@@ -580,6 +580,12 @@ class PROTOBUF_EXPORT Printer {
     return absl::MakeCleanup([this, delta] { indent_ -= delta; });
   }
 
+  auto WithoutIndent() {
+    size_t prev_indent = indent_;
+    indent_ = 0;
+    return absl::MakeCleanup([this, prev_indent] { indent_ = prev_indent; });
+  }
+
   // Emits formatted source code to the underlying output. See the class
   // documentation for more details.
   //

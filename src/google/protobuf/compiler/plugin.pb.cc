@@ -29,6 +29,7 @@ namespace protobuf {
 namespace compiler {
 
 inline constexpr Version::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
         suffix_(
@@ -45,7 +46,7 @@ PROTOBUF_CONSTEXPR Version::Version(::_pbi::ConstantInitialized)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(::_pbi::ConstantInitialized()) {
+      _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct VersionDefaultTypeInternal {
   PROTOBUF_CONSTEXPR VersionDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -59,6 +60,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 VersionDefaultTypeInternal _Version_default_instance_;
 
 inline constexpr CodeGeneratorResponse_File::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
         name_(
@@ -79,7 +81,7 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(::_pbi::ConstantInitialized()) {
+      _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct CodeGeneratorResponse_FileDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponse_FileDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -93,15 +95,26 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
 
 inline constexpr CodeGeneratorResponse::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
+#define FIELD_OFFSET_TO_INTERNAL_METADATA(field) \
+::google::protobuf::internal::MessageInternalMetadataOffsetHelper<    \
+    CodeGeneratorResponse, offsetof(CodeGeneratorResponse, _impl_.field)>::kOffset
       : _cached_size_{0},
-        file_{},
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(file_)}
+        #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_ {}
+        #endif
+        ,
         error_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         supported_features_{::uint64_t{0u}},
         minimum_edition_{0},
-        maximum_edition_{0} {}
+        maximum_edition_{0}
+#undef FIELD_OFFSET_TO_INTERNAL_METADATA
+     {}
 
 template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized)
@@ -110,7 +123,7 @@ PROTOBUF_CONSTEXPR CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::Constant
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(::_pbi::ConstantInitialized()) {
+      _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct CodeGeneratorResponseDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorResponseDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -124,15 +137,35 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
 
 inline constexpr CodeGeneratorRequest::Impl_::Impl_(
+    [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
+#define FIELD_OFFSET_TO_INTERNAL_METADATA(field) \
+::google::protobuf::internal::MessageInternalMetadataOffsetHelper<    \
+    CodeGeneratorRequest, offsetof(CodeGeneratorRequest, _impl_.field)>::kOffset
       : _cached_size_{0},
-        file_to_generate_{},
-        proto_file_{},
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_to_generate_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(file_to_generate_)}
+        #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_to_generate_ {}
+        #endif
+        ,
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        proto_file_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(proto_file_)}
+        #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        proto_file_ {}
+        #endif
+        ,
         parameter_(
             &::google::protobuf::internal::fixed_address_empty_string,
             ::_pbi::ConstantInitialized()),
         compiler_version_{nullptr},
-        source_file_descriptors_{} {}
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        source_file_descriptors_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(source_file_descriptors_)}
+        #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        source_file_descriptors_ {}
+        #endif
+#undef FIELD_OFFSET_TO_INTERNAL_METADATA
+     {}
 
 template <typename>
 PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized)
@@ -141,7 +174,7 @@ PROTOBUF_CONSTEXPR CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantIn
 #else   // PROTOBUF_CUSTOM_VTABLE
     : ::google::protobuf::Message(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(::_pbi::ConstantInitialized()) {
+      _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
 struct CodeGeneratorRequestDefaultTypeInternal {
   PROTOBUF_CONSTEXPR CodeGeneratorRequestDefaultTypeInternal() : _instance(::_pbi::ConstantInitialized{}) {}
@@ -668,12 +701,34 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
+#define FIELD_OFFSET_TO_INTERNAL_METADATA(field) \
+::google::protobuf::internal::MessageInternalMetadataOffsetHelper<    \
+    CodeGeneratorRequest, offsetof(CodeGeneratorRequest, _impl_.field)>::kOffset
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
-        file_to_generate_{visibility, arena, from.file_to_generate_},
-        proto_file_{visibility, arena, from.proto_file_},
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_to_generate_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(file_to_generate_),
+                from.file_to_generate_}
+        #else
+        file_to_generate_ { visibility, arena, from.file_to_generate_ }
+        #endif
+        ,
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        proto_file_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(proto_file_),
+                from.proto_file_}
+        #else
+        proto_file_ { visibility, arena, from.proto_file_ }
+        #endif
+        ,
         parameter_(arena, from.parameter_),
-        source_file_descriptors_{visibility, arena, from.source_file_descriptors_} {}
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        source_file_descriptors_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(source_file_descriptors_),
+                from.source_file_descriptors_}
+        #else
+        source_file_descriptors_ { visibility, arena, from.source_file_descriptors_ }
+        #endif
+#undef FIELD_OFFSET_TO_INTERNAL_METADATA
+     {}
 
 CodeGeneratorRequest::CodeGeneratorRequest(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -698,11 +753,30 @@ CodeGeneratorRequest::CodeGeneratorRequest(
 PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#define FIELD_OFFSET_TO_INTERNAL_METADATA(field) \
+::google::protobuf::internal::MessageInternalMetadataOffsetHelper<    \
+    CodeGeneratorRequest, offsetof(CodeGeneratorRequest, _impl_.field)>::kOffset
       : _cached_size_{0},
-        file_to_generate_{visibility, arena},
-        proto_file_{visibility, arena},
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_to_generate_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(file_to_generate_)}
+        #else
+        file_to_generate_ { visibility, arena }
+        #endif
+        ,
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        proto_file_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(proto_file_)}
+        #else
+        proto_file_ { visibility, arena }
+        #endif
+        ,
         parameter_(arena),
-        source_file_descriptors_{visibility, arena} {}
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        source_file_descriptors_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(source_file_descriptors_)}
+        #else
+        source_file_descriptors_ { visibility, arena }
+        #endif
+#undef FIELD_OFFSET_TO_INTERNAL_METADATA
+     {}
 
 inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -729,6 +803,12 @@ inline void* PROTOBUF_NONNULL CodeGeneratorRequest::PlacementNew_(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CodeGeneratorRequest(arena);
 }
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorRequest),
+                                            alignof(CodeGeneratorRequest));
+}
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
   constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
       PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_) +
@@ -753,6 +833,7 @@ constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
                                  alignof(CodeGeneratorRequest));
   }
 }
+#endif
 constexpr auto CodeGeneratorRequest::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
@@ -1025,10 +1106,13 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_file_to_generate()->MergeFrom(from._internal_file_to_generate());
+      _this->_internal_mutable_file_to_generate()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
+          from._internal_file_to_generate());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_proto_file()->MergeFrom(
+      _this->_internal_mutable_proto_file()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_proto_file());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
@@ -1043,7 +1127,8 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
       }
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-      _this->_internal_mutable_source_file_descriptors()->MergeFrom(
+      _this->_internal_mutable_source_file_descriptors()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_source_file_descriptors());
     }
   }
@@ -1473,10 +1558,21 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorResponse& from_msg)
+#define FIELD_OFFSET_TO_INTERNAL_METADATA(field) \
+::google::protobuf::internal::MessageInternalMetadataOffsetHelper<    \
+    CodeGeneratorResponse, offsetof(CodeGeneratorResponse, _impl_.field)>::kOffset
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
-        file_{visibility, arena, from.file_},
-        error_(arena, from.error_) {}
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(file_),
+                from.file_}
+        #else
+        file_ { visibility, arena, from.file_ }
+        #endif
+        ,
+        error_(arena, from.error_)
+#undef FIELD_OFFSET_TO_INTERNAL_METADATA
+     {}
 
 CodeGeneratorResponse::CodeGeneratorResponse(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -1504,9 +1600,19 @@ CodeGeneratorResponse::CodeGeneratorResponse(
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+#define FIELD_OFFSET_TO_INTERNAL_METADATA(field) \
+::google::protobuf::internal::MessageInternalMetadataOffsetHelper<    \
+    CodeGeneratorResponse, offsetof(CodeGeneratorResponse, _impl_.field)>::kOffset
       : _cached_size_{0},
-        file_{visibility, arena},
-        error_(arena) {}
+        #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        file_{visibility, FIELD_OFFSET_TO_INTERNAL_METADATA(file_)}
+        #else
+        file_ { visibility, arena }
+        #endif
+        ,
+        error_(arena)
+#undef FIELD_OFFSET_TO_INTERNAL_METADATA
+     {}
 
 inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -1537,6 +1643,12 @@ inline void* PROTOBUF_NONNULL CodeGeneratorResponse::PlacementNew_(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) CodeGeneratorResponse(arena);
 }
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+constexpr auto CodeGeneratorResponse::InternalNewImpl_() {
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(CodeGeneratorResponse),
+                                            alignof(CodeGeneratorResponse));
+}
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 constexpr auto CodeGeneratorResponse::InternalNewImpl_() {
   constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
       PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.file_) +
@@ -1553,6 +1665,7 @@ constexpr auto CodeGeneratorResponse::InternalNewImpl_() {
                                  alignof(CodeGeneratorResponse));
   }
 }
+#endif
 constexpr auto CodeGeneratorResponse::InternalGenerateClassData_() {
   return ::google::protobuf::internal::ClassDataFull{
       ::google::protobuf::internal::ClassData{
@@ -1799,6 +1912,7 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1807,7 +1921,8 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_file()->MergeFrom(
+      _this->_internal_mutable_file()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_file());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
