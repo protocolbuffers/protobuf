@@ -298,6 +298,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ASSERT(expr) assert(expr)
 #endif
 
+#if !defined(NDEBUG) && !defined(UPB_TSAN)
+#define UPB_ENABLE_REF_CYCLE_CHECKS 1
+#else
+#define UPB_ENABLE_REF_CYCLE_CHECKS 0
+#endif
+
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_UNREACHABLE()    \
   do {                       \
@@ -955,7 +961,14 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 //
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
-#define UPB_ARENA_SIZE_HACK (10 + (UPB_XSAN_STRUCT_SIZE * 2))
+#ifndef NDEBUG
+#define UPB_ARENA_BASE_SIZE_HACK 11
+#else
+#define UPB_ARENA_BASE_SIZE_HACK 10
+#endif
+
+#define UPB_ARENA_SIZE_HACK \
+  (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))
 
 // LINT.IfChange(upb_Arena)
 
@@ -1132,10 +1145,66 @@ bool upb_Arena_IncRefFor(const upb_Arena* a, const void* owner);
 // This operation is safe to use concurrently from multiple threads.
 void upb_Arena_DecRefFor(const upb_Arena* a, const void* owner);
 
+// Creates a reference between the arenas `from` and `to`, guaranteeing that
+// the latter will not be freed until `from` is freed.
+//
+// Users must avoid all of the following error conditions, which will be
+// checked in debug mode but are UB in opt:
+//
+// - Creating reference cycles between arenas.
+// - Creating a reference between two arenas that are fused, either now
+//   or in the future.
+//
+// Creating a reference multiple times between the same two arenas is not UB but
+// is considered wasteful and may be disallowed in the future.
+//
+// Note that fuses can participate in reference cycles. The following set of
+// calls creates a cycle A -> B -> C -> A
+//   Fuse(A, B);
+//   Ref(B, C);
+//   Ref(C, A);
+//
+// From this perspective, the second rule is just a special-case of the first.
+// This set of calls is disallowed because it is effectively creating a
+// cycle A -> B -> A
+//   Fuse(A, B);
+//   Ref(B, A);
+//
+// Fuse is special because it creates what is effectively a bidirectional
+// ref, but it is not considered a cycle and will be collected correctly.
+//
+// Note that `from` is not `const`, so it may not be called concurrently
+// with any other function on `from`.
+//
+// Returns whether the reference was created successfully.
+bool upb_Arena_RefArena(upb_Arena* from, const upb_Arena* to);
+
+#ifndef NDEBUG
+// Returns true if upb_Arena_RefArena(from, to) was previously called.
+// Note that this does not take fuses into account, and it does not follow
+// chains of references; it must have been these two arenas exactly that
+// created a reference.
+bool upb_Arena_HasRef(const upb_Arena* from, const upb_Arena* to);
+#endif
+
 // This operation is safe to use concurrently from multiple threads.
 uintptr_t upb_Arena_SpaceAllocated(const upb_Arena* a, size_t* fused_count);
 // This operation is safe to use concurrently from multiple threads.
 uint32_t upb_Arena_DebugRefCount(const upb_Arena* a);
+
+#if UPB_ENABLE_REF_CYCLE_CHECKS
+// Returns true if there is a chain of arena refs that spans `from` -> `to`.
+// Fused arenas are taken into account; for example, this series of calls
+// will cause the function to return true:
+//
+// 1. upb_Arena_Fuse(a, b)
+// 2. upb_Arena_RefArena(from, a)
+// 3. upb_Arena_RefArena(b, to)
+//
+// However this function does not return true if `from` and `to` are directly
+// fused.
+bool upb_Arena_HasRefChain(const upb_Arena* from, const upb_Arena* to);
+#endif
 
 UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
   return upb_Arena_Init(NULL, 0, &upb_alloc_global);
@@ -16723,3 +16792,4 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_XSAN_MEMBER
 #undef UPB_XSAN
 #undef UPB_XSAN_STRUCT_SIZE
+#undef UPB_ENABLE_REF_CYCLE_CHECKS
