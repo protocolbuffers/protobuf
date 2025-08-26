@@ -1,6 +1,8 @@
 """A function to compile C/C++ code, like cc_library() but from Starlark."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()

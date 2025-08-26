@@ -1,5 +1,7 @@
 """upb_minitable_proto_library() exposes upb's generated minitables (foo.upb_minitable.h)"""
 
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
 load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "upb_use_cpp_toolchain")
