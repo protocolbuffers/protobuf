@@ -52,6 +52,7 @@ def _bazel_java_proto_aspect_impl(target, ctx):
 
     # Compile Java sources (or just merge if there aren't any)
     deps = _filter_provider(JavaInfo, _proto_library.deps)
+
     exports = _filter_provider(JavaInfo, _proto_library.exports)
     if source_jar and proto_toolchain_info.runtime:
         deps.append(proto_toolchain_info.runtime[JavaInfo])
@@ -97,6 +98,7 @@ def bazel_java_proto_library_rule(ctx):
     for dep in ctx.attr.deps:
         proto_common.check_collocated(ctx.label, dep[ProtoInfo], proto_toolchain)
 
+    # Why isn't deps included if also an implicit option_dep?
     java_info = java_info_merge_for_protos([dep[JavaInfo] for dep in ctx.attr.deps], merge_java_outputs = False)
 
     transitive_src_and_runtime_jars = depset(transitive = [dep[JavaProtoAspectInfo].jars for dep in ctx.attr.deps])
