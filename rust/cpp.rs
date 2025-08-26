@@ -10,9 +10,9 @@
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
-    MergeFrom, Message, Mut, MutProxied, OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr,
-    ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut,
-    RepeatedView, TakeFrom, View,
+    MergeFrom, Message, MessageMutInterop, Mut, MutProxied, OwnedMessageInterop, ParseError,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -1365,6 +1365,28 @@ where
 {
     fn get_raw_message_mut(&mut self, _private: Private) -> RawMessage {
         self.as_mut().get_raw_message_mut(_private)
+    }
+}
+
+impl<'a, T> MessageMutInterop<'a> for T
+where
+    Self: AsMut + CppGetRawMessageMut + From<MessageMutInner<'a, <Self as AsMut>::MutProxied>>,
+    <Self as AsMut>::MutProxied: Message,
+{
+    unsafe fn __unstable_wrap_raw_message_mut(msg: &'a mut *mut std::ffi::c_void) -> Self {
+        let raw = RawMessage::new(*msg as *mut _).unwrap();
+        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
+        inner.into()
+    }
+    unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
+        msg: *mut std::ffi::c_void,
+    ) -> Self {
+        let raw = RawMessage::new(msg as *mut _).unwrap();
+        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
+        inner.into()
+    }
+    fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void {
+        self.get_raw_message_mut(Private).as_ptr() as *mut _
     }
 }
 

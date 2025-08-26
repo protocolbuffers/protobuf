@@ -69,26 +69,8 @@ void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
       return;
     case Kernel::kUpb:
       ctx.Emit(R"rs(
-            impl $pbr$::UpbTypeConversions for $name$ {
-                fn upb_type() -> $pbr$::CType {
-                    $pbr$::CType::Enum
-                }
-
-                fn to_message_value(
-                    val: $pb$::View<'_, Self>) -> $pbr$::upb_MessageValue {
-                    $pbr$::upb_MessageValue { int32_val: val.0 }
-                }
-
-                unsafe fn into_message_value_fuse_if_required(
-                  _raw_parent_arena: $pbr$::RawArena,
-                  val: Self) -> $pbr$::upb_MessageValue {
-                    $pbr$::upb_MessageValue { int32_val: val.0 }
-                }
-
-                unsafe fn from_message_value<'msg>(val: $pbr$::upb_MessageValue)
-                    -> $pb$::View<'msg, Self> {
-                  $name$(unsafe { val.int32_val })
-                }
+            impl $pbr$::EntityType for $name$ {
+                type Tag = $pbr$::EnumTag;
             }
             )rs");
       return;

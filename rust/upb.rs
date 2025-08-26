@@ -10,8 +10,9 @@
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
-    MergeFrom, Message, Mut, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied,
-    ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, TakeFrom, View,
+    MergeFrom, Message, MessageViewInterop, Mut, ParseError, ProtoBytes, ProtoStr, ProtoString,
+    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, TakeFrom,
+    View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -375,7 +376,7 @@ macro_rules! impl_repeated_base {
             unsafe {
                 assert!(upb_Array_Append(
                     f.as_raw(Private),
-                    <$t as UpbTypeConversions>::into_message_value_fuse_if_required(
+                    <$t as UpbTypeConversions<PrimitiveTag>>::into_message_value_fuse_if_required(
                         arena,
                         v.into_proxied(Private)
                     ),
@@ -392,7 +393,10 @@ macro_rules! impl_repeated_base {
         #[inline]
         unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
             unsafe {
-                <$t as UpbTypeConversions>::from_message_value(upb_Array_Get(f.as_raw(Private), i))
+                <$t as UpbTypeConversions<PrimitiveTag>>::from_message_value(upb_Array_Get(
+                    f.as_raw(Private),
+                    i,
+                ))
             }
         }
         #[inline]
@@ -406,7 +410,7 @@ macro_rules! impl_repeated_base {
                 upb_Array_Set(
                     f.as_raw(Private),
                     i,
-                    <$t as UpbTypeConversions>::into_message_value_fuse_if_required(
+                    <$t as UpbTypeConversions<PrimitiveTag>>::into_message_value_fuse_if_required(
                         arena,
                         v.into_proxied(Private),
                     ),
@@ -496,7 +500,7 @@ macro_rules! impl_repeated_bytes {
 
 unsafe impl<T> ProxiedInRepeated for T
 where
-    T: Message + UpbTypeConversions + AssociatedMiniTable,
+    T: Message + EntityType + UpbTypeConversions<T::Tag> + AssociatedMiniTable,
 {
     fn repeated_new(_private: Private) -> Repeated<Self> {
         let arena = Arena::new();
@@ -521,7 +525,7 @@ where
         unsafe {
             upb_Array_Append(
                 repeated.as_raw(Private),
-                <Self as UpbTypeConversions>::into_message_value_fuse_if_required(
+                <Self as UpbTypeConversions<T::Tag>>::into_message_value_fuse_if_required(
                     repeated.raw_arena(Private),
                     val.into_proxied(Private),
                 ),
@@ -574,7 +578,7 @@ where
             upb_Array_Set(
                 repeated.as_raw(Private),
                 index,
-                <Self as UpbTypeConversions>::into_message_value_fuse_if_required(
+                <Self as UpbTypeConversions<T::Tag>>::into_message_value_fuse_if_required(
                     repeated.raw_arena(Private),
                     val.into_proxied(Private),
                 ),
@@ -821,7 +825,30 @@ impl<'msg> InnerMapMut<'msg> {
     }
 }
 
-pub trait UpbTypeConversions: Proxied {
+/// This trait allows us to associate a tag with each type of protobuf entity. The tag indicates
+/// whether the entity is a message, enum, or primitive. The main purpose of this is to allow us to
+/// have separate blanket implementations of UpbTypeConversions for messages and enums.
+pub trait EntityType {
+    type Tag;
+}
+
+pub struct MessageTag;
+pub struct EnumTag;
+pub struct PrimitiveTag;
+
+macro_rules! impl_entity_type_for_primitives {
+    ($($t:ty,)*) => {
+        $(
+            impl EntityType for $t {
+                type Tag = PrimitiveTag;
+            }
+        )*
+    };
+}
+
+impl_entity_type_for_primitives!(f32, f64, i32, u32, i64, u64, bool, ProtoBytes, ProtoString,);
+
+pub trait UpbTypeConversions<Tag>: Proxied {
     fn upb_type() -> upb::CType;
 
     fn to_message_value(val: View<'_, Self>) -> upb_MessageValue;
@@ -836,6 +863,7 @@ pub trait UpbTypeConversions: Proxied {
     /// # Safety
     /// - `msg_val` must be the correct variant for `Self`.
     /// - `msg_val` pointers must point to memory valid for `'msg` lifetime.
+    /// - If `Self` is a closed enum, then `msg_val.int32_val` must be a valid enum entry.
     unsafe fn from_message_value<'msg>(msg_val: upb_MessageValue) -> View<'msg, Self>;
 
     /// # Safety
@@ -850,10 +878,79 @@ pub trait UpbTypeConversions: Proxied {
     }
 }
 
+impl<T> UpbTypeConversions<MessageTag> for T
+where
+    Self: Message + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    for<'a> View<'a, Self>: UpbGetMessagePtr + MessageViewInterop<'a>,
+    for<'a> Mut<'a, Self>: From<MessageMutInner<'a, Self>>,
+{
+    fn upb_type() -> CType {
+        CType::Message
+    }
+
+    fn to_message_value(val: View<'_, Self>) -> upb_MessageValue {
+        upb_MessageValue { msg_val: Some(val.get_ptr(Private).raw()) }
+    }
+
+    unsafe fn into_message_value_fuse_if_required(
+        raw_parent_arena: RawArena,
+        mut val: Self,
+    ) -> upb_MessageValue {
+        // SAFETY: The arena memory is not freed due to `ManuallyDrop`.
+        let parent_arena =
+            std::mem::ManuallyDrop::new(unsafe { Arena::from_raw(raw_parent_arena) });
+
+        parent_arena.fuse(val.get_arena(Private));
+        upb_MessageValue { msg_val: Some(val.get_ptr(Private).raw()) }
+    }
+
+    unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, Self> {
+        unsafe {
+            let raw = msg.msg_val.expect("expected present message value in map");
+            View::<Self>::__unstable_wrap_raw_message_unchecked_lifetime(
+                raw.as_ptr() as *const std::ffi::c_void
+            )
+        }
+    }
+
+    unsafe fn from_message_mut<'msg>(msg: RawMessage, arena: &'msg Arena) -> Mut<'msg, Self> {
+        unsafe { MessageMutInner::<'msg, Self>::wrap_raw(msg, arena).into() }
+    }
+}
+
+impl<T> UpbTypeConversions<EnumTag> for T
+where
+    Self: Into<i32> + TryFrom<i32> + for<'a> Proxied<View<'a> = Self> + 'static,
+{
+    fn upb_type() -> CType {
+        CType::Enum
+    }
+
+    fn to_message_value(val: View<'_, Self>) -> upb_MessageValue {
+        upb_MessageValue { int32_val: val.into() }
+    }
+
+    unsafe fn into_message_value_fuse_if_required(
+        _raw_parent_arena: RawArena,
+        val: Self,
+    ) -> upb_MessageValue {
+        upb_MessageValue { int32_val: val.into() }
+    }
+
+    unsafe fn from_message_value<'msg>(val: upb_MessageValue) -> View<'msg, Self> {
+        // SAFETY: The caller guarantees that `val` is the correct variant.
+        let result = Self::try_from(unsafe { val.int32_val });
+        std::debug_assert!(result.is_ok());
+        // SAFETY:
+        // - The caller guarantees that `val.int32_val` is valid for this enum.
+        unsafe { result.unwrap_unchecked() }
+    }
+}
+
 macro_rules! impl_upb_type_conversions_for_scalars {
     ($($t:ty, $ufield:ident, $upb_tag:expr, $zero_val:literal;)*) => {
         $(
-            impl UpbTypeConversions for $t {
+            impl UpbTypeConversions<PrimitiveTag> for $t {
                 #[inline(always)]
                 fn upb_type() -> upb::CType {
                     $upb_tag
@@ -866,7 +963,7 @@ macro_rules! impl_upb_type_conversions_for_scalars {
 
                 #[inline(always)]
                 unsafe fn into_message_value_fuse_if_required(_: RawArena, val: $t) -> upb_MessageValue {
-                    Self::to_message_value(val)
+                    <Self as UpbTypeConversions<PrimitiveTag>>::to_message_value(val)
                 }
 
                 #[inline(always)]
@@ -888,7 +985,7 @@ impl_upb_type_conversions_for_scalars!(
     bool, bool_val, upb::CType::Bool, false;
 );
 
-impl UpbTypeConversions for ProtoBytes {
+impl UpbTypeConversions<PrimitiveTag> for ProtoBytes {
     fn upb_type() -> upb::CType {
         upb::CType::Bytes
     }
@@ -915,7 +1012,7 @@ impl UpbTypeConversions for ProtoBytes {
     }
 }
 
-impl UpbTypeConversions for ProtoString {
+impl UpbTypeConversions<PrimitiveTag> for ProtoString {
     fn upb_type() -> upb::CType {
         upb::CType::String
     }
@@ -930,7 +1027,7 @@ impl UpbTypeConversions for ProtoString {
     ) -> upb_MessageValue {
         // SAFETY: `raw_arena` is valid as promised by the caller
         unsafe {
-            <ProtoBytes as UpbTypeConversions>::into_message_value_fuse_if_required(
+            <ProtoBytes as UpbTypeConversions<PrimitiveTag>>::into_message_value_fuse_if_required(
                 raw_arena,
                 val.into(),
             )
@@ -969,18 +1066,12 @@ impl RawMapIter {
 
 impl<Key, MessageType> ProxiedInMapValue<Key> for MessageType
 where
-    Key: Proxied + UpbTypeConversions,
-    MessageType: Proxied + UpbTypeConversions,
+    Key: Proxied + EntityType + UpbTypeConversions<Key::Tag>,
+    Self: Proxied + EntityType + UpbTypeConversions<<Self as EntityType>::Tag>,
 {
     fn map_new(_private: Private) -> Map<Key, Self> {
         let arena = Arena::new();
-        let raw = unsafe {
-            upb_Map_New(
-                arena.raw(),
-                <Key as UpbTypeConversions>::upb_type(),
-                <Self as UpbTypeConversions>::upb_type(),
-            )
-        };
+        let raw = unsafe { upb_Map_New(arena.raw(), Key::upb_type(), Self::upb_type()) };
 
         Map::from_inner(Private, InnerMap::new(raw, arena))
     }
@@ -1008,11 +1099,8 @@ where
         unsafe {
             upb_Map_InsertAndReturnIfInserted(
                 map.as_raw(Private),
-                <Key as UpbTypeConversions>::to_message_value(key),
-                <Self as UpbTypeConversions>::into_message_value_fuse_if_required(
-                    arena,
-                    value.into_proxied(Private),
-                ),
+                Key::to_message_value(key),
+                Self::into_message_value_fuse_if_required(arena, value.into_proxied(Private)),
                 arena,
             )
         }
@@ -1021,16 +1109,12 @@ where
     fn map_get<'a>(map: MapView<'a, Key, Self>, key: View<'_, Key>) -> Option<View<'a, Self>> {
         let mut val = MaybeUninit::uninit();
         let found = unsafe {
-            upb_Map_Get(
-                map.as_raw(Private),
-                <Key as UpbTypeConversions>::to_message_value(key),
-                val.as_mut_ptr(),
-            )
+            upb_Map_Get(map.as_raw(Private), Key::to_message_value(key), val.as_mut_ptr())
         };
         if !found {
             return None;
         }
-        Some(unsafe { <Self as UpbTypeConversions>::from_message_value(val.assume_init()) })
+        Some(unsafe { Self::from_message_value(val.assume_init()) })
     }
 
     fn map_get_mut<'a>(mut map: MapMut<'a, Key, Self>, key: View<'_, Key>) -> Option<Mut<'a, Self>>
@@ -1038,26 +1122,13 @@ where
         Self: Message,
     {
         // SAFETY: The map is valid as promised by the caller.
-        let val = unsafe {
-            upb_Map_GetMutable(
-                map.as_raw(Private),
-                <Key as UpbTypeConversions>::to_message_value(key),
-            )
-        };
+        let val = unsafe { upb_Map_GetMutable(map.as_raw(Private), Key::to_message_value(key)) };
         // SAFETY: The lifetime of the MapMut is guaranteed to outlive the returned Mut.
-        NonNull::new(val).map(|msg| unsafe {
-            <Self as UpbTypeConversions>::from_message_mut(msg, map.arena(Private))
-        })
+        NonNull::new(val).map(|msg| unsafe { Self::from_message_mut(msg, map.arena(Private)) })
     }
 
     fn map_remove(mut map: MapMut<Key, Self>, key: View<'_, Key>) -> bool {
-        unsafe {
-            upb_Map_Delete(
-                map.as_raw(Private),
-                <Key as UpbTypeConversions>::to_message_value(key),
-                ptr::null_mut(),
-            )
-        }
+        unsafe { upb_Map_Delete(map.as_raw(Private), Key::to_message_value(key), ptr::null_mut()) }
     }
     fn map_iter(map: MapView<Key, Self>) -> MapIter<Key, Self> {
         // SAFETY: MapView<'_,..>> guarantees its RawMap outlives '_.
@@ -1071,12 +1142,7 @@ where
         unsafe { iter.as_raw_mut(Private).next_unchecked() }
             // SAFETY: MapIter<K, V> returns key and values message values
             //         with the variants for K and V active.
-            .map(|(k, v)| unsafe {
-                (
-                    <Key as UpbTypeConversions>::from_message_value(k),
-                    <Self as UpbTypeConversions>::from_message_value(v),
-                )
-            })
+            .map(|(k, v)| unsafe { (Key::from_message_value(k), Self::from_message_value(v)) })
     }
 }
 
