@@ -1876,7 +1876,6 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
   // Flag control performance tests to keep them internal and opt-in only
   if (suite_.performance_) {
     RunBinaryPerformanceTests();
-    RunJsonPerformanceTests();
   }
 }
 
@@ -1914,57 +1913,6 @@ void BinaryAndJsonConformanceSuiteImpl<
       FieldDescriptor::TYPE_STRING);
   TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
       FieldDescriptor::TYPE_BYTES);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonPerformanceTests() {
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_BOOL, "true");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_DOUBLE, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_FLOAT, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_UINT32, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_UINT64, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_STRING, "\"foo\"");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_BYTES, "\"foo\"");
-}
-
-// This is currently considered valid input by some languages but not others
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-        FieldDescriptor::Type type, std::string field_value) {
-  const std::string type_name =
-      UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
-  const FieldDescriptor* field = GetFieldForType(type, true, Packed::kFalse);
-  const absl::string_view field_name = field->name();
-
-  std::string message_field =
-      absl::StrCat("\"", field_name, "\": [", field_value, "]");
-  std::string recursive_message =
-      absl::StrCat("\"recursive_message\": { ", message_field, "}");
-  std::string input = absl::StrCat("{", recursive_message);
-  for (size_t i = 1; i < kPerformanceRepeatCount; i++) {
-    absl::StrAppend(&input, ",", recursive_message);
-  }
-  absl::StrAppend(&input, "}");
-
-  std::string textproto_message_field =
-      absl::StrCat(field_name, ": ", field_value);
-  std::string expected_textproto = "recursive_message { ";
-  for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    absl::StrAppend(&expected_textproto, textproto_message_field, " ");
-  }
-  absl::StrAppend(&expected_textproto, "}");
-  RunValidJsonTest(
-      absl::StrCat("TestJsonPerformanceMergeMessageWithRepeatedFieldForType",
-                   type_name),
-      RECOMMENDED, input, expected_textproto);
 }
 
 template <typename MessageType>

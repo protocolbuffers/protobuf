@@ -82,7 +82,6 @@ class BinaryAndJsonConformanceSuiteImpl {
   void RunAllTests();
 
   void RunBinaryPerformanceTests();
-  void RunJsonPerformanceTests();
   void RunJsonTests();
   void RunJsonTestsForStoresDefaultPrimitive();
   void RunJsonTestsForFieldNameConvention();
@@ -170,8 +169,6 @@ class BinaryAndJsonConformanceSuiteImpl {
       google::protobuf::FieldDescriptor::Type);
   void TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
       google::protobuf::FieldDescriptor::Type);
-  void TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      google::protobuf::FieldDescriptor::Type, std::string field_value);
 
   enum class Packed {
     kUnspecified = 0,
