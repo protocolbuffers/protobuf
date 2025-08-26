@@ -1797,7 +1797,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         new CachedDescriptorRetriever() {
           @Override
           public FieldDescriptor loadDescriptor() {
-            return scope.getDescriptorForType().getExtensions().get(descriptorIndex);
+            return scope.getDescriptorForType().getExtension(descriptorIndex);
           }
         },
         singularType,
@@ -2151,8 +2151,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     public FieldAccessorTable(final Descriptor descriptor, final String[] camelCaseNames) {
       this.descriptor = descriptor;
       this.camelCaseNames = camelCaseNames;
-      fields = new FieldAccessor[descriptor.getFields().size()];
-      oneofs = new OneofAccessor[descriptor.getOneofs().size()];
+      fields = new FieldAccessor[descriptor.getFieldCount()];
+      oneofs = new OneofAccessor[descriptor.getOneofCount()];
       initialized = false;
     }
 
@@ -2175,7 +2175,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         }
         int fieldsSize = fields.length;
         for (int i = 0; i < fieldsSize; i++) {
-          FieldDescriptor field = descriptor.getFields().get(i);
+          FieldDescriptor field = descriptor.getField(i);
           String containingOneofCamelCaseName = null;
           if (field.getContainingOneof() != null) {
             int index = fieldsSize + field.getContainingOneof().getIndex();
@@ -2235,8 +2235,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           }
         }
 
-        for (int i = 0; i < descriptor.getOneofs().size(); i++) {
-          if (i < descriptor.getRealOneofs().size()) {
+        for (int i = 0; i < descriptor.getOneofCount(); i++) {
+          if (i < descriptor.getRealOneofCount()) {
             oneofs[i] =
                 new RealOneofAccessor(
                     descriptor, camelCaseNames[i + fieldsSize], messageClass, builderClass);
@@ -2383,8 +2383,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** SyntheticOneofAccessor provides access to a single synthetic oneof. */
     private static class SyntheticOneofAccessor implements OneofAccessor {
       SyntheticOneofAccessor(final Descriptor descriptor, final int oneofIndex) {
-        OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
-        fieldDescriptor = oneofDescriptor.getFields().get(0);
+        OneofDescriptor oneofDescriptor = descriptor.getOneof(oneofIndex);
+        fieldDescriptor = oneofDescriptor.getField(0);
       }
 
       private final FieldDescriptor fieldDescriptor;
