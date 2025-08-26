@@ -3087,6 +3087,20 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
 
 // ===================================================================
 
+bool FieldDescriptor::IsRepeatedPtrField() const {
+  if (!is_repeated() || is_map()) {
+    return false;
+  }
+  switch (cpp_type()) {
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return true;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return cpp_string_type() != FieldDescriptor::CppStringType::kCord;
+    default:
+      return false;
+  }
+}
+
 bool FieldDescriptor::is_map_message_type() const {
   return message_type()->options().map_entry();
 }

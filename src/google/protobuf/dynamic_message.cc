@@ -347,6 +347,8 @@ class DynamicMessage final : public Message {
   // If `T` is not `void`, it will mask bits off the offset via alignment.
   // Used to remove feature masks that are part of the reflection
   // implementation.
+  template <typename T>
+  uint32_t FieldOffset(int i) const;
   template <typename T = void>
   T* MutableRaw(int i);
   template <typename T = void>
@@ -441,21 +443,20 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
 }
 
 template <typename T>
-inline T* DynamicMessage::MutableRaw(int i) {
+inline uint32_t DynamicMessage::FieldOffset(int i) const {
   uint32_t mask = ~uint32_t{};
   if constexpr (!std::is_void_v<T>) {
     mask = ~(uint32_t{alignof(T)} - 1);
   }
-  return reinterpret_cast<T*>(OffsetToPointer(type_info_->offsets[i] & mask));
+  return type_info_->offsets[i] & mask;
+}
+template <typename T>
+inline T* DynamicMessage::MutableRaw(int i) {
+  return reinterpret_cast<T*>(OffsetToPointer(FieldOffset<T>(i)));
 }
 template <typename T>
 inline const T& DynamicMessage::GetRaw(int i) const {
-  uint32_t mask = ~uint32_t{};
-  if constexpr (!std::is_void_v<T>) {
-    mask = ~(uint32_t{alignof(T)} - 1);
-  }
-  return *reinterpret_cast<const T*>(
-      OffsetToPointer(type_info_->offsets[i] & mask));
+  return *reinterpret_cast<const T*>(OffsetToPointer(FieldOffset<T>(i)));
 }
 inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);
@@ -495,6 +496,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   }
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+    size_t field_offset = FieldOffset<void>(i);
+    int internal_metadata_offset =
+        internal::MessageInternalMetadataOffset<DynamicMessage>(field_offset);
+#endif
     void* field_ptr = MutableRaw(i);
     if (InRealOneof(field)) {
       continue;
@@ -570,7 +576,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->InitDefault();
             } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+              new (field_ptr)
+                  RepeatedPtrField<std::string>(internal_metadata_offset);
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
               new (field_ptr) RepeatedPtrField<std::string>(arena);
+#endif
             }
             break;
         }
@@ -598,7 +609,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                     : nullptr,
                 arena);
           } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+            new (field_ptr) RepeatedPtrField<Message>(internal_metadata_offset);
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
             new (field_ptr) RepeatedPtrField<Message>(arena);
+#endif
           }
         }
         break;

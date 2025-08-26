@@ -34,6 +34,13 @@ namespace protobuf {
 
 namespace internal {
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+const int RepeatedPtrFieldWithArenaBase::kInternalMetadataOffset =
+    static_cast<int>(
+        offsetof(RepeatedPtrFieldWithArenaBase, internal_metadata_)) -
+    static_cast<int>(offsetof(RepeatedPtrFieldWithArenaBase, field_));
+#endif
+
 MessageLite* CloneSlow(Arena* arena, const MessageLite& value) {
   auto* msg = value.New(arena);
   msg->CheckTypeAndMergeFrom(value);
@@ -127,7 +134,7 @@ void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
 }
 
 template PROTOBUF_EXPORT_TEMPLATE_DEFINE void
-memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
+memswap<InternalMetadataOffsetOffsetHelper<RepeatedPtrFieldBase>::value>(
     char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
 
 template <>
@@ -143,7 +150,8 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
   for (; src < end_assign; ++dst, ++src) {
     (*dst)->assign(**src);
   }
-  if (Arena* const arena = arena_) {
+  if (HasArena()) {
+    Arena* arena = GetArena();
     for (; src < end; ++dst, ++src) {
       *dst = Arena::Create<std::string>(arena, **src);
     }

@@ -430,7 +430,17 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   };
 
   struct ReflectionPayload {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+    explicit ReflectionPayload(Arena* arena)
+        : internal_metadata(arena),
+          repeated_field(
+              internal::InternalVisibility(),
+              static_cast<int>(offsetof(ReflectionPayload, internal_metadata) -
+                               offsetof(ReflectionPayload, repeated_field))) {}
+    InternalMetadata internal_metadata;
+#else
     explicit ReflectionPayload(Arena* arena) : repeated_field(arena) {}
+#endif
     RepeatedPtrField<Message> repeated_field;
 
     absl::Mutex mutex;  // The thread to synchronize map and repeated
