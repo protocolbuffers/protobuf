@@ -49,10 +49,8 @@ struct upb_EnumDef {
   int res_range_count;
   int res_name_count;
   int32_t defaultval;
+  UPB_DESC(SymbolVisibility) visibility;
   bool is_sorted;  // Whether all of the values are defined in ascending order.
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i) {
@@ -88,6 +86,10 @@ bool upb_EnumDef_HasOptions(const upb_EnumDef* e) {
 const UPB_DESC(FeatureSet) *
     upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e) {
   return e->resolved_features;
+}
+
+UPB_DESC(SymbolVisibility) upb_EnumDef_Visibility(const upb_EnumDef* e) {
+  return e->visibility;
 }
 
 const char* upb_EnumDef_FullName(const upb_EnumDef* e) { return e->full_name; }
@@ -284,6 +286,8 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
       UPB_DESC(EnumDescriptorProto_reserved_name)(enum_proto, &n_res_name);
   e->res_name_count = n_res_name;
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
+
+  e->visibility = UPB_DESC(EnumDescriptorProto_visibility)(enum_proto);
 
   if (!upb_inttable_compact(&e->iton, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 

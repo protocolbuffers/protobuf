@@ -76,6 +76,7 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
+  UPB_DESC(SymbolVisibility) visibility;
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -321,6 +322,11 @@ const upb_FieldDef* upb_MessageDef_NestedExtension(const upb_MessageDef* m,
 
 upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m) {
   return m->well_known_type;
+}
+
+UPB_API UPB_DESC(SymbolVisibility)
+    upb_MessageDef_Visibility(const upb_MessageDef* m) {
+  return m->visibility;
 }
 
 bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m) {
@@ -763,6 +769,8 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->nested_msg_count = n_msg;
   m->nested_msgs =
       _upb_MessageDefs_New(ctx, n_msg, msgs, m->resolved_features, m);
+
+  m->visibility = UPB_DESC(DescriptorProto_visibility)(msg_proto);
 }
 
 // Allocate and initialize an array of |n| message defs.
