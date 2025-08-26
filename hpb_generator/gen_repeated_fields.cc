@@ -157,18 +157,22 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* desc,
           if (!new_msg) {
             return ::hpb::MessageAllocationError();
           }
-          return hpb::interop::upb::MakeHandle<$4>((upb_Message *)new_msg, $5);
+          return hpb::interop::upb::MakeHandle<$4>((upb_Message*)new_msg, $5);
         }
 
         bool $0::add_alias_$2($1 target) {
-          ABSL_CHECK(upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(target)));
+#ifndef NDEBUG
+          ABSL_CHECK(
+              upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(target)) ||
+              upb_Arena_HasRef(arena_, hpb::interop::upb::GetArena(target)));
+#endif
           size_t size = 0;
           $3_$2(msg_, &size);
           auto elements = $3_resize_$2(msg_, size + 1, arena_);
           if (!elements) {
             return false;
           }
-          elements[size] = ($9 *)hpb::interop::upb::GetMessage(target);
+          elements[size] = ($9*)hpb::interop::upb::GetMessage(target);
           return true;
         }
       )cc",
