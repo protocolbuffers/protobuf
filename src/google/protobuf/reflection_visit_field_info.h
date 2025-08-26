@@ -225,8 +225,10 @@ struct DynamicExtensionInfoHelper {
     ext.is_cleared = true;
     return ext.ptr.lazymessage_value->Clear();
   }
-  static size_t ByteSizeLongLazyMessage(const Extension& ext) {
-    return ext.ptr.lazymessage_value->ByteSizeLong();
+  static size_t ByteSizeLongLazyMessage(const Extension& ext,
+                                        const Message* prototype,
+                                        Arena* arena) {
+    return ext.ptr.lazymessage_value->ByteSizeLong(prototype, arena);
   }
 };
 
@@ -674,7 +676,8 @@ struct LazyMessageDynamicExtensionInfo
   }
   void Clear() { DynamicExtensionInfoHelper::ClearLazyMessage(ext); }
   size_t FieldByteSize() const {
-    return DynamicExtensionInfoHelper::ByteSizeLongLazyMessage(ext);
+    return DynamicExtensionInfoHelper::ByteSizeLongLazyMessage(ext, &prototype,
+                                                               arena);
   }
 
   ExtensionT& ext;

@@ -578,9 +578,9 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Returns the total serialized size of all the extensions.
   size_t ByteSize() const;
-
   // Like ByteSize() but uses MessageSet format.
   size_t MessageSetByteSize() const;
+
 
   // Returns (an estimate of) the total number of bytes used for storing the
   // extensions in memory, excluding sizeof(*this).  If the ExtensionSet is
@@ -685,7 +685,8 @@ class PROTOBUF_EXPORT ExtensionSet {
                                Arena* arena) const = 0;
     virtual bool IsEagerSerializeSafe(const MessageLite* prototype,
                                       Arena* arena) const = 0;
-    virtual size_t ByteSizeLong() const = 0;
+    virtual size_t ByteSizeLong(const MessageLite* prototype,
+                                Arena* arena) const = 0;
     virtual size_t SpaceUsedLong() const = 0;
 
     virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
@@ -742,8 +743,75 @@ class PROTOBUF_EXPORT ExtensionSet {
     uint8_t* InternalSerializeMessageSetItemWithCachedSizesToArray(
         const MessageLite* extendee, const ExtensionSet* extension_set,
         int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
-    size_t ByteSize(int number) const;
-    size_t MessageSetItemByteSize(int number) const;
+    size_t ByteSize(int number, Arena* arena) const;
+    size_t MessageSetItemByteSize(int number, Arena* arena) const;
+
+    const MessageLite* GetPrototypeForLazyMessage() const {
+      ABSL_DCHECK(is_lazy);
+      return descriptor_or_prototype.AsPrototype();
+    }
+
+
+    // A tagged pointer that can hold either a FieldDescriptor* or
+    // const MessageLite*. The LSB is used for tagging. Mimicks
+    // LazyFIeld::UnparsedPayload.
+    struct DescriptorOrPrototype {
+     private:
+      enum Tag : uintptr_t {
+        kTagFieldDescriptor = 0,
+        kTagPrototype = 1,
+        kTagBits = 1,
+        kRemoveMask = ~kTagBits,
+      };
+
+     public:
+      // Sets the value to a FieldDescriptor*.
+      void Set(const FieldDescriptor* desc) {
+        ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(desc) & kTagBits, 0u)
+            << "FieldDescriptor pointer is not sufficiently aligned.";
+        value = reinterpret_cast<uintptr_t>(desc) | kTagFieldDescriptor;
+      }
+      // Sets the value to an ExtensionInfo*. We store a pointer to the info.
+      void Set(const MessageLite* prototype) {
+        ABSL_DCHECK_NE(prototype, nullptr);
+        ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(prototype) & kTagBits, 0u)
+            << "MessageLite pointer is not sufficiently aligned.";
+        value = reinterpret_cast<uintptr_t>(prototype) | kTagPrototype;
+      }
+
+      // Returns true if the held type is FieldDescriptor*.
+      bool IsFieldDescriptor() const { return tag() == kTagFieldDescriptor; }
+
+      // Returns true if the held type is ExtensionInfo*.
+      bool IsPrototype() const { return tag() == kTagPrototype; }
+
+      // Returns the FieldDescriptor* per tag type. It can still return nullptr.
+      const FieldDescriptor* GetFieldDescriptor() const {
+        if (IsFieldDescriptor()) {
+          return AsFieldDescriptor();
+        } else {
+          return nullptr;
+        }
+      }
+
+      // Requires: IsPrototype() is true.
+      const MessageLite* AsPrototype() const {
+        ABSL_DCHECK(IsPrototype());
+        return reinterpret_cast<const MessageLite*>(value & kRemoveMask);
+      }
+
+     private:
+      // Requires: IsFieldDescriptor() is true.
+      const FieldDescriptor* AsFieldDescriptor() const {
+        ABSL_DCHECK(IsFieldDescriptor());
+        return reinterpret_cast<const FieldDescriptor*>(value & kRemoveMask);
+      }
+
+      Tag tag() const { return static_cast<Tag>(value & kTagBits); }
+
+      uintptr_t value;
+    };
+
     void Clear();
     int GetSize() const;
     void Free();
@@ -879,7 +947,10 @@ class PROTOBUF_EXPORT ExtensionSet {
     // The descriptor for this extension, if one exists and is known.  May be
     // nullptr.  Must not be nullptr if the descriptor for the extension does
     // not live in the same pool as the descriptor for the containing type.
-    const FieldDescriptor* descriptor;
+    //
+    // For lazy message extensions, this will store the prototype of the
+    // message type.
+    DescriptorOrPrototype descriptor_or_prototype;
   };
 
   // The Extension struct is small enough to be passed by value so we use it
@@ -907,9 +978,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   const Extension* FindOrNullInLargeMap(int key) const;
   Extension* FindOrNullInLargeMap(int key);
 
-  // Inserts a new (key, Extension) into the ExtensionSet (and returns true), or
-  // finds the already-existing Extension for that key (returns false).
-  // The Extension* will point to the new-or-found Extension.
+  // Returns a pair of <Extension*, bool> where the bool is true if the
+  // extension was newly inserted.
   std::pair<Extension*, bool> Insert(int key);
   // Same as insert for the large map.
   std::pair<Extension*, bool> InternalInsertIntoLargeMap(int key);
@@ -1119,8 +1189,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Find the prototype for a LazyMessage from the extension registry. Returns
   // null if the extension is not found.
-  const MessageLite* GetPrototypeForLazyMessage(const MessageLite* extendee,
-                                                int number) const;
+  const MessageLite* FindPrototypeForLazyMessage(const MessageLite* extendee,
+                                                 int number) const;
 
   // Returns true if extension is present and lazy.
   bool HasLazy(int number) const;
@@ -1132,7 +1202,14 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Gets the extension with the given number, creating it if it does not
   // already exist.  Returns true if the extension did not already exist.
   bool MaybeNewExtension(int number, const FieldDescriptor* descriptor,
-                         Extension** result);
+                         Extension** result_ptr) {
+    Extension::DescriptorOrPrototype descriptor_or_prototype;
+    descriptor_or_prototype.Set(descriptor);
+    return MaybeNewExtension(number, descriptor_or_prototype, result_ptr);
+  }
+  bool MaybeNewExtension(
+      int number, Extension::DescriptorOrPrototype descriptor_or_prototype,
+      Extension** result_ptr);
 
   // Gets the repeated extension for the given descriptor, creating it if
   // it does not exist.
