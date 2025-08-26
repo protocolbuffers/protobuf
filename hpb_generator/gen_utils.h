@@ -16,7 +16,9 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -43,7 +45,8 @@ std::string ToCamelCase(absl::string_view input, bool lower_first);
 
 std::string DefaultValue(const FieldDescriptor* field);
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_UTILS_H__

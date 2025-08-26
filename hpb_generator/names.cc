@@ -12,10 +12,11 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
-#include "hpb_generator/context.h"
 #include "hpb_generator/keywords.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 namespace protobuf = ::proto2;
 
 namespace {
@@ -152,6 +153,6 @@ std::string MessageProxyType(const protobuf::FieldDescriptor* field,
   return maybe_const + QualifiedInternalClassName(field->message_type()) +
          "Proxy";
 }
-
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

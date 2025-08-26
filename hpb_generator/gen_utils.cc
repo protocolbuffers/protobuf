@@ -25,7 +25,9 @@ std::string EscapeTrigraphs(absl::string_view to_escape) {
 }
 }  // namespace
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -171,6 +173,6 @@ std::string DefaultValue(const FieldDescriptor* field) {
       return "::std::false_type()";
   }
 }
-
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
