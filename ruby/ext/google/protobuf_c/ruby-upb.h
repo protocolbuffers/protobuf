@@ -13400,6 +13400,7 @@ bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
 const char* upb_EnumDef_Name(const upb_EnumDef* e);
 const UPB_DESC(EnumOptions) * upb_EnumDef_Options(const upb_EnumDef* e);
 const UPB_DESC(FeatureSet) * upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e);
+UPB_DESC(SymbolVisibility) upb_EnumDef_Visibility(const upb_EnumDef* e);
 
 upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i);
 int upb_EnumDef_ReservedNameCount(const upb_EnumDef* e);
@@ -13744,6 +13745,8 @@ int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m);
 
 UPB_API upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
 UPB_API upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
+UPB_API UPB_DESC(SymbolVisibility)
+    upb_MessageDef_Visibility(const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -10106,10 +10106,8 @@ struct upb_EnumDef {
   int res_range_count;
   int res_name_count;
   int32_t defaultval;
+  UPB_DESC(SymbolVisibility) visibility;
   bool is_sorted;  // Whether all of the values are defined in ascending order.
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
 };
 
 upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i) {
@@ -10145,6 +10143,10 @@ bool upb_EnumDef_HasOptions(const upb_EnumDef* e) {
 const UPB_DESC(FeatureSet) *
     upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e) {
   return e->resolved_features;
+}
+
+UPB_DESC(SymbolVisibility) upb_EnumDef_Visibility(const upb_EnumDef* e) {
+  return e->visibility;
 }
 
 const char* upb_EnumDef_FullName(const upb_EnumDef* e) { return e->full_name; }
@@ -10341,6 +10343,8 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
       UPB_DESC(EnumDescriptorProto_reserved_name)(enum_proto, &n_res_name);
   e->res_name_count = n_res_name;
   e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
+
+  e->visibility = UPB_DESC(EnumDescriptorProto_visibility)(enum_proto);
 
   if (!upb_inttable_compact(&e->iton, ctx->arena)) _upb_DefBuilder_OomErr(ctx);
 
@@ -12759,6 +12763,7 @@ struct upb_MessageDef {
   bool in_message_set;
   bool is_sorted;
   upb_WellKnown well_known_type;
+  UPB_DESC(SymbolVisibility) visibility;
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
@@ -13004,6 +13009,11 @@ const upb_FieldDef* upb_MessageDef_NestedExtension(const upb_MessageDef* m,
 
 upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m) {
   return m->well_known_type;
+}
+
+UPB_API UPB_DESC(SymbolVisibility)
+    upb_MessageDef_Visibility(const upb_MessageDef* m) {
+  return m->visibility;
 }
 
 bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m) {
@@ -13446,6 +13456,8 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->nested_msg_count = n_msg;
   m->nested_msgs =
       _upb_MessageDefs_New(ctx, n_msg, msgs, m->resolved_features, m);
+
+  m->visibility = UPB_DESC(DescriptorProto_visibility)(msg_proto);
 }
 
 // Allocate and initialize an array of |n| message defs.
@@ -14263,6 +14275,11 @@ static google_protobuf_EnumDescriptorProto* enumdef_toproto(upb_ToProto_Context*
                 upb_EnumDef_Options(e));
   }
 
+  UPB_DESC(SymbolVisibility) visibility = upb_EnumDef_Visibility(e);
+  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+    google_protobuf_EnumDescriptorProto_set_visibility(proto, visibility);
+  }
+
   return proto;
 }
 
@@ -14356,6 +14373,11 @@ static google_protobuf_DescriptorProto* msgdef_toproto(upb_ToProto_Context* ctx,
   if (upb_MessageDef_HasOptions(m)) {
     SET_OPTIONS(proto, DescriptorProto, MessageOptions,
                 upb_MessageDef_Options(m));
+  }
+
+  UPB_DESC(SymbolVisibility) visibility = upb_MessageDef_Visibility(m);
+  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+    google_protobuf_DescriptorProto_set_visibility(proto, visibility);
   }
 
   return proto;
