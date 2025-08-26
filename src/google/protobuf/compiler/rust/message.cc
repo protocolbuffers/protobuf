@@ -103,8 +103,7 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
     case Kernel::kUpb:
       ctx.Emit(
           R"rs(
-        let string = unsafe { $pbr$::debug_string(self.inner.ptr()) };
-        write!(f, "{}", string)
+        write!(f, "{}", $pbr$::debug_string(self))
       )rs");
       return;
   }

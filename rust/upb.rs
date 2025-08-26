@@ -26,9 +26,31 @@ extern crate upb;
 #[cfg(not(bzl))]
 use crate::upb;
 
-// Temporarily 'pub' since a lot of gencode is directly calling any of the ffi
-// fns.
-pub use upb::*;
+// Temporarily 'pub' since the gencode is directly referencing various parts of upb.
+pub use upb::upb_Message_GetMap;
+pub use upb::upb_Message_GetOrCreateMutableMap;
+pub use upb::upb_Message_SetBaseField;
+pub use upb::upb_Message_WhichOneofFieldNumber;
+pub use upb::upb_MiniTable;
+pub use upb::upb_MiniTableEnum;
+pub use upb::upb_MiniTableEnum_Build;
+pub use upb::upb_MiniTable_Build;
+pub use upb::upb_MiniTable_GetFieldByIndex;
+pub use upb::upb_MiniTable_Link;
+pub use upb::upb_MiniTable_SubMessage;
+pub use upb::wire;
+pub use upb::Arena;
+pub use upb::AssociatedMiniTable;
+pub use upb::AssociatedMiniTableEnum;
+pub use upb::MessagePtr;
+pub use upb::MiniTable;
+use upb::*;
+
+pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {
+    let ptr = msg.get_ptr(Private);
+    // SAFETY: `ptr` is legally dereferenceable.
+    unsafe { upb::debug_string(ptr) }
+}
 
 pub type RawArena = upb::RawArena;
 pub type RawMessage = upb::RawMessage;
@@ -1179,11 +1201,6 @@ pub unsafe trait UpbGetMessagePtr: SealedInternal {
     type Msg: AssociatedMiniTable + Message;
 
     fn get_ptr(&self, _private: Private) -> MessagePtr<Self::Msg>;
-
-    // TODO: Remove.
-    fn get_raw_message(&self, _private: Private) -> RawMessage {
-        self.get_ptr(Private).raw()
-    }
 }
 
 /// Internal-only trait to support blanket impls that need mutable access to raw messages
@@ -1193,11 +1210,6 @@ pub unsafe trait UpbGetMessagePtrMut: SealedInternal {
     type Msg: AssociatedMiniTable + Message;
 
     fn get_ptr_mut(&mut self, _private: Private) -> MessagePtr<Self::Msg>;
-
-    // TODO: remove.
-    fn get_raw_message_mut(&mut self, _private: Private) -> RawMessage {
-        self.get_ptr_mut(Private).raw()
-    }
 }
 
 /// Internal-only trait to support blanket impls that need const access to raw messages
@@ -1215,8 +1227,8 @@ where
     fn matches(&self, o: &Self) -> bool {
         unsafe {
             upb_Message_IsEqual(
-                self.as_view().get_raw_message(Private),
-                o.as_view().get_raw_message(Private),
+                self.as_view().get_ptr(Private).raw(),
+                o.as_view().get_ptr(Private).raw(),
                 Self::mini_table(),
                 0,
             )
@@ -1291,8 +1303,8 @@ where
         // `Self::mini_table()`.
         unsafe {
             assert!(upb_Message_DeepCopy(
-                self.get_raw_message(Private),
-                src.as_view().get_raw_message(Private),
+                self.get_ptr(Private).raw(),
+                src.as_view().get_ptr(Private).raw(),
                 <Self as AssociatedMiniTable>::mini_table(),
                 self.get_arena(Private).raw()
             ));
@@ -1309,8 +1321,8 @@ where
         // SAFETY: self and src are both valid `T`s.
         unsafe {
             assert!(upb_Message_MergeFrom(
-                self.get_raw_message(Private),
-                src.as_view().get_raw_message(Private),
+                self.get_ptr(Private).raw(),
+                src.as_view().get_ptr(Private).raw(),
                 <Self as AssociatedMiniTable>::mini_table(),
                 // Use a nullptr for the ExtensionRegistry.
                 std::ptr::null(),
