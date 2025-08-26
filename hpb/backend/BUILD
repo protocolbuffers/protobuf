@@ -20,6 +20,7 @@ cc_library(
             "//src/google/protobuf:arena",
         ],
         "//hpb:hpb_backend_upb": [
+            "//hpb/backend/upb:error",
             "//upb/mem",
         ],
     }),

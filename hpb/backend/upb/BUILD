@@ -128,3 +128,13 @@ cc_library(
         "//upb/message:copy",
     ],
 )
+
+cc_library(
+    name = "error",
+    hdrs = ["error.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//upb/wire",
+        "@abseil-cpp//absl/log:absl_log",
+    ],
+)
