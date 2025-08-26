@@ -152,12 +152,13 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
   if (descriptor_->containing_type() == nullptr) {
     printer->Print(vars,
                    "internal_$identifier$_descriptor =\n"
-                   "  getDescriptor().getMessageType($index$);\n");
+                   "  getDescriptor().getMessageTypes().get($index$);\n");
     bytecode_estimate += 30;
   } else {
-    printer->Print(vars,
-                   "internal_$identifier$_descriptor =\n"
-                   "  internal_$parent$_descriptor.getNestedType($index$);\n");
+    printer->Print(
+        vars,
+        "internal_$identifier$_descriptor =\n"
+        "  internal_$parent$_descriptor.getNestedTypes().get($index$);\n");
     bytecode_estimate += 30;
   }
 

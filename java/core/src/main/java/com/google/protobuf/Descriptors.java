@@ -211,25 +211,9 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(messageTypes));
     }
 
-    public int getMessageTypeCount() {
-      return messageTypes.length;
-    }
-
-    public Descriptor getMessageType(int index) {
-      return messageTypes[index];
-    }
-
     /** Get a list of top-level enum types declared in this file. */
     public List<EnumDescriptor> getEnumTypes() {
       return Collections.unmodifiableList(Arrays.asList(enumTypes));
-    }
-
-    public int getEnumTypeCount() {
-      return enumTypes.length;
-    }
-
-    public EnumDescriptor getEnumType(int index) {
-      return enumTypes[index];
     }
 
     /** Get a list of top-level services declared in this file. */
@@ -237,25 +221,9 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(services));
     }
 
-    public int getServiceCount() {
-      return services.length;
-    }
-
-    public ServiceDescriptor getService(int index) {
-      return services[index];
-    }
-
     /** Get a list of top-level extensions declared in this file. */
     public List<FieldDescriptor> getExtensions() {
       return Collections.unmodifiableList(Arrays.asList(extensions));
-    }
-
-    public int getExtensionCount() {
-      return extensions.length;
-    }
-
-    public FieldDescriptor getExtension(int index) {
-      return extensions[index];
     }
 
     /** Get a list of this file's dependencies (imports). */
@@ -876,29 +844,9 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(fields));
     }
 
-    /** Get a count of this message type's fields. */
-    public int getFieldCount() {
-      return fields.length;
-    }
-
-    /** Get the message type's field at the specified index. */
-    public FieldDescriptor getField(int index) {
-      return fields[index];
-    }
-
     /** Get a list of this message type's oneofs. */
     public List<OneofDescriptor> getOneofs() {
       return Collections.unmodifiableList(Arrays.asList(oneofs));
-    }
-
-    /** Get a count of this message type's oneofs. */
-    public int getOneofCount() {
-      return oneofs.length;
-    }
-
-    /** Get the message type's oneof at the specified index. */
-    public OneofDescriptor getOneof(int index) {
-      return oneofs[index];
     }
 
     /** Get a list of this message type's real oneofs. */
@@ -906,32 +854,9 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(oneofs).subList(0, realOneofCount));
     }
 
-    /** Get a count of this message type's real oneofs. */
-    public int getRealOneofCount() {
-      return realOneofCount;
-    }
-
-    /** Get the message type's real oneof at the specified index. */
-    public OneofDescriptor getRealOneof(int index) {
-      if (index >= realOneofCount) {
-        throw new ArrayIndexOutOfBoundsException(index);
-      }
-      return oneofs[index];
-    }
-
     /** Get a list of the extensions defined nested within this message type's scope. */
     public List<FieldDescriptor> getExtensions() {
       return Collections.unmodifiableList(Arrays.asList(extensions));
-    }
-
-    /** Get a count of the extensions defined nested within this message type's scope. */
-    public int getExtensionCount() {
-      return extensions.length;
-    }
-
-    /** Get the extension defined nested within this message type's scope at the specified index. */
-    public FieldDescriptor getExtension(int index) {
-      return extensions[index];
     }
 
     /** Get a list of message types nested within this one. */
@@ -939,29 +864,9 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(nestedTypes));
     }
 
-    /** Get a count of message types nested within this one. */
-    public int getNestedTypeCount() {
-      return nestedTypes.length;
-    }
-
-    /** Get the message type's nested message type at the specified index. */
-    public Descriptor getNestedType(int index) {
-      return nestedTypes[index];
-    }
-
     /** Get a list of enum types nested within this one. */
     public List<EnumDescriptor> getEnumTypes() {
       return Collections.unmodifiableList(Arrays.asList(enumTypes));
-    }
-
-    /** Get a count of enum types nested within this one. */
-    public int getEnumTypeCount() {
-      return enumTypes.length;
-    }
-
-    /** Get the message type's nested enum type at the specified index. */
-    public EnumDescriptor getEnumType(int index) {
-      return enumTypes[index];
     }
 
     /** Determines if the given field number is an extension. */
@@ -2726,16 +2631,6 @@ public final class Descriptors {
     /** Get a list of methods for this service. */
     public List<MethodDescriptor> getMethods() {
       return Collections.unmodifiableList(Arrays.asList(methods));
-    }
-
-    /** Get a count of methods for this service. */
-    public int getMethodCount() {
-      return methods.length;
-    }
-
-    /** Get the service's method at the specified index. */
-    public MethodDescriptor getMethod(int index) {
-      return methods[index];
     }
 
     /**

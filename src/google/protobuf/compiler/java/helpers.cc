@@ -106,7 +106,7 @@ void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
       absl::StrCat("/* minor= */ ", version.minor()), "patch",
       absl::StrCat("/* patch= */ ", version.patch()), "suffix",
       absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
-      absl::StrCat(java_class_name, ".class"));
+      absl::StrCat(java_class_name, ".class.getName()"));
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,

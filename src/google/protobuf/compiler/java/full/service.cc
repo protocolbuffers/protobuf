@@ -65,7 +65,7 @@ void ImmutableServiceGenerator::Generate(io::Printer* printer) {
       "public static final\n"
       "    com.google.protobuf.Descriptors.ServiceDescriptor\n"
       "    getDescriptor() {\n"
-      "  return $file$.getDescriptor().getService($index$);\n"
+      "  return $file$.getDescriptor().getServices().get($index$);\n"
       "}\n",
       "file", name_resolver_->GetImmutableClassName(descriptor_->file()),
       "index", absl::StrCat(descriptor_->index()));
@@ -339,7 +339,7 @@ void ImmutableServiceGenerator::GenerateStub(io::Printer* printer) {
     vars["output"] = GetOutput(method);
     printer->Print(vars,
                    "channel.callMethod(\n"
-                   "  getDescriptor().getMethod($index$),\n"
+                   "  getDescriptor().getMethods().get($index$),\n"
                    "  controller,\n"
                    "  request,\n"
                    "  $output$.getDefaultInstance(),\n"
@@ -403,7 +403,7 @@ void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
     vars["output"] = GetOutput(method);
     printer->Print(vars,
                    "return ($output$) channel.callBlockingMethod(\n"
-                   "  getDescriptor().getMethod($index$),\n"
+                   "  getDescriptor().getMethods().get($index$),\n"
                    "  controller,\n"
                    "  request,\n"
                    "  $output$.getDefaultInstance());\n");
