@@ -22,14 +22,6 @@
 #include "upb/reflection/def.hpp"
 #include "upb_generator/common/cpp_to_upb_def.h"
 
-// This type exists to work around an absl type that has not yet been
-// released.
-struct SourceLocation {
-  static SourceLocation current() { return {}; }
-  absl::string_view file_name() { return "<unknown>"; }
-  int line() { return 0; }
-};
-
 namespace google {
 namespace protobuf {
 namespace hpb_generator {
@@ -62,12 +54,14 @@ class Context final {
   }
 
   void Emit(absl::Span<const io::Printer::Sub> vars, absl::string_view format,
-            absl::SourceLocation loc = absl::SourceLocation::current()) {
+            google::protobuf::io::Printer::SourceLocation loc =
+                google::protobuf::io::Printer::SourceLocation::current()) {
     printer_.Emit(vars, format, loc);
   }
 
   void Emit(absl::string_view format,
-            absl::SourceLocation loc = absl::SourceLocation::current()) {
+            google::protobuf::io::Printer::SourceLocation loc =
+                google::protobuf::io::Printer::SourceLocation::current()) {
     printer_.Emit(format, loc);
   }
 
@@ -76,7 +70,7 @@ class Context final {
   template <class... Arg>
   void EmitLegacy(absl::string_view format, const Arg&... arg) {
     auto res = absl::Substitute(format, arg...);
-    printer_.Emit(res, absl::SourceLocation::current());
+    printer_.Emit(res);
   }
 
   const Options& options() { return options_; }
