@@ -58,39 +58,6 @@ void MessageNew(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageSerialize(Context& ctx, const Descriptor& msg) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit({}, R"rs(
-        let mut serialized_data = $pbr$::SerializedData::new();
-        let success = unsafe {
-          $pbr$::proto2_rust_Message_serialize(self.raw_msg(), &mut serialized_data)
-        };
-        if success {
-          Ok(serialized_data.into_vec())
-        } else {
-          Err($pb$::SerializeError)
-        }
-      )rs");
-      return;
-
-    case Kernel::kUpb:
-      ctx.Emit(R"rs(
-        // SAFETY: `MINI_TABLE` is the one associated with `self.raw_msg()`.
-        let encoded = unsafe {
-          $pbr$::wire::encode(self.raw_msg(),
-              <Self as $pbr$::AssociatedMiniTable>::mini_table())
-        };
-        //~ TODO: This discards the info we have about the reason
-        //~ of the failure, we should try to keep it instead.
-        encoded.map_err(|_| $pb$::SerializeError)
-      )rs");
-      return;
-  }
-
-  ABSL_LOG(FATAL) << "unreachable";
-}
-
 void MessageDebug(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -598,7 +565,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       {
           {"Msg", RsSafeName(msg.name())},
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
-          {"Msg::serialize", [&] { MessageSerialize(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
           {"MsgMut::from_parent", [&] { MessageMutFromParent(ctx, msg); }},
@@ -746,12 +712,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
         }
 
-        impl $pb$::Serialize for $Msg$ {
-          fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
-            $pb$::AsView::as_view(self).serialize()
-          }
-        }
-
         // SAFETY:
         // - `$Msg$` is `Sync` because it does not implement interior mutability.
         //    Neither does `$Msg$Mut`.
@@ -787,12 +747,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         impl $std$::fmt::Debug for $Msg$View<'_> {
           fn fmt(&self, f: &mut $std$::fmt::Formatter<'_>) -> $std$::fmt::Result {
             $Msg::debug$
-          }
-        }
-
-        impl $pb$::Serialize for $Msg$View<'_> {
-          fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
-            $Msg::serialize$
           }
         }
 
@@ -867,12 +821,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         impl $std$::fmt::Debug for $Msg$Mut<'_> {
           fn fmt(&self, f: &mut $std$::fmt::Formatter<'_>) -> $std$::fmt::Result {
             $Msg::debug$
-          }
-        }
-
-        impl $pb$::Serialize for $Msg$Mut<'_> {
-          fn serialize(&self) -> $Result$<Vec<u8>, $pb$::SerializeError> {
-            $pb$::AsView::as_view(self).serialize()
           }
         }
 

@@ -11,8 +11,8 @@ use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
     MergeFrom, Message, MessageViewInterop, Mut, ParseError, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, TakeFrom,
-    View,
+    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, Serialize,
+    SerializeError, TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -1277,6 +1277,17 @@ where
 
     fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, 0)
+    }
+}
+
+impl<T> Serialize for T
+where
+    Self: AssociatedMiniTable + UpbGetMessagePtr,
+{
+    fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
+        //~ TODO: This discards the info we have about the reason
+        //~ of the failure, we should try to keep it instead.
+        upb::wire::encode(self.get_ptr(Private)).map_err(|_| SerializeError)
     }
 }
 

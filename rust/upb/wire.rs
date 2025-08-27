@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::sys::wire::wire::{upb_Decode, upb_Encode, DecodeStatus, EncodeStatus};
-use super::{Arena, AssociatedMiniTable, MessagePtr, MiniTable, RawMessage};
+use super::{Arena, AssociatedMiniTable, MessagePtr};
 
 /// Contains the decode options that can be passed to `decode_with_options`.
 pub mod decode_options {
@@ -19,21 +19,16 @@ pub mod decode_options {
 }
 
 /// If Err, then EncodeStatus != Ok.
-///
-/// # Safety
-/// - `msg` must be associated with `mini_table`.
-pub unsafe fn encode(
-    msg: RawMessage,
-    mini_table: *const MiniTable,
-) -> Result<Vec<u8>, EncodeStatus> {
+pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, EncodeStatus> {
     let arena = Arena::new();
     let mut buf: *mut u8 = core::ptr::null_mut();
     let mut len = 0usize;
 
     // SAFETY:
-    // - `mini_table` is the one associated with `msg`.
+    // - `T::mini_table()` is the one associated with `msg`.
     // - `buf` and `buf_size` are legally writable.
-    let status = unsafe { upb_Encode(msg, mini_table, 0, arena.raw(), &mut buf, &mut len) };
+    let status =
+        unsafe { upb_Encode(msg.raw(), T::mini_table(), 0, arena.raw(), &mut buf, &mut len) };
 
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.

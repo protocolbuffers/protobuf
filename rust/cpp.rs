@@ -12,7 +12,7 @@ use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
     MergeFrom, Message, MessageMutInterop, Mut, MutProxied, OwnedMessageInterop, ParseError,
     ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, TakeFrom, View,
+    RepeatedMut, RepeatedView, Serialize, SerializeError, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -1427,6 +1427,20 @@ impl<T: CppGetRawMessageMut> ClearAndParse for T {
         }
         .then_some(())
         .ok_or(ParseError)
+    }
+}
+
+impl<T: CppGetRawMessage> Serialize for T {
+    fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
+        let mut serialized_data = SerializedData::new();
+        let success = unsafe {
+            proto2_rust_Message_serialize(self.get_raw_message(Private), &mut serialized_data)
+        };
+        if success {
+            Ok(serialized_data.into_vec())
+        } else {
+            Err(SerializeError)
+        }
     }
 }
 
