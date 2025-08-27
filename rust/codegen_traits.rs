@@ -75,6 +75,22 @@ pub(crate) mod create {
         fn parse(serialized: &[u8]) -> Result<Self, crate::ParseError>;
         fn parse_dont_enforce_required(serialized: &[u8]) -> Result<Self, crate::ParseError>;
     }
+
+    impl<T> Parse for T
+    where
+        Self: Default + crate::ClearAndParse,
+    {
+        fn parse(serialized: &[u8]) -> Result<Self, crate::ParseError> {
+            let mut msg = Self::default();
+            crate::ClearAndParse::clear_and_parse(&mut msg, serialized).map(|_| msg)
+        }
+
+        fn parse_dont_enforce_required(serialized: &[u8]) -> Result<Self, crate::ParseError> {
+            let mut msg = Self::default();
+            crate::ClearAndParse::clear_and_parse_dont_enforce_required(&mut msg, serialized)
+                .map(|_| msg)
+        }
+    }
 }
 
 /// Operations related to reading some aspect of a message (methods that would
