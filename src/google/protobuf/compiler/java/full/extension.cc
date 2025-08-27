@@ -132,10 +132,9 @@ int ImmutableExtensionGenerator::GenerateNonNestedInitializationCode(
   int bytecode_estimate = 0;
   if (descriptor_->extension_scope() == nullptr) {
     // Only applies to non-nested extensions.
-    printer->Print(
-        "$name$.internalInit(descriptor.getExtensions().get($index$));\n",
-        "name", UnderscoresToCamelCaseCheckReserved(descriptor_), "index",
-        absl::StrCat(descriptor_->index()));
+    printer->Print("$name$.internalInit(descriptor.getExtension($index$));\n",
+                   "name", UnderscoresToCamelCaseCheckReserved(descriptor_),
+                   "index", absl::StrCat(descriptor_->index()));
     bytecode_estimate += 21;
   }
   return bytecode_estimate;
