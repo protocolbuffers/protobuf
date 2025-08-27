@@ -297,6 +297,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 
   struct WireFormatNoOpSink {
+    static constexpr bool kIsLazySink = false;
     void Flush(const char* p) {}
     void Append(absl::string_view view) {}
     void Reset(const char* p) {}
