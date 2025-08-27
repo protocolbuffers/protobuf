@@ -49,7 +49,7 @@ template <typename T>
 class StatusOr {
  public:
   explicit StatusOr(const T& value) : value_(value) {}
-  explicit StatusOr(T&& value) : value_(value) {}
+  explicit StatusOr(T&& value) : value_(std::move(value)) {}
   explicit StatusOr(internal::backend::Error status) : value_(status) {}
 
   bool ok() const { return std::holds_alternative<T>(value_); }

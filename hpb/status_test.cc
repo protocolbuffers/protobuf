@@ -7,7 +7,9 @@
 
 #include "hpb/status.h"
 
+#include <memory>
 #include <type_traits>
+#include <utility>
 
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
@@ -36,6 +38,17 @@ TEST(StatusTest, GuaranteedTraits) {
   EXPECT_TRUE(std::is_trivially_copy_constructible<type>::value);
   EXPECT_TRUE(std::is_trivially_copy_assignable<type>::value);
   EXPECT_TRUE(std::is_trivially_destructible<type>::value);
+}
+
+TEST(StatusTest, Moves) {
+  std::unique_ptr<int> i = std::make_unique<int>(100);
+  hpb::StatusOr<std::unique_ptr<int>> status(std::move(i));
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(*status.value(), 100);
+
+  hpb::StatusOr<std::unique_ptr<int>> move(std::move(status));
+  EXPECT_TRUE(move.ok());
+  EXPECT_EQ(*move.value(), 100);
 }
 
 TEST(StatusTest, StatusOr) {
