@@ -53,7 +53,7 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
 
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
-    CHK(ptr = upb_WireReader_ReadTag(ptr, &tag));
+    CHK(ptr = upb_WireReader_ReadTag(ptr, &tag, stream));
     if (tag == end_group) return ptr;
 
     UPB_PRIVATE(_upb_TextEncode_Indent)(e);
@@ -63,19 +63,19 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
     switch (upb_WireReader_GetWireType(tag)) {
       case kUpb_WireType_Varint: {
         uint64_t val;
-        CHK(ptr = upb_WireReader_ReadVarint(ptr, &val));
+        CHK(ptr = upb_WireReader_ReadVarint(ptr, &val, stream));
         UPB_PRIVATE(_upb_TextEncode_Printf)(e, "%" PRIu64, val);
         break;
       }
       case kUpb_WireType_32Bit: {
         uint32_t val;
-        ptr = upb_WireReader_ReadFixed32(ptr, &val);
+        ptr = upb_WireReader_ReadFixed32(ptr, &val, stream);
         UPB_PRIVATE(_upb_TextEncode_Printf)(e, "0x%08" PRIu32, val);
         break;
       }
       case kUpb_WireType_64Bit: {
         uint64_t val;
-        ptr = upb_WireReader_ReadFixed64(ptr, &val);
+        ptr = upb_WireReader_ReadFixed64(ptr, &val, stream);
         UPB_PRIVATE(_upb_TextEncode_Printf)(e, "0x%016" PRIu64, val);
         break;
       }
@@ -83,7 +83,7 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
         int size;
         char* start = e->ptr;
         size_t start_overflow = e->overflow;
-        CHK(ptr = upb_WireReader_ReadSize(ptr, &size));
+        CHK(ptr = upb_WireReader_ReadSize(ptr, &size, stream));
         CHK(upb_EpsCopyInputStream_CheckDataSizeAvailable(stream, ptr, size));
 
         // Speculatively try to parse as message.

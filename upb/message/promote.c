@@ -50,8 +50,8 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   const char* data = unknown_data;
   uint32_t tag;
   uint64_t message_len = 0;
-  data = upb_WireReader_ReadTag(data, &tag);
-  data = upb_WireReader_ReadVarint(data, &message_len);
+  data = upb_WireReader_ReadTag(data, &tag, NULL);
+  data = upb_WireReader_ReadVarint(data, &message_len, NULL);
   upb_DecodeStatus status = upb_Decode(data, message_len, ret.message,
                                        mini_table, NULL, decode_options, arena);
   if (status == kUpb_DecodeStatus_OutOfMemory) {
@@ -93,7 +93,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
       uint32_t tag;
       const char* unknown_begin = ptr;
-      ptr = upb_WireReader_ReadTag(ptr, &tag);
+      ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
       if (!ptr) return kUpb_GetExtension_ParseError;
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
         found_count++;
@@ -168,7 +168,7 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
     while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
       uint32_t tag;
       const char* unknown_begin = ptr;
-      ptr = upb_WireReader_ReadTag(ptr, &tag);
+      ptr = upb_WireReader_ReadTag(ptr, &tag, &stream);
       if (!ptr) return upb_FindUnknownRet_ParseError();
       if (field_number == upb_WireReader_GetFieldNumber(tag)) {
         ret.status = kUpb_FindUnknown_Ok;
