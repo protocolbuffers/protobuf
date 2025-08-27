@@ -951,9 +951,9 @@ class PROTOBUF_EXPORT MessageLite {
   explicit MessageLite(Arena* arena, const internal::ClassData* data)
       : _internal_metadata_(arena), _class_data_(data) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
-  constexpr MessageLite() {}
+  constexpr MessageLite() = default;
   explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
-  explicit constexpr MessageLite(const internal::ClassData*) {}
+  explicit constexpr MessageLite(const internal::ClassData*) = default;
   explicit MessageLite(Arena* arena, const internal::ClassData*)
       : _internal_metadata_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
