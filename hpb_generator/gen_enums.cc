@@ -22,7 +22,9 @@
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 using Sub = protobuf::io::Printer::Sub;
@@ -136,5 +138,6 @@ void WriteEnumDeclarations(
   }
 }
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

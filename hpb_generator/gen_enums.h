@@ -11,7 +11,9 @@
 #include "hpb_generator/context.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -22,7 +24,8 @@ std::string EnumValueSymbolInNameSpace(
 void WriteEnumDeclarations(
     const std::vector<const protobuf::EnumDescriptor*>& enums, Context& ctx);
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ENUMS_H__

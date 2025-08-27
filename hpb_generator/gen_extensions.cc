@@ -17,7 +17,9 @@
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -77,5 +79,6 @@ void WriteExtensionIdentifiersHeader(
   }
 }
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

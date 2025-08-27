@@ -23,7 +23,9 @@
 #include "upb_generator/common.h"
 #include "upb_generator/file_layout.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -351,5 +353,6 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* desc,
   );
 }
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

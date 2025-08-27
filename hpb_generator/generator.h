@@ -16,7 +16,9 @@
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protoc = ::google::protobuf::compiler;
 namespace protobuf = ::proto2;
@@ -39,7 +41,8 @@ class Generator : public protoc::CodeGenerator {
   }
 };
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GENERATOR_H__

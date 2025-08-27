@@ -24,7 +24,9 @@
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 namespace {
 
 namespace protobuf = ::proto2;
@@ -272,5 +274,6 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
     return true;
   }
 }
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

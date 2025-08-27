@@ -23,7 +23,9 @@
 #include "upb_generator/c/names.h"
 #include "upb_generator/minitable/names.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
@@ -678,5 +680,6 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
   return ResolveKeywordConflict(field_name);
 }
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

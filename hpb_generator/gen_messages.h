@@ -11,7 +11,9 @@
 #include "hpb_generator/context.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 namespace protobuf = ::proto2;
 
 void WriteMessageClassDeclarations(
@@ -23,7 +25,8 @@ void WriteMessageImplementation(
     const protobuf::Descriptor* descriptor,
     const std::vector<const protobuf::FieldDescriptor*>& file_exts,
     Context& ctx);
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_MESSAGES_H__
