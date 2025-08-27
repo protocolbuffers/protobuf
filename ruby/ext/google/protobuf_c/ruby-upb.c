@@ -7285,7 +7285,7 @@ static void upb_CombineUnknownFields(upb_UnknownField_Context* ctx,
   // unknown field data is valid, so parse errors here should be impossible.
   while (!upb_EpsCopyInputStream_IsDone(&ctx->stream, &ptr)) {
     uint32_t tag;
-    ptr = upb_WireReader_ReadTag(ptr, &tag);
+    ptr = upb_WireReader_ReadTag(ptr, &tag, &ctx->stream);
     UPB_ASSERT(tag <= UINT32_MAX);
     int wire_type = upb_WireReader_GetWireType(tag);
     if (wire_type == kUpb_WireType_EndGroup) break;
@@ -7301,20 +7301,22 @@ static void upb_CombineUnknownFields(upb_UnknownField_Context* ctx,
 
     switch (wire_type) {
       case kUpb_WireType_Varint:
-        ptr = upb_WireReader_ReadVarint(ptr, &field->data.varint);
+        ptr = upb_WireReader_ReadVarint(ptr, &field->data.varint, &ctx->stream);
         UPB_ASSERT(ptr);
         break;
       case kUpb_WireType_64Bit:
-        ptr = upb_WireReader_ReadFixed64(ptr, &field->data.uint64);
+        ptr =
+            upb_WireReader_ReadFixed64(ptr, &field->data.uint64, &ctx->stream);
         UPB_ASSERT(ptr);
         break;
       case kUpb_WireType_32Bit:
-        ptr = upb_WireReader_ReadFixed32(ptr, &field->data.uint32);
+        ptr =
+            upb_WireReader_ReadFixed32(ptr, &field->data.uint32, &ctx->stream);
         UPB_ASSERT(ptr);
         break;
       case kUpb_WireType_Delimited: {
         int size;
-        ptr = upb_WireReader_ReadSize(ptr, &size);
+        ptr = upb_WireReader_ReadSize(ptr, &size, &ctx->stream);
         UPB_ASSERT(ptr);
         const char* s_ptr = ptr;
         ptr = upb_EpsCopyInputStream_ReadStringAliased(&ctx->stream, &s_ptr,
@@ -14896,6 +14898,7 @@ static _upb_DecodeLongVarintReturn _upb_Decoder_DecodeLongTag(const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeVarint(upb_Decoder* d, const char* ptr,
                                       uint64_t* val) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 10);
   uint64_t byte = (uint8_t)*ptr;
   if (UPB_LIKELY((byte & 0x80) == 0)) {
     *val = byte;
@@ -14911,6 +14914,7 @@ const char* _upb_Decoder_DecodeVarint(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeTag(upb_Decoder* d, const char* ptr,
                                    uint32_t* val) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 5);
   uint64_t byte = (uint8_t)*ptr;
   if (UPB_LIKELY((byte & 0x80) == 0)) {
     *val = byte;
@@ -15153,11 +15157,11 @@ const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
     char* dst = mem;
     while (!_upb_Decoder_IsDone(d, &ptr)) {
       if (lg2 == 2) {
-        ptr = upb_WireReader_ReadFixed32(ptr, dst);
+        ptr = upb_WireReader_ReadFixed32(ptr, dst, &d->input);
         dst += 4;
       } else {
         UPB_ASSERT(lg2 == 3);
-        ptr = upb_WireReader_ReadFixed64(ptr, dst);
+        ptr = upb_WireReader_ReadFixed64(ptr, dst, &d->input);
         dst += 8;
       }
     }
@@ -15809,13 +15813,13 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
       if (((1 << field->UPB_PRIVATE(descriptortype)) & kFixed32OkMask) == 0) {
         *op = kUpb_DecodeOp_UnknownField;
       }
-      return upb_WireReader_ReadFixed32(ptr, &val->uint32_val);
+      return upb_WireReader_ReadFixed32(ptr, &val->uint32_val, &d->input);
     case kUpb_WireType_64Bit:
       *op = kUpb_DecodeOp_Scalar8Byte;
       if (((1 << field->UPB_PRIVATE(descriptortype)) & kFixed64OkMask) == 0) {
         *op = kUpb_DecodeOp_UnknownField;
       }
-      return upb_WireReader_ReadFixed64(ptr, &val->uint64_val);
+      return upb_WireReader_ReadFixed64(ptr, &val->uint64_val, &d->input);
     case kUpb_WireType_Delimited:
       ptr = upb_Decoder_DecodeSize(d, ptr, &val->size);
       *op = _upb_Decoder_GetDelimitedOp(d, mt, field);
@@ -17037,10 +17041,28 @@ const char* _upb_EpsCopyInputStream_IsDoneFallbackNoCallback(
 // Must be last.
 
 UPB_NOINLINE UPB_PRIVATE(_upb_WireReader_LongVarint)
-    UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val) {
+    UPB_PRIVATE(_upb_WireReader_ReadLongVarint64)(const char* ptr,
+                                                  uint64_t val) {
   UPB_PRIVATE(_upb_WireReader_LongVarint) ret = {NULL, 0};
   uint64_t byte;
   for (int i = 1; i < 10; i++) {
+    byte = (uint8_t)ptr[i];
+    val += (byte - 1) << (i * 7);
+    if (!(byte & 0x80)) {
+      ret.ptr = ptr + i + 1;
+      ret.val = val;
+      return ret;
+    }
+  }
+  return ret;
+}
+
+UPB_NOINLINE UPB_PRIVATE(_upb_WireReader_LongVarint)
+    UPB_PRIVATE(_upb_WireReader_ReadLongVarint32)(const char* ptr,
+                                                  uint32_t val) {
+  UPB_PRIVATE(_upb_WireReader_LongVarint) ret = {NULL, 0};
+  uint64_t byte;
+  for (int i = 1; i < 5; i++) {
     byte = (uint8_t)ptr[i];
     val += (byte - 1) << (i * 7);
     if (!(byte & 0x80)) {
@@ -17059,7 +17081,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
   uint32_t end_group_tag = (tag & ~7ULL) | kUpb_WireType_EndGroup;
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
-    ptr = upb_WireReader_ReadTag(ptr, &tag);
+    ptr = upb_WireReader_ReadTag(ptr, &tag, stream);
     if (!ptr) return NULL;
     if (tag == end_group_tag) return ptr;
     ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, stream);
