@@ -5,11 +5,15 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <iterator>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "hpb_generator/tests/child_model.hpb.h"
 #include "hpb_generator/tests/test_extension.hpb.h"
 #include "hpb_generator/tests/test_model.hpb.h"
+#include "hpb/arena.h"
+#include "hpb/ptr.h"
 #include "hpb/requires.h"
 
 namespace {
@@ -272,6 +276,15 @@ TEST(CppGeneratedCode, EmptyRepeatedFieldProxyForMessages) {
   EXPECT_EQ(test_model.child_models().size(), 0);
   EXPECT_EQ(std::distance(test_model.child_models().begin(),
                           test_model.child_models().end()),
+            0);
+}
+
+TEST(CppGeneratedCode, EmptyRepeatedFieldScalarProxy) {
+  hpb::Arena arena;
+  hpb::Ptr<TestModel> test_model = hpb::CreateMessage<TestModel>(arena);
+
+  EXPECT_EQ(std::distance(test_model->repeated_int64().begin(),
+                          test_model->repeated_int64().end()),
             0);
 }
 

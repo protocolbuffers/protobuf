@@ -242,6 +242,9 @@ class RepeatedFieldScalarProxy
 
  private:
   T* unsafe_array() const {
+    if (this->arr_ == nullptr) {
+      return nullptr;
+    }
     if (kIsConst) {
       const void* unsafe_ptr = ::upb_Array_DataPtr(this->arr_);
       return static_cast<T*>(const_cast<void*>(unsafe_ptr));

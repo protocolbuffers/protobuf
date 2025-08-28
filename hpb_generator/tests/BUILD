@@ -202,6 +202,8 @@ cc_test(
     deps = [
         ":test_model_hpb_proto",
         ":test_model_upb_proto",
+        "//hpb:arena",
+        "//hpb:ptr",
         "//hpb:requires",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
