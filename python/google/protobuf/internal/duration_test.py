@@ -93,6 +93,11 @@ class DurationTest(unittest.TestCase):
     # Duration + Duration
     self.assertEqual(dr + dr2, dr2 + dr)
 
+  def test_assign_datetime_to_duration(self):
+    message = well_known_types_test_pb2.WKTMessage()
+    with self.assertRaises((TypeError, AttributeError)):
+      message.optional_duration = datetime.datetime.now()
+
 
 if __name__ == '__main__':
   unittest.main()

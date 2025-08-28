@@ -90,6 +90,11 @@ class TimestampTest(unittest.TestCase):
     # Timestamp + Duration and Duration + Timestamp
     self.assertEqual(ts + msg.optional_duration, msg.optional_duration + ts)
 
+  def test_assign_duration_to_timestamp(self):
+    message = well_known_types_test_pb2.WKTMessage()
+    with self.assertRaises((TypeError, AttributeError)):
+      message.optional_timestamp = datetime.timedelta(microseconds=123)
+
 
 if __name__ == '__main__':
   unittest.main()
