@@ -698,6 +698,9 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
 
+  // Allows access to `fields_`.
+  friend class Reflection;
+
   // Get the merged features that apply to this message type.  These are
   // specified in the .proto file through the feature options in the message
   // definition.  Allowed features are defined by Features in descriptor.proto,

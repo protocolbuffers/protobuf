@@ -34,6 +34,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -1769,44 +1770,46 @@ void Reflection::ListFields(const Message& message,
   const uint32_t* const has_bits =
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
   const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
-  output->reserve(descriptor_->field_count());
-  const int last_non_weak_field_index = last_non_weak_field_index_;
+  const Descriptor* const descriptor = descriptor_;
+  output->reserve(descriptor->field_count());
   // Fields in messages are usually added with the increasing tags.
   uint32_t last = 0;  // UINT32_MAX if out-of-order
   auto append_to_output = [&last, &output](const FieldDescriptor* field) {
     CheckInOrder(field, &last);
     output->push_back(field);
   };
-  for (int i = 0; i <= last_non_weak_field_index; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    const OneofDescriptor* containing_oneof = field->containing_oneof();
+  int i = -1;
+  for (const FieldDescriptor& field :
+       absl::MakeSpan(descriptor->fields_, last_non_weak_field_index_ + 1)) {
+    ++i;
+    const OneofDescriptor* containing_oneof = field.containing_oneof();
     // If the hasbits for repeated fields experiment is disabled, we can
-    // shortcut to checking the field size, since we know the field doesn't have
-    // hasbits.
+    // shortcut to checking the field size, since we know the field doesn't
+    // have hasbits.
     if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
-        field->is_repeated()) {
-      if (FieldSize(message, field) > 0) {
-        append_to_output(field);
+        field.is_repeated()) {
+      if (FieldSize(message, &field) > 0) {
+        append_to_output(&field);
       }
-    } else if (schema_.InRealOneof(field)) {
+    } else if (schema_.InRealOneof(&field)) {
       const uint32_t* const oneof_case_array =
           GetConstPointerAtOffset<uint32_t>(&message,
                                             schema_.oneof_case_offset_);
       // Equivalent to: HasOneofField(message, field)
       if (static_cast<int64_t>(oneof_case_array[containing_oneof->index()]) ==
-          field->number()) {
-        append_to_output(field);
+          field.number()) {
+        append_to_output(&field);
       }
     } else if (has_bits &&
                has_bits_indices[i] != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
-      if (IsFieldPresentGivenHasbits(message, field, has_bits,
+      if (IsFieldPresentGivenHasbits(message, &field, has_bits,
                                      has_bits_indices[i])) {
-        append_to_output(field);
+        append_to_output(&field);
       }
-    } else if (HasFieldWithHasbits(message, field)) {
+    } else if (HasFieldWithHasbits(message, &field)) {
       // Fall back on proto3-style HasBit.
-      append_to_output(field);
+      append_to_output(&field);
     }
   }
 
@@ -1820,8 +1823,7 @@ void Reflection::ListFields(const Message& message,
   size_t last_size = output->size();
   if (schema_.HasExtensionSet()) {
     // Descriptors of ExtensionSet are appended in their increasing order.
-    GetExtensionSet(message).AppendToList(descriptor_, descriptor_pool_,
-                                          output);
+    GetExtensionSet(message).AppendToList(descriptor, descriptor_pool_, output);
     ABSL_DCHECK(std::is_sorted(output->begin() + last_size, output->end(),
                                FieldNumberSorter()));
     if (output->size() != last_size) {
