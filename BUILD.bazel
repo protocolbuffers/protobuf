@@ -164,7 +164,9 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-# upb targets for some of the well-known types
+# upb targets for some of the well-known types. Note that upb does not have a
+# stable API. These targets can therefore change in incompatible ways at any
+# time without warning.
 
 alias(
     name = "any_upb_proto",
@@ -205,6 +207,12 @@ alias(
 alias(
     name = "struct_upb_proto",
     actual = "//src/google/protobuf:struct_upb_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "timestamp_upb_proto",
+    actual = "//src/google/protobuf:timestamp_upb_proto",
     visibility = ["//visibility:public"],
 )
 
