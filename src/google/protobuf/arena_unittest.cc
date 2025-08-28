@@ -1455,25 +1455,26 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     // newly allocated memory is approximately the size of the cleanups for the
     // repeated messages.
     RepeatedField<int32_t> repeated_int32(&arena);
-    RepeatedPtrField<TestAllTypes> repeated_message(&arena);
+    auto* repeated_message =
+        Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
     for (int i = 0; i < 100; i++) {
       repeated_int32.Add(42);
-      repeated_message.Add()->set_optional_int32(42);
-      EXPECT_EQ(&arena, repeated_message.Get(0).GetArena());
-      const TestAllTypes* msg_in_repeated_field = &repeated_message.Get(0);
-      TestAllTypes* msg = repeated_message.UnsafeArenaReleaseLast();
+      repeated_message->Add()->set_optional_int32(42);
+      EXPECT_EQ(&arena, repeated_message->Get(0).GetArena());
+      const TestAllTypes* msg_in_repeated_field = &repeated_message->Get(0);
+      TestAllTypes* msg = repeated_message->UnsafeArenaReleaseLast();
       EXPECT_EQ(msg_in_repeated_field, msg);
     }
 
     // UnsafeArenaExtractSubrange (i) should not leak and (ii) should return
     // on-arena pointers.
     for (int i = 0; i < 10; i++) {
-      repeated_message.Add()->set_optional_int32(42);
+      repeated_message->Add()->set_optional_int32(42);
     }
     TestAllTypes* extracted_messages[5];
-    repeated_message.UnsafeArenaExtractSubrange(0, 5, extracted_messages);
-    EXPECT_EQ(&arena, repeated_message.Get(0).GetArena());
-    EXPECT_EQ(5, repeated_message.size());
+    repeated_message->UnsafeArenaExtractSubrange(0, 5, extracted_messages);
+    EXPECT_EQ(&arena, repeated_message->Get(0).GetArena());
+    EXPECT_EQ(5, repeated_message->size());
     // Upper bound of the size of the cleanups of new repeated messages.
     const size_t upperbound_cleanup_size =
         2 * 110 * sizeof(internal::cleanup::CleanupNode);
@@ -1483,14 +1484,15 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
 
   // Now test ExtractSubrange's copying semantics.
   {
-    RepeatedPtrField<TestAllTypes> repeated_message(&arena);
+    auto* repeated_message =
+        Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
     for (int i = 0; i < 100; i++) {
-      repeated_message.Add()->set_optional_int32(42);
+      repeated_message->Add()->set_optional_int32(42);
     }
 
     TestAllTypes* extracted_messages[5];
     // ExtractSubrange should copy to the heap.
-    repeated_message.ExtractSubrange(0, 5, extracted_messages);
+    repeated_message->ExtractSubrange(0, 5, extracted_messages);
     EXPECT_EQ(nullptr, extracted_messages[0]->GetArena());
     // We need to free the heap-allocated messages to prevent a leak.
     for (int i = 0; i < 5; i++) {
