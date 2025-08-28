@@ -765,7 +765,6 @@ class PROTOBUF_EXPORT ExtensionSet {
       }
       // Sets the value to an ExtensionInfo*. We store a pointer to the info.
       void Set(const MessageLite* prototype) {
-        ABSL_DCHECK_NE(prototype, nullptr);
         ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(prototype) & kTagBits, 0u)
             << "MessageLite pointer is not sufficiently aligned.";
         value = reinterpret_cast<uintptr_t>(prototype) | kTagPrototype;
