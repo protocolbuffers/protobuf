@@ -53,6 +53,7 @@ cc_library(
         ":arena",
         ":extension",
         ":multibackend",
+        ":options",
         ":ptr",
         ":status",
         "//hpb/internal",
@@ -201,4 +202,11 @@ cc_library(
         "//upb/mini_table",
         "@abseil-cpp//absl/base:core_headers",
     ],
+)
+
+cc_library(
+    name = "options",
+    hdrs = ["options.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//hpb:multibackend"],
 )
