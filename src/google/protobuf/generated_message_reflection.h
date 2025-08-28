@@ -269,17 +269,18 @@ struct ReflectionSchema {
     if (type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
       return (v & kInlinedMask) != 0u;
-    } else {
-      // Non string/byte fields are not inlined.
-      return false;
     }
+    // Non string/byte fields are not inlined.
+    return false;
   }
 
   static bool IsMicroString(uint32_t v, FieldDescriptor::Type type) {
-    ABSL_DCHECK(type == FieldDescriptor::TYPE_STRING ||
-                type == FieldDescriptor::TYPE_BYTES)
-        << type;
-    return (v & kMicroStringMask) != 0u;
+    if (type == FieldDescriptor::TYPE_STRING ||
+        type == FieldDescriptor::TYPE_BYTES) {
+      return (v & kMicroStringMask) != 0u;
+    }
+    // Non string/byte fields are, of course, also not a MicroString.
+    return false;
   }
 };
 
@@ -365,7 +366,7 @@ const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
-  const std::string** cache = deci.cache.load(std::memory_order_acquire );
+  const std::string** cache = deci.cache.load(std::memory_order_acquire);
   if (ABSL_PREDICT_TRUE(cache != nullptr)) {
     if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
       return *cache[v - min_val];
