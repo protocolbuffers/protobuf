@@ -15358,7 +15358,11 @@ UPB_INLINE const char* _upb_EpsCopyInputStream_IsDoneFallbackInline(
     e->limit_ptr = e->end + e->limit;
     UPB_ASSERT(ptr < e->limit_ptr);
     e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    return callback(e, old_end, new_start);
+    const char* ret = callback(e, old_end, new_start);
+    if (ret) {
+      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+    }
+    return ret;
   } else {
     UPB_ASSERT(overrun > e->limit);
     e->error = true;
