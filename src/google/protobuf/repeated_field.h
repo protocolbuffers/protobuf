@@ -141,9 +141,15 @@ enum { kSooSizeMask = kNotSooBit - 1 };
 // The number of elements that can be stored in the SOO rep. On 64-bit
 // platforms, this is 1 for int64_t, 2 for int32_t, 3 for bool, and 0 for
 // absl::Cord. We return 0 to disable SOO on 32-bit platforms.
-constexpr int SooCapacityElements(size_t element_size) {
-  if (sizeof(void*) < 8) return 0;
-  return std::min<int>(kSooCapacityBytes / element_size, kSooSizeMask);
+template <typename T>
+constexpr int SooCapacityElements() {
+  // RepeatedPtrField always has SOO capacity of 1.
+  if constexpr (std::is_pointer_v<T>) {
+    return 1;
+  }
+  // Disable SOO for RepeatedFields on 32-bit platforms.
+  if constexpr (sizeof(void*) < 8) return 0;
+  return std::min<int>(kSooCapacityBytes / sizeof(T), kSooSizeMask);
 }
 
 struct LongSooRep {
@@ -480,7 +486,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   friend class Arena;
 
   static constexpr int kSooCapacityElements =
-      internal::SooCapacityElements(sizeof(Element));
+      internal::SooCapacityElements<Element>();
 
   static constexpr int kInitialSize = 0;
   static PROTOBUF_CONSTEXPR const size_t kHeapRepHeaderSize = sizeof(HeapRep);
@@ -1181,7 +1187,7 @@ inline int CalculateReserveSize(int capacity, int new_size) {
   if (ABSL_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
-  constexpr int kSooCapacityElements = SooCapacityElements(sizeof(T));
+  constexpr int kSooCapacityElements = SooCapacityElements<T>();
   if (kSooCapacityElements > 0 && kSooCapacityElements < lower_limit) {
     // In this case, we need to set capacity to 0 here to ensure power-of-two
     // sized allocations.
