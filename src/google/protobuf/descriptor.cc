@@ -97,7 +97,12 @@ namespace protobuf {
 namespace {
 
 constexpr int kPackageLimit = 100;
+
+#ifdef PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
+constexpr int kMaxFieldsPerMessage = std::numeric_limits<int32_t>::max();
+#else   // PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
 constexpr int kMaxFieldsPerMessage = 65535;
+#endif  // PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
 
 
 size_t CamelCaseSize(const absl::string_view input) {
