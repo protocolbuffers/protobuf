@@ -66,6 +66,7 @@ bootstrap_cc_binary(
         "//upb_generator/common:names",
         "//upb_generator/minitable:names",
         "//upb_generator/minitable:names_internal",
+        "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",

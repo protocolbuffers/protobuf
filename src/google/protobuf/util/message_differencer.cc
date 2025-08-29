@@ -1590,7 +1590,7 @@ bool MessageDifferencer::CompareUnknownFields(
 
   UnknownFieldOrdering is_before;
   std::stable_sort(fields1.begin(), fields1.end(), is_before);
-  std::stable_sort(fields2.begin(), fields2.end(), is_before);
+  absl::c_stable_sort(fields2, is_before);
 
   // In order to fill in SpecificField::index, we have to keep track of how
   // many values we've seen with the same field number and type.
