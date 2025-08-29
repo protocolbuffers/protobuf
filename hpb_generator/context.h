@@ -65,14 +65,6 @@ class Context final {
     printer_.Emit(format, loc);
   }
 
-  // TODO: b/373438292 - Remove EmitLegacy in favor of Emit.
-  // This is an interim solution while we migrate from Output to io::Printer
-  template <class... Arg>
-  void EmitLegacy(absl::string_view format, const Arg&... arg) {
-    auto res = absl::Substitute(format, arg...);
-    printer_.Emit(res);
-  }
-
   const Options& options() { return options_; }
   io::Printer& printer() { return printer_; }
 
