@@ -28,6 +28,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "google/protobuf/compiler/plugin.h"
 #ifdef major
 #undef major
 #endif
@@ -320,7 +322,7 @@ void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file,
     absl::flat_hash_set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output,
-    const TransitiveDependencyOptions& options) {
+    const TransitiveDependencyOptions& options) const {
   if (!already_seen->insert(file).second) {
     // Already saw this file.  Skip.
     return;
@@ -2732,30 +2734,8 @@ bool CommandLineInterface::GenerateOutput(
     }
   } else {
     // Regular generator.
-    std::string parameters = output_directive.parameter;
-    if (!generator_parameters_[output_directive.name].empty()) {
-      if (!parameters.empty()) {
-        parameters.append(",");
-      }
-      parameters.append(generator_parameters_[output_directive.name]);
-    }
-    if (!EnforceProto3OptionalSupport(
-            output_directive.name,
-            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
-      return false;
-    }
-
-    if (!EnforceEditionsSupport(
-            output_directive.name,
-            output_directive.generator->GetSupportedFeatures(),
-            output_directive.generator->GetMinimumEdition(),
-            output_directive.generator->GetMaximumEdition(), parsed_files)) {
-      return false;
-    }
-
-    if (!output_directive.generator->GenerateAll(parsed_files, parameters,
-                                                 generator_context, &error)) {
-      // Generator returned an error.
+    if (!GenerateBuiltInOutput(parsed_files, output_directive,
+                               generator_context, &error)) {
       std::cerr << output_directive.name << ": " << error << std::endl;
       return false;
     }
@@ -2845,21 +2825,15 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   return true;
 }
 
-bool CommandLineInterface::GeneratePluginOutput(
-    const std::vector<const FileDescriptor*>& parsed_files,
-    const std::string& plugin_name, const std::string& parameter,
-    GeneratorContext* generator_context, std::string* error) {
+CodeGeneratorRequest CommandLineInterface::CreateCodeGeneratorRequest(
+    std::vector<const FileDescriptor*> parsed_files, std::string parameter,
+    bool copy_json_name, bool bootstrap) const {
   CodeGeneratorRequest request;
-  CodeGeneratorResponse response;
-  std::string processed_parameter = parameter;
-
-  bool bootstrap = GetBootstrapParam(processed_parameter);
 
   // Build the request.
-  if (!processed_parameter.empty()) {
-    request.set_parameter(processed_parameter);
+  if (!parameter.empty()) {
+    request.set_parameter(parameter);
   }
-
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (const FileDescriptor* file : parsed_files) {
@@ -2876,9 +2850,6 @@ bool CommandLineInterface::GeneratePluginOutput(
   const DescriptorPool* pool = parsed_files[0]->pool();
   absl::flat_hash_set<std::string> files_to_generate(input_files_.begin(),
                                                      input_files_.end());
-  static const auto builtin_plugins = new absl::flat_hash_set<std::string>(
-      {"protoc-gen-cpp", "protoc-gen-java", "protoc-gen-mutable_java",
-       "protoc-gen-python"});
   for (FileDescriptorProto& file_proto : *request.mutable_proto_file()) {
     if (files_to_generate.contains(file_proto.name())) {
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
@@ -2888,8 +2859,7 @@ bool CommandLineInterface::GeneratePluginOutput(
       if (!bootstrap) {
         file->CopySourceCodeInfoTo(&file_proto);
 
-        // The built-in code generators didn't use the json names.
-        if (!builtin_plugins->contains(plugin_name)) {
+        if (copy_json_name) {
           file->CopyJsonNameTo(&file_proto);
         }
       }
@@ -2904,21 +2874,12 @@ bool CommandLineInterface::GeneratePluginOutput(
   version->set_patch(PROTOBUF_VERSION % 1000);
   version->set_suffix(PROTOBUF_VERSION_SUFFIX);
 
-  // Invoke the plugin.
-  Subprocess subprocess;
+  return request;
+}
 
-  if (plugins_.count(plugin_name) > 0) {
-    subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
-  } else {
-    subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
-  }
-
-  std::string communicate_error;
-  if (!subprocess.Communicate(request, &response, &communicate_error)) {
-    *error = absl::Substitute("$0: $1", plugin_name, communicate_error);
-    return false;
-  }
-
+bool CommandLineInterface::GenerateCodeFromResponse(
+    const CodeGeneratorResponse& response, GeneratorContext* generator_context,
+    bool bootstrap, std::string plugin_name, std::string* error) {
   // Write the files.  We do this even if there was a generator error in order
   // to match the behavior of a compiled-in generator.
   std::unique_ptr<io::ZeroCopyOutputStream> current_output;
@@ -2955,6 +2916,46 @@ bool CommandLineInterface::GeneratePluginOutput(
     writer.WriteString(output_file.content());
   }
 
+  return true;
+}
+
+bool CommandLineInterface::GeneratePluginOutput(
+    const std::vector<const FileDescriptor*>& parsed_files,
+    const std::string& plugin_name, const std::string& parameter,
+    GeneratorContext* generator_context, std::string* error) {
+  // TODO Remove these special-cases and send json names to all
+  // plugins.
+  static const auto builtin_plugins = new absl::flat_hash_set<std::string>(
+      {"protoc-gen-cpp", "protoc-gen-java", "protoc-gen-mutable_java",
+       "protoc-gen-python"});
+
+  bool bootstrap = GetBootstrapParam(parameter);
+  CodeGeneratorRequest request = CreateCodeGeneratorRequest(
+      parsed_files, parameter,
+      // The built-in code generators didn't use the json names.
+      /*copy_json_name=*/!builtin_plugins->contains(plugin_name), bootstrap);
+  CodeGeneratorResponse response;
+
+  // Invoke the plugin.
+  Subprocess subprocess;
+
+  if (plugins_.count(plugin_name) > 0) {
+    subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
+  } else {
+    subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
+  }
+
+  std::string communicate_error;
+  if (!subprocess.Communicate(request, &response, &communicate_error)) {
+    *error = absl::Substitute("$0: $1", plugin_name, communicate_error);
+    return false;
+  }
+
+  if (!GenerateCodeFromResponse(response, generator_context, bootstrap,
+                                plugin_name, error)) {
+    return false;
+  }
+
   // Check for errors.
   bool success = true;
   if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
@@ -2974,6 +2975,51 @@ bool CommandLineInterface::GeneratePluginOutput(
   }
 
   return success;
+}
+
+bool CommandLineInterface::GenerateBuiltInOutput(
+    const std::vector<const FileDescriptor*>& parsed_files,
+    const OutputDirective& output_directive,
+    GeneratorContext* generator_context, std::string* error) {
+  std::string parameters = output_directive.parameter;
+  if (!generator_parameters_[output_directive.name].empty()) {
+    if (!parameters.empty()) {
+      parameters.append(",");
+    }
+    parameters.append(generator_parameters_[output_directive.name]);
+  }
+  if (!EnforceProto3OptionalSupport(
+          output_directive.name,
+          output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+    return false;
+  }
+
+  if (!EnforceEditionsSupport(
+          output_directive.name,
+          output_directive.generator->GetSupportedFeatures(),
+          output_directive.generator->GetMinimumEdition(),
+          output_directive.generator->GetMaximumEdition(), parsed_files)) {
+    return false;
+  }
+
+  CodeGeneratorRequest request =
+      CreateCodeGeneratorRequest(parsed_files, parameters);
+  CodeGeneratorResponse response;
+  if (!GenerateCode(request, *output_directive.generator, &response, error)) {
+    return false;
+  }
+  if (response.has_error()) {
+    *error = response.error();
+    return false;
+  }
+
+  if (!GenerateCodeFromResponse(response, generator_context,
+                                /*bootstrap=*/false, output_directive.name,
+                                error)) {
+    return false;
+  }
+
+  return true;
 }
 
 bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
