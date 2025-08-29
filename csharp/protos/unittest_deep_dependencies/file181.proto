@@ -1,0 +1,18 @@
+syntax = "proto3";
+package unittest_deep_dependencies;
+import "unittest_deep_dependencies/file14.proto";
+import "unittest_deep_dependencies/file24.proto";
+import "unittest_deep_dependencies/file124.proto";
+import "unittest_deep_dependencies/file205.proto";
+import "unittest_deep_dependencies/file175.proto";
+import "unittest_deep_dependencies/file184.proto";
+import "unittest_deep_dependencies/file199.proto";
+import "unittest_deep_dependencies/file182.proto";
+import "unittest_deep_dependencies/file197.proto";
+import "unittest_deep_dependencies/file183.proto";
+import "unittest_deep_dependencies/file198.proto";
+import "unittest_deep_dependencies/file185.proto";
+import "unittest_deep_dependencies/file200.proto";
+import "unittest_deep_dependencies/file186.proto";
+import "unittest_deep_dependencies/file201.proto";
+import "unittest_deep_dependencies/file190.proto";
