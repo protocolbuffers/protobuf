@@ -222,6 +222,23 @@ public final class FieldMaskUtil {
 
   /** Checks whether paths in a given fields mask are valid. */
   public static boolean isValid(@Nullable Descriptor descriptor, String path) {
+    return isValidInternal(descriptor, path, /* allowRepeatedFieldsInPath= */ false);
+  }
+
+  /** Checks whether a given field path is valid, allowing repeated fields. */
+  public static boolean isValidWithRepeatedFields(Class<? extends Message> type, String path) {
+    Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
+
+    return isValidWithRepeatedFields(descriptor, path);
+  }
+
+  /** Checks whether a given field path is valid, allowing repeated fields. */
+  public static boolean isValidWithRepeatedFields(@Nullable Descriptor descriptor, String path) {
+    return isValidInternal(descriptor, path, /* allowRepeatedFieldsInPath= */ true);
+  }
+
+  private static boolean isValidInternal(
+      @Nullable Descriptor descriptor, String path, boolean allowRepeatedFieldsInPath) {
     String[] parts = path.split(FIELD_SEPARATOR_REGEX);
     if (parts.length == 0) {
       return false;
@@ -234,7 +251,8 @@ public final class FieldMaskUtil {
       if (field == null) {
         return false;
       }
-      if (!field.isRepeated() && field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+      if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE
+          && (allowRepeatedFieldsInPath || !field.isRepeated())) {
         descriptor = field.getMessageType();
       } else {
         descriptor = null;

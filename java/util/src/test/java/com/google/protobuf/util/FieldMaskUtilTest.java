@@ -69,6 +69,55 @@ public class FieldMaskUtilTest {
   }
 
   @Test
+  public void testIsValidWithRepeatedFields() throws Exception {
+    assertThat(FieldMaskUtil.isValidWithRepeatedFields(NestedTestAllTypes.class, "payload"))
+        .isTrue();
+    assertThat(FieldMaskUtil.isValidWithRepeatedFields(NestedTestAllTypes.class, "nonexist"))
+        .isFalse();
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(
+                NestedTestAllTypes.class, "payload.optional_int32"))
+        .isTrue();
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(
+                NestedTestAllTypes.class, "payload.repeated_int32"))
+        .isTrue();
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(
+                NestedTestAllTypes.class, "payload.optional_nested_message"))
+        .isTrue();
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(
+                NestedTestAllTypes.class, "payload.repeated_nested_message"))
+        .isTrue();
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(NestedTestAllTypes.class, "payload.nonexist"))
+        .isFalse();
+
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(NestedTestAllTypes.getDescriptor(), "payload"))
+        .isTrue();
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(NestedTestAllTypes.getDescriptor(), "nonexist"))
+        .isFalse();
+
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(
+                NestedTestAllTypes.class, "payload.optional_nested_message.bb"))
+        .isTrue();
+    // Repeated fields can have sub-paths.
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(
+                NestedTestAllTypes.class, "payload.repeated_nested_message.bb"))
+        .isTrue();
+    // Non-message fields cannot have sub-paths.
+    assertThat(
+            FieldMaskUtil.isValidWithRepeatedFields(
+                NestedTestAllTypes.class, "payload.optional_int32.bb"))
+        .isFalse();
+  }
+
+  @Test
   public void testToString() throws Exception {
     assertThat(FieldMaskUtil.toString(FieldMask.getDefaultInstance())).isEmpty();
     FieldMask mask = FieldMask.newBuilder().addPaths("foo").build();
