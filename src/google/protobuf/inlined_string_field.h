@@ -90,7 +90,7 @@ class PROTOBUF_EXPORT InlinedStringField {
   InlinedStringField& operator=(const InlinedStringField&) = delete;
 #if defined(__cpp_lib_constexpr_string) && __cpp_lib_constexpr_string >= 201907L
   // No need to do dynamic initialization here.
-  constexpr void Init() {}
+  constexpr void Init() const {}
   // Add the dummy parameter just to make InlinedStringField(nullptr)
   // unambiguous.
   constexpr InlinedStringField(

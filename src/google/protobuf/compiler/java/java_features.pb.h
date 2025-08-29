@@ -62,11 +62,11 @@ enum JavaFeatures_Utf8Validation : int;
 PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
 class JavaFeatures;
 struct JavaFeaturesDefaultTypeInternal;
-PROTOC_EXPORT extern JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
+PROTOC_EXPORT extern const JavaFeaturesDefaultTypeInternal _JavaFeatures_default_instance_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_class_data_;
 class JavaFeatures_NestInFileClassFeature;
 struct JavaFeatures_NestInFileClassFeatureDefaultTypeInternal;
-PROTOC_EXPORT extern JavaFeatures_NestInFileClassFeatureDefaultTypeInternal _JavaFeatures_NestInFileClassFeature_default_instance_;
+PROTOC_EXPORT extern const JavaFeatures_NestInFileClassFeatureDefaultTypeInternal _JavaFeatures_NestInFileClassFeature_default_instance_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull JavaFeatures_NestInFileClassFeature_class_data_;
 }  // namespace pb
 namespace google {

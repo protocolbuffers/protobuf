@@ -67,19 +67,19 @@ enum CodeGeneratorResponse_Feature : int;
 PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
 class CodeGeneratorRequest;
 struct CodeGeneratorRequestDefaultTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+PROTOC_EXPORT extern const CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorRequest_class_data_;
 class CodeGeneratorResponse;
 struct CodeGeneratorResponseDefaultTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
+PROTOC_EXPORT extern const CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_class_data_;
 class CodeGeneratorResponse_File;
 struct CodeGeneratorResponse_FileDefaultTypeInternal;
-PROTOC_EXPORT extern CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+PROTOC_EXPORT extern const CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGeneratorResponse_File_class_data_;
 class Version;
 struct VersionDefaultTypeInternal;
-PROTOC_EXPORT extern VersionDefaultTypeInternal _Version_default_instance_;
+PROTOC_EXPORT extern const VersionDefaultTypeInternal _Version_default_instance_;
 PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull Version_class_data_;
 }  // namespace compiler
 template <>
