@@ -27,6 +27,7 @@
 #include <cstdlib>
 #include <iterator>
 #include <limits>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -42,6 +43,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "util/gtl/env.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -107,8 +109,17 @@ PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
 PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(
     int index, int size);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
-  if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
-    LogIndexOutOfBoundsAndAbort(index, size);
+  if constexpr (GetBoundsCheckMode() != BoundsCheckMode::kAbort) {
+    ABSL_DCHECK_GE(index, 0);
+    ABSL_DCHECK_LT(index, size);
+  } else {
+    if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
+      std::optional<std::string> enable_hardening =
+          gtl::GetEnv("ENABLE_PROTOBUF_HARDENING");
+      if (enable_hardening.has_value() && *enable_hardening == "true") {
+        LogIndexOutOfBoundsAndAbort(index, size);
+      }
+    }
   }
 }
 
@@ -196,12 +207,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
-    if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
       RuntimeAssertInBounds(index, current_size_);
-    } else {
-      ABSL_DCHECK_GE(index, 0);
-      ABSL_DCHECK_LT(index, current_size_);
-    }
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -271,14 +277,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
           return TypeHandler::default_instance();
         }
       }
-    } else if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
-      // We refactor this to a separate function instead of inlining it so we
-      // can measure the performance impact more easily.
-      RuntimeAssertInBounds(index, current_size_);
-    } else {
-      ABSL_DCHECK_GE(index, 0);
-      ABSL_DCHECK_LT(index, current_size_);
     }
+    // We refactor this to a separate function instead of inlining it so we
+    // can measure the performance impact more easily.
+    RuntimeAssertInBounds(index, current_size_);
     return *cast<TypeHandler>(element_at(index));
   }
 
