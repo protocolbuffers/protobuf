@@ -578,9 +578,9 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Returns the total serialized size of all the extensions.
   size_t ByteSize() const;
-
   // Like ByteSize() but uses MessageSet format.
   size_t MessageSetByteSize() const;
+
 
   // Returns (an estimate of) the total number of bytes used for storing the
   // extensions in memory, excluding sizeof(*this).  If the ExtensionSet is
@@ -685,7 +685,8 @@ class PROTOBUF_EXPORT ExtensionSet {
                                Arena* arena) const = 0;
     virtual bool IsEagerSerializeSafe(const MessageLite* prototype,
                                       Arena* arena) const = 0;
-    virtual size_t ByteSizeLong() const = 0;
+    virtual size_t ByteSizeLong(const MessageLite* prototype,
+                                Arena* arena) const = 0;
     virtual size_t SpaceUsedLong() const = 0;
 
     virtual std::variant<size_t, const MessageLite*> UnparsedSizeOrMessage()
@@ -742,7 +743,14 @@ class PROTOBUF_EXPORT ExtensionSet {
     uint8_t* InternalSerializeMessageSetItemWithCachedSizesToArray(
         const MessageLite* extendee, const ExtensionSet* extension_set,
         int number, uint8_t* target, io::EpsCopyOutputStream* stream) const;
-    size_t ByteSize(int number) const;
+    size_t ByteSize(int number, Arena* arena) const;
+    size_t MessageSetItemByteSize(int number, Arena* arena) const;
+
+    const MessageLite* GetPrototypeForLazyMessage() const {
+      ABSL_DCHECK(is_lazy);
+      return descriptor_or_prototype.AsPrototype();
+    }
+
 
     // A tagged pointer that can hold either a FieldDescriptor* or
     // const MessageLite*. The LSB is used for tagging. Mimicks
@@ -803,7 +811,6 @@ class PROTOBUF_EXPORT ExtensionSet {
       uintptr_t value;
     };
 
-    size_t MessageSetItemByteSize(int number) const;
     void Clear();
     int GetSize() const;
     void Free();
