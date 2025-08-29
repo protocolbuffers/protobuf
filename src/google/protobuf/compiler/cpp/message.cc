@@ -4674,6 +4674,9 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
 void MessageGenerator::GenerateVerify(io::Printer* p) {
 }
 
+void MessageGenerator::GenerateVerifyV2(io::Printer* p) {
+}
+
 void MessageGenerator::GenerateSerializeOneofFields(
     io::Printer* p, const std::vector<const FieldDescriptor*>& fields) {
   ABSL_CHECK(!fields.empty());

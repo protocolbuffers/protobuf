@@ -297,6 +297,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 
   struct WireFormatNoOpSink {
+    static constexpr bool kIsLazySink = false;
     void Flush(const char* p) {}
     void Append(absl::string_view view) {}
     void Reset(const char* p) {}
@@ -532,6 +533,7 @@ using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
 using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
 
+
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
 // stores the end group tag, in case a parser ended on a endgroup, to verify
@@ -641,6 +643,9 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     if (ABSL_PREDICT_FALSE(!ConsumeEndGroup(tag))) return nullptr;
     return ptr;
   }
+  template <typename Func>
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE const char* ParseWithLengthInlined(
+      const char* ptr, uint32_t length, const Func& func);
 
  private:
   // Out-of-line routine to save space in ParseContext::ParseMessage<T>
@@ -1240,6 +1245,23 @@ inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
   }
   *old_limit = PushLimit(ptr, size);
   --depth_;
+  return ptr;
+}
+
+// Note that "length" is read outside of this function.
+template <typename Func>
+[[nodiscard]] PROTOBUF_ALWAYS_INLINE const char*
+ParseContext::ParseWithLengthInlined(const char* ptr, uint32_t length,
+                                     const Func& func) {
+  ABSL_DCHECK_NE(ptr, nullptr);
+  LimitToken old;
+  old = PushLimit(ptr, length);
+  --depth_;
+  auto old_depth = depth_;
+  PROTOBUF_ALWAYS_INLINE_CALL ptr = func(ptr);
+  if (ptr != nullptr) ABSL_DCHECK_EQ(old_depth, depth_);
+  depth_++;
+  if (!PopLimit(std::move(old))) return nullptr;
   return ptr;
 }
 
