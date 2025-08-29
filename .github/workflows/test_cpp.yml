@@ -59,7 +59,7 @@ jobs:
           - config: { name: "aarch64", flags: "--platforms=//build_defs:aarch64_linux" }
             cache_key: aarch64-bazel8
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
-            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.6.1-aarch64-f0d1e209ed9369f69d93ce418990ecff3aa08d6f" #TODO: b/409557730 - upgrade to bazel 8
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-aarch64-168f9c9d015a0fa16611e1e9eede796fe9bfbb69"
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -121,7 +121,7 @@ jobs:
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604 #TODO: b/409557730 - upgrade to bazel 8
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.0.1-e78301df86b3e4c46ec9ac4d98be00e19305d8f3
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
       - name: Setup sccache
