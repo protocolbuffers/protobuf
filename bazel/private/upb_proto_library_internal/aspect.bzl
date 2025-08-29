@@ -5,8 +5,8 @@ load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
-load(":upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")
-load(":upb_proto_library_internal/copts.bzl", "UpbProtoLibraryCoptsInfo")
+load(":cc_library_func.bzl", "cc_library_func")
+load(":copts.bzl", "UpbProtoLibraryCoptsInfo")
 
 _is_google3 = False
 
