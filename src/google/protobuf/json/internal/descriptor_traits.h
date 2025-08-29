@@ -24,6 +24,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
@@ -294,15 +295,14 @@ struct Proto2Descriptor {
   // Like WithFieldType, but using dynamic lookup by type URL.
   template <typename F>
   static absl::Status WithDynamicType(const Desc& desc,
-                                      const std::string& type_url, F body) {
+                                      absl::string_view type_url, F body) {
     size_t slash = type_url.rfind('/');
     if (slash == absl::string_view::npos || slash == 0) {
       return absl::InvalidArgumentError(absl::StrCat(
           "@type must contain at least one / and a nonempty host; got: ",
           type_url));
     }
-    absl::string_view type_name(type_url);
-    type_name = type_name.substr(slash + 1);
+    absl::string_view type_name = type_url.substr(slash + 1);
 
     const Descriptor* dyn_desc =
         desc.file()->pool()->FindMessageTypeByName(type_name);
@@ -496,7 +496,7 @@ struct Proto3Type {
 
   template <typename F>
   static absl::Status WithDynamicType(const Desc& desc,
-                                      const std::string& type_url, F body) {
+                                      absl::string_view type_url, F body) {
     auto dyn_desc = desc.pool()->FindMessage(type_url);
     RETURN_IF_ERROR(dyn_desc.status());
     return body(**dyn_desc);

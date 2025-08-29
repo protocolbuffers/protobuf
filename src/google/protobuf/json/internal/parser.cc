@@ -645,7 +645,7 @@ absl::Status ParseMapKey(const Desc<Traits>& type, Msg<Traits>& entry,
       break;
     }
     case FieldDescriptor::TYPE_STRING: {
-      Traits::SetString(key_field, entry, std::move(key.value.ToString()));
+      Traits::SetString(key_field, entry, key.value.AsView());
       break;
     }
     default:
@@ -1077,7 +1077,7 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
   if (type_url.has_value()) {
     Traits::SetString(Traits::MustHaveField(desc, 1), msg, type_url->AsView());
     return Traits::NewDynamic(
-        Traits::MustHaveField(desc, 2), type_url->ToString(), msg,
+        Traits::MustHaveField(desc, 2), type_url->AsView(), msg,
         [&](const Desc<Traits>& desc, Msg<Traits>& msg) {
           auto pop = any_lex.path().Push("<any>", FieldDescriptor::TYPE_MESSAGE,
                                          Traits::TypeName(desc));
@@ -1142,7 +1142,7 @@ absl::Status ParseValue(JsonLexer& lex, const Desc<Traits>& desc,
 
       auto str = lex.ParseUtf8();
       RETURN_IF_ERROR(str.status());
-      Traits::SetString(field, msg, std::move(str->value.ToString()));
+      Traits::SetString(field, msg, str->value.AsView());
       break;
     }
     case JsonLexer::kFalse:
@@ -1342,7 +1342,7 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
           }
         }
 
-        return ParseField<Traits>(lex, desc, name.value.ToString(), msg);
+        return ParseField<Traits>(lex, desc, name.value.AsView(), msg);
       });
 }
 }  // namespace
