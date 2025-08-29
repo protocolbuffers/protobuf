@@ -355,125 +355,6 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
     )rs");
 }
 
-void MessageProxiedInRepeated(Context& ctx, const Descriptor& msg) {
-  switch (ctx.opts().kernel) {
-    case Kernel::kCpp:
-      ctx.Emit(
-          {
-              {"Msg", RsSafeName(msg.name())},
-          },
-          R"rs(
-        unsafe impl $pb$::ProxiedInRepeated for $Msg$ {
-          fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
-            // SAFETY:
-            // - The thunk returns an unaliased and valid `RepeatedPtrField*`
-            unsafe {
-              $pb$::Repeated::from_inner($pbi$::Private,
-                $pbr$::InnerRepeated::from_raw($pbr$::proto2_rust_RepeatedField_Message_new())
-              )
-            }
-          }
-
-          unsafe fn repeated_free(_private: $pbi$::Private, f: &mut $pb$::Repeated<Self>) {
-            // SAFETY
-            // - `f.raw()` is a valid `RepeatedPtrField*`.
-            unsafe { $pbr$::proto2_rust_RepeatedField_Message_free(f.as_view().as_raw($pbi$::Private)) }
-          }
-
-          fn repeated_len(f: $pb$::View<$pb$::Repeated<Self>>) -> usize {
-            // SAFETY: `f.as_raw()` is a valid `RepeatedPtrField*`.
-            unsafe { $pbr$::proto2_rust_RepeatedField_Message_size(f.as_raw($pbi$::Private)) }
-          }
-
-          unsafe fn repeated_set_unchecked(
-            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
-            i: usize,
-            v: impl $pb$::IntoProxied<Self>,
-          ) {
-            // SAFETY:
-            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
-            // - `i < len(f)` is promised by caller.
-            // - `v.raw_msg()` is a valid `const Message&`.
-            unsafe {
-              $pbr$::proto2_rust_Message_copy_from(
-                $pbr$::proto2_rust_RepeatedField_Message_get_mut(f.as_raw($pbi$::Private), i),
-                v.into_proxied($pbi$::Private).raw_msg(),
-              );
-            }
-          }
-
-          unsafe fn repeated_get_unchecked(
-            f: $pb$::View<$pb$::Repeated<Self>>,
-            i: usize,
-          ) -> $pb$::View<Self> {
-            // SAFETY:
-            // - `f.as_raw()` is a valid `const RepeatedPtrField&`.
-            // - `i < len(f)` is promised by caller.
-            let msg = unsafe { $pbr$::proto2_rust_RepeatedField_Message_get(f.as_raw($pbi$::Private), i) };
-            let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(msg) };
-            $pb$::View::<Self>::new($pbi$::Private, inner)
-          }
-
-          unsafe fn repeated_get_mut_unchecked(
-            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
-            i: usize,
-          ) -> $pb$::Mut<Self> {
-            // SAFETY:
-            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
-            // - `i < len(f)` is promised by caller.
-            let msg = unsafe { $pbr$::proto2_rust_RepeatedField_Message_get_mut(f.as_raw($pbi$::Private), i) };
-            let inner = unsafe { $pbr$::MessageMutInner::wrap_raw(msg) };
-            inner.into()
-          }
-
-          fn repeated_clear(mut f: $pb$::Mut<$pb$::Repeated<Self>>) {
-            // SAFETY:
-            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
-            unsafe { $pbr$::proto2_rust_RepeatedField_Message_clear(f.as_raw($pbi$::Private)) };
-          }
-
-          fn repeated_push(mut f: $pb$::Mut<$pb$::Repeated<Self>>, v: impl $pb$::IntoProxied<Self>) {
-            // SAFETY:
-            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
-            // - `v.raw_msg()` is a valid `const Message&`.
-            unsafe {
-              let prototype = <$Msg$View as $std$::default::Default>::default().raw_msg();
-              let new_elem = $pbr$::proto2_rust_RepeatedField_Message_add(f.as_raw($pbi$::Private), prototype);
-              $pbr$::proto2_rust_Message_copy_from(new_elem, v.into_proxied($pbi$::Private).raw_msg());
-            }
-          }
-
-          fn repeated_copy_from(
-            src: $pb$::View<$pb$::Repeated<Self>>,
-            mut dest: $pb$::Mut<$pb$::Repeated<Self>>,
-          ) {
-            // SAFETY:
-            // - `dest.as_raw()` is a valid `RepeatedPtrField*`.
-            // - `src.as_raw()` is a valid `const RepeatedPtrField&`.
-            unsafe {
-              $pbr$::proto2_rust_RepeatedField_Message_copy_from(dest.as_raw($pbi$::Private), src.as_raw($pbi$::Private));
-            }
-          }
-
-          fn repeated_reserve(
-            mut f: $pb$::Mut<$pb$::Repeated<Self>>,
-            additional: usize,
-          ) {
-            // SAFETY:
-            // - `f.as_raw()` is a valid `RepeatedPtrField*`.
-            unsafe { $pbr$::proto2_rust_RepeatedField_Message_reserve(f.as_raw($pbi$::Private), additional) }
-          }
-        }
-      )rs");
-      return;
-    case Kernel::kUpb:
-      // ProxiedInRepeated is implemented with a blanket implementation for
-      // upb.
-      return;
-  }
-  ABSL_LOG(FATAL) << "unreachable";
-}
-
 void TypeConversions(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
     case Kernel::kCpp:
@@ -666,7 +547,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                CppGeneratedMessageTraitImpls(ctx, msg);
              }
            }},
-          {"repeated_impl", [&] { MessageProxiedInRepeated(ctx, msg); }},
           {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
           {"unwrap_upb",
            [&] {
@@ -756,6 +636,12 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
         }
 
+        impl<'msg> From<$pbr$::MessageViewInner<'msg, $Msg$>> for $Msg$View<'msg> {
+          fn from(inner: $pbr$::MessageViewInner<'msg, $Msg$>) -> Self {
+            Self { inner }
+          }
+        }
+
         #[allow(dead_code)]
         impl<'msg> $Msg$View<'msg> {
           #[doc(hidden)]
@@ -803,7 +689,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         $into_proxied_impl$
 
-        $repeated_impl$
         $type_conversions_impl$
 
         #[allow(dead_code)]
