@@ -105,15 +105,6 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   return true;
 }
 
-void CollectPublicDependencies(
-    const FileDescriptor* file,
-    absl::flat_hash_set<const FileDescriptor*>* dependencies) {
-  if (file == nullptr || !dependencies->insert(file).second) return;
-  for (int i = 0; file != nullptr && i < file->public_dependency_count(); i++) {
-    CollectPublicDependencies(file->public_dependency(i), dependencies);
-  }
-}
-
 // Finds all extensions for custom options in the given file descriptor with the
 // builder pool which resolves Java features instead of the generated pool.
 void CollectExtensions(const FileDescriptor& file,
@@ -138,20 +129,6 @@ void CollectExtensions(const FileDescriptor& file,
   extensions->clear();
   // Unknown extensions are ok and expected in the case of option imports.
   CollectExtensions(*dynamic_file_proto, extensions);
-
-  // TODO: Remove descriptor pool pollution from protoc full.
-  // Check against dependencies to handle option dependencies polluting pool
-  // from using protoc_full with built-in generators instead of plugins.
-  // Option dependencies and transitive dependencies are not allowed, except in
-  // the case of import public.
-  absl::flat_hash_set<const FileDescriptor*> dependencies;
-  dependencies.insert(&file);
-  for (int i = 0; i < file.dependency_count(); i++) {
-    CollectPublicDependencies(file.dependency(i), &dependencies);
-  }
-  absl::erase_if(*extensions, [&](const FieldDescriptor* fieldDescriptor) {
-    return !dependencies.contains(fieldDescriptor->file());
-  });
 }
 
 // Our static initialization methods can become very, very large.
