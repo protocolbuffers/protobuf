@@ -102,8 +102,10 @@ PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
 // A utility function for logging that doesn't need any template types. Same as
 // LogIndexOutOfBounds, but aborts the program in all cases by logging to FATAL
 // instead of DFATAL.
-[[noreturn]] PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(int index,
-                                                              int size);
+// TODO: Remove preserve_all and add no_return once experiment is
+// complete.
+PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(
+    int index, int size);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
   if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
     LogIndexOutOfBoundsAndAbort(index, size);

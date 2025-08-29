@@ -52,6 +52,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
+
 namespace google {
 namespace protobuf {
 

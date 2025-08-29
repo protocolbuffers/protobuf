@@ -948,6 +948,13 @@ namespace internal {
 #define PROTOBUF_NULLABLE
 #endif
 
+#ifdef PROTOBUF_PRESERVE_ALL
+#error PROTOBUF_PRESERVE_ALL was previously defined
+#endif  // PROTOBUF_PRESERVE_ALL
+#ifndef PROTOBUF_PRESERVE_ALL
+#define PROTOBUF_PRESERVE_ALL
+#endif  // PROTOBUF_PRESERVE_ALL
+
 namespace google {
 namespace protobuf {
 namespace internal {
