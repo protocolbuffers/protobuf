@@ -214,6 +214,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
                                             Arena* arena);
+  [[nodiscard]] const char* ReadMicroStringWithSize(const char* ptr, int size,
+                                                    MicroString& str,
+                                                    Arena* arena);
   [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr, int size,
                                                     MicroString& str,
                                                     Arena* arena);
@@ -1246,6 +1249,13 @@ inline const char* EpsCopyInputStream::ReadMicroString(const char* ptr,
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
 
+  return ReadMicroStringWithSize(ptr, size, str, arena);
+}
+
+inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
+                                                               int size,
+                                                               MicroString& str,
+                                                               Arena* arena) {
   if (size <= BytesAvailable(ptr)) {
     str.Set(absl::string_view(ptr, size), arena);
     return ptr + size;
