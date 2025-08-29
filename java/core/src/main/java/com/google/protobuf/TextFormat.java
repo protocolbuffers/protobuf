@@ -511,12 +511,12 @@ public final class TextFormat {
     /** An adapter class that can take a {@link MapEntry} and returns its key and entry. */
     static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
       private Object entry;
-      private Message messageEntry;
+      private MessageOrBuilder messageEntry;
       private final FieldDescriptor keyField;
 
       MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
-        if (entry instanceof Message) {
-          this.messageEntry = (Message) entry;
+        if (entry instanceof MessageOrBuilder) {
+          this.messageEntry = (MessageOrBuilder) entry;
         } else {
           this.entry = entry;
         }
