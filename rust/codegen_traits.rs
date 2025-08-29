@@ -158,6 +158,17 @@ pub(crate) mod interop {
         ///     passed here (must not be read, written, or deleted)
         #[cfg(cpp_kernel)]
         unsafe fn __unstable_take_ownership_of_raw_message(raw_message: *mut c_void) -> Self;
+
+        /// Attempts to downcast from a pointer to a `proto2::MessageLite` or `proto2::Message`
+        /// to `Self`.
+        ///
+        /// # Safety
+        ///   - The underlying pointer must point to a `proto2::Message` or `proto2::MessageLite`
+        ///     that is of the same type as `Self`.
+        ///   - The pointer passed in must not be used by the caller after being
+        ///     passed here (must not be read, written, or deleted)
+        #[cfg(cpp_kernel)]
+        unsafe fn __unstable_downcast_from_proto2_message(message_lite: *mut c_void) -> Self;
     }
 
     /// Traits related to message view interop.
