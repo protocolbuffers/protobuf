@@ -185,7 +185,9 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // Invoke internalBuildGeneratedFileFrom() to build the file.
   printer->Print(
       "descriptor = com.google.protobuf.Descriptors.FileDescriptor\n"
-      "  .internalBuildGeneratedFileFrom(descriptorData,\n");
+      "  .internalBuildGeneratedFileFrom($classname$.class.getClassLoader(), "
+      "descriptorData,\n",
+      "classname", name_resolver_->GetDescriptorClassName(file_));
   if (options_.opensource_runtime) {
     printer->Print(
         "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
