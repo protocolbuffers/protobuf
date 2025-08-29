@@ -49,6 +49,18 @@ namespace internal {
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
                                           const MapValueConstRef& value);
 
+namespace {
+// Returns the default (prototype) Message instance for a given message
+// field descriptor.
+static const Message* GetMessagePrototype(const FieldDescriptor* field) {
+  ABSL_DCHECK_EQ(field->cpp_type(), FieldDescriptor::CPPTYPE_MESSAGE);
+
+  const Descriptor* descriptor = field->message_type();
+  ABSL_DCHECK_NE(descriptor, nullptr);
+  return MessageFactory::generated_factory()->GetPrototype(descriptor);
+}
+}  // namespace
+
 // ===================================================================
 
 bool UnknownFieldSetFieldSkipper::SkipField(io::CodedInputStream* input,

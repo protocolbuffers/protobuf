@@ -371,8 +371,12 @@ size_t ExtensionSet::GetMessageByteSizeLong(int number) const {
   const Extension* extension = FindOrNull(number);
   ABSL_CHECK(extension != nullptr) << "not present";
   ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
-  return extension->is_lazy ? extension->ptr.lazymessage_value->ByteSizeLong()
-                            : extension->ptr.message_value->ByteSizeLong();
+  ABSL_DCHECK(!extension->is_lazy ||
+              extension->GetPrototypeForLazyMessage() != nullptr);
+  return extension->is_lazy
+             ? extension->ptr.lazymessage_value->ByteSizeLong(
+                   extension->GetPrototypeForLazyMessage(), arena_)
+             : extension->ptr.message_value->ByteSizeLong();
 }
 
 uint8_t* ExtensionSet::InternalSerializeMessage(
@@ -1199,8 +1203,8 @@ uint8_t* ExtensionSet::InternalSerializeMessageSetWithCachedSizesToArray(
 size_t ExtensionSet::ByteSize() const {
   size_t total_size = 0;
   ForEach(
-      [&total_size](int number, const Extension& ext) {
-        total_size += ext.ByteSize(number);
+      [&](int number, const Extension& ext) {
+        total_size += ext.ByteSize(number, arena_);
       },
       Prefetch{});
   return total_size;
@@ -1288,7 +1292,7 @@ void ExtensionSet::Extension::Clear() {
   }
 }
 
-size_t ExtensionSet::Extension::ByteSize(int number) const {
+size_t ExtensionSet::Extension::ByteSize(int number, Arena* arena) const {
   size_t result = 0;
 
   if (is_repeated) {
@@ -1404,7 +1408,8 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
 #undef HANDLE_TYPE
       case WireFormatLite::TYPE_MESSAGE: {
         result += WireFormatLite::LengthDelimitedSize(
-            is_lazy ? ptr.lazymessage_value->ByteSizeLong()
+            is_lazy ? ptr.lazymessage_value->ByteSizeLong(
+                          GetPrototypeForLazyMessage(), arena)
                     : ptr.message_value->ByteSizeLong());
         break;
       }
@@ -1884,11 +1889,12 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
   return target;
 }
 
-size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
+size_t ExtensionSet::Extension::MessageSetItemByteSize(int number,
+                                                       Arena* arena) const {
   if (type != WireFormatLite::TYPE_MESSAGE || is_repeated) {
     // Not a valid MessageSet extension, but compute the byte size for it the
     // normal way.
-    return ByteSize(number);
+    return ByteSize(number, arena);
   }
 
   if (is_cleared) return 0;
@@ -1900,7 +1906,8 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 
   // message
   our_size += WireFormatLite::LengthDelimitedSize(
-      is_lazy ? ptr.lazymessage_value->ByteSizeLong()
+      is_lazy ? ptr.lazymessage_value->ByteSizeLong(
+                    GetPrototypeForLazyMessage(), arena)
               : ptr.message_value->ByteSizeLong());
 
   return our_size;
@@ -1909,8 +1916,8 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 size_t ExtensionSet::MessageSetByteSize() const {
   size_t total_size = 0;
   ForEach(
-      [&total_size](int number, const Extension& ext) {
-        total_size += ext.MessageSetItemByteSize(number);
+      [&](int number, const Extension& ext) {
+        total_size += ext.MessageSetItemByteSize(number, arena_);
       },
       Prefetch{});
   return total_size;
