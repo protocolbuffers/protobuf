@@ -75,6 +75,7 @@ cc_library(
         "//upb_generator/minitable:names",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings",
     ],
 )
@@ -125,6 +126,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
+        "//upb/port",
         "//upb/reflection",
         "//upb_generator/common:cpp_to_upb_def",
         "@abseil-cpp//absl/strings",

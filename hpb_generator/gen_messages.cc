@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -47,10 +48,10 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
                                 Context& ctx);
 void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
                                  Context& ctx);
-void WriteInternalForwardDeclarationsInHeader(
-    const protobuf::Descriptor* message, Context& ctx);
 void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
                                 Context& ctx);
+void WriteDefaultInstanceDefinitionHeader(const protobuf::Descriptor* message,
+                                          Context& ctx);
 void WriteUsingEnumsInHeader(
     const protobuf::Descriptor* message,
     const std::vector<const protobuf::EnumDescriptor*>& file_enums,
@@ -73,29 +74,31 @@ void WriteMessageClassDeclarations(
 
   // Forward declaration of Proto Class for GCC handling of free friend method.
   ctx.Emit(
-      {Sub("class_name", ClassName(descriptor)),
-       Sub("model_access",
-           [&] { WriteModelAccessDeclaration(descriptor, ctx); })
-           .WithSuffix(";"),
-       Sub("fwd_decl",
-           [&] { WriteInternalForwardDeclarationsInHeader(descriptor, ctx); })
-           .WithSuffix(";"),
-       Sub("public_decl",
-           [&] {
-             WriteModelPublicDeclaration(descriptor, file_exts, file_enums,
-                                         ctx);
-           })
-           .WithSuffix(";"),
-       Sub("cproxy_decl", [&] { WriteModelCProxyDeclaration(descriptor, ctx); })
-           .WithSuffix(";"),
-       Sub("proxy_decl", [&] { WriteModelProxyDeclaration(descriptor, ctx); })
-           .WithSuffix(";")},
+      {
+          Sub("class_name", ClassName(descriptor)),
+          Sub("model_access",
+              [&] { WriteModelAccessDeclaration(descriptor, ctx); })
+              .WithSuffix(";"),
+          Sub("public_decl",
+              [&] {
+                WriteModelPublicDeclaration(descriptor, file_exts, file_enums,
+                                            ctx);
+              })
+              .WithSuffix(";"),
+          Sub("cproxy_decl",
+              [&] { WriteModelCProxyDeclaration(descriptor, ctx); })
+              .WithSuffix(";"),
+          Sub("proxy_decl",
+              [&] { WriteModelProxyDeclaration(descriptor, ctx); })
+              .WithSuffix(";"),
+          Sub("default_instance",
+              [&] { WriteDefaultInstanceDefinitionHeader(descriptor, ctx); })
+              .WithSuffix(";"),
+      },
       R"cc(
         class $class_name$;
         namespace internal {
         $model_access$;
-
-        $fwd_decl$;
         }  // namespace internal
 
         $public_decl$;
@@ -103,6 +106,7 @@ void WriteMessageClassDeclarations(
         $cproxy_decl$;
         $proxy_decl$;
         }  // namespace internal
+        $default_instance$;
       )cc");
 }
 
@@ -389,8 +393,35 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
 
 void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
                                 Context& ctx) {
+  if (message->options().map_entry()) {
+    return;
+  }
   ctx.Emit({{"class_name", ClassName(message)}},
-           "  static ::hpb::Ptr<const $class_name$> default_instance();\n");
+           R"cc(
+             static ::hpb::Ptr<const $class_name$> default_instance();
+           )cc");
+}
+
+void WriteDefaultInstanceDefinitionHeader(const protobuf::Descriptor* message,
+                                          Context& ctx) {
+  if (message->options().map_entry()) {
+    return;
+  }
+  ctx.Emit(
+      {{"class_name", ClassName(message)},
+       {"size_class",
+        // Use log2 size class of message size to reduce the number of default
+        // instances created.
+        absl::bit_ceil(static_cast<size_t>(ctx.GetLayoutSize(message)))}},
+      R"cc(
+        inline ::hpb::Ptr<const $class_name$> $class_name$::default_instance() {
+          return ::hpb::interop::upb::MakeCHandle<$class_name$>(
+              ::hpb::internal::backend::upb::DefaultInstance<
+                  $size_class$>::msg(),
+              ::hpb::internal::backend::upb::DefaultInstance<
+                  $size_class$>::arena());
+        }
+      )cc");
 }
 
 void WriteMessageImplementation(
@@ -458,44 +489,6 @@ void WriteMessageImplementation(
   }
 
   WriteAccessorsInSource(descriptor, ctx);
-
-  if (!message_is_map_entry) {
-    ctx.Emit({{"class_name", ClassName(descriptor)},
-              {"c_api_msg_type",
-               upb::generator::CApiMessageType(descriptor->full_name())}},
-             R"cc(
-               struct $class_name$DefaultTypeInternal {
-                 $c_api_msg_type$* msg;
-                 upb_Arena* arena;
-               };
-               static $class_name$DefaultTypeInternal _$class_name$DefaultTypeBuilder() {
-                 upb_Arena* arena = upb_Arena_New();
-                 return $class_name$DefaultTypeInternal{$c_api_msg_type$_new(arena), arena};
-               }
-               $class_name$DefaultTypeInternal _$class_name$_default_instance_ =
-                   _$class_name$DefaultTypeBuilder();
-             )cc");
-
-    ctx.Emit({{"class_name", ClassName(descriptor)}},
-             R"cc(
-               ::hpb::Ptr<const $class_name$> $class_name$::default_instance() {
-                 return ::hpb::interop::upb::MakeCHandle<$class_name$>(
-                     (upb_Message*)_$class_name$_default_instance_.msg,
-                     _$class_name$_default_instance_.arena);
-               }
-             )cc");
-  }
-}
-
-void WriteInternalForwardDeclarationsInHeader(
-    const protobuf::Descriptor* message, Context& ctx) {
-  // Write declaration for internal re-usable default_instance without
-  // leaking implementation.
-  ctx.Emit({{"class_name", ClassName(message)}},
-           R"cc(
-             struct $class_name$DefaultTypeInternal;
-             extern $class_name$DefaultTypeInternal _$class_name$_default_instance_;
-           )cc");
 }
 
 void WriteExtensionIdentifiersInClassHeader(
