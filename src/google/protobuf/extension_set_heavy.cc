@@ -81,6 +81,27 @@ void ExtensionSet::AppendToList(
       Prefetch{});
 }
 
+bool ExtensionSet::IsEmpty() const {
+  if (IsCompletelyEmpty()) return true;
+  auto is_present_fn = [](const auto& field) {
+    return field.is_repeated ? field.GetSize() > 0 : !field.is_cleared;
+  };
+  if (ABSL_PREDICT_FALSE(is_large())) {
+    for (auto it = map_.large->begin(); it != map_.large->end(); ++it) {
+      if (is_present_fn(it->second)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  for (auto it = flat_begin(); it != flat_end(); ++it) {
+    if (is_present_fn(it->second)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 inline FieldDescriptor::Type real_type(FieldType type) {
   ABSL_DCHECK(type > 0 && type <= FieldDescriptor::MAX_TYPE);
   return static_cast<FieldDescriptor::Type>(type);
