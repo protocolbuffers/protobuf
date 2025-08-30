@@ -1,0 +1,28 @@
+edition = "2024";
+
+package third_party_protobuf;
+
+// Leave this as an actual import to make sure implicit option_deps doesn't
+// interfere with regular imports / deps.
+// import "google/protobuf/java_features.proto";
+import "google/protobuf/cpp_features.proto";
+
+import option "google/protobuf/internal_options.proto";
+import option "google/protobuf/java_features.proto";
+import option "third_party/golang/protobuf/v2/src/google/protobuf/go_features.proto";
+
+enum TestImplicitOptionDepsEnum {
+  option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
+
+  UNKNOWN = 0;
+  VALUE1 = 1;
+  VALUE2 = 2;
+}
+
+message TestImplicitOptionDepsMessage {
+  int32 a = 1 [(pb.internal_field_options).cpp = {}];
+  TestImplicitOptionDepsEnum b = 2 [
+    features.(pb.cpp).legacy_closed_enum = true,
+    features.(pb.java).legacy_closed_enum = true
+  ];
+}

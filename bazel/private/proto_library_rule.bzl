@@ -68,6 +68,7 @@ def _proto_library_impl(ctx):
     srcs = ctx.files.srcs
     deps = [dep[ProtoInfo] for dep in ctx.attr.deps]
     option_deps = [dep[ProtoInfo] for dep in ctx.attr.option_deps]
+
     exports = [dep[ProtoInfo] for dep in ctx.attr.exports]
     import_prefix = _get_import_prefix(ctx)
     strip_import_prefix = _get_strip_import_prefix(ctx)
