@@ -66,12 +66,14 @@ static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
 static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
                                           const void* def,
                                           const upb_FileDef* file) {
-  PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)PyUpb_ObjCache_Get(def);
+  PyUpb_ObjCache_Lock();
+  PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)PyUpb_ObjCache_GetLockHeld(def);
 
   if (!base) {
     base = PyUpb_DescriptorBase_DoCreate(type, def, file);
   }
 
+  PyUpb_ObjCache_Unlock();
   return &base->ob_base;
 }
 
@@ -251,7 +253,7 @@ PyObject* PyUpb_Descriptor_Get(const upb_MessageDef* m) {
   return PyUpb_DescriptorBase_Get(kPyUpb_Descriptor, m, file);
 }
 
-PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
+static PyObject* PyUpb_Descriptor_GetClassLockHeld(const upb_MessageDef* m) {
   PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
@@ -284,6 +286,13 @@ void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta) {
   PyObject* tmp = base->message_meta;
   base->message_meta = meta;
   Py_XDECREF(tmp);
+}
+
+PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
+  PyUpb_ObjCache_Lock();
+  PyObject *ret = PyUpb_Descriptor_GetClassLockHeld(m);
+  PyUpb_ObjCache_Unlock();
+  return ret;
 }
 
 // The LookupNested*() functions provide name lookup for entities nested inside

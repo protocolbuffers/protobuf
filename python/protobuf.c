@@ -16,6 +16,13 @@
 #include "python/repeated.h"
 #include "python/unknown_fields.h"
 
+#ifdef Py_GIL_DISABLED
+// needed for PyUpb_Mutex
+#include "upb/port/atomic.h"
+// Must be last.
+#include "upb/port/def.inc"
+#endif
+
 static upb_Arena* PyUpb_NewArena(void);
 
 static void PyUpb_ModuleDealloc(void* module) {
@@ -95,12 +102,62 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
 }
 
 // -----------------------------------------------------------------------------
+// Recursive mutex
+// -----------------------------------------------------------------------------
+
+#ifdef Py_GIL_DISABLED
+// recursive mutex, similar to _PyRecursiveMutex
+typedef struct {
+  PyMutex mutex;
+  UPB_ATOMIC(unsigned long) owner;
+  size_t level;
+} PyUpb_Mutex;
+
+static void PyUpb_MutexLock(PyUpb_Mutex *m)
+{
+  unsigned long thread = PyThread_get_thread_ident();
+  if (upb_Atomic_Load(&m->owner, memory_order_acquire) == thread) {
+    m->level++;
+    return;
+  }
+  PyMutex_Lock(&m->mutex);
+  upb_Atomic_Store(&m->owner, thread, memory_order_release);
+  assert(m->level == 0);
+}
+
+static void PyUpb_MutexUnlock(PyUpb_Mutex *m)
+{
+  unsigned long thread = PyThread_get_thread_ident();
+  if (upb_Atomic_Load(&m->owner, memory_order_acquire) != thread) {
+    assert(0 && "mutex not owned by current thread");
+  }
+  if (m->level > 0) {
+    m->level--;
+    return;
+  }
+  upb_Atomic_Store(&m->owner, 0, memory_order_release);
+  PyMutex_Unlock(&m->mutex);
+}
+
+static bool PyUpb_MutexIsLockedByCurrentThread(PyUpb_Mutex *m)
+{
+  unsigned long thread = PyThread_get_thread_ident();
+  return upb_Atomic_Load(&m->owner, memory_order_acquire) == thread;
+}
+
+#endif // Py_GIL_DISABLED
+
+
+// -----------------------------------------------------------------------------
 // WeakMap
 // -----------------------------------------------------------------------------
 
 struct PyUpb_WeakMap {
   upb_inttable table;
   upb_Arena* arena;
+#ifdef Py_GIL_DISABLED
+  PyUpb_Mutex mutex;
+#endif
 };
 
 PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
@@ -108,6 +165,9 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
   PyUpb_WeakMap* map = upb_Arena_Malloc(arena, sizeof(*map));
   map->arena = arena;
   upb_inttable_init(&map->table, map->arena);
+#ifdef Py_GIL_DISABLED
+  map->mutex = (PyUpb_Mutex){0};
+#endif
   return map;
 }
 
@@ -174,8 +234,47 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
   return state->obj_cache;
 }
 
-void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
+// Return true if ObjCache is locked by the current thread.  This always returns
+// true if free-threading is disabled.
+bool PyUpb_ObjCache_IsLocked(void) {
+#ifdef Py_GIL_DISABLED
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  return PyUpb_MutexIsLockedByCurrentThread(&state->obj_cache->mutex);
+#else
+  return true;
+#endif
+}
+
+void PyUpb_ObjCache_Lock(void) {
+#ifdef Py_GIL_DISABLED
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_MutexLock(&state->obj_cache->mutex);
+#endif
+}
+
+void PyUpb_ObjCache_Unlock(void) {
+#ifdef Py_GIL_DISABLED
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_MutexUnlock(&state->obj_cache->mutex);
+#endif
+}
+
+void PyUpb_ObjCache_AddLockHeld(const void* key, PyObject* py_obj) {
+  assert(PyUpb_ObjCache_IsLocked());
   PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
+}
+
+void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
+  PyUpb_ObjCache_Lock();
+  PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
+  PyUpb_ObjCache_Unlock();
+}
+
+void PyUpb_ObjCache_DeleteLockHeld(const void* key) {
+  assert(PyUpb_ObjCache_IsLocked());
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  assert(state != NULL);
+  PyUpb_WeakMap_Delete(state->obj_cache, key);
 }
 
 void PyUpb_ObjCache_Delete(const void* key) {
@@ -187,11 +286,21 @@ void PyUpb_ObjCache_Delete(const void* key) {
     // map.
     return;
   }
-  PyUpb_WeakMap_Delete(state->obj_cache, key);
+  PyUpb_ObjCache_Lock();
+  PyUpb_ObjCache_DeleteLockHeld(key);
+  PyUpb_ObjCache_Unlock();
+}
+
+PyObject* PyUpb_ObjCache_GetLockHeld(const void* key) {
+  assert(PyUpb_ObjCache_IsLocked());
+  return PyUpb_WeakMap_Get(PyUpb_ObjCache_Instance(), key);
 }
 
 PyObject* PyUpb_ObjCache_Get(const void* key) {
-  return PyUpb_WeakMap_Get(PyUpb_ObjCache_Instance(), key);
+  PyUpb_ObjCache_Lock();
+  PyObject *ret = PyUpb_ObjCache_GetLockHeld(key);
+  PyUpb_ObjCache_Unlock();
+  return ret;
 }
 
 // -----------------------------------------------------------------------------
@@ -224,12 +333,14 @@ static void* upb_trim_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
   (void)oldsize;
   if (size == 0) {
     free(ptr);
+#ifndef Py_GIL_DISABLED
 #ifdef __GLIBC__
     static int count = 0;
     if (++count == 10000) {
       malloc_trim(0);
       count = 0;
     }
+#endif
 #endif
     return NULL;
   } else {
@@ -405,6 +516,10 @@ PyMODINIT_FUNC PyInit__message(void) {
   PyObject* m = PyModule_Create(&module_def);
   if (!m) return NULL;
 
+#ifdef Py_GIL_DISABLED
+  PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
+
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
 
   state->allow_oversize_protos = false;
@@ -420,6 +535,14 @@ PyMODINIT_FUNC PyInit__message(void) {
     Py_DECREF(m);
     return NULL;
   }
+
+#ifdef Py_GIL_DISABLED
+  state->c_descriptor_symtab = upb_DefPool_New();
+  if (state->c_descriptor_symtab == NULL) {
+    Py_DECREF(m);
+    return NULL;
+  }
+#endif
 
   // Temporary: an cookie we can use in the tests to ensure we are testing upb
   // and not another protobuf library on the system.
