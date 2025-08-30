@@ -92,11 +92,6 @@ TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
 
 }  // namespace
 
-class ScopedCheckPtrInvariants {
- public:
-  explicit ScopedCheckPtrInvariants(const TaggedStringPtr*) {}
-};
-
 TaggedStringPtr TaggedStringPtr::ForceCopy(Arena* arena) const {
   return arena != nullptr ? CreateArenaString(*arena, *Get())
                           : CreateString(*Get());
