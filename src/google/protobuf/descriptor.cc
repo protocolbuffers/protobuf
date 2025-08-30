@@ -6731,7 +6731,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
           }
         });
   }
-  if (!had_errors_) {
+  if (!had_errors_ && pool_->enforce_symbol_visibility_) {
     // Check Symbol Visibility Rules.
     CheckVisibilityRules(result, proto);
   }
@@ -7929,7 +7929,8 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                                      "\" is not a message type.");
                });
       return;
-    } else if (!extendee.IsVisibleFrom(file_)) {
+    } else if (!extendee.IsVisibleFrom(file_) &&
+               pool_->enforce_symbol_visibility_) {
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::EXTENDEE, [&] {
                  return extendee.GetVisibilityError(file_, "target of extend");
@@ -8041,7 +8042,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       field->is_map_ = sub_message->options().map_entry();
     }
 
-    if (!type.IsVisibleFrom(file_)) {
+    if (!type.IsVisibleFrom(file_) && pool_->enforce_symbol_visibility_) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                [&] { return type.GetVisibilityError(file_); });
       return;
