@@ -110,22 +110,16 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (ctx.is_upb()) {
                ctx.Emit(R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
-                      let minitable_field = unsafe {
-                        $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$
-                        )
-                      };
+                      use $pbr$::UpbGetMessagePtrMut;
                       let val = src.into_proxied($pbi$::Private);
                       let inner = val.inner($pbi$::Private);
 
                       self.arena().fuse(inner.arena());
                       unsafe {
-                          let value_ptr: *const *const std::ffi::c_void =
-                              &(inner.raw().as_ptr() as *const std::ffi::c_void);
-                          $pbr$::upb_Message_SetBaseField(self.raw_msg(),
-                            minitable_field,
-                            value_ptr as *const std::ffi::c_void);
+                          self.get_ptr_mut($pbi$::Private)
+                              .set_array_at_index(
+                                  $upb_mt_field_index$,
+                                  inner.raw());
                       }
                     }
                   )rs");

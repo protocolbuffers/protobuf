@@ -195,7 +195,7 @@ extern "C" {
     ///
     /// # Safety
     /// - `m` and `f` must be valid to deref
-    /// - `f` must be a repeated field associated with `m`
+    /// - `f` must be a map associated with `m`
     pub fn upb_Message_GetMap(m: RawMessage, f: *const upb_MiniTableField) -> Option<RawMap>;
 
     /// Gets or creates a mutable upb_Map* assigned to the corresponding field

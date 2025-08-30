@@ -57,11 +57,10 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             ctx.Emit(R"rs(
                     pub fn $field$($view_self$)
                       -> $pb$::MapView<$view_lifetime$, $Key$, $Value$> {
+                      use $pbr$::UpbGetMessagePtr;
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
-                        $pbr$::upb_Message_GetMap(self.raw_msg(), f)
+                        self.get_ptr($pbi$::Private)
+                          .get_map_at_index($upb_mt_field_index$)
                           .map_or_else(
                             $pbr$::empty_map::<$Key$, $Value$>,
                             |raw| $pb$::MapView::from_raw($pbi$::Private, raw)
@@ -88,26 +87,11 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             ctx.Emit({}, R"rs(
                     pub fn $field$_mut(&mut self)
                       -> $pb$::MapMut<'_, $Key$, $Value$> {
+                      use $pbr$::UpbGetMessagePtrMut;
                       unsafe {
-                        let parent_mini_table =
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table();
-
-                        let f =
-                          $pbr$::upb_MiniTable_GetFieldByIndex(
-                              parent_mini_table,
-                              $upb_mt_field_index$);
-
-                        let map_entry_mini_table =
-                          $pbr$::upb_MiniTable_SubMessage(
-                              parent_mini_table,
-                              f);
-
-                        let raw_map =
-                          $pbr$::upb_Message_GetOrCreateMutableMap(
-                              self.raw_msg(),
-                              map_entry_mini_table,
-                              f,
-                              self.arena().raw()).unwrap();
+                        let raw_map = self.get_ptr_mut($pbi$::Private)
+                          .get_or_create_mutable_map_at_index(
+                            $upb_mt_field_index$, self.arena()).unwrap();
                         let inner = $pbr$::InnerMapMut::new(
                           raw_map, self.arena());
                         $pb$::MapMut::from_inner($pbi$::Private, inner)
@@ -134,23 +118,17 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   pub fn set_$raw_field_name$(
                       &mut self,
                       src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
-                    let minitable_field = unsafe {
-                      $pbr$::upb_MiniTable_GetFieldByIndex(
-                        <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                        $upb_mt_field_index$
-                      )
-                    };
+                    use $pbr$::UpbGetMessagePtrMut;
                     let mut val = src.into_proxied($pbi$::Private);
                     let val_as_mut = val.as_mut();
                     let mut inner = val_as_mut.inner($pbi$::Private);
 
                     self.arena().fuse(inner.arena());
                     unsafe {
-                        let value_ptr: *const *const $std$::ffi::c_void =
-                            &(inner.as_raw().as_ptr() as *const $std$::ffi::c_void);
-                        $pbr$::upb_Message_SetBaseField(self.raw_msg(),
-                          minitable_field,
-                          value_ptr as *const $std$::ffi::c_void);
+                        self.get_ptr_mut($pbi$::Private)
+                            .set_map_at_index(
+                                $upb_mt_field_index$,
+                                inner.as_raw());
                     }
                   }
                 )rs");

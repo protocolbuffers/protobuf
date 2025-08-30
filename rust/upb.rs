@@ -10,9 +10,10 @@
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
-    MergeFrom, Message, MessageViewInterop, Mut, ParseError, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, Serialize,
-    SerializeError, TakeFrom, View,
+    MergeFrom, Message, MessageMut, MessageMutInterop, MessageView, MessageViewInterop, Mut,
+    OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue,
+    ProxiedInRepeated, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, TakeFrom,
+    View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;
@@ -27,23 +28,15 @@ extern crate upb;
 use crate::upb;
 
 // Temporarily 'pub' since the gencode is directly referencing various parts of upb.
-pub use upb::upb_Message_GetMap;
-pub use upb::upb_Message_GetOrCreateMutableMap;
-pub use upb::upb_Message_SetBaseField;
-pub use upb::upb_Message_WhichOneofFieldNumber;
 pub use upb::upb_MiniTable;
 pub use upb::upb_MiniTableEnum;
 pub use upb::upb_MiniTableEnum_Build;
 pub use upb::upb_MiniTable_Build;
-pub use upb::upb_MiniTable_GetFieldByIndex;
 pub use upb::upb_MiniTable_Link;
-pub use upb::upb_MiniTable_SubMessage;
-pub use upb::wire;
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
 pub use upb::AssociatedMiniTableEnum;
 pub use upb::MessagePtr;
-pub use upb::MiniTable;
 use upb::*;
 
 pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {
@@ -52,11 +45,9 @@ pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {
     unsafe { upb::debug_string(ptr) }
 }
 
-pub type RawArena = upb::RawArena;
-pub type RawMessage = upb::RawMessage;
-pub type RawRepeatedField = upb::RawArray;
-pub type RawMap = upb::RawMap;
-pub type PtrAndLen = upb::StringView;
+pub(crate) type RawRepeatedField = upb::RawArray;
+pub(crate) type RawMap = upb::RawMap;
+pub(crate) type PtrAndLen = upb::StringView;
 
 // This struct represents a raw minitable pointer. We need it to be Send and Sync so that we can
 // store it in a static OnceLock for lazy initialization of minitables. It should not be used for
@@ -1217,6 +1208,32 @@ pub unsafe trait UpbGetMessagePtrMut: SealedInternal {
 #[doc(hidden)]
 pub unsafe trait UpbGetArena: SealedInternal {
     fn get_arena(&mut self, _private: Private) -> &Arena;
+}
+
+// The upb kernel doesn't support any owned message or message mut interop.
+impl<T: Message> OwnedMessageInterop for T {}
+impl<'a, T: MessageMut<'a>> MessageMutInterop<'a> for T {}
+
+impl<'a, T> MessageViewInterop<'a> for T
+where
+    Self: UpbGetMessagePtr
+        + MessageView<'a>
+        + From<MessageViewInner<'a, <Self as MessageView<'a>>::Message>>,
+    <Self as MessageView<'a>>::Message: AssociatedMiniTable,
+{
+    unsafe fn __unstable_wrap_raw_message(msg: &'a *const std::ffi::c_void) -> Self {
+        let raw = RawMessage::new(*msg as *mut _).unwrap();
+        let inner = unsafe { MessageViewInner::wrap_raw(raw) };
+        inner.into()
+    }
+    unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(msg: *const std::ffi::c_void) -> Self {
+        let raw = RawMessage::new(msg as *mut _).unwrap();
+        let inner = unsafe { MessageViewInner::wrap_raw(raw) };
+        inner.into()
+    }
+    fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void {
+        self.get_ptr(Private).raw().as_ptr() as *const _
+    }
 }
 
 impl<T> MatcherEq for T
