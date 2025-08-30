@@ -31,6 +31,16 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 
 py_repositories()
 
+#python_register_toolchains(
+#    name = "python_3_9",
+#    python_version = "3.9",
+#)
+
+#python_register_toolchains(
+#    name = "python_3_10",
+#    python_version = "3.10",
+#)
+
 # Bazel platform rules.
 http_archive(
     name = "platforms",
