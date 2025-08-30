@@ -479,26 +479,27 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
                           const internal::DescriptorTable* descriptor_table,
                           void (*get_metadata_tracker)())
       : ClassData(base),
+        descriptor_methods(descriptor_methods),
+        descriptor_table(descriptor_table),
         reflection(),
         descriptor(),
-        descriptor_table(descriptor_table),
-        descriptor_methods(descriptor_methods),
         get_metadata_tracker(get_metadata_tracker) {}
 
   constexpr const ClassData* base() const { return this; }
 
-  // Accesses are protected by the once_flag in `descriptor_table`. When the
-  // table is null these are populated from the beginning and need to
-  // protection.
-  mutable const Reflection* reflection;
-  mutable const Descriptor* descriptor;
+  const DescriptorMethods* descriptor_methods;
 
   // Codegen types will provide a DescriptorTable to do lazy
   // registration/initialization of the reflection objects.
   // Other types, like DynamicMessage, keep the table as null but eagerly
   // populate `reflection`/`descriptor` fields.
   const internal::DescriptorTable* descriptor_table;
-  const DescriptorMethods* descriptor_methods;
+  // Accesses are protected by the once_flag in `descriptor_table`. When the
+  // table is null these are populated from the beginning and need to
+  // protection.
+  mutable const Reflection* reflection;
+  mutable const Descriptor* descriptor;
+
   // When an access tracker is installed, this function notifies the tracker
   // that GetMetadata was called.
   void (*get_metadata_tracker)();
