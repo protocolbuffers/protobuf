@@ -28,15 +28,15 @@ extern crate upb;
 use crate::upb;
 
 // Temporarily 'pub' since the gencode is directly referencing various parts of upb.
+pub use upb::build_mini_table;
+pub use upb::link_mini_table;
 pub use upb::upb_MiniTable;
-pub use upb::upb_MiniTableEnum;
-pub use upb::upb_MiniTableEnum_Build;
-pub use upb::upb_MiniTable_Build;
-pub use upb::upb_MiniTable_Link;
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
 pub use upb::AssociatedMiniTableEnum;
 pub use upb::MessagePtr;
+pub use upb::MiniDescriptorEnum;
+pub use upb::MiniTablePtr;
 use upb::*;
 
 pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {
@@ -48,18 +48,6 @@ pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {
 pub(crate) type RawRepeatedField = upb::RawArray;
 pub(crate) type RawMap = upb::RawMap;
 pub(crate) type PtrAndLen = upb::StringView;
-
-// This struct represents a raw minitable pointer. We need it to be Send and Sync so that we can
-// store it in a static OnceLock for lazy initialization of minitables. It should not be used for
-// any other purpose.
-pub struct MiniTablePtr(pub *mut upb_MiniTable);
-unsafe impl Send for MiniTablePtr {}
-unsafe impl Sync for MiniTablePtr {}
-
-// Same as above, but for enum minitables.
-pub struct MiniTableEnumPtr(pub *const upb_MiniTableEnum);
-unsafe impl Send for MiniTableEnumPtr {}
-unsafe impl Sync for MiniTableEnumPtr {}
 
 impl From<&ProtoStr> for PtrAndLen {
     fn from(s: &ProtoStr) -> Self {
@@ -86,12 +74,6 @@ impl ScratchSpace {
         static ZEROED_BLOCK: ScratchSpace = ScratchSpace([0; UPB_SCRATCH_SPACE_BYTES]);
         NonNull::from(&ZEROED_BLOCK).cast()
     }
-}
-
-thread_local! {
-    // We need to avoid dropping this Arena, because we use it to build mini tables that
-    // effectively have 'static lifetimes.
-    pub static THREAD_LOCAL_ARENA: ManuallyDrop<Arena> = ManuallyDrop::new(Arena::new());
 }
 
 #[doc(hidden)]
@@ -1148,7 +1130,8 @@ where
 
 impl<T> MatcherEq for T
 where
-    Self: AssociatedMiniTable + AsView + Debug,
+    Self: AsView + Debug,
+    <Self as AsView>::Proxied: AssociatedMiniTable,
     for<'a> View<'a, <Self as AsView>::Proxied>: UpbGetMessagePtr,
 {
     fn matches(&self, o: &Self) -> bool {
@@ -1156,7 +1139,7 @@ where
             upb_Message_IsEqual(
                 self.as_view().get_ptr(Private).raw(),
                 o.as_view().get_ptr(Private).raw(),
-                Self::mini_table(),
+                <Self as AsView>::Proxied::mini_table(),
                 0,
             )
         }
@@ -1175,7 +1158,7 @@ fn clear_and_parse_helper<T>(
     decode_options: i32,
 ) -> Result<(), ParseError>
 where
-    T: AssociatedMiniTable + UpbGetMessagePtrMut + UpbGetArena,
+    T: UpbGetMessagePtrMut + UpbGetArena,
 {
     Clear::clear(msg);
     // SAFETY:
@@ -1196,7 +1179,7 @@ where
 
 impl<T> ClearAndParse for T
 where
-    Self: AssociatedMiniTable + UpbGetMessagePtrMut + UpbGetArena,
+    Self: UpbGetMessagePtrMut + UpbGetArena,
 {
     fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, upb::wire::decode_options::CHECK_REQUIRED)
@@ -1209,7 +1192,7 @@ where
 
 impl<T> Serialize for T
 where
-    Self: AssociatedMiniTable + UpbGetMessagePtr,
+    Self: UpbGetMessagePtr,
 {
     fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
         //~ TODO: This discards the info we have about the reason
@@ -1233,7 +1216,8 @@ where
 
 impl<T> CopyFrom for T
 where
-    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    Self: AsView + UpbGetArena + UpbGetMessagePtr,
+    Self::Proxied: AssociatedMiniTable,
     for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
 {
     fn copy_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
@@ -1243,7 +1227,7 @@ where
             assert!(upb_Message_DeepCopy(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
-                <Self as AssociatedMiniTable>::mini_table(),
+                <Self::Proxied as AssociatedMiniTable>::mini_table(),
                 self.get_arena(Private).raw()
             ));
         }
@@ -1252,7 +1236,8 @@ where
 
 impl<T> MergeFrom for T
 where
-    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    Self: AsView + UpbGetArena + UpbGetMessagePtr,
+    Self::Proxied: AssociatedMiniTable,
     for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
 {
     fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
@@ -1261,7 +1246,7 @@ where
             assert!(upb_Message_MergeFrom(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
-                <Self as AssociatedMiniTable>::mini_table(),
+                <Self::Proxied as AssociatedMiniTable>::mini_table(),
                 // Use a nullptr for the ExtensionRegistry.
                 std::ptr::null(),
                 self.get_arena(Private).raw()
