@@ -12,6 +12,7 @@
 #include <atomic>
 #include <cmath>
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -384,7 +385,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
   RETURN_IF_ERROR(Expect(is_single_quote ? "'" : "\""));
 
   // on_heap is empty if we do not need to heap-allocate the string.
-  std::string on_heap;
+  std::optional<std::string> on_heap;
   LocationWith<Mark> mark = BeginMark();
   while (true) {
     RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
@@ -399,16 +400,16 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         }
 
         // NOTE: the 1 below clips off the " from the end of the string.
-        MaybeOwnedString result = on_heap.empty()
-                                      ? mark.value.UpToUnread(1)
-                                      : MaybeOwnedString{std::move(on_heap)};
+        MaybeOwnedString result = on_heap.has_value()
+                                      ? MaybeOwnedString{std::move(*on_heap)}
+                                      : mark.value.UpToUnread(1);
         if (utf8_range::IsStructurallyValid(result)) {
           return LocationWith<MaybeOwnedString>{std::move(result), loc};
         }
         return Invalid("Invalid UTF-8 string");
       }
       case '\\': {
-        if (on_heap.empty()) {
+        if (!on_heap.has_value()) {
           // The 1 skips over the `\`.
           on_heap = std::string(mark.value.UpToUnread(1).AsView());
           // Clang-tidy incorrectly notes this as being moved-from multiple
@@ -426,17 +427,23 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         if (c == 'u' ||
             (c == 'U' && options_.allow_legacy_nonconformant_behavior)) {
           // Ensure there is actual space to scribble the UTF-8 onto.
-          on_heap.resize(on_heap.size() + 4);
-          auto written = ParseUnicodeEscape(&on_heap[on_heap.size() - 4]);
+          std::string& on_heap_ref =
+              on_heap.has_value() ? *on_heap : on_heap.emplace();
+          on_heap_ref.resize(on_heap_ref.size() + 4);
+          auto written =
+              ParseUnicodeEscape(&on_heap_ref[on_heap_ref.size() - 4]);
           RETURN_IF_ERROR(written.status());
-          on_heap.resize(on_heap.size() - 4 + *written);
+          on_heap_ref.resize(on_heap_ref.size() - 4 + *written);
         } else {
           char escape = ParseSimpleEscape(
               c, options_.allow_legacy_nonconformant_behavior);
           if (escape == 0) {
             return Invalid(absl::StrFormat("invalid escape char: '%c'", c));
           }
-          on_heap.push_back(escape);
+          if (!on_heap.has_value()) {
+            on_heap.emplace();
+          }
+          on_heap->push_back(escape);
         }
         break;
       }
@@ -478,14 +485,14 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
             return Invalid("invalid UTF-8 in string");
         }
 
-        if (!on_heap.empty()) {
-          on_heap.push_back(c);
+        if (on_heap.has_value()) {
+          on_heap->push_back(c);
         }
         auto lookahead_bytes = stream_.Take(lookahead);
         RETURN_IF_ERROR(lookahead_bytes.status());
-        if (!on_heap.empty()) {
+        if (on_heap.has_value()) {
           absl::string_view view = lookahead_bytes->AsView();
-          on_heap.append(view.data(), view.size());
+          on_heap->append(view.data(), view.size());
         }
         break;
       }
