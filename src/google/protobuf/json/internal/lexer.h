@@ -11,6 +11,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <utility>
 
 #include "absl/status/status.h"
@@ -250,6 +251,11 @@ class JsonLexer {
     json_loc_.col += static_cast<int>(bytes);
     return absl::OkStatus();
   }
+
+  // Slow path for ParseUtf8. `on_heap` contains the portion of the value
+  // which was already parsed by the fast path before it decided to bail out.
+  absl::StatusOr<LocationWith<MaybeOwnedString>> ParseUtf8Slow(
+      bool is_single_quote, std::string on_heap, JsonLocation loc);
 
   ZeroCopyBufferedStream stream_;
 

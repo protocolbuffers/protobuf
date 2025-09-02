@@ -579,6 +579,19 @@ TEST_P(JsonTest, ParseMapWithEnumValuesProto3) {
               StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
+TEST_P(JsonTest, MalformedUtf8) {
+  ParseOptions options;
+  options.ignore_unknown_fields = false;
+
+  const std::string input_json = R"json({
+    "stringValue": "\x80\x81"
+  })json";
+
+  TestMessage message;
+  EXPECT_THAT(ToProto(message, input_json, options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 TEST_P(JsonTest, ParseMapWithEnumValuesProto2WithUnknownFields) {
   ParseOptions options;
   options.ignore_unknown_fields = true;

@@ -11,12 +11,15 @@
 
 #include <atomic>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 #include <string>
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/attributes.h"
+#include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/status/status.h"
@@ -385,12 +388,54 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
   JsonLocation loc = json_loc_;
   RETURN_IF_ERROR(Expect(is_single_quote ? "'" : "\""));
 
-  // on_heap is empty if we do not need to heap-allocate the string.
-  std::optional<std::string> on_heap;
   LocationWith<Mark> mark = BeginMark();
+
+  // Fast path for strings with no escapes and which are likely-ascii.
+  if (!is_single_quote) {
+    while (true) {
+      RETURN_IF_ERROR(stream_.BufferAtLeastOne());
+      uint8_t c = static_cast<uint8_t>(stream_.PeekChar());
+      // Bail out to the slow path on control characters and escape characters
+      // without advancing the cursor.
+      if (c < 0x20 || c == '\\') {
+        break;
+      }
+      RETURN_IF_ERROR(Advance(1));
+      if (c == '"') {
+        // NOTE: the 1 below clips off the " from the end of the string.
+        MaybeOwnedString result = mark.value.UpToUnread(1);
+        if (utf8_range::IsStructurallyValid(result)) {
+          return LocationWith<MaybeOwnedString>{std::move(result), loc};
+        }
+        return Invalid("Invalid UTF-8 string");
+      }
+    }
+  }
+
+  // When switching to the slow path, move what we've scanned into a std::string
+  // and discard the mark; the slow path needs to build up a string explicitly
+  // to handle escapes which have a different in-memory representation than
+  // wire-representation.
+  std::string on_heap = std::move(mark.value.UpToUnread(0).ToString());
+
+  // This discard is optimization relevant. The Mark holds a BufferingGuard,
+  // so when the fast path above is iterating, if the string its building up is
+  // split across two chunks the underlying stream will begin buffering which
+  // will copy the characters it into a contiguous chunk. ParseUtf8Slow will
+  // build up its own std::string as it goes instead, since it needs to in the
+  // case of escapes. In the case where buffering only started due to the
+  // loop above, this Discard avoids continuing buffering during the slow loop
+  // which would effectively maintain two separate std::strings as the lexing
+  // continues until ParseUtf8Slow ends.
+  std::move(mark).value.Discard();
+
+  return ParseUtf8Slow(is_single_quote, std::move(on_heap), loc);
+}
+
+absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8Slow(
+    bool is_single_quote, std::string on_heap, JsonLocation loc) {
   while (true) {
     RETURN_IF_ERROR(stream_.BufferAtLeastOne());
-
     char c = stream_.PeekChar();
     RETURN_IF_ERROR(Advance(1));
     switch (c) {
@@ -399,28 +444,13 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         if (c != (is_single_quote ? '\'' : '"')) {
           goto normal_character;
         }
-
-        // NOTE: the 1 below clips off the " from the end of the string.
-        MaybeOwnedString result = on_heap.has_value()
-                                      ? MaybeOwnedString{std::move(*on_heap)}
-                                      : mark.value.UpToUnread(1);
+        MaybeOwnedString result = MaybeOwnedString{std::move(on_heap)};
         if (utf8_range::IsStructurallyValid(result)) {
           return LocationWith<MaybeOwnedString>{std::move(result), loc};
         }
         return Invalid("Invalid UTF-8 string");
       }
       case '\\': {
-        if (!on_heap.has_value()) {
-          // The 1 skips over the `\`.
-          on_heap = std::string(mark.value.UpToUnread(1).AsView());
-          // Clang-tidy incorrectly notes this as being moved-from multiple
-          // times, but it can only occur in one loop iteration. The mark is
-          // destroyed only if we need to handle an escape when on_heap is
-          // empty. Because this branch unconditionally pushes to on_heap, this
-          // condition can never be reached in any iteration that follows it.
-          // Thus, at most one move ever actually occurs.
-          std::move(mark).value.Discard();
-        }
         RETURN_IF_ERROR(stream_.BufferAtLeastOne());
 
         char c = stream_.PeekChar();
@@ -428,23 +458,17 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         if (c == 'u' ||
             (c == 'U' && options_.allow_legacy_nonconformant_behavior)) {
           // Ensure there is actual space to scribble the UTF-8 onto.
-          std::string& on_heap_ref =
-              on_heap.has_value() ? *on_heap : on_heap.emplace();
-          on_heap_ref.resize(on_heap_ref.size() + 4);
-          auto written =
-              ParseUnicodeEscape(&on_heap_ref[on_heap_ref.size() - 4]);
+          on_heap.resize(on_heap.size() + 4);
+          auto written = ParseUnicodeEscape(&on_heap[on_heap.size() - 4]);
           RETURN_IF_ERROR(written.status());
-          on_heap_ref.resize(on_heap_ref.size() - 4 + *written);
+          on_heap.resize(on_heap.size() - 4 + *written);
         } else {
           char escape = ParseSimpleEscape(
               c, options_.allow_legacy_nonconformant_behavior);
           if (escape == 0) {
             return Invalid(absl::StrFormat("invalid escape char: '%c'", c));
           }
-          if (!on_heap.has_value()) {
-            on_heap.emplace();
-          }
-          on_heap->push_back(escape);
+          on_heap.push_back(escape);
         }
         break;
       }
@@ -459,10 +483,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
           return Invalid(absl::StrFormat(
               "invalid control character 0x%02x in string", uc));
         }
-
-        if (on_heap.has_value()) {
-          on_heap->push_back(c);
-        }
+        on_heap.push_back(c);
         break;
       }
     }

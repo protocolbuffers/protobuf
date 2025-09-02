@@ -139,6 +139,8 @@ cc_library(
         "//src/google/protobuf/stubs",
         "//third_party/utf8_range:utf8_validity",
         "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/status",
