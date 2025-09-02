@@ -548,6 +548,107 @@ impl CppTypeConversions for ProtoBytes {
     }
 }
 
+unsafe impl<T> ProxiedInRepeated for T
+where
+    Self: MutProxied + CppGetRawMessage + Message,
+    for<'a> View<'a, Self>:
+        From<MessageViewInner<'a, Self>> + std::default::Default + CppGetRawMessage,
+    for<'a> Mut<'a, Self>: From<MessageMutInner<'a, Self>>,
+{
+    fn repeated_new(_private: Private) -> Repeated<Self> {
+        // SAFETY:
+        // - The thunk returns an unaliased and valid `RepeatedPtrField*`
+        unsafe {
+            Repeated::from_inner(
+                Private,
+                InnerRepeated::from_raw(proto2_rust_RepeatedField_Message_new()),
+            )
+        }
+    }
+
+    unsafe fn repeated_free(_private: Private, f: &mut Repeated<Self>) {
+        // SAFETY
+        // - `f.raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_free(f.as_view().as_raw(Private)) }
+    }
+
+    fn repeated_len(f: View<Repeated<Self>>) -> usize {
+        // SAFETY: `f.as_raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_size(f.as_raw(Private)) }
+    }
+
+    unsafe fn repeated_set_unchecked(
+        mut f: Mut<Repeated<Self>>,
+        i: usize,
+        v: impl IntoProxied<Self>,
+    ) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        // - `i < len(f)` is promised by caller.
+        // - The second argument below is a valid `const Message&`.
+        unsafe {
+            proto2_rust_Message_copy_from(
+                proto2_rust_RepeatedField_Message_get_mut(f.as_raw(Private), i),
+                v.into_proxied(Private).get_raw_message(Private),
+            );
+        }
+    }
+
+    unsafe fn repeated_get_unchecked(f: View<Repeated<Self>>, i: usize) -> View<Self> {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `const RepeatedPtrField&`.
+        // - `i < len(f)` is promised by caller.
+        let msg = unsafe { proto2_rust_RepeatedField_Message_get(f.as_raw(Private), i) };
+        let inner = unsafe { MessageViewInner::wrap_raw(msg) };
+        inner.into()
+    }
+
+    unsafe fn repeated_get_mut_unchecked(mut f: Mut<Repeated<Self>>, i: usize) -> Mut<Self> {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        // - `i < len(f)` is promised by caller.
+        let msg = unsafe { proto2_rust_RepeatedField_Message_get_mut(f.as_raw(Private), i) };
+        let inner = unsafe { MessageMutInner::wrap_raw(msg) };
+        inner.into()
+    }
+
+    fn repeated_clear(mut f: Mut<Repeated<Self>>) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_clear(f.as_raw(Private)) };
+    }
+
+    fn repeated_push(mut f: Mut<Repeated<Self>>, v: impl IntoProxied<Self>) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        // - The second argument below is a valid `const Message&`.
+        unsafe {
+            let prototype =
+                <View<Self> as std::default::Default>::default().get_raw_message(Private);
+            let new_elem = proto2_rust_RepeatedField_Message_add(f.as_raw(Private), prototype);
+            proto2_rust_Message_copy_from(
+                new_elem,
+                v.into_proxied(Private).get_raw_message(Private),
+            );
+        }
+    }
+
+    fn repeated_copy_from(src: View<Repeated<Self>>, mut dest: Mut<Repeated<Self>>) {
+        // SAFETY:
+        // - `dest.as_raw()` is a valid `RepeatedPtrField*`.
+        // - `src.as_raw()` is a valid `const RepeatedPtrField&`.
+        unsafe {
+            proto2_rust_RepeatedField_Message_copy_from(dest.as_raw(Private), src.as_raw(Private));
+        }
+    }
+
+    fn repeated_reserve(mut f: Mut<Repeated<Self>>, additional: usize) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_reserve(f.as_raw(Private), additional) }
+    }
+}
+
 macro_rules! impl_repeated_primitives {
     (@impl $($t:ty => [
         $new_thunk:ident,
