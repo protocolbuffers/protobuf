@@ -371,7 +371,7 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
 
               unsafe fn from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$View<'b> {
                   debug_assert_eq!(value.tag, $pbr$::MapValueTag::Message);
-                  unsafe { $Msg$View::new($pbi$::Private, $pbr$::MessageViewInner::wrap_raw(value.val.m)) }
+                  unsafe { $pbr$::MessageViewInner::wrap_raw(value.val.m).into() }
               }
 
               unsafe fn mut_from_map_value<'b>(value: $pbr$::MapValue) -> $Msg$Mut<'b> {
@@ -451,6 +451,18 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           {"MsgMut::from_parent", [&] { MessageMutFromParent(ctx, msg); }},
           {"default_instance_impl",
            [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
+          {"raw_msg",
+           [&] {
+             // The raw_msg() method is emitted for the C++ kernel only,
+             // because we do not need it for upb.
+             if (ctx.is_cpp()) {
+               ctx.Emit(R"rs(
+                 fn raw_msg(&self) -> $pbr$::RawMessage {
+                   self.inner.raw()
+                 }
+               )rs");
+             }
+           }},
           {"accessor_fns",
            [&] {
              for (int i = 0; i < msg.field_count(); ++i) {
@@ -632,7 +644,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         impl $std$::default::Default for $Msg$View<'_> {
           fn default() -> $Msg$View<'static> {
-            $Msg$View::new($pbi$::Private, $default_instance_impl$)
+            $default_instance_impl$.into()
           }
         }
 
@@ -644,14 +656,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         #[allow(dead_code)]
         impl<'msg> $Msg$View<'msg> {
-          #[doc(hidden)]
-          pub fn new(_private: $pbi$::Private, inner: $pbr$::MessageViewInner<'msg, $Msg$>) -> Self {
-            Self { inner }
-          }
-
-          fn raw_msg(&self) -> $pbr$::RawMessage {
-            self.inner.raw()
-          }
+          $raw_msg$
 
           pub fn to_owned(&self) -> $Msg$ {
             $pb$::IntoProxied::into_proxied(*self, $pbi$::Private)
@@ -719,9 +724,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         impl<'msg> $Msg$Mut<'msg> {
           $MsgMut::from_parent$
 
-          fn raw_msg(&self) -> $pbr$::RawMessage {
-            self.inner.raw()
-          }
+          $raw_msg$
 
           #[doc(hidden)]
           pub fn as_message_mut_inner(&mut self, _private: $pbi$::Private)
@@ -787,9 +790,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
             $Msg::new$
           }
 
-          fn raw_msg(&self) -> $pbr$::RawMessage {
-            self.inner.raw()
-          }
+          $raw_msg$
 
           #[doc(hidden)]
           pub fn as_message_mut_inner(&mut self, _private: $pbi$::Private) -> $pbr$::MessageMutInner<'_, $Msg$> {
@@ -809,9 +810,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
 
           pub fn as_view(&self) -> $Msg$View<'_> {
-            $Msg$View::new(
-                $pbi$::Private,
-                $pbr$::MessageViewInner::view_of_owned(&self.inner))
+            $pbr$::MessageViewInner::view_of_owned(&self.inner).into()
           }
 
           pub fn as_mut(&mut self) -> $Msg$Mut<'_> {
@@ -902,7 +901,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           msg: &'a *const $std$::ffi::c_void) -> Self {
           let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
           let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
-          Self::new($pbi$::Private, inner)
+          inner.into()
         }
         pub fn __unstable_cpp_repr_grant_permission_to_break(self) -> *const $std$::ffi::c_void {
           self.inner.raw().as_ptr() as *const _
@@ -927,37 +926,13 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           msg: &'a *const $std$::ffi::c_void) -> Self {
           let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
           let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
-          Self::new($pbi$::Private, inner)
+          inner.into()
         }
         unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(
           msg: *const $std$::ffi::c_void) -> Self {
           let raw = $pbr$::RawMessage::new(msg as *mut _).unwrap();
           let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
-          Self::new($pbi$::Private, inner)
-        }
-        fn __unstable_as_raw_message(&self) -> *const $std$::ffi::c_void {
-          self.inner.raw().as_ptr() as *const _
-        }
-      }
-    )rs");
-  } else {
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}}, R"rs(
-      // upb kernel doesn't support any owned message or message mut interop.
-      impl $pb$::OwnedMessageInterop for $Msg$ {}
-      impl<'a> $pb$::MessageMutInterop<'a> for $Msg$Mut<'a> {}
-
-      impl<'a> $pb$::MessageViewInterop<'a> for $Msg$View<'a> {
-        unsafe fn __unstable_wrap_raw_message(
-          msg: &'a *const $std$::ffi::c_void) -> Self {
-          let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
-          let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
-          Self::new($pbi$::Private, inner)
-        }
-        unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(
-          msg: *const $std$::ffi::c_void) -> Self {
-          let raw = $pbr$::RawMessage::new(msg as *mut _).unwrap();
-          let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
-          Self::new($pbi$::Private, inner)
+          inner.into()
         }
         fn __unstable_as_raw_message(&self) -> *const $std$::ffi::c_void {
           self.inner.raw().as_ptr() as *const _

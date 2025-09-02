@@ -52,7 +52,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               //~ to check for null and return the default instance manually.
               //~ Note that a nullptr received from upb manifests as Option::None
               submsg
-                  .map(|ptr| $msg_type$View::new($pbi$::Private, unsafe { $pbr$::MessageViewInner::wrap(ptr) }))
+                  .map(|ptr| unsafe { $pbr$::MessageViewInner::wrap(ptr).into() })
                  .unwrap_or($msg_type$View::default())
               )rs");
                 } else {
@@ -62,7 +62,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               //~ default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
               let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(submsg) };
-              $msg_type$View::new($pbi$::Private, inner)
+              inner.into()
         )rs");
                 }
               },

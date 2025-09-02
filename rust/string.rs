@@ -9,7 +9,7 @@
 #![allow(dead_code)]
 #![allow(unused)]
 
-use crate::__internal::runtime::{InnerProtoString, RawMessage};
+use crate::__internal::runtime::InnerProtoString;
 use crate::__internal::{Private, SealedInternal};
 use crate::{
     utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied,
