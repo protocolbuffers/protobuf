@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 // Returns true if no known fields or extensions are set in the message.
+// !To check for presence ofunknown fields use upb_Message_HasUnknown.
 UPB_API bool upb_Message_IsEmpty(const upb_Message* msg,
                                  const upb_MiniTable* m);
 

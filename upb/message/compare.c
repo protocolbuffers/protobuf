@@ -38,6 +38,9 @@ bool upb_Message_IsEmpty(const upb_Message* msg, const upb_MiniTable* m) {
   const upb_MiniTableField* f;
   upb_MessageValue v;
   size_t iter = kUpb_BaseField_Begin;
+  // NextBaseField checks for presence bit, otherwise checks for empty values
+  // for sub messages and other fields. If all fields are empty, it returns
+  // false. This is basically O(N) , N = the number of fields in the minitable.
   return !UPB_PRIVATE(_upb_Message_NextBaseField)(msg, m, &f, &v, &iter);
 }
 
