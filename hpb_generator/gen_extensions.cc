@@ -23,7 +23,7 @@ namespace hpb_generator {
 
 namespace protobuf = ::proto2;
 
-std::string ExtensionIdentifierBase(const protobuf::FieldDescriptor* ext) {
+std::string ExtensionIdentifierBase(const google::protobuf::FieldDescriptor* ext) {
   assert(ext->is_extension());
   std::string ext_scope;
   if (ext->extension_scope()) {
@@ -33,13 +33,13 @@ std::string ExtensionIdentifierBase(const protobuf::FieldDescriptor* ext) {
   }
 }
 
-std::string ContainingTypeName(const protobuf::FieldDescriptor* ext) {
+std::string ContainingTypeName(const google::protobuf::FieldDescriptor* ext) {
   return ext->containing_type()->file() != ext->file()
              ? QualifiedClassName(ext->containing_type())
              : ClassName(ext->containing_type());
 }
 
-void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
+void WriteExtensionIdentifierHeader(const google::protobuf::FieldDescriptor* ext,
                                     Context& ctx) {
   std::string mini_table_name =
       absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext");
@@ -70,7 +70,7 @@ void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
 }
 
 void WriteExtensionIdentifiersHeader(
-    const std::vector<const protobuf::FieldDescriptor*>& extensions,
+    const std::vector<const google::protobuf::FieldDescriptor*>& extensions,
     Context& ctx) {
   for (const auto* ext : extensions) {
     if (!ext->extension_scope()) {

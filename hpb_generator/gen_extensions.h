@@ -15,12 +15,10 @@ namespace google {
 namespace protobuf {
 namespace hpb_generator {
 
-namespace protobuf = ::proto2;
-
 void WriteExtensionIdentifiersHeader(
-    const std::vector<const protobuf::FieldDescriptor*>& extensions,
+    const std::vector<const google::protobuf::FieldDescriptor*>& extensions,
     Context& ctx);
-void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
+void WriteExtensionIdentifierHeader(const google::protobuf::FieldDescriptor* ext,
                                     Context& ctx);
 
 }  // namespace hpb_generator

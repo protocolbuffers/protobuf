@@ -114,6 +114,7 @@ cc_library(
         ":keywords",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
     ],

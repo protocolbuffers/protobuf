@@ -27,14 +27,12 @@ namespace google {
 namespace protobuf {
 namespace hpb_generator {
 
-namespace protobuf = ::proto2;
-
 // Adds using accessors to reuse base Access class members from a Proxy/CProxy.
-void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
+void WriteRepeatedFieldUsingAccessors(const google::protobuf::FieldDescriptor* field,
                                       absl::string_view class_name,
                                       absl::string_view resolved_field_name,
                                       Context& ctx, bool read_only) {
-  if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+  if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     ctx.Emit({{"class_name", class_name}, {"field_name", resolved_field_name}},
              R"cc(
                using $class_name$Access::$field_name$;
@@ -68,8 +66,8 @@ void WriteRepeatedFieldUsingAccessors(const protobuf::FieldDescriptor* field,
   }
 }
 
-void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
-                                        const protobuf::FieldDescriptor* field,
+void WriteRepeatedFieldsInMessageHeader(const google::protobuf::Descriptor* desc,
+                                        const google::protobuf::FieldDescriptor* field,
                                         absl::string_view resolved_field_name,
                                         absl::string_view resolved_upbc_name,
                                         Context& ctx) {
@@ -85,7 +83,7 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
         }
       )cc");
 
-  if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+  if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     ctx.Emit(
         {{"mut_ptr_type", MessagePtrConstType(field, /* const */ false)},
          {"const_ptr_type", MessagePtrConstType(field, /* const */ true)},
@@ -105,7 +103,7 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
           bool add_alias_$field_name$($mut_ptr_type$ target);
           $mut_ptr_type$ mutable_$field_name$(size_t index) const;
         )cc");
-  } else if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
+  } else if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
     ctx.Emit({{"cpp_const_type", CppConstType(field)},
               {"field_name", resolved_field_name}},
              R"cc(
@@ -130,8 +128,8 @@ void WriteRepeatedFieldsInMessageHeader(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteRepeatedMessageAccessor(const protobuf::Descriptor* desc,
-                                  const protobuf::FieldDescriptor* field,
+void WriteRepeatedMessageAccessor(const google::protobuf::Descriptor* desc,
+                                  const google::protobuf::FieldDescriptor* field,
                                   const absl::string_view resolved_field_name,
                                   const absl::string_view class_name,
                                   Context& ctx) {
@@ -233,8 +231,8 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* desc,
       )cc");
 }
 
-void WriteRepeatedStringAccessor(const protobuf::Descriptor* desc,
-                                 const protobuf::FieldDescriptor* field,
+void WriteRepeatedStringAccessor(const google::protobuf::Descriptor* desc,
+                                 const google::protobuf::FieldDescriptor* field,
                                  const absl::string_view resolved_field_name,
                                  const absl::string_view class_name,
                                  Context& ctx) {
@@ -318,8 +316,8 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* desc,
       )cc");
 }
 
-void WriteRepeatedScalarAccessor(const protobuf::Descriptor* desc,
-                                 const protobuf::FieldDescriptor* field,
+void WriteRepeatedScalarAccessor(const google::protobuf::Descriptor* desc,
+                                 const google::protobuf::FieldDescriptor* field,
                                  const absl::string_view resolved_field_name,
                                  const absl::string_view class_name,
                                  Context& ctx) {

@@ -21,14 +21,13 @@ namespace protobuf {
 namespace hpb_generator {
 
 namespace protoc = ::google::protobuf::compiler;
-namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 using google::protobuf::Edition;
 
 class Generator : public protoc::CodeGenerator {
  public:
   ~Generator() override = default;
-  bool Generate(const protobuf::FileDescriptor* file,
+  bool Generate(const google::protobuf::FileDescriptor* file,
                 const std::string& parameter, protoc::GeneratorContext* context,
                 std::string* error) const override;
   uint64_t GetSupportedFeatures() const override {
