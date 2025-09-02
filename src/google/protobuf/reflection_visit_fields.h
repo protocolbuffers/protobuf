@@ -384,10 +384,9 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
             PROTOBUF_HANDLE_CASE(GROUP, Group);
             case FieldDescriptor::TYPE_MESSAGE: {
               const FieldDescriptor* field =
-                  ext.descriptor_or_prototype.GetFieldDescriptor();
-              if (field == nullptr) {
-                field = pool->FindExtensionByNumber(extendee, number);
-              }
+                  ext.descriptor != nullptr
+                      ? ext.descriptor
+                      : pool->FindExtensionByNumber(extendee, number);
               ABSL_DCHECK_EQ(field->number(), number);
               bool is_mset =
                   field->containing_type()->options().message_set_wire_format();
