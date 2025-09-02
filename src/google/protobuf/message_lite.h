@@ -383,6 +383,9 @@ struct PROTOBUF_EXPORT ClassData {
   bool is_lite;
   bool is_dynamic = false;
 
+  // DO NOT SUBMIT
+  char filler[1024]{};
+
   // In normal mode we have the small constructor to avoid the cost in
   // codegen.
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
