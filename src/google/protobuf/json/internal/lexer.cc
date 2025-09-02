@@ -26,6 +26,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "utf8_validity.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -459,40 +460,8 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
               "invalid control character 0x%02x in string", uc));
         }
 
-        // Process this UTF-8 code point. We do not need to fully validate it
-        // at this stage; we just need to interpret it enough to know how many
-        // bytes to read. UTF-8 is a varint encoding satisfying one of the
-        // following (big-endian) patterns:
-        //
-        // 0b0xxxxxxx
-        // 0b110xxxxx'10xxxxxx
-        // 0b1110xxxx'10xxxxxx'10xxxxxx
-        // 0b11110xxx'10xxxxxx'10xxxxxx'10xxxxxx
-        size_t lookahead = 0;
-        switch (absl::countl_one(uc)) {
-          case 0:
-            break;
-          case 2:
-            lookahead = 1;
-            break;
-          case 3:
-            lookahead = 2;
-            break;
-          case 4:
-            lookahead = 3;
-            break;
-          default:
-            return Invalid("invalid UTF-8 in string");
-        }
-
         if (on_heap.has_value()) {
           on_heap->push_back(c);
-        }
-        auto lookahead_bytes = stream_.Take(lookahead);
-        RETURN_IF_ERROR(lookahead_bytes.status());
-        if (on_heap.has_value()) {
-          absl::string_view view = lookahead_bytes->AsView();
-          on_heap->append(view.data(), view.size());
         }
         break;
       }
