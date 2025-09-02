@@ -266,6 +266,7 @@ void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
   }
 }
 
+
 const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
                                                 ArenaStringPtr* s,
                                                 Arena* arena) {
@@ -280,6 +281,7 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   return ptr;
 }
+
 
 }  // namespace internal
 }  // namespace protobuf
