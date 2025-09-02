@@ -188,7 +188,7 @@ absl::StatusOr<uint16_t> JsonLexer::ParseU16HexCodepoint() {
 
 absl::Status JsonLexer::SkipToToken() {
   while (true) {
-    RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
+    RETURN_IF_ERROR(stream_.BufferAtLeastOne());
     switch (stream_.PeekChar()) {
       case '\n':
         RETURN_IF_ERROR(Advance(1));
@@ -389,7 +389,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
   std::optional<std::string> on_heap;
   LocationWith<Mark> mark = BeginMark();
   while (true) {
-    RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
+    RETURN_IF_ERROR(stream_.BufferAtLeastOne());
 
     char c = stream_.PeekChar();
     RETURN_IF_ERROR(Advance(1));
@@ -421,7 +421,7 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
           // Thus, at most one move ever actually occurs.
           std::move(mark).value.Discard();
         }
-        RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
+        RETURN_IF_ERROR(stream_.BufferAtLeastOne());
 
         char c = stream_.PeekChar();
         RETURN_IF_ERROR(Advance(1));
