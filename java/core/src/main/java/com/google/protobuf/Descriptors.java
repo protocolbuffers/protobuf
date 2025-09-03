@@ -1408,7 +1408,8 @@ public final class Descriptors {
       // since these are used before feature resolution when parsing java feature set defaults
       // (custom options) into unknown fields.
       if (type == Type.MESSAGE
-          && !(messageType != null && messageType.toProto().getOptions().getMapEntry())
+          && !(typeDescriptor != null
+              && ((Descriptor) typeDescriptor).toProto().getOptions().getMapEntry())
           && !(containingType != null && containingType.toProto().getOptions().getMapEntry())
           && this.features != null
           && getFeatures().getMessageEncoding() == FeatureSet.MessageEncoding.DELIMITED) {
@@ -1653,7 +1654,7 @@ public final class Descriptors {
         throw new UnsupportedOperationException(
             String.format("This field is not of message type. (%s)", fullName));
       }
-      return messageType;
+      return (Descriptor) typeDescriptor;
     }
 
     /** For enum fields, gets the field's type. */
@@ -1663,7 +1664,7 @@ public final class Descriptors {
         throw new UnsupportedOperationException(
             String.format("This field is not of enum type. (%s)", fullName));
       }
-      return enumType;
+      return (EnumDescriptor) typeDescriptor;
     }
 
     /**
@@ -1692,12 +1693,12 @@ public final class Descriptors {
       // extension itself involves calling legacyEnumFieldTreatedAsClosed() which would otherwise
       // infinite loop.
       if (getFile().getDependencies().isEmpty()) {
-        return getType() == Type.ENUM && enumType.isClosed();
+        return getType() == Type.ENUM && getEnumType().isClosed();
       }
 
       return getType() == Type.ENUM
           && (getFeatures().getExtension(JavaFeaturesProto.java_).getLegacyClosedEnum()
-              || enumType.isClosed());
+              || getEnumType().isClosed());
     }
 
     /**
@@ -1746,9 +1747,8 @@ public final class Descriptors {
     // Possibly initialized during cross-linking.
     private Type type;
     private Descriptor containingType;
-    private Descriptor messageType;
     private OneofDescriptor containingOneof;
-    private EnumDescriptor enumType;
+    private GenericDescriptor typeDescriptor;
     private Object defaultValue;
 
     public enum Type {
@@ -2111,7 +2111,7 @@ public final class Descriptors {
             throw new DescriptorValidationException(
                 this, '\"' + proto.getTypeName() + "\" is not a message type.");
           }
-          messageType = (Descriptor) typeDescriptor;
+          this.typeDescriptor = typeDescriptor;
 
           if (proto.hasDefaultValue()) {
             throw new DescriptorValidationException(this, "Messages can't have default values.");
@@ -2121,7 +2121,7 @@ public final class Descriptors {
             throw new DescriptorValidationException(
                 this, '\"' + proto.getTypeName() + "\" is not an enum type.");
           }
-          enumType = (EnumDescriptor) typeDescriptor;
+          this.typeDescriptor = typeDescriptor;
         } else {
           throw new DescriptorValidationException(this, "Field with primitive type has type_name.");
         }
@@ -2203,7 +2203,7 @@ public final class Descriptors {
               }
               break;
             case ENUM:
-              defaultValue = enumType.findValueByName(proto.getDefaultValue());
+              defaultValue = getEnumType().findValueByName(proto.getDefaultValue());
               if (defaultValue == null) {
                 throw new DescriptorValidationException(
                     this, "Unknown enum default value: \"" + proto.getDefaultValue() + '\"');
@@ -2226,7 +2226,7 @@ public final class Descriptors {
             case ENUM:
               // We guarantee elsewhere that an enum type always has at least
               // one possible value.
-              defaultValue = enumType.getValues().get(0);
+              defaultValue = getEnumType().getValues().get(0);
               break;
             case MESSAGE:
               defaultValue = null;
