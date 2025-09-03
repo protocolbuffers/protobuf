@@ -113,9 +113,6 @@ void InitializeFileDescriptorDefaultInstances() {
 #endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 }
 
-void InitializeLazyExtensionSet() {
-}
-
 bool ParseNamedEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
                     absl::string_view name, int* PROTOBUF_NONNULL value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
@@ -3973,7 +3970,6 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   // Reflection refers to the default fields so make sure they are initialized.
   internal::InitProtobufDefaults();
   internal::InitializeFileDescriptorDefaultInstances();
-  internal::InitializeLazyExtensionSet();
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.

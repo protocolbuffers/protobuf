@@ -25,6 +25,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/flags/flag.h"
 #include "absl/functional/overload.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
@@ -33,12 +34,14 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/lazy_field.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // must be last.
 #include "google/protobuf/port_def.inc"
@@ -384,8 +387,8 @@ uint8_t* ExtensionSet::InternalSerializeMessage(
   ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
 
   if (extension->is_lazy) {
-    return extension->ptr.lazymessage_value->WriteMessageToArray(
-        prototype, number, target, stream);
+    return extension->ptr.lazymessage_value->InternalWrite(prototype, number,
+                                                           target, stream);
   }
 
   const auto* msg = extension->ptr.message_value;
@@ -448,8 +451,8 @@ const MessageLite& ExtensionSet::GetMessage(
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->GetMessage(default_value,
-                                                          arena_);
+      return extension->ptr.lazymessage_value->GetByPrototype(default_value,
+                                                              arena_);
     } else {
       return *extension->ptr.message_value;
     }
@@ -478,8 +481,8 @@ MessageLite* ExtensionSet::MutableMessage(int number, FieldType type,
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     extension->is_cleared = false;
     if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->MutableMessage(prototype,
-                                                              arena_);
+      return extension->ptr.lazymessage_value->MutableByPrototype(prototype,
+                                                                  arena_);
     } else {
       return extension->ptr.message_value;
     }
@@ -521,7 +524,7 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      extension->ptr.lazymessage_value->SetAllocatedMessage(message, arena);
+      extension->ptr.lazymessage_value->SetAllocated(message, arena);
     } else {
       if (arena == nullptr) {
         delete extension->ptr.message_value;
@@ -558,8 +561,8 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      extension->ptr.lazymessage_value->UnsafeArenaSetAllocatedMessage(message,
-                                                                       arena_);
+      extension->ptr.lazymessage_value->UnsafeArenaSetAllocated(message,
+                                                                arena_);
     } else {
       if (arena_ == nullptr) {
         delete extension->ptr.message_value;
@@ -581,7 +584,8 @@ MessageLite* ExtensionSet::ReleaseMessage(int number,
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
       Arena* const arena = arena_;
-      ret = extension->ptr.lazymessage_value->ReleaseMessage(prototype, arena);
+      ret = extension->ptr.lazymessage_value->ReleaseByPrototype(prototype,
+                                                                 arena);
       if (arena == nullptr) {
         delete extension->ptr.lazymessage_value;
       }
@@ -611,7 +615,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
       Arena* const arena = arena_;
-      ret = extension->ptr.lazymessage_value->UnsafeArenaReleaseMessage(
+      ret = extension->ptr.lazymessage_value->UnsafeArenaReleaseByPrototype(
           prototype, arena);
       if (arena == nullptr) {
         delete extension->ptr.lazymessage_value;
@@ -895,10 +899,9 @@ void ExtensionSet::InternalExtensionMergeFromIntoUninitializedExtension(
           Arena::Create<std::string>(arena_, *other_extension.ptr.string_value);
       break;
     case WireFormatLite::CPPTYPE_MESSAGE: {
-      if (other_extension.is_lazy) {
-        dst_extension.ptr.lazymessage_value =
-            other_extension.ptr.lazymessage_value->Clone(
-                arena_, *other_extension.ptr.lazymessage_value, other_arena);
+      if (IsLazyParsingSupported() && other_extension.is_lazy) {
+        dst_extension.ptr.lazymessage_value = Arena::Create<LazyField>(
+            arena_, *other_extension.ptr.lazymessage_value, other_arena);
       } else {
         dst_extension.ptr.message_value =
             other_extension.ptr.message_value->New(arena_);
@@ -983,13 +986,13 @@ void ExtensionSet::InternalExtensionMergeFrom(const MessageLite* extendee,
               *other_extension.ptr.lazymessage_value, arena_, other_arena);
         } else {
           dst_extension->ptr.message_value->CheckTypeAndMergeFrom(
-              other_extension.ptr.lazymessage_value->GetMessage(
+              other_extension.ptr.lazymessage_value->GetByPrototype(
                   *dst_extension->ptr.message_value, other_arena));
         }
       } else {
         if (dst_extension->is_lazy) {
           dst_extension->ptr.lazymessage_value
-              ->MutableMessage(*other_extension.ptr.message_value, arena_)
+              ->MutableByPrototype(*other_extension.ptr.message_value, arena_)
               ->CheckTypeAndMergeFrom(*other_extension.ptr.message_value);
         } else {
           dst_extension->ptr.message_value->CheckTypeAndMergeFrom(
@@ -1517,9 +1520,6 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
   return ptr.lazymessage_value->IsInitialized(prototype, arena);
 }
 
-// Dummy key method to avoid weak vtable.
-void ExtensionSet::LazyMessageExtension::UnusedKeyMethod() {}
-
 const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (flat_size_ == 0) {
     return nullptr;
@@ -1813,8 +1813,8 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
         if (is_lazy) {
           const auto* prototype =
               extension_set->GetPrototypeForLazyMessage(extendee, number);
-          target = ptr.lazymessage_value->WriteMessageToArray(prototype, number,
-                                                              target, stream);
+          target = ptr.lazymessage_value->InternalWrite(prototype, number,
+                                                        target, stream);
         } else {
           target = WireFormatLite::InternalWriteMessage(
               number, *ptr.message_value, ptr.message_value->GetCachedSize(),
@@ -1863,7 +1863,7 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
   if (is_lazy) {
     const auto* prototype =
         extension_set->GetPrototypeForLazyMessage(extendee, number);
-    target = ptr.lazymessage_value->WriteMessageToArray(
+    target = ptr.lazymessage_value->InternalWrite(
         prototype, WireFormatLite::kMessageSetMessageNumber, target, stream);
   } else {
     target = WireFormatLite::InternalWriteMessage(
@@ -1917,9 +1917,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   }
   return nullptr;
 }
-
-std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
-    ExtensionSet::maybe_create_lazy_extension_;
 
 }  // namespace internal
 }  // namespace protobuf

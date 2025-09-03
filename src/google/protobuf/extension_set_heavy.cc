@@ -110,7 +110,7 @@ const MessageLite& ExtensionSet::GetMessage(int number,
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->GetMessage(
+      return extension->ptr.lazymessage_value->GetByPrototype(
           *factory->GetPrototype(message_type), arena_);
     } else {
       return *extension->ptr.message_value;
@@ -137,7 +137,7 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     extension->is_cleared = false;
     if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->MutableMessage(
+      return extension->ptr.lazymessage_value->MutableByPrototype(
           *factory->GetPrototype(descriptor->message_type()), arena_);
     } else {
       return extension->ptr.message_value;
@@ -155,7 +155,7 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
-      ret = extension->ptr.lazymessage_value->ReleaseMessage(
+      ret = extension->ptr.lazymessage_value->ReleaseByPrototype(
           *factory->GetPrototype(descriptor->message_type()), arena_);
       if (arena_ == nullptr) {
         delete extension->ptr.lazymessage_value;
@@ -183,7 +183,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     MessageLite* ret = nullptr;
     if (extension->is_lazy) {
-      ret = extension->ptr.lazymessage_value->UnsafeArenaReleaseMessage(
+      ret = extension->ptr.lazymessage_value->UnsafeArenaReleaseByPrototype(
           *factory->GetPrototype(descriptor->message_type()), arena_);
       if (arena_ == nullptr) {
         delete extension->ptr.lazymessage_value;
@@ -283,7 +283,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
     return true;
   }
 }
-
 
 bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
                                  const Message* extendee,
@@ -398,7 +397,9 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
         break;
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (is_lazy) {
-          total_size += ptr.lazymessage_value->SpaceUsedLong();
+          total_size += sizeof(LazyField) +
+                        ptr.lazymessage_value->SpaceUsedExcludingSelfLong();
+
         } else {
           total_size +=
               DownCastMessage<Message>(ptr.message_value)->SpaceUsedLong();

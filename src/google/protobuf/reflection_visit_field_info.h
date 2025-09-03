@@ -208,18 +208,19 @@ struct DynamicExtensionInfoHelper {
   static const Message& GetLazyMessage(const Extension& ext,
                                        const Message& prototype, Arena* arena) {
     return DownCastMessage<Message>(
-        ext.ptr.lazymessage_value->GetMessage(prototype, arena));
+        ext.ptr.lazymessage_value->GetByPrototype(prototype, arena));
   }
   static const Message& GetLazyMessageIgnoreUnparsed(const Extension& ext,
                                                      const Message& prototype,
                                                      Arena* arena) {
     return DownCastMessage<Message>(
-        ext.ptr.lazymessage_value->GetMessageIgnoreUnparsed(prototype, arena));
+        ext.ptr.lazymessage_value->GetIgnoreUnparsedByPrototype(prototype,
+                                                                arena));
   }
   static Message& MutableLazyMessage(Extension& ext, const Message& prototype,
                                      Arena* arena) {
     return DownCastMessage<Message>(
-        *ext.ptr.lazymessage_value->MutableMessage(prototype, arena));
+        *ext.ptr.lazymessage_value->MutableByPrototype(prototype, arena));
   }
   static void ClearLazyMessage(Extension& ext) {
     ext.is_cleared = true;

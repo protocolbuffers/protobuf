@@ -226,9 +226,8 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
     }
   }
   if (check_descendants && reflection->HasExtensionSet(message)) {
-    // Note that "extendee" is only referenced if the extension is lazily parsed
-    // (e.g. LazyMessageExtensionImpl), which requires a verification function
-    // to be generated.
+    // Note that "extendee" is only referenced if the extension is lazily
+    // parsed, which requires a verification function to be generated.
     //
     // Dynamic messages would get null prototype from the generated message
     // factory but their verification functions are not generated. Therefore, it
