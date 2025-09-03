@@ -28,28 +28,26 @@ namespace google {
 namespace protobuf {
 namespace hpb_generator {
 
-namespace protobuf = ::proto2;
-
 using NameToFieldDescriptorMap =
-    absl::flat_hash_map<absl::string_view, const protobuf::FieldDescriptor*>;
+    absl::flat_hash_map<absl::string_view, const google::protobuf::FieldDescriptor*>;
 
-void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
-                              const protobuf::FieldDescriptor* field,
+void WriteFieldAccessorHazzer(const google::protobuf::Descriptor* desc,
+                              const google::protobuf::FieldDescriptor* field,
                               absl::string_view resolved_field_name,
                               absl::string_view resolved_upbc_name,
                               Context& ctx);
-void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
-                             const protobuf::FieldDescriptor* field,
+void WriteFieldAccessorClear(const google::protobuf::Descriptor* desc,
+                             const google::protobuf::FieldDescriptor* field,
                              absl::string_view resolved_field_name,
                              absl::string_view resolved_upbc_name,
                              Context& ctx);
-void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
-                            const protobuf::FieldDescriptor* field,
+void WriteMapFieldAccessors(const google::protobuf::Descriptor* desc,
+                            const google::protobuf::FieldDescriptor* field,
                             absl::string_view resolved_field_name,
                             absl::string_view resolved_upbc_name, Context& ctx);
 
-void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
-                                 const protobuf::FieldDescriptor* field,
+void WriteMapAccessorDefinitions(const google::protobuf::Descriptor* desc,
+                                 const google::protobuf::FieldDescriptor* field,
                                  absl::string_view resolved_field_name,
                                  absl::string_view class_name, Context& ctx);
 
@@ -59,26 +57,24 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
 // The Upb C generator prefixes all accessors with package and class names
 // avoiding collisions. Therefore we need to use raw field names when calling
 // into C accessors but need to fully resolve conflicts for C++ class members.
-std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
+std::string ResolveFieldName(const google::protobuf::FieldDescriptor* field,
                              const NameToFieldDescriptorMap& field_names);
 
 upb::generator::NameMangler CreateNameMangler(
-    const protobuf::Descriptor* message) {
+    const google::protobuf::Descriptor* message) {
   return upb::generator::NameMangler(upb::generator::GetCppFields(message));
 }
 
-NameToFieldDescriptorMap CreateFieldNameMap(
-    const protobuf::Descriptor* message) {
+NameToFieldDescriptorMap CreateFieldNameMap(const google::protobuf::Descriptor* message) {
   NameToFieldDescriptorMap field_names;
   for (int i = 0; i < message->field_count(); i++) {
-    const protobuf::FieldDescriptor* field = message->field(i);
+    const google::protobuf::FieldDescriptor* field = message->field(i);
     field_names.emplace(field->name(), field);
   }
   return field_names;
 }
 
-void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Context& ctx) {
+void WriteFieldAccessorsInHeader(const google::protobuf::Descriptor* desc, Context& ctx) {
   // Generate const methods.
   auto field_names = CreateFieldNameMap(desc);
   auto mangler = CreateNameMangler(desc);
@@ -103,14 +99,14 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                                          resolved_upbc_name, ctx);
     } else {
       // non-repeated.
-      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
+      if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
         ctx.Emit({{"field_name", resolved_field_name}},
                  R"cc(
                    absl::string_view $field_name$() const;
                    void set_$field_name$(absl::string_view value);
                  )cc");
       } else if (field->cpp_type() ==
-                 protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+                 google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         ctx.Emit(
             {{"mut_ptr_type", MessagePtrConstType(field, /* const */ false)},
              {"const_ptr_type", MessagePtrConstType(field, /* const */ true)},
@@ -146,8 +142,8 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
-                              const protobuf::FieldDescriptor* field,
+void WriteFieldAccessorHazzer(const google::protobuf::Descriptor* desc,
+                              const google::protobuf::FieldDescriptor* field,
                               const absl::string_view resolved_field_name,
                               const absl::string_view resolved_upbc_name,
                               Context& ctx) {
@@ -166,8 +162,8 @@ void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
-                             const protobuf::FieldDescriptor* field,
+void WriteFieldAccessorClear(const google::protobuf::Descriptor* desc,
+                             const google::protobuf::FieldDescriptor* field,
                              const absl::string_view resolved_field_name,
                              const absl::string_view resolved_upbc_name,
                              Context& ctx) {
@@ -184,14 +180,14 @@ void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
-                            const protobuf::FieldDescriptor* field,
+void WriteMapFieldAccessors(const google::protobuf::Descriptor* desc,
+                            const google::protobuf::FieldDescriptor* field,
                             const absl::string_view resolved_field_name,
                             const absl::string_view resolved_upbc_name,
                             Context& ctx) {
-  const protobuf::Descriptor* entry = field->message_type();
-  const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
-  const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
+  const google::protobuf::Descriptor* entry = field->message_type();
+  const google::protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
+  const google::protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
   ctx.Emit(
       {{"field_name", resolved_field_name},
        {"upb_msg_name", upb::generator::CApiMessageType(desc->full_name())},
@@ -207,7 +203,7 @@ void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
         void delete_$field_name$($const_key$ key);
       )cc");
 
-  if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+  if (val->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     ctx.Emit({{"field_name", resolved_field_name},
               {"const_key", CppConstType(key)},
               {"const_val", CppConstType(val)},
@@ -232,7 +228,7 @@ void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
+void WriteAccessorsInSource(const google::protobuf::Descriptor* desc, Context& ctx) {
   std::string class_name = ClassName(desc);
   absl::StrAppend(&class_name, "Access");
   ctx.Emit("namespace internal {\n");
@@ -251,11 +247,10 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
     } else if (desc->options().map_entry()) {
       // TODO Implement map entry
     } else if (field->is_repeated()) {
-      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+      if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         WriteRepeatedMessageAccessor(desc, field, resolved_field_name,
                                      class_name, ctx);
-      } else if (field->cpp_type() ==
-                 protobuf::FieldDescriptor::CPPTYPE_STRING) {
+      } else if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
         WriteRepeatedStringAccessor(desc, field, resolved_field_name,
                                     class_name, ctx);
       } else {
@@ -264,7 +259,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
       }
     } else {
       // non-repeated field.
-      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
+      if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
         ctx.Emit({{"class_name", class_name},
                   {"cpp_const_type", CppConstType(field)},
                   {"field_name", resolved_field_name},
@@ -293,7 +288,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
                    }
                  )cc");
       } else if (field->cpp_type() ==
-                 protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+                 google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         ctx.Emit(
             {{"class_name", class_name},
              {"const_ptr_type",
@@ -353,26 +348,26 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx) {
   ctx.Emit("}  // namespace internal\n\n");
 }
 
-void WriteMapAccessorDefinitions(const protobuf::Descriptor* desc,
-                                 const protobuf::FieldDescriptor* field,
+void WriteMapAccessorDefinitions(const google::protobuf::Descriptor* desc,
+                                 const google::protobuf::FieldDescriptor* field,
                                  const absl::string_view resolved_field_name,
                                  const absl::string_view class_name,
                                  Context& ctx) {
-  const protobuf::Descriptor* entry = field->message_type();
-  const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
-  const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
+  const google::protobuf::Descriptor* entry = field->message_type();
+  const google::protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
+  const google::protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
   absl::string_view upbc_name = field->name();
   absl::string_view converted_key_name = "key";
   absl::string_view optional_conversion_code = "";
 
-  if (key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
+  if (key->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
     // Insert conversion from absl::string_view to upb_StringView.
     // Creates upb_StringView on stack to prevent allocation.
     converted_key_name = "upb_key";
     optional_conversion_code =
         "upb_StringView upb_key = {key.data(), key.size()};\n";
   }
-  if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+  if (val->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     ctx.Emit(
         {{"class_name", class_name},
          {"field_name", resolved_field_name},
@@ -531,7 +526,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* desc,
                 msg_, $converted_key_name$);
           }
         )cc");
-  } else if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
+  } else if (val->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING) {
     ctx.Emit(
         {{"class_name", class_name},
          {"field_name", resolved_field_name},
@@ -644,7 +639,7 @@ void WriteMapAccessorDefinitions(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
+void WriteUsingAccessorsInHeader(const google::protobuf::Descriptor* desc,
                                  MessageClassType handle_type, Context& ctx) {
   bool read_only = handle_type == MessageClassType::kMessageCProxy;
 
@@ -683,7 +678,7 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
             )cc");
         // only emit set_alias and get_mutable for maps when value is a message
         if (field->message_type()->FindFieldByNumber(2)->cpp_type() ==
-            protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+            google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
           ctx.Emit(
               {{"class_name", class_name}, {"field_name", resolved_field_name}},
               R"cc(
@@ -698,7 +693,7 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
       WriteRepeatedFieldUsingAccessors(field, class_name, resolved_field_name,
                                        ctx, read_only);
     } else {
-      if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+      if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         ctx.Emit({{"class_name", ClassName(desc)},
                   {"field_name", resolved_field_name}},
                  "using $class_name$Access::$field_name$;\n");
@@ -723,7 +718,7 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
     }
   }
   for (int i = 0; i < desc->real_oneof_decl_count(); ++i) {
-    const protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
+    const google::protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
     ctx.Emit({{"class_name", class_name}, {"oneof_name", oneof->name()}},
              "using $class_name$Access::$oneof_name$_case;\n");
     ctx.Emit({{"class_name", class_name},
@@ -731,7 +726,7 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
                ToCamelCase(oneof->name(), /*lower_first=*/false)}},
              "using $class_name$Access::$name_camel_case$Case;\n");
     for (int j = 0; j < oneof->field_count(); ++j) {
-      const protobuf::FieldDescriptor* field = oneof->field(j);
+      const google::protobuf::FieldDescriptor* field = oneof->field(j);
       ctx.Emit({{"class_name", class_name},
                 {"field_camel_case",
                  ToCamelCase(field->name(), /*lower_first=*/false)}},
@@ -743,19 +738,18 @@ void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
   }
 }
 
-void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Context& ctx) {
+void WriteOneofAccessorsInHeader(const google::protobuf::Descriptor* desc, Context& ctx) {
   // Generate const methods.
   auto indent = ctx.printer().WithIndent();
   std::string class_name = ClassName(desc);
   auto field_names = CreateFieldNameMap(desc);
   for (int i = 0; i < desc->real_oneof_decl_count(); ++i) {
-    const protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
+    const google::protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);
     ctx.Emit({{"name_camel_case",
                ToCamelCase(oneof->name(), /*lower_first=*/false)}},
              "enum $name_camel_case$Case {\n");
     for (int j = 0; j < oneof->field_count(); ++j) {
-      const protobuf::FieldDescriptor* field = oneof->field(j);
+      const google::protobuf::FieldDescriptor* field = oneof->field(j);
       ctx.Emit({{"field_camel_case",
                  ToCamelCase(field->name(), /*lower_first=*/false)},
                 {"field_number", field->number()}},
@@ -769,7 +763,7 @@ void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
          {"oneof_name", oneof->name()}},
         "$name_camel_case$Case $oneof_name$_case() const {\n");
     for (int j = 0; j < oneof->field_count(); ++j) {
-      const protobuf::FieldDescriptor* field = oneof->field(j);
+      const google::protobuf::FieldDescriptor* field = oneof->field(j);
       std::string resolved_field_name = ResolveFieldName(field, field_names);
       ctx.Emit({{"field_name", resolved_field_name},
                 {"field_camel_case",
@@ -782,7 +776,7 @@ void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
   }
 }
 
-std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
+std::string ResolveFieldName(const google::protobuf::FieldDescriptor* field,
                              const NameToFieldDescriptorMap& field_names) {
   // C++ implementation specific reserved names.
   static const auto& kReservedNames =
@@ -826,8 +820,7 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       if (match != field_names.end()) {
         const auto* candidate = match->second;
         if (candidate->is_repeated() || candidate->is_map() ||
-            (candidate->cpp_type() ==
-                 protobuf::FieldDescriptor::CPPTYPE_STRING &&
+            (candidate->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_STRING &&
              prefix == kClearMethodPrefix) ||
             prefix == kSetMethodPrefix || prefix == kHasMethodPrefix) {
           return absl::StrCat(field_name, "_");

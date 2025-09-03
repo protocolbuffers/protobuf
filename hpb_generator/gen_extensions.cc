@@ -21,8 +21,6 @@ namespace google {
 namespace protobuf {
 namespace hpb_generator {
 
-namespace protobuf = ::proto2;
-
 std::string ExtensionIdentifierBase(const google::protobuf::FieldDescriptor* ext) {
   assert(ext->is_extension());
   std::string ext_scope;

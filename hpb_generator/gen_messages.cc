@@ -30,41 +30,37 @@ namespace google {
 namespace protobuf {
 namespace hpb_generator {
 
-namespace protobuf = ::proto2;
-using Sub = protobuf::io::Printer::Sub;
+using Sub = google::protobuf::io::Printer::Sub;
 
-void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
+void WriteModelAccessDeclaration(const google::protobuf::Descriptor* descriptor,
                                  Context& ctx);
 void WriteModelPublicDeclaration(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Context& ctx);
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const google::protobuf::EnumDescriptor*>& file_enums, Context& ctx);
 void WriteExtensionIdentifiersInClassHeader(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Context& ctx);
-void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
+    const google::protobuf::Descriptor* message,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts, Context& ctx);
+void WriteModelProxyDeclaration(const google::protobuf::Descriptor* descriptor,
                                 Context& ctx);
-void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
+void WriteModelCProxyDeclaration(const google::protobuf::Descriptor* descriptor,
                                  Context& ctx);
-void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
+void WriteDefaultInstanceHeader(const google::protobuf::Descriptor* message,
                                 Context& ctx);
-void WriteDefaultInstanceDefinitionHeader(const protobuf::Descriptor* message,
+void WriteDefaultInstanceDefinitionHeader(const google::protobuf::Descriptor* message,
                                           Context& ctx);
 void WriteUsingEnumsInHeader(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Context& ctx);
+    const google::protobuf::Descriptor* message,
+    const std::vector<const google::protobuf::EnumDescriptor*>& file_enums, Context& ctx);
 
 // Writes message class declarations into .hpb.h.
 //
 // For each proto Foo, FooAccess and FooProxy/FooCProxy are generated
 // that are exposed to users as Foo , Ptr<Foo> and Ptr<const Foo>.
 void WriteMessageClassDeclarations(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const google::protobuf::EnumDescriptor*>& file_enums,
     Context& ctx) {
   if (IsMapEntryMessage(descriptor)) {
     // Skip map entry generation. Low level accessors for maps are
@@ -110,7 +106,7 @@ void WriteMessageClassDeclarations(
       )cc");
 }
 
-void WriteModelAccessDeclaration(const protobuf::Descriptor* descriptor,
+void WriteModelAccessDeclaration(const google::protobuf::Descriptor* descriptor,
                                  Context& ctx) {
   ctx.Emit({Sub("class_name", ClassName(descriptor)),
             Sub("qualified_class_name", QualifiedClassName(descriptor)),
@@ -175,7 +171,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   return result;
 }
 
-std::string FieldConstantName(const protobuf::FieldDescriptor* field) {
+std::string FieldConstantName(const google::protobuf::FieldDescriptor* field) {
   std::string field_name = UnderscoresToCamelCase(field->name(), true);
   std::string result = absl::StrCat("k", field_name, "FieldNumber");
 
@@ -190,7 +186,7 @@ std::string FieldConstantName(const protobuf::FieldDescriptor* field) {
 }
 
 void WriteConstFieldNumbers(Context& ctx,
-                            const protobuf::Descriptor* descriptor) {
+                            const google::protobuf::Descriptor* descriptor) {
   for (auto field : FieldRange(descriptor)) {
     ctx.Emit({{"name", FieldConstantName(field)}, {"number", field->number()}},
              "static constexpr ::uint32_t $name$ = $number$;\n");
@@ -199,9 +195,9 @@ void WriteConstFieldNumbers(Context& ctx,
 }
 
 void WriteModelPublicDeclaration(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const google::protobuf::EnumDescriptor*>& file_enums,
     Context& ctx) {
   ctx.Emit({{"class_name", ClassName(descriptor)},
             {"qualified_class_name", QualifiedClassName(descriptor)}},
@@ -276,7 +272,7 @@ void WriteModelPublicDeclaration(
   ctx.Emit("};\n\n");
 }
 
-void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
+void WriteModelProxyDeclaration(const google::protobuf::Descriptor* descriptor,
                                 Context& ctx) {
   // Foo::Proxy.
   ctx.Emit({{"class_name", ClassName(descriptor)}},
@@ -343,7 +339,7 @@ void WriteModelProxyDeclaration(const protobuf::Descriptor* descriptor,
   ctx.Emit("};\n\n");
 }
 
-void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
+void WriteModelCProxyDeclaration(const google::protobuf::Descriptor* descriptor,
                                  Context& ctx) {
   // Foo::CProxy.
   ctx.Emit({{"class_name", ClassName(descriptor)}},
@@ -391,7 +387,7 @@ void WriteModelCProxyDeclaration(const protobuf::Descriptor* descriptor,
   ctx.Emit("};\n\n");
 }
 
-void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
+void WriteDefaultInstanceHeader(const google::protobuf::Descriptor* message,
                                 Context& ctx) {
   if (message->options().map_entry()) {
     return;
@@ -402,7 +398,7 @@ void WriteDefaultInstanceHeader(const protobuf::Descriptor* message,
            )cc");
 }
 
-void WriteDefaultInstanceDefinitionHeader(const protobuf::Descriptor* message,
+void WriteDefaultInstanceDefinitionHeader(const google::protobuf::Descriptor* message,
                                           Context& ctx) {
   if (message->options().map_entry()) {
     return;
@@ -425,8 +421,8 @@ void WriteDefaultInstanceDefinitionHeader(const protobuf::Descriptor* message,
 }
 
 void WriteMessageImplementation(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
     Context& ctx) {
   bool message_is_map_entry = descriptor->options().map_entry();
   if (!message_is_map_entry) {
@@ -492,8 +488,8 @@ void WriteMessageImplementation(
 }
 
 void WriteExtensionIdentifiersInClassHeader(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
+    const google::protobuf::Descriptor* message,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
     Context& ctx) {
   for (auto* ext : file_exts) {
     if (ext->extension_scope() &&
@@ -504,8 +500,8 @@ void WriteExtensionIdentifiersInClassHeader(
 }
 
 void WriteUsingEnumsInHeader(
-    const protobuf::Descriptor* message,
-    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
+    const google::protobuf::Descriptor* message,
+    const std::vector<const google::protobuf::EnumDescriptor*>& file_enums,
     Context& ctx) {
   for (auto* enum_descriptor : file_enums) {
     std::string enum_type_name = EnumTypeName(enum_descriptor);
