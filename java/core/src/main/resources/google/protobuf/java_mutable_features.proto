@@ -36,6 +36,7 @@ message JavaMutableFeatures {
   // enums, and services.
   optional NestInFileClassFeature.NestInFileClass nest_in_file_class = 6 [
     retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_SERVICE,
