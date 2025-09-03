@@ -296,6 +296,26 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         }
       }
 
+      // SAFETY: this is an enum type
+      unsafe impl $pbi$::Enum for $name$ {
+        const NAME: &'static str = "$name$";
+
+        fn is_known(value: i32) -> bool {
+          matches!(value, $known_values_pattern$)
+        }
+      }
+
+      $type_conversions_impl$
+
+      $mini_table$
+      )rs");
+
+  if (ctx.is_cpp()) {
+    ctx.Emit(
+        {
+            {"name", name},
+        },
+        R"rs(
       unsafe impl $pb$::ProxiedInRepeated for $name$ {
         fn repeated_new(_private: $pbi$::Private) -> $pb$::Repeated<Self> {
           $pbr$::new_enum_repeated()
@@ -359,20 +379,8 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
             $pbr$::reserve_enum_repeated_mut(r, additional);
         }
       }
-
-      // SAFETY: this is an enum type
-      unsafe impl $pbi$::Enum for $name$ {
-        const NAME: &'static str = "$name$";
-
-        fn is_known(value: i32) -> bool {
-          matches!(value, $known_values_pattern$)
-        }
-      }
-
-      $type_conversions_impl$
-
-      $mini_table$
-      )rs");
+        )rs");
+  }
 }
 
 }  // namespace rust

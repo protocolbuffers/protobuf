@@ -364,161 +364,14 @@ impl<'msg> InnerRepeatedMut<'msg> {
     }
 }
 
-macro_rules! impl_repeated_base {
-    ($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr) => {
-        #[allow(dead_code)]
-        #[inline]
-        fn repeated_new(_: Private) -> Repeated<$t> {
-            let arena = Arena::new();
-            Repeated::from_inner(
-                Private,
-                InnerRepeated { raw: unsafe { upb_Array_New(arena.raw(), $upb_tag) }, arena },
-            )
-        }
-        #[allow(dead_code)]
-        unsafe fn repeated_free(_: Private, _f: &mut Repeated<$t>) {
-            // No-op: the memory will be dropped by the arena.
-        }
-        #[inline]
-        fn repeated_len(f: View<Repeated<$t>>) -> usize {
-            unsafe { upb_Array_Size(f.as_raw(Private)) }
-        }
-        #[inline]
-        fn repeated_push(mut f: Mut<Repeated<$t>>, v: impl IntoProxied<$t>) {
-            let arena = f.raw_arena(Private);
-            unsafe {
-                assert!(upb_Array_Append(
-                    f.as_raw(Private),
-                    <$t as UpbTypeConversions<PrimitiveTag>>::into_message_value_fuse_if_required(
-                        arena,
-                        v.into_proxied(Private)
-                    ),
-                    arena,
-                ));
-            }
-        }
-        #[inline]
-        fn repeated_clear(mut f: Mut<Repeated<$t>>) {
-            unsafe {
-                upb_Array_Resize(f.as_raw(Private), 0, f.raw_arena(Private));
-            }
-        }
-        #[inline]
-        unsafe fn repeated_get_unchecked(f: View<Repeated<$t>>, i: usize) -> View<$t> {
-            unsafe {
-                <$t as UpbTypeConversions<PrimitiveTag>>::from_message_value(upb_Array_Get(
-                    f.as_raw(Private),
-                    i,
-                ))
-            }
-        }
-        #[inline]
-        unsafe fn repeated_set_unchecked(
-            mut f: Mut<Repeated<$t>>,
-            i: usize,
-            v: impl IntoProxied<$t>,
-        ) {
-            let arena = f.raw_arena(Private);
-            unsafe {
-                upb_Array_Set(
-                    f.as_raw(Private),
-                    i,
-                    <$t as UpbTypeConversions<PrimitiveTag>>::into_message_value_fuse_if_required(
-                        arena,
-                        v.into_proxied(Private),
-                    ),
-                )
-            }
-        }
-        #[inline]
-        fn repeated_reserve(mut f: Mut<Repeated<$t>>, additional: usize) {
-            // SAFETY:
-            // - `upb_Array_Reserve` is unsafe but assumed to be sound when called on a
-            //   valid array.
-            unsafe {
-                let arena = f.raw_arena(Private);
-                let size = upb_Array_Size(f.as_raw(Private));
-                assert!(upb_Array_Reserve(f.as_raw(Private), size + additional, arena));
-            }
-        }
-    };
-}
-
-macro_rules! impl_repeated_primitives {
-    ($(($t:ty, $elem_t:ty, $ufield:ident, $upb_tag:expr)),* $(,)?) => {
-        $(
-            unsafe impl ProxiedInRepeated for $t {
-                impl_repeated_base!($t, $elem_t, $ufield, $upb_tag);
-
-                fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
-                    let arena = dest.raw_arena(Private);
-                    // SAFETY:
-                    // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
-                    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
-                    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
-                    unsafe {
-                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), arena)) {
-                            panic!("upb_Array_Resize failed.");
-                        }
-                        ptr::copy_nonoverlapping(
-                          upb_Array_DataPtr(src.as_raw(Private)).cast::<u8>(),
-                          upb_Array_MutableDataPtr(dest.as_raw(Private)).cast::<u8>(),
-                          size_of::<$elem_t>() * src.len());
-                    }
-                }
-            }
-        )*
-    }
-}
-
-macro_rules! impl_repeated_bytes {
-    ($(($t:ty, $upb_tag:expr)),* $(,)?) => {
-        $(
-            unsafe impl ProxiedInRepeated for $t {
-                impl_repeated_base!($t, PtrAndLen, str_val, $upb_tag);
-
-                #[inline]
-                fn repeated_copy_from(src: View<Repeated<$t>>, mut dest: Mut<Repeated<$t>>) {
-                    let len = src.len();
-                    // SAFETY:
-                    // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
-                    // - `upb_Array` ensures its elements are never uninitialized memory.
-                    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans
-                    //   of memory that are valid for at least `len` elements of PtrAndLen.
-                    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
-                    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
-                    // - The bytes held within a valid array are valid.
-                    unsafe {
-                        let arena = ManuallyDrop::new(Arena::from_raw(dest.raw_arena(Private)));
-                        if (!upb_Array_Resize(dest.as_raw(Private), src.len(), arena.raw())) {
-                            panic!("upb_Array_Resize failed.");
-                        }
-                        let src_ptrs: &[PtrAndLen] = slice::from_raw_parts(
-                            upb_Array_DataPtr(src.as_raw(Private)).cast(),
-                            len
-                        );
-                        let dest_ptrs: &mut [PtrAndLen] = slice::from_raw_parts_mut(
-                            upb_Array_MutableDataPtr(dest.as_raw(Private)).cast(),
-                            len
-                        );
-                        for (src_ptr, dest_ptr) in src_ptrs.iter().zip(dest_ptrs) {
-                            *dest_ptr = arena.copy_slice_in(src_ptr.as_ref()).unwrap().into();
-                        }
-                    }
-                }
-            }
-        )*
-    }
-}
-
 unsafe impl<T> ProxiedInRepeated for T
 where
-    T: Message + EntityType + UpbTypeConversions<T::Tag> + AssociatedMiniTable,
+    T: EntityType + UpbTypeConversions<T::Tag>,
 {
     fn repeated_new(_private: Private) -> Repeated<Self> {
         let arena = Arena::new();
         Repeated::from_inner(Private, unsafe {
-            InnerRepeated::from_raw_parts(upb_Array_New(arena.raw(), CType::Message), arena)
+            InnerRepeated::from_raw_parts(upb_Array_New(arena.raw(), T::upb_type()), arena)
         })
     }
 
@@ -538,7 +391,7 @@ where
         unsafe {
             upb_Array_Append(
                 repeated.as_raw(Private),
-                <Self as UpbTypeConversions<T::Tag>>::into_message_value_fuse_if_required(
+                T::into_message_value_fuse_if_required(
                     repeated.raw_arena(Private),
                     val.into_proxied(Private),
                 ),
@@ -570,7 +423,10 @@ where
     unsafe fn repeated_get_mut_unchecked<'a>(
         mut repeated: Mut<'a, Repeated<Self>>,
         index: usize,
-    ) -> Mut<'a, Self> {
+    ) -> Mut<'a, Self>
+    where
+        Self: Message,
+    {
         // SAFETY:
         // - `repeated.as_raw()` is a valid `upb_Array*`.
         // - `repeated` is a an array of message-valued elements.
@@ -591,7 +447,7 @@ where
             upb_Array_Set(
                 repeated.as_raw(Private),
                 index,
-                <Self as UpbTypeConversions<T::Tag>>::into_message_value_fuse_if_required(
+                T::into_message_value_fuse_if_required(
                     repeated.raw_arena(Private),
                     val.into_proxied(Private),
                 ),
@@ -599,11 +455,13 @@ where
         }
     }
 
-    fn repeated_copy_from(src: View<Repeated<Self>>, dest: Mut<Repeated<Self>>) {
+    fn repeated_copy_from(src: View<Repeated<Self>>, mut dest: Mut<Repeated<Self>>) {
         // SAFETY:
-        // - Elements of `src` and `dest` have message minitable `Self::mini_table()`.
+        // - `src.as_raw()` and `dest.as_raw()` are both valid arrays of `Self`.
+        // - `dest.as_raw()` is mutable.
+        // - `dest.raw_arena()` will outlive `dest.as_raw()`.
         unsafe {
-            repeated_message_copy_from(src, dest, <Self as AssociatedMiniTable>::mini_table());
+            Self::copy_repeated(src.as_raw(Private), dest.as_raw(Private), dest.raw_arena(Private));
         }
     }
 
@@ -632,50 +490,6 @@ impl<'msg, T> RepeatedMut<'msg, T> {
     #[doc(hidden)]
     pub fn arena(&self, _private: Private) -> &'msg Arena {
         self.inner.arena
-    }
-}
-
-impl_repeated_primitives!(
-    // proxied type, element type, upb_MessageValue field name, upb::CType variant
-    (bool, bool, bool_val, upb::CType::Bool),
-    (f32, f32, float_val, upb::CType::Float),
-    (f64, f64, double_val, upb::CType::Double),
-    (i32, i32, int32_val, upb::CType::Int32),
-    (u32, u32, uint32_val, upb::CType::UInt32),
-    (i64, i64, int64_val, upb::CType::Int64),
-    (u64, u64, uint64_val, upb::CType::UInt64),
-);
-
-impl_repeated_bytes!((ProtoString, upb::CType::String), (ProtoBytes, upb::CType::Bytes),);
-
-/// Copy the contents of `src` into `dest`.
-///
-/// # Safety
-/// - `minitable` must be a pointer to the minitable for message `T`.
-pub unsafe fn repeated_message_copy_from<T: ProxiedInRepeated>(
-    src: View<Repeated<T>>,
-    mut dest: Mut<Repeated<T>>,
-    minitable: *const upb_MiniTable,
-) {
-    // SAFETY:
-    // - `src.as_raw()` is a valid `const upb_Array*`.
-    // - `dest.as_raw()` is a valid `upb_Array*`.
-    // - Elements of `src` and have message minitable `$minitable$`.
-    unsafe {
-        let size = upb_Array_Size(src.as_raw(Private));
-        if !upb_Array_Resize(dest.as_raw(Private), size, dest.raw_arena(Private)) {
-            panic!("upb_Array_Resize failed.");
-        }
-        for i in 0..size {
-            let src_msg = upb_Array_Get(src.as_raw(Private), i)
-                .msg_val
-                .expect("upb_Array* element should not be NULL");
-            // Avoid the use of `upb_Array_DeepClone` as it creates an
-            // entirely new `upb_Array*` at a new memory address.
-            let cloned_msg = upb_Message_DeepClone(src_msg, minitable, dest.raw_arena(Private))
-                .expect("upb_Message_DeepClone failed.");
-            upb_Array_Set(dest.as_raw(Private), i, upb_MessageValue { msg_val: Some(cloned_msg) });
-        }
     }
 }
 
@@ -889,6 +703,12 @@ pub trait UpbTypeConversions<Tag>: Proxied {
     {
         panic!("mut_from_message_value is only implemented for messages.")
     }
+
+    /// # Safety
+    /// - `src` must be a valid array of `Self`.
+    /// - `dest` must be a valid mutable array of `Self`.
+    /// - `arena` must point to an arena that will outlive `dest`.
+    unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena);
 }
 
 impl<T> UpbTypeConversions<MessageTag> for T
@@ -929,6 +749,28 @@ where
     unsafe fn from_message_mut<'msg>(msg: RawMessage, arena: &'msg Arena) -> Mut<'msg, Self> {
         unsafe { MessageMutInner::<'msg, Self>::wrap_raw(msg, arena).into() }
     }
+
+    unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena) {
+        // SAFETY:
+        // - `src` is a valid `const upb_Array*`.
+        // - `dest` is a valid `upb_Array*`.
+        // - Elements of `src` and `dest` have minitable `Self::mini_table()`.
+        unsafe {
+            let size = upb_Array_Size(src);
+            if !upb_Array_Resize(dest, size, arena) {
+                panic!("upb_Array_Resize failed (alloc should be infallible)");
+            }
+            for i in 0..size {
+                let src_msg =
+                    upb_Array_Get(src, i).msg_val.expect("upb_Array* element should not be NULL");
+                // Avoid the use of `upb_Array_DeepClone` as it creates an
+                // entirely new `upb_Array*` at a new memory address.
+                let cloned_msg = upb_Message_DeepClone(src_msg, Self::mini_table(), arena)
+                    .expect("upb_Message_DeepClone failed (alloc should be infallible)");
+                upb_Array_Set(dest, i, upb_MessageValue { msg_val: Some(cloned_msg) });
+            }
+        }
+    }
 }
 
 impl<T> UpbTypeConversions<EnumTag> for T
@@ -958,6 +800,16 @@ where
         // - The caller guarantees that `val.int32_val` is valid for this enum.
         unsafe { result.unwrap_unchecked() }
     }
+
+    unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena) {
+        // SAFETY:
+        // - Enum arrays have the same representation as i32 arrays.
+        // - The caller guarantees that src and dest are enum arrays and that `arena` will outlive
+        //   `dest`.
+        unsafe {
+            <i32 as UpbTypeConversions<PrimitiveTag>>::copy_repeated(src, dest, arena);
+        }
+    }
 }
 
 macro_rules! impl_upb_type_conversions_for_scalars {
@@ -983,6 +835,24 @@ macro_rules! impl_upb_type_conversions_for_scalars {
                 unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, $t> {
                     unsafe { msg.$ufield }
                 }
+
+                #[inline(always)]
+                unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena) {
+                    // SAFETY:
+                    // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
+                    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
+                    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
+                    unsafe {
+                        let len = upb_Array_Size(src);
+                        if (!upb_Array_Resize(dest, len, arena)) {
+                            panic!("upb_Array_Resize failed (alloc should be infallible)");
+                        }
+                        ptr::copy_nonoverlapping(
+                          upb_Array_DataPtr(src).cast::<u8>(),
+                          upb_Array_MutableDataPtr(dest).cast::<u8>(),
+                          size_of::<$t>() * len);
+                    }
+                }
             }
         )*
     };
@@ -997,6 +867,34 @@ impl_upb_type_conversions_for_scalars!(
     u64, uint64_val, upb::CType::UInt64, 0u64;
     bool, bool_val, upb::CType::Bool, false;
 );
+
+/// # Safety
+/// - `src` must be a valid array of string or bytes.
+/// - `dest` must be a valid mutable array of the same type as `src`.
+/// - `arena` must point to an arena that will outlive `dest`.
+unsafe fn copy_repeated_bytes(src: RawArray, dest: RawArray, arena: RawArena) {
+    // SAFETY:
+    // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
+    // - `upb_Array` ensures its elements are never uninitialized memory.
+    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans
+    //   of memory that are valid for at least `len` elements of PtrAndLen.
+    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
+    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
+    // - The bytes held within a valid array are valid.
+    unsafe {
+        let len = upb_Array_Size(src);
+        let arena = ManuallyDrop::new(Arena::from_raw(arena));
+        if !upb_Array_Resize(dest, len, arena.raw()) {
+            panic!("upb_Array_Resize failed (alloc should be infallible)");
+        }
+        let src_ptrs: &[PtrAndLen] = slice::from_raw_parts(upb_Array_DataPtr(src).cast(), len);
+        let dest_ptrs: &mut [PtrAndLen] =
+            slice::from_raw_parts_mut(upb_Array_MutableDataPtr(dest).cast(), len);
+        for (src_ptr, dest_ptr) in src_ptrs.iter().zip(dest_ptrs) {
+            *dest_ptr = arena.copy_slice_in(src_ptr.as_ref()).unwrap().into();
+        }
+    }
+}
 
 impl UpbTypeConversions<PrimitiveTag> for ProtoBytes {
     fn upb_type() -> upb::CType {
@@ -1022,6 +920,12 @@ impl UpbTypeConversions<PrimitiveTag> for ProtoBytes {
 
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoBytes> {
         unsafe { msg.str_val.as_ref() }
+    }
+
+    unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena) {
+        unsafe {
+            copy_repeated_bytes(src, dest, arena);
+        }
     }
 }
 
@@ -1049,6 +953,12 @@ impl UpbTypeConversions<PrimitiveTag> for ProtoString {
 
     unsafe fn from_message_value<'msg>(msg: upb_MessageValue) -> View<'msg, ProtoString> {
         unsafe { ProtoStr::from_utf8_unchecked(msg.str_val.as_ref()) }
+    }
+
+    unsafe fn copy_repeated(src: RawArray, dest: RawArray, arena: RawArena) {
+        unsafe {
+            copy_repeated_bytes(src, dest, arena);
+        }
     }
 }
 
