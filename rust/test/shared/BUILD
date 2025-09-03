@@ -606,3 +606,31 @@ rust_test(
         "@crate_index//:googletest",
     ],
 )
+
+rust_test(
+    name = "threading_test_cpp",
+    srcs = ["threading_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_cpp_export",
+        "//rust/test:unittest_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "threading_test_upb",
+    srcs = ["threading_test.rs"],
+    aliases = {
+        "//rust:protobuf_upb_export": "protobuf",
+    },
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "//rust:protobuf_upb_export",
+        "//rust/test:unittest_upb_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)

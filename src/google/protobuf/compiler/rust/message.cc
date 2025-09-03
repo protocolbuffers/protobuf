@@ -741,10 +741,16 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           $accessor_fns_for_muts$
         }
 
+        //~ Note that upb Arenas are not threadsafe but we mark `$Msg$Mut` as
+        //~ both Send and Sync.
+        //~ We currently ensure safety by designing the API to ensure that no two
+        //~ threads can hold a reference to MsgMuts with the same arena.
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
-        // - `$Msg$Mut` is not `Send`, and so even in the presence of mutator
-        //   splitting, synchronous access of an arena is impossible.
+        unsafe impl Send for $Msg$Mut<'_> {}
+
+        // SAFETY:
+        // - `$Msg$Mut` does not perform any shared mutation.
         unsafe impl Sync for $Msg$Mut<'_> {}
 
         impl<'msg> $pb$::Proxy<'msg> for $Msg$Mut<'msg> {}
