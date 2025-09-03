@@ -342,4 +342,6 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
       return descriptor == other.descriptor && number == other.number;
     }
   }
+
+  ExtensionRegistry() {}
 }
