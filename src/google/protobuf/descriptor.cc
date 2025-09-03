@@ -8630,6 +8630,7 @@ void DescriptorBuilder::ValidateOptions(const Descriptor* message,
                                         const DescriptorProto& proto) {
   CheckFieldJsonNameUniqueness(proto, message);
   ValidateExtensionRangeOptions(proto, *message);
+
 }
 
 void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,

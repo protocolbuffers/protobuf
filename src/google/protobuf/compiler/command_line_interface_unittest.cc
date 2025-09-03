@@ -2547,6 +2547,7 @@ TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
       "`java_multiple_files` is not supported in editions 2024 and above");
 }
 
+
 TEST_F(CommandLineInterfaceTest, JavaNestInFileClassFor) {
   CreateTempFile("foo.proto",
                  R"schema(
