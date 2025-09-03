@@ -1809,7 +1809,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "\n google/protobuf/descriptor.proto\022\017goog"
     "le.protobuf\"U\n\021FileDescriptorSet\0222\n\004file"
     "\030\001 \003(\0132$.google.protobuf.FileDescriptorP"
-    "roto*\014\010\200\354\312\377\001\020\201\354\312\377\001\"\241\004\n\023FileDescriptorPro"
+    "roto*\014\010\200\354\312\377\001\020\200\200\200\200\002\"\241\004\n\023FileDescriptorPro"
     "to\022\014\n\004name\030\001 \001(\t\022\017\n\007package\030\002 \001(\t\022\022\n\ndep"
     "endency\030\003 \003(\t\022\031\n\021public_dependency\030\n \003(\005"
     "\022\027\n\017weak_dependency\030\013 \003(\005\022\031\n\021option_depe"

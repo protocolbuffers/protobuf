@@ -174,9 +174,10 @@ const ::uint32_t
         2,
         3,
         0,
-        0x081, // bitmap
+        0x083, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_._has_bits_),
-        8, // hasbit index offset
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_._extensions_),
+        9, // hasbit index offset
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.parameter_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_),
@@ -217,8 +218,8 @@ static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::google::protobuf::compiler::Version)},
         {11, sizeof(::google::protobuf::compiler::CodeGeneratorRequest)},
-        {24, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
-        {35, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
+        {25, sizeof(::google::protobuf::compiler::CodeGeneratorResponse_File)},
+        {36, sizeof(::google::protobuf::compiler::CodeGeneratorResponse)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::compiler::_Version_default_instance_._instance,
@@ -232,26 +233,27 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
     "\030google.protobuf.compiler\032 google/protob"
     "uf/descriptor.proto\"F\n\007Version\022\r\n\005major\030"
     "\001 \001(\005\022\r\n\005minor\030\002 \001(\005\022\r\n\005patch\030\003 \001(\005\022\016\n\006s"
-    "uffix\030\004 \001(\t\"\201\002\n\024CodeGeneratorRequest\022\030\n\020"
+    "uffix\030\004 \001(\t\"\217\002\n\024CodeGeneratorRequest\022\030\n\020"
     "file_to_generate\030\001 \003(\t\022\021\n\tparameter\030\002 \001("
     "\t\0228\n\nproto_file\030\017 \003(\0132$.google.protobuf."
     "FileDescriptorProto\022E\n\027source_file_descr"
     "iptors\030\021 \003(\0132$.google.protobuf.FileDescr"
     "iptorProto\022;\n\020compiler_version\030\003 \001(\0132!.g"
-    "oogle.protobuf.compiler.Version\"\222\003\n\025Code"
-    "GeneratorResponse\022\r\n\005error\030\001 \001(\t\022\032\n\022supp"
-    "orted_features\030\002 \001(\004\022\027\n\017minimum_edition\030"
-    "\003 \001(\005\022\027\n\017maximum_edition\030\004 \001(\005\022B\n\004file\030\017"
-    " \003(\01324.google.protobuf.compiler.CodeGene"
-    "ratorResponse.File\032\177\n\004File\022\014\n\004name\030\001 \001(\t"
-    "\022\027\n\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001"
-    "(\t\022\?\n\023generated_code_info\030\020 \001(\0132\".google"
-    ".protobuf.GeneratedCodeInfo\"W\n\007Feature\022\020"
-    "\n\014FEATURE_NONE\020\000\022\033\n\027FEATURE_PROTO3_OPTIO"
-    "NAL\020\001\022\035\n\031FEATURE_SUPPORTS_EDITIONS\020\002Br\n\034"
-    "com.google.protobuf.compilerB\014PluginProt"
-    "osZ)google.golang.org/protobuf/types/plu"
-    "ginpb\252\002\030Google.Protobuf.Compiler"
+    "oogle.protobuf.compiler.Version*\014\010\201\354\312\377\001\020"
+    "\202\354\312\377\001\"\222\003\n\025CodeGeneratorResponse\022\r\n\005error"
+    "\030\001 \001(\t\022\032\n\022supported_features\030\002 \001(\004\022\027\n\017mi"
+    "nimum_edition\030\003 \001(\005\022\027\n\017maximum_edition\030\004"
+    " \001(\005\022B\n\004file\030\017 \003(\01324.google.protobuf.com"
+    "piler.CodeGeneratorResponse.File\032\177\n\004File"
+    "\022\014\n\004name\030\001 \001(\t\022\027\n\017insertion_point\030\002 \001(\t\022"
+    "\017\n\007content\030\017 \001(\t\022\?\n\023generated_code_info\030"
+    "\020 \001(\0132\".google.protobuf.GeneratedCodeInf"
+    "o\"W\n\007Feature\022\020\n\014FEATURE_NONE\020\000\022\033\n\027FEATUR"
+    "E_PROTO3_OPTIONAL\020\001\022\035\n\031FEATURE_SUPPORTS_"
+    "EDITIONS\020\002Br\n\034com.google.protobuf.compil"
+    "erB\014PluginProtosZ)google.golang.org/prot"
+    "obuf/types/pluginpb\252\002\030Google.Protobuf.Co"
+    "mpiler"
 };
 static const ::_pbi::DescriptorTable* PROTOBUF_NONNULL const
     descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps[1] = {
@@ -261,7 +263,7 @@ static ::absl::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
     false,
     false,
-    952,
+    966,
     descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto,
     "google/protobuf/compiler/plugin.proto",
     &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
@@ -664,7 +666,8 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
-      : _has_bits_{from._has_bits_},
+      : _extensions_{visibility, arena},
+        _has_bits_{from._has_bits_},
         _cached_size_{0},
         file_to_generate_{visibility, arena, from.file_to_generate_},
         proto_file_{visibility, arena, from.proto_file_},
@@ -684,6 +687,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.compiler_version_ = (CheckHasBit(cached_has_bits, 0x00000008U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.compiler_version_)
@@ -694,7 +698,8 @@ CodeGeneratorRequest::CodeGeneratorRequest(
 PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
-      : _cached_size_{0},
+      : _extensions_{visibility, arena},
+        _cached_size_{0},
         file_to_generate_{visibility, arena},
         proto_file_{visibility, arena},
         parameter_(arena),
@@ -727,6 +732,9 @@ inline void* PROTOBUF_NONNULL CodeGeneratorRequest::PlacementNew_(
 }
 constexpr auto CodeGeneratorRequest::InternalNewImpl_() {
   constexpr auto arena_bits = ::google::protobuf::internal::EncodePlacementArenaOffsets({
+      PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._extensions_) +
+          decltype(CodeGeneratorRequest::_impl_._extensions_)::InternalGetArenaOffset(
+              ::google::protobuf::Message::internal_visibility()),
       PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_.file_to_generate_) +
           decltype(CodeGeneratorRequest::_impl_.file_to_generate_)::
               InternalGetArenaOffset(
@@ -787,7 +795,7 @@ const ::_pbi::TcParseTable<3, 5, 3, 0, 2>
 CodeGeneratorRequest::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._has_bits_),
-    0, // no _extensions_
+    PROTOBUF_FIELD_OFFSET(CodeGeneratorRequest, _impl_._extensions_),
     17, 56,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
     4294885368,  // skipmap
@@ -847,6 +855,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
+  _impl_._extensions_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
@@ -936,6 +945,9 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
     }
   }
 
+  // All extensions.
+  target = this_._impl_._extensions_._InternalSerializeAll(&default_instance(),
+                                                    target, stream);
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -954,6 +966,7 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorRequest)
   ::size_t total_size = 0;
+  total_size += this_._impl_._extensions_.ByteSize();
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -1040,6 +1053,8 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
+  _this->_impl_._extensions_.MergeFrom(&default_instance(),
+                                from._impl_._extensions_);
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -1054,6 +1069,9 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const CodeGeneratorRequest&>(msg);
+  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+    return false;
+  }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_proto_file()))
     return false;
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_source_file_descriptors()))
@@ -1063,6 +1081,7 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitializedImpl(
 
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
+  _impl_._extensions_.InternalSwap(&other->_impl_._extensions_);
   auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
