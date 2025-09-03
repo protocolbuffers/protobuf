@@ -49,7 +49,6 @@ namespace internal {
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
                                           const MapValueConstRef& value);
 
-
 // ===================================================================
 
 bool UnknownFieldSetFieldSkipper::SkipField(io::CodedInputStream* input,

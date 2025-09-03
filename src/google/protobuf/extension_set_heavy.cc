@@ -69,12 +69,10 @@ void ExtensionSet::AppendToList(
           //   lazily-initialized, so they might not even be constructed until
           //   AppendToList() is called.
 
-          const auto* field_descriptor =
-              ext.descriptor_or_prototype.GetFieldDescriptor();
-          if (field_descriptor == nullptr) {
+          if (ext.descriptor == nullptr) {
             output->push_back(pool->FindExtensionByNumber(extendee, number));
           } else {
-            output->push_back(field_descriptor);
+            output->push_back(ext.descriptor);
           }
         }
       },
