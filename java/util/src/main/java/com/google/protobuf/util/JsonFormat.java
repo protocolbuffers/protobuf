@@ -1861,7 +1861,7 @@ public class JsonFormat {
         InvalidProtocolBufferException ex = new InvalidProtocolBufferException(
             "Not a float value: " + json);
         ex.initCause(e);
-        throw e;
+        throw ex;
       }
     }
 
