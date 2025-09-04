@@ -5,12 +5,12 @@ import static com.google.common.truth.Truth.assertThat;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
-import proto2_unittest.UnittestCustomOptions;
-import proto2_unittest_import_option.TestMessage;
-import proto2_unittest_import_option.UnittestImportOptionProto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import proto2_unittest.UnittestCustomOptions;
+import proto2_unittest_import_option.TestMessage;
+import proto2_unittest_import_option.UnittestImportOptionProto;
 
 /** Unit test for import option. */
 @RunWith(JUnit4.class)
@@ -36,5 +36,8 @@ public final class ImportOptionTest {
     // TODO: Since `option_deps` are treated as `deps` in Bazel 7, the unknown
     // fields are not empty.  Once we drop Bazel 7 support we can test that these are filled with
     // unknown fields.
+    assertThat(unknownFieldsFile.asMap().size()).isAtMost(1);
+    assertThat(unknownFieldsMessage.asMap().size()).isAtMost(1);
+    assertThat(unknownFieldsField.asMap().size()).isAtMost(1);
   }
 }
