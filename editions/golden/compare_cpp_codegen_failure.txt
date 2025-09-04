@@ -6,7 +6,8 @@
 -    // optional int32 int32_field = 1;
 +    // int32 int32_field = 1;
      {::_pbi::TcParser::FastV32S1,
-      {8, 0, 0, PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
+      {8, 0, 0,
+       PROTOBUF_FIELD_OFFSET(SimpleProto3, _impl_.int32_field_)}},
    }}, {{
      65535, 65535
    }}, {{
