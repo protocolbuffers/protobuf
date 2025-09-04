@@ -8,6 +8,7 @@
 #ifndef UPB_BASE_DESCRIPTOR_CONSTANTS_H_
 #define UPB_BASE_DESCRIPTOR_CONSTANTS_H_
 
+#include <stdint.h>
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -63,6 +64,10 @@ typedef enum {
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+UPB_INLINE bool upb_CType_IsValid(int32_t ctype) {
+  return ctype >= kUpb_CType_Bool && ctype <= kUpb_CType_Bytes;
+}
 
 // Convert from upb_FieldType to upb_CType
 UPB_INLINE upb_CType upb_FieldType_CType(upb_FieldType field_type) {
