@@ -197,7 +197,11 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
     }
   }
 
-  printer->Print("    });\n");
+  printer->Print(
+      "    }, $registry$);\n", "registry",
+      options_.bootstrap
+          ? "com.google.protobuf.ExtensionRegistry.getEmptyRegistry()"
+          : "com.google.protobuf.ExtensionRegistry.getBuiltinRegistry()");
 }
 
 }  // namespace java

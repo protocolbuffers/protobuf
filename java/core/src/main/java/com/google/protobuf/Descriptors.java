@@ -30,6 +30,7 @@ import com.google.protobuf.DescriptorProtos.OneofOptions;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
+import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -494,17 +495,26 @@ public final class Descriptors {
       return descriptors.toArray(new FileDescriptor[0]);
     }
 
+    @Deprecated
+    public static FileDescriptor internalBuildGeneratedFileFrom(
+        final String[] descriptorDataParts, final FileDescriptor[] dependencies) {
+      return internalBuildGeneratedFileFrom(
+          descriptorDataParts, dependencies, ExtensionRegistry.getEmptyRegistry());
+    }
+
     /**
      * This method is to be called by generated code only. It is equivalent to {@code buildFrom}
      * except that the {@code FileDescriptorProto} is encoded in protocol buffer wire format.
      */
     public static FileDescriptor internalBuildGeneratedFileFrom(
-        final String[] descriptorDataParts, final FileDescriptor[] dependencies) {
+        final String[] descriptorDataParts,
+        final FileDescriptor[] dependencies,
+        ExtensionRegistry registry) {
       final byte[] descriptorBytes = latin1Cat(descriptorDataParts);
 
       FileDescriptorProto proto;
       try {
-        proto = FileDescriptorProto.parseFrom(descriptorBytes);
+        proto = FileDescriptorProto.parseFrom(descriptorBytes, registry);
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
@@ -541,13 +551,11 @@ public final class Descriptors {
      */
     public static void internalUpdateFileDescriptor(
         FileDescriptor descriptor, ExtensionRegistry registry) {
-      ByteString bytes = descriptor.proto.toByteString();
       try {
-        FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
-        descriptor.setProto(proto);
-      } catch (InvalidProtocolBufferException e) {
+        descriptor.promoteUnknownExtensions(registry);
+      } catch (DescriptorValidationException e) {
         throw new IllegalArgumentException(
-            "Failed to parse protocol buffer descriptor for generated code.", e);
+            "Invalid features in \"" + descriptor.getName() + "\".", e);
       }
     }
 
@@ -765,37 +773,35 @@ public final class Descriptors {
       }
     }
 
-    /**
-     * Replace our {@link FileDescriptorProto} with the given one, which is identical except that it
-     * might contain extensions that weren't present in the original. This method is needed for
-     * bootstrapping when a file defines custom options. The options may be defined in the file
-     * itself, so we can't actually parse them until we've constructed the descriptors, but to
-     * construct the descriptors we have to have parsed the descriptor protos. So, we have to parse
-     * the descriptor protos a second time after constructing the descriptors.
-     */
-    private synchronized void setProto(final FileDescriptorProto proto) {
-      this.proto = proto;
-      this.options = null;
-      try {
-        resolveFeatures(proto.getOptions().getFeatures());
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
+        throws DescriptorValidationException {
+      FileOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      FileOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      FileOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
+      }
 
-        for (int i = 0; i < messageTypes.length; i++) {
-          messageTypes[i].setProto(proto.getMessageType(i));
-        }
-
-        for (int i = 0; i < enumTypes.length; i++) {
-          enumTypes[i].setProto(proto.getEnumType(i));
-        }
-
-        for (int i = 0; i < services.length; i++) {
-          services[i].setProto(proto.getService(i));
-        }
-
-        for (int i = 0; i < extensions.length; i++) {
-          extensions[i].setProto(proto.getExtension(i));
-        }
-      } catch (DescriptorValidationException e) {
-        throw new IllegalArgumentException("Invalid features for \"" + proto.getName() + "\".", e);
+      for (Descriptor messageType : messageTypes) {
+        messageType.promoteUnknownExtensions(registry);
+      }
+      for (EnumDescriptor enumType : enumTypes) {
+        enumType.promoteUnknownExtensions(registry);
+      }
+      for (ServiceDescriptor service : services) {
+        service.promoteUnknownExtensions(registry);
+      }
+      for (FieldDescriptor extension : extensions) {
+        extension.promoteUnknownExtensions(registry);
       }
     }
   }
@@ -1306,30 +1312,38 @@ public final class Descriptors {
       }
     }
 
-    /** See {@link FileDescriptor#setProto}. */
-    private void setProto(final DescriptorProto proto) throws DescriptorValidationException {
-      this.proto = proto;
-      this.options = null;
-      resolveFeatures(proto.getOptions().getFeatures());
-
-      for (int i = 0; i < nestedTypes.length; i++) {
-        nestedTypes[i].setProto(proto.getNestedType(i));
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
+        throws DescriptorValidationException {
+      MessageOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      MessageOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      MessageOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
       }
 
-      for (int i = 0; i < oneofs.length; i++) {
-        oneofs[i].setProto(proto.getOneofDecl(i));
+      for (Descriptor nestedType : nestedTypes) {
+        nestedType.promoteUnknownExtensions(registry);
       }
-
-      for (int i = 0; i < enumTypes.length; i++) {
-        enumTypes[i].setProto(proto.getEnumType(i));
+      for (OneofDescriptor oneof : oneofs) {
+        oneof.promoteUnknownExtensions(registry);
       }
-
-      for (int i = 0; i < fields.length; i++) {
-        fields[i].setProto(proto.getField(i));
+      for (EnumDescriptor enumType : enumTypes) {
+        enumType.promoteUnknownExtensions(registry);
       }
-
-      for (int i = 0; i < extensions.length; i++) {
-        extensions[i].setProto(proto.getExtension(i));
+      for (FieldDescriptor field : fields) {
+        field.promoteUnknownExtensions(registry);
+      }
+      for (FieldDescriptor extension : extensions) {
+        extension.promoteUnknownExtensions(registry);
       }
     }
   }
@@ -2275,11 +2289,23 @@ public final class Descriptors {
       }
     }
 
-    /** See {@link FileDescriptor#setProto}. */
-    private void setProto(final FieldDescriptorProto proto) throws DescriptorValidationException {
-      this.proto = proto;
-      this.options = null;
-      resolveFeatures(proto.getOptions().getFeatures());
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
+        throws DescriptorValidationException {
+      FieldOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      FieldOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      FieldOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
+      }
     }
 
     @Override
@@ -2569,14 +2595,26 @@ public final class Descriptors {
       }
     }
 
-    /** See {@link FileDescriptor#setProto}. */
-    private void setProto(final EnumDescriptorProto proto) throws DescriptorValidationException {
-      this.proto = proto;
-      this.options = null;
-      resolveFeatures(proto.getOptions().getFeatures());
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
+        throws DescriptorValidationException {
+      EnumOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      EnumOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      EnumOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
+      }
 
-      for (int i = 0; i < values.length; i++) {
-        values[i].setProto(proto.getValue(i));
+      for (EnumValueDescriptor value : values) {
+        value.promoteUnknownExtensions(registry);
       }
     }
   }
@@ -2718,12 +2756,23 @@ public final class Descriptors {
       resolveFeatures(proto.getOptions().getFeatures());
     }
 
-    /** See {@link FileDescriptor#setProto}. */
-    private void setProto(final EnumValueDescriptorProto proto)
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
         throws DescriptorValidationException {
-      this.proto = proto;
-      this.options = null;
-      resolveFeatures(proto.getOptions().getFeatures());
+      EnumValueOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      EnumValueOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      EnumValueOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
+      }
     }
   }
 
@@ -2858,14 +2907,26 @@ public final class Descriptors {
       }
     }
 
-    /** See {@link FileDescriptor#setProto}. */
-    private void setProto(final ServiceDescriptorProto proto) throws DescriptorValidationException {
-      this.proto = proto;
-      this.options = null;
-      resolveFeatures(proto.getOptions().getFeatures());
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
+        throws DescriptorValidationException {
+      ServiceOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      ServiceOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      ServiceOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
+      }
 
-      for (int i = 0; i < methods.length; i++) {
-        methods[i].setProto(proto.getMethod(i));
+      for (MethodDescriptor method : methods) {
+        method.promoteUnknownExtensions(registry);
       }
     }
   }
@@ -3009,11 +3070,23 @@ public final class Descriptors {
       outputType = (Descriptor) output;
     }
 
-    /** See {@link FileDescriptor#setProto}. */
-    private void setProto(final MethodDescriptorProto proto) throws DescriptorValidationException {
-      this.proto = proto;
-      this.options = null;
-      resolveFeatures(proto.getOptions().getFeatures());
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
+        throws DescriptorValidationException {
+      MethodOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      MethodOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      MethodOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
+      }
     }
   }
 
@@ -3133,6 +3206,33 @@ public final class Descriptors {
     }
 
     volatile FeatureSet features;
+
+    @CanIgnoreReturnValue
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected static <T extends GeneratedMessage.ExtendableMessage> T promoteUnknownExtensions(
+        T message, ExtensionRegistry registry) {
+      if (!message.hasUnknownFields()) {
+        return message;
+      }
+      // We could iterate the unknown fields directly, lookup the extension, and set the extensions.
+      // However that is more work (though probably more performant), and this is the easier route.
+      UnknownFieldSet oldUnknownFields = message.getUnknownFields();
+      ByteString serializedUnknownFields = oldUnknownFields.toByteString();
+      GeneratedMessage.ExtendableMessage.Builder builder =
+          (GeneratedMessage.ExtendableMessage.Builder) message.toBuilder();
+      builder.setUnknownFields(UnknownFieldSet.getDefaultInstance());
+      try {
+        builder.mergeFrom(serializedUnknownFields, registry);
+      } catch (IOException e) {
+        throw new RuntimeException(
+            "Failed to reparse " + builder.getDescriptorForType().getFullName(), e);
+      }
+      if (builder.getUnknownFieldCount() == oldUnknownFields.getFieldCount()) {
+        // No promotion was successful. Throw everything away and just return the original.
+        return message;
+      }
+      return (T) builder.build();
+    }
   }
 
   /** Thrown when building descriptors fails because the source DescriptorProtos are not valid. */
@@ -3612,10 +3712,23 @@ public final class Descriptors {
       resolveFeatures(proto.getOptions().getFeatures());
     }
 
-    private void setProto(final OneofDescriptorProto proto) throws DescriptorValidationException {
-      this.proto = proto;
-      this.options = null;
-      resolveFeatures(proto.getOptions().getFeatures());
+    private void promoteUnknownExtensions(ExtensionRegistry registry)
+        throws DescriptorValidationException {
+      OneofOptions oldOptions = proto.getOptions();
+      FeatureSet oldFeatures = oldOptions.getFeatures();
+      FeatureSet newFeatures = promoteUnknownExtensions(oldFeatures, registry);
+      OneofOptions midOptions;
+      if (oldFeatures != newFeatures) {
+        midOptions = oldOptions.toBuilder().setFeatures(newFeatures).build();
+      } else {
+        midOptions = oldOptions;
+      }
+      OneofOptions newOptions = promoteUnknownExtensions(midOptions, registry);
+      if (oldOptions != newOptions) {
+        this.options = null;
+        this.proto = proto.toBuilder().setOptions(newOptions).build();
+        resolveFeatures(newFeatures);
+      }
     }
 
     private OneofDescriptor(
