@@ -16,11 +16,8 @@ import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
 import static java.lang.Math.subtractExact;
 
-import com.google.common.annotations.GwtIncompatible;
-import com.google.common.annotations.J2ktIncompatible;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.CompileTimeConstant;
-import com.google.j2objc.annotations.J2ObjCIncompatible;
 import com.google.protobuf.Duration;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -140,9 +137,6 @@ public final class Durations {
    * @throws NullPointerException if {@code duration} is {@code null}
    */
   @CanIgnoreReturnValue
-  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
-  @J2ktIncompatible
-  @J2ObjCIncompatible
   public static Duration checkNotNegative(Duration duration) {
     if (isNegative(duration)) {
       throw new IllegalArgumentException(
@@ -158,9 +152,6 @@ public final class Durations {
    * @throws NullPointerException if {@code duration} is {@code null}
    */
   @CanIgnoreReturnValue
-  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
-  @J2ktIncompatible
-  @J2ObjCIncompatible
   public static Duration checkPositive(Duration duration) {
     if (!isPositive(duration)) {
       throw new IllegalArgumentException("duration (" + toString(duration) + ") must be positive");
@@ -206,9 +197,6 @@ public final class Durations {
    * @return The string representation of the given duration.
    * @throws IllegalArgumentException if the given duration is not in the valid range.
    */
-  @GwtIncompatible("Depends on String.format which is not supported in Xplat.")
-  @J2ktIncompatible
-  @J2ObjCIncompatible
   public static String toString(Duration duration) {
     checkValid(duration);
 
@@ -236,9 +224,6 @@ public final class Durations {
    * @return a Duration parsed from the string
    * @throws ParseException if the string is not in the duration format
    */
-  @GwtIncompatible("ParseException is not supported in Xplat")
-  @J2ktIncompatible
-  @J2ObjCIncompatible
   public static Duration parse(String value) throws ParseException {
     // Must end with "s".
     if (value.isEmpty() || value.charAt(value.length() - 1) != 's') {
@@ -288,9 +273,6 @@ public final class Durations {
    * @return a {@link Duration} parsed from the string
    * @throws IllegalArgumentException if parsing fails
    */
-  @GwtIncompatible("ParseException is not supported in Xplat")
-  @J2ktIncompatible
-  @J2ObjCIncompatible
   public static Duration parseUnchecked(@CompileTimeConstant String value) {
     try {
       return parse(value);
