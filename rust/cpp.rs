@@ -10,9 +10,9 @@
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
-    MergeFrom, Message, MessageMutInterop, Mut, MutProxied, OwnedMessageInterop, ParseError,
-    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
-    RepeatedMut, RepeatedView, Serialize, SerializeError, TakeFrom, View,
+    MergeFrom, Message, MessageMutInterop, Mut, MutProxied, ParseError, ProtoBytes, ProtoStr,
+    ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut,
+    RepeatedView, Serialize, SerializeError, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
