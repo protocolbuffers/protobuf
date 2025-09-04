@@ -73,6 +73,9 @@ message TestAllTypes {
   double optional_double = 12;
   bool optional_bool = 13;
   string optional_string = 14;
+  // string optional_string_with_utf8_validation = 12345666 [
+  //   features.utf8_validation = VERIFY
+  // ];
   bytes optional_bytes = 15;
 
   message OptionalGroup {

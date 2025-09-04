@@ -216,14 +216,14 @@ void ImmutableStringFieldGenerator::GenerateMembers(
       "        (com.google.protobuf.ByteString) ref;\n"
       "    java.lang.String s = bs.toStringUtf8();\n");
   printer->Annotate("{", "}", descriptor_);
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_, "    $name$_ = s;\n");
-  } else {
-    printer->Print(variables_,
-                   "    if (bs.isValidUtf8()) {\n"
-                   "      $name$_ = s;\n"
-                   "    }\n");
-  }
+  // if (CheckUtf8(descriptor_)) {
+  //   printer->Print(variables_, "    $name$_ = s;\n");
+  // } else {
+  //   printer->Print(variables_,
+  //                  "    if (bs.isValidUtf8()) {\n"
+  //                  "      $name$_ = s;\n"
+  //                  "    }\n");
+  // }
   printer->Print(variables_,
                  "    return s;\n"
                  "  }\n"
@@ -274,14 +274,14 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
       "        (com.google.protobuf.ByteString) ref;\n"
       "    java.lang.String s = bs.toStringUtf8();\n");
   printer->Annotate("{", "}", descriptor_);
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_, "    $name$_ = s;\n");
-  } else {
-    printer->Print(variables_,
-                   "    if (bs.isValidUtf8()) {\n"
-                   "      $name$_ = s;\n"
-                   "    }\n");
-  }
+  // if (CheckUtf8(descriptor_)) {
+  //   printer->Print(variables_, "    $name$_ = s;\n");
+  // } else {
+  //   printer->Print(variables_,
+  //                  "    if (bs.isValidUtf8()) {\n"
+  //                  "      $name$_ = s;\n"
+  //                  "    }\n");
+  // }
   printer->Print(variables_,
                  "    return s;\n"
                  "  } else {\n"
@@ -408,7 +408,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "$name$_ = input.readStringRequireUtf8();\n"
+                   "$name$_ = input.readBytesRequireUtf8();\n"
                    "$set_has_field_bit_builder$\n");
   } else {
     printer->Print(variables_,
@@ -494,17 +494,16 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
       "        (com.google.protobuf.ByteString) ref;\n"
       "    java.lang.String s = bs.toStringUtf8();\n");
   printer->Annotate("{", "}", descriptor_);
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-                   "    if ($has_oneof_case_message$) {\n"
-                   "      $oneof_name$_ = s;\n"
-                   "    }\n");
-  } else {
-    printer->Print(variables_,
-                   "    if (bs.isValidUtf8() && ($has_oneof_case_message$)) {\n"
-                   "      $oneof_name$_ = s;\n"
-                   "    }\n");
-  }
+  // if (CheckUtf8(descriptor_)) {
+  //   printer->Print(variables_,
+  //                  "    if ($has_oneof_case_message$) {\n"
+  //                  "      $oneof_name$_ = s;\n"
+  //                  "    }\n");
+  // } else {
+  //   printer->Print(variables_,
+  //                  "    if (bs.isValidUtf8() && ($has_oneof_case_message$))
+  //                  {\n" "      $oneof_name$_ = s;\n" "    }\n");
+  // }
   printer->Print(variables_,
                  "    return s;\n"
                  "  }\n"
@@ -562,14 +561,14 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
       "    java.lang.String s = bs.toStringUtf8();\n"
       "    if ($has_oneof_case_message$) {\n");
   printer->Annotate("{", "}", descriptor_);
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_, "      $oneof_name$_ = s;\n");
-  } else {
-    printer->Print(variables_,
-                   "      if (bs.isValidUtf8()) {\n"
-                   "        $oneof_name$_ = s;\n"
-                   "      }\n");
-  }
+  // if (CheckUtf8(descriptor_)) {
+  //   printer->Print(variables_, "      $oneof_name$_ = s;\n");
+  // } else {
+  //   printer->Print(variables_,
+  //                  "      if (bs.isValidUtf8()) {\n"
+  //                  "        $oneof_name$_ = s;\n"
+  //                  "      }\n");
+  // }
   printer->Print(variables_,
                  "    }\n"
                  "    return s;\n"
