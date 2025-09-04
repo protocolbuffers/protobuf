@@ -73,8 +73,7 @@ jobs:
             activity in the 14 days since the `inactive` label was added.
           stale-issue-label: 'inactive'
           stale-pr-label: 'inactive'
-          exempt-issue-labels: 'help wanted'
-          exempt-issue-labels: 'keep open'
+          exempt-issue-labels: 'help wanted,keep open'
           labels-to-add-when-unstale: 'untriaged'
           days-before-stale: 90
           days-before-close: 14
