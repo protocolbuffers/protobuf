@@ -52,6 +52,7 @@ config_setting(
         "//python:__pkg__",
         "//upb:__subpackages__",
         "//upb_generator:__subpackages__",
+        "//hpb_generator:__subpackages__",
     ],
 )
 
