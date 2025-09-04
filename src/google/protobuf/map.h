@@ -1260,6 +1260,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K = key_type>
+  ABSL_DEPRECATED(
+      "Use find() instead of at(). Calling at() with a nonexistent key will "
+      "crash, which is often not the desired behavior. Use find() instead and "
+      "decide yourself whether crashing is appropriate. go/chemist-check-cloud")
   const T& at(const key_arg<K>& key) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const_iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
@@ -1267,6 +1271,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   template <typename K = key_type>
+  ABSL_DEPRECATED(
+      "Use find() instead of at(). Calling at() with a nonexistent key will "
+      "crash, which is often not the desired behavior. Use find() instead and "
+      "decide yourself whether crashing is appropriate. go/chemist-check-cloud")
   T& at(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     iterator it = find(key);
     ABSL_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
