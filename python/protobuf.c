@@ -124,25 +124,36 @@ uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
 }
 
 void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
+  Py_BEGIN_CRITICAL_SECTION(map);
   upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
                       upb_value_ptr(py_obj), map->arena);
+  Py_END_CRITICAL_SECTION();
 }
 
 void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
+  Py_BEGIN_CRITICAL_SECTION(map);
   upb_value val;
   bool removed =
       upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
   (void)removed;
   assert(removed);
+  Py_END_CRITICAL_SECTION();
 }
 
 void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key) {
+  Py_BEGIN_CRITICAL_SECTION(map);
   upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
+  Py_END_CRITICAL_SECTION();
 }
 
 PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key) {
   upb_value val;
-  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
+  bool status;
+  Py_BEGIN_CRITICAL_SECTION(map);
+  status = upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val);
+  Py_END_CRITICAL_SECTION();
+
+  if (status) {
     PyObject* ret = upb_value_getptr(val);
     Py_INCREF(ret);
     return ret;
@@ -155,14 +166,21 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
                         intptr_t* iter) {
   uintptr_t u_key;
   upb_value val;
-  if (!upb_inttable_next(&map->table, &u_key, &val, iter)) return false;
+  bool status;
+  Py_BEGIN_CRITICAL_SECTION(map);
+  status = upb_inttable_next(&map->table, &u_key, &val, iter);
+  Py_END_CRITICAL_SECTION();
+
+  if (!status) return false;
   *key = (void*)(u_key << PyUpb_PtrShift);
   *obj = upb_value_getptr(val);
   return true;
 }
 
 void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter) {
+  Py_BEGIN_CRITICAL_SECTION(map);
   upb_inttable_removeiter(&map->table, iter);
+  Py_END_CRITICAL_SECTION();
 }
 
 // -----------------------------------------------------------------------------
@@ -404,6 +422,10 @@ bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
 PyMODINIT_FUNC PyInit__message(void) {
   PyObject* m = PyModule_Create(&module_def);
   if (!m) return NULL;
+
+#ifdef Py_GIL_DISABLED
+  PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED);
+#endif
 
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
 
