@@ -30,6 +30,7 @@ import com.google.protobuf.DescriptorProtos.OneofOptions;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceOptions;
 import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
+import java.io.IOException;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -456,26 +457,6 @@ public final class Descriptors {
       return result;
     }
 
-    private static byte[] latin1Cat(final String[] strings) {
-      // Hack:  We can't embed a raw byte array inside generated Java code
-      //   (at least, not efficiently), but we can embed Strings.  So, the
-      //   protocol compiler embeds the FileDescriptorProto as a giant
-      //   string literal which is passed to this function to construct the
-      //   file's FileDescriptor.  The string literal contains only 8-bit
-      //   characters, each one representing a byte of the FileDescriptorProto's
-      //   serialized form.  So, if we convert it to bytes in ISO-8859-1, we
-      //   should get the original bytes that we want.
-      // Literal strings are limited to 64k, so it may be split into multiple strings.
-      if (strings.length == 1) {
-        return strings[0].getBytes(Internal.ISO_8859_1);
-      }
-      StringBuilder descriptorData = new StringBuilder();
-      for (String part : strings) {
-        descriptorData.append(part);
-      }
-      return descriptorData.toString().getBytes(Internal.ISO_8859_1);
-    }
-
     private static FileDescriptor[] findDescriptors(
         final Class<?> descriptorOuterClass,
         final String[] dependencyClassNames,
@@ -500,12 +481,10 @@ public final class Descriptors {
      */
     public static FileDescriptor internalBuildGeneratedFileFrom(
         final String[] descriptorDataParts, final FileDescriptor[] dependencies) {
-      final byte[] descriptorBytes = latin1Cat(descriptorDataParts);
-
       FileDescriptorProto proto;
       try {
-        proto = FileDescriptorProto.parseFrom(descriptorBytes);
-      } catch (InvalidProtocolBufferException e) {
+        proto = FileDescriptorProto.parseFrom(Latin1CodedInputStream.create(descriptorDataParts));
+      } catch (IOException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
       }
