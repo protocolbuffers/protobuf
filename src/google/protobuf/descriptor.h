@@ -2360,6 +2360,13 @@ class PROTOBUF_EXPORT DescriptorPool {
   // of this enforcement.
   void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
 
+  // Enforce symbol visibility rules.  This will enable enforcement of the
+  // `export` and `local` keywords added in edition 2024, honoring the behavior
+  // of the `default_symbol_visibility` feature.
+  void EnforceSymbolVisibility(bool enforce) {
+    enforce_symbol_visibility_ = enforce;
+  }
+
   // By default, option imports are allowed to be missing.
   // If you call EnforceOptionDependencies(true), however, the DescriptorPool
   // will report a import not found error.
@@ -2675,6 +2682,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   bool enforce_naming_style_;
+  bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;
 
   // Set of files to track for additional validation. The bool value when true
