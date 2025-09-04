@@ -57,11 +57,17 @@ message FileDescriptorSet {
   repeated FileDescriptorProto file = 1;
 
   // Extensions for tooling.
-  extensions 536000000 [declaration = {
+  extensions 536000000 to max
+  [declaration = {
     number: 536000000
     type: ".buf.descriptor.v1.FileDescriptorSetExtension"
     full_name: ".buf.descriptor.v1.buf_file_descriptor_set_extension"
-  }];
+  },
+   declaration = {
+     number: 536000001
+     type: ".google.protobuf.compiler.OptionDependencies"
+     full_name: ".google.protobuf.compiler.protoc_option_dependencies"
+   }];
 }
 
 // The full set of known editions.

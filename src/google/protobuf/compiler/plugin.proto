@@ -77,6 +77,12 @@ message CodeGeneratorRequest {
 
   // The version number of protocol compiler.
   optional Version compiler_version = 3;
+
+  extensions 536000001 [declaration = {
+    number: 536000001
+    type: ".google.protobuf.compiler.OptionDependencies"
+    full_name: ".google.protobuf.compiler.plugin_option_dependencies"
+  }];
 }
 
 // The plugin writes an encoded CodeGeneratorResponse to stdout.

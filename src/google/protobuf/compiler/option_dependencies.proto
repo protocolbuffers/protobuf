@@ -1,0 +1,32 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package google.protobuf.compiler;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/compiler/plugin.proto";
+
+// This file defines extensions that are used to ensure that the
+// FileDescriptorProtos for all option dependencies are available to code
+// generators, if they needs them.  Most code generators should not need this,
+// and it should only be used to generate *optional* dependencies that may not
+// exist during build or runtime.
+
+extend google.protobuf.FileDescriptorSet {
+  OptionDependencies protoc_option_dependencies = 536000001;
+}
+extend CodeGeneratorRequest {
+  OptionDependencies plugin_option_dependencies = 536000001;
+}
+
+message OptionDependencies {
+  // The FileDescriptorProtos for all files that are option dependencies of the
+  // files being directly compiled and all of their transitive dependencies.
+  repeated google.protobuf.FileDescriptorProto files = 1;
+}
