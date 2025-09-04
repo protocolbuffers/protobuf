@@ -257,6 +257,7 @@ std::string ClassNameResolver::GetClassFullName(
                           false);
 }
 
+
 std::string ClassNameResolver::GetClassFullName(
     absl::string_view name_without_package, const FileDescriptor* file,
     bool immutable, bool is_own_file, bool kotlin) {
