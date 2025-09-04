@@ -31,6 +31,7 @@
 #include "google/protobuf/compiler/java/internal_helpers.h"
 #include "google/protobuf/compiler/java/lite/generator_factory.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 #include "google/protobuf/compiler/retention.h"
@@ -105,10 +106,20 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   return true;
 }
 
+void CollectPublicDependencies(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>* dependencies) {
+  if (file == nullptr || !dependencies->insert(file).second) return;
+  for (int i = 0; file != nullptr && i < file->public_dependency_count(); i++) {
+    CollectPublicDependencies(file->public_dependency(i), dependencies);
+  }
+}
+
 // Finds all extensions for custom options in the given file descriptor with the
 // builder pool which resolves Java features instead of the generated pool.
-void CollectExtensions(const FileDescriptor& file,
-                       FieldDescriptorSet* extensions) {
+void CollectExtensions(const FileDescriptor& file, const Options& options,
+                       FieldDescriptorSet* extensions,
+                       FieldDescriptorSet* optional_extensions) {
   FileDescriptorProto file_proto = StripSourceRetentionOptions(file);
   std::string file_data;
   file_proto.SerializeToString(&file_data);
@@ -129,6 +140,29 @@ void CollectExtensions(const FileDescriptor& file,
   extensions->clear();
   // Unknown extensions are ok and expected in the case of option imports.
   CollectExtensions(*dynamic_file_proto, extensions);
+
+  if (options.strip_nonfunctional_codegen) {
+    // Skip feature extensions, which are a visible (but non-functional)
+    // deviation between editions and legacy syntax.
+    absl::erase_if(*extensions, [](const FieldDescriptor* field) {
+      return field->containing_type()->full_name() == "google.protobuf.FeatureSet";
+    });
+  }
+
+  // Check against dependencies to handle option dependencies polluting pool.
+  absl::flat_hash_set<const FileDescriptor*> dependencies;
+  dependencies.insert(&file);
+  for (int i = 0; i < file.dependency_count(); i++) {
+    CollectPublicDependencies(file.dependency(i), &dependencies);
+  }
+  for (auto* extension : *extensions) {
+    if (!dependencies.contains(extension->file())) {
+      optional_extensions->insert(extension);
+    }
+  }
+  absl::erase_if(*extensions, [&](const FieldDescriptor* fieldDescriptor) {
+    return optional_extensions->contains(fieldDescriptor);
+  });
 }
 
 // Our static initialization methods can become very, very large.
@@ -487,15 +521,8 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   // of the FileDescriptor based on the builder-pool, then we can use
   // reflections to find all extension fields
   FieldDescriptorSet extensions;
-  CollectExtensions(*file_, &extensions);
-
-  if (options_.strip_nonfunctional_codegen) {
-    // Skip feature extensions, which are a visible (but non-functional)
-    // deviation between editions and legacy syntax.
-    absl::erase_if(extensions, [](const FieldDescriptor* field) {
-      return field->containing_type()->full_name() == "google.protobuf.FeatureSet";
-    });
-  }
+  FieldDescriptorSet optional_extensions;
+  CollectExtensions(*file_, options_, &extensions, &optional_extensions);
 
   // Force descriptor initialization of all dependencies.
   for (int i = 0; i < file_->dependency_count(); i++) {
@@ -507,7 +534,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     }
   }
 
-  if (!extensions.empty()) {
+  if (!extensions.empty() || !optional_extensions.empty()) {
     // Must construct an ExtensionRegistry containing all existing extensions
     // and use it to parse the descriptor data again to recognize extensions.
     printer->Print(
@@ -518,6 +545,25 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       std::unique_ptr<ExtensionGenerator> generator(
           generator_factory_->NewExtensionGenerator(field));
       bytecode_estimate += generator->GenerateRegistrationCode(printer);
+      MaybeRestartJavaMethod(
+          printer, &bytecode_estimate, &method_num,
+          "_clinit_autosplit_dinit_$method_num$(registry);\n",
+          "private static void _clinit_autosplit_dinit_$method_num$(\n"
+          "    com.google.protobuf.ExtensionRegistry registry) {\n");
+    }
+    for (const FieldDescriptor* field : optional_extensions) {
+      std::unique_ptr<ExtensionGenerator> generator(
+          generator_factory_->NewExtensionGenerator(field));
+      printer->Emit({{"scope", field->extension_scope() != nullptr
+                                   ? name_resolver_->GetImmutableClassName(
+                                         field->extension_scope())
+                                   : name_resolver_->GetImmutableClassName(
+                                         field->file())},
+                     {"name", UnderscoresToCamelCaseCheckReserved(field)}},
+                    R"java(
+                      registry.addOptional("$scope$", "$name$");
+                    )java");
+      bytecode_estimate += 8;
       MaybeRestartJavaMethod(
           printer, &bytecode_estimate, &method_num,
           "_clinit_autosplit_dinit_$method_num$(registry);\n",
