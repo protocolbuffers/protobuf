@@ -665,7 +665,8 @@ public final class TextFormat {
     // field, b) via an enum field marked with debug_redact=true that is within the proto's
     // FieldOptions, either directly or indirectly via a message option.
     private boolean shouldRedact(final FieldDescriptor field, TextGenerator generator) {
-      return enablingSafeDebugFormat && field.isSensitive();
+      FieldDescriptor.RedactionState state = field.getRedactionState();
+      return enablingSafeDebugFormat && state.redact;
     }
 
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */

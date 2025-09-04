@@ -1753,15 +1753,37 @@ public final class Descriptors {
     private final Descriptor extensionScope;
     private final boolean isProto3Optional;
 
-    private enum Sensitivity {
-      UNKNOWN,
-      SENSITIVE,
-      NOT_SENSITIVE
+    static final class RedactionState {
+      private static final RedactionState FALSE_FALSE = new RedactionState(false, false);
+      private static final RedactionState FALSE_TRUE = new RedactionState(false, true);
+      private static final RedactionState TRUE_FALSE = new RedactionState(true, false);
+      private static final RedactionState TRUE_TRUE = new RedactionState(true, true);
+
+      final boolean redact;
+      final boolean report;
+
+      private RedactionState(boolean redact, boolean report) {
+        this.redact = redact;
+        this.report = report;
+      }
+
+      private static RedactionState of(boolean redact) {
+        return of(redact, false);
+      }
+
+      private static RedactionState of(boolean redact, boolean report) {
+        if (redact) {
+          return report ? TRUE_TRUE : TRUE_FALSE;
+        }
+        return report ? FALSE_TRUE : FALSE_FALSE;
+      }
+
+      private static RedactionState combine(RedactionState lhs, RedactionState rhs) {
+        return of(lhs.redact || rhs.redact, rhs.report);
+      }
     }
 
-    // Caches the result of isSensitive() for performance reasons.
-    private volatile Sensitivity sensitivity = Sensitivity.UNKNOWN;
-    private volatile boolean isReportable = false;
+    private volatile RedactionState redactionState;
 
     // Possibly initialized during cross-linking.
     private Type type;
@@ -1937,73 +1959,68 @@ public final class Descriptors {
     }
 
     @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
-    private List<Boolean> isOptionSensitive(FieldDescriptor field, Object value) {
+    private static RedactionState isOptionSensitive(FieldDescriptor field, Object value) {
       if (field.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
         if (field.isRepeated()) {
           for (EnumValueDescriptor v : (List<EnumValueDescriptor>) value) {
             if (v.getOptions().getDebugRedact()) {
-              return Arrays.asList(true, false);
+              return RedactionState.of(true, false);
             }
           }
         } else {
           if (((EnumValueDescriptor) value).getOptions().getDebugRedact()) {
-            return Arrays.asList(true, false);
+            return RedactionState.of(true, false);
           }
         }
       } else if (field.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE) {
         if (field.isRepeated()) {
           for (Message m : (List<Message>) value) {
             for (Map.Entry<FieldDescriptor, Object> entry : m.getAllFields().entrySet()) {
-              List<Boolean> result = isOptionSensitive(entry.getKey(), entry.getValue());
-              if (result.get(0)) {
-                return result;
+              RedactionState state = isOptionSensitive(entry.getKey(), entry.getValue());
+              if (state.redact) {
+                return state;
               }
             }
           }
         } else {
           for (Map.Entry<FieldDescriptor, Object> entry :
               ((Message) value).getAllFields().entrySet()) {
-            List<Boolean> result = isOptionSensitive(entry.getKey(), entry.getValue());
-            if (result.get(0)) {
-              return result;
+            RedactionState state = isOptionSensitive(entry.getKey(), entry.getValue());
+            if (state.redact) {
+              return state;
             }
           }
         }
       }
-      return Arrays.asList(false, false);
+      return RedactionState.of(false);
     }
 
-    // Lazily calculates if the field is marked as sensitive, and caches results.
-    private List<Boolean> calculateSensitivityData() {
-      if (sensitivity == Sensitivity.UNKNOWN) {
+    // Lazily calculates the redact state of the field, caching the result.
+    RedactionState getRedactionState() {
+      RedactionState state = redactionState;
+      if (state == null) {
         // If the field is directly marked with debug_redact=true, then it is sensitive.
         synchronized (this) {
-          if (sensitivity == Sensitivity.UNKNOWN) {
-            boolean isSensitive = proto.getOptions().getDebugRedact();
+          state = redactionState;
+          if (state == null) {
+            FieldOptions options = getOptions();
+            state = RedactionState.of(options.getDebugRedact());
             // Check if the FieldOptions contain any enums that are marked as debug_redact=true,
             // either directly or indirectly via a message option.
             for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
-                proto.getOptions().getAllFields().entrySet()) {
-              List<Boolean> result = isOptionSensitive(entry.getKey(), entry.getValue());
-              isSensitive = isSensitive || result.get(0);
-              isReportable = result.get(1);
-              if (isSensitive) {
+                options.getAllFields().entrySet()) {
+              state =
+                  RedactionState.combine(
+                      state, isOptionSensitive(entry.getKey(), entry.getValue()));
+              if (state.redact) {
                 break;
               }
             }
-            sensitivity = isSensitive ? Sensitivity.SENSITIVE : Sensitivity.NOT_SENSITIVE;
+            redactionState = state;
           }
         }
       }
-      return Arrays.asList(sensitivity == Sensitivity.SENSITIVE, isReportable);
-    }
-
-    boolean isSensitive() {
-      return calculateSensitivityData().get(0);
-    }
-
-    boolean isReportable() {
-      return calculateSensitivityData().get(1);
+      return state;
     }
 
     /** See {@link FileDescriptor#resolveAllFeatures}. */
