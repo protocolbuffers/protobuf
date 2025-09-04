@@ -720,13 +720,14 @@ public final class Descriptors {
 
     @Override
     FeatureSet inferLegacyProtoFeatures() {
-      FeatureSet.Builder features = FeatureSet.newBuilder();
       if (getEdition().getNumber() >= Edition.EDITION_2023.getNumber()) {
-        return features.build();
+        return FeatureSet.getDefaultInstance();
       }
 
+      FeatureSet.Builder features = null;
       if (getEdition() == Edition.EDITION_PROTO2) {
         if (proto.getOptions().getJavaStringCheckUtf8()) {
+          features = FeatureSet.newBuilder();
           features.setExtension(
               JavaFeaturesProto.java_,
               JavaFeatures.newBuilder()
@@ -734,20 +735,8 @@ public final class Descriptors {
                   .build());
         }
       }
-      return features.build();
-    }
 
-    @Override
-    boolean hasInferredLegacyProtoFeatures() {
-      if (getEdition().getNumber() >= Edition.EDITION_2023.getNumber()) {
-        return false;
-      }
-      if (getEdition() == Edition.EDITION_PROTO2) {
-        if (proto.getOptions().getJavaStringCheckUtf8()) {
-          return true;
-        }
-      }
-      return false;
+      return features != null ? features.build() : FeatureSet.getDefaultInstance();
     }
 
     /** Look up and cross-link all field types, etc. */
@@ -2030,57 +2019,42 @@ public final class Descriptors {
 
     @Override
     FeatureSet inferLegacyProtoFeatures() {
-      FeatureSet.Builder features = FeatureSet.newBuilder();
       if (getFile().getEdition().getNumber() >= Edition.EDITION_2023.getNumber()) {
-        return features.build();
+        return FeatureSet.getDefaultInstance();
       }
 
+      FeatureSet.Builder features = null;
+
       if (proto.getLabel() == FieldDescriptorProto.Label.LABEL_REQUIRED) {
+        features = FeatureSet.newBuilder();
         features.setFieldPresence(FeatureSet.FieldPresence.LEGACY_REQUIRED);
       }
 
       if (proto.getType() == FieldDescriptorProto.Type.TYPE_GROUP) {
+        if (features == null) {
+          features = FeatureSet.newBuilder();
+        }
         features.setMessageEncoding(FeatureSet.MessageEncoding.DELIMITED);
       }
 
       if (getFile().getEdition() == Edition.EDITION_PROTO2 && proto.getOptions().getPacked()) {
+        if (features == null) {
+          features = FeatureSet.newBuilder();
+        }
         features.setRepeatedFieldEncoding(FeatureSet.RepeatedFieldEncoding.PACKED);
       }
 
       if (getFile().getEdition() == Edition.EDITION_PROTO3) {
         if (proto.getOptions().hasPacked() && !proto.getOptions().getPacked()) {
+          if (features == null) {
+            features = FeatureSet.newBuilder();
+          }
           features.setRepeatedFieldEncoding(FeatureSet.RepeatedFieldEncoding.EXPANDED);
         }
 
       }
-      return features.build();
-    }
 
-    @Override
-    boolean hasInferredLegacyProtoFeatures() {
-      if (getFile().getEdition().getNumber() >= Edition.EDITION_2023.getNumber()) {
-        return false;
-      }
-
-      if (proto.getLabel() == FieldDescriptorProto.Label.LABEL_REQUIRED) {
-        return true;
-      }
-
-      if (proto.getType() == FieldDescriptorProto.Type.TYPE_GROUP) {
-        return true;
-      }
-
-      if (proto.getOptions().getPacked()) {
-        return true;
-      }
-
-      if (getFile().getEdition() == Edition.EDITION_PROTO3) {
-        if (proto.getOptions().hasPacked() && !proto.getOptions().getPacked()) {
-          return true;
-        }
-
-      }
-      return false;
+      return features != null ? features.build() : FeatureSet.getDefaultInstance();
     }
 
     @Override
@@ -3058,9 +3032,11 @@ public final class Descriptors {
 
     void resolveFeatures(FeatureSet unresolvedFeatures) throws DescriptorValidationException {
       GenericDescriptor parent = getParent();
+      FeatureSet inferredLegacyFeatures = null;
       if (parent != null
           && unresolvedFeatures.equals(FeatureSet.getDefaultInstance())
-          && !hasInferredLegacyProtoFeatures()) {
+          && (inferredLegacyFeatures = inferLegacyProtoFeatures())
+              .equals(FeatureSet.getDefaultInstance())) {
         this.features = parent.features;
         validateFeatures();
         return;
@@ -3073,7 +3049,7 @@ public final class Descriptors {
         if (f.getNumber() == JavaFeaturesProto.java_.getNumber()
             && f != JavaFeaturesProto.java_.getDescriptor()) {
           hasPossibleCustomJavaFeature = true;
-          continue;
+          break;
         }
       }
       boolean hasPossibleUnknownJavaFeature =
@@ -3101,7 +3077,10 @@ public final class Descriptors {
       } else {
         features = parent.features.toBuilder();
       }
-      features.mergeFrom(inferLegacyProtoFeatures());
+      if (inferredLegacyFeatures == null) {
+        inferredLegacyFeatures = inferLegacyProtoFeatures();
+      }
+      features.mergeFrom(inferredLegacyFeatures);
       features.mergeFrom(unresolvedFeatures);
       this.features = internFeatures(features.build());
       validateFeatures();
@@ -3109,10 +3088,6 @@ public final class Descriptors {
 
     FeatureSet inferLegacyProtoFeatures() {
       return FeatureSet.getDefaultInstance();
-    }
-
-    boolean hasInferredLegacyProtoFeatures() {
-      return false;
     }
 
     void validateFeatures() throws DescriptorValidationException {}
