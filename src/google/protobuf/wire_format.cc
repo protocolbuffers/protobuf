@@ -49,6 +49,7 @@ namespace internal {
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
                                           const MapValueConstRef& value);
 
+
 // ===================================================================
 
 bool UnknownFieldSetFieldSkipper::SkipField(io::CodedInputStream* input,
@@ -1689,7 +1690,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
       if (field->is_extension()) {
         data_size += WireFormatLite::LengthDelimitedSize(
             message_reflection->GetExtensionSet(message).GetMessageByteSizeLong(
-                field->number()));
+                &message, field->number()));
         break;
       }
       data_size += WireFormatLite::MessageSize(
