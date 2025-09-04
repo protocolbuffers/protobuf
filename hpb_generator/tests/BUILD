@@ -189,6 +189,7 @@ cc_test(
         "//hpb:requires",
         "//hpb/backend/upb:interop",
         "//upb/mem",
+        "@abseil-cpp//absl/status:status_matchers",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
