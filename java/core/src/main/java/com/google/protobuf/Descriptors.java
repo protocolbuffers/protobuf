@@ -177,6 +177,10 @@ public final class Descriptors {
       return null;
     }
 
+    public boolean isPlaceholder() {
+      return placeholder;
+    }
+
     /** Returns the same as getName(). */
     @Override
     public String getFullName() {
@@ -574,6 +578,7 @@ public final class Descriptors {
     private final FileDescriptor[] dependencies;
     private final FileDescriptor[] publicDependencies;
     private final FileDescriptorTables tables;
+    private final boolean placeholder;
     private volatile boolean featuresResolved;
 
     private FileDescriptor(
@@ -609,6 +614,8 @@ public final class Descriptors {
       }
       this.publicDependencies = new FileDescriptor[publicDependencies.size()];
       publicDependencies.toArray(this.publicDependencies);
+
+      placeholder = false;
 
       tables.addPackage(getPackage(), this);
 
@@ -662,6 +669,8 @@ public final class Descriptors {
       enumTypes = EMPTY_ENUM_DESCRIPTORS;
       services = EMPTY_SERVICE_DESCRIPTORS;
       extensions = EMPTY_FIELD_DESCRIPTORS;
+
+      placeholder = true;
 
       tables.addPackage(packageName, this);
       tables.addSymbol(message);
@@ -853,6 +862,10 @@ public final class Descriptors {
     @Override
     GenericDescriptor getParent() {
       return parent;
+    }
+
+    public boolean isPlaceholder() {
+      return placeholder;
     }
 
     /** If this is a nested type, get the outer descriptor, otherwise null. */
@@ -1091,6 +1104,8 @@ public final class Descriptors {
     private final int[] extensionRangeLowerBounds;
     private final int[] extensionRangeUpperBounds;
 
+    private final boolean placeholder;
+
     // Used to create a placeholder when the type cannot be found.
     Descriptor(final String fullname) throws DescriptorValidationException {
       String name = fullname;
@@ -1122,6 +1137,8 @@ public final class Descriptors {
 
       extensionRangeLowerBounds = new int[] {1};
       extensionRangeUpperBounds = new int[] {536870912};
+
+      placeholder = true;
     }
 
     private Descriptor(
@@ -1203,6 +1220,8 @@ public final class Descriptors {
         }
       }
       this.realOneofCount = this.oneofs.length - syntheticOneofCount;
+
+      placeholder = false;
 
       file.tables.addSymbol(this);
 
@@ -2304,6 +2323,10 @@ public final class Descriptors {
     @Override
     GenericDescriptor getParent() {
       return parent;
+    }
+
+    public boolean isPlaceholder() {
+      return false;
     }
 
     /**
