@@ -278,6 +278,14 @@ inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
   return EnableStableExperiments();
 }
 
+inline constexpr bool ForceSplitFieldsInProtoc() {
+#if defined(PROTOBUF_FORCE_SPLIT)
+  return true;
+#else
+  return false;
+#endif
+}
+
 // Returns true if hasbits for repeated fields are enabled (b/391445226). This
 // flag-gates the rollout of the feature, and if disabled will disable the
 // feature. This will be removed once the feature is fully rolled out and
