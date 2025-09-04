@@ -261,10 +261,10 @@ class PROTOBUF_EXPORT TextFormat {
 
   class PROTOBUF_EXPORT MessagePrinter {
    public:
-    MessagePrinter() {}
+    MessagePrinter() = default;
     MessagePrinter(const MessagePrinter&) = delete;
     MessagePrinter& operator=(const MessagePrinter&) = delete;
-    virtual ~MessagePrinter() {}
+    virtual ~MessagePrinter() = default;
     virtual void Print(const Message& message, bool single_line_mode,
                        BaseTextGenerator* generator) const = 0;
   };
