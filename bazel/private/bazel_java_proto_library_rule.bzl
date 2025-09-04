@@ -12,7 +12,7 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:java_proto_support.bzl", "JavaProtoAspectInfo", "java_compile_for_protos", "java_info_merge_for_protos")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-_JAVA_PROTO_TOOLCHAIN = Label("//bazel/private:java_toolchain_type")
+JAVA_PROTO_TOOLCHAIN = Label("//bazel/private:java_toolchain_type")
 
 def _filter_provider(provider, *attrs):
     return [dep[provider] for attr in attrs for dep in attr if provider in dep]
@@ -37,7 +37,7 @@ def _bazel_java_proto_aspect_impl(target, ctx):
       runtime jars.
     """
     _proto_library = ctx.rule.attr
-    proto_toolchain_info = toolchains.find_toolchain(ctx, "_aspect_java_proto_toolchain", _JAVA_PROTO_TOOLCHAIN)
+    proto_toolchain_info = toolchains.find_toolchain(ctx, "_aspect_java_proto_toolchain", JAVA_PROTO_TOOLCHAIN)
     source_jar = None
     if proto_common.experimental_should_generate_code(target[ProtoInfo], proto_toolchain_info, "java_proto_library", target.label):
         # Generate source jar using proto compiler.
@@ -78,7 +78,7 @@ bazel_java_proto_aspect = aspect(
             ),
         })
     ),
-    toolchains = ["@bazel_tools//tools/jdk:toolchain_type"] + toolchains.use_toolchain(_JAVA_PROTO_TOOLCHAIN),
+    toolchains = ["@bazel_tools//tools/jdk:toolchain_type"] + toolchains.use_toolchain(JAVA_PROTO_TOOLCHAIN),
     attr_aspects = ["deps", "exports"],
     required_providers = [ProtoInfo],
     provides = [JavaInfo, JavaProtoAspectInfo],
@@ -93,7 +93,7 @@ def bazel_java_proto_library_rule(ctx):
     Returns:
       ([JavaInfo, DefaultInfo, OutputGroupInfo])
     """
-    proto_toolchain = toolchains.find_toolchain(ctx, "_aspect_java_proto_toolchain", _JAVA_PROTO_TOOLCHAIN)
+    proto_toolchain = toolchains.find_toolchain(ctx, "_aspect_java_proto_toolchain", JAVA_PROTO_TOOLCHAIN)
     for dep in ctx.attr.deps:
         proto_common.check_collocated(ctx.label, dep[ProtoInfo], proto_toolchain)
 
@@ -162,5 +162,5 @@ rules to generate Java code for.
         ),
     }),  # buildifier: disable=attr-licenses (attribute called licenses)
     provides = [JavaInfo],
-    toolchains = toolchains.use_toolchain(_JAVA_PROTO_TOOLCHAIN),
+    toolchains = toolchains.use_toolchain(JAVA_PROTO_TOOLCHAIN),
 )
