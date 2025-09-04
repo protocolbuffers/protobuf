@@ -185,7 +185,8 @@ void UpbMiniTableLinking(Context& ctx, const Descriptor& msg,
             if (scc.Contains(m)) {
               ctx.Emit({{"minitable_symbol_name",
                          QualifiedUpbMiniTableName(ctx, m)}},
-                       "$minitable_symbol_name$.0,\n");
+                       "$std$::ptr::NonNull::new_unchecked($minitable_symbol_"
+                       "name$.0),\n");
             } else {
               ctx.Emit({{"name", RsTypePath(ctx, m)}},
                        "<$name$ as "
@@ -215,9 +216,9 @@ void UpbMiniTableLinking(Context& ctx, const Descriptor& msg,
         $subenums$
       ];
       assert!($pbr$::upb_MiniTable_Link(
-          $minitable_symbol_name$.0,
-          submessages.as_ptr() as *const *const $pbr$::upb_MiniTable,
-          submessages.len(), subenums.as_ptr(), subenums.len()));
+          $std$::ptr::NonNull::new_unchecked($minitable_symbol_name$.0),
+          submessages.as_ptr(), submessages.len(),
+          subenums.as_ptr(), subenums.len()));
   )rs");
 }
 
@@ -282,13 +283,15 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
       // lock-free.
       R"rs(
       unsafe impl $pbr$::AssociatedMiniTable for $name$ {
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> $pbr$::RawMiniTable {
           static ONCE_LOCK: $std$::sync::OnceLock<$pbr$::MiniTablePtr> =
               $std$::sync::OnceLock::new();
-          ONCE_LOCK.get_or_init(|| unsafe {
-            $mini_table_impl$
-            $pbr$::MiniTablePtr($minitable_symbol_name$.0)
-          }).0
+          unsafe {
+            $std$::ptr::NonNull::new_unchecked(ONCE_LOCK.get_or_init(|| {
+              $mini_table_impl$
+              $pbr$::MiniTablePtr($minitable_symbol_name$.0)
+            }).0)
+          }
         }
       }
     )rs");
@@ -305,14 +308,14 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
 
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> $pbr$::RawMiniTable {
           <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
         }
       }
 
       unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
         #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
+        fn mini_table() -> $pbr$::RawMiniTable {
           <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
         }
       }
