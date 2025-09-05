@@ -111,7 +111,12 @@ public abstract class CodedInputStream {
 
   /** Create a new CodedInputStream wrapping the given byte array. */
   public static CodedInputStream newInstance(final byte[] buf) {
-    return newInstance(buf, 0, buf.length);
+    return newInstance(buf, /* bufferIsImmutable= */ false);
+  }
+
+  /** Create a new CodedInputStream wrapping the given byte array. */
+  static CodedInputStream newInstance(final byte[] buf, boolean bufferIsImmutable) {
+    return newInstance(buf, 0, buf.length, bufferIsImmutable);
   }
 
   /** Create a new CodedInputStream wrapping the given byte array slice. */
