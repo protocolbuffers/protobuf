@@ -1150,7 +1150,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     )cc");
   } else {
     p->Emit(R"cc(
-      static constexpr const ::_pb::EnumDescriptor *$nonnull$ *$nullable$
+      static constexpr const ::_pb::EnumDescriptor* $nonnull$* $nullable$
           $file_level_enum_descriptors$ = nullptr;
     )cc");
   }
@@ -1163,7 +1163,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     )cc");
   } else {
     p->Emit(R"cc(
-      static constexpr const ::_pb::ServiceDescriptor *$nonnull$ *$nullable$
+      static constexpr const ::_pb::ServiceDescriptor* $nonnull$* $nullable$
           $file_level_service_descriptors$ = nullptr;
     )cc");
   }
@@ -1373,13 +1373,13 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     if (UsingImplicitWeakDescriptor(file_, options_)) {
       for (auto* pinned :
            GetMessagesToPinGloballyForWeakDescriptors(file_, options_)) {
-        static_initializers_[kInitPriority102].push_back([this,
-                                                          pinned](auto* p) {
-          p->Emit({{"pin", StrongReferenceToType(pinned, options_)}},
-                  R"cc(
-                    $pin$,
-                  )cc");
-        });
+        static_initializers_[kInitPriority102].push_back(
+            [this, pinned](auto* p) {
+              p->Emit({{"pin", StrongReferenceToType(pinned, options_)}},
+                      R"cc(
+                        $pin$,
+                      )cc");
+            });
       }
     }
     static_initializers_[kInitPriority102].push_back([](auto* p) {
