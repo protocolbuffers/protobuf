@@ -203,6 +203,22 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     add(newExtensionInfo(extension), extension.getExtensionType());
   }
 
+  /** Add an optional extension from a file that may or may not be in the classpath. */
+  public void addOptional(final String className, final String fieldName) {
+    try {
+      GeneratedMessage.GeneratedExtension<?, ?> ext =
+          (GeneratedMessage.GeneratedExtension<?, ?>)
+              java.lang.Class.forName(className).getField(fieldName).get(null);
+      add(ext);
+    } catch (ClassNotFoundException e) {
+      // ignore missing class if it's not in the classpath.
+    } catch (NoSuchFieldException e) {
+      // ignore missing field if it's not in the classpath.
+    } catch (IllegalAccessException e) {
+      // ignore malformed field if it's not what we expect.
+    }
+  }
+
   /** Add an extension from a generated file to the registry. */
   public void add(final GeneratedMessage.GeneratedExtension<?, ?> extension) {
     add((Extension<?, ?>) extension);
