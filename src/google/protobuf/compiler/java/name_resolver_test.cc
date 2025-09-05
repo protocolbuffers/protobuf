@@ -141,6 +141,88 @@ TEST_F(NameResolverTest, FileImmutableClassNameEdition2023) {
             "ConflictingFileClassNameOuterClass");
 }
 
+TEST_F(NameResolverTest, FileProto1ClassNameEdition2023) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2023";
+
+      package proto2_unittest;
+
+      option java_api_version = 1;
+
+      message Bar {
+        int32 field = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  EXPECT_EQ(resolver.GetFileClassName(file, /* immutable = */ false),
+            "FooOuterClass");
+}
+
+TEST_F(NameResolverTest, FileProto1ClassNameEdition2024) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest;
+
+      option java_api_version = 1;
+
+      message Bar {
+        int32 field = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  EXPECT_EQ(resolver.GetFileClassName(file, /* immutable = */ false),
+            "FooProto");
+}
+
+TEST_F(NameResolverTest, FileProto1ClassNameEdition2024Overridden) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest;
+
+      option java_api_version = 1;
+      option java_outer_classname = "BarBuz";
+
+      message Bar {
+        int32 field = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  EXPECT_EQ(resolver.GetFileClassName(file, /* immutable = */ false), "BarBuz");
+}
+
+TEST_F(NameResolverTest, FileProto1ClassNameEdition2024OverriddenProto1) {
+  BuildFileAndPopulatePool("foo.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest;
+
+      option java_api_version = 1;
+      option java_outer_classname = "BarBuz";
+      option java_outer_classname_proto1 = "BarBuzProto1";
+
+      message Bar {
+        int32 field = 1;
+      }
+                )schema");
+
+  ClassNameResolver resolver;
+  auto file = pool_.FindFileByName("foo.proto");
+  EXPECT_EQ(resolver.GetFileClassName(file, /* immutable = */ false),
+            "BarBuzProto1");
+}
+
 TEST_F(NameResolverTest, MultipleFilesServiceEdition2023) {
   BuildFileAndPopulatePool("foo.proto",
                            R"schema(
