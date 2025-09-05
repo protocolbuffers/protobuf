@@ -15,6 +15,7 @@ pub struct CodeGen {
     output_dir: PathBuf,
     includes: Vec<PathBuf>,
     dependencies: Vec<Dependency>,
+    protoc_executable: PathBuf,
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -68,11 +69,14 @@ fn expected_protoc_version(cargo_version: &str) -> String {
 
 impl CodeGen {
     pub fn new() -> Self {
+        let protoc_path =
+            env::var_os("PROTOC").map(PathBuf::from).unwrap_or(PathBuf::from("protoc"));
         Self {
             inputs: Vec::new(),
             output_dir: PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("protobuf_generated"),
             includes: Vec::new(),
             dependencies: Vec::new(),
+            proto_executable: protoc_path,
         }
     }
 
@@ -108,6 +112,13 @@ impl CodeGen {
         self
     }
 
+    /// Set the path to protoc executable to be used. This can either be a file name which is
+    /// searched for in the PATH or an absolute path to use a specific executable.
+    pub fn protoc_executable(&mut self, protoc_executable: impl AsRef<Path>) -> &mut Self {
+        self.protoc_executable = protoc_executable.as_ref().to_owned();
+        self
+    }
+
     fn expected_generated_rs_files(&self) -> Vec<PathBuf> {
         self.inputs
             .iter()
@@ -133,7 +144,7 @@ impl CodeGen {
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
-        let mut version_cmd = std::process::Command::new("protoc");
+        let mut version_cmd = std::process::Command::new(&self.protoc_executable);
         let output = version_cmd.arg("--version").output().map_err(|e| {
             format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())
         })?;
@@ -147,7 +158,7 @@ impl CodeGen {
             );
         }
 
-        let mut cmd = std::process::Command::new("protoc");
+        let mut cmd = std::process::Command::new(&self.protoc_executable);
         for input in &self.inputs {
             cmd.arg(input);
         }
@@ -214,5 +225,27 @@ mod tests {
         assert_that!(expected_protoc_version("4.30.0-beta"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-pre"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-rc.1"), eq("30.0-rc1"));
+    }
+
+    #[googletest::test]
+    fn test_protoc_path() {
+        // Verify the default path.
+        let codegen = CodeGen::new();
+        assert_that!(codegen.protoc_executable, eq(PathBuf::from("protoc")));
+
+        // Verify that the path can be set.
+        let codegen = codegen::new().protoc_executable(PathBuf::from("/path/to/protoc"));
+        assert_that!(codegen.protoc_executable, eq(PathBuf::from("/path/to/protoc")));
+        let codegen = codegen::new().protoc_executable(PathBuf::from("protoc-27.1"));
+        assert_that!(codegen.protoc_executable, eq(PathBuf::from("protoc-27.1")));
+
+        // Verify that the patth can be set by an environment variable.
+        std::env::set_var("PROTOC", "/path/to/protoc");
+        let codegen = CodeGen::new();
+        assert_that!(codegen.protoc_executable, eq(PathBuf::from("/path/to/protoc")));
+
+        std::env::remove_var("PROTOC");
+        let codegen = CodeGen::new();
+        assert_that!(codegen.protoc_executable, eq(PathBuf::from("protoc")));
     }
 }
