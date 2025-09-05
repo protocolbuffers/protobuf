@@ -68,7 +68,7 @@ double _upb_NoLocaleStrtod(const char *str, char **endptr) {
     // Update endptr to point at the right location.
     if (endptr != NULL) {
       // size_diff is non-zero if the localized radix has multiple bytes.
-      int size_diff = strlen(localized) - strlen(str);
+      size_t size_diff = (size_t)strlen(localized) - (size_t)strlen(str);
       *endptr = (char *)str + (localized_endptr - &localized[0] - size_diff);
     }
   }
