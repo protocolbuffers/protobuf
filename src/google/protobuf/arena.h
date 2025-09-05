@@ -78,6 +78,12 @@ template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
 template <typename T>
+struct IsRepeatedPtrFieldType;  // defined in repeated_ptr_field.h
+
+template <typename T>
+struct RepeatedPtrFieldArenaRepresentation;  // defined in repeated_ptr_field.h
+
+template <typename T>
 void arena_delete_object(void* PROTOBUF_NONNULL object) {
   delete reinterpret_cast<T*>(object);
 }
@@ -222,7 +228,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
           return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
         }
       }
-      return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
+      if constexpr (internal::IsRepeatedPtrFieldType<Type>::value) {
+        return CreateArenaCompatibleRepeatedPtrField<Type>(
+            arena, std::forward<Args>(args)...);
+      } else {
+        return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
+      }
     } else {
       if (ABSL_PREDICT_FALSE(arena == nullptr)) {
         return new T(std::forward<Args>(args)...);
@@ -429,12 +440,33 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
     template <typename... Args>
     static T* PROTOBUF_NONNULL Construct(void* PROTOBUF_NONNULL ptr,
+                                         Arena* PROTOBUF_NULLABLE arena,
                                          Args&&... args) {
-      return new (ptr) T(static_cast<Args&&>(args)...);
+      if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
+        if (ABSL_PREDICT_FALSE(arena == nullptr)) {
+          return new (ptr) T(static_cast<Args&&>(args)...);
+        } else {
+          using ArenaReprT =
+              internal::RepeatedPtrFieldArenaRepresentation<T>::Type;
+          auto* arena_repr =
+              new (ptr) ArenaReprT(arena, static_cast<Args&&>(args)...);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+          return &arena_repr->field();
+#else
+          return arena_repr;
+#endif
+        }
+      } else {
+        return new (ptr) T(arena, static_cast<Args&&>(args)...);
+      }
     }
 
     static PROTOBUF_ALWAYS_INLINE T* PROTOBUF_NONNULL New() {
-      return new T(nullptr);
+      if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
+        return new T();
+      } else {
+        return new T(nullptr);
+      }
     }
 
     friend class Arena;
@@ -513,6 +545,29 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       return new T(nullptr, static_cast<Args&&>(args)...);
     } else {
       return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
+    }
+  }
+
+  template <typename T, typename... Args>
+  PROTOBUF_NDEBUG_INLINE static T* PROTOBUF_NONNULL
+  CreateArenaCompatibleRepeatedPtrField(Arena* PROTOBUF_NULLABLE arena,
+                                        Args&&... args) {
+    static_assert(is_arena_constructable<T>::value,
+                  "Can only construct types that are ArenaConstructable");
+    static_assert(internal::IsRepeatedPtrFieldType<T>::value,
+                  "Can only construct repeated pointer fields with "
+                  "CreateArenaCompatibleRepeatedPtrField");
+    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
+      return new T(static_cast<Args&&>(args)...);
+    } else {
+      using ArenaReprT = internal::RepeatedPtrFieldArenaRepresentation<T>::Type;
+      auto* arena_repr =
+          arena->DoCreateMessage<ArenaReprT>(static_cast<Args&&>(args)...);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+      return &arena_repr->field();
+#else
+      return arena_repr;
+#endif
     }
   }
 

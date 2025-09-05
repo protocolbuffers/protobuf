@@ -300,6 +300,19 @@ struct EnumTraitsImpl {
 template <typename T>
 using EnumTraits = decltype(EnumTraitsImpl::value<T>);
 
+template <typename T, size_t FieldOffset>
+struct MessageInternalMetadataOffsetHelper {
+  static constexpr int kOffset =
+      static_cast<int>(offsetof(T, _internal_metadata_)) -
+      static_cast<int>(FieldOffset);
+};
+
+template <typename T>
+int MessageInternalMetadataOffset(size_t field_offset) {
+  return static_cast<int>(offsetof(T, _internal_metadata_)) -
+         static_cast<int>(field_offset);
+}
+
 class SwapFieldHelper;
 
 // See parse_context.h for explanation
@@ -1113,6 +1126,10 @@ class PROTOBUF_EXPORT MessageLite {
   friend class Arena::InternalHelper;
   template <typename Type>
   friend struct FallbackMessageTraits;
+  template <typename T, size_t FieldOffset>
+  friend struct internal::MessageInternalMetadataOffsetHelper;
+  template <typename T>
+  friend int internal::MessageInternalMetadataOffset(size_t field_offset);
 
   template <typename Type>
   friend const internal::ClassData* internal::GetClassData(const Type& msg);

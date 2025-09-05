@@ -18,6 +18,7 @@ namespace internal {
 
 class InternalVisibilityForTesting;
 class InternalMetadata;
+class MapFieldBase;
 
 // Empty class to use as a mandatory 'internal token' for functions that have to
 // be public, such as arena constructors, but that are for internal use only.
@@ -31,6 +32,7 @@ class InternalVisibility {
   friend class ::google::protobuf::Message;
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::internal::InternalMetadata;
+  friend class ::google::protobuf::internal::MapFieldBase;
 
   friend class InternalVisibilityForTesting;
 };

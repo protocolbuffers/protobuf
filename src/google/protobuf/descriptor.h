@@ -132,6 +132,8 @@ class CodeGenerator;
 class CommandLineInterface;
 namespace cpp {
 class CppGenerator;
+class FieldGeneratorBase;
+class MessageGenerator;
 // Defined in helpers.h
 class Formatter;
 }  // namespace cpp
@@ -1117,6 +1119,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+  // Allow access to IsRepeatedPtrField for special handling with internal
+  // metadata offsets.
+  friend class compiler::cpp::MessageGenerator;
+  friend class compiler::cpp::FieldGeneratorBase;
   friend class Reflection;
   friend class FieldDescriptorLegacy;
   friend const std::string& internal::DefaultValueStringAsString(
@@ -1160,6 +1166,11 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Walks up the descriptor tree to generate the source location path
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
+
+  // Returns true if the field will be internally represented as a
+  // RepeatedPtrField. This is true for message and string repeated fields,
+  // with the exception of repeated cords.
+  bool IsRepeatedPtrField() const;
 
   // Returns true if this is a map message type.
   bool is_map_message_type() const;

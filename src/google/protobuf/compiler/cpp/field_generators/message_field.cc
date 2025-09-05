@@ -748,7 +748,11 @@ class RepeatedMessage : public FieldGeneratorBase {
 void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+      $pbi$::RawPtr<$pbi$::$Weak$RepeatedPtrFieldWithArena<$Submsg$>> $name$_;
+#else
       $pbi$::RawPtr<$pb$::$Weak$RepeatedPtrField<$Submsg$>> $name$_;
+#endif
     )cc");
   } else {
     p->Emit("$pb$::$Weak$RepeatedPtrField< $Submsg$ > $name$_;\n");
@@ -854,17 +858,31 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
       $Msg$::_internal$_weak$_$name_internal$() const {
         $TsanDetectConcurrentRead$;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+        return $field_$->field();
+#else
         return *$field_$;
+#endif
       }
       inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
       $Msg$::_internal_mutable$_weak$_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+          $field_$.Set($superclass$::DefaultConstruct<
+                       $pbi$::$Weak$RepeatedPtrFieldWithArena<$Submsg$>>(
+              GetArena()));
+#else
           $field_$.Set($superclass$::DefaultConstruct<
                        $pb$::$Weak$RepeatedPtrField<$Submsg$>>(GetArena()));
+#endif
         }
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS
+        return &$field_$->field();
+#else
         return $field_$.Get();
+#endif
       }
     )cc");
   } else {
