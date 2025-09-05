@@ -9,6 +9,8 @@ edition = "2023";
 
 package protobuf_test_messages.editions;
 
+import "google/protobuf/struct.proto";
+
 option features.message_encoding = DELIMITED;
 option java_package = "com.google.protobuf_test_messages.edition2023";
 option java_multiple_files = true;
@@ -214,4 +216,6 @@ message GroupLikeType {
 extend TestAllTypesEdition2023 {
   GroupLikeType groupliketype = 121;
   GroupLikeType delimited_ext = 122;
+  google.protobuf.Struct struct_ext = 123;
+  google.protobuf.NullValue null_value_ext = 124;
 }

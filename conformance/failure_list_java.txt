@@ -43,3 +43,5 @@ Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool       
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.StringFieldNotAString                                                                         # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.UnknownOrdering.ProtobufOutput                                                            # Unknown field mismatch
+Required.Editions.JsonInput.JsonNullValueWktExtensionRoundTrip.ProtobufOutput                                      # Failed to parse input or produce output.
+Required.Editions.JsonInput.JsonStructWktExtensionRoundTrip.ProtobufOutput                                         # Failed to parse input or produce output.
