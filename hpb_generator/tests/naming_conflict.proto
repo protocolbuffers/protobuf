@@ -13,3 +13,9 @@ message HasChildCount {
   HasChildCount has_child_count = 1;
   int32 child_count = 2;
 }
+
+message ConflictingOsMacros {
+  int32 linux = 1;
+  int32 major = 2;
+  int32 minor = 3;
+}

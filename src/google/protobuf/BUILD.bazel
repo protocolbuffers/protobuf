@@ -357,6 +357,16 @@ cc_proto_library(
 ################################################################################
 
 cc_library(
+    name = "os_macros",
+    hdrs = [
+        "os_macros_restore.inc",
+        "os_macros_undef.inc",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//hpb:__subpackages__"],
+)
+
+cc_library(
     name = "port",
     srcs = ["port.cc"],
     hdrs = [
@@ -370,6 +380,7 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
+        ":os_macros",
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:prefetch",
