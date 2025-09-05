@@ -183,6 +183,46 @@ class JsonFormatTest(JsonFormatBase):
     json_format.ParseDict(message_dict, parsed_message)
     self.assertEqual(message, parsed_message)
 
+  def testScalarExtensionToDictAndBack(self):
+    message = unittest_pb2.TestAllExtensions()
+    message.Extensions[unittest_pb2.optional_int32_extension] = 7
+    message.Extensions[unittest_pb2.optional_string_extension] = 'hello'
+    message_dict = json_format.MessageToDict(message)
+    self.assertEqual(
+        message_dict,
+        {
+            '[proto2_unittest.optional_int32_extension]': 7,
+            '[proto2_unittest.optional_string_extension]': 'hello',
+        },
+    )
+    parsed_message = unittest_pb2.TestAllExtensions()
+    json_format.ParseDict(message_dict, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+  def testRepeatedScalarExtensionToDictAndBack(self):
+    message = unittest_pb2.TestAllExtensions()
+    ext1 = unittest_pb2.repeated_int32_extension
+    message.Extensions[ext1].extend([1, 2, 3])
+    message_dict = json_format.MessageToDict(message)
+    self.assertIn('[proto2_unittest.repeated_int32_extension]', message_dict)
+    parsed_message = unittest_pb2.TestAllExtensions()
+    json_format.ParseDict(message_dict, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+  def testRepeatedMessageExtensionToDictAndBack(self):
+    message = unittest_pb2.TestAllExtensions()
+    ext1 = unittest_pb2.repeated_nested_message_extension
+    sub = unittest_pb2.TestAllTypes.NestedMessage()
+    sub.bb = 1
+    message.Extensions[ext1].append(sub)
+    message_dict = json_format.MessageToDict(message)
+    self.assertIn(
+        '[proto2_unittest.repeated_nested_message_extension]', message_dict
+    )
+    parsed_message = unittest_pb2.TestAllExtensions()
+    json_format.ParseDict(message_dict, parsed_message)
+    self.assertEqual(message, parsed_message)
+
   def testJsonParseDictToAnyDoesNotAlterInput(self):
     orig_dict = {
         'int32Value': 20,
@@ -1041,7 +1081,10 @@ class JsonFormatTest(JsonFormatBase):
     self.assertRaisesRegex(
         json_format.ParseError,
         'Invalid enum value',
-        json_format.Parse, '{"a": "UNKNOWN_STRING_VALUE"}', message)
+        json_format.Parse,
+        '{"a": "UNKNOWN_STRING_VALUE"}',
+        message,
+    )
 
   def testParseUnknownEnumStringValue_Repeated_Proto2(self):
     message = json_format_pb2.TestRepeatedEnum()
@@ -1066,8 +1109,9 @@ class JsonFormatTest(JsonFormatBase):
     """
     json_format.Parse(text, message, ignore_unknown_fields=True)
 
-    self.assertFalse(json_format_pb2.TestExtension.enum_ext in
-                     message.Extensions)
+    self.assertFalse(
+        json_format_pb2.TestExtension.enum_ext in message.Extensions
+    )
 
   def testParseUnknownEnumStringValue_ExtensionFieldWithoutIgnore_Proto2(self):
     message = json_format_pb2.TestMessageWithExtension()
@@ -1077,7 +1121,10 @@ class JsonFormatTest(JsonFormatBase):
     self.assertRaisesRegex(
         json_format.ParseError,
         'Invalid enum value',
-        json_format.Parse, text, message)
+        json_format.Parse,
+        text,
+        message,
+    )
 
   def testParseUnknownEnumStringValue_Scalar_Proto3(self):
     message = json_format_proto3_pb2.TestMessage()
@@ -1092,8 +1139,9 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse(text, message, ignore_unknown_fields=True)
 
     self.assertEqual(len(message.repeated_enum_value), 1)
-    self.assertTrue(message.repeated_enum_value[0] ==
-                    json_format_proto3_pb2.FOO)
+    self.assertTrue(
+        message.repeated_enum_value[0] == json_format_proto3_pb2.FOO
+    )
 
   def testParseUnknownEnumStringValue_Map_Proto3(self):
     message = json_format_proto3_pb2.MapOfEnums()
@@ -1154,6 +1202,28 @@ class JsonFormatTest(JsonFormatBase):
         '{"int32Value": 1,\n"int32Value":2}',
         'Failed to load JSON: duplicate key int32Value.',
     )
+
+  def testDuplicateFieldAlternateNames(self):
+    # Note: this behavior is non-spec and an oversight bug in the
+    # implementation, but would be a breaking change to fix. The duplicate field
+    # checker intends reject inputs with duplicate key names, but it only
+    # catches keys that are exact matches and not alternate spellings that
+    # correspond to the same field.
+    parsed_message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse('{"int32Value": 1,"int32_value":2}', parsed_message)
+    self.assertEqual(parsed_message.int32_value, 2)
+
+  def testDuplicateFieldAlternateNamesMap(self):
+    # Note: this behavior is non-spec and an oversight bug in the
+    # implementation, but would be a breaking change to fix. The duplicate field
+    # checker intends reject inputs with duplicate key names, but it only
+    # catches keys that are exact matches and not alternate spellings that
+    # correspond to the same field.
+    parsed_message = json_format_proto3_pb2.TestMap()
+    json_format.Parse(
+        '{"int32Map": {"1": 2}, "int32_map": {"3": 4}}', parsed_message
+    )
+    self.assertEqual(parsed_message.int32_map, {3: 4})
 
   def testInvalidBoolValue(self):
     self.CheckError(
@@ -1458,7 +1528,13 @@ class JsonFormatTest(JsonFormatBase):
   def testInvalidAny(self):
     message = any_pb2.Any()
     text = '{"@type": "type.googleapis.com/google.protobuf.Int32Value"}'
-    self.assertRaisesRegex(json_format.ParseError, 'KeyError: \'value\'', json_format.Parse, text, message)
+    self.assertRaisesRegex(
+        json_format.ParseError,
+        "KeyError: 'value'",
+        json_format.Parse,
+        text,
+        message,
+    )
     text = '{"value": 1234}'
     self.assertRaisesRegex(
         json_format.ParseError,
@@ -1738,6 +1814,7 @@ class JsonFormatTest(JsonFormatBase):
     text = ('{"a":' * num_recursions) + '""' + ('}' * num_recursions)
     with self.assertRaises(json_format.ParseError):
       json_format.Parse(text, json_format_proto3_pb2.TestMessage())
+
 
 if __name__ == '__main__':
   unittest.main()
