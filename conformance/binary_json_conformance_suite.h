@@ -56,6 +56,7 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                             const std::string& equivalent_text_format);
 
   void RunDelimitedFieldTests();
+  void RunJsonWktExtensionTests();
 
   void RunMessageSetTests();
 
