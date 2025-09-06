@@ -76,6 +76,10 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     return EMPTY_REGISTRY;
   }
 
+  public static ExtensionRegistry getBuiltinRegistry() {
+    return BuiltinExtensionRegistry.getInstance();
+  }
+
   /** Returns an unmodifiable view of the registry. */
   @Override
   public ExtensionRegistry getUnmodifiable() {

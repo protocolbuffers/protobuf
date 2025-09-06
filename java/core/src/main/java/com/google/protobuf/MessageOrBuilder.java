@@ -112,4 +112,14 @@ public interface MessageOrBuilder extends MessageLiteOrBuilder {
 
   /** Get the {@link UnknownFieldSet} for this message. */
   UnknownFieldSet getUnknownFields();
+
+  /** Determines whether this message has unknown fields in its unknown field set. */
+  default boolean hasUnknownFields() {
+    return !getUnknownFields().isEmpty();
+  }
+
+  /** Counts the number of unknown fields in this message. */
+  default int getUnknownFieldCount() {
+    return getUnknownFields().getFieldCount();
+  }
 }
