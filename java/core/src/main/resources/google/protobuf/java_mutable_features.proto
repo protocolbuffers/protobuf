@@ -32,14 +32,10 @@ message JavaMutableFeatures {
   }
 
   // Whether to nest the generated class in the generated file class for
-  // Java Proto2 Mutable API. This is only applicable to *top-level* messages,
-  // enums, and services.
+  // Java Proto2 Mutable API. This is only available at the file level.
   optional NestInFileClassFeature.NestInFileClass nest_in_file_class = 6 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FILE,
-    targets = TARGET_TYPE_MESSAGE,
-    targets = TARGET_TYPE_ENUM,
-    targets = TARGET_TYPE_SERVICE,
     feature_support = {
       edition_introduced: EDITION_2024,
     },
