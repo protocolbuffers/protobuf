@@ -318,6 +318,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2Editions>(
         this, /*run_proto3_tests=*/false);
     RunDelimitedFieldTests();
+    RunJsonWktExtensionTests();
   }
 }
 
@@ -373,6 +374,37 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
       absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
       group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+}
+
+void BinaryAndJsonConformanceSuite::RunJsonWktExtensionTests() {
+  {
+    ConformanceRequestSetting setting(
+        REQUIRED, ::conformance::JSON, ::conformance::PROTOBUF,
+        ::conformance::JSON_TEST, TestAllTypesEdition2023::default_instance(),
+        "JsonStructWktExtensionRoundTrip",
+        R"json(
+        {"[protobuf_test_messages.editions.struct_ext]": {
+          "foo": "bar"
+        }})json");
+    RunValidInputTest(setting,
+                      R"pb([protobuf_test_messages.editions.struct_ext]: {
+                             fields: {
+                               key: "foo",
+                               value: { string_value: "bar" }
+                             }
+                           })pb");
+  }
+
+  {
+    ConformanceRequestSetting setting(
+        REQUIRED, ::conformance::JSON, ::conformance::PROTOBUF,
+        ::conformance::JSON_TEST, TestAllTypesEdition2023::default_instance(),
+        "JsonNullValueWktExtensionRoundTrip",
+        R"json({"[protobuf_test_messages.editions.null_value_ext]": null})json");
+    RunValidInputTest(setting,
+                      R"pb([protobuf_test_messages.editions.null_value_ext]:
+                               NULL_VALUE)pb");
+  }
 }
 
 void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
