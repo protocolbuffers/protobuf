@@ -501,7 +501,7 @@ def _make_proto_library_aspect(is_upb):
         attrs = {
             "_cpp_thunks_deps": attr.label_list(
                 default = [
-                    Label("//rust/cpp_kernel:cpp_api"),
+                    Label("//rust:cpp_api"),
                     Label("//src/google/protobuf"),
                     Label("//src/google/protobuf:protobuf_lite"),
                 ],
@@ -523,7 +523,7 @@ def _make_proto_library_aspect(is_upb):
             ),
             "_extra_deps": attr.label_list(
                 default = [
-                ],
+                ] + ([Label("@crate_index//:linkme")] if is_upb else []),
             ),
             "_process_wrapper": attr.label(
                 doc = "A process wrapper for running rustc on all platforms.",

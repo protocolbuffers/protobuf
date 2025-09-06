@@ -11,17 +11,30 @@ use crate::AsMut;
 use crate::AsView;
 use crate::IntoMut;
 use crate::IntoView;
-use crate::__internal::runtime::{KernelMessage, KernelMessageMut, KernelMessageView};
+use crate::MutProxied;
+use crate::__internal::runtime::{
+    KernelMessage, KernelMessageMut, KernelMessageView, MessageMutInner, MessageViewInner,
+};
 use crate::__internal::SealedInternal;
-use crate::{MutProxied, ProtoBytes, ProtoString};
+use crate::{ProtoBytes, ProtoString};
 use create::Parse;
 use interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
 use read::Serialize;
 use std::fmt::Debug;
 use write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom};
 
+/// Used to constrain Messages to only be EntityType<Tag=MessageTag>
+pub(crate) trait MessageTypeHelper<T> {}
+impl<T: EntityType<Tag = entity_tag::MessageTag>> MessageTypeHelper<entity_tag::MessageTag> for T {}
+
+/// A trait implemented only by Message types.
+pub trait MessageType {}
+impl<T> MessageType for T where T: EntityType + MessageTypeHelper<T::Tag> {}
+
 /// A trait that all generated owned message types implement.
 pub trait Message: SealedInternal
+  + EntityType<Tag = entity_tag::MessageTag>
+  + MessageType
   + MutProxied
   + for<'a> MutProxied<View<'a> = Self::MessageView<'a>, Mut<'a> = Self::MessageMut<'a>>
   // Create traits:
@@ -53,6 +66,7 @@ pub trait Message: SealedInternal
 pub trait MessageView<'msg>: SealedInternal
     + AsView<Proxied = Self::Message>
     + IntoView<'msg, Proxied = Self::Message>
+    + EntityType<Tag = entity_tag::ViewProxyTag>
     // Read traits:
     + Debug + Serialize + Default
     // Thread safety:
@@ -62,8 +76,9 @@ pub trait MessageView<'msg>: SealedInternal
     // C++ Interop:
     + MessageViewInterop<'msg>
     + KernelMessageView
+    + From<MessageViewInner<'msg, Self::Message>>
 {
-    /// The owned message type that this is a view of.
+    #[doc(hidden)]
     type Message: Message;
 }
 
@@ -84,8 +99,9 @@ pub trait MessageMut<'msg>: SealedInternal
     // C++ Interop:
     + MessageMutInterop<'msg>
     + KernelMessageMut
+    + From<MessageMutInner<'msg, Self::Message>>
 {
-    /// The owned message type that this is a mut of.
+    #[doc(hidden)]
     type Message: Message;
 }
 
@@ -103,6 +119,7 @@ pub mod entity_tag {
     pub struct PrimitiveTag;
     pub struct ViewProxyTag;
     pub struct MutProxyTag;
+    pub struct RepeatedTag;
 }
 
 macro_rules! impl_entity_type_for_primitives {

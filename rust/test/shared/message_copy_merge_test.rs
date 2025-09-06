@@ -105,3 +105,43 @@ fn merge_from_sub_message() {
     dst.merge_from(src.as_view());
     assert_that!(dst.child().payload().optional_int32(), eq(42));
 }
+
+#[gtest]
+fn test_view_is_copy() {
+    let mut msg = TestAllTypes::new();
+    let view = msg.as_view();
+    fn requires_into_view<'a, M: Message>(_v: impl IntoView<'a, Proxied = M>) {}
+    requires_into_view(view);
+    requires_into_view(view); // if View is Copy, this compiles
+}
+
+#[gtest]
+fn test_reference_into_view() {
+    let msg = TestAllTypes::new();
+    fn requires_into_view<'a, M: Message>(_v: impl IntoView<'a, Proxied = M>) {}
+
+    requires_into_view(&msg);
+}
+
+#[gtest]
+fn test_some_view_multi_get() {
+    let mut msg = TestAllTypes::new();
+    let some_view = msg.as_view();
+
+    fn ext_get<'a, M: Message>(_v: impl IntoView<'a, Proxied = M>) {}
+
+    // User's exact snippet:
+    ext_get(some_view);
+    ext_get(some_view);
+}
+
+#[gtest]
+fn test_some_view_multi_get_ref() {
+    let msg = TestAllTypes::new();
+
+    fn ext_get<'a, M: Message>(_v: impl IntoView<'a, Proxied = M>) {}
+
+    // User's exact snippet:
+    ext_get(&msg);
+    ext_get(&msg);
+}

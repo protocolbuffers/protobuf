@@ -17,6 +17,7 @@
 //! `protobuf::` crate instead.
 
 pub use crate::{
-    proto, AsMut as _, AsView as _, Clear as _, ClearAndParse as _, CopyFrom as _, IntoMut as _,
-    IntoView as _, MergeFrom as _, Parse as _, Serialize as _, TakeFrom as _,
+    proto, AsMut, AsView, Clear, ClearAndParse, CopyFrom, ExtensionId, ExtensionKind, IntoMut,
+    IntoProxied, IntoView, MergeFrom, Message, MessageMut, MessageView, Mut, Parse, ProtoBytes,
+    ProtoStr, ProtoString, Repeated, RepeatedMut, RepeatedView, Serialize, TakeFrom, View,
 };
