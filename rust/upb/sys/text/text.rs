@@ -10,7 +10,7 @@ mod sys {
 }
 
 use sys::message::message::RawMessage;
-use sys::mini_table::mini_table::upb_MiniTable;
+use sys::mini_table::mini_table::RawMiniTable;
 
 extern "C" {
     /// Returns the minimum needed length (excluding NULL) that `buf` has to be
@@ -23,7 +23,7 @@ extern "C" {
     ///   `size` is 0)
     pub fn upb_DebugString(
         msg: RawMessage,
-        mt: *const upb_MiniTable,
+        mt: RawMiniTable,
         options: i32, // bitmask of `text_encode_options` values
         buf: *mut u8,
         size: usize,
