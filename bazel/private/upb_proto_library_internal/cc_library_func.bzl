@@ -5,7 +5,12 @@ load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 def upb_use_cpp_toolchain():
-    return use_cpp_toolchain()
+    return [
+        config_common.toolchain_type(
+            "@bazel_tools//tools/cpp:cc_runtimes_toolchain_type",
+            mandatory = False,
+        ),
+    ] + use_cpp_toolchain()
 
 def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = []):
     """Like cc_library(), but callable from rules.
