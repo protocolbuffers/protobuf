@@ -208,17 +208,8 @@ void UpbMiniTableLinking(Context& ctx, const Descriptor& msg,
         }},
        {"minitable_symbol_name", QualifiedUpbMiniTableName(ctx, msg)}},
       R"rs(
-      let submessages = [
-        $submessages$
-      ];
-      let subenums = [
-        $subenums$
-      ];
-      assert!($pbr$::upb_MiniTable_Link(
-          $minitable_symbol_name$.0,
-          submessages.as_ptr() as *const *const $pbr$::upb_MiniTable,
-          submessages.len(), subenums.as_ptr(), subenums.len()));
-  )rs");
+      $pbr$::link_mini_table(
+          $minitable_symbol_name$.0, &[$submessages$], &[$subenums$]);)rs");
 }
 
 void CppGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg) {
@@ -251,18 +242,12 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
               std::string mini_descriptor =
                   pool.FindMessageByName(d->full_name().data())
                       .MiniDescriptorEncode();
-              ctx.Emit({{"name", RsTypePath(ctx, *d)},
-                        {"minitable_symbol_name",
+              ctx.Emit({{"minitable_symbol_name",
                          QualifiedUpbMiniTableName(ctx, *d)},
-                        {"mini_descriptor", mini_descriptor},
-                        {"mini_descriptor_length", mini_descriptor.size()}},
+                        {"mini_descriptor", mini_descriptor}},
                        R"rs(
-                       $minitable_symbol_name$.0 =
-                           $pbr$::upb_MiniTable_Build(
-                               "$mini_descriptor$".as_ptr(),
-                               $mini_descriptor_length$,
-                               $pbr$::THREAD_LOCAL_ARENA.with(|a| a.raw()),
-                               $std$::ptr::null_mut());
+                       $minitable_symbol_name$ =
+                           $pbr$::build_mini_table("$mini_descriptor$");
               )rs");
             }
             for (const Descriptor* d : scc.descriptors) {
@@ -287,7 +272,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
               $std$::sync::OnceLock::new();
           ONCE_LOCK.get_or_init(|| unsafe {
             $mini_table_impl$
-            $pbr$::MiniTablePtr($minitable_symbol_name$.0)
+            $minitable_symbol_name$
           }).0
         }
       }
@@ -303,19 +288,6 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
         }
       }
 
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
-        #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
-        }
-      }
-
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
-        #[inline(always)]
-        fn mini_table() -> *const $pbr$::upb_MiniTable {
-          <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
-        }
-      }
       unsafe impl $pbr$::UpbGetMessagePtrMut for $Msg$ {
         type Msg = $Msg$;
         fn get_ptr_mut(&mut self, _private: $pbi$::Private) -> $pbr$::MessagePtr<$Msg$> {

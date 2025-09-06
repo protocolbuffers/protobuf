@@ -11,7 +11,10 @@ mod arena;
 pub use arena::Arena;
 
 mod associated_mini_table;
-pub use associated_mini_table::{AssociatedMiniTable, AssociatedMiniTableEnum};
+pub use associated_mini_table::{
+    build_mini_table, link_mini_table, AssociatedMiniTable, AssociatedMiniTableEnum,
+    MiniDescriptorEnum, MiniTablePtr,
+};
 
 mod text;
 pub use text::debug_string;

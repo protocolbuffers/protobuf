@@ -82,23 +82,14 @@ void MiniTable(Context& ctx, const EnumDescriptor& desc,
   if (ctx.is_cpp() || !desc.is_closed()) {
     return;
   }
-  std::string mini_descriptor = upb_enum.MiniDescriptorEncode();
-  ctx.Emit({{"mini_descriptor", mini_descriptor},
-            {"mini_descriptor_length", mini_descriptor.size()}},
+  ctx.Emit({{"mini_descriptor", upb_enum.MiniDescriptorEncode()}},
            R"rs(
-    unsafe impl $pbr$::AssociatedMiniTableEnum for $name$ {
-      fn mini_table() -> *const $pbr$::upb_MiniTableEnum {
-        static MINI_TABLE: $std$::sync::OnceLock<$pbr$::MiniTableEnumPtr> =
-            $std$::sync::OnceLock::new();
-        MINI_TABLE.get_or_init(|| unsafe {
-          $pbr$::MiniTableEnumPtr($pbr$::upb_MiniTableEnum_Build(
-              "$mini_descriptor$".as_ptr(), $mini_descriptor_length$,
-              $pbr$::THREAD_LOCAL_ARENA.with(|a| a.raw()),
-              $std$::ptr::null_mut()))
-        }).0
-      }
-    }
-  )rs");
+           impl $pbr$::MiniDescriptorEnum for $name$ {
+             fn mini_descriptor() -> &'static str {
+               "$mini_descriptor$"
+             }
+           }
+           )rs");
 }
 
 }  // namespace
