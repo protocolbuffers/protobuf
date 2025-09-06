@@ -1,6 +1,7 @@
 #include "google/protobuf/compiler/java/name_resolver.h"
 
 #include <string>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -13,6 +14,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -42,13 +44,16 @@ class SimpleErrorCollector : public io::ErrorCollector {
 // error" with bazel in OSS. This also avoids using the descriptors generated
 // from the C++ code generator for Java features; instead, we use a custom
 // descriptor pool with feature set defaults built from JavaGenerator.
+
+class FakeGenerator : public JavaGenerator {
+};
+
 class NameResolverTest : public testing::Test {
  protected:
   void SetUp() override {
     // Set the Java FeatureSet defaults from JavaGenerator.
-    JavaGenerator generator;
-    ASSERT_OK(
-        pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+    ASSERT_OK(pool_.SetFeatureSetDefaults(
+        *FakeGenerator().BuildFeatureSetDefaults()));
 
     // Parse and build built-in protos.
     BuildFileAndPopulatePool(
