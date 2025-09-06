@@ -5,7 +5,7 @@ package pb;
 import "google/protobuf/descriptor.proto";
 
 option java_package = "com.google.protobuf";
-option java_outer_classname = "JavaFeaturesProto";
+option java_outer_classname = "JavaMutableFeaturesProto";
 
 extend google.protobuf.FeatureSet {
   optional JavaMutableFeatures java_mutable = 9989;
