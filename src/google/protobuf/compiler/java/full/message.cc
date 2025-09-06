@@ -837,6 +837,18 @@ void ImmutableMessageGenerator::GenerateDescriptorMethods(
 // ===================================================================
 
 void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
+  // If the message has no required fields, we can skip the isInitialized()
+  // method entirely.
+  if (!HasRequiredFields(descriptor_)) {
+    printer->Print(
+        "@java.lang.Override\n"
+        "public final boolean isInitialized() {\n"
+        "  return true;\n"
+        "}\n"
+        "\n");
+    return;
+  }
+
   // Memoizes whether the protocol buffer is fully initialized (has all
   // required fields). -1 means not yet computed. 0 means false and 1 means
   // true.
