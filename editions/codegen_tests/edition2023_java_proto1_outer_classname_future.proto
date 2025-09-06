@@ -1,0 +1,38 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package protobuf_editions_test.edition2023;
+
+option java_api_version = 1;
+option java_package = "com.google.protobuf.editions.test.edition2023";
+
+// This is what the default proto2 classname is.
+option java_outer_classname_proto1 = "Edition2023JavaProto1OuterclassnameFutureProto";
+
+message Edition2023Proto1OuterClassnameFutureMessage {
+  int32 foo = 1;
+
+  message NestedMessage {
+    int32 bar = 1;
+  }
+
+  enum NestedEnum {
+    NESTED_ENUM_UNKNOWN = 0;
+  }
+}
+
+enum Edition2023Proto1OuterClassnameFutureEnum {
+  JAVA_PROTO1_OUTERCLASSNAME_FUTURE_ENUM_UNKNOWN = 0;
+}
+
+service Edition2023Proto1OuterclassnameFutureService {
+  // Edition2023Proto1OuterClassnameFutureService.Method
+  rpc Method(Edition2023Proto1OuterClassnameFutureMessage.NestedMessage)
+      returns (Edition2023Proto1OuterClassnameFutureMessage) {}
+}

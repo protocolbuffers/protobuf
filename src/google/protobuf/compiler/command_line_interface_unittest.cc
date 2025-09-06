@@ -4748,6 +4748,74 @@ TEST_F(CommandLineInterfaceTest, VisibilityFromSame) {
   ExpectNoErrors();
 }
 
+TEST_F(CommandLineInterfaceTest, NonDefaultSymbolVisibilityBuiltInCodegen) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+        option features.default_symbol_visibility = EXPORT_ALL;
+
+        message TopLevelMessage {
+          message NestedMessage {
+          }
+          enum NestedEnum {
+            NESTED_ENUM_UNKNOWN = 0;
+            NESTED_ENUM_BAR = 1;
+          }
+        }
+        )schema");
+
+  CreateTempFile("good_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+        option features.default_symbol_visibility = EXPORT_ALL;
+
+        message GoodImport {
+          vis.test.TopLevelMessage foo = 1;
+          vis.test.TopLevelMessage.NestedMessage bar = 2;
+          vis.test.TopLevelMessage.NestedEnum baz = 3;
+        }
+        )schema");
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--proto_path=$tmpdir good_importer.proto vis.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, NonDefaultSymbolVisibilityPluginCodegen) {
+  CreateTempFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+        option features.default_symbol_visibility = EXPORT_ALL;
+
+        message TopLevelMessage {
+          message NestedMessage {
+          }
+          enum NestedEnum {
+            NESTED_ENUM_UNKNOWN = 0;
+            NESTED_ENUM_BAR = 1;
+          }
+        }
+        )schema");
+
+  CreateTempFile("good_importer.proto", R"schema(
+        edition = "2024";
+        import "vis.proto";
+        option features.default_symbol_visibility = EXPORT_ALL;
+
+        message GoodImport {
+          vis.test.TopLevelMessage foo = 1;
+          vis.test.TopLevelMessage.NestedMessage bar = 2;
+          vis.test.TopLevelMessage.NestedEnum baz = 3;
+        }
+        )schema");
+  Run("protocol_compiler --plug_out=$tmpdir "
+      "--experimental_editions "  // remove when edition 2024 is valid
+      "--proto_path=$tmpdir good_importer.proto vis.proto");
+
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, ExplicitVisibilityFromOther) {
   CreateTempFile("vis.proto", R"schema(
         edition = "2024";
