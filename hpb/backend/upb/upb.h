@@ -13,11 +13,13 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "hpb/arena.h"
+#include "hpb/backend/types.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/extension.h"
 #include "hpb/internal/internal.h"
 #include "hpb/internal/message_lock.h"
 #include "hpb/internal/template_help.h"
+#include "hpb/options.h"
 #include "hpb/ptr.h"
 #include "hpb/status.h"
 #include "upb/mem/arena.h"
@@ -104,6 +106,24 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
     return message;
   }
   return MessageDecodeError(status);
+}
+
+template <typename T>
+hpb::StatusOr<T> Parse(absl::string_view bytes, ParseOptions options) {
+  auto extension_registry = options.generated_registry
+                                ? ExtensionRegistry::generated_registry()
+                                : ExtensionRegistry::empty_registry();
+  T message;
+  auto* arena = interop::upb::GetArena(&message);
+  upb_DecodeStatus status =
+      upb_Decode(bytes.data(), bytes.size(), interop::upb::GetMessage(&message),
+                 interop::upb::GetMiniTable(&message),
+                 internal::GetUpbExtensions(extension_registry),
+                 /* options= */ 0, arena);
+  if (status == kUpb_DecodeStatus_Ok) {
+    return hpb::StatusOr<T>(std::move(message));
+  }
+  return hpb::StatusOr<T>(internal::backend::Error(status));
 }
 
 }  // namespace hpb::internal::backend::upb
