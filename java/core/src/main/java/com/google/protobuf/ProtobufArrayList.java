@@ -10,11 +10,15 @@ package com.google.protobuf;
 import static java.lang.Math.max;
 
 import com.google.protobuf.Internal.ProtobufList;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.RandomAccess;
 
 /** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
-final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements RandomAccess {
+final class ProtobufArrayList<E> extends AbstractProtobufList<E>
+    implements RandomAccess, Serializable {
+  private static final long serialVersionUID = 1L;
 
   private static final Object[] EMPTY_ARRAY = new Object[0];
 
@@ -173,5 +177,16 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
 
   private String makeOutOfBoundsExceptionMessage(int index) {
     return "Index:" + index + ", Size:" + size;
+  }
+
+  /**
+   * Replaces this object in the output stream with a serialized form. Part of Java's serialization
+   * magic. Generated sub-classes must override this method by calling {@code return
+   * super.writeReplace();}
+   *
+   * @return a SerializedForm of this message
+   */
+  protected Object writeReplace() {
+    throw new UnsupportedOperationException("ProtobufArrayList is not serializable.");
   }
 }

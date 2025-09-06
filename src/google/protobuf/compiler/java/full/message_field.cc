@@ -47,6 +47,9 @@ void SetMessageVariables(
   (*variables)["group_or_message"] =
       (GetType(descriptor) == FieldDescriptor::TYPE_GROUP) ? "Group"
                                                            : "Message";
+  (*variables)["empty_list"] =
+      absl::StrCat("emptyList(", (*variables)["type"], ".class)");
+
   // TODO: Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
@@ -783,8 +786,11 @@ void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
-                             "private java.util.List<$type$> $name$_;\n");
+  printer->Print(
+      variables_,
+      "private com.google.protobuf.Internal.ProtobufList<$type$> $name$_ =\n"
+      "    emptyList($type$.class);\n");
+
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_, context_->options());
   printer->Print(variables_,
@@ -877,26 +883,14 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
   printer->Print(
       variables_,
-      // Used when the builder is null.
-      // One field is the list and the other field keeps track of whether the
-      // list is immutable. If it's immutable, the invariant is that it must
-      // either an instance of Collections.emptyList() or it's an ArrayList
-      // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
-      // a reference to the underlying ArrayList. This invariant allows us to
-      // share instances of lists between protocol buffers avoiding expensive
-      // memory allocations. Note, immutable is a strong guarantee here -- not
-      // just that the list cannot be modified via the reference but that the
-      // list can never be modified.
-      "private java.util.List<$type$> $name$_ =\n"
-      "  java.util.Collections.emptyList();\n"
-
+      "private com.google.protobuf.Internal.ProtobufList<$type$> $name$_ =\n"
+      "    emptyList($type$.class);\n"
       "private void ensure$capitalized_name$IsMutable() {\n"
-      "  if (!$get_mutable_bit_builder$) {\n"
-      "    $name$_ = new java.util.ArrayList<$type$>($name$_);\n"
-      "    $set_mutable_bit_builder$;\n"
-      "   }\n"
-      "}\n"
-      "\n");
+      "  if (!$name$_.isModifiable()) {\n"
+      "    $name$_ = makeMutableCopy($name$_);\n"
+      "  }\n"
+      "  $set_has_field_bit_builder$\n"
+      "}\n");
 
   printer->Print(
       variables_,
@@ -911,15 +905,15 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
   // List<Field> getRepeatedFieldList()
   WriteFieldDocComment(printer, descriptor_, context_->options());
-  PrintNestedBuilderFunction(
-      printer,
-      "$deprecation$public java.util.List<$type$> "
-      "${$get$capitalized_name$List$}$()",
+  PrintNestedBuilderFunction(printer,
+                             "$deprecation$public java.util.List<$type$> "
+                             "${$get$capitalized_name$List$}$()",
 
-      "return java.util.Collections.unmodifiableList($name$_);\n",
-      "return $name$Builder_.getMessageList();\n",
+                             "$name$_.makeImmutable();\n"
+                             "return $name$_;\n",
+                             "return $name$Builder_.getMessageList();\n",
 
-      nullptr);
+                             nullptr);
 
   // int getRepeatedFieldCount()
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -954,8 +948,11 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "ensure$capitalized_name$IsMutable();\n"
       "$name$_.set(index, value);\n"
       "$on_changed$\n",
-      "$name$Builder_.setMessage(index, value);\n", "return this;\n",
-      Semantic::kSet);
+
+      "$name$Builder_.setMessage(index, value);\n"
+      "$set_has_field_bit_builder$\n",
+
+      "return this;\n", Semantic::kSet);
 
   // Builder setRepeatedField(int index, Field.Builder builderForValue)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -968,7 +965,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$_.set(index, builderForValue.build());\n"
       "$on_changed$\n",
 
-      "$name$Builder_.setMessage(index, builderForValue.build());\n",
+      "$name$Builder_.setMessage(index, builderForValue.build());\n"
+      "$set_has_field_bit_builder$\n",
 
       "return this;\n", Semantic::kSet);
 
@@ -986,7 +984,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$on_changed$\n",
 
-      "$name$Builder_.addMessage(value);\n",
+      "$name$Builder_.addMessage(value);\n"
+      "$set_has_field_bit_builder$\n",
 
       "return this;\n", Semantic::kSet);
 
@@ -1004,7 +1003,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$_.add(index, value);\n"
       "$on_changed$\n",
 
-      "$name$Builder_.addMessage(index, value);\n",
+      "$name$Builder_.addMessage(index, value);\n"
+      "$set_has_field_bit_builder$\n",
 
       "return this;\n", Semantic::kSet);
 
@@ -1019,7 +1019,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$_.add(builderForValue.build());\n"
       "$on_changed$\n",
 
-      "$name$Builder_.addMessage(builderForValue.build());\n",
+      "$name$Builder_.addMessage(builderForValue.build());\n"
+      "$set_has_field_bit_builder$\n",
 
       "return this;\n", Semantic::kSet);
 
@@ -1034,7 +1035,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "$name$_.add(index, builderForValue.build());\n"
       "$on_changed$\n",
 
-      "$name$Builder_.addMessage(index, builderForValue.build());\n",
+      "$name$Builder_.addMessage(index, builderForValue.build());\n"
+      "$set_has_field_bit_builder$\n",
 
       "return this;\n", Semantic::kSet);
 
@@ -1050,7 +1052,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "    values, $name$_);\n"
       "$on_changed$\n",
 
-      "$name$Builder_.addAllMessages(values);\n",
+      "$name$Builder_.addAllMessages(values);\n"
+      "$set_has_field_bit_builder$\n",
 
       "return this;\n", Semantic::kSet);
 
@@ -1059,13 +1062,14 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
   PrintNestedBuilderFunction(
       printer, "$deprecation$public Builder ${$clear$capitalized_name$$}$()",
 
-      "$name$_ = java.util.Collections.emptyList();\n"
-      "$clear_mutable_bit_builder$;\n"
+      "$name$_ = $empty_list$;\n"
       "$on_changed$\n",
 
       "$name$Builder_.clear();\n",
 
-      "return this;\n", Semantic::kSet);
+      "$clear_has_field_bit_builder$\n"
+      "return this;\n",
+      Semantic::kSet);
 
   // Builder removeRepeatedField(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -1079,7 +1083,11 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.remove(index);\n",
 
-      "return this;\n", Semantic::kSet);
+      "if (get$capitalized_name$Count() == 0) {\n"
+      "  $clear_has_field_bit_builder$;\n"
+      "}\n"
+      "return this;\n",
+      Semantic::kSet);
 
   // Field.Builder getRepeatedFieldBuilder(int index)
   WriteFieldDocComment(printer, descriptor_, context_->options());
@@ -1116,7 +1124,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       "  if ($name$Builder_ != null) {\n"
       "    return $name$Builder_.getMessageOrBuilderList();\n"
       "  } else {\n"
-      "    return java.util.Collections.unmodifiableList($name$_);\n"
+      "    $name$_.makeImmutable();\n"
+      "    return $name$_;\n"
       "  }\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -1126,6 +1135,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public $type$.Builder "
                  "${$add$capitalized_name$Builder$}$() {\n"
+                 "  $set_has_field_bit_builder$\n"
                  "  return "
                  "internalGet$capitalized_name$FieldBuilder().addBuilder(\n"
                  "      $type$.getDefaultInstance());\n"
@@ -1138,6 +1148,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public $type$.Builder ${$add$capitalized_name$Builder$}$(\n"
       "    int index) {\n"
+      "  $set_has_field_bit_builder$\n"
       "  return "
       "internalGet$capitalized_name$FieldBuilder().addBuilder(\n"
       "      index, $type$.getDefaultInstance());\n"
@@ -1161,7 +1172,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
                  "com.google.protobuf.RepeatedFieldBuilder<\n"
                  "        $type$, $type$.Builder, $type$OrBuilder>(\n"
                  "            $name$_,\n"
-                 "            $get_mutable_bit_builder$,\n"
+                 "            $name$_.isModifiable(),\n"
                  "            getParentForChildren(),\n"
                  "            isClean());\n"
                  "    $name$_ = null;\n"
@@ -1178,18 +1189,15 @@ void RepeatedImmutableMessageFieldGenerator::
 
 void RepeatedImmutableMessageFieldGenerator::GenerateInitializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_, "$name$_ = java.util.Collections.emptyList();\n");
+  printer->Print(variables_, "$name$_ = $empty_list$;\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
-  PrintNestedBuilderCondition(printer,
-                              "$name$_ = java.util.Collections.emptyList();\n",
+  PrintNestedBuilderCondition(printer, "$name$_ = $empty_list$;\n",
 
                               "$name$_ = null;\n"
                               "$name$Builder_.clear();\n");
-
-  printer->Print(variables_, "$clear_mutable_bit_builder$;\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateMergingCode(
@@ -1204,7 +1212,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMergingCode(
       "if (!other.$name$_.isEmpty()) {\n"
       "  if ($name$_.isEmpty()) {\n"
       "    $name$_ = other.$name$_;\n"
-      "    $clear_mutable_bit_builder$;\n"
+      "    $set_has_field_bit_builder$\n"
       "  } else {\n"
       "    ensure$capitalized_name$IsMutable();\n"
       "    $name$_.addAll(other.$name$_);\n"
@@ -1217,13 +1225,14 @@ void RepeatedImmutableMessageFieldGenerator::GenerateMergingCode(
       "    $name$Builder_.dispose();\n"
       "    $name$Builder_ = null;\n"
       "    $name$_ = other.$name$_;\n"
-      "    $clear_mutable_bit_builder$;\n"
+      "    $set_has_field_bit_builder$\n"
       "    $name$Builder_ = \n"
       "      com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders "
       "?\n"
       "         internalGet$capitalized_name$FieldBuilder() : null;\n"
       "  } else {\n"
       "    $name$Builder_.addAllMessages(other.$name$_);\n"
+      "    $set_has_field_bit_builder$\n"
       "  }\n"
       "}\n");
 }
@@ -1235,13 +1244,11 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuildingCode(
   // we make it immutable.
   PrintNestedBuilderCondition(
       printer,
-      "if ($get_mutable_bit_builder$) {\n"
-      "  $name$_ = java.util.Collections.unmodifiableList($name$_);\n"
-      "  $clear_mutable_bit_builder$;\n"
-      "}\n"
+      "$name$_.makeImmutable();\n"
       "result.$name$_ = $name$_;\n",
 
-      "result.$name$_ = $name$Builder_.build();\n");
+      "result.$name$_ = (com.google.protobuf.Internal.ProtobufList<$type$>) "
+      "$name$Builder_.build();\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
@@ -1262,7 +1269,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
   PrintNestedBuilderCondition(printer,
                               "ensure$capitalized_name$IsMutable();\n"
                               "$name$_.add(m);\n",
-                              "$name$Builder_.addMessage(m);\n");
+                              "$name$Builder_.addMessage(m);\n"
+                              "$set_has_field_bit_builder$\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateSerializationCode(
