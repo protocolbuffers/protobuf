@@ -1180,6 +1180,13 @@ class PROTOBUF_EXPORT ExtensionSet {
                                   internal::InternalMetadata* metadata,
                                   internal::ParseContext* ctx);
 
+  template <typename TableType>
+  const char* ParseMessageFieldMaybeLazilyImpl(int number,
+                                               const ExtensionInfo& info,
+                                               ExtensionMode mode,
+                                               const char* ptr,
+                                               internal::ParseContext* ctx);
+
   // Implemented in extension_set_inl.h to keep code out of the header file.
   template <typename T>
   const char* ParseFieldWithExtensionInfo(int number, bool was_packed_on_wire,
