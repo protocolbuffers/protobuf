@@ -802,6 +802,11 @@ message TestRequiredMessage {
   ];
 }
 
+message TestRequiredLazyMessage {
+  TestRequired child = 1 [lazy = true];
+  TestRequiredLazyMessage recurse = 2 [lazy = true];
+}
+
 message TestNestedRequiredForeign {
   TestNestedRequiredForeign child = 1;
   TestRequiredForeign payload = 2;
