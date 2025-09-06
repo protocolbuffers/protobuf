@@ -945,6 +945,17 @@ class StructTest(unittest.TestCase):
     msg3 = well_known_types_test_pb2.WKTMessage(optional_struct=dictionary3)
     self.assertEqual(msg3.optional_struct, {'key1': 5.0})
 
+  def testRepeatedStructConstruct(self):
+    dict0 = {'key1': 6.0}
+    dict1 = {
+        'key1': 'abc',
+        'key2': {'subkey': 11.0, 'k': True},
+    }
+    msg = well_known_types_test_pb2.WKTMessage(repeated_struct=[dict0, dict1])
+    self.assertEqual(len(msg.repeated_struct), 2)
+    self.assertEqual(msg.repeated_struct[0], dict0)
+    self.assertEqual(msg.repeated_struct[1], dict1)
+
   def testMergeFrom(self):
     struct = struct_pb2.Struct()
     struct_class = struct.__class__

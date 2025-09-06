@@ -26,4 +26,9 @@ message WKTMessage {
   Duration optional_duration = 2;
   Struct optional_struct = 3;
   ListValue optional_list_value = 4;
+
+  repeated Timestamp repeated_ts = 5;
+  repeated Duration repeated_td = 6;
+  repeated Struct repeated_struct = 7;
+  repeated ListValue repeated_list = 8;
 }

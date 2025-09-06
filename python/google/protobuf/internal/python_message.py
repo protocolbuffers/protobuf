@@ -535,9 +535,30 @@ def _AddInitMethod(message_descriptor, cls):
           else:
             for val in field_value:
               if isinstance(val, dict):
-                field_copy.add(**val)
-              else:
+                if field.message_type.full_name == _StructFullTypeName:
+                  new_msg = field_copy.add()
+                  if len(val) == 1 and 'fields' in val:
+                    try:
+                      new_msg.update(val)
+                    except:
+                      field_copy.remove(new_msg)
+                      field_copy.add(**val)
+                  else:
+                    new_msg.update(val)
+                else:
+                  field_copy.add(**val)
+              elif isinstance(val, message_mod.Message):
                 field_copy.add().MergeFrom(val)
+              else:
+                new_msg = field_copy.add()
+                if hasattr(new_msg, '_internal_assign'):
+                  new_msg._internal_assign(val)
+                else:
+                  raise TypeError(
+                      'Fail to init repeated field {0}.{1}.'.format(
+                          message_descriptor.name, field_name
+                      )
+                  )
         else:  # Scalar
           if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
             field_value = [_GetIntegerEnumValue(field.enum_type, val)
