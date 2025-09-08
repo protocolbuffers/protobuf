@@ -66,7 +66,7 @@ bzl_library(
 
 bzl_library(
     name = "proto_descriptor_set_bzl",
-    srcs = ["proto_descriptor_set.bzl.bzl"],
+    srcs = ["proto_descriptor_set.bzl"],
     visibility = ["//visibility:public"],
 )
 
