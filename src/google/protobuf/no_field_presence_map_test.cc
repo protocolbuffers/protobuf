@@ -133,7 +133,7 @@ TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
 
   // Trying to get an unset map entry would crash with a DCHECK in debug mode.
   EXPECT_DEATH(r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
-               "index < current_size_");
+               "index < size");
 }
 #endif
 
