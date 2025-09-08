@@ -392,6 +392,26 @@ constexpr std::optional<uintptr_t> EncodePlacementArenaOffsets(
   return arena_bits;
 }
 
+struct PrivateAccess {
+  template <typename T, int number>
+  static constexpr bool IsLazyField() {
+    constexpr auto l =
+        [](auto& msg) -> decltype(msg._lazy_internal_mutable(
+                          std::integral_constant<int, number>{})) {};
+    return std::is_invocable_v<decltype(l), T&>;
+  }
+
+  template <int number, typename T>
+  static auto& MutableLazy(T& msg) {
+    return msg._lazy_internal_mutable(std::integral_constant<int, number>{});
+  }
+
+  template <typename T>
+  static auto& GetExtensionSet(T& msg) {
+    return msg._impl_._extensions_;
+  }
+};
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
