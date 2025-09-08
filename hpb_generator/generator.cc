@@ -113,6 +113,8 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
   }
 
   ctx.Emit("#include \"upb/port/def.inc\"\n");
+  ctx.Emit(
+      "#include \"third_party/protobuf/hpb/internal/os_macros_undef.inc\"\n");
 
   const std::vector<const google::protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
@@ -144,6 +146,8 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
     ctx.Emit("\n");
   });
 
+  ctx.Emit(
+      "#include \"third_party/protobuf/hpb/internal/os_macros_restore.inc\"\n");
   ctx.Emit("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
