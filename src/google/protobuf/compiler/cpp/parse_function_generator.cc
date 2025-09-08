@@ -491,12 +491,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
        {"data_size", FieldNameDataSize(tc_table_info_->field_name_data)},
        {"field_num_to_entry_table_size", field_num_to_entry_table.size16()},
        {"table_base", GenerateTableBase},
-       {"fast_entries",
-        [&] {
-          // TODO: refactor this to use Emit.
-          Formatter format(p, variables_);
-          GenerateFastFieldEntries(format);
-        }},
+       {"fast_entries", [&] { GenerateFastFieldEntries(p); }},
        {"field_lookup_table",
         [&] {
           for (SkipEntryBlock& entry_block : field_num_to_entry_table.blocks) {
@@ -592,14 +587,22 @@ $classname$::_table_ = {
   );
 }
 
-void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
+void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
   for (const auto& info : tc_table_info_->fast_path_fields) {
     if (auto* nonfield = info.AsNonField()) {
       // Fast slot that is not associated with a field. Eg end group tags.
-      format("{$1$, {$2$, $3$}},\n", TcParseFunctionName(nonfield->func),
-             nonfield->coded_tag, nonfield->nonfield_info);
+      p->Emit({{"target", TcParseFunctionName(nonfield->func)},
+               {"coded_tag", nonfield->coded_tag},
+               {"nonfield_info", nonfield->nonfield_info}},
+              R"cc(
+                {$target$, {$coded_tag$, $nonfield_info$}},
+              )cc");
     } else if (auto* as_field = info.AsField()) {
-      PrintFieldComment(format, as_field->field, options_);
+      {
+        // TODO: refactor this to use Emit.
+        Formatter format(p, variables_);
+        PrintFieldComment(format, as_field->field, options_);
+      }
       ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
       std::string func_name = TcParseFunctionName(as_field->func);
@@ -626,14 +629,24 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
         }
       }
 
-      format(
-          "{$1$,\n"
-          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$, $5$)}},\n",
-          func_name, as_field->coded_tag, as_field->hasbit_idx,
-          as_field->aux_idx, FieldMemberName(as_field->field, /*split=*/false));
+      p->Emit(
+          {
+              {"target", func_name},
+              {"coded_tag", as_field->coded_tag},
+              {"hasbit_idx", as_field->hasbit_idx},
+              {"aux_idx", as_field->aux_idx},
+              {"field_name", FieldMemberName(as_field->field, /*split=*/false)},
+          },
+          R"cc(
+            {$target$,
+             {$coded_tag$, $hasbit_idx$, $aux_idx$,
+              PROTOBUF_FIELD_OFFSET($classname$, $field_name$)}},
+          )cc");
     } else {
       ABSL_DCHECK(info.is_empty());
-      format("{::_pbi::TcParser::MiniParse, {}},\n");
+      p->Emit(R"cc(
+        {::_pbi::TcParser::MiniParse, {}},
+      )cc");
     }
   }
 }
