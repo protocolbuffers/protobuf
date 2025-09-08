@@ -81,6 +81,11 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
   return true;
 }
 
+UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_ToField(
+    const struct upb_MiniTableExtension* e) {
+  return &e->UPB_PRIVATE(field);
+}
+
 UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
     const struct upb_MiniTableExtension* e) {
   return UPB_PRIVATE(_upb_MiniTableField_GetRep)(&e->UPB_PRIVATE(field));
