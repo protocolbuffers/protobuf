@@ -227,10 +227,12 @@ Timestamp::_table_ = {
   }, {{
     // int32 nanos = 2;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Timestamp, _impl_.nanos_), 1>(),
-     {16, 1, 0, PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.nanos_)}},
+     {16, 1, 0,
+      PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.nanos_)}},
     // int64 seconds = 1;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(Timestamp, _impl_.seconds_), 0>(),
-     {8, 0, 0, PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.seconds_)}},
+     {8, 0, 0,
+      PROTOBUF_FIELD_OFFSET(Timestamp, _impl_.seconds_)}},
   }}, {{
     65535, 65535
   }}, {{

@@ -258,10 +258,12 @@ Any::_table_ = {
   }, {{
     // bytes value = 2;
     {::_pbi::TcParser::FastBS1,
-     {18, 1, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.value_)}},
+     {18, 1, 0,
+      PROTOBUF_FIELD_OFFSET(Any, _impl_.value_)}},
     // string type_url = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_)}},
+     {10, 0, 0,
+      PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_)}},
   }}, {{
     65535, 65535
   }}, {{

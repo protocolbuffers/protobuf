@@ -435,28 +435,36 @@ Api::_table_ = {
   }, {{
     // string edition = 8;
     {::_pbi::TcParser::FastUS1,
-     {66, 5, 0, PROTOBUF_FIELD_OFFSET(Api, _impl_.edition_)}},
+     {66, 5, 0,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.edition_)}},
     // string name = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 3, 0, PROTOBUF_FIELD_OFFSET(Api, _impl_.name_)}},
+     {10, 3, 0,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.name_)}},
     // repeated .google.protobuf.Method methods = 2;
     {::_pbi::TcParser::FastMtR1,
-     {18, 0, 0, PROTOBUF_FIELD_OFFSET(Api, _impl_.methods_)}},
+     {18, 0, 0,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.methods_)}},
     // repeated .google.protobuf.Option options = 3;
     {::_pbi::TcParser::FastMtR1,
-     {26, 1, 1, PROTOBUF_FIELD_OFFSET(Api, _impl_.options_)}},
+     {26, 1, 1,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.options_)}},
     // string version = 4;
     {::_pbi::TcParser::FastUS1,
-     {34, 4, 0, PROTOBUF_FIELD_OFFSET(Api, _impl_.version_)}},
+     {34, 4, 0,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.version_)}},
     // .google.protobuf.SourceContext source_context = 5;
     {::_pbi::TcParser::FastMtS1,
-     {42, 6, 2, PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_)}},
+     {42, 6, 2,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_)}},
     // repeated .google.protobuf.Mixin mixins = 6;
     {::_pbi::TcParser::FastMtR1,
-     {50, 2, 3, PROTOBUF_FIELD_OFFSET(Api, _impl_.mixins_)}},
+     {50, 2, 3,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.mixins_)}},
     // .google.protobuf.Syntax syntax = 7;
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Api, _impl_.syntax_), 7>(),
-     {56, 7, 0, PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_)}},
+     {56, 7, 0,
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -995,28 +1003,36 @@ Method::_table_ = {
   }, {{
     // string edition = 8 [deprecated = true];
     {::_pbi::TcParser::FastUS1,
-     {66, 4, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.edition_)}},
+     {66, 4, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.edition_)}},
     // string name = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 1, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.name_)}},
+     {10, 1, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.name_)}},
     // string request_type_url = 2;
     {::_pbi::TcParser::FastUS1,
-     {18, 2, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.request_type_url_)}},
+     {18, 2, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.request_type_url_)}},
     // bool request_streaming = 3;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(Method, _impl_.request_streaming_), 5>(),
-     {24, 5, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.request_streaming_)}},
+     {24, 5, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.request_streaming_)}},
     // string response_type_url = 4;
     {::_pbi::TcParser::FastUS1,
-     {34, 3, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.response_type_url_)}},
+     {34, 3, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.response_type_url_)}},
     // bool response_streaming = 5;
     {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(Method, _impl_.response_streaming_), 6>(),
-     {40, 6, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.response_streaming_)}},
+     {40, 6, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.response_streaming_)}},
     // repeated .google.protobuf.Option options = 6;
     {::_pbi::TcParser::FastMtR1,
-     {50, 0, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.options_)}},
+     {50, 0, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.options_)}},
     // .google.protobuf.Syntax syntax = 7 [deprecated = true];
     {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(Method, _impl_.syntax_), 7>(),
-     {56, 7, 0, PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_)}},
+     {56, 7, 0,
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_)}},
   }}, {{
     65535, 65535
   }}, {{
@@ -1507,10 +1523,12 @@ Mixin::_table_ = {
   }, {{
     // string root = 2;
     {::_pbi::TcParser::FastUS1,
-     {18, 1, 0, PROTOBUF_FIELD_OFFSET(Mixin, _impl_.root_)}},
+     {18, 1, 0,
+      PROTOBUF_FIELD_OFFSET(Mixin, _impl_.root_)}},
     // string name = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(Mixin, _impl_.name_)}},
+     {10, 0, 0,
+      PROTOBUF_FIELD_OFFSET(Mixin, _impl_.name_)}},
   }}, {{
     65535, 65535
   }}, {{

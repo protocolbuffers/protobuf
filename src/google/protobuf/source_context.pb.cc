@@ -235,7 +235,8 @@ SourceContext::_table_ = {
   }, {{
     // string file_name = 1;
     {::_pbi::TcParser::FastUS1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)}},
+     {10, 0, 0,
+      PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_)}},
   }}, {{
     65535, 65535
   }}, {{

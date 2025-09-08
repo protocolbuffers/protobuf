@@ -244,7 +244,8 @@ FieldMask::_table_ = {
   }, {{
     // repeated string paths = 1;
     {::_pbi::TcParser::FastUR1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_)}},
+     {10, 0, 0,
+      PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_)}},
   }}, {{
     65535, 65535
   }}, {{
