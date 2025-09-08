@@ -431,6 +431,16 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_THREAD_LOCAL __thread
 #endif
 
+#ifdef PROTOBUF_ATTRIBUTE_PACKED
+#error PROTOBUF_ATTRIBUTE_PACKED was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_ATTRIBUTE_PACKED __attribute__((__packed__))
+#else
+#define PROTOBUF_ATTRIBUTE_PACKED
+#endif
+
+
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
