@@ -87,15 +87,19 @@ void MiniTable(Context& ctx, const EnumDescriptor& desc,
             {"mini_descriptor_length", mini_descriptor.size()}},
            R"rs(
     unsafe impl $pbr$::AssociatedMiniTableEnum for $name$ {
-      fn mini_table() -> *const $pbr$::upb_MiniTableEnum {
+      fn mini_table() -> $pbr$::RawMiniTableEnum {
         static MINI_TABLE: $std$::sync::OnceLock<$pbr$::MiniTableEnumPtr> =
             $std$::sync::OnceLock::new();
-        MINI_TABLE.get_or_init(|| unsafe {
-          $pbr$::MiniTableEnumPtr($pbr$::upb_MiniTableEnum_Build(
-              "$mini_descriptor$".as_ptr(), $mini_descriptor_length$,
-              $pbr$::THREAD_LOCAL_ARENA.with(|a| a.raw()),
-              $std$::ptr::null_mut()))
-        }).0
+        unsafe {
+          MINI_TABLE.get_or_init(|| {
+            $pbr$::MiniTableEnumPtr(
+                $std$::ptr::NonNull::new_unchecked(
+                    $pbr$::upb_MiniTableEnum_Build(
+                        "$mini_descriptor$".as_ptr(), $mini_descriptor_length$,
+                        $pbr$::THREAD_LOCAL_ARENA.with(|a| a.raw()),
+                        $std$::ptr::null_mut())))
+          }).0
+        }
       }
     }
   )rs");
