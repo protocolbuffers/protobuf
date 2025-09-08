@@ -133,6 +133,7 @@ _hpb_proto_library_aspect = aspect(
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
                 "//upb:generated_cpp_support",
                 "//hpb:generated_hpb_support",
+                "//hpb/internal:os_macros",
                 "@abseil-cpp//absl/log:absl_check",
                 "@abseil-cpp//absl/strings",
                 "@abseil-cpp//absl/status:statusor",

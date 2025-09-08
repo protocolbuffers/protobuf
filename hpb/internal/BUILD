@@ -11,6 +11,18 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
+    name = "os_macros",
+    textual_hdrs = [
+        "os_macros_undef.inc",
+        "os_macros_restore.inc",
+    ],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//src/google/protobuf:os_macros",
+    ],
+)
+
+cc_library(
     name = "template_help",
     hdrs = ["template_help.h"],
     visibility = ["//hpb:__subpackages__"],
