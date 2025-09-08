@@ -10113,6 +10113,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
 }
 
 TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
+  pool_.EnforceSymbolVisibility(true);
   BuildDescriptorMessagesInTestPool();
 
   ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
@@ -10137,6 +10138,7 @@ TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
 }
 
 TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNested) {
+  pool_.EnforceSymbolVisibility(true);
   BuildDescriptorMessagesInTestPool();
 
   ParseAndBuildFileWithErrorSubstr(
@@ -10155,6 +10157,24 @@ TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNested) {
       "default_symbol_visibility. It must be moved to top-level, ideally in "
       "its own file "
       "in order to be `export`.");
+}
+
+TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNestedDisabled) {
+  pool_.EnforceSymbolVisibility(false);
+  BuildDescriptorMessagesInTestPool();
+
+  EXPECT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+
+    local message LocalOuter {
+      export message Inner {
+      }
+    }
+  )schema"),
+              NotNull());
 }
 
 TEST_F(FeaturesTest, BadPackageName) {
@@ -13188,7 +13208,8 @@ TEST_F(ValidationErrorTest, ExtensionDeclarationsFullNameMissingLeadingDot) {
 }
 
 TEST_F(ValidationErrorTest, VisibilityFromSame) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  EXPECT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
@@ -13197,11 +13218,13 @@ TEST_F(ValidationErrorTest, VisibilityFromSame) {
         export message ExportMessage {
           LocalMessage foo = 1;
         }
-        )schema");
+        )schema"),
+              NotNull());
 }
 
 TEST_F(ValidationErrorTest, ExplicitVisibilityFromOther) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
@@ -13209,7 +13232,8 @@ TEST_F(ValidationErrorTest, ExplicitVisibilityFromOther) {
         }
         export message ExportMessage {
         }
-        )schema");
+        )schema"),
+              NotNull());
 
   ParseAndBuildFileWithErrorSubstr(
       "importer.proto",
@@ -13227,8 +13251,34 @@ TEST_F(ValidationErrorTest, ExplicitVisibilityFromOther) {
       "file\n");
 }
 
+TEST_F(ValidationErrorTest, ExplicitVisibilityFromOtherDisabled) {
+  pool_.EnforceSymbolVisibility(false);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema"),
+              NotNull());
+
+  EXPECT_THAT(ParseAndBuildFile("importer.proto",
+                                R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.LocalMessage foo = 1;
+        }
+      )schema"),
+              NotNull());
+}
+
 TEST_F(ValidationErrorTest, Edition2024DefaultVisibilityFromOther) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
@@ -13236,16 +13286,18 @@ TEST_F(ValidationErrorTest, Edition2024DefaultVisibilityFromOther) {
           message NestedMessage {
           }
         }
-        )schema");
+        )schema"),
+              NotNull());
 
-  ParseAndBuildFile("good_importer.proto", R"schema(
+  ASSERT_THAT(ParseAndBuildFile("good_importer.proto", R"schema(
         edition = "2024";
         import "vis.proto";
 
         message GoodImport {
           vis.test.TopLevelMessage foo = 1;
         }
-        )schema");
+        )schema"),
+              NotNull());
 
   ParseAndBuildFileWithErrorSubstr(
       "bad_importer.proto", R"schema(
@@ -13265,14 +13317,16 @@ TEST_F(ValidationErrorTest, Edition2024DefaultVisibilityFromOther) {
 }
 
 TEST_F(ValidationErrorTest, VisibilityFromLocalExtender) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
         local message LocalExtendee {
           extensions 1 to 100;
         }
-        )schema");
+        )schema"),
+              NotNull());
 
   ParseAndBuildFileWithErrorSubstr(
       "bad_importer.proto", R"schema(
