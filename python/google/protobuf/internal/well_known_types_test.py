@@ -945,6 +945,30 @@ class StructTest(unittest.TestCase):
     msg3 = well_known_types_test_pb2.WKTMessage(optional_struct=dictionary3)
     self.assertEqual(msg3.optional_struct, {'key1': 5.0})
 
+  def testRepeatedStructConstruct(self):
+    dict0 = {'key1': 6.0}
+    dict1 = {
+        'key1': 'abc',
+        'key2': {'subkey': 11.0, 'k': True},
+    }
+    value_msg = struct_pb2.Value(number_value=5.0)
+    dict2 = {'fields': {'key1': value_msg}}
+    msg = well_known_types_test_pb2.WKTMessage(
+        repeated_struct=[dict0, dict1, dict2]
+    )
+    self.assertEqual(len(msg.repeated_struct), 3)
+    self.assertEqual(msg.repeated_struct[0], dict0)
+    self.assertEqual(msg.repeated_struct[1], dict1)
+    self.assertEqual(msg.repeated_struct[2], {'key1': 5.0})
+
+  def testRepeatedListValueConstruct(self):
+    list0 = [6, 'seven', True, False]
+    list1 = [None, {'key': 1.2}]
+    msg = well_known_types_test_pb2.WKTMessage(repeated_list=[list0, list1])
+    self.assertEqual(len(msg.repeated_list), 2)
+    self.assertEqual(msg.repeated_list[0], list0)
+    self.assertEqual(msg.repeated_list[1], list1)
+
   def testMergeFrom(self):
     struct = struct_pb2.Struct()
     struct_class = struct.__class__

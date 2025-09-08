@@ -67,6 +67,15 @@ class DurationTest(unittest.TestCase):
     )
     self.assertEqual(expected_td, message.optional_duration.ToTimedelta())
 
+  def test_repeated_duration_construction(self):
+    td0 = datetime.timedelta(microseconds=123)
+    td1 = datetime.timedelta(microseconds=456)
+    dr = duration_pb2.Duration()
+    message = well_known_types_test_pb2.WKTMessage(repeated_td=[td0, td1, dr])
+    self.assertEqual(td0, duration.to_timedelta(message.repeated_td[0]))
+    self.assertEqual(td1, duration.to_timedelta(message.repeated_td[1]))
+    self.assertEqual(dr, message.repeated_td[2])
+
   def test_duration_sub_annotation(self):
     dt = datetime.datetime.now()
     dr = duration_pb2.Duration()
