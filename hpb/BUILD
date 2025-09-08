@@ -111,6 +111,7 @@ cc_library(
     deps = [
         ":hpb",
         ":repeated_field",
+        "//hpb/internal:os_macros",
         "//upb/mem",
         "//upb/message",
     ],
