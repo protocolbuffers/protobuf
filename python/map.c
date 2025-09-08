@@ -353,8 +353,9 @@ static PyObject* PyUpb_MapContainer_Repr(PyObject* _self) {
 PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
                                                 const upb_FieldDef* f,
                                                 PyObject* arena) {
+  PyUpb_ObjCache_Lock();
   PyUpb_MapContainer* ret = (void*)PyUpb_ObjCache_Get(map);
-  if (ret) return &ret->ob_base;
+  if (ret) goto out;
 
   PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
   ret = (void*)PyType_GenericAlloc(cls, 0);
@@ -363,7 +364,10 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
   ret->ptr.map = map;
   ret->version = 0;
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(map, &ret->ob_base);
+  PyUpb_ObjCache_AddLockHeld(map, &ret->ob_base);
+
+out:
+  PyUpb_ObjCache_Unlock();
   return &ret->ob_base;
 }
 
