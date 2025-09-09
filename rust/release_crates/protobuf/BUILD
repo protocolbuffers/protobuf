@@ -31,5 +31,5 @@ filegroup(
         "README.md",
         "build.rs",
     ],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
