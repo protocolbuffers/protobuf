@@ -535,6 +535,7 @@ cc_test(
     deps = [
         ":arena",
         ":protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

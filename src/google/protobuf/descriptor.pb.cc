@@ -68,7 +68,8 @@ inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         path_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
         }
         #else
         path_ {}
@@ -77,7 +78,8 @@ inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
         _path_cached_byte_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         span_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
         }
         #else
         span_ {}
@@ -86,7 +88,8 @@ inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
         _span_cached_byte_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         leading_detached_comments_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         leading_detached_comments_ {}
@@ -130,7 +133,8 @@ inline constexpr GeneratedCodeInfo_Annotation::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         path_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::GeneratedCodeInfo_Annotation, PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
+            ::google::protobuf::GeneratedCodeInfo_Annotation,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
         }
         #else
         path_ {}
@@ -409,7 +413,8 @@ inline constexpr UninterpretedOption::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         name_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::UninterpretedOption, PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
+            ::google::protobuf::UninterpretedOption,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         name_ {}
@@ -459,7 +464,8 @@ inline constexpr SourceCodeInfo::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         location_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
+            ::google::protobuf::SourceCodeInfo,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         location_ {}
@@ -497,7 +503,8 @@ inline constexpr GeneratedCodeInfo::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         annotation_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::GeneratedCodeInfo, PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
+            ::google::protobuf::GeneratedCodeInfo,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         annotation_ {}
@@ -568,7 +575,8 @@ inline constexpr ServiceOptions::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ServiceOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::ServiceOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -608,7 +616,8 @@ inline constexpr OneofOptions::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::OneofOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::OneofOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -647,7 +656,8 @@ inline constexpr MethodOptions::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::MethodOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::MethodOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -694,7 +704,8 @@ inline constexpr MessageOptions::Impl_::Impl_(
         deprecated_legacy_json_field_conflicts_{false},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::MessageOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::MessageOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -772,7 +783,8 @@ inline constexpr FileOptions::Impl_::Impl_(
         cc_enable_arenas_{true},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::FileOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -810,7 +822,8 @@ inline constexpr FieldOptions::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         edition_defaults_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         edition_defaults_ {}
@@ -818,7 +831,8 @@ inline constexpr FieldOptions::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -837,7 +851,8 @@ inline constexpr FieldOptions::Impl_::Impl_(
         retention_{static_cast< ::google::protobuf::FieldOptions_OptionRetention >(0)},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         targets_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
         }
         #else
         targets_ {}
@@ -875,7 +890,8 @@ inline constexpr FeatureSetDefaults::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         defaults_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FeatureSetDefaults, PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
+            ::google::protobuf::FeatureSetDefaults,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         defaults_ {}
@@ -915,7 +931,8 @@ inline constexpr ExtensionRangeOptions::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         declaration_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ExtensionRangeOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
+            ::google::protobuf::ExtensionRangeOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         declaration_ {}
@@ -923,7 +940,8 @@ inline constexpr ExtensionRangeOptions::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ExtensionRangeOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::ExtensionRangeOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -963,7 +981,8 @@ inline constexpr EnumValueOptions::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumValueOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::EnumValueOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -1009,7 +1028,8 @@ inline constexpr EnumOptions::Impl_::Impl_(
         deprecated_legacy_json_field_conflicts_{false},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::EnumOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_ {}
@@ -1242,7 +1262,8 @@ inline constexpr ServiceDescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         method_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ServiceDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
+            ::google::protobuf::ServiceDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         method_ {}
@@ -1284,7 +1305,8 @@ inline constexpr EnumDescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         value_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         value_ {}
@@ -1292,7 +1314,8 @@ inline constexpr EnumDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_range_)>()
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_range_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_range_ {}
@@ -1300,7 +1323,8 @@ inline constexpr EnumDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_name_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_name_)>()
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_name_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_name_ {}
@@ -1343,7 +1367,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         field_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         field_ {}
@@ -1351,7 +1376,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         nested_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.nested_type_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.nested_type_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         nested_type_ {}
@@ -1359,7 +1385,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         enum_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.enum_type_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.enum_type_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         enum_type_ {}
@@ -1367,7 +1394,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_range_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_range_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_range_ {}
@@ -1375,7 +1403,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_ {}
@@ -1383,7 +1412,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         oneof_decl_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.oneof_decl_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.oneof_decl_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         oneof_decl_ {}
@@ -1391,7 +1421,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_range_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_range_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_range_ {}
@@ -1399,7 +1430,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_name_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_name_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_name_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_name_ {}
@@ -1442,7 +1474,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         dependency_ {}
@@ -1450,7 +1483,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         message_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.message_type_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.message_type_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         message_type_ {}
@@ -1458,7 +1492,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         enum_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.enum_type_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.enum_type_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         enum_type_ {}
@@ -1466,7 +1501,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         service_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.service_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.service_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         service_ {}
@@ -1474,7 +1510,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.extension_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.extension_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_ {}
@@ -1482,7 +1519,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         public_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.public_dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.public_dependency_)>()
         }
         #else
         public_dependency_ {}
@@ -1490,7 +1528,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         weak_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.weak_dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.weak_dependency_)>()
         }
         #else
         weak_dependency_ {}
@@ -1498,7 +1537,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         option_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.option_dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.option_dependency_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         option_dependency_ {}
@@ -1548,7 +1588,8 @@ inline constexpr FileDescriptorSet::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorSet, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
+            ::google::protobuf::FileDescriptorSet,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_ {}
@@ -2621,9 +2662,11 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        file_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorSet, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
-        ), from.file_}
+        file_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorSet,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
+        , arena,
+                from.file_}
         #else
         file_ { visibility, arena, from.file_ }
         #endif
@@ -2660,7 +2703,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorSet, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
+            ::google::protobuf::FileDescriptorSet,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
         }
         #else
         file_ { visibility, arena }
@@ -2956,65 +3000,81 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        dependency_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
-        ), from.dependency_}
+        dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
+        , arena,
+                from.dependency_}
         #else
         dependency_ { visibility, arena, from.dependency_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        message_type_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.message_type_)>()
-        ), from.message_type_}
+        message_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.message_type_)>()
+        , arena,
+                from.message_type_}
         #else
         message_type_ { visibility, arena, from.message_type_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        enum_type_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.enum_type_)>()
-        ), from.enum_type_}
+        enum_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.enum_type_)>()
+        , arena,
+                from.enum_type_}
         #else
         enum_type_ { visibility, arena, from.enum_type_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        service_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.service_)>()
-        ), from.service_}
+        service_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.service_)>()
+        , arena,
+                from.service_}
         #else
         service_ { visibility, arena, from.service_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        extension_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.extension_)>()
-        ), from.extension_}
+        extension_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.extension_)>()
+        , arena,
+                from.extension_}
         #else
         extension_ { visibility, arena, from.extension_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-        public_dependency_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.public_dependency_)>()
-        ), from.public_dependency_}
+        public_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.public_dependency_)>()
+        , arena,
+                from.public_dependency_}
         #else
         public_dependency_ { visibility, arena, from.public_dependency_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-        weak_dependency_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.weak_dependency_)>()
-        ), from.weak_dependency_}
+        weak_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.weak_dependency_)>()
+        , arena,
+                from.weak_dependency_}
         #else
         weak_dependency_ { visibility, arena, from.weak_dependency_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        option_dependency_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.option_dependency_)>()
-        ), from.option_dependency_}
+        option_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.option_dependency_)>()
+        , arena,
+                from.option_dependency_}
         #else
         option_dependency_ { visibility, arena, from.option_dependency_ }
         #endif
@@ -3053,7 +3113,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.dependency_)>()
         }
         #else
         dependency_ { visibility, arena }
@@ -3061,7 +3122,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         message_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.message_type_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.message_type_)>()
         }
         #else
         message_type_ { visibility, arena }
@@ -3069,7 +3131,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         enum_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.enum_type_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.enum_type_)>()
         }
         #else
         enum_type_ { visibility, arena }
@@ -3077,7 +3140,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         service_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.service_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.service_)>()
         }
         #else
         service_ { visibility, arena }
@@ -3085,7 +3149,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.extension_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.extension_)>()
         }
         #else
         extension_ { visibility, arena }
@@ -3093,7 +3158,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         public_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.public_dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.public_dependency_)>()
         }
         #else
         public_dependency_ { visibility, arena }
@@ -3101,7 +3167,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         weak_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.weak_dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.weak_dependency_)>()
         }
         #else
         weak_dependency_ { visibility, arena }
@@ -3109,7 +3176,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         option_dependency_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.option_dependency_)>()
+            ::google::protobuf::FileDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorProto, _impl_.option_dependency_)>()
         }
         #else
         option_dependency_ { visibility, arena }
@@ -4479,65 +4547,81 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        field_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
-        ), from.field_}
+        field_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
+        , arena,
+                from.field_}
         #else
         field_ { visibility, arena, from.field_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        nested_type_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.nested_type_)>()
-        ), from.nested_type_}
+        nested_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.nested_type_)>()
+        , arena,
+                from.nested_type_}
         #else
         nested_type_ { visibility, arena, from.nested_type_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        enum_type_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.enum_type_)>()
-        ), from.enum_type_}
+        enum_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.enum_type_)>()
+        , arena,
+                from.enum_type_}
         #else
         enum_type_ { visibility, arena, from.enum_type_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        extension_range_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_range_)>()
-        ), from.extension_range_}
+        extension_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_range_)>()
+        , arena,
+                from.extension_range_}
         #else
         extension_range_ { visibility, arena, from.extension_range_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        extension_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_)>()
-        ), from.extension_}
+        extension_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_)>()
+        , arena,
+                from.extension_}
         #else
         extension_ { visibility, arena, from.extension_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        oneof_decl_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.oneof_decl_)>()
-        ), from.oneof_decl_}
+        oneof_decl_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.oneof_decl_)>()
+        , arena,
+                from.oneof_decl_}
         #else
         oneof_decl_ { visibility, arena, from.oneof_decl_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        reserved_range_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_range_)>()
-        ), from.reserved_range_}
+        reserved_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_range_)>()
+        , arena,
+                from.reserved_range_}
         #else
         reserved_range_ { visibility, arena, from.reserved_range_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        reserved_name_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_name_)>()
-        ), from.reserved_name_}
+        reserved_name_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_name_)>()
+        , arena,
+                from.reserved_name_}
         #else
         reserved_name_ { visibility, arena, from.reserved_name_ }
         #endif
@@ -4571,7 +4655,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         field_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.field_)>()
         }
         #else
         field_ { visibility, arena }
@@ -4579,7 +4664,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         nested_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.nested_type_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.nested_type_)>()
         }
         #else
         nested_type_ { visibility, arena }
@@ -4587,7 +4673,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         enum_type_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.enum_type_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.enum_type_)>()
         }
         #else
         enum_type_ { visibility, arena }
@@ -4595,7 +4682,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_range_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_range_)>()
         }
         #else
         extension_range_ { visibility, arena }
@@ -4603,7 +4691,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         extension_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.extension_)>()
         }
         #else
         extension_ { visibility, arena }
@@ -4611,7 +4700,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         oneof_decl_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.oneof_decl_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.oneof_decl_)>()
         }
         #else
         oneof_decl_ { visibility, arena }
@@ -4619,7 +4709,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_range_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_range_)>()
         }
         #else
         reserved_range_ { visibility, arena }
@@ -4627,7 +4718,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_name_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::DescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_name_)>()
+            ::google::protobuf::DescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::DescriptorProto, _impl_.reserved_name_)>()
         }
         #else
         reserved_name_ { visibility, arena }
@@ -5686,17 +5778,21 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        declaration_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ExtensionRangeOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
-        ), from.declaration_}
+        declaration_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::ExtensionRangeOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
+        , arena,
+                from.declaration_}
         #else
         declaration_ { visibility, arena, from.declaration_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ExtensionRangeOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::ExtensionRangeOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -5738,7 +5834,8 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         declaration_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ExtensionRangeOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
+            ::google::protobuf::ExtensionRangeOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.declaration_)>()
         }
         #else
         declaration_ { visibility, arena }
@@ -5746,7 +5843,8 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ExtensionRangeOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::ExtensionRangeOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -7307,25 +7405,31 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        value_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
-        ), from.value_}
+        value_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
+        , arena,
+                from.value_}
         #else
         value_ { visibility, arena, from.value_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        reserved_range_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_range_)>()
-        ), from.reserved_range_}
+        reserved_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_range_)>()
+        , arena,
+                from.reserved_range_}
         #else
         reserved_range_ { visibility, arena, from.reserved_range_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        reserved_name_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_name_)>()
-        ), from.reserved_name_}
+        reserved_name_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_name_)>()
+        , arena,
+                from.reserved_name_}
         #else
         reserved_name_ { visibility, arena, from.reserved_name_ }
         #endif
@@ -7359,7 +7463,8 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         value_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.value_)>()
         }
         #else
         value_ { visibility, arena }
@@ -7367,7 +7472,8 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_range_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_range_)>()
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_range_)>()
         }
         #else
         reserved_range_ { visibility, arena }
@@ -7375,7 +7481,8 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         reserved_name_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_name_)>()
+            ::google::protobuf::EnumDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumDescriptorProto, _impl_.reserved_name_)>()
         }
         #else
         reserved_name_ { visibility, arena }
@@ -8182,9 +8289,11 @@ PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        method_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ServiceDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
-        ), from.method_}
+        method_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::ServiceDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
+        , arena,
+                from.method_}
         #else
         method_ { visibility, arena, from.method_ }
         #endif
@@ -8217,7 +8326,8 @@ PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         method_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ServiceDescriptorProto, PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
+            ::google::protobuf::ServiceDescriptorProto,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceDescriptorProto, _impl_.method_)>()
         }
         #else
         method_ { visibility, arena }
@@ -9006,9 +9116,11 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
         php_metadata_namespace_(arena, from.php_metadata_namespace_),
         ruby_package_(arena, from.ruby_package_),
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FileOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -9068,7 +9180,8 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
         cc_enable_arenas_{true},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FileOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::FileOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -9851,9 +9964,11 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::MessageOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::MessageOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -9901,7 +10016,8 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::MessageOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::MessageOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -10978,25 +11094,31 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        edition_defaults_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
-        ), from.edition_defaults_}
+        edition_defaults_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
+        , arena,
+                from.edition_defaults_}
         #else
         edition_defaults_ { visibility, arena, from.edition_defaults_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-        targets_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
-        ), from.targets_}
+        targets_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
+        , arena,
+                from.targets_}
         #else
         targets_ { visibility, arena, from.targets_ }
         #endif
@@ -11047,7 +11169,8 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         edition_defaults_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.edition_defaults_)>()
         }
         #else
         edition_defaults_ { visibility, arena }
@@ -11055,7 +11178,8 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -11063,7 +11187,8 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         targets_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
+            ::google::protobuf::FieldOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
         }
         #else
         targets_ { visibility, arena }
@@ -11695,9 +11820,11 @@ PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::OneofOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::OneofOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -11738,7 +11865,8 @@ PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::OneofOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::OneofOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -12086,9 +12214,11 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::EnumOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -12136,7 +12266,8 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::EnumOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -12542,9 +12673,11 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumValueOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::EnumValueOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -12595,7 +12728,8 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::EnumValueOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::EnumValueOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -13022,9 +13156,11 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ServiceOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::ServiceOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -13066,7 +13202,8 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ServiceOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::ServiceOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -13443,9 +13580,11 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        uninterpreted_option_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::MethodOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
-        ), from.uninterpreted_option_}
+        uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::MethodOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
+        , arena,
+                from.uninterpreted_option_}
         #else
         uninterpreted_option_ { visibility, arena, from.uninterpreted_option_ }
         #endif
@@ -13493,7 +13632,8 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         uninterpreted_option_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::MethodOptions, PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
+            ::google::protobuf::MethodOptions,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
         }
         #else
         uninterpreted_option_ { visibility, arena }
@@ -14186,9 +14326,11 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        name_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::UninterpretedOption, PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
-        ), from.name_}
+        name_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::UninterpretedOption,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
+        , arena,
+                from.name_}
         #else
         name_ { visibility, arena, from.name_ }
         #endif
@@ -14226,7 +14368,8 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         name_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::UninterpretedOption, PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
+            ::google::protobuf::UninterpretedOption,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::UninterpretedOption, _impl_.name_)>()
         }
         #else
         name_ { visibility, arena }
@@ -15618,9 +15761,11 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        defaults_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FeatureSetDefaults, PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
-        ), from.defaults_}
+        defaults_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FeatureSetDefaults,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
+        , arena,
+                from.defaults_}
         #else
         defaults_ { visibility, arena, from.defaults_ }
         #endif
@@ -15655,7 +15800,8 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         defaults_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FeatureSetDefaults, PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
+            ::google::protobuf::FeatureSetDefaults,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
         }
         #else
         defaults_ { visibility, arena }
@@ -15995,27 +16141,33 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-        path_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
-        ), from.path_}
+        path_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
+        , arena,
+                from.path_}
         #else
         path_ { visibility, arena, from.path_ }
         #endif
         ,
         _path_cached_byte_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-        span_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
-        ), from.span_}
+        span_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
+        , arena,
+                from.span_}
         #else
         span_ { visibility, arena, from.span_ }
         #endif
         ,
         _span_cached_byte_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        leading_detached_comments_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
-        ), from.leading_detached_comments_}
+        leading_detached_comments_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
+        , arena,
+                from.leading_detached_comments_}
         #else
         leading_detached_comments_ { visibility, arena, from.leading_detached_comments_ }
         #endif
@@ -16045,7 +16197,8 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         path_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.path_)>()
         }
         #else
         path_ { visibility, arena }
@@ -16054,7 +16207,8 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
         _path_cached_byte_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         span_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.span_)>()
         }
         #else
         span_ { visibility, arena }
@@ -16063,7 +16217,8 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
         _span_cached_byte_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         leading_detached_comments_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo_Location, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
+            ::google::protobuf::SourceCodeInfo_Location,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo_Location, _impl_.leading_detached_comments_)>()
         }
         #else
         leading_detached_comments_ { visibility, arena }
@@ -16470,9 +16625,11 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
         _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        location_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
-        ), from.location_}
+        location_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::SourceCodeInfo,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
+        , arena,
+                from.location_}
         #else
         location_ { visibility, arena, from.location_ }
         #endif
@@ -16509,7 +16666,8 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         location_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::SourceCodeInfo, PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
+            ::google::protobuf::SourceCodeInfo,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
         }
         #else
         location_ { visibility, arena }
@@ -16803,9 +16961,11 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-        path_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::GeneratedCodeInfo_Annotation, PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
-        ), from.path_}
+        path_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::GeneratedCodeInfo_Annotation,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
+        , arena,
+                from.path_}
         #else
         path_ { visibility, arena, from.path_ }
         #endif
@@ -16842,7 +17002,8 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
         path_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::GeneratedCodeInfo_Annotation, PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
+            ::google::protobuf::GeneratedCodeInfo_Annotation,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo_Annotation, _impl_.path_)>()
         }
         #else
         path_ { visibility, arena }
@@ -17227,9 +17388,11 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        annotation_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::GeneratedCodeInfo, PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
-        ), from.annotation_}
+        annotation_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::GeneratedCodeInfo,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
+        , arena,
+                from.annotation_}
         #else
         annotation_ { visibility, arena, from.annotation_ }
         #endif
@@ -17257,7 +17420,8 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         annotation_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::GeneratedCodeInfo, PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
+            ::google::protobuf::GeneratedCodeInfo,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
         }
         #else
         annotation_ { visibility, arena }

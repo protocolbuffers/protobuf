@@ -203,7 +203,7 @@ class FieldGeneratorBase {
 
   pb::CppFeatures::StringType GetDeclaredStringType() const;
 
-  static void InternalMetadataOffsetFormatString(io::Printer* p);
+  static io::Printer::Sub InternalMetadataOffsetSub(io::Printer* p);
 
 
  private:
