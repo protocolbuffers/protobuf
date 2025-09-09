@@ -35,7 +35,7 @@ final class CodedInputStreamReader implements Reader {
 
   public static CodedInputStreamReader forCodedInput(CodedInputStream input) {
     if (input.wrapper != null) {
-      return input.wrapper;
+      return (CodedInputStreamReader) input.wrapper;
     }
     return new CodedInputStreamReader(input);
   }

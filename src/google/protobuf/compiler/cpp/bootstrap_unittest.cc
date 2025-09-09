@@ -52,8 +52,8 @@ std::string FindWithDefault(
 
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
-  MockErrorCollector() {}
-  ~MockErrorCollector() override {}
+  MockErrorCollector() = default;
+  ~MockErrorCollector() override = default;
 
   std::string text_;
 

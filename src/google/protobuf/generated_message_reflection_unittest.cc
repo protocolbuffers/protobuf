@@ -21,6 +21,7 @@
 
 #include "google/protobuf/generated_message_reflection.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -40,7 +41,9 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest_import_option.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
@@ -82,6 +85,7 @@ class GeneratedMessageReflectionTestHelper {
 namespace {
 
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Pointee;
 using ::testing::Property;
 
@@ -1757,6 +1761,48 @@ TEST(GeneratedMessageReflection, IsDescendantOneof) {
       IsDescendant(msg1, msg2.foo_message().repeated_foreign_message(0)));
 }
 
+TEST(GeneratedMessageReflection, IsDescendantDirtyMap) {
+  proto2_unittest::TestMap msg;
+  ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
+      R"pb(
+        map_int32_all_types {
+          key: 123
+          value: { optional_int32: 123 }
+        }
+      )pb",
+      &msg));
+
+  msg.mutable_map_int32_all_types()->insert({789, unittest::TestAllTypes()});
+
+  size_t msg_size = msg.SpaceUsedLong();
+
+  proto2_unittest::TestAllTypes msg2;
+  EXPECT_FALSE(IsDescendant(msg, msg2));
+
+  EXPECT_EQ(msg_size, msg.SpaceUsedLong());
+}
+
+// Tests that a map field with in state `STATE_MODIFIED_REPEATED` does not force
+// a sync to the map.
+TEST(GeneratedMessageReflection, IsDescendantInvalidMap) {
+  proto2_unittest::TestMap msg;
+  ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
+      R"pb(
+        map_int32_all_types {
+          key: 123
+          value: { optional_int32: 123 }
+        }
+      )pb",
+      &msg));
+
+  size_t msg_size = msg.SpaceUsedLong();
+
+  proto2_unittest::TestAllTypes msg2;
+  EXPECT_FALSE(IsDescendant(msg, msg2));
+
+  EXPECT_EQ(msg_size, msg.SpaceUsedLong());
+}
+
 TEST(GeneratedMessageReflection, ListFieldsSorted) {
   unittest::TestFieldOrderings msg;
   const Reflection* reflection = msg.GetReflection();
@@ -1802,6 +1848,32 @@ TEST(GeneratedMessageReflection, ListFieldsSorted) {
                           Pointee(Property(&FieldDescriptor::number, 101))));
 }
 
+TEST(GeneratedMessageReflection, ListFieldsEmptyRepeated) {
+  unittest::TestAllTypes msg;
+  const Reflection* reflection = msg.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+
+  msg.mutable_repeated_bool();
+  reflection->ListFields(msg, &fields);
+  EXPECT_THAT(fields, IsEmpty());
+
+  msg.Clear();
+  reflection->GetMutableRepeatedFieldRef<bool>(
+      &msg, msg.GetDescriptor()->FindFieldByName("repeated_bool"));
+  reflection->ListFields(msg, &fields);
+  EXPECT_THAT(fields, IsEmpty());
+}
+
+TEST(GeneratedMessageReflection, ListFieldsEmptyMap) {
+  unittest::TestMap msg;
+  const Reflection* reflection = msg.GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+
+  msg.mutable_map_int32_int32();
+  reflection->ListFields(msg, &fields);
+  EXPECT_THAT(fields, IsEmpty());
+}
+
 TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {
   proto3_unittest::TestHasbits lhs, rhs;
   rhs.mutable_child()->set_optional_int32(-1);
@@ -1823,6 +1895,23 @@ TEST(GeneratedMessageReflection, UnvalidatedStringsAreDowngradedToBytes) {
       proto2_unittest::repeated_string_extension, "bar");
   parsed_msg.mutable_optional_extension()->Swap(
       msg.mutable_optional_extension());
+}
+
+TEST(GeneratedMessageReflection, ImportOption) {
+  proto2_unittest_import_option::TestMessage message;
+  google::protobuf::FileDescriptor const* file_descriptor =
+      message.GetDescriptor()->file();
+  google::protobuf::Descriptor const* message_descriptor = message.GetDescriptor();
+  google::protobuf::FieldDescriptor const* field_descriptor =
+      message_descriptor->FindFieldByName("field1");
+
+  EXPECT_EQ(
+      1, file_descriptor->options().GetExtension(proto2_unittest::file_opt1));
+  EXPECT_EQ(2, message_descriptor->options().GetExtension(
+                   proto2_unittest::message_opt1));
+  EXPECT_EQ(
+      3, field_descriptor->options().GetExtension(proto2_unittest::field_opt1));
+
 }
 
 }  // namespace

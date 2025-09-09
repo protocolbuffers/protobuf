@@ -35,7 +35,6 @@ namespace compiler {
 namespace cpp {
 namespace {
 
-using ::google::protobuf::internal::cpp::HasHasbit;
 using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -83,7 +82,7 @@ class SingularMessage : public FieldGeneratorBase {
       : FieldGeneratorBase(field, opts, scc),
         opts_(&opts),
         has_required_(scc->HasRequiredFields(field->message_type())),
-        has_hasbit_(HasHasbit(field)) {}
+        has_hasbit_(HasHasbit(field, opts)) {}
 
   ~SingularMessage() override = default;
 
@@ -380,7 +379,7 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
 void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(R"cc(
-    if ((from.$has_hasbit$) != 0) {
+    if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
       _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
     }
   )cc");
@@ -414,9 +413,9 @@ void SingularMessage::GenerateByteSize(io::Printer* p) const {
 void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
-  if (HasHasbit(field_)) {
+  if (HasHasbit(field_, *opts_)) {
     p->Emit(R"cc(
-      if ((this_.$has_hasbit$) != 0) {
+      if (CheckHasBit(this_.$has_bits_array$, $has_mask$)) {
         if (!this_.$field_$->IsInitialized()) return false;
       }
     )cc");
@@ -561,7 +560,8 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $StrongRef$;
-      return $has_field$ ? *$cast_field_$ : reinterpret_cast<$Submsg$&>($kDefault$);
+      return $has_field$ ? static_cast<const $Submsg$&>(*$cast_field_$)
+                         : reinterpret_cast<const $Submsg$&>($kDefault$);
     }
   )cc");
   p->Emit(R"cc(
@@ -787,8 +787,12 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
+
   p->Emit({GetEmitRepeatedFieldMutableSub(*opts_, p)},
           R"cc(
+            //~ Note: no need to set hasbit in mutable_$name$(int index).
+            //~ Hasbits only need to be updated if a new element is
+            //~ (potentially) added, not if an existing element is mutated.
             inline $Submsg$* $nonnull$ $Msg$::mutable_$name$(int index)
                 ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $WeakDescriptorSelfPin$;
@@ -803,6 +807,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
+      $set_hasbit$;
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $StrongRef$;
@@ -827,6 +832,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $Submsg$* _add = _internal_mutable_$name_internal$()->Add();
+      $set_hasbit$;
       $annotate_add_mutable$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
       return _add;

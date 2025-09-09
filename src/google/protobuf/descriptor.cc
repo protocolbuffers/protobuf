@@ -96,7 +96,13 @@ namespace google {
 namespace protobuf {
 namespace {
 
-const int kPackageLimit = 100;
+constexpr int kPackageLimit = 100;
+
+#ifdef PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
+constexpr int kMaxFieldsPerMessage = std::numeric_limits<int32_t>::max();
+#else   // PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
+constexpr int kMaxFieldsPerMessage = 65535;
+#endif  // PROTOBUF_UNSAFE_DISABLE_MAX_FIELD_COUNT_CHECK
 
 
 size_t CamelCaseSize(const absl::string_view input) {
@@ -2435,7 +2441,6 @@ bool DescriptorPool::IsReadyForCheckingDescriptorExtDecl(
       "google.protobuf.MethodOptions",
       "google.protobuf.OneofOptions",
       "google.protobuf.ServiceOptions",
-      "google.protobuf.StreamOptions",
   });
   return kDescriptorTypes.contains(message_name);
 }
@@ -5173,6 +5178,21 @@ absl::Status DescriptorPool::SetFeatureSetDefaults(FeatureSetDefaults spec) {
   return absl::OkStatus();
 }
 
+bool DescriptorPool::ShouldEnforceExtensionDeclaration(
+    const FieldDescriptor& field) const {
+  ABSL_DCHECK(field.is_extension());
+  const Descriptor* containing_type = field.containing_type();
+  switch (enforce_extension_declarations_) {
+    case ExtDeclEnforcementLevel::kCustomExtensions:
+      return containing_type->file()->name() !=
+             "google/protobuf/descriptor.proto";
+    case ExtDeclEnforcementLevel::kAllExtensions:
+      return true;
+    default:
+      return false;
+  }
+}
+
 const FeatureSetDefaults& DescriptorPool::GetFeatureSetDefaults() const {
   if (feature_set_defaults_spec_ != nullptr) return *feature_set_defaults_spec_;
   static const FeatureSetDefaults* cpp_default_spec =
@@ -6711,7 +6731,7 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
           }
         });
   }
-  if (!had_errors_) {
+  if (!had_errors_ && pool_->enforce_symbol_visibility_) {
     // Check Symbol Visibility Rules.
     CheckVisibilityRules(result, proto);
   }
@@ -6856,6 +6876,16 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
       });
     }
   }
+
+  if (result->field_count() > kMaxFieldsPerMessage) {
+    AddError(
+        result->full_name(), proto, DescriptorPool::ErrorCollector::TYPE, [&] {
+          return absl::StrCat(result->field_count(), " fields in ",
+                              result->full_name(), " exceeds the limit of ",
+                              kMaxFieldsPerMessage);
+        });
+  }
+
   // Check that fields aren't using reserved names or numbers and that they
   // aren't using extension numbers.
   for (int i = 0; i < result->field_count(); i++) {
@@ -7899,7 +7929,8 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                                      "\" is not a message type.");
                });
       return;
-    } else if (!extendee.IsVisibleFrom(file_)) {
+    } else if (!extendee.IsVisibleFrom(file_) &&
+               pool_->enforce_symbol_visibility_) {
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::EXTENDEE, [&] {
                  return extendee.GetVisibilityError(file_, "target of extend");
@@ -8011,7 +8042,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       field->is_map_ = sub_message->options().map_entry();
     }
 
-    if (!type.IsVisibleFrom(file_)) {
+    if (!type.IsVisibleFrom(file_) && pool_->enforce_symbol_visibility_) {
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::TYPE,
                [&] { return type.GetVisibilityError(file_); });
       return;
@@ -8421,9 +8452,9 @@ void DescriptorBuilder::CheckVisibilityRules(FileDescriptor* file,
         CheckVisibilityRulesVisit(descriptor, proto, state);
       });
 
-  // In edition 2024 we only enforce STRICT visibilty rules. There are possibly
+  // In edition 2024 we only enforce STRICT visibility rules. There are possibly
   // more rules to come in future editions, but for now just apply the rule for
-  // enforcing nested symbol local visibilty. There is a single caveat for,
+  // enforcing nested symbol local visibility. There is a single caveat for,
   // allowing nested enums to have visibility set only when
   //
   // local msg { export enum {} reserved 1 to max; }
@@ -8600,6 +8631,7 @@ void DescriptorBuilder::ValidateOptions(const Descriptor* message,
                                         const DescriptorProto& proto) {
   CheckFieldJsonNameUniqueness(proto, message);
   ValidateExtensionRangeOptions(proto, *message);
+
 }
 
 void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,
@@ -8717,7 +8749,7 @@ void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
       return;
     }
 
-    if (pool_->EnforceCustomExtensionDeclarations()) {
+    if (pool_->ShouldEnforceExtensionDeclaration(*field)) {
       for (const auto& declaration : extension_range->options_->declaration()) {
         if (declaration.number() != field->number()) continue;
         if (declaration.reserved()) {
@@ -10663,7 +10695,7 @@ bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
   return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
-HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
+HasbitMode GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field) {
   // Do not generate hasbits for "real-oneof", weak, or extension fields.
   if (field->real_containing_oneof() || field->options().weak() ||
       field->is_extension()) {
@@ -10675,21 +10707,18 @@ HasbitMode GetFieldHasbitMode(const FieldDescriptor* field) {
     return HasbitMode::kTrueHasbit;
   }
 
-  // Implicit presence fields.
-  if (!field->is_repeated()) {
+  if constexpr (EnableExperimentalHintHasBitsForRepeatedFields()) {
+    // With hasbits for repeated fields enabled, both implicit-presence and
+    // repeated/map fields have hint hasbits.
     return HasbitMode::kHintHasbit;
   }
-  // We currently don't implement hasbits for implicit repeated fields.
-  return HasbitMode::kNoHasbit;
+
+  // Implicit-presence fields have hint hasbits, repeated/map fields do not.
+  return field->is_repeated() ? HasbitMode::kNoHasbit : HasbitMode::kHintHasbit;
 }
 
-bool HasHasbit(const FieldDescriptor* field) {
-  return GetFieldHasbitMode(field) != HasbitMode::kNoHasbit;
-}
-
-static bool IsVerifyUtf8(const FieldDescriptor* field, bool is_lite) {
-  if (is_lite) return false;
-  return true;
+bool HasHasbitWithoutProfile(const FieldDescriptor* field) {
+  return GetFieldHasbitModeWithoutProfile(field) != HasbitMode::kNoHasbit;
 }
 
 // Which level of UTF-8 enforcemant is placed on this file.
@@ -10701,8 +10730,6 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
                                FieldDescriptor::TYPE_STRING))) {
     if (IsStrictUtf8(field)) {
       return Utf8CheckMode::kStrict;
-    } else if (IsVerifyUtf8(field, is_lite)) {
-      return Utf8CheckMode::kVerify;
     }
   }
   return Utf8CheckMode::kNone;

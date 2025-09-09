@@ -6,13 +6,16 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::sys::text::text::upb_DebugString;
-use super::{MiniTable, RawMessage};
+use super::{AssociatedMiniTable, MessagePtr};
 
 /// Returns a string of field number to value entries of a message.
 ///
 /// # Safety
-/// - `mt` must correspond to the `msg`s minitable.
-pub unsafe fn debug_string(msg: RawMessage, mt: *const MiniTable) -> String {
+/// - `msg` must be legally dereferenceable.
+pub unsafe fn debug_string<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> String {
+    let mt = T::mini_table();
+    let msg = msg.raw();
+
     // Only find out the length first to then allocate a buffer of the minimum size
     // needed.
     // SAFETY:

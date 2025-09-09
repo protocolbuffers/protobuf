@@ -97,9 +97,13 @@ class MessageLayoutHelper {
   }
 
  protected:
+  // Enum of hotness classes for fields, which is the major factor in layout
+  // order. Use enum class instead of enum to avoid implicit conversion to an
+  // index.
+  //
   // TODO: Merge kCold and kSplit once all field types can be
   // split.
-  enum FieldHotness {
+  enum class FieldHotness {
     kSplit,
     kCold,
     kWarm,
@@ -108,6 +112,11 @@ class MessageLayoutHelper {
     kRepeated,   // Non-split repeated fields.
     kMaxHotness,
   };
+
+  static constexpr size_t kMaxHotness =
+      static_cast<size_t>(FieldHotness::kMaxHotness);
+
+  friend bool operator<(FieldHotness h1, FieldHotness h2);
 
   // Reorder 'fields' so that if the fields are output into a C++ class in the
   // new order, fields of similar family (see below) are together and within
@@ -165,6 +174,8 @@ class MessageLayoutHelper {
     FieldPartitionArray aligned_to_8;
   };
 
+  static constexpr size_t FieldHotnessIndex(FieldHotness hotness);
+
   // Returns true if the message has PDProto data.
   virtual bool HasProfiledData() const = 0;
 
@@ -187,6 +198,11 @@ class MessageLayoutHelper {
 
   static bool IsFastPathField(
       const FieldDescriptor* field,
+      const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
+          fast_path_fields);
+
+  static bool ShouldPromoteToFastParse(
+      const FieldDescriptor* field, FieldHotness hotness,
       const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
           fast_path_fields);
 
@@ -245,6 +261,9 @@ class MessageLayoutHelper {
 
   const Descriptor* descriptor_;
 };
+
+bool operator<(MessageLayoutHelper::FieldHotness h1,
+               MessageLayoutHelper::FieldHotness h2);
 
 }  // namespace cpp
 }  // namespace compiler

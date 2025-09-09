@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
+#include <cstdint>
 #include <iterator>
 #include <optional>
 #include <string>
@@ -384,10 +385,19 @@ std::optional<float> GetPresenceProbability(const FieldDescriptor* field,
 std::optional<float> GetFieldGroupPresenceProbability(
     const std::vector<const FieldDescriptor*>& fields, const Options& options);
 
+// Returns the "hasbit mode" of the field, which may depend on profile data.
+internal::cpp::HasbitMode GetFieldHasbitMode(const FieldDescriptor* field,
+                                             const Options& options);
+
+// Returns true if there are hasbits for the field, which may depend on profile
+// data.
+PROTOC_EXPORT bool HasHasbit(const FieldDescriptor* field,
+                             const Options& options);
+
 bool IsStringInliningEnabled(const Options& options);
 
 // Returns true if the provided field is a singular string and can be inlined.
-bool CanStringBeInlined(const FieldDescriptor* field);
+bool CanStringBeInlined(const FieldDescriptor* field, const Options& options);
 
 // Returns true if `field` is a string field that can and should be inlined
 // based on PDProto profile.
@@ -508,7 +518,8 @@ bool HasEnumDefinitions(const FileDescriptor* file);
 bool HasV2MessageTable(const FileDescriptor* file, const Options& options);
 bool HasV2ParseTable(const FileDescriptor* file, const Options& options);
 
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor);
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
+                                const Options& options);
 
 // Returns true if a message (descriptor) can have v2 table.
 bool IsV2EnabledForMessage(const Descriptor* descriptor,

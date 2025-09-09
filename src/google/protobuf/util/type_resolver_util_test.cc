@@ -520,6 +520,62 @@ TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsFieldFeatures) {
               )pb"));
 }
 
+TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsInheritedMessageFeatures) {
+  ASSERT_NE(BuildFile(R"pb(
+              package: "test"
+              name: "foo"
+              syntax: "editions"
+              edition: EDITION_2023
+              options {
+                features {
+                  repeated_field_encoding: EXPANDED
+                  [pb.cpp] { string_type: CORD }
+                }
+              }
+              message_type {
+                name: "Parent"
+                options {
+                  features {
+                    field_presence: IMPLICIT
+                    [pb.cpp] { string_type: VIEW }
+                  }
+                }
+                nested_type {
+                  name: "MyMessage"
+                  field { name: "field" number: 1 type: TYPE_BYTES }
+                }
+              }
+            )pb"),
+            nullptr);
+
+  Type type;
+  ASSERT_TRUE(
+      resolver_->ResolveMessageType(GetTypeUrl("test.Parent.MyMessage"), &type)
+          .ok());
+  EXPECT_THAT(type, EqualsProto(R"pb(
+                name: "test.Parent.MyMessage"
+                fields {
+                  kind: TYPE_BYTES
+                  cardinality: CARDINALITY_OPTIONAL
+                  number: 1
+                  name: "field"
+                  json_name: "field"
+                }
+                options {
+                  name: "features"
+                  value {
+                    [type.googleapis.com/google.protobuf.FeatureSet] {
+                      field_presence: IMPLICIT
+                      repeated_field_encoding: EXPANDED
+                      [pb.cpp] { string_type: VIEW }
+                    }
+                  }
+                }
+                source_context { file_name: "foo" }
+                syntax: SYNTAX_EDITIONS
+                edition: "2023")pb"));
+}
+
 TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsEnumFeatures) {
   BuildFile(R"pb(
     package: "test"
@@ -549,6 +605,47 @@ TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsEnumFeatures) {
         syntax: SYNTAX_EDITIONS
         edition: "2023"
       )pb"));
+}
+
+TEST_F(DescriptorPoolTypeResolverSyntaxTest, EditionsEnumInheritedFeatures) {
+  ASSERT_NE(BuildFile(R"pb(
+              package: "test"
+              name: "foo"
+              syntax: "editions"
+              edition: EDITION_2023
+              options { features { repeated_field_encoding: EXPANDED } }
+              message_type {
+                name: "Parent"
+                options { features { field_presence: IMPLICIT } }
+                enum_type {
+                  name: "MyEnum"
+                  options { features { enum_type: CLOSED } }
+                  value: { name: "FOO" number: 1 }
+                }
+              }
+            )pb"),
+            nullptr);
+
+  Enum enm;
+  ASSERT_TRUE(
+      resolver_->ResolveEnumType(GetTypeUrl("test.Parent.MyEnum"), &enm).ok());
+  EXPECT_THAT(enm, EqualsProto(R"pb(
+                name: "test.Parent.MyEnum"
+                enumvalue { name: "FOO" number: 1 }
+                options {
+                  name: "features"
+                  value {
+                    [type.googleapis.com/google.protobuf.FeatureSet] {
+                      field_presence: IMPLICIT
+                      enum_type: CLOSED
+                      repeated_field_encoding: EXPANDED
+                    }
+                  }
+                }
+                source_context { file_name: "foo" }
+                syntax: SYNTAX_EDITIONS
+                edition: "2023"
+              )pb"));
 }
 
 TEST(ConvertDescriptorToTypeTest, TestAllTypes) {

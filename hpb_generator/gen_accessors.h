@@ -8,23 +8,22 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__
 #define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__
 
-#include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_utils.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
-namespace protobuf = ::proto2;
+void WriteFieldAccessorsInHeader(const google::protobuf::Descriptor* desc, Context& ctx);
+void WriteAccessorsInSource(const google::protobuf::Descriptor* desc, Context& ctx);
 
-void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Context& ctx);
-void WriteAccessorsInSource(const protobuf::Descriptor* desc, Context& ctx);
-
-void WriteUsingAccessorsInHeader(const protobuf::Descriptor* desc,
+void WriteUsingAccessorsInHeader(const google::protobuf::Descriptor* desc,
                                  MessageClassType handle_type, Context& ctx);
-void WriteOneofAccessorsInHeader(const protobuf::Descriptor* desc,
-                                 Context& ctx);
+void WriteOneofAccessorsInHeader(const google::protobuf::Descriptor* desc, Context& ctx);
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_ACCESSORS_H__

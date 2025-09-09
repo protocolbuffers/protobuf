@@ -53,6 +53,7 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
   GPBApi_FieldNumber_SourceContext = 5,
   GPBApi_FieldNumber_MixinsArray = 6,
   GPBApi_FieldNumber_Syntax = 7,
+  GPBApi_FieldNumber_Edition = 8,
 };
 
 /**
@@ -65,6 +66,11 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
  * sometimes simply referred to as "APIs" in other contexts, such as the name of
  * this message itself. See https://cloud.google.com/apis/design/glossary for
  * detailed terminology.
+ *
+ * New usages of this message as an alternative to ServiceDescriptorProto are
+ * strongly discouraged. This message does not reliability preserve all
+ * information necessary to model the schema and preserve semantics. Instead
+ * make use of FileDescriptorSet which preserves the necessary information.
  **/
 GPB_FINAL @interface GPBApi : GPBMessage
 
@@ -123,6 +129,9 @@ GPB_FINAL @interface GPBApi : GPBMessage
 /** The source syntax of the service. */
 @property(nonatomic, readwrite) GPBSyntax syntax;
 
+/** The source edition string, only valid when syntax is SYNTAX_EDITIONS. */
+@property(nonatomic, readwrite, copy, null_resettable) NSString *edition;
+
 @end
 
 /**
@@ -147,10 +156,16 @@ typedef GPB_ENUM(GPBMethod_FieldNumber) {
   GPBMethod_FieldNumber_ResponseStreaming = 5,
   GPBMethod_FieldNumber_OptionsArray = 6,
   GPBMethod_FieldNumber_Syntax = 7,
+  GPBMethod_FieldNumber_Edition = 8,
 };
 
 /**
  * Method represents a method of an API interface.
+ *
+ * New usages of this message as an alternative to MethodDescriptorProto are
+ * strongly discouraged. This message does not reliability preserve all
+ * information necessary to model the schema and preserve semantics. Instead
+ * make use of FileDescriptorSet which preserves the necessary information.
  **/
 GPB_FINAL @interface GPBMethod : GPBMessage
 
@@ -174,8 +189,21 @@ GPB_FINAL @interface GPBMethod : GPBMessage
 /** The number of items in @c optionsArray without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
-/** The source syntax of this method. */
-@property(nonatomic, readwrite) GPBSyntax syntax;
+/**
+ * The source syntax of this method.
+ *
+ * This field should be ignored, instead the syntax should be inherited from
+ * Api. This is similar to Field and EnumValue.
+ **/
+@property(nonatomic, readwrite) GPBSyntax syntax GPB_DEPRECATED_MSG("google.protobuf.Method.syntax is deprecated (see google/protobuf/api.proto).");
+
+/**
+ * The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+ *
+ * This field should be ignored, instead the edition should be inherited from
+ * Api. This is similar to Field and EnumValue.
+ **/
+@property(nonatomic, readwrite, copy, null_resettable) NSString *edition GPB_DEPRECATED_MSG("google.protobuf.Method.edition is deprecated (see google/protobuf/api.proto).");
 
 @end
 

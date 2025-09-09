@@ -20,6 +20,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "lite_nowkt",
+    actual = "//java/core:lite_runtime_only",
+    visibility = ["//visibility:public"],
+)
+
 proto_lang_toolchain(
     name = "toolchain",
     # keep this in sync w/ LITE_WELL_KNOWN_PROTO_MAP in //:BUILD

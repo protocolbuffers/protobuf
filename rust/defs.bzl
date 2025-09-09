@@ -114,13 +114,13 @@ def _rust_proto_library_impl(ctx):
     # we have to create a shallow copy.
     toolchain = ctx.toolchains["@rules_rust//rust:toolchain_type"]
     fields = {field: getattr(crate_info, field) for field in dir(crate_info)}
-    pkg, name = _user_visible_label(ctx).rsplit(":")
 
     # Construct a label and compute the crate name.
-    # Package and workspace root are only relevant when 1P crate renaming is enabled.
+    # The label's package and workspace root are only relevant when 1P crate renaming is enabled.
     # The current implementation of crate renaming supports only monorepos which
-    # means that it will only rename wen label.workspace_root is empty.
-    label = struct(**{"name": name, "package": pkg, "workspace_root": ""})
+    # means that it will only rename when label.workspace_root is empty.
+    label_str = _user_visible_label(ctx)
+    label = Label(label_str)
     fields["name"] = label_to_crate_name(ctx, label, toolchain)
 
     # These two fields present on the dir(crate_info) but break on some versions of Bazel when

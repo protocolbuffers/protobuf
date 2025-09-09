@@ -46,7 +46,8 @@ typedef enum {
   kUpb_EncodeStatus_OutOfMemory = 1,  // Arena alloc failed
   kUpb_EncodeStatus_MaxDepthExceeded = 2,
 
-  // kUpb_EncodeOption_CheckRequired failed but the parse otherwise succeeded.
+  // One or more required fields are missing. Only returned if
+  // kUpb_EncodeOption_CheckRequired is set.
   kUpb_EncodeStatus_MissingRequired = 3,
 } upb_EncodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:encode_status)

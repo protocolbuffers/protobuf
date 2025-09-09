@@ -515,7 +515,9 @@ public final class DynamicMessage extends AbstractMessage {
         }
         oneofCases[index] = field;
       } else if (!field.hasPresence()) {
-        if (!field.isRepeated() && value.equals(field.getDefaultValue())) {
+        if (field.isRepeated()
+            ? ((List<?>) value).isEmpty()
+            : value.equals(field.getDefaultValue())) {
           // Setting a field without presence to its default value is equivalent to clearing the
           // field.
           fields.clearField(field);

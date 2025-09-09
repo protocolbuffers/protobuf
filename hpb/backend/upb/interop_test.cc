@@ -8,8 +8,8 @@
 #include "hpb/backend/upb/interop.h"
 
 #include <gtest/gtest.h>
-#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.h"
+#include "hpb_generator/tests/test_model.hpb.h"
+#include "hpb_generator/tests/test_model.upb.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 

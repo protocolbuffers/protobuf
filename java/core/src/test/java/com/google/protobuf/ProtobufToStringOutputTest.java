@@ -12,6 +12,8 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class ProtobufToStringOutputTest extends DebugFormatTest {
+  private static final String SILENT_MARKER = "";
+
   RedactedFields.Builder messageBuilder;
   RedactedFields message;
 
@@ -31,7 +33,7 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
   public void toStringFormat_defaultFormat() {
     assertThat(message.toString())
         .matches(
-            "optional_redacted_string: \"bar\"\n"
+            "optional_redacted_string: " + SILENT_MARKER + "\"bar\"\n"
                 + "optional_unredacted_string: \"foo\"\n"
                 + "optional_redacted_message \\{\n"
                 + "  optional_unredacted_nested_string: \"foobar\"\n"
@@ -107,7 +109,7 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
   public void builderToStringFormat_defaultFormat() {
     assertThat(messageBuilder.toString())
         .matches(
-            "optional_redacted_string: \"bar\"\n"
+            "optional_redacted_string: " + SILENT_MARKER + "\"bar\"\n"
                 + "optional_unredacted_string: \"foo\"\n"
                 + "optional_redacted_message \\{\n"
                 + "  optional_unredacted_nested_string: \"foobar\"\n"

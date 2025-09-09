@@ -256,6 +256,8 @@ void PyiGenerator::PrintImports() const {
   } else {
     if (file_->service_count() > 0) {
       printer_->Print(
+          "from google3.net.rpc.python import legacy_stream_token as "
+          "_legacy_stream_token\n"
           "from google3.net.rpc.python import proto_python_api_2_stub as "
           "_proto_python_api_2_stub\n"
           "from google3.net.rpc.python import pywraprpc as _pywraprpc\n"
@@ -442,21 +444,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   Annotate("class_name", &message_descriptor);
   printer_->Indent();
 
-  // Prints slots
-  printer_->Print("__slots__ = (");
-  int items_printed = 0;
-  for (int i = 0; i < message_descriptor.field_count(); ++i) {
-    const FieldDescriptor* field_des = message_descriptor.field(i);
-    if (IsPythonKeyword(field_des->name())) {
-      continue;
-    }
-    if (items_printed > 0) {
-      printer_->Print(", ");
-    }
-    ++items_printed;
-    printer_->Print("\"$field_name$\"", "field_name", field_des->name());
-  }
-  printer_->Print(items_printed == 1 ? ",)\n" : ")\n");
+  printer_->Print("__slots__ = ()\n");
 
   // Prints Extensions for extendable messages
   if (message_descriptor.extension_range_count() > 0) {

@@ -10,9 +10,9 @@
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapView,
-    MergeFrom, Message, Mut, MutProxied, OwnedMessageInterop, ParseError, ProtoBytes, ProtoStr,
-    ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated, RepeatedMut,
-    RepeatedView, TakeFrom, View,
+    MergeFrom, Message, MessageMutInterop, Mut, MutProxied, OwnedMessageInterop, ParseError,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, ProxiedInMapValue, ProxiedInRepeated, Repeated,
+    RepeatedMut, RepeatedView, Serialize, SerializeError, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;
@@ -545,6 +545,107 @@ impl CppTypeConversions for ProtoBytes {
 
     fn into_insertelem(v: Self) -> CppStdString {
         v.into_inner(Private).into_raw()
+    }
+}
+
+unsafe impl<T> ProxiedInRepeated for T
+where
+    Self: MutProxied + CppGetRawMessage + Message,
+    for<'a> View<'a, Self>:
+        From<MessageViewInner<'a, Self>> + std::default::Default + CppGetRawMessage,
+    for<'a> Mut<'a, Self>: From<MessageMutInner<'a, Self>>,
+{
+    fn repeated_new(_private: Private) -> Repeated<Self> {
+        // SAFETY:
+        // - The thunk returns an unaliased and valid `RepeatedPtrField*`
+        unsafe {
+            Repeated::from_inner(
+                Private,
+                InnerRepeated::from_raw(proto2_rust_RepeatedField_Message_new()),
+            )
+        }
+    }
+
+    unsafe fn repeated_free(_private: Private, f: &mut Repeated<Self>) {
+        // SAFETY
+        // - `f.raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_free(f.as_view().as_raw(Private)) }
+    }
+
+    fn repeated_len(f: View<Repeated<Self>>) -> usize {
+        // SAFETY: `f.as_raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_size(f.as_raw(Private)) }
+    }
+
+    unsafe fn repeated_set_unchecked(
+        mut f: Mut<Repeated<Self>>,
+        i: usize,
+        v: impl IntoProxied<Self>,
+    ) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        // - `i < len(f)` is promised by caller.
+        // - The second argument below is a valid `const Message&`.
+        unsafe {
+            proto2_rust_Message_copy_from(
+                proto2_rust_RepeatedField_Message_get_mut(f.as_raw(Private), i),
+                v.into_proxied(Private).get_raw_message(Private),
+            );
+        }
+    }
+
+    unsafe fn repeated_get_unchecked(f: View<Repeated<Self>>, i: usize) -> View<Self> {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `const RepeatedPtrField&`.
+        // - `i < len(f)` is promised by caller.
+        let msg = unsafe { proto2_rust_RepeatedField_Message_get(f.as_raw(Private), i) };
+        let inner = unsafe { MessageViewInner::wrap_raw(msg) };
+        inner.into()
+    }
+
+    unsafe fn repeated_get_mut_unchecked(mut f: Mut<Repeated<Self>>, i: usize) -> Mut<Self> {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        // - `i < len(f)` is promised by caller.
+        let msg = unsafe { proto2_rust_RepeatedField_Message_get_mut(f.as_raw(Private), i) };
+        let inner = unsafe { MessageMutInner::wrap_raw(msg) };
+        inner.into()
+    }
+
+    fn repeated_clear(mut f: Mut<Repeated<Self>>) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_clear(f.as_raw(Private)) };
+    }
+
+    fn repeated_push(mut f: Mut<Repeated<Self>>, v: impl IntoProxied<Self>) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        // - The second argument below is a valid `const Message&`.
+        unsafe {
+            let prototype =
+                <View<Self> as std::default::Default>::default().get_raw_message(Private);
+            let new_elem = proto2_rust_RepeatedField_Message_add(f.as_raw(Private), prototype);
+            proto2_rust_Message_copy_from(
+                new_elem,
+                v.into_proxied(Private).get_raw_message(Private),
+            );
+        }
+    }
+
+    fn repeated_copy_from(src: View<Repeated<Self>>, mut dest: Mut<Repeated<Self>>) {
+        // SAFETY:
+        // - `dest.as_raw()` is a valid `RepeatedPtrField*`.
+        // - `src.as_raw()` is a valid `const RepeatedPtrField&`.
+        unsafe {
+            proto2_rust_RepeatedField_Message_copy_from(dest.as_raw(Private), src.as_raw(Private));
+        }
+    }
+
+    fn repeated_reserve(mut f: Mut<Repeated<Self>>, additional: usize) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_reserve(f.as_raw(Private), additional) }
     }
 }
 
@@ -1368,6 +1469,28 @@ where
     }
 }
 
+impl<'a, T> MessageMutInterop<'a> for T
+where
+    Self: AsMut + CppGetRawMessageMut + From<MessageMutInner<'a, <Self as AsMut>::MutProxied>>,
+    <Self as AsMut>::MutProxied: Message,
+{
+    unsafe fn __unstable_wrap_raw_message_mut(msg: &'a mut *mut std::ffi::c_void) -> Self {
+        let raw = RawMessage::new(*msg as *mut _).unwrap();
+        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
+        inner.into()
+    }
+    unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
+        msg: *mut std::ffi::c_void,
+    ) -> Self {
+        let raw = RawMessage::new(msg as *mut _).unwrap();
+        let inner = unsafe { MessageMutInner::wrap_raw(raw) };
+        inner.into()
+    }
+    fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void {
+        self.get_raw_message_mut(Private).as_ptr() as *mut _
+    }
+}
+
 impl<T> MatcherEq for T
 where
     Self: AsView + Debug,
@@ -1405,6 +1528,20 @@ impl<T: CppGetRawMessageMut> ClearAndParse for T {
         }
         .then_some(())
         .ok_or(ParseError)
+    }
+}
+
+impl<T: CppGetRawMessage> Serialize for T {
+    fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
+        let mut serialized_data = SerializedData::new();
+        let success = unsafe {
+            proto2_rust_Message_serialize(self.get_raw_message(Private), &mut serialized_data)
+        };
+        if success {
+            Ok(serialized_data.into_vec())
+        } else {
+            Err(SerializeError)
+        }
     }
 }
 

@@ -28,9 +28,7 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
 }
 
-RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {
-
-}
+RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() = default;
 
 void RepeatedPrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(

@@ -51,10 +51,10 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               //~ For upb, getters return null if the field is unset, so we need
               //~ to check for null and return the default instance manually.
               //~ Note that a nullptr received from upb manifests as Option::None
-              let raw = submsg.map(|ptr| ptr.raw()).unwrap_or($pbr$::ScratchSpace::zeroed_block());
-              let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };
-              $msg_type$View::new($pbi$::Private, inner)
-        )rs");
+              submsg
+                  .map(|ptr| unsafe { $pbr$::MessageViewInner::wrap(ptr).into() })
+                 .unwrap_or($msg_type$View::default())
+              )rs");
                 } else {
                   ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}},
                            R"rs(
@@ -62,7 +62,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
               //~ default_instance if the field is unset.
               let submsg = unsafe { $getter_thunk$(self.raw_msg()) };
               let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(submsg) };
-              $msg_type$View::new($pbi$::Private, inner)
+              inner.into()
         )rs");
                 }
               },
@@ -97,7 +97,7 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   $msg_type$Mut::from_parent(
                     $pbi$::Private,
                     self.as_message_mut_inner($pbi$::Private),
-                    ptr.raw())
+                    ptr)
                 )rs");
              }
            }},

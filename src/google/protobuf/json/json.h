@@ -24,6 +24,11 @@ namespace google {
 namespace protobuf {
 namespace json {
 struct ParseOptions {
+  // Whether some legacy non-spec behaviors are accepted for bug
+  // compatibility reasons. Setting allow_legacy_nonconformant_behavior=false is
+  // recommended for new code and is expected to eventually become the default.
+  bool allow_legacy_nonconformant_behavior = true;
+
   // Whether to ignore unknown JSON fields during parsing
   bool ignore_unknown_fields = false;
 
@@ -36,6 +41,11 @@ struct ParseOptions {
 };
 
 struct PrintOptions {
+  // Whether some legacy non-spec behaviors are accepted for bug
+  // compatibility reasons. Setting allow_legacy_nonconformant_behavior=false is
+  // recommended for new code and is expected to eventually become the default.
+  bool allow_legacy_nonconformant_behavior = true;
+
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace = false;

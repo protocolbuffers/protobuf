@@ -160,6 +160,23 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   return name;
 }
 
+PROTOC_EXPORT std::string KotlinFactoryName(const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetKotlinFactoryName(descriptor);
+}
+
+PROTOC_EXPORT std::string FullyQualifiedKotlinFactoryName(
+    const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetFullyQualifiedKotlinFactoryName(descriptor);
+}
+
+PROTOC_EXPORT std::string KotlinExtensionsClassName(
+    const Descriptor* descriptor) {
+  ClassNameResolver name_resolver;
+  return name_resolver.GetKotlinExtensionsClassName(descriptor);
+}
+
 
 }  // namespace java
 }  // namespace compiler

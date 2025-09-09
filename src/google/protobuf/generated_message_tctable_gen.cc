@@ -151,7 +151,7 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
 
 #define PROTOBUF_PICK_STRING_FUNCTION(fn)                                 \
   (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord      \
-       ? PROTOBUF_PICK_FUNCTION(fn##cS)                                   \
+       ? PROTOBUF_PICK_REPEATABLE_FUNCTION(fn##c)                         \
    : field->cpp_string_type() == FieldDescriptor::CppStringType::kView && \
            options.use_micro_string                                       \
        ? PROTOBUF_PICK_FUNCTION(fn##mS)                                   \
@@ -224,9 +224,6 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       switch (entry.utf8_check_mode) {
         case cpp::Utf8CheckMode::kStrict:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastU);
-          break;
-        case cpp::Utf8CheckMode::kVerify:
-          picked = PROTOBUF_PICK_STRING_FUNCTION(kFastS);
           break;
         case cpp::Utf8CheckMode::kNone:
           picked = PROTOBUF_PICK_STRING_FUNCTION(kFastB);
@@ -524,10 +521,10 @@ uint16_t MakeTypeCardForField(
     cpp::Utf8CheckMode utf8_check_mode) {
   uint16_t type_card;
   namespace fl = internal::field_layout;
-  if (has_hasbit) {
-    type_card = fl::kFcOptional;
-  } else if (field->is_repeated()) {
+  if (field->is_repeated()) {
     type_card = fl::kFcRepeated;
+  } else if (has_hasbit) {
+    type_card = fl::kFcOptional;
   } else if (field->real_containing_oneof()) {
     type_card = fl::kFcOneof;
   } else {
@@ -627,9 +624,6 @@ uint16_t MakeTypeCardForField(
       switch (utf8_check_mode) {
         case cpp::Utf8CheckMode::kStrict:
           type_card |= fl::kUtf8String;
-          break;
-        case cpp::Utf8CheckMode::kVerify:
-          type_card |= fl::kRawString;
           break;
         case cpp::Utf8CheckMode::kNone:
           type_card |= fl::kBytes;
@@ -743,27 +737,6 @@ bool IsFieldTypeEligibleForFastParsing(const FieldDescriptor* field) {
   if (field->is_map() || field->real_containing_oneof() ||
       field->options().weak()) {
     return false;
-  }
-
-  switch (field->type()) {
-      // Some bytes fields can be handled on fast path.
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES: {
-      auto ctype = field->cpp_string_type();
-      if (ctype == FieldDescriptor::CppStringType::kString ||
-          ctype == FieldDescriptor::CppStringType::kView) {
-        // strings are fine...
-      } else if (ctype == FieldDescriptor::CppStringType::kCord) {
-        // Cords are worth putting into the fast table, if they're not repeated
-        if (field->is_repeated()) return false;
-      } else {
-        return false;
-      }
-      break;
-    }
-
-    default:
-      break;
   }
 
   // The largest tag that can be read by the tailcall parser is two bytes

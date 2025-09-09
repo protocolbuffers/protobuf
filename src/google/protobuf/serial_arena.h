@@ -376,31 +376,6 @@ class PROTOBUF_EXPORT SerialArena {
     return const_cast<char*>(&dummy);
   }
 
-  // Next pointer to allocate from.  Always 8-byte aligned.  Points inside
-  // head_ (and head_->pos will always be non-canonical).  We keep these
-  // here to reduce indirection.
-  std::atomic<char*> ptr_{ArbitraryInternalPointerForInit()};
-  // Limiting address up to which memory can be allocated from the head block.
-  char* limit_ = ArbitraryInternalPointerForInit();
-  // Current prefetch positions. Data from `ptr_` up to but not including
-  // `prefetch_ptr_` is software prefetched.
-  const char* prefetch_ptr_ = ArbitraryInternalPointerForInit();
-
-  // Chunked linked list for managing cleanup for arena elements.
-  cleanup::ChunkList cleanup_list_;
-
-  // The active string block.
-  std::atomic<StringBlock*> string_block_{nullptr};
-
-  // The number of unused bytes in string_block_.
-  // We allocate from `effective_size()` down to 0 inside `string_block_`.
-  // `unused  == 0` means that `string_block_` is exhausted. (or null).
-  std::atomic<size_t> string_block_unused_{0};
-
-  std::atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
-  std::atomic<size_t> space_used_{0};       // Necessary for metrics.
-  std::atomic<size_t> space_allocated_{0};
-  ThreadSafeArena& parent_;
 
   // Repeated*Field and Arena play together to reduce memory consumption by
   // reusing blocks. Currently, natural growth of the repeated field types makes
@@ -410,7 +385,38 @@ class PROTOBUF_EXPORT SerialArena {
   // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
   // The array of freelists is grown when needed in `ReturnArrayMemory()`.
   uint8_t cached_block_length_ = 0;
+
+  // Current prefetch positions. Data from `ptr_` up to but not including
+  // `prefetch_ptr_` is software prefetched.
+  const char* prefetch_ptr_ = ArbitraryInternalPointerForInit();
+
+  std::atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
+
+  // Next pointer to allocate from.  Always 8-byte aligned.  Points inside
+  // head_ (and head_->pos will always be non-canonical).  We keep these
+  // here to reduce indirection.
+  std::atomic<char*> ptr_{ArbitraryInternalPointerForInit()};
+
+  // Limiting address up to which memory can be allocated from the head block.
+  char* limit_ = ArbitraryInternalPointerForInit();
+
+  std::atomic<size_t> space_allocated_{0};
+
   CachedBlock** cached_blocks_ = nullptr;
+
+  // The active string block.
+  std::atomic<StringBlock*> string_block_{nullptr};
+
+  ThreadSafeArena& parent_;
+  // The number of unused bytes in string_block_.
+  // We allocate from `effective_size()` down to 0 inside `string_block_`.
+  // `unused  == 0` means that `string_block_` is exhausted. (or null).
+  std::atomic<size_t> string_block_unused_{0};
+
+  // Chunked linked list for managing cleanup for arena elements.
+  cleanup::ChunkList cleanup_list_;
+
+  std::atomic<size_t> space_used_{0};  // Necessary for metrics.
 };
 
 PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {

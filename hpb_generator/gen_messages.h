@@ -8,22 +8,24 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GEN_MESSAGES_H__
 #define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_MESSAGES_H__
 
-#include "google/protobuf/compiler/hpb/context.h"
+#include <vector>
+
+#include "hpb_generator/context.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
-namespace protobuf = ::proto2;
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 void WriteMessageClassDeclarations(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Context& ctx);
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const google::protobuf::EnumDescriptor*>& file_enums, Context& ctx);
 void WriteMessageImplementation(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Context& ctx);
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts, Context& ctx);
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_MESSAGES_H__

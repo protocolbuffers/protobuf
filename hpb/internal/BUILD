@@ -5,17 +5,26 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
+    name = "os_macros",
+    textual_hdrs = [
+        "os_macros_undef.inc",
+        "os_macros_restore.inc",
+    ],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//src/google/protobuf:os_macros",
+    ],
+)
+
+cc_library(
     name = "template_help",
     hdrs = ["template_help.h"],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb:__subpackages__"],
     deps = [
         "//hpb:ptr",
@@ -27,7 +36,7 @@ cc_test(
     srcs = ["template_help_test.cc"],
     deps = [
         ":template_help",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_hpb_proto",
+        "//hpb_generator/tests:test_model_hpb_proto",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -51,7 +60,6 @@ cc_library(
     hdrs = [
         "message_lock.h",
     ],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = [
         "//hpb:__subpackages__",
     ],
@@ -76,9 +84,10 @@ cc_test(
         "//hpb",
         "//hpb:arena",
         "//hpb:extension",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_hpb_proto",
+        "//hpb_generator/tests:test_model_hpb_proto",
         "//upb/mem",
         "//upb/mini_table",
+        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/hash",
         "@abseil-cpp//absl/log:absl_check",
         "@googletest//:gtest",

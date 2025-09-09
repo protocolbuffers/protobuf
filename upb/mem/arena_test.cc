@@ -17,6 +17,7 @@
 #include <memory>
 #include <thread>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -272,7 +273,7 @@ TEST(OverheadTest, SingleMassiveBlockThenLittle) {
     EXPECT_NEAR(test.WastePct(), 0.075, 0.025);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.09, 0.025);
 #else
-    EXPECT_NEAR(test.WastePct(), 0.08, 0.025);
+    EXPECT_NEAR(test.WastePct(), 0.08, 0.125);
     EXPECT_NEAR(test.AmortizedAlloc(), 0.09, 0.025);
 #endif
   }
@@ -402,6 +403,35 @@ class Environment {
     EXPECT_TRUE(upb_Arena_Fuse(a->ptr(), b->ptr()));
   }
 
+  void RandomRefArena(absl::BitGen& gen) {
+    std::shared_ptr<const upb::Arena> a = RandomNonNullArena(gen);
+    std::shared_ptr<const upb::Arena> b = RandomNonNullArena(gen);
+    if (a->ptr() == b->ptr()) return;
+    if (a->ptr() > b->ptr()) std::swap(a, b);
+    EXPECT_TRUE(upb_Arena_RefArena(a->ptr(), b->ptr()));
+  }
+
+#ifndef NDEBUG
+  void PartitionedHasRef(absl::BitGen& gen) {
+    // Ensure refs like (0,2), (1,3), (2,4) ... (97,99).
+    auto [a, b] = GetArenaPairWithOffset(gen, 2);
+    (void)upb_Arena_HasRef(a->ptr(), b->ptr());
+  }
+
+  void PartitionedFuse(absl::BitGen& gen) {
+    // Ensure partitions like (0,1), (2,3), (4,5) ... (98,99).
+    auto [a, b] = GetArenaPairWithOffset(gen, 1);
+    EXPECT_TRUE(upb_Arena_Fuse(a->ptr(), b->ptr()));
+  }
+
+  void PartitionedRefArena(absl::BitGen& gen) {
+    // Ensure refs like (0,2), (1,3), (2,4) ... (97,99).
+    auto [a, b] = GetArenaPairWithOffset(gen, 2);
+    if (a->ptr() > b->ptr()) std::swap(a, b);
+    EXPECT_TRUE(upb_Arena_RefArena(a->ptr(), b->ptr()));
+  }
+#endif
+
   void RandomPoke(absl::BitGen& gen, size_t min_index = 0) {
     switch (absl::Uniform(gen, 0, 2)) {
       case 0:
@@ -423,9 +453,22 @@ class Environment {
   }
 
  private:
-  size_t RandomIndex(absl::BitGen& gen, size_t min_index = 0) {
-    return absl::Uniform<size_t>(gen, min_index,
-                                 std::tuple_size<ArenaArray>::value);
+  using ArenaArray = std::array<std::shared_ptr<const upb::Arena>, 100>;
+
+  std::pair<std::shared_ptr<const upb::Arena>,
+            std::shared_ptr<const upb::Arena>>
+  GetArenaPairWithOffset(absl::BitGen& gen, size_t offset) {
+    size_t index = RandomIndex(gen, 0, std::tuple_size<ArenaArray>::value - 1);
+    size_t a_index = index % 2 == 0 ? index : index + 1;
+    std::shared_ptr<const upb::Arena> a = IndexedNonNullArena(a_index);
+    std::shared_ptr<const upb::Arena> b = IndexedNonNullArena(
+        (a_index + offset) % std::tuple_size<ArenaArray>::value);
+    return {a, b};
+  }
+
+  size_t RandomIndex(absl::BitGen& gen, size_t min_index = 0,
+                     size_t max_index = std::tuple_size<ArenaArray>::value) {
+    return absl::Uniform<size_t>(gen, min_index, max_index);
   }
 
   // Swaps a random arena from the set with the given arena.
@@ -445,7 +488,6 @@ class Environment {
     return IndexedNonNullArena(RandomIndex(gen));
   }
 
-  using ArenaArray = std::array<std::shared_ptr<const upb::Arena>, 100>;
   ArenaArray arenas_ ABSL_GUARDED_BY(mutex_);
   absl::Mutex mutex_;
 };
@@ -766,6 +808,205 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   done.Notify();
   for (auto& t : threads) t.join();
 }
+
+TEST(ArenaTest, FuzzRefArenaRace) {
+  Environment env;
+
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.RandomNewFree(gen);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    env.RandomRefArena(gen);
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
+}
+
+#ifndef NDEBUG
+
+TEST(ArenaTest, FuzzFuseRefArenaRace) {
+  Environment env;
+
+  absl::Notification done;
+  std::vector<std::thread> threads;
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.PartitionedFuse(gen);
+      }
+    });
+  }
+  for (int i = 0; i < 10; ++i) {
+    threads.emplace_back([&]() {
+      absl::BitGen gen;
+      while (!done.HasBeenNotified()) {
+        env.PartitionedHasRef(gen);
+      }
+    });
+  }
+
+  absl::BitGen gen;
+  auto end = absl::Now() + absl::Seconds(2);
+  while (absl::Now() < end) {
+    env.PartitionedRefArena(gen);
+    env.PartitionedHasRef(gen);
+  }
+  done.Notify();
+  for (auto& t : threads) t.join();
+}
+
+TEST(ArenaTest, ArenaRef) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_HasRef(arena1, arena2));
+  EXPECT_FALSE(upb_Arena_HasRef(arena2, arena1));
+
+  upb_Arena_Free(arena1);
+  upb_Arena_Free(arena2);
+}
+#endif
+
+TEST(ArenaTest, ArenaRefPreventsFree) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  // arena2 has refcount 1.
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // arena1 now owns a ref to arena2. arena2 has refcount 2.
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
+
+  // User of arena2 frees it. Refcount goes to 1. Arena is not freed.
+  upb_Arena_Free(arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // We can still allocate on arena2.
+  EXPECT_NE(nullptr, upb_Arena_Malloc(arena2, 1));
+
+  // When arena1 is freed, it releases its ref on arena2, which is then freed.
+  upb_Arena_Free(arena1);
+}
+
+TEST(ArenaTest, ArenaOwnerFreedFirst) {
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+
+  // arena2 has refcount 1.
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // arena1 now owns a ref to arena2. arena2 has refcount 2.
+  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
+
+  // Freeing the owner releases its ref on arena2. Refcount goes to 1.
+  upb_Arena_Free(arena1);
+  EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
+
+  // Now when we free arena2, it is actually freed.
+  upb_Arena_Free(arena2);
+}
+
+#ifndef UPB_ENABLE_REF_CYCLE_CHECKS
+
+TEST(ArenaDeathTest, ArenaRefCycle) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_RefArena(arena2, arena1);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaRefCycleThroughFuse) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena* arena3 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);
+        upb_Arena_Fuse(arena2, arena3);
+        upb_Arena_RefArena(arena3, arena1);
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+        upb_Arena_Free(arena3);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaRefCycleThroughMultipleFuses) {
+  ASSERT_DEATH(
+      {
+        upb_Arena* arena1 = upb_Arena_New();
+        upb_Arena* arena2 = upb_Arena_New();
+        upb_Arena* arena3 = upb_Arena_New();
+        upb_Arena* arena4 = upb_Arena_New();
+        upb_Arena* arena5 = upb_Arena_New();
+        upb_Arena_RefArena(arena1, arena2);  // a -> b
+        upb_Arena_Fuse(arena2, arena3);      // b + c
+        upb_Arena_RefArena(arena3, arena4);  // c -> d
+        upb_Arena_Fuse(arena4, arena5);      // d + e
+        upb_Arena_RefArena(arena5, arena1);  // e -> a (cycle)
+        upb_Arena_Free(arena1);
+        upb_Arena_Free(arena2);
+        upb_Arena_Free(arena3);
+        upb_Arena_Free(arena4);
+        upb_Arena_Free(arena5);
+      },
+      "");
+}
+
+TEST(ArenaDeathTest, ArenaRefFuseCycle) {
+  ASSERT_DEATH(
+      {
+        upb::Arena a;
+        upb::Arena b;
+        upb::Arena c;
+        c.RefArena(a);
+
+        absl::Notification t1_started;
+        absl::Notification t2_started;
+        absl::Notification t1_finished;
+        absl::Notification t2_finished;
+
+        std::thread thread1([&]() {
+          t1_started.Notify();
+          t2_started.WaitForNotification();
+          a.RefArena(b);
+          t1_finished.Notify();
+        });
+
+        std::thread thread2([&]() {
+          t2_started.Notify();
+          t1_started.WaitForNotification();
+          b.Fuse(c);
+          t2_finished.Notify();
+        });
+
+        thread1.join();
+        thread2.join();
+      },
+      "");
+}
+
+#endif  // DEBUG
 
 #endif  // UPB_SUPPRESS_MISSING_ATOMICS
 

@@ -66,7 +66,7 @@ TEST(RepeatedFieldIterator, Traits) {
   EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
   EXPECT_TRUE((std::is_same<It::iterator_category,
                             std::random_access_iterator_tag>::value));
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   EXPECT_TRUE((
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
 #else
@@ -83,7 +83,7 @@ TEST(ConstRepeatedFieldIterator, Traits) {
   EXPECT_TRUE((std::is_same<It::difference_type, std::ptrdiff_t>::value));
   EXPECT_TRUE((std::is_same<It::iterator_category,
                             std::random_access_iterator_tag>::value));
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   EXPECT_TRUE((
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value));
 #else
@@ -1343,20 +1343,6 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Halves) {
 }
 
 TEST(RepeatedField, CheckedGetOrAbortTest) {
-  RepeatedField<int> field;
-
-  // Empty container tests.
-  EXPECT_DEATH(CheckedGetOrAbort(field, -1), "index: -1, size: 0");
-  EXPECT_DEATH(CheckedGetOrAbort(field, field.size()), "index: 0, size: 0");
-
-  // Non-empty container tests
-  field.Add(5);
-  field.Add(4);
-  EXPECT_DEATH(CheckedGetOrAbort(field, 2), "index: 2, size: 2");
-  EXPECT_DEATH(CheckedGetOrAbort(field, -1), "index: -1, size: 2");
-}
-
-TEST(RepeatedField, CheckedMutableOrAbortTest) {
   RepeatedField<int> field;
 
   // Empty container tests.

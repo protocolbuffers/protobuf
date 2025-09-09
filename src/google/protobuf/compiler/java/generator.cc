@@ -34,8 +34,8 @@ namespace compiler {
 namespace java {
 
 
-JavaGenerator::JavaGenerator() {}
-JavaGenerator::~JavaGenerator() {}
+JavaGenerator::JavaGenerator() = default;
+JavaGenerator::~JavaGenerator() = default;
 
 uint64_t JavaGenerator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |
@@ -74,6 +74,8 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       file_options.annotation_list_file = option.second;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       file_options.strip_nonfunctional_codegen = true;
+    } else if (option.first == "bootstrap") {
+      file_options.bootstrap = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;

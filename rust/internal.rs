@@ -26,11 +26,6 @@ pub mod runtime;
 #[path = "upb.rs"]
 pub mod runtime;
 
-// TODO: Temporarily re-export these symbols which are now under
-// runtime under __internal directly since some external callers using it
-// through __internal.
-pub use runtime::{PtrAndLen, RawMap, RawMessage, RawRepeatedField};
-
 /// Used to protect internal-only items from being used accidentally.
 #[derive(Debug)]
 pub struct Private;

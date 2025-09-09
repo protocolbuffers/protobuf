@@ -20,6 +20,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/message_lite.h"
@@ -108,7 +109,6 @@ bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
   auto end = begin + kSlopBytes;
   return ParsingEndsInBuffer(ptr, end, depth);
 }
-
 
 template <bool kExperimentalV2>
 const char* EpsCopyInputStream::NextBuffer(int overrun, int depth) {
@@ -593,6 +593,7 @@ const char* InlineGreedyStringParser(std::string* s, const char* ptr,
   if (!ptr) return nullptr;
   return ctx->ReadString(ptr, size, s);
 }
+
 
 
 template <typename T, bool sign>

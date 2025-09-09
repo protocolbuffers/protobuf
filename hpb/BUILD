@@ -6,14 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load(
-    "//hpb/bazel:hpb_proto_library.bzl",
-    "hpb_proto_library_copts",
-)
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -50,7 +44,6 @@ cc_library(
     hdrs = [
         "hpb.h",
     ],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":arena",
@@ -93,59 +86,34 @@ cc_library(
     name = "repeated_field",
     hdrs = [
         "repeated_field.h",
-        "repeated_field_iterator.h",
     ],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":hpb",
+        ":multibackend",
         ":ptr",
-        "//hpb/backend/upb:interop",
-        "//hpb/internal:template_help",
-        "//upb/base",
-        "//upb/mem",
-        "//upb/message",
-        "//upb/message:copy",
         "@abseil-cpp//absl/strings",
-    ],
+    ] + select({
+        ":hpb_backend_cpp": [
+        ],
+        ":hpb_backend_upb": [
+            "//hpb/backend/upb:repeated_field",
+        ],
+    }),
 )
 
 # Common support code for C++ generated code.
 cc_library(
     name = "generated_hpb_support",
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = [
         "//hpb/bazel:__pkg__",
-        "//src/google/protobuf/compiler/hpb:__pkg__",
+        "//hpb_generator:__pkg__",
     ],
     deps = [
         ":hpb",
         ":repeated_field",
+        "//hpb/internal:os_macros",
         "//upb/mem",
         "//upb/message",
-    ],
-)
-
-hpb_proto_library_copts(
-    name = "hpb_proto_library_copts",
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//hpb/bazel:__pkg__"],
-)
-
-cc_test(
-    name = "repeated_field_iterator_test",
-    srcs = ["repeated_field_iterator_test.cc"],
-    deps = [
-        ":arena",
-        ":hpb",
-        ":repeated_field",
-        "//hpb/backend/upb:interop",
-        "//upb/base",
-        "//upb/mem",
-        "//upb/message",
-        "@abseil-cpp//absl/strings:string_view",
-        "@googletest//:gtest",
-        "@googletest//:gtest_main",
     ],
 )
 
@@ -184,9 +152,27 @@ cc_library(
     hdrs = ["status.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":multibackend",
+        "//hpb/backend:types",
         "//upb/wire",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "status_test",
+    srcs = ["status_test.cc"],
+    deps = [
+        ":ptr",
+        ":status",
+        "//hpb_generator/tests:test_model_hpb_proto",
+        "//upb/wire",
+        "@abseil-cpp//absl/status:statusor",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -196,20 +182,15 @@ cc_library(
     hdrs = ["extension.h"],
     visibility = ["//visibility:public"],
     deps = [
+        ":arena",
+        ":multibackend",
         ":ptr",
-        ":status",
-        "//hpb:arena",
+        "//hpb/backend/upb:extension",
         "//hpb/backend/upb:interop",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
-        "//upb/base",
-        "//upb/mem",
         "//upb/message",
         "//upb/mini_table",
         "@abseil-cpp//absl/base:core_headers",
-        "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/status:statusor",
-        "@abseil-cpp//absl/strings:string_view",
     ],
 )

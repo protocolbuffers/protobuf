@@ -5,6 +5,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
@@ -13,9 +15,18 @@ cc_library(
     visibility = ["//hpb:__subpackages__"],
     deps = [
         "//hpb:arena",
+        "//hpb:extension",
         "//hpb:ptr",
         "//hpb/internal:template_help",
-        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_library(
+    name = "interop",
+    hdrs = ["interop.h"],
+    deps = [
+        "//hpb/internal",
     ],
 )

@@ -387,4 +387,51 @@ public class MessageTest {
             .build();
     assertThat(message1).isNotEqualTo(message2);
   }
+
+  /** Tests that unpaired surrogates are replaced by a question mark when serializing a string. */
+  @Test
+  public void testUnpairedSurrogatesReplacedByQuestionMark() throws InvalidProtocolBufferException {
+    String testString = "foo \ud83d bar";
+    String expectedString = "foo ? bar";
+
+    proto3_unittest.UnittestProto3.TestAllTypes testMessage =
+        proto3_unittest.UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalString(testString)
+            .build();
+    ByteString serializedMessage = testMessage.toByteString();
+
+    // Behavior is compatible with String.getBytes("UTF-8"), which replaces
+    // unpaired surrogates with a question mark.
+    proto3_unittest.UnittestProto3.TestAllTypes parsedMessage =
+        proto3_unittest.UnittestProto3.TestAllTypes.parseFrom(serializedMessage);
+    assertThat(parsedMessage.getOptionalString()).isEqualTo(expectedString);
+
+    // Conversion happens during serialization.
+    ByteString expectedBytes = ByteString.copyFromUtf8(expectedString);
+    assertWithMessage(
+            String.format(
+                "Expected serializedMessage (%s) to contain \"%s\" (%s).",
+                encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes)))
+        .that(contains(serializedMessage, expectedBytes))
+        .isTrue();
+  }
+
+  private static String encodeHex(ByteString bytes) {
+    String hexDigits = "0123456789abcdef";
+    StringBuilder stringBuilder = new StringBuilder(bytes.size() * 2);
+    for (byte b : bytes) {
+      stringBuilder.append(hexDigits.charAt((b & 0xf0) >> 4));
+      stringBuilder.append(hexDigits.charAt(b & 0x0f));
+    }
+    return stringBuilder.toString();
+  }
+
+  private static boolean contains(ByteString a, ByteString b) {
+    for (int i = 0; i <= a.size() - b.size(); ++i) {
+      if (a.substring(i, i + b.size()).equals(b)) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

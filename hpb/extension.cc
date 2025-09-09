@@ -7,14 +7,6 @@
 
 #include "hpb/extension.h"
 
-#include "absl/log/absl_check.h"
-#include "absl/status/status.h"
-#include "hpb/internal/message_lock.h"
-#include "hpb/status.h"
-#include "upb/mem/arena.h"
-#include "upb/message/accessors.h"
-#include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 
 namespace hpb {
@@ -22,38 +14,6 @@ namespace internal {
 upb_ExtensionRegistry* GetUpbExtensions(
     const ExtensionRegistry& extension_registry) {
   return extension_registry.registry_;
-}
-
-absl::Status MoveExtension(upb_Message* message, upb_Arena* message_arena,
-                           const upb_MiniTableExtension* ext,
-                           upb_Message* extension, upb_Arena* extension_arena) {
-  if (message_arena != extension_arena &&
-      // Try fuse, if fusing is not allowed or fails, create copy of extension.
-      !upb_Arena_Fuse(message_arena, extension_arena)) {
-    extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
-                          message_arena);
-  }
-  return upb_Message_SetExtension(message, ext, &extension, message_arena)
-             ? absl::OkStatus()
-             : MessageAllocationError();
-}
-
-absl::Status SetExtension(upb_Message* message, upb_Arena* message_arena,
-                          const upb_MiniTableExtension* ext,
-                          const upb_Message* extension) {
-  // Clone extension into target message arena.
-  extension = DeepClone(extension, upb_MiniTableExtension_GetSubMessage(ext),
-                        message_arena);
-  return upb_Message_SetExtension(message, ext, &extension, message_arena)
-             ? absl::OkStatus()
-             : MessageAllocationError();
-}
-
-void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
-                       const upb_MiniTableExtension* ext,
-                       upb_Message* extension, upb_Arena* extension_arena) {
-  ABSL_CHECK(upb_Arena_IsFused(message_arena, extension_arena));
-  upb_Message_SetExtension(message, ext, &extension, message_arena);
 }
 
 }  // namespace internal

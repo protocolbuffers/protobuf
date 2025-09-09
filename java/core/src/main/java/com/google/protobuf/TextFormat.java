@@ -42,7 +42,7 @@ public final class TextFormat {
   private static final String ENABLE_INSERT_SILENT_MARKER_ENV_NAME =
       "SILENT_MARKER_INSERTION_ENABLED";
   private static final boolean ENABLE_INSERT_SILENT_MARKER =
-      "true".equals(System.getenv(ENABLE_INSERT_SILENT_MARKER_ENV_NAME));
+    System.getenv().getOrDefault(ENABLE_INSERT_SILENT_MARKER_ENV_NAME, "false").equals("true");
 
   private static final String REDACTED_MARKER = "[REDACTED]";
 
@@ -665,7 +665,8 @@ public final class TextFormat {
     // field, b) via an enum field marked with debug_redact=true that is within the proto's
     // FieldOptions, either directly or indirectly via a message option.
     private boolean shouldRedact(final FieldDescriptor field, TextGenerator generator) {
-      return enablingSafeDebugFormat && field.isSensitive();
+      FieldDescriptor.RedactionState state = field.getRedactionState();
+      return enablingSafeDebugFormat && state.redact;
     }
 
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
@@ -906,6 +907,77 @@ public final class TextFormat {
         generator.eol();
       }
     }
+  }
+
+  /**
+   * Outputs a textual representation of the Protocol Message supplied into the parameter output.
+   * (This representation is the new version of the classic "ProtocolPrinter" output from the
+   * original Protocol Buffer system)
+   *
+   * @deprecated Use {@code printer().print(MessageOrBuilder, Appendable)}
+   */
+  @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().print(message, output)",
+      imports = "com.google.protobuf.TextFormat")
+  public static void print(final MessageOrBuilder message, final Appendable output)
+      throws IOException {
+    printer().print(message, output);
+  }
+
+  /**
+   * Same as {@code print()}, except that non-ASCII characters are not escaped.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).print(MessageOrBuilder, Appendable)}
+   */
+  @Deprecated
+  public static void printUnicode(final MessageOrBuilder message, final Appendable output)
+      throws IOException {
+    printer()
+        .escapingNonAscii(false)
+        .print(message, output, Printer.FieldReporterLevel.PRINT_UNICODE);
+  }
+
+  /**
+   * Like {@code print()}, but writes directly to a {@code String} and returns it.
+   *
+   * @deprecated Use {@code message.toString()}
+   */
+  @Deprecated
+  public static String printToString(final MessageOrBuilder message) {
+    return printer().printToString(message, Printer.FieldReporterLevel.TEXTFORMAT_PRINT_TO_STRING);
+  }
+
+  /**
+   * Same as {@code printToString()}, except that non-ASCII characters in string type fields are not
+   * escaped in backslash+octals.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).printToString(MessageOrBuilder)}
+   */
+  @Deprecated
+  public static String printToUnicodeString(final MessageOrBuilder message) {
+    return printer()
+        .escapingNonAscii(false)
+        .printToString(message, Printer.FieldReporterLevel.PRINT_UNICODE);
+  }
+
+  /**
+   * Outputs a textual representation of the value of given field value.
+   *
+   * @deprecated Use {@code printer().printFieldValue(FieldDescriptor, Object, Appendable)}
+   * @param field the descriptor of the field
+   * @param value the value of the field
+   * @param output the output to which to append the formatted value
+   * @throws ClassCastException if the value is not appropriate for the given field descriptor
+   * @throws IOException if there is an exception writing to the output
+   */
+  @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().printFieldValue(field, value, output)",
+      imports = "com.google.protobuf.TextFormat")
+  public static void printFieldValue(
+      final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
+    printer().printFieldValue(field, value, output);
   }
 
   /** Convert an unsigned 32-bit integer to a string. */

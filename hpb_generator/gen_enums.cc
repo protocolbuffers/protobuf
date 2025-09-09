@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/gen_enums.h"
+#include "hpb_generator/gen_enums.h"
 
 #include <algorithm>
 #include <deque>
@@ -17,20 +17,20 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/names.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
-namespace protobuf = ::proto2;
-using Sub = protobuf::io::Printer::Sub;
+using Sub = google::protobuf::io::Printer::Sub;
 
 namespace {
 
-std::string ContainingTypeNames(
-    const protobuf::EnumDescriptor* enum_descriptor) {
+std::string ContainingTypeNames(const google::protobuf::EnumDescriptor* enum_descriptor) {
   std::deque<absl::string_view> containing_type_names;
   auto containing_type = enum_descriptor->containing_type();
   while (containing_type != nullptr) {
@@ -57,7 +57,7 @@ std::string EnumInt32ToString(int number) {
   }
 }
 
-std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor) {
+std::string EnumTypeName(const google::protobuf::EnumDescriptor* enum_descriptor) {
   const std::string containing_types = ContainingTypeNames(enum_descriptor);
   if (containing_types.empty()) {
     // enums types with no package name are prefixed with protos_ to prevent
@@ -82,8 +82,8 @@ std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor) {
 }
 
 std::string EnumValueSymbolInNameSpace(
-    const protobuf::EnumDescriptor* desc,
-    const protobuf::EnumValueDescriptor* value) {
+    const google::protobuf::EnumDescriptor* desc,
+    const google::protobuf::EnumValueDescriptor* value) {
   const std::string containing_types = ContainingTypeNames(desc);
   if (!containing_types.empty()) {
     return ToCIdent(
@@ -98,16 +98,16 @@ std::string EnumValueSymbolInNameSpace(
   }
 }
 
-void WriteEnumValues(const protobuf::EnumDescriptor* desc, Context& ctx) {
-  std::vector<const protobuf::EnumValueDescriptor*> values;
+void WriteEnumValues(const google::protobuf::EnumDescriptor* desc, Context& ctx) {
+  std::vector<const google::protobuf::EnumValueDescriptor*> values;
   auto value_count = desc->value_count();
   values.reserve(value_count);
   for (int i = 0; i < value_count; i++) {
     values.push_back(desc->value(i));
   }
   std::stable_sort(values.begin(), values.end(),
-                   [](const protobuf::EnumValueDescriptor* a,
-                      const protobuf::EnumValueDescriptor* b) {
+                   [](const google::protobuf::EnumValueDescriptor* a,
+                      const google::protobuf::EnumValueDescriptor* b) {
                      return a->number() < b->number();
                    });
 
@@ -123,7 +123,7 @@ void WriteEnumValues(const protobuf::EnumDescriptor* desc, Context& ctx) {
 }
 
 void WriteEnumDeclarations(
-    const std::vector<const protobuf::EnumDescriptor*>& enums, Context& ctx) {
+    const std::vector<const google::protobuf::EnumDescriptor*>& enums, Context& ctx) {
   for (auto enumdesc : enums) {
     ctx.Emit({{"type", EnumTypeName(enumdesc)},
               Sub("enum_vals", [&] { WriteEnumValues(enumdesc, ctx); })
@@ -136,5 +136,6 @@ void WriteEnumDeclarations(
   }
 }
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

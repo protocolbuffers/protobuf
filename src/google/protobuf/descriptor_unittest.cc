@@ -66,6 +66,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -83,10 +84,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-using ::google::protobuf::internal::cpp::GetFieldHasbitMode;
+using ::google::protobuf::internal::cpp::GetFieldHasbitModeWithoutProfile;
 using ::google::protobuf::internal::cpp::GetUtf8CheckMode;
 using ::google::protobuf::internal::cpp::HasbitMode;
-using ::google::protobuf::internal::cpp::HasHasbit;
+using ::google::protobuf::internal::cpp::HasHasbitWithoutProfile;
 using ::google::protobuf::internal::cpp::HasPreservingUnknownEnumSemantics;
 using ::google::protobuf::internal::cpp::Utf8CheckMode;
 using ::testing::AnyOf;
@@ -3252,9 +3253,9 @@ class HasHasbitTest : public testing::TestWithParam<HasHasbitTestParam> {
 TEST_P(HasHasbitTest, TestHasHasbitExplicitPresence) {
   EXPECT_EQ(GetField()->has_presence(),
             GetParam().expected_output.expected_has_presence);
-  EXPECT_EQ(GetFieldHasbitMode(GetField()),
+  EXPECT_EQ(GetFieldHasbitModeWithoutProfile(GetField()),
             GetParam().expected_output.expected_hasbitmode);
-  EXPECT_EQ(HasHasbit(GetField()),
+  EXPECT_EQ(HasHasbitWithoutProfile(GetField()),
             GetParam().expected_output.expected_has_hasbit);
 }
 
@@ -3286,24 +3287,30 @@ INSTANTIATE_TEST_SUITE_P(
                                /*expected_has_hasbit=*/true,
                            }},
         // Test case: proto2 repeated fields
-        HasHasbitTestParam{R"pb(name: 'foo.proto'
-                                package: 'foo'
-                                syntax: 'proto2'
-                                message_type {
-                                  name: 'FooMessage'
-                                  field {
-                                    name: 'f'
-                                    number: 1
-                                    type: TYPE_STRING
-                                    label: LABEL_REPEATED
-                                  }
-                                }
-                           )pb",
-                           /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
-                               /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
-                           }},
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'proto2'
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     label: LABEL_REPEATED
+                   }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields()
+                    ? HasbitMode::kHintHasbit
+                    : HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+            }},
         // Test case: proto3 singular fields
         HasHasbitTestParam{R"pb(name: 'foo.proto'
                                 package: 'foo'
@@ -3347,24 +3354,30 @@ INSTANTIATE_TEST_SUITE_P(
                 /*expected_has_hasbit=*/true,
             }},
         // Test case: proto3 repeated fields
-        HasHasbitTestParam{R"pb(name: 'foo.proto'
-                                package: 'foo'
-                                syntax: 'proto3'
-                                message_type {
-                                  name: 'FooMessage'
-                                  field {
-                                    name: 'f'
-                                    number: 1
-                                    type: TYPE_STRING
-                                    label: LABEL_REPEATED
-                                  }
-                                }
-                           )pb",
-                           /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
-                               /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
-                           }},
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'proto3'
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     label: LABEL_REPEATED
+                   }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields()
+                    ? HasbitMode::kHintHasbit
+                    : HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+            }},
         // Test case: proto2 extension fields.
         // Note that extension fields don't have hasbits.
         HasHasbitTestParam{
@@ -3495,25 +3508,31 @@ INSTANTIATE_TEST_SUITE_P(
             }},
         // Test case: repeated fields.
         // Note that repeated fields can't specify presence.
-        HasHasbitTestParam{R"pb(name: 'foo.proto'
-                                package: 'foo'
-                                syntax: 'editions'
-                                edition: EDITION_2023
-                                message_type {
-                                  name: 'FooMessage'
-                                  field {
-                                    name: 'f'
-                                    number: 1
-                                    type: TYPE_STRING
-                                    label: LABEL_REPEATED
-                                  }
-                                }
-                           )pb",
-                           /*expected_output=*/{
-                               /*expected_hasbitmode=*/HasbitMode::kNoHasbit,
-                               /*expected_has_presence=*/false,
-                               /*expected_has_hasbit=*/false,
-                           }},
+        HasHasbitTestParam{
+            R"pb(name: 'foo.proto'
+                 package: 'foo'
+                 syntax: 'editions'
+                 edition: EDITION_2023
+                 message_type {
+                   name: 'FooMessage'
+                   field {
+                     name: 'f'
+                     number: 1
+                     type: TYPE_STRING
+                     label: LABEL_REPEATED
+                   }
+                 }
+            )pb",
+            /*expected_output=*/
+            {
+                /*expected_hasbitmode=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields()
+                    ? HasbitMode::kHintHasbit
+                    : HasbitMode::kNoHasbit,
+                /*expected_has_presence=*/false,
+                /*expected_has_hasbit=*/
+                internal::EnableExperimentalHintHasBitsForRepeatedFields(),
+            }},
         // Test case: extension fields.
         // Note that extension fields don't have hasbits.
         HasHasbitTestParam{
@@ -8690,7 +8709,7 @@ TEST_F(FeaturesTest, Proto2Features) {
   EXPECT_FALSE(field->requires_utf8_validation());
   EXPECT_EQ(
       GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/false),
-      Utf8CheckMode::kVerify);
+      Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(message->FindFieldByName("str"), /*is_lite=*/true),
             Utf8CheckMode::kNone);
   EXPECT_EQ(GetCoreFeatures(message->FindFieldByName("cord"))
@@ -10094,6 +10113,7 @@ TEST_F(FeaturesTest, NoNamingStyleViolationsWithPoolOptInIfMessagesAreGood) {
 }
 
 TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
+  pool_.EnforceSymbolVisibility(true);
   BuildDescriptorMessagesInTestPool();
 
   ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
@@ -10118,6 +10138,7 @@ TEST_F(FeaturesTest, VisibilityFeatureSetStrict) {
 }
 
 TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNested) {
+  pool_.EnforceSymbolVisibility(true);
   BuildDescriptorMessagesInTestPool();
 
   ParseAndBuildFileWithErrorSubstr(
@@ -10136,6 +10157,24 @@ TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNested) {
       "default_symbol_visibility. It must be moved to top-level, ideally in "
       "its own file "
       "in order to be `export`.");
+}
+
+TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNestedDisabled) {
+  pool_.EnforceSymbolVisibility(false);
+  BuildDescriptorMessagesInTestPool();
+
+  EXPECT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+    edition = "2024";
+    package naming;
+
+    option features.default_symbol_visibility = STRICT;
+
+    local message LocalOuter {
+      export message Inner {
+      }
+    }
+  )schema"),
+              NotNull());
 }
 
 TEST_F(FeaturesTest, BadPackageName) {
@@ -11115,11 +11154,11 @@ TEST_F(FeaturesTest, FieldFeatureHelpers) {
   EXPECT_FALSE(expanded_field->is_packed());
   EXPECT_FALSE(utf8_verify_field->requires_utf8_validation());
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/false),
-            Utf8CheckMode::kVerify);
+            Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
             Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/false),
-            Utf8CheckMode::kVerify);
+            Utf8CheckMode::kNone);
   EXPECT_EQ(GetUtf8CheckMode(utf8_verify_field, /*is_lite=*/true),
             Utf8CheckMode::kNone);
 }
@@ -13169,7 +13208,8 @@ TEST_F(ValidationErrorTest, ExtensionDeclarationsFullNameMissingLeadingDot) {
 }
 
 TEST_F(ValidationErrorTest, VisibilityFromSame) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  EXPECT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
@@ -13178,11 +13218,13 @@ TEST_F(ValidationErrorTest, VisibilityFromSame) {
         export message ExportMessage {
           LocalMessage foo = 1;
         }
-        )schema");
+        )schema"),
+              NotNull());
 }
 
 TEST_F(ValidationErrorTest, ExplicitVisibilityFromOther) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
@@ -13190,7 +13232,8 @@ TEST_F(ValidationErrorTest, ExplicitVisibilityFromOther) {
         }
         export message ExportMessage {
         }
-        )schema");
+        )schema"),
+              NotNull());
 
   ParseAndBuildFileWithErrorSubstr(
       "importer.proto",
@@ -13208,8 +13251,34 @@ TEST_F(ValidationErrorTest, ExplicitVisibilityFromOther) {
       "file\n");
 }
 
+TEST_F(ValidationErrorTest, ExplicitVisibilityFromOtherDisabled) {
+  pool_.EnforceSymbolVisibility(false);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
+        edition = "2024";
+        package vis.test;
+
+        local message LocalMessage {
+        }
+        export message ExportMessage {
+        }
+        )schema"),
+              NotNull());
+
+  EXPECT_THAT(ParseAndBuildFile("importer.proto",
+                                R"schema(
+        edition = "2024";
+        import "vis.proto";
+
+        message BadImport {
+          vis.test.LocalMessage foo = 1;
+        }
+      )schema"),
+              NotNull());
+}
+
 TEST_F(ValidationErrorTest, Edition2024DefaultVisibilityFromOther) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
@@ -13217,16 +13286,18 @@ TEST_F(ValidationErrorTest, Edition2024DefaultVisibilityFromOther) {
           message NestedMessage {
           }
         }
-        )schema");
+        )schema"),
+              NotNull());
 
-  ParseAndBuildFile("good_importer.proto", R"schema(
+  ASSERT_THAT(ParseAndBuildFile("good_importer.proto", R"schema(
         edition = "2024";
         import "vis.proto";
 
         message GoodImport {
           vis.test.TopLevelMessage foo = 1;
         }
-        )schema");
+        )schema"),
+              NotNull());
 
   ParseAndBuildFileWithErrorSubstr(
       "bad_importer.proto", R"schema(
@@ -13246,14 +13317,16 @@ TEST_F(ValidationErrorTest, Edition2024DefaultVisibilityFromOther) {
 }
 
 TEST_F(ValidationErrorTest, VisibilityFromLocalExtender) {
-  ParseAndBuildFile("vis.proto", R"schema(
+  pool_.EnforceSymbolVisibility(true);
+  ASSERT_THAT(ParseAndBuildFile("vis.proto", R"schema(
         edition = "2024";
         package vis.test;
 
         local message LocalExtendee {
           extensions 1 to 100;
         }
-        )schema");
+        )schema"),
+              NotNull());
 
   ParseAndBuildFileWithErrorSubstr(
       "bad_importer.proto", R"schema(
@@ -13765,6 +13838,27 @@ TEST_F(ValidationErrorTest, PackageTooLong) {
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
       "aaaaaaaa: NAME: Package name is too long\n");
+}
+
+TEST_F(ValidationErrorTest, TooManyFieldsInMessage) {
+  FileDescriptorProto file = ParseTextOrDie(R"pb(
+    name: "foo.proto"
+    syntax: "proto2"
+    package: "test"
+    message_type { name: "Foo" }
+  )pb");
+
+  for (int i = 0; i < 70000; ++i) {
+    FieldDescriptorProto* field = file.mutable_message_type(0)->add_field();
+    field->set_name(absl::StrCat("field", i));
+    field->set_number(i + 1);
+    field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    field->set_type(FieldDescriptorProto::TYPE_INT32);
+  }
+  BuildFileWithErrors(
+      file,
+      "foo.proto: test.Foo: TYPE: 70000 fields in test.Foo exceeds the limit "
+      "of 65535\n");
 }
 
 

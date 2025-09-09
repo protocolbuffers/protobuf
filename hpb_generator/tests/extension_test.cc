@@ -12,13 +12,16 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/status/status_matchers.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
+#include "hpb_generator/tests/child_model.hpb.h"
+#include "hpb_generator/tests/test_extension.hpb.h"
+#include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb/arena.h"
+#include "hpb/backend/upb/interop.h"
 #include "hpb/hpb.h"
 #include "hpb/requires.h"
+#include "upb/mem/arena.h"
 
 namespace {
 using ::hpb::internal::Requires;
@@ -41,7 +44,7 @@ using ::hpb_unittest::someotherpackage::protos::string_trigraph_ext;
 using ::hpb_unittest::someotherpackage::protos::uint32_ext;
 using ::hpb_unittest::someotherpackage::protos::uint64_ext;
 
-using ::testing::status::IsOkAndHolds;
+using absl_testing::IsOkAndHolds;
 
 TEST(CppGeneratedCode, HasExtension) {
   TestModel model;
@@ -218,8 +221,7 @@ TEST(CppGeneratedCode, SetExtensionWithPtrSameArena) {
   EXPECT_TRUE(ext.ok());
   EXPECT_NE(hpb::interop::upb::GetMessage(*ext), prior_message);
 }
-// TODO - re-enable once hpb arena api can take init blocks
-/*
+
 TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
   // Use an initial block to disallow fusing.
   char initial_block[1000];
@@ -229,15 +231,14 @@ TEST(CppGeneratedCode, SetExtensionFusingFailureShouldCopy) {
 
   ThemeExtension extension1;
   extension1.set_ext_name("Hello World");
-  ASSERT_FALSE(
-      upb_Arena_Fuse(arena.ptr(), hpb::interop::upb::GetArena(&extension1)));
+  ASSERT_FALSE(upb_Arena_Fuse(hpb::interop::upb::UnwrapArena(arena),
+                              hpb::interop::upb::GetArena(&extension1)));
   EXPECT_FALSE(::hpb::HasExtension(model, theme));
   auto status = ::hpb::SetExtension(model, theme, std::move(extension1));
   EXPECT_TRUE(status.ok());
   EXPECT_TRUE(::hpb::HasExtension(model, theme));
   EXPECT_TRUE(hpb::GetExtension(model, theme).ok());
 }
-*/
 
 TEST(CppGeneratedCode, SetExtensionShouldClone) {
   TestModel model;
@@ -311,6 +312,8 @@ TEST(CppGeneratedCode, SetAliasExtensionOnTwoParents) {
                 ->ext_name());
 }
 
+#ifndef NDEBUG
+
 TEST(CppGeneratedCode, SetAliasExtensionOnDifferentArenaShouldCrash) {
   hpb::Arena arena1;
   hpb::Arena arena2;
@@ -322,6 +325,8 @@ TEST(CppGeneratedCode, SetAliasExtensionOnDifferentArenaShouldCrash) {
                                         extension1),
                "");
 }
+
+#endif  // NDEBUG
 
 TEST(CppGeneratedCode, GetExtension) {
   TestModel model;

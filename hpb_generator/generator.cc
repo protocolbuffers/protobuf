@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/generator.h"
+#include "hpb_generator/generator.h"
 
 #include <memory>
 #include <string>
@@ -16,32 +16,32 @@
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
-#include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_enums.h"
-#include "google/protobuf/compiler/hpb/gen_extensions.h"
-#include "google/protobuf/compiler/hpb/gen_messages.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/names.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_enums.h"
+#include "hpb_generator/gen_extensions.h"
+#include "hpb_generator/gen_messages.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 namespace {
 
-namespace protobuf = ::proto2;
 using FileDescriptor = ::google::protobuf::FileDescriptor;
 
 void WriteTypedefForwardingHeader(
-    const protobuf::FileDescriptor* file,
-    const std::vector<const protobuf::Descriptor*>& file_messages,
-    Context& ctx);
+    const google::protobuf::FileDescriptor* file,
+    const std::vector<const google::protobuf::Descriptor*>& file_messages, Context& ctx);
 
-void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
+void WriteHeaderMessageForwardDecls(const google::protobuf::FileDescriptor* file,
                                     Context& ctx);
 
-void WriteMessageImplementations(const protobuf::FileDescriptor* file,
+void WriteMessageImplementations(const google::protobuf::FileDescriptor* file,
                                  Context& ctx);
 
-void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
+void WriteForwardDecls(const google::protobuf::FileDescriptor* file, Context& ctx) {
   for (int i = 0; i < file->public_dependency_count(); ++i) {
     const auto target_file_messages =
         SortedMessages(file->public_dependency(i));
@@ -52,7 +52,7 @@ void WriteForwardDecls(const protobuf::FileDescriptor* file, Context& ctx) {
   WriteTypedefForwardingHeader(file, this_file_messages, ctx);
 }
 
-void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
+void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
     EmitFileWarning(file, ctx);
     const auto msgs = SortedMessages(file);
@@ -74,12 +74,14 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
 
                    $class_name$() = default;
 
-                   $type$* msg() const { return msg_; }
-
                   private:
                    $class_name$($type$* msg) : msg_(msg) {}
 
                    $type$* msg_;
+
+                   $type$* msg() const { return msg_; }
+
+                   friend struct ::hpb::internal::PrivateAccess;
                  };
                  }  // namespace $namespace$
                )cc");
@@ -111,10 +113,12 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
   }
 
   ctx.Emit("#include \"upb/port/def.inc\"\n");
+  ctx.Emit(
+      "#include \"third_party/protobuf/hpb/internal/os_macros_undef.inc\"\n");
 
-  const std::vector<const protobuf::Descriptor*> this_file_messages =
+  const std::vector<const google::protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
-  const std::vector<const protobuf::FieldDescriptor*> this_file_exts =
+  const std::vector<const google::protobuf::FieldDescriptor*> this_file_exts =
       SortedExtensions(file);
 
   if (!this_file_messages.empty()) {
@@ -124,7 +128,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
   WriteHeaderMessageForwardDecls(file, ctx);
   WriteForwardDecls(file, ctx);
 
-  std::vector<const protobuf::EnumDescriptor*> this_file_enums =
+  std::vector<const google::protobuf::EnumDescriptor*> this_file_enums =
       SortedEnums(file);
 
   WrapNamespace(file, ctx, [&]() {
@@ -142,6 +146,8 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
     ctx.Emit("\n");
   });
 
+  ctx.Emit(
+      "#include \"third_party/protobuf/hpb/internal/os_macros_restore.inc\"\n");
   ctx.Emit("\n#include \"upb/port/undef.inc\"\n\n");
   // End of "C" section.
 
@@ -150,7 +156,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Context& ctx) {
 }
 
 // Writes a .hpb.cc source file.
-void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
+void WriteSource(const google::protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
     ctx.Emit("// Placeholder hpb C++ source stub");
     return;
@@ -181,11 +187,11 @@ void WriteSource(const protobuf::FileDescriptor* file, Context& ctx) {
   ctx.Emit("#include \"upb/port/undef.inc\"\n\n");
 }
 
-void WriteMessageImplementations(const protobuf::FileDescriptor* file,
+void WriteMessageImplementations(const google::protobuf::FileDescriptor* file,
                                  Context& ctx) {
-  const std::vector<const protobuf::FieldDescriptor*> file_exts =
+  const std::vector<const google::protobuf::FieldDescriptor*> file_exts =
       SortedExtensions(file);
-  const std::vector<const protobuf::Descriptor*> this_file_messages =
+  const std::vector<const google::protobuf::Descriptor*> this_file_messages =
       SortedMessages(file);
   for (auto message : this_file_messages) {
     WriteMessageImplementation(message, file_exts, ctx);
@@ -193,9 +199,8 @@ void WriteMessageImplementations(const protobuf::FileDescriptor* file,
 }
 
 void WriteTypedefForwardingHeader(
-    const protobuf::FileDescriptor* file,
-    const std::vector<const protobuf::Descriptor*>& file_messages,
-    Context& ctx) {
+    const google::protobuf::FileDescriptor* file,
+    const std::vector<const google::protobuf::Descriptor*>& file_messages, Context& ctx) {
   WrapNamespace(file, ctx, [&]() {
     // Forward-declare types defined in this file.
     for (auto message : file_messages) {
@@ -214,7 +219,7 @@ void WriteTypedefForwardingHeader(
 }
 
 /// Writes includes for upb C minitables and fwd.h for transitive typedefs.
-void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
+void WriteHeaderMessageForwardDecls(const google::protobuf::FileDescriptor* file,
                                     Context& ctx) {
   // Import forward-declaration of types defined in this file.
   ctx.Emit({{"upb_filename", UpbCFilename(file)}},
@@ -234,7 +239,7 @@ void WriteHeaderMessageForwardDecls(const protobuf::FileDescriptor* file,
 
 }  // namespace
 
-bool Generator::Generate(const protobuf::FileDescriptor* file,
+bool Generator::Generate(const google::protobuf::FileDescriptor* file,
                          const std::string& parameter,
                          protoc::GeneratorContext* context,
                          std::string* error) const {
@@ -270,5 +275,6 @@ bool Generator::Generate(const protobuf::FileDescriptor* file,
     return true;
   }
 }
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

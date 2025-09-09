@@ -93,7 +93,7 @@ bool MiniTable::HasFastTableEntry(const upb_MiniTable* mt,
     char buf[16];
     memset(buf, 0, sizeof(buf));
     memcpy(buf, &encoded_tag, sizeof(encoded_tag));
-    const char* end = upb_WireReader_ReadTag(buf, &tag);
+    const char* end = upb_WireReader_ReadTag(buf, &tag, nullptr);
     ABSL_CHECK(end == buf + 1 || end == buf + 2);
     if (tag >> 3 == field->UPB_PRIVATE(number)) {
       return true;

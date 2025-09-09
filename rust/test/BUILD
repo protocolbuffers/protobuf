@@ -4,6 +4,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//rust:defs.bzl",
@@ -12,7 +13,24 @@ load(
 )
 
 package(
-    default_visibility = ["//rust/test:__subpackages__"],
+    default_visibility = ["//rust:__subpackages__"],
+)
+
+pkg_files(
+    name = "test_proto_srcs",
+    srcs = glob(["*.proto"]),
+    prefix = "proto",
+    strip_prefix = strip_prefix.from_root(""),
+)
+
+pkg_files(
+    name = "google_protobuf_proto_srcs",
+    srcs = [
+        "//src/google/protobuf:cpp_features_proto_srcs",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
+    prefix = "proto",
+    strip_prefix = strip_prefix.from_root("src"),
 )
 
 proto_library(

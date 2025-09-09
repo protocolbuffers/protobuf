@@ -1,5 +1,6 @@
 """upb_c_proto_library() exposes upb's generated C API for protobuf (foo.upb.h)"""
 
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel:upb_minitable_proto_library.bzl", "UpbMinitableCcInfo", "upb_minitable_proto_library_aspect")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")

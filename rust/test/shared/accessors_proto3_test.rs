@@ -8,6 +8,11 @@
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields
 //! on proto3.
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 use protobuf::prelude::*;
 

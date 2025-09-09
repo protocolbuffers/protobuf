@@ -232,22 +232,14 @@ namespace protobuf {
 
 bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
     const ConformanceResponse& response, Message* test_message) {
-  std::string binary_protobuf;
+  json::ParseOptions options;
+  options.allow_legacy_nonconformant_behavior = false;
   absl::Status status =
-      json::JsonToBinaryString(type_resolver_.get(), type_url_,
-                               response.json_payload(), &binary_protobuf);
-
+      json::JsonStringToMessage(response.json_payload(), test_message);
   if (!status.ok()) {
     ABSL_LOG(ERROR) << status;
     return false;
   }
-
-  if (!test_message->ParseFromString(binary_protobuf)) {
-    ABSL_LOG(FATAL) << "INTERNAL ERROR: internal JSON->protobuf transcode "
-                    << "yielded unparseable proto.";
-    return false;
-  }
-
   return true;
 }
 
@@ -1884,7 +1876,6 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
   // Flag control performance tests to keep them internal and opt-in only
   if (suite_.performance_) {
     RunBinaryPerformanceTests();
-    RunJsonPerformanceTests();
   }
 }
 
@@ -1925,64 +1916,11 @@ void BinaryAndJsonConformanceSuiteImpl<
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonPerformanceTests() {
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_BOOL, "true");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_DOUBLE, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_FLOAT, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_UINT32, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_UINT64, "123");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_STRING, "\"foo\"");
-  TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_BYTES, "\"foo\"");
-}
-
-// This is currently considered valid input by some languages but not others
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    TestJsonPerformanceMergeMessageWithRepeatedFieldForType(
-        FieldDescriptor::Type type, std::string field_value) {
-  const std::string type_name =
-      UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
-  const FieldDescriptor* field = GetFieldForType(type, true, Packed::kFalse);
-  const absl::string_view field_name = field->name();
-
-  std::string message_field =
-      absl::StrCat("\"", field_name, "\": [", field_value, "]");
-  std::string recursive_message =
-      absl::StrCat("\"recursive_message\": { ", message_field, "}");
-  std::string input = absl::StrCat("{", recursive_message);
-  for (size_t i = 1; i < kPerformanceRepeatCount; i++) {
-    absl::StrAppend(&input, ",", recursive_message);
-  }
-  absl::StrAppend(&input, "}");
-
-  std::string textproto_message_field =
-      absl::StrCat(field_name, ": ", field_value);
-  std::string expected_textproto = "recursive_message { ";
-  for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    absl::StrAppend(&expected_textproto, textproto_message_field, " ");
-  }
-  absl::StrAppend(&expected_textproto, "}");
-  RunValidJsonTest(
-      absl::StrCat("TestJsonPerformanceMergeMessageWithRepeatedFieldForType",
-                   type_name),
-      RECOMMENDED, input, expected_textproto);
-}
-
-template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTests() {
   RunValidJsonTest("HelloWorld", REQUIRED,
                    "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
-  // NOTE: The spec for JSON support is still being sorted out, these may not
-  // all be correct.
   RunJsonTestsForFieldNameConvention();
   RunJsonTestsForNonRepeatedTypes();
   RunJsonTestsForRepeatedTypes();
@@ -2902,6 +2840,14 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "RepeatedFieldWrongElementTypeExpectingMessagesGotString", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1}, "2"]})");
+
+  // A singular field where a repeated field was expected is not allowed, even
+  // if it is the right type.
+  ExpectParseFailureForJson("SingleValueForRepeatedFieldInt32", REQUIRED,
+                            R"({"repeatedInt32": 1})");
+  ExpectParseFailureForJson("SingleValueForRepeatedFieldMessage", REQUIRED,
+                            R"({"repeatedNestedMessage": {"a": 1}})");
+
   // Trailing comma in the repeated field is not allowed.
   ExpectParseFailureForJson("RepeatedFieldTrailingComma", RECOMMENDED,
                             R"({"repeatedInt32": [1, 2, 3, 4,]})");
@@ -3128,6 +3074,18 @@ void BinaryAndJsonConformanceSuiteImpl<
       "DurationProtoInputTooLarge", REQUIRED,
       "optional_duration: {seconds: 315576000001 nanos: 0}");
 
+  ExpectSerializeFailureForJson("DurationProtoNanosWrongSign", REQUIRED,
+                                "optional_duration: {seconds: 1 nanos: -1}");
+  ExpectSerializeFailureForJson("DurationProtoNanosWrongSignNegativeSecs",
+                                REQUIRED,
+                                "optional_duration: {seconds: -1 nanos: 1}");
+  ExpectSerializeFailureForJson(
+      "DurationProtoNanosTooSmall", REQUIRED,
+      "optional_duration: {seconds: -1 nanos: -1000000000}");
+  ExpectSerializeFailureForJson(
+      "DurationProtoNanosTooLarge", REQUIRED,
+      "optional_duration: {seconds: 1 nanos: 1000000000}");
+
   RunValidJsonTestWithValidator(
       "DurationHasZeroFractionalDigit", RECOMMENDED,
       R"({"optionalDuration": "1.000000000s"})", [](const Json::Value& value) {
@@ -3220,6 +3178,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                                 "optional_timestamp: {seconds: -62135596801}");
   ExpectSerializeFailureForJson("TimestampProtoInputTooLarge", REQUIRED,
                                 "optional_timestamp: {seconds: 253402300800}");
+  ExpectSerializeFailureForJson(
+      "TimestampProtoNegativeNanos", REQUIRED,
+      "optional_timestamp: {seconds: 5000 nanos: -1}");
+  ExpectSerializeFailureForJson(
+      "TimestampProtoNanoTooLarge", REQUIRED,
+      "optional_timestamp: {seconds: 5000 nanos: 1000000000}");
   RunValidJsonTestWithValidator(
       "TimestampZeroNormalized", RECOMMENDED,
       R"({"optionalTimestamp": "1969-12-31T16:00:00-08:00"})",

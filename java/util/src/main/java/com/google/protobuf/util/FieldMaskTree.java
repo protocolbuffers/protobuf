@@ -7,7 +7,6 @@
 
 package com.google.protobuf.util;
 
-import com.google.common.base.Splitter;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -15,6 +14,7 @@ import com.google.protobuf.FieldMask;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -125,8 +125,12 @@ final class FieldMaskTree {
    * </ul>
    */
   @CanIgnoreReturnValue
+  @SuppressWarnings("StringSplitter")
   FieldMaskTree removeFieldPath(String path) {
-    List<String> parts = Splitter.onPattern(FIELD_PATH_SEPARATOR_REGEX).splitToList(path);
+    if (path.isEmpty()) {
+      return this;
+    }
+    List<String> parts = Arrays.asList(path.split(FIELD_PATH_SEPARATOR_REGEX));
     if (parts.isEmpty()) {
       return this;
     }
@@ -191,6 +195,7 @@ final class FieldMaskTree {
   }
 
   /** Adds the intersection of this tree with the given {@code path} to {@code output}. */
+  @SuppressWarnings("StringSplitter")
   void intersectFieldPath(String path, FieldMaskTree output) {
     if (root.children.isEmpty()) {
       return;

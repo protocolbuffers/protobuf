@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <limits>
 #include <memory>
-#include <new>
 #include <optional>
 #include <queue>
 #include <string>
@@ -70,6 +69,9 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+
+using ::google::protobuf::internal::cpp::HasbitMode;
+
 constexpr absl::string_view kAnyMessageName = "Any";
 constexpr absl::string_view kAnyProtoFile = "google/protobuf/any.proto";
 
@@ -1094,11 +1096,25 @@ std::optional<float> GetFieldGroupPresenceProbability(
   return 1.0 - all_absent_probability;
 }
 
+HasbitMode GetFieldHasbitMode(const FieldDescriptor* field,
+                              const Options& options) {
+  if (IsProfileDriven(options) && field->is_repeated() &&
+      IsLikelyPresent(field, options)) {
+    return HasbitMode::kNoHasbit;
+  }
+
+  return internal::cpp::GetFieldHasbitModeWithoutProfile(field);
+}
+
+bool HasHasbit(const FieldDescriptor* field, const Options& options) {
+  return GetFieldHasbitMode(field, options) != HasbitMode::kNoHasbit;
+}
+
 bool IsStringInliningEnabled(const Options& options) {
   return options.force_inline_string || IsProfileDriven(options);
 }
 
-bool CanStringBeInlined(const FieldDescriptor* field) {
+bool CanStringBeInlined(const FieldDescriptor* field, const Options& options) {
   // TODO: Handle inlining for any.proto.
   if (IsAnyMessage(field->containing_type())) return false;
   if (field->containing_type()->options().map_entry()) return false;
@@ -1107,7 +1123,7 @@ bool CanStringBeInlined(const FieldDescriptor* field) {
   // We rely on has bits to distinguish field presence for release_$name$.  When
   // there is no hasbit, we cannot use the address of the string instance when
   // the field has been inlined.
-  if (!internal::cpp::HasHasbit(field)) return false;
+  if (!HasHasbit(field, options)) return false;
 
   if (!IsString(field)) return false;
   if (!field->default_value_string().empty()) return false;
@@ -1340,7 +1356,9 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
 bool IsV2CodegenEnabled(const Options& options) {
-  return !options.opensource_runtime && !options.bootstrap;
+  return !options.lite_implicit_weak_fields &&
+         !options.descriptor_implicit_weak_messages &&
+         !options.opensource_runtime && !options.bootstrap;
 }
 
 bool IsEditionsGoldenProto(const Descriptor* descriptor) {
@@ -1378,7 +1396,9 @@ bool HasV2MessageTable(const FileDescriptor* file, const Options& options) {
   return false;
 }
 
-bool IsV2ParseEnabledForMessage(const Descriptor* descriptor) {
+
+bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
+                                const Options& options) {
   return false;
 }
 
@@ -1513,20 +1533,6 @@ static void GenerateUtf8CheckCode(io::Printer* p, const FieldDescriptor* field,
         p->Emit(R"cc(
           $pbi$::WireFormatLite::$Strict$(
               $params$ $pbi$::WireFormatLite::SERIALIZE, "$pkg.Msg.field$");
-        )cc");
-      }
-      break;
-
-    case internal::cpp::Utf8CheckMode::kVerify:
-      if (for_parse) {
-        p->Emit(R"cc(
-          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::PARSE,
-                                      "$pkg.Msg.field$");
-        )cc");
-      } else {
-        p->Emit(R"cc(
-          $pbi$::WireFormat::$Verify$($params$ $pbi$::WireFormat::SERIALIZE,
-                                      "$pkg.Msg.field$");
         )cc");
       }
       break;

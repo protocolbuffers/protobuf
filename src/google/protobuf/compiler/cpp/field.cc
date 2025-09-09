@@ -306,7 +306,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
     return;
   }
 
-  ABSL_CHECK(internal::cpp::HasHasbit(field));
+  ABSL_CHECK(HasHasbit(field, opts));
 
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xU", 1u << (*idx % 32));
@@ -315,10 +315,17 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
                                    ? "_has_bits_"
                                    : "_impl_._has_bits_";
 
-  auto has = absl::StrFormat("%s[%d] & %s", has_bits, index, mask);
-  auto set = absl::StrFormat("%s[%d] |= %s;", has_bits, index, mask);
-  auto clr = absl::StrFormat("%s[%d] &= ~%s;", has_bits, index, mask);
+  auto has_bits_array = absl::StrFormat("%s[%d]", has_bits, index);
+  auto for_repeated = field->is_repeated() ? "ForRepeated" : "";
+  auto has = absl::StrFormat("CheckHasBit%s(%s, %s)", for_repeated,
+                             has_bits_array, mask);
+  auto set = absl::StrFormat("SetHasBit%s(%s, %s);", for_repeated,
+                             has_bits_array, mask);
+  auto clr = absl::StrFormat("ClearHasBit%s(%s, %s);", for_repeated,
+                             has_bits_array, mask);
 
+  vars.emplace_back("has_bits_array", has_bits_array);
+  vars.emplace_back("has_mask", mask);
   vars.emplace_back("has_hasbit", has);
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));

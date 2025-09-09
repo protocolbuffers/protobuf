@@ -1286,9 +1286,12 @@ class TextFormat::Parser::ParserImpl {
       value->AppendPartialToString(serialized_value);
     } else {
       if (!value->IsInitialized()) {
+        std::vector<std::string> missing_fields;
+        value->FindInitializationErrors(&missing_fields);
         ReportError(absl::StrCat(
             "Value of type \"", value_descriptor->full_name(),
-            "\" stored in google.protobuf.Any has missing required fields"));
+            "\" stored in google.protobuf.Any has missing required fields: ",
+            absl::StrJoin(missing_fields, ", ")));
         return false;
       }
       value->AppendToString(serialized_value);

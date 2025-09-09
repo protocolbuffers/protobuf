@@ -88,7 +88,7 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["upb.rs"],
     crate_root = "shared.rs",
     proc_macro_deps = [
-        "//rust/proto_proc_macro",
+        "//rust/protobuf_macros",
         "@crate_index//:paste",
     ],
     rustc_flags = [
@@ -135,7 +135,7 @@ rust_library(
     srcs = PROTOBUF_SHARED + ["cpp.rs"],
     crate_root = "shared.rs",
     proc_macro_deps = [
-        "//rust/proto_proc_macro",
+        "//rust/protobuf_macros",
         "@crate_index//:paste",
     ],
     rustc_flags = [
@@ -266,7 +266,7 @@ config_setting(
 
 pkg_files(
     name = "rust_protobuf_src",
-    srcs = ALL_RUST_SRCS + ["proto_macro.rs"],
+    srcs = ALL_RUST_SRCS,
     strip_prefix = strip_prefix.from_root("rust"),
 )
 
@@ -298,5 +298,5 @@ pkg_filegroup(
 
 alias(
     name = "release",
-    actual = "//rust/release_crates:crates",
+    actual = "//rust/release_crates:workspace",
 )

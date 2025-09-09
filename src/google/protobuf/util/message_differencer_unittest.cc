@@ -2876,7 +2876,7 @@ TEST(MessageDifferencerTest, IgnoreField_SetReportIgnoresFalse) {
 // passed to the comparison function.
 class ParentSavingFieldComparator : public util::FieldComparator {
  public:
-  ParentSavingFieldComparator() {}
+  ParentSavingFieldComparator() = default;
 
   ComparisonResult Compare(const Message& message_1, const Message& message_2,
                            const FieldDescriptor* field, int index_1,
@@ -2934,7 +2934,7 @@ class ComparisonTest : public testing::Test {
     unknown2_ = empty2_.mutable_unknown_fields();
   }
 
-  ~ComparisonTest() override {}
+  ~ComparisonTest() override = default;
 
   void SetSpecialFieldOption(const Message& message,
                              util::MessageDifferencer* d) {
@@ -3962,9 +3962,9 @@ class MatchingTest : public testing::Test {
   typedef util::MessageDifferencer MessageDifferencer;
 
  protected:
-  MatchingTest() {}
+  MatchingTest() = default;
 
-  ~MatchingTest() override {}
+  ~MatchingTest() override = default;
 
   std::string RunWithResult(MessageDifferencer* differencer,
                             const Message& msg1, const Message& msg2,

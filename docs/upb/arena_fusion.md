@@ -60,7 +60,7 @@ a subset of fused arenas while racing with fuse calls.
 
 ## Finding the root
 
-Each set of fused arenas is uniqiuely identified by the root node of its tree.
+Each set of fused arenas is uniquely identified by the root node of its tree.
 To find the root for a given arena, traverse the `parent_or_count` pointer until
 you reach a node with a count instead of a parent pointer - that's the root. To
 avoid expensive lookups if frequently repeated, this data structure uses path

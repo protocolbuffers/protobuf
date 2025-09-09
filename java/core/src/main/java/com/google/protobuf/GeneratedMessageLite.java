@@ -1221,9 +1221,14 @@ public abstract class GeneratedMessageLite<
     }
 
     @Override
+    public boolean internalMessageIsImmutable(Object message) {
+      return message instanceof MessageLite;
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
-    public MessageLite.Builder internalMergeFrom(MessageLite.Builder to, MessageLite from) {
-      return ((Builder) to).mergeFrom((GeneratedMessageLite) from);
+    public void internalMergeFrom(Object to, Object from) {
+      ((Builder) to).mergeFrom((GeneratedMessageLite) from);
     }
 
     @Override

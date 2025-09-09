@@ -30,11 +30,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 
 /**
  * All generated protocol message classes extend this class. This class implements most of the
@@ -51,6 +54,8 @@ import java.util.TreeMap;
  */
 public abstract class GeneratedMessage extends AbstractMessage implements Serializable {
   private static final long serialVersionUID = 1L;
+
+  private static final Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
 
   /**
    * For testing. Allows a test to disable the optimization that avoids using field builders for
@@ -392,6 +397,59 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
   protected static IntList emptyIntList() {
     return IntArrayList.emptyList();
+  }
+
+  static final String PRE22_GENCODE_SILENCE_PROPERTY =
+      "com.google.protobuf.use_unsafe_pre22_gencode";
+  static final String PRE22_GENCODE_ERROR_PROPERTY =
+      "com.google.protobuf.error_on_unsafe_pre22_gencode";
+
+  static final String PRE22_GENCODE_VULNERABILITY_MESSAGE =
+      "As of 2022/09/29 (release 21.7) makeExtensionsImmutable should not be called from protobuf"
+          + " gencode. If you are seeing this message, your gencode is vulnerable to a denial of"
+          + " service attack. You should regenerate your code using protobuf 25.6 or later. Use the"
+          + " latest version that meets your needs. However, if you understand the risks and wish"
+          + " to continue with vulnerable gencode, you can set the system property"
+          + " `-Dcom.google.protobuf.use_unsafe_pre22_gencode` on the command line to silence this"
+          + " warning. You also can set"
+          + " `-Dcom.google.protobuf.error_on_unsafe_pre22_gencode` to throw an error instead. See"
+          + " security vulnerability:"
+          + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
+
+  protected static final Set<String> loggedPre22TypeNames =
+      Collections.synchronizedSet(new HashSet<String>());
+
+  static void warnPre22Gencode(Class<?> messageClass) {
+    if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
+      return;
+    }
+    String messageName = messageClass.getName();
+    String vulnerabilityMessage =
+        "Vulnerable protobuf generated type in use: "
+            + messageName
+            + "\n"
+            + PRE22_GENCODE_VULNERABILITY_MESSAGE;
+
+    if (System.getProperty(PRE22_GENCODE_ERROR_PROPERTY) != null) {
+      throw new UnsupportedOperationException(vulnerabilityMessage);
+    }
+
+    if (!loggedPre22TypeNames.add(messageName)) {
+      return;
+    }
+
+    logger.warning(vulnerabilityMessage);
+  }
+
+  /**
+   * This method only exists as a shim for pre-22 gencode. This function is a no-op other than
+   * warning or throwing an error for messages that are not extendable.
+   *
+   * @throws UnsupportedOperationException if the {@link #PRE22_GENCODE_ERROR_PROPERTY} system
+   *     property is set.
+   */
+  protected void makeExtensionsImmutable() {
+    warnPre22Gencode(getClass());
   }
 
   protected static LongList emptyLongList() {
@@ -949,12 +1007,20 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       this.extensions = builder.buildExtensions();
     }
 
-    private void verifyExtensionContainingType(final Extension<? extends MessageT, ?> extension) {
-      if (extension.getDescriptor().getContainingType() != getDescriptorForType()) {
+    /**
+     * Returns an iterator over the set extensions lazily wrapped in {@link FieldEntry} objects.
+     * Order is unspecified.
+     */
+    public final Iterator<FieldEntry> extensionsIterator() {
+      return new FieldEntryIterator(extensions);
+    }
+
+    private void verifyExtensionContainingType(final FieldDescriptor descriptor) {
+      if (descriptor.getContainingType() != getDescriptorForType()) {
         // This can only happen if someone uses unchecked operations.
         throw new IllegalArgumentException(
             "Extension is for type \""
-                + extension.getDescriptor().getContainingType().getFullName()
+                + descriptor.getContainingType().getFullName()
                 + "\" which does not match message type \""
                 + getDescriptorForType().getFullName()
                 + "\".");
@@ -967,8 +1033,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         final ExtensionLite<? extends MessageT, T> extensionLite) {
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
-      return extensions.hasField(extension.getDescriptor());
+      final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
+      return extensions.hasField(descriptor);
     }
 
     /** Get the number of elements in a repeated extension. */
@@ -977,8 +1044,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         final ExtensionLite<? extends MessageT, List<T>> extensionLite) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
       final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
       return extensions.getRepeatedFieldCount(descriptor);
     }
 
@@ -988,8 +1055,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     public final <T> T getExtension(final ExtensionLite<? extends MessageT, T> extensionLite) {
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
-      FieldDescriptor descriptor = extension.getDescriptor();
+      final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
       final Object value = extensions.getField(descriptor);
       T result = null;
       if (value == null) {
@@ -1020,8 +1087,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         final ExtensionLite<? extends MessageT, List<T>> extensionLite, final int index) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
-      verifyExtensionContainingType(extension);
-      FieldDescriptor descriptor = extension.getDescriptor();
+      final FieldDescriptor descriptor = extension.getDescriptor();
+      verifyExtensionContainingType(descriptor);
       return (T)
           extension.singularFromReflectionType(extensions.getRepeatedField(descriptor, index));
     }
@@ -1035,6 +1102,16 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @Override
     public boolean isInitialized() {
       return super.isInitialized() && extensionsAreInitialized();
+    }
+
+    /**
+     * This method only exists as a shim for pre-22 gencode (see {@link
+     * GeneratedMessage.warnPre22Gencode}.
+     */
+    @Override
+    protected void makeExtensionsImmutable() {
+      GeneratedMessage.warnPre22Gencode(getClass());
+      extensions.makeImmutable();
     }
 
     /**
@@ -1230,6 +1307,45 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     private void verifyContainingType(final FieldDescriptor field) {
       if (field.getContainingType() != getDescriptorForType()) {
         throw new IllegalArgumentException("FieldDescriptor does not match message type.");
+      }
+    }
+
+    /** A wrapper for a field descriptor and its value. */
+    public static final class FieldEntry {
+      private final FieldDescriptor descriptor;
+      private final Object value;
+
+      public FieldDescriptor getDescriptor() {
+        return descriptor;
+      }
+
+      public Object getValue() {
+        return value;
+      }
+
+      FieldEntry(FieldDescriptor descriptor, Object value) {
+        this.descriptor = descriptor;
+        this.value = value;
+      }
+    }
+
+    private static final class FieldEntryIterator implements Iterator<FieldEntry> {
+      private final Iterator<Map.Entry<FieldDescriptor, Object>> iter;
+
+      FieldEntryIterator(FieldSet<FieldDescriptor> fieldSet) {
+        this.iter = fieldSet.iterator();
+      }
+
+      @Override
+      public final boolean hasNext() {
+        return iter.hasNext();
+      }
+
+      @Override
+      public final FieldEntry next() {
+        // Just let the inner iterator throw the NoSuchElementException.
+        Map.Entry<FieldDescriptor, Object> entry = iter.next();
+        return new FieldEntry(entry.getKey(), entry.getValue());
       }
     }
   }
@@ -1681,7 +1797,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         new CachedDescriptorRetriever() {
           @Override
           public FieldDescriptor loadDescriptor() {
-            return scope.getDescriptorForType().getExtensions().get(descriptorIndex);
+            return scope.getDescriptorForType().getExtension(descriptorIndex);
           }
         },
         singularType,
@@ -2035,8 +2151,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     public FieldAccessorTable(final Descriptor descriptor, final String[] camelCaseNames) {
       this.descriptor = descriptor;
       this.camelCaseNames = camelCaseNames;
-      fields = new FieldAccessor[descriptor.getFields().size()];
-      oneofs = new OneofAccessor[descriptor.getOneofs().size()];
+      fields = new FieldAccessor[descriptor.getFieldCount()];
+      oneofs = new OneofAccessor[descriptor.getOneofCount()];
       initialized = false;
     }
 
@@ -2059,7 +2175,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         }
         int fieldsSize = fields.length;
         for (int i = 0; i < fieldsSize; i++) {
-          FieldDescriptor field = descriptor.getFields().get(i);
+          FieldDescriptor field = descriptor.getField(i);
           String containingOneofCamelCaseName = null;
           if (field.getContainingOneof() != null) {
             int index = fieldsSize + field.getContainingOneof().getIndex();
@@ -2119,8 +2235,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           }
         }
 
-        for (int i = 0; i < descriptor.getOneofs().size(); i++) {
-          if (i < descriptor.getRealOneofs().size()) {
+        for (int i = 0; i < descriptor.getOneofCount(); i++) {
+          if (i < descriptor.getRealOneofCount()) {
             oneofs[i] =
                 new RealOneofAccessor(
                     descriptor, camelCaseNames[i + fieldsSize], messageClass, builderClass);
@@ -2267,8 +2383,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /** SyntheticOneofAccessor provides access to a single synthetic oneof. */
     private static class SyntheticOneofAccessor implements OneofAccessor {
       SyntheticOneofAccessor(final Descriptor descriptor, final int oneofIndex) {
-        OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
-        fieldDescriptor = oneofDescriptor.getFields().get(0);
+        OneofDescriptor oneofDescriptor = descriptor.getOneof(oneofIndex);
+        fieldDescriptor = oneofDescriptor.getField(0);
       }
 
       private final FieldDescriptor fieldDescriptor;

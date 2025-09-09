@@ -87,7 +87,7 @@ static void WriteShort(io::CodedOutputStream* out, uint16_t val) {
 
 ZipWriter::ZipWriter(io::ZeroCopyOutputStream* raw_output)
     : raw_output_(raw_output) {}
-ZipWriter::~ZipWriter() {}
+ZipWriter::~ZipWriter() = default;
 
 bool ZipWriter::Write(const std::string& filename,
                       const std::string& contents) {

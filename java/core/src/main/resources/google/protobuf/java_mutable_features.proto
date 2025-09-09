@@ -5,7 +5,7 @@ package pb;
 import "google/protobuf/descriptor.proto";
 
 option java_package = "com.google.protobuf";
-option java_outer_classname = "JavaFeaturesProto";
+option java_outer_classname = "JavaMutableFeaturesProto";
 
 extend google.protobuf.FeatureSet {
   optional JavaMutableFeatures java_mutable = 9989;
@@ -36,6 +36,7 @@ message JavaMutableFeatures {
   // enums, and services.
   optional NestInFileClassFeature.NestInFileClass nest_in_file_class = 6 [
     retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_SERVICE,

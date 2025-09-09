@@ -71,7 +71,7 @@ TEST(EditionMessageTest,
   auto* table = GetTableIfAvailable<Proto>(nullptr);
   // Only test when TDP is on, and we have these fields inlined.
   if (table != nullptr &&
-      table->fast_entry(1)->target() == TcParser::FastSiS1) {
+      table->fast_entry(1)->target() == TcParser::FastBiS1) {
     // optional string str1 = 1;
     // The aux_idx points to the inlined_string_idx and not the actual aux_idx.
     EXPECT_EQ(table->fast_entry(1)->bits.aux_idx(), 1);

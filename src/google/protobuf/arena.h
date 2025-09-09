@@ -10,6 +10,7 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -28,15 +29,14 @@ using type_info = ::type_info;
 #endif
 
 #include "absl/base/attributes.h"
-#include "absl/base/macros.h"
 #include "absl/base/optimization.h"
-#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -49,7 +49,7 @@ namespace google {
 namespace protobuf {
 
 struct ArenaOptions;  // defined below
-class Arena;    // defined below
+class Arena;          // defined below
 class Message;  // defined in message.h
 class MessageLite;
 template <typename Key, typename T>
@@ -163,7 +163,12 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
 // This is a thread-safe implementation: multiple threads may allocate from the
 // arena concurrently. Destruction is not thread-safe and the destructing
 // thread must synchronize with users of the arena first.
-class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
+class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
+#ifdef __clang__
+    // TODO: Enable this for GCC.
+    ABSL_ATTRIBUTE_WARN_UNUSED
+#endif  // __clang__
+    Arena final {
  public:
   // Default constructor with sensible default options, tuned for average
   // use-cases.
@@ -259,7 +264,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_NDEBUG_INLINE static T* PROTOBUF_NONNULL
   CreateArray(Arena* PROTOBUF_NULLABLE arena, size_t num_elements) {
-    static_assert(std::is_trivial_v<T>,
+    static_assert(std::is_trivially_default_constructible<T>::value,
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible_v<T>,
                   "CreateArray requires a trivially destructible type");
@@ -335,7 +340,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       void (*PROTOBUF_NONNULL destruct)(void* PROTOBUF_NONNULL)) {
     impl_.AddCleanup(object, destruct);
   }
-
 
   template <typename T>
   class InternalHelper {
@@ -436,6 +440,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     friend class Arena;
     friend class TestUtil::ReflectionTester;
   };
+
 
   // Provides access to protected GetArena to generated messages.
   // For internal use only.
@@ -656,16 +661,25 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
     Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from) {
-  // If the object is larger than half a cache line, prefetch it.
-  // This way of prefetching is a little more aggressive than if we
-  // condition off a whole cache line, but benchmarks show better results.
-  if (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
-    PROTOBUF_PREFETCH_WITH_OFFSET(from, 64);
+  const auto* typed_from = static_cast<const T*>(from);
+  // If the object is larger than half of a cache line, prefetch either the rest
+  // of it or half of it, whichiver is smaller, starting at 1-cache-line offset.
+  // This has shown the best benchmark results on average between several tested
+  // configurations.
+  if constexpr (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
+    using internal::PrefetchOpts;
+    static constexpr PrefetchOpts kPrefetchOpts = {
+        /*num=*/{std::min(sizeof(T) / 2, sizeof(T) - ABSL_CACHELINE_SIZE / 2),
+                 PrefetchOpts::kBytes},
+        /*from=*/{1, PrefetchOpts::kLines},
+        /*locality=*/PrefetchOpts::kHigh,
+    };
+    internal::Prefetch<kPrefetchOpts, T, T>(typed_from);
   }
   static_assert(is_destructor_skippable<T>::value, "");
   void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
                                : ::operator new(sizeof(T));
-  return new (mem) T(arena, *static_cast<const T*>(from));
+  return new (mem) T(arena, *typed_from);
 }
 
 template <>

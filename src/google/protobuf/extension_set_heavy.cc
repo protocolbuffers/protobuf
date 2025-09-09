@@ -15,16 +15,22 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <string>
 #include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
+#include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/extension_set_inl.h"
+#include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -43,24 +49,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-// Implementation of ExtensionFinder which finds extensions in a given
-// DescriptorPool, using the given MessageFactory to construct sub-objects.
-// This class is implemented in extension_set_heavy.cc.
-class DescriptorPoolExtensionFinder {
- public:
-  DescriptorPoolExtensionFinder(const DescriptorPool* pool,
-                                MessageFactory* factory,
-                                const Descriptor* extendee)
-      : pool_(pool), factory_(factory), containing_type_(extendee) {}
-
-  bool Find(int number, ExtensionInfo* output);
-
- private:
-  const DescriptorPool* pool_;
-  MessageFactory* factory_;
-  const Descriptor* containing_type_;
-};
 
 void ExtensionSet::AppendToList(
     const Descriptor* extendee, const DescriptorPool* pool,
@@ -273,6 +261,7 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
   if (extension == nullptr) {
     return false;
   } else {
+    output->number = extension->number();
     output->type = extension->type();
     output->is_repeated = extension->is_repeated();
     output->is_packed = extension->is_packed();
@@ -443,6 +432,7 @@ bool ExtensionSet::ShouldRegisterAtThisTime(
   return has_all == is_preregistration;
 }
 #endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
+
 
 }  // namespace internal
 }  // namespace protobuf

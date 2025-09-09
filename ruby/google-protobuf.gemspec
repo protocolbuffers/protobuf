@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "4.32.0"
+  s.version     = "4.33.0"
   git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"
@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
     s.files     += ["lib/google/protobuf_java.jar"] +
       Dir.glob('ext/**/*').reject do |file|
         File.basename(file) =~ /^((convert|defs|map|repeated_field)\.[ch]|
-                                   BUILD\.bazel|extconf\.rb|wrap_memcpy\.c)$/x
+                                   BUILD\.bazel|extconf\.rb)$/x
       end
     s.extensions = ["ext/google/protobuf_c/Rakefile"]
     s.add_dependency "ffi", "~>1"

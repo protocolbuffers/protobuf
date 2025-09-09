@@ -27,8 +27,7 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
 }
 
-MapFieldGenerator::~MapFieldGenerator() {
-}
+MapFieldGenerator::~MapFieldGenerator() = default;
 
 void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
   const FieldDescriptor* key_descriptor =

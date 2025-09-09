@@ -9,6 +9,10 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel:upb_c_proto_library.bzl", "upb_c_proto_library")
 load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load("//bazel:upb_proto_reflection_library.bzl", "upb_proto_reflection_library")
+load(
+    "//bazel/tests:protobuf_test_proto_library.bzl",
+    "protobuf_test_proto_library",
+)
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
@@ -353,6 +357,16 @@ cc_proto_library(
 ################################################################################
 
 cc_library(
+    name = "os_macros",
+    hdrs = [
+        "os_macros_restore.inc",
+        "os_macros_undef.inc",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//hpb:__subpackages__"],
+)
+
+cc_library(
     name = "port",
     srcs = ["port.cc"],
     hdrs = [
@@ -366,6 +380,7 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
+        ":os_macros",
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:prefetch",
@@ -698,6 +713,7 @@ cc_library(
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/meta:type_traits",
         "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:internal",
@@ -857,7 +873,14 @@ cc_test(
     srcs = ["has_bits_test.cc"],
     copts = COPTS,
     deps = [
+        ":cc_test_protos",
+        ":port",
+        ":protobuf",
         ":protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -985,6 +1008,7 @@ filegroup(
         "unittest_enormous_descriptor.proto",
         "unittest_features.proto",
         "unittest_import.proto",
+        "unittest_import_option.proto",
         "unittest_import_public.proto",
         "unittest_invalid_features.proto",
         "unittest_lite_imports_nonlite.proto",
@@ -1004,6 +1028,12 @@ filegroup(
         "unittest_string_type.proto",
         "unittest_well_known_types.proto",
     ],
+    visibility = ["//:__subpackages__"],
+)
+
+filegroup(
+    name = "unittest_custom_options_unlinked_proto_srcs",
+    srcs = ["unittest_custom_options_unlinked.proto"],
     visibility = ["//:__subpackages__"],
 )
 
@@ -1047,7 +1077,7 @@ filegroup(
     visibility = ["//:__subpackages__"],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "test_protos",
     srcs = [
         "any_test.proto",
@@ -1089,12 +1119,15 @@ proto_library(
         "unittest_string_view.proto",
         "unittest_well_known_types.proto",
     ],
+    option_deps = [
+        ":cpp_features_proto",
+        "//:java_features_proto",
+    ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
         ":any_proto",
         ":api_proto",
-        ":cpp_features_proto",
         ":descriptor_proto",
         ":duration_proto",
         ":empty_proto",
@@ -1184,9 +1217,14 @@ cc_proto_library(
     deps = [":unittest_features_proto"],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "generic_test_protos",
     srcs = [":test_proto_srcs"],
+    option_deps = [
+        "//:java_features_proto",
+        ":cpp_features_proto",
+        ":unittest_custom_options_unlinked_proto",
+    ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -1205,9 +1243,13 @@ proto_library(
     ],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "generic_test_editions_protos",
     srcs = [":test_proto_editions_srcs"],
+    option_deps = [
+        ":cpp_features_proto",
+        "//:java_features_proto",
+    ],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -1298,6 +1340,31 @@ proto_library(
 cc_proto_library(
     name = "unittest_string_view_cc_proto",
     deps = [":unittest_string_view_proto"],
+)
+
+proto_library(
+    name = "unittest_custom_options_unlinked_proto",
+    srcs = ["unittest_custom_options_unlinked.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:descriptor_proto",
+    ],
+)
+
+protobuf_test_proto_library(
+    name = "unittest_import_option_proto",
+    srcs = ["unittest_import_option.proto"],
+    option_deps = [
+        ":test_protos",
+        ":unittest_custom_options_unlinked_proto",
+    ],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "unittest_import_option_cc_proto",
+    deps = [":unittest_import_option_proto"],
 )
 
 cc_test(
@@ -1672,7 +1739,7 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "//src/google/protobuf/util:differencer",
-        "@abseil-cpp//absl/base",
+        "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:cord",
         "@googletest//:gtest",
@@ -1755,6 +1822,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":test_util",
+        ":unittest_import_option_cc_proto",
         ":unittest_proto3_cc_proto",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
@@ -2163,6 +2231,7 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/flags:flag",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/random",

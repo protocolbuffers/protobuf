@@ -53,7 +53,7 @@ public abstract class CodedInputStream {
   int sizeLimit = DEFAULT_SIZE_LIMIT;
 
   /** Used to adapt to the experimental {@link Reader} interface. */
-  CodedInputStreamReader wrapper;
+  Object wrapper;
 
   /** Create a new CodedInputStream wrapping the given InputStream. */
   public static CodedInputStream newInstance(final InputStream input) {
@@ -304,6 +304,73 @@ public abstract class CodedInputStream {
    * replace the offending bytes with the standard UTF-8 replacement character.
    */
   public abstract String readString() throws IOException;
+
+  /** Read a string field from the input with the proper UTF8 validation. */
+  Object readString(WireFormat.Utf8Validation utf8Validation) throws IOException {
+    switch (utf8Validation) {
+      case LOOSE:
+        return readString();
+      case STRICT:
+        return readStringRequireUtf8();
+      case LAZY:
+        return readBytes();
+    }
+    throw new IllegalStateException("Unknown UTF8 validation: " + utf8Validation);
+  }
+
+  /**
+   * Read a field of any primitive type for immutable messages from a CodedInputStream. Enums,
+   * groups, and embedded messages are not handled by this method.
+   *
+   * @param type Declared type of the field.
+   * @param utf8Validation Different string UTF8 validation level for handling string fields.
+   * @return An object representing the field's value, of the exact type which would be returned by
+   *     {@link Message#getField(Descriptors.FieldDescriptor)} for this field.
+   */
+  Object readPrimitiveField(WireFormat.FieldType type, WireFormat.Utf8Validation utf8Validation)
+      throws IOException {
+    switch (type) {
+      case DOUBLE:
+        return readDouble();
+      case FLOAT:
+        return readFloat();
+      case INT64:
+        return readInt64();
+      case UINT64:
+        return readUInt64();
+      case INT32:
+        return readInt32();
+      case FIXED64:
+        return readFixed64();
+      case FIXED32:
+        return readFixed32();
+      case BOOL:
+        return readBool();
+      case BYTES:
+        return readBytes();
+      case UINT32:
+        return readUInt32();
+      case SFIXED32:
+        return readSFixed32();
+      case SFIXED64:
+        return readSFixed64();
+      case SINT32:
+        return readSInt32();
+      case SINT64:
+        return readSInt64();
+      case STRING:
+        return readString(utf8Validation);
+      case GROUP:
+        throw new IllegalArgumentException("readPrimitiveField() cannot handle nested groups.");
+      case MESSAGE:
+        throw new IllegalArgumentException("readPrimitiveField() cannot handle embedded messages.");
+      case ENUM:
+        // We don't handle enums because we don't know what to do if the
+        // value is not recognized.
+        throw new IllegalArgumentException("readPrimitiveField() cannot handle enums.");
+    }
+    throw new IllegalStateException("Unknown field type: " + type);
+  }
 
   /**
    * Read a {@code string} field value from the stream. If the stream contains malformed UTF-8,

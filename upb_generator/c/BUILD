@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load(
     "//upb/bazel:build_defs.bzl",
@@ -20,7 +21,7 @@ cc_library(
     name = "names",
     srcs = ["names.cc"],
     hdrs = ["names.h"],
-    visibility = ["//src/google/protobuf/compiler/hpb:__pkg__"],
+    visibility = ["//hpb_generator:__pkg__"],
     deps = [
         ":names_internal",
         "@abseil-cpp//absl/container:flat_hash_map",

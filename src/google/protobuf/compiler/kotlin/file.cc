@@ -57,6 +57,7 @@ void FileGenerator::Generate(io::Printer* printer) {
       "\n",
       "filename", file_->name());
   printer->Print(
+      "@file:com.google.protobuf.Generated\n"
       "// Generated files should ignore deprecation warnings\n"
       "@file:Suppress(\"DEPRECATION\")\n");
   if (!java_package_.empty()) {
@@ -98,6 +99,7 @@ void FileGenerator::GenerateSiblings(
         "\n",
         "filename", descriptor->file()->name());
     printer.Print(
+        "@file:com.google.protobuf.Generated\n"
         "// Generated files should ignore deprecation warnings\n"
         "@file:Suppress(\"DEPRECATION\")\n");
     if (!java_package_.empty()) {

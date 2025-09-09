@@ -38,6 +38,7 @@ import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
 import com.google.protobuf.test.UnittestImport.ImportEnumForMap;
 import legacy_features_unittest.UnittestLegacyFeatures;
+import pb.EnumFeature;
 import pb.UnittestFeatures;
 import proto2_unittest.TestCustomOptions;
 import proto2_unittest.UnittestCustomOptions;
@@ -91,6 +92,7 @@ public class DescriptorsTest {
     public void testFileDescriptor() throws Exception {
       FileDescriptor file = UnittestProto.getDescriptor();
 
+      assertThat(file.isPlaceholder()).isFalse();
       assertThat(file.getName()).isEqualTo("google/protobuf/unittest.proto");
       assertThat(file.getPackage()).isEqualTo("proto2_unittest");
       assertThat(file.getOptions().getJavaOuterClassname()).isEqualTo("UnittestProto");
@@ -208,7 +210,10 @@ public class DescriptorsTest {
     @Test
     public void testDescriptor() throws Exception {
       Descriptor messageType = TestAllTypes.getDescriptor();
+      assertThat(messageType.isPlaceholder()).isFalse();
+
       Descriptor nestedType = TestAllTypes.NestedMessage.getDescriptor();
+      assertThat(nestedType.isPlaceholder()).isFalse();
 
       assertThat(messageType.getName()).isEqualTo("TestAllTypes");
       assertThat(messageType.getFullName()).isEqualTo("proto2_unittest.TestAllTypes");
@@ -966,8 +971,21 @@ public class DescriptorsTest {
                               .setName("bar")
                               .setNumber(1)))
               .build();
-      FileDescriptor unused =
+      FileDescriptor foo =
           Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      assertThat(
+              foo.findMessageTypeByName("Foo")
+                  .findFieldByName("bar")
+                  .getMessageType()
+                  .isPlaceholder())
+          .isTrue();
+      assertThat(
+              foo.findMessageTypeByName("Foo")
+                  .findFieldByName("bar")
+                  .getMessageType()
+                  .getFile()
+                  .isPlaceholder())
+          .isTrue();
     }
 
     @Test
@@ -1541,7 +1559,7 @@ public class DescriptorsTest {
       features.setExtension(
           UnittestFeatures.test,
           features.getExtension(UnittestFeatures.test).toBuilder()
-              .setMultipleFeature(UnittestFeatures.EnumFeature.forNumber(value))
+              .setMultipleFeature(EnumFeature.forNumber(value))
               .build());
     }
 

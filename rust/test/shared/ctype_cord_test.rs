@@ -5,12 +5,17 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use googletest::prelude::*;
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
 
-use unittest_rust_proto::{TestAllTypes, TestCord};
+use googletest::prelude::*;
 
 #[gtest]
 fn test_bytes_cord() {
+    use unittest_rust_proto::TestCord;
+
     let mut msg = TestCord::new();
     assert_that!(msg.has_optional_bytes_cord(), eq(false));
     assert_that!(msg.optional_bytes_cord(), eq("".as_bytes()));

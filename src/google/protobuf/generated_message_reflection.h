@@ -25,6 +25,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -149,7 +150,7 @@ struct ReflectionSchema {
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
   uint32_t HasBitIndex(const FieldDescriptor* field) const {
     ABSL_DCHECK(!field->is_extension());
-    if (has_bits_offset_ == -1) return static_cast<uint32_t>(-1);
+    if (has_bits_offset_ == -1) return static_cast<uint32_t>(kNoHasbit);
     ABSL_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
   }

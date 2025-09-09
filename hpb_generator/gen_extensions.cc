@@ -5,23 +5,23 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/gen_extensions.h"
+#include "hpb_generator/gen_extensions.h"
 
 #include <string>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/hpb/context.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/names.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
-namespace protobuf = ::proto2;
-
-std::string ExtensionIdentifierBase(const protobuf::FieldDescriptor* ext) {
+std::string ExtensionIdentifierBase(const google::protobuf::FieldDescriptor* ext) {
   assert(ext->is_extension());
   std::string ext_scope;
   if (ext->extension_scope()) {
@@ -31,13 +31,13 @@ std::string ExtensionIdentifierBase(const protobuf::FieldDescriptor* ext) {
   }
 }
 
-std::string ContainingTypeName(const protobuf::FieldDescriptor* ext) {
+std::string ContainingTypeName(const google::protobuf::FieldDescriptor* ext) {
   return ext->containing_type()->file() != ext->file()
              ? QualifiedClassName(ext->containing_type())
              : ClassName(ext->containing_type());
 }
 
-void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
+void WriteExtensionIdentifierHeader(const google::protobuf::FieldDescriptor* ext,
                                     Context& ctx) {
   std::string mini_table_name =
       absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext");
@@ -68,7 +68,7 @@ void WriteExtensionIdentifierHeader(const protobuf::FieldDescriptor* ext,
 }
 
 void WriteExtensionIdentifiersHeader(
-    const std::vector<const protobuf::FieldDescriptor*>& extensions,
+    const std::vector<const google::protobuf::FieldDescriptor*>& extensions,
     Context& ctx) {
   for (const auto* ext : extensions) {
     if (!ext->extension_scope()) {
@@ -77,5 +77,6 @@ void WriteExtensionIdentifiersHeader(
   }
 }
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

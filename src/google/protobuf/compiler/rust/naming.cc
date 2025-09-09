@@ -39,7 +39,11 @@ namespace compiler {
 namespace rust {
 
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep) {
-  return absl::StrCat("::", RsSafeName(ctx.ImportPathToCrateName(dep.name())));
+  std::string crate_name = RsSafeName(ctx.ImportPathToCrateName(dep.name()));
+  if (absl::StartsWith(crate_name, "crate::")) {
+    return crate_name;
+  }
+  return absl::StrCat("::", crate_name);
 }
 
 std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file) {

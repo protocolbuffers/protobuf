@@ -230,6 +230,11 @@ bool ExtensionSet::HasLazy(int number) const {
   return Has(number) && FindOrNull(number)->is_lazy;
 }
 
+bool ExtensionSet::LazyHasUnparsed(int number) const {
+  ABSL_DCHECK(HasLazy(number));
+  return FindOrNull(number)->ptr.lazymessage_value->HasUnparsed();
+}
+
 int ExtensionSet::NumExtensions() const {
   int result = 0;
   ForEachNoPrefetch([&result](int /* number */, const Extension& ext) {
@@ -1640,13 +1645,6 @@ void ExtensionSet::InternalReserveSmallCapacityFromEmpty(
   flat_capacity_ = new_flat_capacity;
   map_.flat = AllocateFlatMap(arena_, new_flat_capacity);
 }
-
-#if (__cplusplus < 201703) && \
-    (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-// static
-constexpr uint16_t ExtensionSet::kMaximumFlatCapacity;
-#endif  //  (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900
-        //  && _MSC_VER < 1912))
 
 void ExtensionSet::Erase(int key) {
   if (ABSL_PREDICT_FALSE(is_large())) {

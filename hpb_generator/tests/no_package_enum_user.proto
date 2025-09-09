@@ -9,7 +9,7 @@ edition = "2023";
 
 package hpb_unittest;
 
-import "google/protobuf/compiler/hpb/tests/no_package.proto";
+import "hpb_generator/tests/no_package.proto";
 
 message MyMessage {
   MessageWithEnumUpbTest my_type = 1;

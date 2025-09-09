@@ -16,6 +16,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -78,6 +79,36 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::DoOptimizeLayout(
   return ordered_fields;
 }
 
+// This function determines the order of the field hotness groups in the
+// message. The higher the number, the closer to the top of the message.
+constexpr size_t MessageLayoutHelper::FieldHotnessIndex(FieldHotness hotness) {
+  if constexpr (internal::EnableExperimentalHintHasBitsForRepeatedFields()) {
+    // Swap kFastParse and kRepeated so fast-parse fields are assigned the
+    // lowest hasbit indices.
+    switch (hotness) {
+      case FieldHotness::kSplit:
+        return 0;
+      case FieldHotness::kCold:
+        return 1;
+      case FieldHotness::kWarm:
+        return 2;
+      case FieldHotness::kHot:
+        return 3;
+      case FieldHotness::kRepeated:
+        return 4;
+      case FieldHotness::kFastParse:
+        return 5;
+      case FieldHotness::kMaxHotness:
+        internal::Unreachable();
+    }
+
+    // Make the compiler happy.
+    return 0;
+  } else {
+    return static_cast<size_t>(hotness);
+  }
+}
+
 MessageLayoutHelper::FieldFamily MessageLayoutHelper::GetFieldFamily(
     const FieldDescriptor* field, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) {
@@ -126,6 +157,20 @@ bool MessageLayoutHelper::IsFastPathField(
   return fast_field != nullptr && fast_field->field == field;
 }
 
+bool MessageLayoutHelper::ShouldPromoteToFastParse(
+    const FieldDescriptor* field, FieldHotness hotness,
+    const std::vector<internal::TailCallTableInfo::FastFieldInfo>&
+        fast_path_fields) {
+  // Only promote warm and hot fields to fast-parse.
+  if (hotness < FieldHotness::kWarm) return false;
+  // If hasbits for repeated fields is disabled, don't promote repeated fields.
+  if (!internal::EnableExperimentalHintHasBitsForRepeatedFields() &&
+      field->is_repeated()) {
+    return false;
+  }
+  return IsFastPathField(field, fast_path_fields);
+}
+
 MessageLayoutHelper::FieldAlignmentGroups
 MessageLayoutHelper::BuildFieldAlignmentGroups(
     const FieldVector& fields, const Options& options,
@@ -138,27 +183,30 @@ MessageLayoutHelper::BuildFieldAlignmentGroups(
 
     FieldHotness hotness;
     if (ShouldSplit(field, options)) {
-      hotness = kSplit;
+      hotness = FieldHotness::kSplit;
     } else if (field->is_repeated()) {
-      hotness = kRepeated;
+      hotness = FieldHotness::kRepeated;
     } else {
       hotness = GetFieldHotness(field, options, scc_analyzer);
+    }
 
-      if (hotness != kCold && IsFastPathField(field, fast_path_fields)) {
-        hotness = kFastParse;
-      }
+    if (ShouldPromoteToFastParse(field, hotness, fast_path_fields)) {
+      hotness = FieldHotness::kFastParse;
     }
 
     FieldGroup fg = SingleFieldGroup(field);
     switch (EstimateAlignmentSize(field)) {
       case 1:
-        field_alignment_groups.aligned_to_1[f][hotness].push_back(fg);
+        field_alignment_groups.aligned_to_1[f][FieldHotnessIndex(hotness)]
+            .push_back(fg);
         break;
       case 4:
-        field_alignment_groups.aligned_to_4[f][hotness].push_back(fg);
+        field_alignment_groups.aligned_to_4[f][FieldHotnessIndex(hotness)]
+            .push_back(fg);
         break;
       case 8:
-        field_alignment_groups.aligned_to_8[f][hotness].push_back(fg);
+        field_alignment_groups.aligned_to_8[f][FieldHotnessIndex(hotness)]
+            .push_back(fg);
         break;
       default:
         ABSL_LOG(FATAL) << "Unknown alignment size "
@@ -356,16 +404,19 @@ void MessageLayoutHelper::FillPaddingFromPartition(
 
 void MessageLayoutHelper::MaybeMergeHotIntoFast(
     FieldPartitionArray& field_groups) {
+  constexpr size_t kFastParseIdx = FieldHotnessIndex(FieldHotness::kFastParse);
+  constexpr size_t kHotIdx = FieldHotnessIndex(FieldHotness::kHot);
+
   size_t num_fast_fields = 0;
   for (size_t f = 0; f < kMaxFamily; ++f) {
-    for (const auto& group : field_groups[f][kFastParse]) {
+    for (const auto& group : field_groups[f][kFastParseIdx]) {
       num_fast_fields += group.num_fields();
     }
   }
 
   size_t num_hot_fields = 0;
   for (size_t f = 0; f < kMaxFamily; ++f) {
-    for (const auto& group : field_groups[f][kHot]) {
+    for (const auto& group : field_groups[f][kHotIdx]) {
       num_hot_fields += group.num_fields();
     }
   }
@@ -373,20 +424,26 @@ void MessageLayoutHelper::MaybeMergeHotIntoFast(
   if (num_fast_fields + num_hot_fields <=
       internal::TailCallTableInfo::kMaxFastFieldHasbitIndex + 1) {
     for (size_t f = 0; f < kMaxFamily; ++f) {
-      if (field_groups[f][kHot].empty()) {
+      if (field_groups[f][kHotIdx].empty()) {
         continue;
       }
 
-      FillPaddingFromPartition(field_groups[f][kFastParse],
-                               field_groups[f][kHot], /*alignment=*/8);
+      FillPaddingFromPartition(field_groups[f][kFastParseIdx],
+                               field_groups[f][kHotIdx], /*alignment=*/8);
 
       // Append all remaining hot fields to the end of the fast parse group.
-      field_groups[f][kFastParse].insert(field_groups[f][kFastParse].end(),
-                                         field_groups[f][kHot].begin(),
-                                         field_groups[f][kHot].end());
-      field_groups[f][kHot].clear();
+      field_groups[f][kFastParseIdx].insert(
+          field_groups[f][kFastParseIdx].end(),
+          field_groups[f][kHotIdx].begin(), field_groups[f][kHotIdx].end());
+      field_groups[f][kHotIdx].clear();
     }
   }
+}
+
+bool operator<(MessageLayoutHelper::FieldHotness h1,
+               MessageLayoutHelper::FieldHotness h2) {
+  return MessageLayoutHelper::FieldHotnessIndex(h1) <
+         MessageLayoutHelper::FieldHotnessIndex(h2);
 }
 
 }  // namespace cpp

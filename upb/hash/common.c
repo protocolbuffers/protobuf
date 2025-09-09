@@ -42,7 +42,8 @@ static const double MIN_DENSITY = 0.1;
 #endif
 #elif defined(__GNUC__)
 #define UPB_FAST_POPCOUNT32(i) __builtin_popcount(i)
-#elif defined(_MSC_VER)
+#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+// Only use __popcnt on x86/x64 architectures for MSVC
 #define UPB_FAST_POPCOUNT32(i) __popcnt(i)
 #endif
 

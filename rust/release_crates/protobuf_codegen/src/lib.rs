@@ -6,7 +6,6 @@ use std::path::{Path, PathBuf};
 pub struct Dependency {
     pub crate_name: String,
     pub proto_import_paths: Vec<PathBuf>,
-    pub c_include_paths: Vec<PathBuf>,
     pub proto_files: Vec<String>,
 }
 
@@ -89,6 +88,8 @@ impl CodeGen {
 
     pub fn output_dir(&mut self, output_dir: impl AsRef<Path>) -> &mut Self {
         self.output_dir = output_dir.as_ref().to_owned();
+        // Make sure output_dir and its parent directories exist
+        std::fs::create_dir_all(&self.output_dir).unwrap();
         self
     }
 
@@ -132,14 +133,6 @@ impl CodeGen {
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
-        let upb_version = std::env::var("DEP_UPB_VERSION").expect("DEP_UPB_VERSION should have been set, make sure that the Protobuf crate is a dependency");
-        if VERSION != upb_version {
-            panic!(
-                "protobuf-codegen version {} does not match protobuf version {}.",
-                VERSION, upb_version
-            );
-        }
-
         let mut version_cmd = std::process::Command::new("protoc");
         let output = version_cmd.arg("--version").output().map_err(|e| {
             format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())

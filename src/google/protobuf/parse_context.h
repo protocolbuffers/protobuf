@@ -39,6 +39,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -53,6 +54,8 @@ class DescriptorPool;
 class MessageFactory;
 
 namespace internal {
+
+class LazyField;
 
 // Template code below needs to know about the existence of these functions.
 PROTOBUF_EXPORT void WriteVarint(uint32_t num, uint64_t val, std::string* s);
@@ -211,6 +214,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
                                             Arena* arena);
+  [[nodiscard]] const char* ReadMicroStringWithSize(const char* ptr, int size,
+                                                    MicroString& str,
+                                                    Arena* arena);
   [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr, int size,
                                                     MicroString& str,
                                                     Arena* arena);
@@ -290,25 +296,38 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
 
+  struct WireFormatNoOpSink {
+    void Flush(const char* p) {}
+    void Append(absl::string_view view) {}
+    void Reset(const char* p) {}
+  };
+
  protected:
   // Returns true if limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded, it returns true and ptr is set to null.
-  template <bool kExperimentalV2>
-  bool DoneWithCheck(const char** ptr, int d) {
+  template <bool kExperimentalV2, typename SinkT>
+  bool DoneWithCheck(const char** ptr, int d, SinkT& sink) {
     ABSL_DCHECK(*ptr);
     if (ABSL_PREDICT_TRUE(*ptr < limit_end_)) return false;
     int overrun = static_cast<int>(*ptr - buffer_end_);
     ABSL_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
         limit_) {  //  No need to flip buffers if we ended on a limit.
+      // Flush up to *ptr since we're done with it.
+      sink.Flush(*ptr);
+      sink.Reset(*ptr);
       // If we actually overrun the buffer and next_chunk_ is null, it means
       // the stream ended and we passed the stream end.
       if (overrun > 0 && next_chunk_ == nullptr) *ptr = nullptr;
       return true;
     }
+    // Flush up to *ptr before updating it.
+    sink.Flush(*ptr);
     auto res = DoneFallback<kExperimentalV2>(overrun, d);
     *ptr = res.first;
+    // Reset the sink to the new start pointer.
+    sink.Reset(res.first);
     return res.second;
   }
 
@@ -344,6 +363,11 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     limit_ = limit - static_cast<int>(buffer_end_ - res);
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return res;
+  }
+
+  // TODO Can V1 enjoy a code deduplication benefit by using this?
+  const char* InitFrom(const BoundedZCIS& bounded_zcis) {
+    return InitFrom(bounded_zcis.zcis, bounded_zcis.limit);
   }
 
  protected:
@@ -417,7 +441,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // kSlopBytes of the current buffer. depth is the current depth of nested
   // groups (or negative if the use case does not need careful tracking).
   template <bool kExperimentalV2>
-  inline const char* NextBuffer(int overrun, int depth);
+  const char* NextBuffer(int overrun, int depth);
   const char* SkipFallback(const char* ptr, int size);
   const char* AppendStringFallback(const char* ptr, int size, std::string* str);
   const char* VerifyUTF8Fallback(const char* ptr, size_t size);
@@ -556,7 +580,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // Done should only be called when the parsing pointer is pointing to the
   // beginning of field data - that is, at a tag.  Or if it is NULL.
   bool Done(const char** ptr) {
-    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_);
+    WireFormatNoOpSink sink;
+    return DoneWithCheck</*kExperimentalV2=*/false>(ptr, group_depth_, sink);
   }
 
 
@@ -647,6 +672,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   Data data_;
 };
 
+
 template <int>
 struct EndianHelper;
 
@@ -693,6 +719,13 @@ template <typename T, typename Void,
           typename = std::enable_if_t<std::is_same_v<Void, void>>>
 T UnalignedLoad(const Void* p) {
   return UnalignedLoad<T>(reinterpret_cast<const char*>(p));
+}
+
+template <typename T>
+T UnalignedLoadAndIncrement(const char** ptr) {
+  T value = UnalignedLoad<T>(*ptr);
+  *ptr += sizeof(T);
+  return value;
 }
 
 PROTOBUF_EXPORT
@@ -1216,6 +1249,13 @@ inline const char* EpsCopyInputStream::ReadMicroString(const char* ptr,
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
 
+  return ReadMicroStringWithSize(ptr, size, str, arena);
+}
+
+inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
+                                                               int size,
+                                                               MicroString& str,
+                                                               Arena* arena) {
   if (size <= BytesAvailable(ptr)) {
     str.Set(absl::string_view(ptr, size), arena);
     return ptr + size;

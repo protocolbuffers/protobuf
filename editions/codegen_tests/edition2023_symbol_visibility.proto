@@ -1,0 +1,14 @@
+edition = "2023";
+
+package protobuf_editions_test.edition2023;
+
+// Define symbols at different scopes to test symbol visibility.
+message SymbolVisibilityMessage {
+  message NestedMessage {
+    int32 a = 1;
+  }
+  enum NestedEnum {
+    NESTED_ENUM_UNKNOWN = 0;
+    NESTED_ENUM_BAR = 1;
+  }
+}

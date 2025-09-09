@@ -10,6 +10,7 @@
 
 #include "hpb/multibackend.h"
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
+#include "hpb/backend/upb/error.h"
 #include "upb/mem/arena.hpp"
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
 #include "google/protobuf/arena.h"
@@ -19,6 +20,7 @@ namespace hpb {
 namespace internal {
 namespace backend {
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
+using Error = ::hpb::internal::backend::upb::Error;
 namespace upb {
 using Arena = ::upb::Arena;
 }

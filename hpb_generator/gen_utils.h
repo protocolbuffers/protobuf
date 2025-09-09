@@ -16,9 +16,9 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
-
-namespace protobuf = ::proto2;
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 enum class MessageClassType {
   kMessage,
@@ -27,23 +27,24 @@ enum class MessageClassType {
   kMessageAccess,
 };
 
-inline bool IsMapEntryMessage(const protobuf::Descriptor* descriptor) {
+inline bool IsMapEntryMessage(const google::protobuf::Descriptor* descriptor) {
   return descriptor->options().map_entry();
 }
-std::vector<const protobuf::EnumDescriptor*> SortedEnums(
-    const protobuf::FileDescriptor* file);
-std::vector<const protobuf::Descriptor*> SortedMessages(
-    const protobuf::FileDescriptor* file);
-std::vector<const protobuf::FieldDescriptor*> SortedExtensions(
-    const protobuf::FileDescriptor* file);
-std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
-    const protobuf::Descriptor* message);
+std::vector<const google::protobuf::EnumDescriptor*> SortedEnums(
+    const google::protobuf::FileDescriptor* file);
+std::vector<const google::protobuf::Descriptor*> SortedMessages(
+    const google::protobuf::FileDescriptor* file);
+std::vector<const google::protobuf::FieldDescriptor*> SortedExtensions(
+    const google::protobuf::FileDescriptor* file);
+std::vector<const google::protobuf::FieldDescriptor*> FieldNumberOrder(
+    const google::protobuf::Descriptor* message);
 
 std::string ToCamelCase(absl::string_view input, bool lower_first);
 
 std::string DefaultValue(const FieldDescriptor* field);
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_UTILS_H__

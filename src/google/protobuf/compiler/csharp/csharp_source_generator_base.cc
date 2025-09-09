@@ -27,8 +27,7 @@ SourceGeneratorBase::SourceGeneratorBase(
     const Options *options) : options_(options) {
 }
 
-SourceGeneratorBase::~SourceGeneratorBase() {
-}
+SourceGeneratorBase::~SourceGeneratorBase() = default;
 
 void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
   printer->Print("[global::System.Diagnostics.DebuggerNonUserCodeAttribute]\n");

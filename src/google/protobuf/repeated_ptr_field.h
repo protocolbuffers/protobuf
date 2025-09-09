@@ -102,12 +102,18 @@ PROTOBUF_EXPORT void LogIndexOutOfBounds(int index, int size);
 // A utility function for logging that doesn't need any template types. Same as
 // LogIndexOutOfBounds, but aborts the program in all cases by logging to FATAL
 // instead of DFATAL.
-[[noreturn]] PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(int index,
-                                                              int size);
+// TODO: Remove preserve_all and add no_return once experiment is
+// complete.
+PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(
+    int index, int size);
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
-  if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
-    LogIndexOutOfBoundsAndAbort(index, size);
+  if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
+    if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
+      LogIndexOutOfBoundsAndAbort(index, size);
+    }
   }
+  ABSL_DCHECK_GE(index, 0);
+  ABSL_DCHECK_LT(index, size);
 }
 
 // Defined further below.
@@ -153,15 +159,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       GenericTypeHandler<MessageLite>, TypeHandler>;
 
   constexpr RepeatedPtrFieldBase()
-      : tagged_rep_or_elem_(nullptr),
-        current_size_(0),
-        capacity_proxy_(0),
-        arena_(nullptr) {}
+      : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(nullptr) {}
   explicit RepeatedPtrFieldBase(Arena* arena)
-      : tagged_rep_or_elem_(nullptr),
-        current_size_(0),
-        capacity_proxy_(0),
-        arena_(arena) {}
+      : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(arena) {}
 
   RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = delete;
   RepeatedPtrFieldBase& operator=(const RepeatedPtrFieldBase&) = delete;
@@ -182,7 +182,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   //   * prefer `SizeAtCapacity()` to `size() == Capacity()`;
   //   * prefer `AllocatedSizeAtCapacity()` to `allocated_size() == Capacity()`.
-  int Capacity() const { return capacity_proxy_ + kSSOCapacity; }
+  int Capacity() const { return using_sso() ? kSSOCapacity : rep()->capacity; }
 
   template <typename TypeHandler>
   const Value<TypeHandler>& at(int index) const {
@@ -200,12 +200,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
-    if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
       RuntimeAssertInBounds(index, current_size_);
-    } else {
-      ABSL_DCHECK_GE(index, 0);
-      ABSL_DCHECK_LT(index, current_size_);
-    }
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -275,14 +270,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
           return TypeHandler::default_instance();
         }
       }
-    } else if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
-      // We refactor this to a separate function instead of inlining it so we
-      // can measure the performance impact more easily.
-      RuntimeAssertInBounds(index, current_size_);
-    } else {
-      ABSL_DCHECK_GE(index, 0);
-      ABSL_DCHECK_LT(index, current_size_);
     }
+    // We refactor this to a separate function instead of inlining it so we
+    // can measure the performance impact more easily.
+    RuntimeAssertInBounds(index, current_size_);
     return *cast<TypeHandler>(element_at(index));
   }
 
@@ -642,6 +633,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   using CopyFn = void* (*)(Arena*, const void*);
 
   struct Rep {
+    // The size of the elements array, in number of elements.
+    int capacity;
+    // The number of elements allocated in the elements array (including cleared
+    // elements). This is always >= current_size.
     int allocated_size;
     // Here we declare a huge array as a way of approximating C's "flexible
     // array member" feature without relying on undefined behavior.
@@ -661,20 +656,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
     ABSL_DCHECK_LE(allocated_size(), Capacity());
-    // This is equivalent to `current_size_ == Capacity()`.
-    // Assuming `Capacity()` function is inlined, compiler is likely to optimize
-    // away "+ kSSOCapacity" and reduce it to "current_size_ > capacity_proxy_"
-    // which is an instruction less than "current_size_ == capacity_proxy_ + 1".
-    return current_size_ >= Capacity();
+    return current_size_ == Capacity();
   }
   inline bool AllocatedSizeAtCapacity() const {
     // Harden invariant size() <= allocated_size() <= Capacity().
     ABSL_DCHECK_LE(size(), allocated_size());
     ABSL_DCHECK_LE(allocated_size(), Capacity());
-    // This combines optimization mentioned in `SizeAtCapacity()` and simplifies
-    // `allocated_size()` in sso case.
-    return using_sso() ? (tagged_rep_or_elem_ != nullptr)
-                       : rep()->allocated_size >= Capacity();
+    return allocated_size() == Capacity();
   }
 
   void* const* elements() const {
@@ -788,7 +776,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // significant performance for memory-sensitive workloads.
   void* tagged_rep_or_elem_;
   int current_size_;
-  int capacity_proxy_;  // we store `capacity - kSSOCapacity` as an optimization
+  const int arena_offset_placeholder_do_not_use_ = 0;
   Arena* arena_;
 };
 
@@ -1020,6 +1008,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
       : RepeatedPtrField(arena, rhs) {}
 
   // TODO: make constructor private
+  [[deprecated("Use Arena::Create<RepeatedPtrField<...>>(Arena*) instead")]]
   explicit RepeatedPtrField(Arena* arena);
 
   template <typename Iter,

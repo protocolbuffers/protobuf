@@ -28,8 +28,7 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
     : PrimitiveFieldGenerator(descriptor, presenceIndex, options) {
 }
 
-EnumFieldGenerator::~EnumFieldGenerator() {
-}
+EnumFieldGenerator::~EnumFieldGenerator() = default;
 
 void EnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(variables_,
@@ -74,8 +73,7 @@ EnumOneofFieldGenerator::EnumOneofFieldGenerator(
   : PrimitiveOneofFieldGenerator(descriptor, presenceIndex, options) {
 }
 
-EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {
-}
+EnumOneofFieldGenerator::~EnumOneofFieldGenerator() = default;
 
 void EnumOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(variables_, "$property_name$ = other.$property_name$;\n");

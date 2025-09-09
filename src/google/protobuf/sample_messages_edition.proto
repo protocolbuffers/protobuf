@@ -7,14 +7,13 @@
 //
 // Sample messages to generate example code.
 
-edition = "2023";
+edition = "2024";
 
 package protobuf_test_messages.edition;
 
-import "google/protobuf/cpp_features.proto";
-
 option optimize_for = SPEED;
-option features.(pb.cpp).string_type = VIEW;
+
+import option "google/protobuf/cpp_features.proto";
 
 // This proto includes every type of field in both singular and repeated
 // forms.
@@ -59,8 +58,8 @@ message TestAllTypesEdition {
   NestedEnum optional_nested_enum = 21;
   ForeignEnumEdition optional_foreign_enum = 22;
 
-  string optional_string_piece = 24 [ctype = STRING_PIECE];
-  string optional_cord = 25 [ctype = CORD];
+  string optional_string_piece = 24;
+  string optional_cord = 25 [features.(pb.cpp).string_type = CORD];
 
   TestAllTypesEdition recursive_message = 27;
 
@@ -87,8 +86,8 @@ message TestAllTypesEdition {
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnumEdition repeated_foreign_enum = 52;
 
-  repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
-  repeated string repeated_cord = 55 [ctype = CORD];
+  repeated string repeated_string_piece = 54;
+  repeated string repeated_cord = 55 [features.(pb.cpp).string_type = CORD];
 
   // Packed
   repeated int32 packed_int32 = 75 [features.repeated_field_encoding = PACKED];
@@ -210,23 +209,23 @@ message TestAllTypesEdition {
   // Test field-name-to-JSON-name convention.
   // (protobuf says names can be any valid C/C++ identifier.)
   int32 fieldname1 = 401;
-  int32 field_name2 = 402;
-  int32 _field_name3 = 403;
-  int32 field__name4_ = 404;
-  int32 field0name5 = 405;
-  int32 field_0_name6 = 406;
-  int32 fieldName7 = 407;
-  int32 FieldName8 = 408;
-  int32 field_Name9 = 409;
-  int32 Field_Name10 = 410;
-  int32 FIELD_NAME11 = 411;
-  int32 FIELD_name12 = 412;
-  int32 __field_name13 = 413;
-  int32 __Field_name14 = 414;
-  int32 field__name15 = 415;
-  int32 field__Name16 = 416;
-  int32 field_name17__ = 417;
-  int32 Field_name18__ = 418;
+  int32 field_name2 = 402 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 _field_name3 = 403 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 field__name4_ = 404 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 field0name5 = 405 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 field_0_name6 = 406 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 fieldName7 = 407 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 FieldName8 = 408 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 field_Name9 = 409 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 Field_Name10 = 410 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 FIELD_NAME11 = 411 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 FIELD_name12 = 412 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 __field_name13 = 413 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 __Field_name14 = 414 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 field__name15 = 415 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 field__Name16 = 416 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 field_name17__ = 417 [features.enforce_naming_style = STYLE_LEGACY];
+  int32 Field_name18__ = 418 [features.enforce_naming_style = STYLE_LEGACY];
 
   // Reserved for unknown fields test.
   reserved 1000 to 9999;
@@ -283,6 +282,8 @@ message NullHypothesisEdition {}
 
 message EnumOnlyEdition {
   enum Bool {
+    option features.enforce_naming_style = STYLE_LEGACY;
+
     kFalse = 0;
     kTrue = 1;
   }
@@ -341,9 +342,11 @@ message TestAllRequiredTypesEdition {
       [features.field_presence = LEGACY_REQUIRED];
 
   string required_string_piece = 24
-      [ctype = STRING_PIECE, features.field_presence = LEGACY_REQUIRED];
-  string required_cord = 25
-      [ctype = CORD, features.field_presence = LEGACY_REQUIRED];
+      [features.field_presence = LEGACY_REQUIRED];
+  string required_cord = 25 [
+    features.(pb.cpp).string_type = CORD,
+    features.field_presence = LEGACY_REQUIRED
+  ];
 
   TestAllRequiredTypesEdition recursive_message = 27;
   TestAllRequiredTypesEdition optional_recursive_message = 28;

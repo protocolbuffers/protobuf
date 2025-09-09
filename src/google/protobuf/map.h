@@ -224,9 +224,10 @@ class UntypedMapIterator {
 };
 
 // These properties are depended upon by Rust FFI.
-static_assert(std::is_trivial_v<UntypedMapIterator>,
-              "UntypedMapIterator must be a trivial type.");
-static_assert(std::is_trivially_copyable_v<UntypedMapIterator>,
+static_assert(
+    std::is_trivially_default_constructible<UntypedMapIterator>::value,
+    "UntypedMapIterator must be trivially default-constructible.");
+static_assert(std::is_trivially_copyable<UntypedMapIterator>::value,
               "UntypedMapIterator must be trivially copyable.");
 static_assert(std::is_trivially_destructible_v<UntypedMapIterator>,
               "UntypedMapIterator must be trivially destructible.");
@@ -1501,13 +1502,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   PROTOBUF_NOINLINE Node* CloneFromOther(const Map& other) {
     Node* head = nullptr;
     for (const auto& [key, value] : other) {
-      Node* new_node;
-      if constexpr (std::is_base_of_v<MessageLite, mapped_type>) {
-        new_node = CreateNode(key);
-        new_node->kv.second = value;
-      } else {
-        new_node = CreateNode(key, value);
-      }
+      Node* new_node = CreateNode(key, value);
       new_node->next = head;
       head = new_node;
     }

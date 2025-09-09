@@ -2782,20 +2782,20 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
 
   UNITTEST::TestEnumMap to;
   EXPECT_TRUE(to.ParseFromString(data));
-  EXPECT_EQ(0, to.unknown_map_field().size());
-  EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
-  EXPECT_EQ(1, to.known_map_field().size());
-  EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
+  EXPECT_EQ(to.GetReflection()->GetUnknownFields(to).field_count(), 1);
+  EXPECT_THAT(to.known_map_field(),
+              ElementsAre(Pair(0, UNITTEST::PROTO2_MAP_ENUM_FOO)));
+  EXPECT_THAT(to.unknown_map_field(), IsEmpty());
 
   data.clear();
   from.Clear();
   to.SerializeToString(&data);
   EXPECT_TRUE(from.ParseFromString(data));
-  EXPECT_EQ(0, from.GetReflection()->GetUnknownFields(from).field_count());
-  EXPECT_EQ(1, from.known_map_field().size());
-  EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_FOO, from.known_map_field().at(0));
-  EXPECT_EQ(1, from.unknown_map_field().size());
-  EXPECT_EQ(UNITTEST::E_PROTO2_MAP_ENUM_EXTRA, from.unknown_map_field().at(0));
+  EXPECT_EQ(from.GetReflection()->GetUnknownFields(from).field_count(), 0);
+  EXPECT_THAT(from.known_map_field(),
+              ElementsAre(Pair(0, UNITTEST::E_PROTO2_MAP_ENUM_FOO)));
+  EXPECT_THAT(from.unknown_map_field(),
+              ElementsAre(Pair(0, UNITTEST::E_PROTO2_MAP_ENUM_EXTRA)));
 
   // Test the same behavior with the reflection based parser.
   to.Clear();
@@ -2806,10 +2806,10 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   ASSERT_TRUE(ptr);
   ASSERT_TRUE(ctx.EndedAtLimit());
 
-  EXPECT_EQ(0, to.unknown_map_field().size());
-  EXPECT_EQ(1, to.GetReflection()->GetUnknownFields(to).field_count());
-  EXPECT_EQ(1, to.known_map_field().size());
-  EXPECT_EQ(UNITTEST::PROTO2_MAP_ENUM_FOO, to.known_map_field().at(0));
+  EXPECT_EQ(to.GetReflection()->GetUnknownFields(to).field_count(), 1);
+  EXPECT_THAT(to.known_map_field(),
+              ElementsAre(Pair(0, UNITTEST::PROTO2_MAP_ENUM_FOO)));
+  EXPECT_THAT(to.unknown_map_field(), IsEmpty());
 }
 
 TEST(GeneratedMapFieldTest, Proto2UnknownEnumThrowsAwayUnknownData) {
@@ -4360,7 +4360,6 @@ TEST(NonUtf8Test, StringValuePassesInProto2) {
   (*message.mutable_map_string())[1] = "\xFF";
 
   auto serialized = message.SerializeAsString();
-  // Parsing passes, but a failure is logged in debug mode.
   ASSERT_TRUE(message.ParseFromString(serialized));
   EXPECT_EQ((*message.mutable_map_string())[1], "\xFF");
 }

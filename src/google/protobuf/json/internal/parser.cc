@@ -482,7 +482,7 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
           Traits::SetBool(field, msg, false);
           break;
         case JsonLexer::kStr: {
-          if (!lex.options().allow_legacy_syntax) {
+          if (!lex.options().allow_legacy_nonconformant_behavior) {
             goto bad;
           }
 
@@ -672,7 +672,7 @@ absl::Status ParseArray(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
         return ParseSingular<Traits>(lex, field, msg);
       }
 
-      if (lex.options().allow_legacy_syntax) {
+      if (lex.options().allow_legacy_nonconformant_behavior) {
         RETURN_IF_ERROR(lex.Expect("null"));
         return EmitNull<Traits>(lex, field, msg);
       }
@@ -689,7 +689,7 @@ absl::Status ParseArray(JsonLexer& lex, Field<Traits> field, Msg<Traits>& msg) {
     // the custom parser handler.
     bool can_flatten =
         type != MessageType::kValue && type != MessageType::kList;
-    if (can_flatten && lex.options().allow_legacy_syntax &&
+    if (can_flatten && lex.options().allow_legacy_nonconformant_behavior &&
         lex.Peek(JsonLexer::kArr)) {
       // You read that right. In legacy mode, if we encounter an array within
       // an array, we just flatten it as part of the current array!
@@ -1023,7 +1023,7 @@ absl::Status ParseFieldMask(JsonLexer& lex, const Desc<Traits>& desc,
       } else if (absl::ascii_isupper(c)) {
         snake_path.push_back('_');
         snake_path.push_back(absl::ascii_tolower(c));
-      } else if (lex.options().allow_legacy_syntax) {
+      } else if (lex.options().allow_legacy_nonconformant_behavior) {
         snake_path.push_back(c);
       } else {
         return str->loc.Invalid("unexpected character in FieldMask");
@@ -1069,7 +1069,8 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
   // limit.
   JsonLexer any_lex(&in, lex.options(), &lex.path(), mark.loc);
 
-  if (!type_url.has_value() && !lex.options().allow_legacy_syntax) {
+  if (!type_url.has_value() &&
+      !lex.options().allow_legacy_nonconformant_behavior) {
     return mark.loc.Invalid("missing @type in Any");
   }
 
@@ -1085,7 +1086,7 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
         });
   } else {
     // Empty {} is accepted in legacy mode.
-    ABSL_DCHECK(lex.options().allow_legacy_syntax);
+    ABSL_DCHECK(lex.options().allow_legacy_nonconformant_behavior);
     RETURN_IF_ERROR(any_lex.VisitObject([&](auto&) {
       return mark.loc.Invalid(
           "in legacy mode, missing @type in Any is only allowed for an empty "
@@ -1253,9 +1254,9 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
   auto pop = lex.path().Push(name, Traits::FieldType(*field),
                              Traits::FieldTypeName(*field));
 
-  if (Traits::HasParsed(
-          *field, msg,
-          /*allow_repeated_non_oneof=*/lex.options().allow_legacy_syntax) &&
+  if (Traits::HasParsed(*field, msg,
+                        /*allow_repeated_non_oneof=*/
+                        lex.options().allow_legacy_nonconformant_behavior) &&
       !lex.Peek(JsonLexer::kNull)) {
     return lex.Invalid(absl::StrFormat(
         "'%s' has already been set (either directly or as part of a oneof)",
@@ -1267,7 +1268,8 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
   }
 
   if (Traits::IsRepeated(*field)) {
-    if (lex.options().allow_legacy_syntax && !lex.Peek(JsonLexer::kArr)) {
+    if (lex.options().allow_legacy_nonconformant_behavior &&
+        !lex.Peek(JsonLexer::kArr)) {
       // The original ESF parser permits a single element in place of an array
       // thereof.
       return ParseSingular<Traits>(lex, *field, msg);
@@ -1297,7 +1299,8 @@ absl::Status ParseMessage(JsonLexer& lex, const Desc<Traits>& desc,
     // It is not clear if this counts as out-of-spec, but we're treating it as
     // such.
     bool is_upcoming_object = lex.Peek(JsonLexer::kObj);
-    if (!(is_upcoming_object && lex.options().allow_legacy_syntax)) {
+    if (!(is_upcoming_object &&
+          lex.options().allow_legacy_nonconformant_behavior)) {
       switch (type) {
         case MessageType::kList:
           return ParseListValue<Traits>(lex, desc, msg);

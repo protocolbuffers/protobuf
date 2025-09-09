@@ -308,6 +308,7 @@ class ParseContext;
 struct DescriptorTable;
 class DescriptorPoolExtensionFinder;
 class ExtensionSet;
+class HasBitsTestPeer;
 class LazyField;
 class RepeatedPtrFieldBase;
 class TcParser;
@@ -478,27 +479,26 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
                           const internal::DescriptorTable* descriptor_table,
                           void (*get_metadata_tracker)())
       : ClassData(base),
-        descriptor_methods(descriptor_methods),
-        descriptor_table(descriptor_table),
         reflection(),
         descriptor(),
+        descriptor_table(descriptor_table),
+        descriptor_methods(descriptor_methods),
         get_metadata_tracker(get_metadata_tracker) {}
 
   constexpr const ClassData* base() const { return this; }
 
-  const DescriptorMethods* descriptor_methods;
-
-  // Codegen types will provide a DescriptorTable to do lazy
-  // registration/initialization of the reflection objects.
-  // Other types, like DynamicMessage, keep the table as null but eagerly
-  // populate `reflection`/`descriptor` fields.
-  const internal::DescriptorTable* descriptor_table;
   // Accesses are protected by the once_flag in `descriptor_table`. When the
   // table is null these are populated from the beginning and need to
   // protection.
   mutable const Reflection* reflection;
   mutable const Descriptor* descriptor;
 
+  // Codegen types will provide a DescriptorTable to do lazy
+  // registration/initialization of the reflection objects.
+  // Other types, like DynamicMessage, keep the table as null but eagerly
+  // populate `reflection`/`descriptor` fields.
+  const internal::DescriptorTable* descriptor_table;
+  const DescriptorMethods* descriptor_methods;
   // When an access tracker is installed, this function notifies the tracker
   // that GetMetadata was called.
   void (*get_metadata_tracker)();
@@ -987,6 +987,48 @@ class PROTOBUF_EXPORT MessageLite {
         GetClassData()->cached_size_offset);
   }
 
+  // The following methods should be used to access has bits. They enable
+  // measuring the cost of checking/setting has bits with inline frame data.
+  static PROTOBUF_ALWAYS_INLINE constexpr void SetHasBit(
+      uint32_t& cached_has_bits, uint32_t has_bit_mask) {
+    cached_has_bits |= has_bit_mask;
+  }
+
+  static PROTOBUF_ALWAYS_INLINE constexpr void ClearHasBit(
+      uint32_t& cached_has_bits, uint32_t has_bit_mask) {
+    cached_has_bits &= ~has_bit_mask;
+  }
+
+  static PROTOBUF_ALWAYS_INLINE constexpr bool CheckHasBit(
+      uint32_t cached_has_bits, uint32_t has_bit_mask) {
+    return (cached_has_bits & has_bit_mask) != 0;
+  }
+
+  // The following methods should be used to access has bits for repeated
+  // fields.
+  // TODO: Remove these methods once measurement is complete.
+  static PROTOBUF_ALWAYS_INLINE constexpr void SetHasBitForRepeated(
+      uint32_t& cached_has_bits, uint32_t has_bit_mask) {
+    SetHasBit(cached_has_bits, has_bit_mask);
+  }
+
+  static PROTOBUF_ALWAYS_INLINE constexpr void ClearHasBitForRepeated(
+      uint32_t& cached_has_bits, uint32_t has_bit_mask) {
+    ClearHasBit(cached_has_bits, has_bit_mask);
+  }
+
+  static PROTOBUF_ALWAYS_INLINE constexpr bool CheckHasBitForRepeated(
+      uint32_t cached_has_bits, uint32_t has_bit_mask) {
+    return CheckHasBit(cached_has_bits, has_bit_mask);
+  }
+
+  static PROTOBUF_ALWAYS_INLINE constexpr bool BatchCheckHasBit(
+      uint32_t cached_has_bits, uint32_t batch_has_bits_mask) {
+    return (cached_has_bits & batch_has_bits_mask) != 0;
+  }
+
+  void CheckHasBitConsistency() const;
+
  public:
   enum ParseFlags {
     // Merge vs. Parse:
@@ -1051,6 +1093,7 @@ class PROTOBUF_EXPORT MessageLite {
   friend class compiler::cpp::MessageTableTester;
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
+  friend class internal::HasBitsTestPeer;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;
@@ -1073,6 +1116,10 @@ class PROTOBUF_EXPORT MessageLite {
 
   template <typename Type>
   friend const internal::ClassData* internal::GetClassData(const Type& msg);
+
+  static bool CheckFieldPresence(const internal::ParseContext& ctx,
+                                 const MessageLite& msg,
+                                 MessageLite::ParseFlags parse_flags);
 
   void LogInitializationErrorMessage() const;
 

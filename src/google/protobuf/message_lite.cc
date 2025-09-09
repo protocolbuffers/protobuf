@@ -72,6 +72,10 @@ void MessageLite::DeleteInstance() {
   internal::SizedDelete(ptr, size);
 }
 
+void MessageLite::CheckHasBitConsistency() const {
+  internal::TcParser::CheckHasBitConsistency(this, GetTcParseTable());
+}
+
 void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   auto* data = GetClassData();
   auto* other_data = other.GetClassData();
@@ -197,9 +201,9 @@ inline absl::string_view as_string_view(const void* data, int size) {
 }
 
 // Returns true if all required fields are present / have values.
-inline bool CheckFieldPresence(const internal::ParseContext& ctx,
-                               const MessageLite& msg,
-                               MessageLite::ParseFlags parse_flags) {
+inline bool CheckFieldPresenceImpl(const internal::ParseContext& ctx,
+                                   const MessageLite& msg,
+                                   MessageLite::ParseFlags parse_flags) {
   (void)ctx;  // Parameter is used by Google-internal code.
   if (ABSL_PREDICT_FALSE((parse_flags & MessageLite::kMergePartial) != 0)) {
     return true;
@@ -208,6 +212,13 @@ inline bool CheckFieldPresence(const internal::ParseContext& ctx,
 }
 
 }  // namespace
+
+// Returns true if all required fields are present / have values.
+bool MessageLite::CheckFieldPresence(const internal::ParseContext& ctx,
+                                     const MessageLite& msg,
+                                     MessageLite::ParseFlags parse_flags) {
+  return CheckFieldPresenceImpl(ctx, msg, parse_flags);
+}
 
 void MessageLite::LogInitializationErrorMessage() const {
   ABSL_LOG(ERROR) << InitializationErrorMessage("parse", *this);
@@ -236,7 +247,7 @@ bool MergeFromImpl(absl::string_view input, MessageLite* msg,
   ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   // ctx has an explicit limit set (length of string_view).
   if (ABSL_PREDICT_TRUE(ptr && ctx.EndedAtLimit())) {
-    return CheckFieldPresence(ctx, *msg, parse_flags);
+    return CheckFieldPresenceImpl(ctx, *msg, parse_flags);
   }
   return false;
 }
@@ -251,7 +262,7 @@ bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
   ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   // ctx has no explicit limit (hence we end on end of stream)
   if (ABSL_PREDICT_TRUE(ptr && ctx.EndedAtEndOfStream())) {
-    return CheckFieldPresence(ctx, *msg, parse_flags);
+    return CheckFieldPresenceImpl(ctx, *msg, parse_flags);
   }
   return false;
 }
@@ -267,7 +278,7 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
   if (ABSL_PREDICT_FALSE(!ptr)) return false;
   ctx.BackUp(ptr);
   if (ABSL_PREDICT_TRUE(ctx.EndedAtLimit())) {
-    return CheckFieldPresence(ctx, *msg, parse_flags);
+    return CheckFieldPresenceImpl(ctx, *msg, parse_flags);
   }
   return false;
 }
@@ -345,7 +356,7 @@ bool MessageLite::MergeFromImpl(io::CodedInputStream* input,
   } else {
     input->SetConsumed();
   }
-  return CheckFieldPresence(ctx, *this, parse_flags);
+  return CheckFieldPresenceImpl(ctx, *this, parse_flags);
 }
 
 bool MessageLite::MergePartialFromCodedStream(io::CodedInputStream* input) {

@@ -31,7 +31,6 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-using ::google::protobuf::internal::cpp::HasHasbit;
 using ::google::protobuf::io::AnnotationCollector;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
@@ -411,7 +410,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
   // will have checked that this field is set.  If so, we can avoid redundant
   // checks against the default variable.
 
-  if (is_inlined() && HasHasbit(field_)) {
+  if (is_inlined() && HasHasbit(field_, options_)) {
     p->Emit(R"cc(
       $DCHK$(!$field_$.IsDefault());
     )cc");
@@ -433,8 +432,8 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
     return;
   }
 
-  p->Emit({{"Clear",
-            HasHasbit(field_) ? "ClearNonDefaultToEmpty" : "ClearToEmpty"}},
+  p->Emit({{"Clear", HasHasbit(field_, options_) ? "ClearNonDefaultToEmpty"
+                                                 : "ClearToEmpty"}},
           R"cc(
             $field_$.$Clear$();
           )cc");
@@ -501,8 +500,8 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
   p->Emit(
       {{"hazzer",
         [&] {
-          if (HasHasbit(field_)) {
-            p->Emit(R"cc((from.$has_hasbit$) != 0)cc");
+          if (HasHasbit(field_, options_)) {
+            p->Emit(R"cc(CheckHasBit(from.$has_bits_array$, $has_mask$))cc");
           } else {
             p->Emit(R"cc(!from._internal_$name$().empty())cc");
           }
@@ -744,6 +743,9 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
           return $getter$;
         }
+        //~ Note: no need to set hasbit in set_$name$(int index). Hasbits only
+        //~ need to be updated if a new element is (potentially) added, not if
+        //~ an existing element is mutated.
         template <typename Arg_>
         inline void $Msg$::set_$name$(int index, Arg_&& value) {
           $WeakDescriptorSelfPin$;
@@ -757,6 +759,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
           $TsanDetectConcurrentMutation$;
           $pbi$::AddToRepeatedPtrField(*_internal_mutable_$name_internal$(),
                                        ::std::forward<Arg_>(value) $bytes_tag$);
+          $set_hasbit$;
           $annotate_add$;
           // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
         }
@@ -770,6 +773,7 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
         inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
         $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
+          $set_hasbit$;
           $annotate_mutable_list$;
           // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
           $TsanDetectConcurrentMutation$;

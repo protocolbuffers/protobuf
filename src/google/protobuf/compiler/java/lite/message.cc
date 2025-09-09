@@ -67,7 +67,7 @@ ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
   }
 }
 
-ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() {}
+ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() = default;
 
 void ImmutableMessageLiteGenerator::GenerateStaticVariables(
     io::Printer* printer, int* bytecode_estimate) {
@@ -228,7 +228,11 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
                      "private java.lang.Object $oneof_name$_;\n");
     }
     // OneofCase enum
-    printer->Print(vars, "public enum ${$$oneof_capitalized_name$Case$}$ {\n");
+    printer->Print(
+        vars,
+        "public enum ${$$oneof_capitalized_name$Case$}$\n"
+        "    implements "
+        "com.google.protobuf.AbstractMessageLite.InternalOneOfEnum {\n");
     printer->Annotate("{", "}", oneof);
     printer->Indent();
     for (int j = 0; j < (oneof)->field_count(); j++) {
@@ -278,7 +282,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "}\n"
         // TODO: Rename this to "getFieldNumber" or something to
         // disambiguate it from actual proto enums.
-        "public int getNumber() {\n"
+        "@java.lang.Override public int getNumber() {\n"
         "  return this.value;\n"
         "}\n",
         "cap_oneof_name", absl::AsciiStrToUpper(vars["oneof_name"]));

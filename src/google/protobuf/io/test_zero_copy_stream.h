@@ -72,9 +72,14 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
         << "The last call was not a successful Next()";
     ABSL_CHECK_LE(static_cast<size_t>(count), last_returned_buffer_->size())
         << "count must be within bounds of last buffer";
+    // Return the backed up buffer to the front s.t. Next() can return it.
     buffers_.push_front(
         last_returned_buffer_->substr(last_returned_buffer_->size() - count));
-    last_returned_buffer_ = nullptr;
+    // Note that last_returned_buffer_ is moved to last_backed_up_buffer_ to
+    // avoid use-after-free of data that was exposed to users but not backed up.
+    // For example, ZCIS::ReadCord() reads data, then backs up unused data
+    // before copying the data to Cord.
+    last_backed_up_buffer_ = std::move(last_returned_buffer_);
     byte_count_ -= count;
   }
 
@@ -109,6 +114,10 @@ class TestZeroCopyInputStream final : public ZeroCopyInputStream {
   // std::optional could work here, but std::unique_ptr makes it more likely
   // for sanitizers to detect if the string is used after it is destroyed.
   std::unique_ptr<std::string> last_returned_buffer_;
+  // It is possible that some part of the buffer needs to be valid after the
+  // unused part is backed up. Keeping last_returned_buffer_ alive broke some
+  // tests. Instead, we temporarily store it to last_backed_up_buffer_.
+  std::unique_ptr<std::string> last_backed_up_buffer_;
   int64_t byte_count_ = 0;
 };
 

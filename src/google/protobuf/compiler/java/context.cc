@@ -29,7 +29,7 @@ Context::Context(const FileDescriptor* file, const Options& options)
   InitializeFieldGeneratorInfo(file);
 }
 
-Context::~Context() {}
+Context::~Context() = default;
 
 ClassNameResolver* Context::GetNameResolver() const {
   return name_resolver_.get();

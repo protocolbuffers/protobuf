@@ -12,7 +12,6 @@ Recommended.*.JsonInput.BoolFieldDoubleQuotedTrue                               
 Recommended.*.JsonInput.FieldNameDuplicate                                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.FieldNameExtension.Validator                                                               # Expected JSON payload but got type 1
 Recommended.*.JsonInput.FieldNameNotQuoted                                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.MapFieldValueIsNull                                                                        # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.RepeatedFieldMessageElementIsNull                                                          # Should have failed to parse, but didn't.
@@ -33,3 +32,6 @@ Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput                          
 Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                                                               # Should have failed to serialize, but didn't.
 Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
+Required.*.JsonInput.SingleValueForRepeatedFieldMessage                                                            # Should have failed to parse, but didn't.
+

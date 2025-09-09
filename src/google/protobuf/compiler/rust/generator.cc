@@ -56,8 +56,11 @@ void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
     auto path = RsTypePath(ctx, *msg);
     ctx.Emit({{"pkg::Msg", path}},
              R"rs(
+                #[allow(unused_imports)]
                 pub use $pkg::Msg$;
+                #[allow(unused_imports)]
                 pub use $pkg::Msg$View;
+                #[allow(unused_imports)]
                 pub use $pkg::Msg$Mut;
               )rs");
   }
@@ -66,6 +69,7 @@ void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
     auto path = RsTypePath(ctx, *enum_);
     ctx.Emit({{"pkg::Enum", path}},
              R"rs(
+                #[allow(unused_imports)]
                 pub use $pkg::Enum$;
               )rs");
   }

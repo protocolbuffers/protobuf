@@ -5,6 +5,9 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
 
 package(default_applicable_licenses = ["//:license"])
@@ -124,7 +127,10 @@ cc_library(
     hdrs = ["internal/reader.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//upb:__pkg__"],
-    deps = ["//upb/port"],
+    deps = [
+        ":eps_copy_input_stream",
+        "//upb/port",
+    ],
 )
 
 cc_library(

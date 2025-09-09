@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <gtest/gtest.h>
-#include "google/protobuf/compiler/hpb/tests/set_alias.hpb.h"
+#include "hpb_generator/tests/set_alias.hpb.h"
 #include "hpb/arena.h"
 #include "hpb/hpb.h"
 

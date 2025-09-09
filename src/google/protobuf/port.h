@@ -23,6 +23,10 @@
 #include <type_traits>
 #include <typeinfo>
 
+#if defined(__ARM_FEATURE_CRC32)
+#include <arm_acle.h>
+#endif
+
 #include "absl/base/optimization.h"
 
 
@@ -274,6 +278,14 @@ inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
   return EnableStableExperiments();
 }
 
+// Returns true if hasbits for repeated fields are enabled (b/391445226). This
+// flag-gates the rollout of the feature, and if disabled will disable the
+// feature. This will be removed once the feature is fully rolled out and
+// verified.
+inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
+  return true;
+}
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -325,6 +337,14 @@ constexpr bool DebugHardenForceAllocationOnConstruction() {
 }
 
 constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
+  return false;
+}
+
+inline constexpr bool DebugHardenCheckHasBitConsistency() {
+#if !defined(NDEBUG) || defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
+  return true;
+#endif
   return false;
 }
 
@@ -786,9 +806,7 @@ inline uint32_t Crc32(uint32_t crc, uint64_t v) {
 #elif defined(__ARM_FEATURE_CRC32)
 
 constexpr bool HasCrc32() { return true; }
-inline uint32_t Crc32(uint32_t crc, uint64_t v) {
-  return __builtin_arm_crc32cd(crc, v);
-}
+inline uint32_t Crc32(uint32_t crc, uint64_t v) { return __crc32cd(crc, v); }
 
 #else
 

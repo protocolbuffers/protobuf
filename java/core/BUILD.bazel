@@ -7,6 +7,10 @@ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load(
+    "//bazel/tests:protobuf_test_proto_library.bzl",
+    "protobuf_test_proto_library",
+)
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:java_opts.bzl", "protobuf_java_export", "protobuf_java_library", "protobuf_versioned_java_library")
 load("//conformance:defs.bzl", "conformance_test")
@@ -182,7 +186,10 @@ protobuf_java_export(
 protobuf_java_library(
     name = "lite_runtime_only",
     srcs = LITE_SRCS,
-    visibility = ["//java/kotlin:__pkg__"],
+    visibility = [
+        "//java/kotlin:__pkg__",
+        "//java/lite:__pkg__",
+    ],
 )
 
 proto_library(
@@ -210,7 +217,10 @@ cc_proto_library(
 filegroup(
     name = "java_features_proto_srcs",
     srcs = ["src/main/resources/google/protobuf/java_features.proto"],
-    visibility = ["//pkg:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//python:__pkg__",
+    ],
 )
 
 compile_edition_defaults(
@@ -219,7 +229,7 @@ compile_edition_defaults(
         "//:descriptor_proto",
         "//:java_features_proto",
     ],
-    maximum_edition = "2023",
+    maximum_edition = "2024",
     minimum_edition = "PROTO2",
 )
 
@@ -335,9 +345,12 @@ proto_lang_toolchain(
     visibility = ["//visibility:public"],
 )
 
-proto_library(
+protobuf_test_proto_library(
     name = "java_test_protos",
     srcs = glob(["src/test/proto/**/*.proto"]),
+    option_deps = [
+        "//:java_features_proto",
+    ],
     strip_import_prefix = "src/test/proto",
     deps = [
         "//:any_proto",
@@ -415,7 +428,7 @@ build_test(
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_java.txt",
-    maximum_edition = "2023",
+    maximum_edition = "2024",
     testee = "//conformance:conformance_java",
     text_format_failure_list = "//conformance:text_format_failure_list_java.txt",
 )
@@ -538,6 +551,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/FieldPresenceTest.java",
     "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
     "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    "src/test/java/com/google/protobuf/ImportOptionTest.java",
     "src/test/java/com/google/protobuf/LazilyParsedMessageSetTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
     "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
@@ -627,6 +641,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/UnredactedDebugFormatForTestTest.java",
             "src/test/java/com/google/protobuf/LargeEnumTest.java",
             "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
+            "src/test/java/com/google/protobuf/ImportOptionTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
@@ -679,6 +694,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/FieldPresenceTest.java",
             "src/test/java/com/google/protobuf/LargeEnumTest.java",
             "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
+            "src/test/java/com/google/protobuf/ImportOptionTest.java",
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",

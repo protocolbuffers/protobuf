@@ -18,12 +18,9 @@
 #include "hpb/internal/template_help.h"
 #include "hpb/multibackend.h"
 #include "hpb/ptr.h"
-#include "hpb/status.h"
 
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
-#include "hpb/backend/upb/interop.h"
 #include "hpb/backend/upb/upb.h"
-#include "upb/wire/decode.h"
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
 #include "hpb/backend/cpp/cpp.h"
 #else
@@ -69,33 +66,15 @@ template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
                                 absl::string_view bytes,
                                 const ExtensionRegistry& extension_registry =
-                                    ExtensionRegistry::EmptyRegistry()) {
-  static_assert(!std::is_const_v<T>);
-  upb_Message_Clear(interop::upb::GetMessage(message),
-                    interop::upb::GetMiniTable(message));
-  auto* arena = interop::upb::GetArena(message);
-  return upb_Decode(bytes.data(), bytes.size(),
-                    interop::upb::GetMessage(message),
-                    interop::upb::GetMiniTable(message),
-                    internal::GetUpbExtensions(extension_registry),
-                    /* options= */ 0, arena) == kUpb_DecodeStatus_Ok;
+                                    ExtensionRegistry::empty_registry()) {
+  return backend::Parse(message, bytes, extension_registry);
 }
 
 template <typename T>
 absl::StatusOr<T> Parse(absl::string_view bytes,
                         const ExtensionRegistry& extension_registry =
-                            ExtensionRegistry::EmptyRegistry()) {
-  T message;
-  auto* arena = interop::upb::GetArena(&message);
-  upb_DecodeStatus status =
-      upb_Decode(bytes.data(), bytes.size(), interop::upb::GetMessage(&message),
-                 interop::upb::GetMiniTable(&message),
-                 internal::GetUpbExtensions(extension_registry),
-                 /* options= */ 0, arena);
-  if (status == kUpb_DecodeStatus_Ok) {
-    return message;
-  }
-  return MessageDecodeError(status);
+                            ExtensionRegistry::empty_registry()) {
+  return backend::Parse<T>(bytes, extension_registry);
 }
 
 template <typename T>

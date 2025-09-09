@@ -80,6 +80,9 @@ def _proto_library_impl(ctx):
             if not proto.allow_exports[_PackageSpecificationInfo].contains(ctx.label):
                 fail("proto_library '%s' can't be reexported in package '//%s'" % (proto.direct_descriptor_set.owner, ctx.label.package))
 
+    if len(ctx.attr.extension_declarations) > 0 and ctx.label.package != "net/proto2/bridge/proto":
+        fail("extension_declarations: this attribute is only allowed on //net/proto2/bridge/proto:message_set")
+
     proto_path, virtual_srcs = _process_srcs(ctx, srcs, import_prefix, strip_import_prefix)
     descriptor_set = ctx.actions.declare_file(ctx.label.name + "-descriptor-set.proto.bin")
 
@@ -92,6 +95,7 @@ def _proto_library_impl(ctx):
         workspace_root = ctx.label.workspace_root,
         bin_dir = ctx.bin_dir.path,
         allow_exports = ctx.attr.allow_exports,
+        extension_declarations = ctx.files.extension_declarations,
     )
 
     _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descriptor_set)
@@ -363,6 +367,13 @@ lang_proto_library that is not in one of the listed packages.""",
         "data": attr.label_list(
             allow_files = True,
             flags = ["SKIP_CONSTRAINTS_OVERRIDE"],
+        ),
+        "extension_declarations": attr.label_list(
+            allow_files = [".txtpb"],
+            doc = """
+List of files containing extension declarations. This attribute is only allowed
+for use with MessageSet.
+""",
         ),
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),

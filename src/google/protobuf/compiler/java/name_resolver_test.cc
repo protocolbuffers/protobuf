@@ -242,6 +242,8 @@ TEST_F(NameResolverTest, MultipleFilesMessageEdition2023) {
             PACKAGE_PREFIX "proto2_unittest.FooMessage");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
             PACKAGE_PREFIX "proto2_unittest.FooMessage");
+  EXPECT_EQ(resolver.GetFullyQualifiedKotlinFactoryName(message_descriptor),
+            PACKAGE_PREFIX "proto2_unittest.fooMessage");
 }
 
 TEST_F(NameResolverTest, SingleFileMessageEdition2023) {
@@ -262,6 +264,8 @@ TEST_F(NameResolverTest, SingleFileMessageEdition2023) {
             PACKAGE_PREFIX "proto2_unittest.Foo.FooMessage");
   EXPECT_EQ(resolver.GetJavaImmutableClassName(message_descriptor),
             PACKAGE_PREFIX "proto2_unittest.Foo$FooMessage");
+  EXPECT_EQ(resolver.GetFullyQualifiedKotlinFactoryName(message_descriptor),
+            PACKAGE_PREFIX "proto2_unittest.fooMessage");
 }
 
 TEST_F(NameResolverTest, NestInFileClassMessageEdition2024) {
@@ -307,6 +311,14 @@ TEST_F(NameResolverTest, NestInFileClassMessageEdition2024) {
   EXPECT_EQ(resolver.GetJavaImmutableClassName(nested_in_unnested_message),
             PACKAGE_PREFIX
             "proto2_unittest.UnnestedMessage$NestedInUnnestedMessage");
+  EXPECT_EQ(resolver.GetFullyQualifiedKotlinFactoryName(unnested_message),
+            PACKAGE_PREFIX "proto2_unittest.unnestedMessage");
+  EXPECT_EQ(resolver.GetFullyQualifiedKotlinFactoryName(nested_in_file_message),
+            PACKAGE_PREFIX "proto2_unittest.nestedInFileClassMessage");
+  EXPECT_EQ(
+      resolver.GetFullyQualifiedKotlinFactoryName(nested_in_unnested_message),
+      PACKAGE_PREFIX
+      "proto2_unittest.UnnestedMessageKt.nestedInUnnestedMessage");
 }
 
 TEST_F(NameResolverTest, MultipleFilesEnumEdition2023) {

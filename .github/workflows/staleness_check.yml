@@ -17,7 +17,9 @@ on:
         type: string
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test staleness
@@ -27,7 +29,7 @@ jobs:
       - name: Checkout
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
-          ref: ${{ inputs.safe-checkout || github.head_ref || github.ref }}
+          ref: ${{ inputs.safe-checkout }}
 
       - name: Mark runs associated with commits
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
@@ -50,7 +52,7 @@ jobs:
         # commit.
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
-          version: 7.1.2 # Bazel version
+          version: 7.6.1 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: staleness
           # TODO: Enable bzlmod once //python/dist is buildable.

@@ -698,6 +698,9 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
 
+  // Allows access to `fields_`.
+  friend class Reflection;
+
   // Get the merged features that apply to this message type.  These are
   // specified in the .proto file through the feature options in the message
   // definition.  Allowed features are defined by Features in descriptor.proto,
@@ -2357,6 +2360,13 @@ class PROTOBUF_EXPORT DescriptorPool {
   // of this enforcement.
   void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
 
+  // Enforce symbol visibility rules.  This will enable enforcement of the
+  // `export` and `local` keywords added in edition 2024, honoring the behavior
+  // of the `default_symbol_visibility` feature.
+  void EnforceSymbolVisibility(bool enforce) {
+    enforce_symbol_visibility_ = enforce;
+  }
+
   // By default, option imports are allowed to be missing.
   // If you call EnforceOptionDependencies(true), however, the DescriptorPool
   // will report a import not found error.
@@ -2386,17 +2396,12 @@ class PROTOBUF_EXPORT DescriptorPool {
     enforce_extension_declarations_ = enforce;
   }
 
-  bool EnforceDescriptorExtensionDeclarations() const {
+  bool ShouldEnforceDescriptorExtensionDeclarations() const {
     return enforce_extension_declarations_ ==
            ExtDeclEnforcementLevel::kAllExtensions;
   }
 
-  bool EnforceCustomExtensionDeclarations() const {
-    return enforce_extension_declarations_ ==
-               ExtDeclEnforcementLevel::kAllExtensions ||
-           enforce_extension_declarations_ ==
-               ExtDeclEnforcementLevel::kCustomExtensions;
-  }
+  bool ShouldEnforceExtensionDeclaration(const FieldDescriptor& field) const;
 
 #ifndef SWIG
   // Dispatch recursive builds to a callback that may stick them onto a separate
@@ -2677,6 +2682,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   bool enforce_naming_style_;
+  bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;
 
   // Set of files to track for additional validation. The bool value when true
@@ -3184,16 +3190,22 @@ enum class HasbitMode : uint8_t {
 //     indicates an unset field (kTrueHasbit);
 //   - have hasbits where hasbit == 1 indicates "field is possibly modified" and
 //     hasbit == 0 indicates "field is definitely missing" (kHintHasbit).
-PROTOBUF_EXPORT HasbitMode GetFieldHasbitMode(const FieldDescriptor* field);
+//
+// Note that this may not match the hasbit mode chosen by the compiler, which
+// may be influenced by other factors like PDProto profiles.
+PROTOBUF_EXPORT HasbitMode
+GetFieldHasbitModeWithoutProfile(const FieldDescriptor* field);
 
 // Returns true if there are hasbits for the field.
 // Note that this does not correlate with "hazzer"s, i.e., whether has_foo APIs
 // are emitted.
-PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
+//
+// Note that this may not match the hasbit mode chosen by the compiler, which
+// may be influenced by other factors like PDProto profiles.
+PROTOBUF_EXPORT bool HasHasbitWithoutProfile(const FieldDescriptor* field);
 
 enum class Utf8CheckMode : uint8_t {
   kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
-  kVerify = 1,  // Only log an error but parsing will succeed.
   kNone = 2,    // No UTF-8 check.
 };
 PROTOBUF_EXPORT Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,

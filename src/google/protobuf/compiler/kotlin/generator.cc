@@ -27,8 +27,8 @@ namespace kotlin {
 
 using google::protobuf::compiler::java::Options;
 
-KotlinGenerator::KotlinGenerator() {}
-KotlinGenerator::~KotlinGenerator() {}
+KotlinGenerator::KotlinGenerator() = default;
+KotlinGenerator::~KotlinGenerator() = default;
 
 uint64_t KotlinGenerator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |

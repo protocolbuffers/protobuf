@@ -59,7 +59,7 @@ TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   static_assert(std::is_same_v<It::iterator_category,
                              std::random_access_iterator_tag>,
                 "");
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");
@@ -95,7 +95,7 @@ TEST(ConstRepeatedPtrOverPtrsIterator, Traits) {
   static_assert(std::is_same_v<It::iterator_category,
                              std::random_access_iterator_tag>,
                 "");
-#if __cplusplus >= 202002L
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
   static_assert(
       std::is_same<It::iterator_concept, std::contiguous_iterator_tag>::value,
       "");
@@ -906,10 +906,14 @@ TEST(RepeatedPtrFieldTest, SmallOptimization) {
   // Adding a second object stops sso.
   std::string str2;
   array->UnsafeArenaAddAllocated(&str2);
-  EXPECT_EQ(array->Capacity(), 3);
-  // Backing array and the strings.
-  EXPECT_EQ(array->SpaceUsedExcludingSelf(),
-            (1 + array->Capacity()) * sizeof(void*) + 2 * sizeof(str));
+  // We know we have exited sso if the capacity is greater than 1.
+  EXPECT_GT(array->Capacity(), 1);
+  // Backing array and the strings. sizeof(Rep) = 2 * sizeof(int) for capacity
+  // and allocated_size. Each element of the Rep contributes sizeof(void*),
+  // and each string contributes sizeof(str) to arena memory.
+  EXPECT_EQ(
+      array->SpaceUsedExcludingSelf(),
+      2 * sizeof(int) + array->Capacity() * sizeof(void*) + 2 * sizeof(str));
   // We used some arena space now.
   EXPECT_LT(usage_before, arena.SpaceUsed());
   // And the pointer_begin is not in the sso anymore.

@@ -758,7 +758,7 @@ static upb_MiniTable* upb_MtDecoder_DoBuildMiniTableWithBuf(
 #ifdef UPB_TRACING_ENABLED
   // MiniTables built from MiniDescriptors will not be able to vend the message
   // name unless it is explicitly set with upb_MiniTable_SetFullName().
-  decoder->table->UPB_PRIVATE(full_name) = 0;
+  decoder->table.UPB_PRIVATE(full_name) = 0;
 #endif
 
   // Strip off and verify the version tag.

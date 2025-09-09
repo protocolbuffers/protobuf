@@ -24,8 +24,8 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-Generator::Generator() {}
-Generator::~Generator() {}
+Generator::Generator() = default;
+Generator::~Generator() = default;
 
 uint64_t Generator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |

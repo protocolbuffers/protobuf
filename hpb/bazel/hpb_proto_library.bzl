@@ -10,6 +10,8 @@
 """
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "use_cpp_toolchain")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
@@ -20,23 +22,6 @@ def upb_use_cpp_toolchain():
 
 def _filter_none(elems):
     return [e for e in elems if e]
-
-# Dummy rule to expose select() copts to aspects  ##############################
-
-HpbProtoLibraryCoptsInfo = provider(
-    "Provides copts for hpb proto targets",
-    fields = {
-        "copts": "copts for hpb_proto_library()",
-    },
-)
-
-def hpb_proto_library_copts_impl(ctx):
-    return HpbProtoLibraryCoptsInfo(copts = ctx.attr.copts)
-
-hpb_proto_library_copts = rule(
-    implementation = hpb_proto_library_copts_impl,
-    attrs = {"copts": attr.string_list(default = [])},
-)
 
 _UpbCcWrappedCcInfo = provider("Provider for cc_info for hpb", fields = ["cc_info"])
 _WrappedCcGeneratedSrcsInfo = provider("Provider for generated sources", fields = ["srcs"])
@@ -130,7 +115,7 @@ def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
             name = ctx.rule.attr.name + ".upbprotos",
             hdrs = files.hdrs,
             srcs = files.srcs,
-            copts = ctx.attr._ccopts[HpbProtoLibraryCoptsInfo].copts,
+            copts = [],
             dep_ccinfos = dep_ccinfos,
         )
         return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
@@ -140,17 +125,15 @@ def _upb_cc_proto_library_aspect_impl(target, ctx):
 
 _hpb_proto_library_aspect = aspect(
     attrs = {
-        "_ccopts": attr.label(
-            default = "//hpb:hpb_proto_library_copts",
-        ),
         "_hpb_lang_toolchain": attr.label(
-            default = "//src/google/protobuf/compiler/hpb:toolchain",
+            default = "//hpb_generator:toolchain",
         ),
         "_upbprotos": attr.label_list(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
                 "//upb:generated_cpp_support",
                 "//hpb:generated_hpb_support",
+                "//hpb/internal:os_macros",
                 "@abseil-cpp//absl/log:absl_check",
                 "@abseil-cpp//absl/strings",
                 "@abseil-cpp//absl/status:statusor",
@@ -185,9 +168,6 @@ hpb_proto_library = rule(
             ],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],
-        ),
-        "_ccopts": attr.label(
-            default = "//hpb:hpb_proto_library_copts",
         ),
     },
 )

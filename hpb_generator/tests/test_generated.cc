@@ -12,12 +12,12 @@
 #include <gtest/gtest.h>
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/hpb/tests/child_model.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/no_package.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/set_alias.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_enum.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_extension.hpb.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.hpb.h"
+#include "hpb_generator/tests/child_model.hpb.h"
+#include "hpb_generator/tests/no_package.hpb.h"
+#include "hpb_generator/tests/set_alias.hpb.h"
+#include "hpb_generator/tests/test_enum.hpb.h"
+#include "hpb_generator/tests/test_extension.hpb.h"
+#include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb/arena.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/hpb.h"
@@ -666,6 +666,7 @@ TEST(CppGeneratedCode, SetAliasFieldsOutofOrder) {
   ASSERT_EQ(parent1.child()->peeps(), 12);
 }
 
+#ifndef NDEBUG
 TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);
@@ -673,6 +674,7 @@ TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   auto parent = hpb::CreateMessage<Parent>(different_arena);
   EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
 }
+#endif
 
 TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaFused) {
   hpb::Arena arena;
@@ -711,6 +713,7 @@ TEST(CppGeneratedCode, SetAliasRepeated) {
             hpb::interop::upb::GetMessage(parent1.children(0)));
 }
 
+#ifndef NDEBUG
 TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);
@@ -718,6 +721,7 @@ TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
   auto parent = hpb::CreateMessage<ParentWithRepeated>(different_arena);
   EXPECT_DEATH(parent.add_alias_children(child), "hpb::interop::upb::GetArena");
 }
+#endif
 
 TEST(CppGeneratedCode, SetAliasMap) {
   hpb::Arena arena;
@@ -736,6 +740,26 @@ TEST(CppGeneratedCode, SetAliasMap) {
   EXPECT_TRUE(c2.ok());
   ASSERT_EQ(hpb::interop::upb::GetMessage(c1.value()),
             hpb::interop::upb::GetMessage(c2.value()));
+}
+
+TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaRefs) {
+  hpb::Arena arena;
+  auto parent1 = hpb::CreateMessage<Parent>(arena);
+  auto child = parent1.mutable_child();
+  child->set_peeps(12);
+
+  hpb::Arena other_arena;
+  auto parent2 = hpb::CreateMessage<Parent>(other_arena);
+  other_arena.RefArena(arena);
+
+  parent2.set_alias_child(child);
+
+  ASSERT_EQ(parent1.child()->peeps(), parent2.child()->peeps());
+  ASSERT_EQ(hpb::interop::upb::GetMessage(parent1.child()),
+            hpb::interop::upb::GetMessage(parent2.child()));
+  auto childPtr = hpb::Ptr<Child>(child);
+  ASSERT_EQ(hpb::interop::upb::GetMessage(childPtr),
+            hpb::interop::upb::GetMessage(parent1.child()));
 }
 
 }  // namespace

@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
 load(
@@ -56,7 +57,7 @@ cc_library(
     srcs = ["names.cc"],
     hdrs = ["names.h"],
     visibility = [
-        "//src/google/protobuf/compiler/hpb:__pkg__",
+        "//hpb_generator:__pkg__",
         "//src/google/protobuf/compiler/rust:__pkg__",
         "//third_party/kotlin/protobuf/generator/native:__pkg__",
         "//upb_generator:__subpackages__",

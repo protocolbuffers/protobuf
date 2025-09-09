@@ -11,6 +11,7 @@ load("@protobuf_pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load(":dist.bzl", "py_dist", "py_dist_module")
@@ -130,6 +131,7 @@ selects.config_setting_group(
         ":osx_x86_64_release",
         ":osx_x86_64_local",
     ],
+    visibility = ["//python:__subpackages__"],
 )
 
 config_setting(
@@ -157,6 +159,7 @@ selects.config_setting_group(
         ":osx_aarch64_release",
         ":osx_aarch64_local",
     ],
+    visibility = ["//python:__subpackages__"],
 )
 
 config_setting(
@@ -189,6 +192,7 @@ selects.config_setting_group(
         ":windows_x86_32_release",
         ":windows_x86_32_local",
     ],
+    visibility = ["//python:__subpackages__"],
 )
 
 config_setting(
@@ -299,24 +303,28 @@ pkg_tar(
     }),
 )
 
+sh_binary(
+    name = "setup_wrapper",
+    srcs = ["setup_wrapper.sh"],
+    data = [requirement("setuptools")],
+    visibility = ["//visibility:private"],
+)
+
 genrule(
     name = "source_wheel",
     srcs = [":source_tarball"],
     outs = ["protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION],
     cmd = """
-        export PYTHONPATH=$$PWD/external/protobuf_pip_deps_setuptools/site-packages
         set -eux
         tar -xzvf $(location :source_tarball)
-        cd protobuf/
-        python3 setup.py sdist
-        cd ..
+        $(location :setup_wrapper) sdist
         mv protobuf/dist/*.tar.gz $@
     """,
     target_compatible_with = select({
         "@system_python//:none": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
-    tools = [requirement("setuptools")],
+    tools = [":setup_wrapper"],
 )
 
 py_wheel(

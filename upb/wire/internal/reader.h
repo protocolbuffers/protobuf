@@ -8,6 +8,11 @@
 #ifndef UPB_WIRE_INTERNAL_READER_H_
 #define UPB_WIRE_INTERNAL_READER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
+#include "upb/wire/eps_copy_input_stream.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -24,22 +29,36 @@ extern "C" {
 #endif
 
 UPB_PRIVATE(_upb_WireReader_LongVarint)
-UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val);
+UPB_PRIVATE(_upb_WireReader_ReadLongVarint32)(const char* ptr, uint32_t val);
+UPB_PRIVATE(_upb_WireReader_LongVarint)
+UPB_PRIVATE(_upb_WireReader_ReadLongVarint64)(const char* ptr, uint64_t val);
 
 UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
-    const char* ptr, uint64_t* val, int maxlen, uint64_t maxval) {
-  uint64_t byte = (uint8_t)*ptr;
+    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 10);
+  uint8_t byte = *ptr;
   if (UPB_LIKELY((byte & 0x80) == 0)) {
-    *val = (uint32_t)byte;
+    *val = byte;
     return ptr + 1;
   }
-  const char* start = ptr;
   UPB_PRIVATE(_upb_WireReader_LongVarint)
-  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(ptr, byte);
-  if (!res.ptr || (maxlen < 10 && res.ptr - start > maxlen) ||
-      res.val > maxval) {
-    return NULL;  // Malformed.
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint64)(ptr, byte);
+  if (UPB_UNLIKELY(!res.ptr)) return NULL;
+  *val = res.val;
+  return res.ptr;
+}
+
+UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadTag)(
+    const char* ptr, uint32_t* val, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 5);
+  uint8_t byte = *ptr;
+  if (UPB_LIKELY((byte & 0x80) == 0)) {
+    *val = byte;
+    return ptr + 1;
   }
+  UPB_PRIVATE(_upb_WireReader_LongVarint)
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint32)(ptr, byte);
+  if (UPB_UNLIKELY(!res.ptr)) return NULL;
   *val = res.val;
   return res.ptr;
 }

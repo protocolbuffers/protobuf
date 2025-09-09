@@ -8,7 +8,8 @@ Most users should depend upon public aliases in the root:
     //:well_known_types_py_pb2
 """
 
-load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
@@ -17,7 +18,7 @@ load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load("//editions:defaults.bzl", "compile_edition_defaults", "embed_edition_defaults")
-load(":internal.bzl", "internal_copy_files", "internal_py_test")
+load(":internal.bzl", "internal_copy_files", "internal_is_windows", "internal_py_test")
 
 def build_targets(name):
     """
@@ -63,6 +64,12 @@ def build_targets(name):
         ],
     )
 
+    # Visibility needs to be public per https://github.com/bazelbuild/bazel-skylib/pull/584
+    internal_is_windows(
+        name = "is_windows",
+        visibility = ["//visibility:public"],
+    )
+
     internal_copy_files(
         name = "copied_wkt_proto_files",
         srcs = [
@@ -72,18 +79,14 @@ def build_targets(name):
         ],
         strip_prefix = "src",
     )
-
-    native.cc_binary(
+    cc_binary(
         name = "google/protobuf/internal/_api_implementation.so",
         srcs = ["google/protobuf/internal/api_implementation.cc"],
         copts = COPTS + [
             "-DPYTHON_PROTO2_CPP_IMPL_V2",
         ],
-        linkopts = selects.with_or({
-            (
-                "//python/dist:osx_x86_64",
-                "//python/dist:osx_aarch64",
-            ): ["-Wl,-undefined,dynamic_lookup"],
+        linkopts = select({
+            "@platforms//os:osx": ["-Wl,-undefined,dynamic_lookup"],
             "//conditions:default": [],
         }),
         linkshared = 1,
@@ -107,8 +110,7 @@ def build_targets(name):
             "define": "allow_oversize_protos=true",
         },
     )
-
-    native.cc_binary(
+    cc_binary(
         name = "google/protobuf/pyext/_message.so",
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
@@ -120,11 +122,8 @@ def build_targets(name):
             "//conditions:default": [],
             ":allow_oversize_protos": ["-DPROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS=1"],
         }),
-        linkopts = selects.with_or({
-            (
-                "//python/dist:osx_x86_64",
-                "//python/dist:osx_aarch64",
-            ): ["-Wl,-undefined,dynamic_lookup"],
+        linkopts = select({
+            "@platforms//os:osx": ["-Wl,-undefined,dynamic_lookup"],
             "//conditions:default": [],
         }),
         includes = ["."],
@@ -177,7 +176,7 @@ def build_targets(name):
     compile_edition_defaults(
         name = "python_edition_defaults",
         srcs = ["//:descriptor_proto"],
-        maximum_edition = "2023",
+        maximum_edition = "2024",
         minimum_edition = "PROTO2",
     )
 
@@ -258,16 +257,36 @@ def build_targets(name):
     )
 
     internal_copy_files(
-        name = "copied_test_dependency_proto_files",
+        name = "copied_cpp_features_test_dependency_proto_files",
         srcs = [
             "//src/google/protobuf:cpp_features_proto_srcs",
         ],
         strip_prefix = "src",
     )
 
+    internal_copy_files(
+        name = "copied_java_features_test_dependency_proto_files",
+        srcs = [
+            "//java/core:java_features_proto_srcs",
+        ],
+        strip_prefix = "java/core/src/main/resources",
+    )
+
+    internal_copy_files(
+        name = "copied_unittest_custom_options_unlinked_proto_files",
+        srcs = [
+            "//src/google/protobuf:unittest_custom_options_unlinked_proto_srcs",
+        ],
+        strip_prefix = "src",
+    )
+
     internal_py_proto_library(
         name = "test_dependency_proto_py_pb2",
-        srcs = [":copied_test_dependency_proto_files"],
+        srcs = [
+            ":copied_cpp_features_test_dependency_proto_files",
+            ":copied_java_features_test_dependency_proto_files",
+            ":copied_unittest_custom_options_unlinked_proto_files",
+        ],
         include = ".",
         default_runtime = "",
         protoc = "//:protoc",
@@ -448,8 +467,7 @@ def build_targets(name):
         name = "proto_json_test",
         srcs = ["google/protobuf/internal/proto_json_test.py"],
     )
-
-    native.cc_library(
+    cc_library(
         name = "proto_api",
         srcs = ["google/protobuf/proto_api.cc"],
         hdrs = ["google/protobuf/proto_api.h"],

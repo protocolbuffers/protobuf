@@ -61,6 +61,7 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
@@ -862,7 +863,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     // fields will have "hint hasbits" where
     // - if hasbit is unset, field is not present.
     // - if hasbit is set, field is present if it is also nonempty.
-    if (internal::cpp::HasHasbit(field)) {
+    if (internal::cpp::HasHasbitWithoutProfile(field)) {
       // TODO: b/112602698 - during Python textproto serialization, MapEntry
       // messages may be generated from DynamicMessage on the fly. C++
       // implementations of MapEntry messages always have hasbits, but
@@ -897,8 +898,8 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
         type_info->has_bits_offset = size;
         uint32_t* has_bits_indices = new uint32_t[type->field_count()];
         for (int j = 0; j < type->field_count(); j++) {
-          // Initialize to -1, fields that need a hasbit will overwrite.
-          has_bits_indices[j] = static_cast<uint32_t>(-1);
+          // Initialize to kNoHasbit, fields that need a hasbit will overwrite.
+          has_bits_indices[j] = static_cast<uint32_t>(internal::kNoHasbit);
         }
         type_info->has_bits_indices.reset(has_bits_indices);
       }

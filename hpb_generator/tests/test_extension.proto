@@ -9,7 +9,7 @@ edition = "2023";
 
 package hpb_unittest.someotherpackage;
 
-import "google/protobuf/compiler/hpb/tests/test_model.proto";
+import "hpb_generator/tests/test_model.proto";
 
 // Define extension that is extending proto outside this package with a type
 // defined in different file.
