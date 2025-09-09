@@ -1,5 +1,5 @@
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
 inline_sh_binary(
     name = "build_conformance_test",

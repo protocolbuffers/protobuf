@@ -22,10 +22,10 @@
 
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/compiler/code_generator_lite.h"  // IWYU pragma: export
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/port.h"
+#include "google/protobuf/internal_feature_helper.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -53,7 +53,7 @@ class GeneratorContext;
 // be registered with CommandLineInterface to support various languages.
 class PROTOC_EXPORT CodeGenerator {
  public:
-  CodeGenerator() {}
+  CodeGenerator() = default;
   CodeGenerator(const CodeGenerator&) = delete;
   CodeGenerator& operator=(const CodeGenerator&) = delete;
   virtual ~CodeGenerator();
@@ -135,12 +135,26 @@ class PROTOC_EXPORT CodeGenerator {
 
  protected:
   // Retrieves the resolved source features for a given descriptor.  All the
-  // features that are imported (from the proto file) and linked in (from the
-  // callers binary) will be fully resolved. These should be used to make any
-  // feature-based decisions during code generation.
+  // global features and language features returned by GetFeatureExtensions will
+  // be fully resolved. These should be used to make any feature-based decisions
+  // during code generation.
   template <typename DescriptorT>
   static const FeatureSet& GetResolvedSourceFeatures(const DescriptorT& desc) {
     return ::google::protobuf::internal::InternalFeatureHelper::GetFeatures(desc);
+  }
+
+  // Returns the resolved FeatureSet for the language extension. It is
+  // guaranteed that the result is fully aware of the language feature set
+  // defaults, either the defaults set to the descriptor pool, or, if not set,
+  // the defaults embedded in the language FeatureSet extension.
+  template <typename DescriptorT, typename TypeTraitsT, uint8_t field_type,
+            bool is_packed>
+  static auto GetResolvedSourceFeatureExtension(
+      const DescriptorT& desc,
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
+    return ::google::protobuf::internal::InternalFeatureHelper::
+        GetResolvedFeatureExtension(desc, extension);
   }
 
   // Retrieves the unresolved source features for a given descriptor.  These
@@ -156,7 +170,22 @@ class PROTOC_EXPORT CodeGenerator {
     return ::google::protobuf::internal::InternalFeatureHelper::GetUnresolvedFeatures(
         descriptor, extension);
   }
+
+  // Retrieves the edition of a built file descriptor.
+  static Edition GetEdition(const FileDescriptor& file) {
+    return ::google::protobuf::internal::InternalFeatureHelper::GetEdition(file);
+  }
 };
+
+// The minimum edition supported by protoc.
+constexpr auto ProtocMinimumEdition() { return Edition::EDITION_PROTO2; }
+// The maximum edition supported by protoc.
+constexpr auto ProtocMaximumEdition() { return Edition::EDITION_2023; }
+
+// The maximum edition known to protoc, which may or may not be officially
+// supported yet.  During development of a new edition, this will typically be
+// set to that.
+constexpr auto MaximumKnownEdition() { return Edition::EDITION_2024; }
 
 // CodeGenerators generate one or more files in a given directory.  This
 // abstract interface represents the directory to which the CodeGenerator is
@@ -218,20 +247,8 @@ class PROTOC_EXPORT GeneratorContext {
 // provides backward compatibility.
 typedef GeneratorContext OutputDirectory;
 
-// Several code generators treat the parameter argument as holding a
-// list of options separated by commas.  This helper function parses
-// a set of comma-delimited name/value pairs: e.g.,
-//   "foo=bar,baz,moo=corge"
-// parses to the pairs:
-//   ("foo", "bar"), ("baz", ""), ("moo", "corge")
-PROTOC_EXPORT void ParseGeneratorParameter(
-    absl::string_view, std::vector<std::pair<std::string, std::string> >*);
-
-// Strips ".proto" or ".protodevel" from the end of a filename.
-PROTOC_EXPORT std::string StripProto(absl::string_view filename);
-
-// Returns true if the proto path corresponds to a known feature file.
-PROTOC_EXPORT bool IsKnownFeatureProto(absl::string_view filename);
+// Returns true if the proto path can skip edition check.
+PROTOC_EXPORT bool CanSkipEditionCheck(absl::string_view filename);
 
 }  // namespace compiler
 }  // namespace protobuf

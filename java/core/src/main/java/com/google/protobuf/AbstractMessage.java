@@ -84,7 +84,11 @@ public abstract class AbstractMessage
 
   @Override
   public final String toString() {
-    return TextFormat.printer().printToString(this);
+    TextFormat.Printer printer =
+        ProtobufToStringOutput.shouldOutputDebugFormat()
+            ? TextFormat.debugFormatPrinter()
+            : TextFormat.printer();
+    return printer.printToString(this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_TO_STRING);
   }
 
   @Override
@@ -115,6 +119,17 @@ public abstract class AbstractMessage
     return memoizedSize;
   }
 
+  /*
+   * This method will only ever return true if `this` and `other` have the same descriptor instance
+   * for their type (including a gencode message compared to a `DynamicMessage` constructed using
+   * the same descriptor instance).
+   *
+   * For reasons of backward compatibility, a comparison
+   * involving `DynamicMessage` that is constructed using semantically the same descriptor which
+   * was loaded separately (such that the reference identity of the descriptors does not match) will
+   * always return false even if there is otherwise no skew between the descriptors and the contents
+   * of the instances.
+   */
   @Override
   public boolean equals(final Object other) {
     if (other == this) {
@@ -437,7 +452,12 @@ public abstract class AbstractMessage
 
     @Override
     public String toString() {
-      return TextFormat.printer().printToString(this);
+      TextFormat.Printer printer =
+          ProtobufToStringOutput.shouldOutputDebugFormat()
+              ? TextFormat.debugFormatPrinter()
+              : TextFormat.printer();
+      return printer.printToString(
+          this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_BUILDER_TO_STRING);
     }
 
     /** Construct an UninitializedMessageException reporting missing fields in the given message. */
@@ -537,45 +557,5 @@ public abstract class AbstractMessage
         final InputStream input, final ExtensionRegistryLite extensionRegistry) throws IOException {
       return (BuilderType) super.mergeFrom(input, extensionRegistry);
     }
-  }
-
-  /**
-   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
-   * generated code.
-   */
-  @Deprecated
-  protected static int hashLong(long n) {
-    return (int) (n ^ (n >>> 32));
-  }
-
-  /**
-   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
-   * generated code.
-   */
-  @Deprecated
-  protected static int hashBoolean(boolean b) {
-    return b ? 1231 : 1237;
-  }
-
-  /**
-   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
-   * generated code.
-   */
-  @Deprecated
-  protected static int hashEnum(EnumLite e) {
-    return e.getNumber();
-  }
-
-  /**
-   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
-   * generated code.
-   */
-  @Deprecated
-  protected static int hashEnumList(List<? extends EnumLite> list) {
-    int hash = 1;
-    for (EnumLite e : list) {
-      hash = 31 * hash + hashEnum(e);
-    }
-    return hash;
   }
 }

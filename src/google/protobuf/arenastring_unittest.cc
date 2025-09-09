@@ -8,12 +8,15 @@
 #include "google/protobuf/arenastring.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
@@ -90,16 +93,11 @@ TEST_P(SingleArena, NullDefault) {
 }
 
 TEST(ArenaStringPtrTest, ConstInit) {
-  // Verify that we can constinit construct an ArenaStringPtr from an arbitrary
-  // ExplicitlyConstructed<std::string>*.
-  static internal::ExplicitlyConstructedArenaString str;
-  PROTOBUF_CONSTINIT static ArenaStringPtr ptr(&str,
-                                               internal::ConstantInitialized{});
-  EXPECT_EQ(&ptr.Get(), str.get_mutable());
-
-  PROTOBUF_CONSTINIT static const ArenaStringPtr ptr2(
+  // Verify that we can constinit construct an ArenaStringPtr from the global
+  // string.
+  PROTOBUF_CONSTINIT static const ArenaStringPtr ptr(
       &internal::fixed_address_empty_string, internal::ConstantInitialized{});
-  EXPECT_EQ(&ptr2.Get(), &internal::GetEmptyStringAlreadyInited());
+  EXPECT_EQ(&ptr.Get(), &internal::GetEmptyStringAlreadyInited());
 }
 
 TEST_P(SingleArena, ConstructEmpty) {
@@ -107,7 +105,7 @@ TEST_P(SingleArena, ConstructEmpty) {
   ArenaStringPtr field(arena.get());
 
   EXPECT_EQ(field.Get(), "");
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_FALSE(field.IsDefault());
   } else {
     EXPECT_TRUE(field.IsDefault());
@@ -120,7 +118,7 @@ TEST_P(SingleArena, ConstructEmptyWithDefault) {
   internal::LazyString default_value{{{"Hello default", 13}}, {nullptr}};
   ArenaStringPtr field(arena.get(), default_value);
 
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_EQ(field.Get(), "Hello default");
     EXPECT_FALSE(field.IsDefault());
   } else {
@@ -138,7 +136,7 @@ TEST_P(SingleArena, CopyConstructEmpty) {
 
   ArenaStringPtr dst(arena.get(), field);
   EXPECT_EQ(dst.Get(), "");
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_FALSE(dst.IsDefault());
   } else {
     EXPECT_TRUE(dst.IsDefault());
@@ -155,7 +153,7 @@ TEST_P(SingleArena, CopyConstructEmptyWithDefault) {
 
   internal::LazyString default_value{{{"Hello default", 13}}, {nullptr}};
   ArenaStringPtr dst(arena.get(), field, default_value);
-  if (internal::DebugHardenStringValues()) {
+  if (internal::DebugHardenForceCopyDefaultString()) {
     EXPECT_EQ(dst.Get(), "Hello default");
     EXPECT_FALSE(dst.IsDefault());
   } else {

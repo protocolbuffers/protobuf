@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_ENUM_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_ENUM_H__
 
 #include <string>
 
@@ -23,7 +23,7 @@ namespace csharp {
 class EnumGenerator : public SourceGeneratorBase {
  public:
   EnumGenerator(const EnumDescriptor* descriptor, const Options* options);
-  ~EnumGenerator();
+  ~EnumGenerator() override;
 
   EnumGenerator(const EnumGenerator&) = delete;
   EnumGenerator& operator=(const EnumGenerator&) = delete;
@@ -39,5 +39,4 @@ class EnumGenerator : public SourceGeneratorBase {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_ENUM_H__
-
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_ENUM_H__

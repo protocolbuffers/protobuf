@@ -45,7 +45,7 @@ namespace {
 bool ascii_isnewline(char c) { return c == '\n' || c == '\r'; }
 
 bool ReadLine(absl::string_view* input, absl::string_view* line) {
-  for (int len = 0; len < input->size(); ++len) {
+  for (size_t len = 0; len < input->size(); ++len) {
     if (ascii_isnewline((*input)[len])) {
       *line = absl::string_view(input->data(), len);
       ++len;  // advance over the newline
@@ -57,7 +57,7 @@ bool ReadLine(absl::string_view* input, absl::string_view* line) {
 }
 
 void RemoveComment(absl::string_view* input) {
-  int offset = input->find('#');
+  size_t offset = input->find('#');
   if (offset != absl::string_view::npos) {
     input->remove_suffix(input->length() - offset);
   }
@@ -162,7 +162,7 @@ bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
     }
 
     if (!parser.ParseChunk(
-            absl::string_view(static_cast<const char*>(buf), buf_len),
+            absl::string_view(static_cast<const char*>(buf), (size_t)buf_len),
             &local_error)) {
       *out_error = absl::StrCat("error: ", stream_name, " Line ",
                                 parser.last_line(), ", ", local_error);

@@ -97,7 +97,7 @@ class MtDataEncoder {
       if (!end) return false;
       // C++ does not guarantee that string has doubling growth behavior, but
       // we need it to avoid O(n^2).
-      str_.reserve(upb_Log2CeilingSize(str_.size() + (end - buf_)));
+      str_.reserve(upb_RoundUpToPowerOfTwo(str_.size() + (end - buf_)));
       str_.append(buf_, end - buf_);
       return true;
     }

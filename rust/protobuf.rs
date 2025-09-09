@@ -7,10 +7,13 @@
 
 //! Rust Protobuf Runtime
 //!
-//! This file forwards to `shared.rs`, which exports a kernel-specific
-//! `__runtime`. Rust Protobuf gencode actually depends directly on kernel
-//! specific crates. The only reason this crate exists is to be able to use
-//! `protobuf` as a crate name for both cpp and upb kernels from user code.
+//! This file exists as the public entry point for the Rust Protobuf runtime. It
+//! is a thin re-export of the `shared.rs` file but is needed for two reasons:
+//! - To create a single `protobuf` crate name for either cpp and upb kernels
+//!   from user code (toggled at compile time).
+//! - Blocks the __internal module from being re-exported to application code,
+//!   unless they use one of our visibility-restricted targets (gencode does
+//!   have access to them).
 
 #[cfg(cpp_kernel)]
 use protobuf_cpp as kernel;
@@ -18,4 +21,14 @@ use protobuf_cpp as kernel;
 #[cfg(upb_kernel)]
 use protobuf_upb as kernel;
 
-pub use kernel::__public::*;
+/// Block these two mods from being re-exported by the `pub use`
+/// below (glob use automatically only adds things that aren't otherwise
+/// defined).
+///
+/// By creating a const instead of an empty mod it is easier to have a test
+/// that confirms this targeted 'blocking' is working as intended.
+#[doc(hidden)]
+#[allow(non_upper_case_globals)]
+pub const __internal: () = ();
+
+pub use kernel::*;

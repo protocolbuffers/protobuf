@@ -46,6 +46,20 @@ message TestMessage {
   repeated TestEnum repeated_enum = 22;
 }
 
+message TestPackedMessage {
+  repeated int32 repeated_int32 = 12 [packed = true];
+}
+
+message TestGroupMessage {
+  optional group GroupField = 1 {
+    optional int32 a = 1;
+  }
+}
+
+message TestRequiredMessage {
+  required int32 required_int32 = 1;
+}
+
 message TestMessage2 {
   optional int32 foo = 1;
 }
@@ -230,4 +244,9 @@ message TestMessageSetExtension3 {
 
 extend TestMessageSet {
   optional TestMessageSetExtension3 message_set_extension3 = 98418655;
+}
+
+message BadFieldNames {
+  optional int32 dup = 1;
+  optional int32 class = 2;
 }

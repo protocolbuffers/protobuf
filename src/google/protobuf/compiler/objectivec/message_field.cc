@@ -27,15 +27,14 @@ namespace objectivec {
 
 namespace {
 
-void SetMessageVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+void SetMessageVariables(const FieldDescriptor* descriptor,
+                         SubstitutionMap& variables) {
   const std::string& message_type = ClassName(descriptor->message_type());
   const std::string& containing_class =
       ClassName(descriptor->containing_type());
-  (*variables)["msg_type"] = message_type;
-  (*variables)["containing_class"] = containing_class;
-  (*variables)["dataTypeSpecific_value"] = ObjCClass(message_type);
+  variables.Set("msg_type", message_type);
+  variables.Set("containing_class", containing_class);
+  variables.Set("dataTypeSpecific_value", ObjCClass(message_type));
 }
 
 }  // namespace
@@ -44,7 +43,7 @@ MessageFieldGenerator::MessageFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : ObjCObjFieldGenerator(descriptor, generation_options) {
-  SetMessageVariables(descriptor, &variables_);
+  SetMessageVariables(descriptor, variables_);
 }
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
@@ -78,7 +77,7 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : RepeatedFieldGenerator(descriptor, generation_options) {
-  SetMessageVariables(descriptor, &variables_);
+  SetMessageVariables(descriptor, variables_);
 }
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(

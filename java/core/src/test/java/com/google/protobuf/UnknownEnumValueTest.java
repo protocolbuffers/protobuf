@@ -19,7 +19,6 @@ import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2EnumMessage;
 import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2EnumMessageWithEnumSubset;
 import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2TestEnum;
 import com.google.protobuf.Proto2UnknownEnumValuesTestProto.Proto2TestEnumSubset;
-import com.google.protobuf.TextFormat.ParseException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -221,7 +220,7 @@ public class UnknownEnumValueTest {
   }
 
   @Test
-  public void testUnknownEnumValuesInTextFormat() {
+  public void testUnknownEnumValuesInTextFormat() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);
     builder.addRepeatedNestedEnumValue(5432);
@@ -232,18 +231,13 @@ public class UnknownEnumValueTest {
     String textData = TextFormat.printer().printToString(message);
     assertThat(textData)
         .isEqualTo(
-            "optional_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_4321\n"
-                + "repeated_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_5432\n"
-                + "packed_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_6543\n");
+            "optional_nested_enum: 4321\n"
+                + "repeated_nested_enum: 5432\n"
+                + "packed_nested_enum: 6543\n");
 
-    // Parsing unknown enum values will fail just like parsing other kinds of
-    // unknown fields.
-    try {
-      TextFormat.merge(textData, builder);
-      assertWithMessage("Expected exception").fail();
-    } catch (ParseException e) {
-      // expected.
-    }
+    builder.clear();
+    TextFormat.merge(textData, builder);
+    assertThat(message.equals(builder.build())).isTrue();
   }
 
   @Test

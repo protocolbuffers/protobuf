@@ -5,12 +5,13 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-syntax = "proto3";
+edition = "2023";
 
 package wrappers_test;
 
 import "google/protobuf/wrappers.proto";
 
+option features.field_presence = IMPLICIT;
 option java_package = "com.google.protobuf.wrapperstest";
 option java_outer_classname = "WrappersTestProto";
 

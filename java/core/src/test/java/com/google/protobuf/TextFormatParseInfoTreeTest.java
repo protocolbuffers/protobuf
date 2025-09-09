@@ -12,7 +12,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import protobuf_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestAllTypes;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

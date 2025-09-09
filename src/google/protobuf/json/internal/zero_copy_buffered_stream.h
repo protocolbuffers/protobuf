@@ -8,11 +8,9 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_ZERO_COPY_BUFFERED_STREAM_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_ZERO_COPY_BUFFERED_STREAM_H__
 
-#include <algorithm>
-#include <cstdint>
-#include <iostream>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -70,11 +68,11 @@ class MaybeOwnedString {
 
   // Returns the string as a view, regardless of whether it is owned or not.
   absl::string_view AsView() const {
-    if (auto* unowned = absl::get_if<StreamOwned>(&data_)) {
+    if (auto* unowned = std::get_if<StreamOwned>(&data_)) {
       return unowned->AsView();
     }
 
-    return absl::get<std::string>(data_);
+    return std::get<std::string>(data_);
   }
 
   operator absl::string_view() const { return AsView(); }  // NOLINT
@@ -82,12 +80,12 @@ class MaybeOwnedString {
   // Returns a reference to an owned string; if the wrapped string is not
   // owned, this function will perform a copy and make it owned.
   std::string& ToString() {
-    if (auto* unowned = absl::get_if<StreamOwned>(&data_)) {
+    if (auto* unowned = std::get_if<StreamOwned>(&data_)) {
       data_ = std::string(unowned->AsView());
       token_ = BufferingGuard{};
     }
 
-    return absl::get<std::string>(data_);
+    return std::get<std::string>(data_);
   }
 
   template <typename String>
@@ -105,7 +103,7 @@ class MaybeOwnedString {
     size_t start, len;
     absl::string_view AsView() const;
   };
-  absl::variant<std::string, StreamOwned> data_;
+  std::variant<std::string, StreamOwned> data_;
   BufferingGuard token_;
 };
 

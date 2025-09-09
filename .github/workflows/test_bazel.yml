@@ -1,0 +1,74 @@
+name: Bazel Tests
+
+on:
+  workflow_call:
+    inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
+      safe-checkout:
+        required: true
+        description: "The SHA key for the commit we want to run over"
+        type: string
+      continuous-prefix:
+        required: true
+        description: "The string continuous-only tests should be prefixed with when displaying test
+        results."
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  examples:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ ubuntu, windows, macos ]
+        bazelversion: [ '7.1.2', '8.0.0' ]
+        bzlmod: [ true, false ]
+        toolchain_resolution: [ "", "--incompatible_enable_proto_toolchain_resolution=true" ]
+    runs-on: ${{ matrix.runner }}-latest
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v4
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      # rules_jvm_external doesn't support Java 8, which is the default version
+      # on some github runners.  When this is selected, it results in some
+      # opaque errors about coursier (see
+      # https://github.com/bazel-contrib/rules_jvm_external/issues/1337).
+      - name: Pin to Java 11
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Windows startup flags
+        if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
+        working-directory: examples
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
+
+      - name: Configure Bazel version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        working-directory: examples
+        shell: bash
+        run: echo "${{ matrix.bazelversion }}" > .bazelversion
+
+      - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel@v4
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: examples
+          version: ${{ matrix.bazelversion }}
+          bash: >
+            cd examples;
+            bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};

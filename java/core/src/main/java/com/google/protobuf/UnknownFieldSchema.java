@@ -93,6 +93,9 @@ abstract class UnknownFieldSchema<T, B> {
         addGroup(unknownFields, fieldNumber, toImmutable(subFields));
         return true;
       case WireFormat.WIRETYPE_END_GROUP:
+        if (currentDepth == 0) {
+          throw InvalidProtocolBufferException.invalidEndTag();
+        }
         return false;
       default:
         throw InvalidProtocolBufferException.invalidWireType();

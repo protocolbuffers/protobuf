@@ -10,10 +10,10 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
-import protobuf_unittest.LazyFieldsLite.LazyExtension;
-import protobuf_unittest.LazyFieldsLite.LazyInnerMessageLite;
-import protobuf_unittest.LazyFieldsLite.LazyMessageLite;
-import protobuf_unittest.LazyFieldsLite.LazyNestedInnerMessageLite;
+import proto2_unittest.LazyFieldsLite.LazyExtension;
+import proto2_unittest.LazyFieldsLite.LazyInnerMessageLite;
+import proto2_unittest.LazyFieldsLite.LazyMessageLite;
+import proto2_unittest.LazyFieldsLite.LazyNestedInnerMessageLite;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +24,7 @@ import org.junit.runners.JUnit4;
 public class LazyMessageLiteTest {
 
   @Test
+  @SuppressWarnings("RedundantSetterCall")
   public void testSetValues() {
     LazyNestedInnerMessageLite nested = LazyNestedInnerMessageLite.newBuilder().setNum(3).build();
     LazyInnerMessageLite inner =

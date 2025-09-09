@@ -4,6 +4,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
+
 #ifndef UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 #define UPB_MINI_DESCRIPTOR_BUILD_ENUM_H_
 
@@ -18,20 +19,11 @@
 extern "C" {
 #endif
 
-// Builds a upb_MiniTableEnum from an enum MiniDescriptor.  The MiniDescriptor
-// must be for an enum, not a message.
-UPB_API upb_MiniTableEnum* upb_MiniDescriptor_BuildEnum(const char* data,
-                                                        size_t len,
-                                                        upb_Arena* arena,
-                                                        upb_Status* status);
-
-// TODO: Deprecated name; update callers.
-UPB_API_INLINE upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data,
-                                                          size_t len,
-                                                          upb_Arena* arena,
-                                                          upb_Status* status) {
-  return upb_MiniDescriptor_BuildEnum(data, len, arena, status);
-}
+// Builds a upb_MiniTableEnum from an enum mini descriptor.
+// The mini descriptor must be for an enum, not a message.
+UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
+                                                   upb_Arena* arena,
+                                                   upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */

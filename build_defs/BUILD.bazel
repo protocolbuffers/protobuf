@@ -1,8 +1,8 @@
 # Internal Starlark definitions for Protobuf.
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
-load("@rules_cc//cc:defs.bzl", starlark_cc_proto_library = "cc_proto_library")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("//bazel:cc_proto_library.bzl", starlark_cc_proto_library = "cc_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
@@ -14,8 +14,62 @@ package(
 )
 
 create_compiler_config_setting(
-    name = "config_msvc",
+    name = "config_msvc_cl",
     value = "msvc-cl",
+)
+
+create_compiler_config_setting(
+    name = "config_clang_cl",
+    value = "clang-cl",
+)
+
+platform(
+    name = "x64_windows-clang-cl",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+        # This is necessary for Bazel 7 compatibility with a MODULE.bazel file that still works in
+        # Bazel 8.  Using cc_configure_extension from rules_cc produces a @local_config_cc
+        # repository that's not compatible with @bazel_tools//tools/cpp:clang-cl from before
+        # Bazel 8.  See https://github.com/bazelbuild/rules_cc/issues/330.
+        "@rules_cc//cc/private/toolchain:clang-cl",
+    ],
+)
+
+platform(
+    name = "x64_windows-msvc-cl",
+    constraint_values = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:windows",
+        # This may be necessary in case cc_configure_extension from rules_cc produces a
+        # @local_config_cc repository that's not compatible with @bazel_tools//tools/cpp:msvc from
+        # before Bazel 8, as with clang-cl above, to avoid silently falling back to clang-cl.
+        # See https://github.com/bazelbuild/rules_cc/issues/330.
+        "@rules_cc//cc/private/toolchain:msvc",
+    ],
+)
+
+config_setting(
+    name = "protobuf_allow_msvc",
+    values = {
+        "define": "protobuf_allow_msvc=true",
+    },
+)
+
+selects.config_setting_group(
+    name = "config_msvc",
+    match_any = [
+        ":config_clang_cl",
+        ":config_msvc_cl",
+    ],
+)
+
+platform(
+    name = "aarch64_linux",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:linux",
+    ],
 )
 
 config_setting(
@@ -35,9 +89,17 @@ config_setting(
 # For more info on the various crosstool_tops used by NDK Bazel builds, see:
 # https://docs.bazel.build/versions/master/android-ndk.html#configuring-the-stl
 
+# When using https://bazel.build/concepts/platforms
 config_setting(
     name = "config_android",
+    constraint_values = ["@platforms//os:android"],
+)
+
+# When using legacy flags like --android_crosstool_top, --android_cpu, and --fat_apk_cpu
+config_setting(
+    name = "config_android-legacy-default-crosstool",
     values = {
+        # Default of `--android_crosstool_top`
         "crosstool_top": "//external:android/crosstool",
     },
 )

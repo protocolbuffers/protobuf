@@ -11,6 +11,8 @@
 
 #include "google/protobuf/compiler/importer.h"
 
+#include <string>
+
 #ifdef _MSC_VER
 #include <direct.h>
 #else
@@ -21,23 +23,25 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/parser.h"
-#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 
 #ifdef _WIN32
-#include <ctype.h>
+#include "absl/strings/str_replace.h"
+#include "google/protobuf/io/io_win32.h"
+#endif
+
+#if defined(_WIN32) || defined(__CYGWIN__)
+#include "absl/strings/ascii.h"
 #endif
 
 namespace google {
@@ -56,7 +60,7 @@ using google::protobuf::io::win32::open;
 // copy in command_line_interface.cc?
 static bool IsWindowsAbsolutePath(absl::string_view text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
-  return text.size() >= 3 && text[1] == ':' && isalpha(text[0]) &&
+  return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
 #else
   return false;
@@ -88,6 +92,13 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
                                                message);
     }
     had_errors_ = true;
+  }
+
+  void RecordWarning(int line, int column, absl::string_view message) override {
+    if (multi_file_error_collector_ != nullptr) {
+      multi_file_error_collector_->RecordWarning(filename_, line, column,
+                                                 message);
+    }
   }
 
  private:
@@ -216,14 +227,11 @@ const FileDescriptor* Importer::Import(const std::string& filename) {
   return pool_.FindFileByName(filename);
 }
 
-void Importer::AddUnusedImportTrackFile(const std::string& file_name,
-                                        bool is_error) {
-  pool_.AddUnusedImportTrackFile(file_name, is_error);
+void Importer::AddDirectInputFile(absl::string_view file_name, bool is_error) {
+  pool_.AddDirectInputFile(file_name, is_error);
 }
 
-void Importer::ClearUnusedImportTrackFiles() {
-  pool_.ClearUnusedImportTrackFiles();
-}
+void Importer::ClearDirectInputFiles() { pool_.ClearDirectInputFiles(); }
 
 
 // ===================================================================

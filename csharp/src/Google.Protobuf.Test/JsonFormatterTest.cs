@@ -844,10 +844,96 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WriteValueWithIndentation_MapWithNested()
+        {
+            var value = new TestMap
+            {
+                MapInt32ForeignMessage =
+                {
+                    { 1, new ForeignMessage { C = 1 } },
+                    { 2, new ForeignMessage { C = 2 } },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'mapInt32ForeignMessage': {
+    '1': {
+      'c': 1
+    },
+    '2': {
+      'c': 2
+    }
+  }
+}";
+
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_MapWithEmptyNested()
+        {
+            var value = new TestMap
+            {
+                MapInt32ForeignMessage =
+                {
+                    { 1, new ForeignMessage() },
+                    { 2, new ForeignMessage() },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'mapInt32ForeignMessage': {
+    '1': {},
+    '2': {}
+  }
+}";
+
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
         public void WriteValueWithIndentation_List()
         {
             var value = new RepeatedField<int> { 1, 2, 3 };
             AssertWriteValue(value, "[\n  1,\n  2,\n  3\n]", JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_Any()
+        {
+            var registry = TypeRegistry.FromMessages(ForeignMessage.Descriptor);
+            var formatter = JsonFormatter.Settings.Default.WithIndentation().WithTypeRegistry(registry);
+
+            var nestedMessage = new ForeignMessage { C = 1 };
+            var value = Any.Pack(nestedMessage);
+            const string expectedJson = @"
+{
+  '@type': 'type.googleapis.com/protobuf_unittest3.ForeignMessage',
+  'c': 1
+}";
+
+            AssertWriteValue(value, expectedJson, formatter);
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_NestedAny()
+        {
+            var registry = TypeRegistry.FromMessages(ForeignMessage.Descriptor);
+            var formatter = JsonFormatter.Settings.Default.WithIndentation().WithTypeRegistry(registry);
+
+            var nestedMessage = new ForeignMessage { C = 1 };
+            var value = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
+            const string expectedJson = @"
+{
+  'anyField': {
+    '@type': 'type.googleapis.com/protobuf_unittest3.ForeignMessage',
+    'c': 1
+  }
+}";
+
+            AssertWriteValue(value, expectedJson, formatter);
         }
 
         [Test]

@@ -1,1 +1,3 @@
-numpy<=1.24.4
+numpy<=2.1.0
+setuptools<=70.3.0
+absl-py==2.*

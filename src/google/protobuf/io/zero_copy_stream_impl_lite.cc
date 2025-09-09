@@ -12,14 +12,23 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <limits>
+#include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
 #include "absl/strings/internal/resize_uninitialized.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -120,7 +129,7 @@ int64_t ArrayOutputStream::ByteCount() const { return position_; }
 StringOutputStream::StringOutputStream(std::string* target) : target_(target) {}
 
 bool StringOutputStream::Next(void** data, int* size) {
-  ABSL_CHECK(target_ != NULL);
+  ABSL_CHECK(target_ != nullptr);
   size_t old_size = target_->size();
 
   // Grow the string.
@@ -148,13 +157,13 @@ bool StringOutputStream::Next(void** data, int* size) {
 
 void StringOutputStream::BackUp(int count) {
   ABSL_CHECK_GE(count, 0);
-  ABSL_CHECK(target_ != NULL);
+  ABSL_CHECK(target_ != nullptr);
   ABSL_CHECK_LE(static_cast<size_t>(count), target_->size());
   target_->resize(target_->size() - count);
 }
 
 int64_t StringOutputStream::ByteCount() const {
-  ABSL_CHECK(target_ != NULL);
+  ABSL_CHECK(target_ != nullptr);
   return target_->size();
 }
 
@@ -226,7 +235,7 @@ bool CopyingInputStreamAdaptor::Next(const void** data, int* size) {
 }
 
 void CopyingInputStreamAdaptor::BackUp(int count) {
-  ABSL_CHECK(backup_bytes_ == 0 && buffer_.get() != NULL)
+  ABSL_CHECK(backup_bytes_ == 0 && buffer_ != nullptr)
       << " BackUp() can only be called after Next().";
   ABSL_CHECK_LE(count, buffer_used_)
       << " Can't back up over more bytes than were returned by the last call"
@@ -264,7 +273,7 @@ int64_t CopyingInputStreamAdaptor::ByteCount() const {
 }
 
 void CopyingInputStreamAdaptor::AllocateBufferIfNeeded() {
-  if (buffer_.get() == NULL) {
+  if (buffer_ == nullptr) {
     buffer_.reset(new uint8_t[buffer_size_]);
   }
 }
@@ -386,7 +395,7 @@ bool CopyingOutputStreamAdaptor::WriteBuffer() {
 }
 
 void CopyingOutputStreamAdaptor::AllocateBufferIfNeeded() {
-  if (buffer_ == NULL) {
+  if (buffer_ == nullptr) {
     buffer_.reset(new uint8_t[buffer_size_]);
   }
 }
@@ -617,7 +626,7 @@ bool CordOutputStream::Next(void** data, int* size) {
     case State::kFull:
       assert(buffer_.length() > 0);
       cord_.Append(std::move(buffer_));
-      PROTOBUF_FALLTHROUGH_INTENDED;
+      [[fallthrough]];
     case State::kEmpty:
       assert(buffer_.length() == 0);
       buffer_ = absl::CordBuffer::CreateWithDefaultLimit(desired_size);
@@ -683,3 +692,5 @@ absl::Cord CordOutputStream::Consume() {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

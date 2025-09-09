@@ -175,6 +175,27 @@ public class RubyDescriptor extends RubyObject {
         true);
   }
 
+  /*
+   * call-seq:
+   *     Descriptor.to_proto => DescriptorProto
+   *
+   * Returns the `DescriptorProto` of this `Descriptor`.
+   */
+  @JRubyMethod(name = "to_proto")
+  public IRubyObject toProto(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor descriptorProto =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.DescriptorProto"));
+    RubyClass msgClass = (RubyClass) descriptorProto.msgclass(context);
+    RubyMessage msg = (RubyMessage) msgClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(descriptor.toProto().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
   protected FieldDescriptor getField(String name) {
     return descriptor.findFieldByName(name);
   }

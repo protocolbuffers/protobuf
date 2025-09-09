@@ -11,22 +11,26 @@
 
 #include "google/protobuf/wire_format.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <string>
+
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
-#include <gmock/gmock.h>
+#include "google/protobuf/wire_format_lite.h"
 #include <gtest/gtest.h>
 
-#define UNITTEST ::protobuf_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
-#define UNITTEST_PACKAGE_NAME "protobuf_unittest"
+#define UNITTEST ::proto2_unittest
+#define UNITTEST_IMPORT ::proto2_unittest_import
+#define UNITTEST_PACKAGE_NAME "proto2_unittest"
 #define PROTO2_WIREFORMAT_UNITTEST ::proto2_wireformat_unittest
 #define PROTO3_ARENA_UNITTEST ::proto3_arena_unittest
 
 // Must include after defining UNITTEST, etc.
 // clang-format off
-#include "google/protobuf/test_util.inc"
 #include "google/protobuf/wire_format_unittest.inc"
 // clang-format on
 

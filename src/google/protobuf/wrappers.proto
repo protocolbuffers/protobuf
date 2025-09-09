@@ -28,10 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Wrappers for primitive (non-message) types. These types are useful
-// for embedding primitives in the `google.protobuf.Any` type and for places
-// where we need to distinguish between the absence of a primitive
-// typed field and its default value.
+// Wrappers for primitive (non-message) types. These types were needed
+// for legacy reasons and are not recommended for use in new APIs.
+//
+// Historically these wrappers were useful to have presence on proto3 primitive
+// fields, but proto3 syntax has been updated to support the `optional` keyword.
+// Using that keyword is now the strongly preferred way to add presence to
+// proto3 primitive fields.
+//
+// A secondary usecase was to embed primitives in the `google.protobuf.Any`
+// type: it is now recommended that you embed your value in your own wrapper
+// message which can be specifically documented.
 //
 // These wrappers have no meaningful use within repeated fields as they lack
 // the ability to detect presence on individual elements.
@@ -53,6 +60,9 @@ option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 // Wrapper message for `double`.
 //
 // The JSON representation for `DoubleValue` is JSON number.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message DoubleValue {
   // The double value.
   double value = 1;
@@ -61,6 +71,9 @@ message DoubleValue {
 // Wrapper message for `float`.
 //
 // The JSON representation for `FloatValue` is JSON number.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message FloatValue {
   // The float value.
   float value = 1;
@@ -69,6 +82,9 @@ message FloatValue {
 // Wrapper message for `int64`.
 //
 // The JSON representation for `Int64Value` is JSON string.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message Int64Value {
   // The int64 value.
   int64 value = 1;
@@ -77,6 +93,9 @@ message Int64Value {
 // Wrapper message for `uint64`.
 //
 // The JSON representation for `UInt64Value` is JSON string.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message UInt64Value {
   // The uint64 value.
   uint64 value = 1;
@@ -85,6 +104,9 @@ message UInt64Value {
 // Wrapper message for `int32`.
 //
 // The JSON representation for `Int32Value` is JSON number.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message Int32Value {
   // The int32 value.
   int32 value = 1;
@@ -93,6 +115,9 @@ message Int32Value {
 // Wrapper message for `uint32`.
 //
 // The JSON representation for `UInt32Value` is JSON number.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message UInt32Value {
   // The uint32 value.
   uint32 value = 1;
@@ -101,6 +126,9 @@ message UInt32Value {
 // Wrapper message for `bool`.
 //
 // The JSON representation for `BoolValue` is JSON `true` and `false`.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message BoolValue {
   // The bool value.
   bool value = 1;
@@ -109,6 +137,9 @@ message BoolValue {
 // Wrapper message for `string`.
 //
 // The JSON representation for `StringValue` is JSON string.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message StringValue {
   // The string value.
   string value = 1;
@@ -117,6 +148,9 @@ message StringValue {
 // Wrapper message for `bytes`.
 //
 // The JSON representation for `BytesValue` is JSON string.
+//
+// Not recommended for use in new APIs, but still useful for legacy APIs and
+// has no plan to be removed.
 message BytesValue {
   // The bytes value.
   bytes value = 1;

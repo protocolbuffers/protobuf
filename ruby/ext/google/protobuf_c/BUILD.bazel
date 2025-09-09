@@ -1,5 +1,5 @@
 load("@build_bazel_rules_apple//apple:apple_binary.bzl", "apple_binary")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
 
 package(default_visibility = ["//ruby:__subpackages__"])
@@ -49,12 +49,12 @@ cc_library(
     ],
     linkstatic = True,
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
+        "@ruby//engine:jruby": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     deps = [
-        "@rules_ruby//ruby/runtime:headers",
-        "@utf8_range",
+        "//third_party/utf8_range",
+        "@ruby//:headers",
     ],
     alwayslink = True,
 )
@@ -79,7 +79,7 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
-        "@utf8_range",
+        "//third_party/utf8_range",
     ],
 )
 
@@ -118,7 +118,7 @@ apple_binary(
         "-undefined,dynamic_lookup",
         "-multiply_defined,suppress",
     ],
-    minimum_os_version = "10.11",
+    minimum_os_version = "11.0",
     platform_type = "macos",
     tags = ["manual"],
     deps = [
@@ -133,7 +133,7 @@ apple_binary(
         "-undefined,dynamic_lookup",
         "-multiply_defined,suppress",
     ],
-    minimum_os_version = "10.11",
+    minimum_os_version = "11.0",
     platform_type = "macos",
     tags = ["manual"],
     deps = [

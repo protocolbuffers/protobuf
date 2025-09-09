@@ -59,6 +59,10 @@ cc_library(
     hdrs = _ZLIB_PREFIXED_HEADERS,
     copts = select({
         "@platforms//os:windows": [],
+        "@platforms//os:macos": [
+            "-Wno-unused-variable",
+            "-Wno-implicit-function-declaration",
+        ],
         "//conditions:default": [
             "-Wno-deprecated-non-prototype",
             "-Wno-unused-variable",

@@ -213,7 +213,7 @@ TEST(PreserveUnknownEnumTest, IntegerEnumReflectionAPI) {
 
 // Test that the EnumValue API works properly for proto2 messages as well.
 TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
-  protobuf_unittest::TestAllTypes message;  // proto2 message
+  proto2_unittest::TestAllTypes message;  // proto2 message
   const Reflection* r = message.GetReflection();
   const Descriptor* d = message.GetDescriptor();
   const FieldDescriptor* repeated_field =
@@ -231,11 +231,11 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   // unknown fields.
   r->SetEnumValue(&message, singular_field, 4242);
   EXPECT_EQ(r->GetEnum(message, singular_field)->number(),
-            protobuf_unittest::TestAllTypes::FOO);
+            proto2_unittest::TestAllTypes::FOO);
   r->SetRepeatedEnumValue(&message, repeated_field, 0, 4242);
   // repeated_nested_enum was set to bar above, this should not have changed.
   EXPECT_EQ(r->GetRepeatedEnum(message, repeated_field, 0)->number(),
-            protobuf_unittest::TestAllTypes::BAR);
+            proto2_unittest::TestAllTypes::BAR);
   r->AddEnumValue(&message, repeated_field, 4242);
   // No element should be added
   EXPECT_EQ(message.repeated_nested_enum_size(), 1);

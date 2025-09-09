@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "python/repeated.h"
 
@@ -41,8 +18,10 @@ static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
 
 // Wrapper for a repeated field.
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* arena;
+  // clang-format on
   // The field descriptor (PyObject*).
   // The low bit indicates whether the container is reified (see ptr below).
   //   - low bit set: repeated field is a stub (no underlying data).
@@ -202,15 +181,32 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   bool submsg = upb_FieldDef_IsSubMessage(f);
   PyObject* e;
 
-  while ((e = PyIter_Next(it))) {
-    PyObject* ret;
-    if (submsg) {
-      ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
-    } else {
-      ret = PyUpb_RepeatedScalarContainer_Append(_self, e);
+  if (submsg) {
+    while ((e = PyIter_Next(it))) {
+      PyObject* ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
+      Py_XDECREF(ret);
+      Py_DECREF(e);
     }
-    Py_XDECREF(ret);
-    Py_DECREF(e);
+  } else {
+    upb_Arena* arena = PyUpb_Arena_Get(self->arena);
+    Py_ssize_t size = PyObject_Size(value);
+    if (size < 0) {
+      // Some iterables may not have len. Size() will return -1 and
+      // set an error in such cases.
+      PyErr_Clear();
+    } else {
+      upb_Array_Reserve(arr, start_size + size, arena);
+    }
+    while ((e = PyIter_Next(it))) {
+      upb_MessageValue msgval;
+      if (!PyUpb_PyToUpb(e, f, &msgval, arena)) {
+        assert(PyErr_Occurred());
+        Py_DECREF(e);
+        break;
+      }
+      upb_Array_Append(arr, msgval, arena);
+      Py_DECREF(e);
+    }
   }
 
   Py_DECREF(it);
@@ -496,11 +492,14 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
     }
   }
 
+  if (PyUpb_RepeatedContainer_Length(pself) == 0) Py_RETURN_NONE;
+
   PyObject* ret = NULL;
   PyObject* full_slice = NULL;
   PyObject* list = NULL;
   PyObject* m = NULL;
   PyObject* res = NULL;
+
   if ((full_slice = PySlice_New(NULL, NULL, NULL)) &&
       (list = PyUpb_RepeatedContainer_Subscript(pself, full_slice)) &&
       (m = PyObject_GetAttrString(list, "sort")) &&
@@ -527,6 +526,15 @@ static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
     upb_MessageValue val2 = upb_Array_Get(arr, i2);
     upb_Array_Set(arr, i, val2);
     upb_Array_Set(arr, i2, val1);
+  }
+  Py_RETURN_NONE;
+}
+
+static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* _self) {
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  Py_ssize_t size = PyUpb_RepeatedContainer_Length(_self);
+  if (size > 0) {
+    upb_Array_Delete(self->ptr.arr, 0, size);
   }
   Py_RETURN_NONE;
 }
@@ -639,6 +647,8 @@ static PyMethodDef PyUpb_RepeatedCompositeContainer_Methods[] = {
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
     {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", (PyCFunction)PyUpb_RepeatedContainer_Clear, METH_NOARGS,
+     "Clears repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Adds objects to the repeated container."},
     {NULL, NULL}};
@@ -735,6 +745,8 @@ static PyMethodDef PyUpb_RepeatedScalarContainer_Methods[] = {
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
     {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", (PyCFunction)PyUpb_RepeatedContainer_Clear, METH_NOARGS,
+     "Clears repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Merges a repeated container into the current container."},
     {NULL, NULL}};

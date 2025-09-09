@@ -26,8 +26,8 @@ extern "C" {
 #endif
 
 enum {
-  /* If set, strings will alias the input buffer instead of copying into the
-   * arena. */
+  /* If set, strings and unknown fields will alias the input buffer instead of
+   * copying into the arena. */
   kUpb_DecodeOption_AliasString = 1,
 
   /* If set, the parse will return failure if any message is missing any
@@ -45,7 +45,7 @@ enum {
    *    already has some sub-message fields present.  If the sub-message does
    *    not occur in the binary payload, we will never visit it and discover the
    *    incomplete sub-message.  For this reason, this check is only useful for
-   *    implemting ParseFromString() semantics.  For MergeFromString(), a
+   *    implementing ParseFromString() semantics.  For MergeFromString(), a
    *    post-parse validation step will always be necessary. */
   kUpb_DecodeOption_CheckRequired = 2,
 
@@ -83,6 +83,16 @@ enum {
    *    be created by the parser or the message-copying logic in message/copy.h.
    */
   kUpb_DecodeOption_ExperimentalAllowUnlinked = 4,
+
+  /* EXPERIMENTAL:
+   *
+   * If set, decoding will enforce UTF-8 validation for string fields, even for
+   * proto2 or fields with `features.utf8_validation = NONE`. Normally, only
+   * proto3 string fields will be validated for UTF-8. Decoding will return
+   * kUpb_DecodeStatus_BadUtf8 for non-UTF-8 strings, which is the same behavior
+   * as non-UTF-8 proto3 string fields.
+   */
+  kUpb_DecodeOption_AlwaysValidateUtf8 = 8,
 };
 
 UPB_INLINE uint32_t upb_DecodeOptions_MaxDepth(uint16_t depth) {
@@ -93,6 +103,8 @@ UPB_INLINE uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
   return options >> 16;
 }
 
+uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options);
+
 // Enforce an upper bound on recursion depth.
 UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
   uint32_t max_depth = upb_DecodeOptions_GetMaxDepth(decode_options);
@@ -100,6 +112,7 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
   return upb_DecodeOptions_MaxDepth(max_depth) | (decode_options & 0xffff);
 }
 
+// LINT.IfChange
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
   kUpb_DecodeStatus_Malformed = 1,    // Wire format was corrupt
@@ -117,12 +130,24 @@ typedef enum {
   // of options.
   kUpb_DecodeStatus_UnlinkedSubMessage = 6,
 } upb_DecodeStatus;
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
 
 UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,
-                                    upb_Message* msg, const upb_MiniTable* l,
+                                    upb_Message* msg, const upb_MiniTable* mt,
                                     const upb_ExtensionRegistry* extreg,
                                     int options, upb_Arena* arena);
 
+// Same as upb_Decode but with a varint-encoded length prepended.
+// On success 'num_bytes_read' will be set to the how many bytes were read,
+// on failure the contents of num_bytes_read is undefined.
+UPB_API upb_DecodeStatus upb_DecodeLengthPrefixed(
+    const char* buf, size_t size, upb_Message* msg, size_t* num_bytes_read,
+    const upb_MiniTable* mt, const upb_ExtensionRegistry* extreg, int options,
+    upb_Arena* arena);
+
+// Utility function for wrapper languages to get an error string from a
+// upb_DecodeStatus.
+UPB_API const char* upb_DecodeStatus_String(upb_DecodeStatus status);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

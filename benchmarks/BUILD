@@ -6,27 +6,21 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_python//python:defs.bzl", "py_binary")
-
-# begin:google_only
-# load("@rules_cc//cc:defs.bzl", "cc_proto_library")
-# end:google_only
-
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
 load(
     ":build_defs.bzl",
     "cc_optimizefor_proto_library",
     "expand_suffixes",
-    "proto_library",
     "tmpl_cc_binary",
 )
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
 
@@ -35,7 +29,7 @@ proto_library(
     srcs = ["descriptor.proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "benchmark_descriptor_upb_proto",
     deps = [":descriptor_proto"],
 )
@@ -47,7 +41,7 @@ upb_proto_reflection_library(
 
 upb_proto_reflection_library(
     name = "ads_upb_proto_reflection",
-    deps = ["@com_google_googleapis//:ads_proto"],
+    deps = ["@googleapis//google/ads/googleads/v17/services:services_proto"],
 )
 
 cc_proto_library(
@@ -75,15 +69,18 @@ cc_test(
         ":benchmark_descriptor_sv_cc_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
-        "//:protobuf",
-        "@com_google_googletest//:gtest_main",
+        "//src/google/protobuf",
+        "//src/google/protobuf/json",
         "//upb:base",
-        "//upb:base_internal",
-        "//upb:descriptor_upb_proto",
+        "//upb:json",
         "//upb:mem",
         "//upb:reflection",
-        "@com_github_google_benchmark//:benchmark_main",
-        "@com_google_absl//absl/container:flat_hash_set",
+        "//upb:wire",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@google_benchmark//:benchmark_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -101,19 +98,16 @@ SIZE_BENCHMARKS = {
 py_binary(
     name = "gen_synthetic_protos",
     srcs = ["gen_synthetic_protos.py"],
-    python_version = "PY3",
 )
 
 py_binary(
     name = "gen_upb_binary_c",
     srcs = ["gen_upb_binary_c.py"],
-    python_version = "PY3",
 )
 
 py_binary(
     name = "gen_protobuf_binary_cc",
     srcs = ["gen_protobuf_binary_cc.py"],
-    python_version = "PY3",
 )
 
 genrule(
@@ -154,7 +148,7 @@ proto_library(
 )
 
 [(
-    upb_proto_library(
+    upb_c_proto_library(
         name = k + "_upb_proto",
         deps = [":" + k + "_proto"],
     ),
@@ -238,7 +232,7 @@ genrule(
     ),
     outs = ["size_data.txt"],
     # We want --format=GNU which counts rodata with data, not text.
-    cmd = "size $$($$OSTYPE == 'linux-gnu' ? '--format=GNU -d' : '') $(SRCS) > $@",
+    cmd = "size $$([ $$OSTYPE == 'linux-gnu' ] && echo '--format=GNU -d' || echo '') $(SRCS) > $@",
     # "size" sometimes isn't available remotely.
     local = 1,
     tags = ["no-remote-exec"],

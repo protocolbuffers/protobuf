@@ -7,6 +7,7 @@
 
 #import "GPBWireFormat.h"
 
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 enum {
@@ -38,7 +39,7 @@ GPBWireFormat GPBWireFormatForType(GPBDataType type, BOOL isPacked) {
     return GPBWireFormatLengthDelimited;
   }
 
-  static const GPBWireFormat format[GPBDataType_Count] = {
+  static const GPBWireFormat format[] = {
       GPBWireFormatVarint,           // GPBDataTypeBool
       GPBWireFormatFixed32,          // GPBDataTypeFixed32
       GPBWireFormatFixed32,          // GPBDataTypeSFixed32

@@ -16,8 +16,6 @@ namespace compiler {
 namespace rust {
 namespace {
 
-using testing::Eq;
-
 TEST(RelativePathTest, GetRelativePath) {
   auto relative = [](absl::string_view from_path, absl::string_view to_path) {
     return RelativePath(from_path).Relative(RelativePath(to_path));

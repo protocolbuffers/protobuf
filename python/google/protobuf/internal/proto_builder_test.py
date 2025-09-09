@@ -15,6 +15,7 @@ from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import proto_builder
 from google.protobuf import text_format
+from google.protobuf.internal import api_implementation
 
 
 class ProtoBuilderTest(unittest.TestCase):
@@ -70,13 +71,29 @@ class ProtoBuilderTest(unittest.TestCase):
         'foo%d' % i: descriptor_pb2.FieldDescriptorProto.TYPE_INT64
         for i in range(num_fields)
     }
+    if api_implementation.Type() == 'upb':
+      with self.assertRaisesRegex(
+          TypeError, "Couldn't build proto file into descriptor pool"
+      ):
+        proto_cls = proto_builder.MakeSimpleProtoClass(
+            fields,
+            full_name=(
+                'net.proto2.python.public.proto_builder_test.LargeProtoTest'
+            ),
+        )
+      return
+
     proto_cls = proto_builder.MakeSimpleProtoClass(
         fields,
-        full_name='net.proto2.python.public.proto_builder_test.LargeProtoTest')
+        full_name='net.proto2.python.public.proto_builder_test.LargeProtoTest',
+    )
 
     reserved_field_numbers = set(
-        range(descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER,
-              descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER + 1))
+        range(
+            descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER,
+            descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER + 1,
+        )
+    )
     proto_field_numbers = set(proto_cls.DESCRIPTOR.fields_by_number)
     self.assertFalse(reserved_field_numbers.intersection(proto_field_numbers))
 

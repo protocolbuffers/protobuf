@@ -9,8 +9,8 @@
 
 #include <sstream>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_join.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
@@ -152,7 +152,9 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Indent();
 
   // TODO: Consider a C#-escaping format here instead of just Base64.
-  std::string base64 = FileDescriptorToBase64(file_);
+  std::string base64 = options()->strip_nonfunctional_codegen
+                           ? ""
+                           : FileDescriptorToBase64(file_);
   while (base64.size() > 60) {
     printer->Print("\"$base64$\",\n", "base64", base64.substr(0, 60));
     base64 = base64.substr(60);
@@ -168,10 +170,14 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
       "descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,\n");
   printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
-      printer->Print(
-      "$full_reflection_class_name$.Descriptor, ",
-      "full_reflection_class_name",
-      GetReflectionClassName(file_->dependency(i)));
+    if (options()->strip_nonfunctional_codegen &&
+        IsKnownFeatureProto(file_->dependency(i)->name())) {
+      // Strip feature imports for editions codegen tests.
+      continue;
+    }
+    printer->Print("$full_reflection_class_name$.Descriptor, ",
+                   "full_reflection_class_name",
+                   GetReflectionClassName(file_->dependency(i)));
   }
   printer->Print("},\n"
       "    new pbr::GeneratedClrTypeInfo(");
@@ -188,6 +194,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   }  
   if (file_->extension_count() > 0) {
     std::vector<std::string> extensions;
+    extensions.reserve(file_->extension_count());
     for (int i = 0; i < file_->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(file_->extension(i)));
     }
@@ -254,9 +261,21 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       std::vector<std::string> oneofs;
       oneofs.reserve(descriptor->oneof_decl_count());
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
-          oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
+        if (options()->strip_nonfunctional_codegen &&
+            i >= descriptor->real_oneof_decl_count()) {
+          // Skip synthetic oneofs, which don't affect any actual behavior
+          // outside reflection.
+          break;
+        }
+        oneofs.push_back(
+            UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", absl::StrJoin(oneofs, "\", \""));
+      if (oneofs.empty()) {
+        printer->Print("null, ");
+      } else {
+        printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs",
+                       absl::StrJoin(oneofs, "\", \""));
+      }
   }
   else {
       printer->Print("null, ");
@@ -278,6 +297,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   // Extensions
   if (descriptor->extension_count() > 0) {
     std::vector<std::string> extensions;
+    extensions.reserve(descriptor->extension_count());
     for (int i = 0; i < descriptor->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(descriptor->extension(i)));
     }

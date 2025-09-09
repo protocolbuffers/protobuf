@@ -5,8 +5,10 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBArray.h"
 #import "GPBArray_PackagePrivate.h"
 
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 
 // Direct access is use for speed, to avoid even internally declaring things
@@ -2210,6 +2212,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
                         usingBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))
                                        block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
+  if (!_values || _count == 0) {
+    return;
+  }
   BOOL stop = NO;
   GPBEnumValidationFunc func = _validationFunc;
   if ((opts & NSEnumerationReverse) == 0) {

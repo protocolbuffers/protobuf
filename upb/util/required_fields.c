@@ -17,9 +17,10 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/mem/alloc.h"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
-#include "upb/message/types.h"
+#include "upb/message/message.h"
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
@@ -168,10 +169,12 @@ static void upb_FieldPathVector_Reserve(upb_FindContext* ctx,
                                         upb_FieldPathVector* vec,
                                         size_t elems) {
   if (vec->cap - vec->size < elems) {
+    const int oldsize = vec->cap * sizeof(*vec->path);
     size_t need = vec->size + elems;
     vec->cap = UPB_MAX(4, vec->cap);
     while (vec->cap < need) vec->cap *= 2;
-    vec->path = realloc(vec->path, vec->cap * sizeof(*vec->path));
+    const int newsize = vec->cap * sizeof(*vec->path);
+    vec->path = upb_grealloc(vec->path, oldsize, newsize);
     if (!vec->path) {
       UPB_LONGJMP(ctx->err, 1);
     }
@@ -196,7 +199,7 @@ static void upb_util_FindUnsetInMessage(upb_FindContext* ctx,
   // Iterate over all fields to see if any required fields are missing.
   for (int i = 0, n = upb_MessageDef_FieldCount(m); i < n; i++) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
-    if (upb_FieldDef_Label(f) != kUpb_Label_Required) continue;
+    if (!upb_FieldDef_IsRequired(f)) continue;
 
     if (!msg || !upb_Message_HasFieldByDef(msg, f)) {
       // A required field is missing.
@@ -289,7 +292,7 @@ bool upb_util_HasUnsetRequired(const upb_Message* msg, const upb_MessageDef* m,
   upb_FieldPathVector_Init(&ctx.stack);
   upb_FieldPathVector_Init(&ctx.out_fields);
   upb_util_FindUnsetRequiredInternal(&ctx, msg, m);
-  free(ctx.stack.path);
+  upb_gfree(ctx.stack.path);
 
   if (ctx.has_unset_required && fields) {
     upb_FieldPathVector_Reserve(&ctx, &ctx.out_fields, 1);

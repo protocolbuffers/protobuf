@@ -14,15 +14,15 @@ import static org.mockito.Mockito.when;
 
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
-import protobuf_unittest.MessageWithNoOuter;
-import protobuf_unittest.ServiceWithNoOuter;
-import protobuf_unittest.UnittestProto.BarRequest;
-import protobuf_unittest.UnittestProto.BarResponse;
-import protobuf_unittest.UnittestProto.FooRequest;
-import protobuf_unittest.UnittestProto.FooResponse;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestService;
-import protobuf_unittest.no_generic_services_test.UnittestNoGenericServices;
+import proto2_unittest.MessageWithNoOuter;
+import proto2_unittest.ServiceWithNoOuter;
+import proto2_unittest.UnittestProto.BarRequest;
+import proto2_unittest.UnittestProto.BarResponse;
+import proto2_unittest.UnittestProto.FooRequest;
+import proto2_unittest.UnittestProto.FooResponse;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestService;
+import proto2_unittest.no_generic_services_test.UnittestNoGenericServices;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.Test;
@@ -192,7 +192,7 @@ public class ServiceTest {
 
     // Build a list of the class names nested in UnittestNoGenericServices.
     String outerName =
-        "protobuf_unittest.no_generic_services_test.UnittestNoGenericServices";
+        "proto2_unittest.no_generic_services_test.UnittestNoGenericServices";
     Class<?> outerClass = Class.forName(outerName);
 
     Set<String> innerClassNames = new HashSet<>();

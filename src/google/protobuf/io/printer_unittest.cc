@@ -610,6 +610,35 @@ TEST_F(PrinterTest, EmitConsumeAfter) {
             "};\n");
 }
 
+TEST_F(PrinterTest, EmitWithSubstitutionListener) {
+  std::vector<std::string> seen;
+  Printer printer(output());
+  const auto emit = [&] {
+    printer.Emit(
+        {
+            {"class", "Foo"},
+            Printer::Sub{"var", "int x;"}.WithSuffix(";"),
+        },
+        R"cc(
+          void $class$::foo() { $var$; }
+          void $class$::set_foo() { $var$; }
+        )cc");
+  };
+  emit();
+  EXPECT_THAT(seen, ElementsAre());
+  {
+    auto listener = printer.WithSubstitutionListener(
+        [&](auto label, auto loc) { seen.emplace_back(label); });
+    emit();
+  }
+  EXPECT_THAT(seen, ElementsAre("class", "var", "class", "var"));
+
+  // Still works after the listener is disconnected.
+  seen.clear();
+  emit();
+  EXPECT_THAT(seen, ElementsAre());
+}
+
 TEST_F(PrinterTest, EmitConditionalFunctionCall) {
   {
     Printer printer(output());
@@ -682,6 +711,84 @@ TEST_F(PrinterTest, EmitWithIndent) {
             "  class Foo {\n"
             "    int x, y, z;\n"
             "  };\n");
+}
+
+TEST_F(PrinterTest, EmitWithIndentAndIgnoredCommentOnFirstLine) {
+  {
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      //~ First line comment.
+      class Foo {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "  class Foo {\n"
+            "    int x, y, z;\n"
+            "  };\n");
+}
+
+TEST_F(PrinterTest, EmitWithCPPDirectiveOnFirstLine) {
+  {
+    Printer printer(output());
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+#if NDEBUG
+#pragma foo
+      class Foo {
+        int $f1$, $f2$, $f3$;
+      };
+#endif
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "#if NDEBUG\n"
+            "#pragma foo\n"
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n"
+            "#endif\n");
+}
+
+TEST_F(PrinterTest, EmitWithPreprocessor) {
+  {
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"value",
+                   [&] {
+                     printer.Emit(R"cc(
+#if FOO
+                       0,
+#else
+                       1,
+#endif
+                     )cc");
+                   }},
+                  {"on_new_line",
+                   [&] {
+                     printer.Emit(R"cc(
+#pragma foo
+                     )cc");
+                   }}},
+                 R"cc(
+                   int val = ($value$, 0);
+                   $on_new_line$;
+                 )cc");
+  }
+
+  EXPECT_EQ(written(),
+            R"(  int val = (
+  #if FOO
+  0,
+  #else
+  1,
+  #endif
+   0);
+  #pragma foo
+)");
 }
 
 

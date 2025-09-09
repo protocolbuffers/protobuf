@@ -38,6 +38,7 @@ import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
@@ -73,6 +74,9 @@ public class RubyDescriptorPool extends RubyObject {
     cDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::Descriptor");
     cEnumDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::EnumDescriptor");
     cFieldDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::FieldDescriptor");
+    cServiceDescriptor =
+        (RubyClass) runtime.getClassFromPath("Google::Protobuf::ServiceDescriptor");
+    cMethodDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::MethodDescriptor");
   }
 
   public RubyDescriptorPool(Ruby runtime, RubyClass klazz) {
@@ -95,8 +99,8 @@ public class RubyDescriptorPool extends RubyObject {
    * call-seq:
    *     DescriptorPool.lookup(name) => descriptor
    *
-   * Finds a Descriptor, EnumDescriptor or FieldDescriptor by name and returns it, or nil if none
-   * exists with the given name.
+   * Finds a Descriptor, EnumDescriptor, FieldDescriptor or ServiceDescriptor by name and returns it,
+   * or nil if none exists with the given name.
    *
    * This currently lazy loads the ruby descriptor objects as they are requested.
    * This allows us to leave the heavy lifting to the java library
@@ -156,6 +160,13 @@ public class RubyDescriptorPool extends RubyObject {
       registerDescriptor(context, message, packageName);
     for (FieldDescriptor fieldDescriptor : fd.getExtensions())
       registerExtension(context, fieldDescriptor, packageName);
+    for (ServiceDescriptor serviceDescriptor : fd.getServices())
+      registerService(context, serviceDescriptor, packageName);
+
+    RubyFileDescriptor rfd =
+        (RubyFileDescriptor) RubyFileDescriptor.getRubyFileDescriptor(context, fd);
+    RubyString name = context.runtime.newString(fd.getName());
+    symtab.put(name, rfd);
 
     // Mark this as a loaded file
     fileDescriptors.add(fd);
@@ -206,6 +217,18 @@ public class RubyDescriptorPool extends RubyObject {
     symtab.put(name, des);
   }
 
+  private void registerService(
+      ThreadContext context, ServiceDescriptor descriptor, String parentPath) {
+    String fullName = parentPath + descriptor.getName();
+    RubyString name = context.runtime.newString(fullName);
+    RubyServiceDescriptor des =
+        (RubyServiceDescriptor) cServiceDescriptor.newInstance(context, Block.NULL_BLOCK);
+    des.setName(name);
+    // n.b. this will also construct the descriptors for the service's methods.
+    des.setDescriptor(context, descriptor, this);
+    symtab.putIfAbsent(name, des);
+  }
+
   private FileDescriptor[] existingFileDescriptors() {
     return fileDescriptors.toArray(new FileDescriptor[fileDescriptors.size()]);
   }
@@ -213,6 +236,8 @@ public class RubyDescriptorPool extends RubyObject {
   private static RubyClass cDescriptor;
   private static RubyClass cEnumDescriptor;
   private static RubyClass cFieldDescriptor;
+  private static RubyClass cServiceDescriptor;
+  private static RubyClass cMethodDescriptor;
   private static RubyDescriptorPool descriptorPool;
 
   private List<FileDescriptor> fileDescriptors;

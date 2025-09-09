@@ -11,7 +11,7 @@
 
 #include <algorithm>
 #include <cstring>
-#include <iostream>
+#include <string>
 
 #ifndef _WIN32
 #include <errno.h>
@@ -117,15 +117,16 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // Create the process.
   PROCESS_INFORMATION process_info;
 
-  if (CreateProcessW((search_mode == SEARCH_PATH) ? nullptr : wprogram.c_str(),
-                     (search_mode == SEARCH_PATH) ? wcommand_line_copy : NULL,
-                     nullptr,  // process security attributes
-                     nullptr,  // thread security attributes
-                     TRUE,     // inherit handles?
-                     0,        // obscure creation flags
-                     nullptr,  // environment (inherit from parent)
-                     nullptr,  // current directory (inherit from parent)
-                     &startup_info, &process_info)) {
+  if (CreateProcessW(
+          (search_mode == SEARCH_PATH) ? nullptr : wprogram.c_str(),
+          (search_mode == SEARCH_PATH) ? wcommand_line_copy : nullptr,
+          nullptr,  // process security attributes
+          nullptr,  // thread security attributes
+          TRUE,     // inherit handles?
+          0,        // obscure creation flags
+          nullptr,  // environment (inherit from parent)
+          nullptr,  // current directory (inherit from parent)
+          &startup_info, &process_info)) {
     child_handle_ = process_info.hProcess;
     CloseHandleOrDie(process_info.hThread);
     child_stdin_ = stdin_pipe_write;

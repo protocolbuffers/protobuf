@@ -94,7 +94,7 @@ std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations) {
 template <typename DescriptorT>
 std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
                                         absl::string_view separator) {
-  std::string name = descriptor.name();
+  std::string name = std::string(descriptor.name());
   const Descriptor* parent = descriptor.containing_type();
   if (parent != nullptr) {
     std::string prefix = NamePrefixedWithNestedTypes(*parent, separator);

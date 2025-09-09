@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,8 @@ namespace protobuf {
 namespace compiler {
 namespace {
 
+#define ASSERT_OK(x) ASSERT_TRUE(x.ok()) << x.message();
+
 using ::testing::HasSubstr;
 using ::testing::NotNull;
 
@@ -42,6 +45,9 @@ class TestGenerator : public CodeGenerator {
                 std::string* error) const override {
     return true;
   }
+
+  uint64_t GetSupportedFeatures() const override { return features_; }
+  void set_supported_features(uint64_t features) { features_ = features; }
 
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
     return feature_extensions_;
@@ -61,12 +67,14 @@ class TestGenerator : public CodeGenerator {
   }
 
   // Expose the protected methods for testing.
+  using CodeGenerator::GetResolvedSourceFeatureExtension;
   using CodeGenerator::GetResolvedSourceFeatures;
   using CodeGenerator::GetUnresolvedSourceFeatures;
 
  private:
-  Edition minimum_edition_ = PROTOBUF_MINIMUM_EDITION;
-  Edition maximum_edition_ = PROTOBUF_MAXIMUM_EDITION;
+  uint64_t features_ = CodeGenerator::Feature::FEATURE_SUPPORTS_EDITIONS;
+  Edition minimum_edition_ = ProtocMinimumEdition();
+  Edition maximum_edition_ = ProtocMaximumEdition();
   std::vector<const FieldDescriptor*> feature_extensions_ = {
       GetExtensionReflection(pb::test)};
 };
@@ -107,21 +115,21 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesRoot) {
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 
     option features.field_presence = EXPLICIT;  // 2023 default
     option features.enum_type = CLOSED;         // override
-    option features.(pb.test).int_file_feature = 8;
-    option features.(pb.test).string_source_feature = "file";
+    option features.(pb.test).file_feature = VALUE5;
+    option features.(pb.test).source_feature = VALUE6;
   )schema");
   ASSERT_THAT(file, NotNull());
 
   EXPECT_THAT(TestGenerator::GetUnresolvedSourceFeatures(*file, pb::test),
               google::protobuf::EqualsProto(R"pb(
-                int_file_feature: 8
-                string_source_feature: "file"
+                file_feature: VALUE5
+                source_feature: VALUE6
               )pb"));
 }
 
@@ -130,20 +138,20 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 
     option features.enum_type = OPEN;
-    option features.(pb.test).int_file_feature = 6;
+    option features.(pb.test).file_feature = VALUE4;
     message EditionsMessage {
-      option features.(pb.test).int_message_feature = 7;
-      option features.(pb.test).int_multiple_feature = 8;
+      option features.(pb.test).message_feature = VALUE5;
+      option features.(pb.test).multiple_feature = VALUE6;
 
       string field = 1 [
         features.field_presence = EXPLICIT,
-        features.(pb.test).int_multiple_feature = 9,
-        features.(pb.test).string_source_feature = "field"
+        features.(pb.test).multiple_feature = VALUE3,
+        features.(pb.test).source_feature = VALUE2
       ];
     }
   )schema");
@@ -155,28 +163,28 @@ TEST_F(CodeGeneratorTest, GetUnresolvedSourceFeaturesInherited) {
 
   EXPECT_THAT(TestGenerator::GetUnresolvedSourceFeatures(*field, pb::test),
               google::protobuf::EqualsProto(R"pb(
-                int_multiple_feature: 9
-                string_source_feature: "field"
+                multiple_feature: VALUE3
+                source_feature: VALUE2
               )pb"));
 }
 
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   TestGenerator generator;
   generator.set_feature_extensions({GetExtensionReflection(pb::test)});
-  pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 
     option features.field_presence = EXPLICIT;  // 2023 default
     option features.enum_type = CLOSED;         // override
-    option features.(pb.test).int_file_feature = 8;
-    option features.(pb.test).string_source_feature = "file";
+    option features.(pb.test).file_feature = VALUE6;
+    option features.(pb.test).source_feature = VALUE5;
   )schema");
   ASSERT_THAT(file, NotNull());
 
@@ -188,36 +196,36 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   EXPECT_EQ(features.field_presence(), FeatureSet::EXPLICIT);
   EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);
 
-  EXPECT_TRUE(ext.has_int_message_feature());
-  EXPECT_EQ(ext.int_file_feature(), 8);
-  EXPECT_EQ(ext.string_source_feature(), "file");
+  EXPECT_EQ(ext.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext.source_feature(), pb::EnumFeature::VALUE5);
+  EXPECT_EQ(ext.field_feature(), pb::EnumFeature::VALUE1);
 }
 
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   TestGenerator generator;
   generator.set_feature_extensions({GetExtensionReflection(pb::test)});
-  pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults());
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
 
   ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
   ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
   auto file = BuildFile(R"schema(
     edition = "2023";
-    package protobuf_unittest;
+    package proto2_unittest;
 
     import "google/protobuf/unittest_features.proto";
 
     option features.enum_type = CLOSED;
-    option features.(pb.test).int_source_feature = 5;
-    option features.(pb.test).int_file_feature = 6;
+    option features.(pb.test).source_feature = VALUE5;
+    option features.(pb.test).file_feature = VALUE6;
     message EditionsMessage {
-      option features.(pb.test).int_message_feature = 7;
-      option features.(pb.test).int_multiple_feature = 8;
-      option features.(pb.test).string_source_feature = "message";
+      option features.(pb.test).message_feature = VALUE4;
+      option features.(pb.test).multiple_feature = VALUE3;
+      option features.(pb.test).source_feature2 = VALUE2;
 
       string field = 1 [
         features.field_presence = IMPLICIT,
-        features.(pb.test).int_multiple_feature = 9,
-        features.(pb.test).string_source_feature = "field"
+        features.(pb.test).multiple_feature = VALUE5,
+        features.(pb.test).source_feature2 = VALUE3
       ];
     }
   )schema");
@@ -232,11 +240,148 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);
   EXPECT_EQ(features.field_presence(), FeatureSet::IMPLICIT);
 
-  EXPECT_EQ(ext.int_message_feature(), 7);
-  EXPECT_EQ(ext.int_file_feature(), 6);
-  EXPECT_EQ(ext.int_multiple_feature(), 9);
-  EXPECT_EQ(ext.int_source_feature(), 5);
-  EXPECT_EQ(ext.string_source_feature(), "field");
+  EXPECT_EQ(ext.message_feature(), pb::EnumFeature::VALUE4);
+  EXPECT_EQ(ext.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext.multiple_feature(), pb::EnumFeature::VALUE5);
+  EXPECT_EQ(ext.source_feature(), pb::EnumFeature::VALUE5);
+  EXPECT_EQ(ext.source_feature2(), pb::EnumFeature::VALUE3);
+}
+
+TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtension) {
+  TestGenerator generator;
+  generator.set_feature_extensions({GetExtensionReflection(pb::test)});
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
+  auto file = BuildFile(R"schema(
+    edition = "2023";
+    package proto2_unittest;
+
+    import "google/protobuf/unittest_features.proto";
+
+    option features.(pb.test).file_feature = VALUE6;
+    option features.(pb.test).source_feature = VALUE5;
+  )schema");
+  ASSERT_THAT(file, NotNull());
+  const pb::TestFeatures& ext1 =
+      TestGenerator::GetResolvedSourceFeatureExtension(*file, pb::test);
+  const pb::TestFeatures& ext2 =
+      TestGenerator::GetResolvedSourceFeatures(*file).GetExtension(pb::test);
+
+  // Since the pool provides the feature set defaults, there should be no
+  // difference between the two results.
+  EXPECT_EQ(ext1.enum_feature(), pb::EnumFeature::VALUE1);
+  EXPECT_EQ(ext1.field_feature(), pb::EnumFeature::VALUE1);
+  EXPECT_EQ(ext1.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext1.source_feature(), pb::EnumFeature::VALUE5);
+  EXPECT_EQ(ext2.enum_feature(), ext1.enum_feature());
+  EXPECT_EQ(ext2.field_feature(), ext1.field_feature());
+  EXPECT_EQ(ext2.file_feature(), ext1.file_feature());
+  EXPECT_EQ(ext2.source_feature(), ext1.source_feature());
+}
+
+TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtensionEditedDefaults) {
+  FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
+    minimum_edition: EDITION_PROTO2
+    maximum_edition: EDITION_2024
+    defaults {
+      edition: EDITION_LEGACY
+      overridable_features {}
+      fixed_features {
+        field_presence: EXPLICIT
+        enum_type: CLOSED
+        repeated_field_encoding: EXPANDED
+        utf8_validation: NONE
+        message_encoding: LENGTH_PREFIXED
+        json_format: LEGACY_BEST_EFFORT
+        enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
+      }
+    }
+    defaults {
+      edition: EDITION_2023
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: OPEN
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        [pb.test] {
+          file_feature: VALUE3
+          field_feature: VALUE15
+          enum_feature: VALUE14
+          source_feature: VALUE1
+        }
+      }
+      fixed_features {
+        enforce_naming_style: STYLE_LEGACY
+        default_symbol_visibility: EXPORT_ALL
+      }
+    }
+  )pb");
+  ASSERT_OK(pool_.SetFeatureSetDefaults(defaults));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
+  auto file = BuildFile(R"schema(
+    edition = "2023";
+    package proto2_unittest;
+
+    import "google/protobuf/unittest_features.proto";
+
+    option features.(pb.test).file_feature = VALUE6;
+    option features.(pb.test).source_feature = VALUE5;
+  )schema");
+  ASSERT_THAT(file, NotNull());
+  const pb::TestFeatures& ext =
+      TestGenerator::GetResolvedSourceFeatureExtension(*file, pb::test);
+
+  // Since the pool provides the modified feature set defaults, the result
+  // should be the one reflecting the pool's defaults.
+  EXPECT_EQ(ext.enum_feature(), pb::EnumFeature::VALUE14);
+  EXPECT_EQ(ext.field_feature(), pb::EnumFeature::VALUE15);
+  EXPECT_EQ(ext.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext.source_feature(), pb::EnumFeature::VALUE5);
+}
+
+TEST_F(CodeGeneratorTest,
+       GetResolvedSourceFeatureExtensionDefaultsFromFeatureSetExtension) {
+  // Make sure feature set defaults are empty in the pool.
+  TestGenerator generator;
+  generator.set_feature_extensions({});
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
+  auto file = BuildFile(R"schema(
+    edition = "2023";
+    package proto2_unittest;
+
+    import "google/protobuf/unittest_features.proto";
+
+    option features.(pb.test).file_feature = VALUE6;
+    option features.(pb.test).source_feature = VALUE5;
+  )schema");
+  ASSERT_THAT(file, NotNull());
+
+  const pb::TestFeatures& ext1 =
+      TestGenerator::GetResolvedSourceFeatureExtension(*file, pb::test);
+  const pb::TestFeatures& ext2 =
+      TestGenerator::GetResolvedSourceFeatures(*file).GetExtension(pb::test);
+
+  // No defaults were added to the pool, but they should be still present in the
+  // result. On the other hand, features that are explicitly set should be also
+  // present.
+  EXPECT_EQ(ext1.enum_feature(), pb::EnumFeature::VALUE1);
+  EXPECT_EQ(ext1.field_feature(), pb::EnumFeature::VALUE1);
+  EXPECT_EQ(ext1.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext1.source_feature(), pb::EnumFeature::VALUE5);
+  EXPECT_EQ(ext2.enum_feature(), pb::EnumFeature::TEST_ENUM_FEATURE_UNKNOWN);
+  EXPECT_EQ(ext2.field_feature(), pb::EnumFeature::TEST_ENUM_FEATURE_UNKNOWN);
+  EXPECT_EQ(ext2.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext2.source_feature(), pb::EnumFeature::VALUE5);
 }
 
 // TODO: Use the gtest versions once that's available in OSS.
@@ -264,30 +409,36 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
   EXPECT_THAT(generator.BuildFeatureSetDefaults(),
               IsOkAndHolds(EqualsProto(R"pb(
                 defaults {
-                  edition: EDITION_PROTO2
-                  features {
+                  edition: EDITION_LEGACY
+                  overridable_features {}
+                  fixed_features {
                     field_presence: EXPLICIT
                     enum_type: CLOSED
                     repeated_field_encoding: EXPANDED
                     utf8_validation: NONE
                     message_encoding: LENGTH_PREFIXED
                     json_format: LEGACY_BEST_EFFORT
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
                   edition: EDITION_PROTO3
-                  features {
+                  overridable_features {}
+                  fixed_features {
                     field_presence: IMPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
                     utf8_validation: VERIFY
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
                   }
                 }
                 defaults {
                   edition: EDITION_2023
-                  features {
+                  overridable_features {
                     field_presence: EXPLICIT
                     enum_type: OPEN
                     repeated_field_encoding: PACKED
@@ -295,10 +446,48 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                     message_encoding: LENGTH_PREFIXED
                     json_format: ALLOW
                   }
+                  fixed_features {
+                    enforce_naming_style: STYLE_LEGACY
+                    default_symbol_visibility: EXPORT_ALL
+                  }
                 }
-                minimum_edition: EDITION_99997_TEST_ONLY
-                maximum_edition: EDITION_99999_TEST_ONLY
+                defaults {
+                  edition: EDITION_2024
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: OPEN
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
+                minimum_edition: EDITION_PROTO2
+                maximum_edition: EDITION_2024
               )pb")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {
+  TestGenerator generator;
+  generator.set_supported_features(0);
+  generator.set_feature_extensions({});
+  generator.set_minimum_edition(EDITION_99997_TEST_ONLY);
+  generator.set_maximum_edition(EDITION_99999_TEST_ONLY);
+  auto result = generator.BuildFeatureSetDefaults();
+
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  EXPECT_EQ(result->minimum_edition(), ProtocMinimumEdition());
+  EXPECT_EQ(result->maximum_edition(), MaximumKnownEdition());
+}
+
+TEST_F(CodeGeneratorTest, SupportedEditionRangeIsDense) {
+  for (int i = static_cast<int>(ProtocMinimumEdition());
+       i <= static_cast<int>(ProtocMaximumEdition()); ++i) {
+    EXPECT_TRUE(Edition_IsValid(i));
+  }
 }
 
 #include "google/protobuf/port_undef.inc"

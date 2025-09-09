@@ -1,5 +1,6 @@
 # Tests for CMake file list generation
 
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//pkg:build_systems.bzl", "gen_file_lists")
 load("//pkg:cc_dist_library.bzl", "cc_dist_library")
 

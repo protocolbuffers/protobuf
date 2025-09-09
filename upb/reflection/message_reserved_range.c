@@ -36,7 +36,7 @@ upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     const UPB_DESC(DescriptorProto_ReservedRange) * const* protos,
     const upb_MessageDef* m) {
   upb_MessageReservedRange* r =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageReservedRange) * n);
+      UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MessageReservedRange, n);
 
   for (int i = 0; i < n; i++) {
     const int32_t start =

@@ -48,7 +48,7 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     ";\n"
     "private $type_name$ $name$_;\n");
-  WritePropertyDocComment(printer, descriptor_);
+  WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
@@ -176,7 +176,7 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 }
 
 void WrapperFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
+  WritePropertyDocComment(printer, options(), descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
@@ -202,7 +202,7 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
         "private static readonly pb::FieldCodec<$type_name$> _oneof_$name$_codec = ");
   GenerateCodecCode(printer);
   printer->Print(";\n");
-  WritePropertyDocComment(printer, descriptor_);
+  WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,

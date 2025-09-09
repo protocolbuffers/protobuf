@@ -83,6 +83,27 @@ public class RubyOneofDescriptor extends RubyObject {
         true);
   }
 
+  /*
+   * call-seq:
+   *     OneofDescriptor.to_proto => OneofDescriptor
+   *
+   * Returns the `OneofDescriptorProto` of this `OneofDescriptor`.
+   */
+  @JRubyMethod(name = "to_proto")
+  public IRubyObject toProto(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor oneofDescriptorProto =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.OneofDescriptorProto"));
+    RubyClass msgClass = (RubyClass) oneofDescriptorProto.msgclass(context);
+    RubyMessage msg = (RubyMessage) msgClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(descriptor.toProto().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
   protected Collection<RubyFieldDescriptor> getFields() {
     return fields;
   }

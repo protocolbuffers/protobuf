@@ -40,7 +40,7 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
     "private $type_name$ $name$_;\n");
-  WritePropertyDocComment(printer, descriptor_);
+  WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
@@ -148,7 +148,7 @@ void MessageFieldGenerator::WriteToString(io::Printer* printer) {
     "PrintField(\"$field_name$\", has$property_name$, $name$_, writer);\n");
 }
 void MessageFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
+  WritePropertyDocComment(printer, options(), descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,
@@ -190,7 +190,7 @@ MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {
 }
 
 void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
+  WritePropertyDocComment(printer, options(), descriptor_);
   AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,

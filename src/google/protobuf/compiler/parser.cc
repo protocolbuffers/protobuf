@@ -13,8 +13,6 @@
 
 #include "google/protobuf/compiler/parser.h"
 
-#include <float.h>
-
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -23,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-#include "absl/base/casts.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -37,8 +35,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/port.h"
-#include "google/protobuf/wire_format.h"
+#include "google/protobuf/message_lite.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -47,8 +44,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace {
-
-using ::google::protobuf::internal::DownCast;
 
 using TypeNameMap =
     absl::flat_hash_map<absl::string_view, FieldDescriptorProto::Type>;
@@ -106,57 +101,6 @@ std::string MapEntryName(absl::string_view field_name) {
   return result;
 }
 
-bool IsUppercase(char c) { return c >= 'A' && c <= 'Z'; }
-
-bool IsLowercase(char c) { return c >= 'a' && c <= 'z'; }
-
-bool IsNumber(char c) { return c >= '0' && c <= '9'; }
-
-bool IsUpperCamelCase(absl::string_view name) {
-  if (name.empty()) {
-    return true;
-  }
-  // Name must start with an upper case character.
-  if (!IsUppercase(name[0])) {
-    return false;
-  }
-  // Must not contains underscore.
-  for (const char c : name) {
-    if (c == '_') {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool IsUpperUnderscore(absl::string_view name) {
-  for (const char c : name) {
-    if (!IsUppercase(c) && c != '_' && !IsNumber(c)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool IsLowerUnderscore(absl::string_view name) {
-  for (const char c : name) {
-    if (!IsLowercase(c) && c != '_' && !IsNumber(c)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool IsNumberFollowUnderscore(absl::string_view name) {
-  for (int i = 1; i < name.length(); i++) {
-    const char c = name[i];
-    if (IsNumber(c) && name[i - 1] == '_') {
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // anonymous namespace
 
 // Makes code slightly more readable.  The meaning of "DO(foo)" is
@@ -178,8 +122,7 @@ Parser::Parser()
       stop_after_syntax_identifier_(false) {
 }
 
-Parser::~Parser() {}
-
+Parser::~Parser() = default;
 // ===================================================================
 
 inline bool Parser::LookingAt(absl::string_view text) {
@@ -201,7 +144,7 @@ bool Parser::TryConsume(absl::string_view text) {
   }
 }
 
-bool Parser::Consume(absl::string_view text, absl::string_view error) {
+bool Parser::Consume(absl::string_view text, ErrorMaker error) {
   if (TryConsume(text)) {
     return true;
   } else {
@@ -211,10 +154,11 @@ bool Parser::Consume(absl::string_view text, absl::string_view error) {
 }
 
 bool Parser::Consume(absl::string_view text) {
-  return Consume(text, absl::StrCat("Expected \"", text, "\"."));
+  return Consume(text,
+                 [&] { return absl::StrCat("Expected \"", text, "\"."); });
 }
 
-bool Parser::ConsumeIdentifier(std::string* output, absl::string_view error) {
+bool Parser::ConsumeIdentifier(std::string* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
     *output = input_->current().text;
     input_->Next();
@@ -225,7 +169,7 @@ bool Parser::ConsumeIdentifier(std::string* output, absl::string_view error) {
   }
 }
 
-bool Parser::ConsumeInteger(int* output, absl::string_view error) {
+bool Parser::ConsumeInteger(int* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     uint64_t value = 0;
     if (!io::Tokenizer::ParseInteger(input_->current().text,
@@ -243,7 +187,7 @@ bool Parser::ConsumeInteger(int* output, absl::string_view error) {
   }
 }
 
-bool Parser::ConsumeSignedInteger(int* output, absl::string_view error) {
+bool Parser::ConsumeSignedInteger(int* output, ErrorMaker error) {
   bool is_negative = false;
   uint64_t max_value = std::numeric_limits<int32_t>::max();
   if (TryConsume("-")) {
@@ -258,7 +202,7 @@ bool Parser::ConsumeSignedInteger(int* output, absl::string_view error) {
 }
 
 bool Parser::ConsumeInteger64(uint64_t max_value, uint64_t* output,
-                              absl::string_view error) {
+                              ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     if (!io::Tokenizer::ParseInteger(input_->current().text, max_value,
                                      output)) {
@@ -283,7 +227,7 @@ bool Parser::TryConsumeInteger64(uint64_t max_value, uint64_t* output) {
   return false;
 }
 
-bool Parser::ConsumeNumber(double* output, absl::string_view error) {
+bool Parser::ConsumeNumber(double* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_FLOAT)) {
     *output = io::Tokenizer::ParseFloat(input_->current().text);
     input_->Next();
@@ -320,7 +264,7 @@ bool Parser::ConsumeNumber(double* output, absl::string_view error) {
   }
 }
 
-bool Parser::ConsumeString(std::string* output, absl::string_view error) {
+bool Parser::ConsumeString(std::string* output, ErrorMaker error) {
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     io::Tokenizer::ParseString(input_->current().text, output);
     input_->Next();
@@ -372,32 +316,34 @@ bool Parser::ConsumeEndOfDeclaration(absl::string_view text,
   if (TryConsumeEndOfDeclaration(text, location)) {
     return true;
   } else {
-    RecordError(absl::StrCat("Expected \"", text, "\"."));
+    RecordError([&] { return absl::StrCat("Expected \"", text, "\"."); });
     return false;
   }
 }
 
 // -------------------------------------------------------------------
 
-void Parser::RecordError(int line, int column, absl::string_view error) {
+void Parser::RecordError(int line, int column, ErrorMaker error) {
   if (error_collector_ != nullptr) {
-    error_collector_->RecordError(line, column, error);
+    error_collector_->RecordError(line, column, error.get());
   }
   had_errors_ = true;
 }
 
-void Parser::RecordError(absl::string_view error) {
+void Parser::RecordError(ErrorMaker error) {
   RecordError(input_->current().line, input_->current().column, error);
 }
 
-void Parser::RecordWarning(int line, int column, absl::string_view warning) {
+void Parser::RecordWarning(int line, int column, ErrorMaker error) {
   if (error_collector_ != nullptr) {
-    error_collector_->RecordWarning(line, column, warning);
+    error_collector_->RecordWarning(line, column, error.get());
   }
 }
 
-void Parser::RecordWarning(absl::string_view warning) {
-  RecordWarning(input_->current().line, input_->current().column, warning);
+// Invokes error_collector_->RecordWarning() with the line and column number
+// of the current token.
+void Parser::RecordWarning(ErrorMaker error) {
+  RecordWarning(input_->current().line, input_->current().column, error);
 }
 
 // -------------------------------------------------------------------
@@ -590,12 +536,13 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
   }
 
   if (has_allow_alias && !allow_alias) {
-    std::string error = absl::StrCat(
-        "\"", proto->name(),
-        "\" declares 'option allow_alias = false;' which has no effect. "
-        "Please remove the declaration.");
     // This needlessly clutters declarations with nops.
-    RecordError(error);
+    RecordError([=] {
+      return absl::StrCat(
+          "\"", proto->name(),
+          "\" declares 'option allow_alias = false;' which has no effect. "
+          "Please remove the declaration.");
+    });
     return false;
   }
 
@@ -611,27 +558,16 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     }
   }
   if (allow_alias && !has_duplicates) {
-    std::string error = absl::StrCat(
-        "\"", proto->name(),
-        "\" declares support for enum aliases but no enum values share field "
-        "numbers. Please remove the unnecessary 'option allow_alias = true;' "
-        "declaration.");
     // Generate an error if an enum declares support for duplicate enum values
     // and does not use it protect future authors.
-    RecordError(error);
+    RecordError([=] {
+      return absl::StrCat(
+          "\"", proto->name(),
+          "\" declares support for enum aliases but no enum values share field "
+          "numbers. Please remove the unnecessary 'option allow_alias = true;' "
+          "declaration.");
+    });
     return false;
-  }
-
-  // Enforce that enum constants must be UPPER_CASE except in case of
-  // enum_alias.
-  if (!allow_alias) {
-    for (const auto& enum_value : proto->value()) {
-      if (!IsUpperUnderscore(enum_value.name())) {
-        RecordWarning(absl::StrCat(
-            "Enum constant should be in UPPER_CASE. Found: ", enum_value.name(),
-            ". See https://developers.google.com/protocol-buffers/docs/style"));
-      }
-    }
   }
 
   return true;
@@ -675,11 +611,10 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
         }
       }
     } else if (!stop_after_syntax_identifier_) {
-      ABSL_LOG(WARNING) << "No syntax specified for the proto file: "
-                        << file->name()
-                        << ". Please use 'syntax = \"proto2\";' "
-                        << "or 'syntax = \"proto3\";' to specify a syntax "
-                        << "version. (Defaulted to proto2 syntax.)";
+      ABSL_LOG(WARNING) << "No edition or syntax specified for the proto file: "
+                        << file->name() << ". Please use 'edition = \"YYYY\";' "
+                        << " to specify a valid edition "
+                        << "version. (Defaulted to \"syntax = \"proto2\";\".)";
       syntax_identifier_ = "proto2";
     }
 
@@ -731,9 +666,12 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
 
   if (has_edition) {
     if (!Edition_Parse(absl::StrCat("EDITION_", syntax), &edition_) ||
-        edition_ < Edition::EDITION_2023) {
-      RecordError(syntax_token.line, syntax_token.column,
-                  absl::StrCat("Unknown edition \"", syntax, "\"."));
+        edition_ == Edition::EDITION_PROTO2 ||
+        edition_ == Edition::EDITION_PROTO3 ||
+        edition_ == Edition::EDITION_UNKNOWN) {
+      RecordError(syntax_token.line, syntax_token.column, [&] {
+        return absl::StrCat("Unknown edition \"", syntax, "\".");
+      });
       return false;
     }
     syntax_identifier_ = "editions";
@@ -743,10 +681,11 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
   syntax_identifier_ = syntax;
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {
-    RecordError(syntax_token.line, syntax_token.column,
-                absl::StrCat("Unrecognized syntax identifier \"", syntax,
-                             "\".  This parser "
-                             "only recognizes \"proto2\" and \"proto3\"."));
+    RecordError(syntax_token.line, syntax_token.column, [&] {
+      return absl::StrCat("Unrecognized syntax identifier \"", syntax,
+                          "\".  This parser "
+                          "only recognizes \"proto2\" and \"proto3\".");
+    });
     return false;
   }
 
@@ -758,16 +697,27 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
   if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
-  } else if (LookingAt("message")) {
+  }
+
+  SymbolVisibility visibility = SymbolVisibility::VISIBILITY_UNSET;
+  if (LookingAt("export") || LookingAt("local")) {
+    DO(ParseVisibility(file, &visibility));
+  }
+
+  if (LookingAt("message")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kMessageTypeFieldNumber,
                               file->message_type_size());
-    return ParseMessageDefinition(file->add_message_type(), location, file);
+    // Maximum depth allowed by the DescriptorPool.
+    recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
+    return ParseMessageDefinition(file->add_message_type(), visibility,
+                                  location, file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kEnumTypeFieldNumber,
                               file->enum_type_size());
-    return ParseEnumDefinition(file->add_enum_type(), location, file);
+    return ParseEnumDefinition(file->add_enum_type(), visibility, location,
+                               file);
   } else if (LookingAt("service")) {
     LocationRecorder location(root_location,
                               FileDescriptorProto::kServiceFieldNumber,
@@ -781,6 +731,7 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
         FileDescriptorProto::kMessageTypeFieldNumber, location, file);
   } else if (LookingAt("import")) {
     return ParseImport(file->mutable_dependency(),
+                       file->mutable_option_dependency(),
                        file->mutable_public_dependency(),
                        file->mutable_weak_dependency(), root_location, file);
   } else if (LookingAt("package")) {
@@ -822,10 +773,10 @@ PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
       // Avoid prepending a double-underscore because such names are
       // reserved in C++.
       if (oneof_name.empty() || oneof_name[0] != '_') {
-        oneof_name = '_' + oneof_name;
+        oneof_name.insert(0, "_");
       }
       while (names.count(oneof_name) > 0) {
-        oneof_name = 'X' + oneof_name;
+        oneof_name.insert(0, "X");
       }
 
       names.insert(oneof_name);
@@ -837,8 +788,15 @@ PROTOBUF_NOINLINE static void GenerateSyntheticOneofs(
 }
 
 bool Parser::ParseMessageDefinition(
-    DescriptorProto* message, const LocationRecorder& message_location,
+    DescriptorProto* message, const SymbolVisibility& visibility,
+    const LocationRecorder& message_location,
     const FileDescriptorProto* containing_file) {
+  const auto undo_depth = absl::MakeCleanup([&] { ++recursion_depth_; });
+  if (--recursion_depth_ <= 0) {
+    RecordError("Reached maximum recursion limit for nested messages.");
+    return false;
+  }
+
   DO(Consume("message"));
   {
     LocationRecorder location(message_location,
@@ -846,16 +804,15 @@ bool Parser::ParseMessageDefinition(
     location.RecordLegacyLocation(message,
                                   DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(message->mutable_name(), "Expected message name."));
-    if (!IsUpperCamelCase(message->name())) {
-      RecordWarning(absl::StrCat(
-          "Message name should be in UpperCamelCase. Found: ", message->name(),
-          ". See https://developers.google.com/protocol-buffers/docs/style"));
-    }
   }
   DO(ParseMessageBlock(message, message_location, containing_file));
 
   if (syntax_identifier_ == "proto3") {
     GenerateSyntheticOneofs(message);
+  }
+
+  if (visibility != SymbolVisibility::VISIBILITY_UNSET) {
+    message->set_visibility(visibility);
   }
 
   return true;
@@ -947,17 +904,24 @@ bool Parser::ParseMessageStatement(DescriptorProto* message,
   if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
-  } else if (LookingAt("message")) {
+  }
+
+  SymbolVisibility visibility = SymbolVisibility::VISIBILITY_UNSET;
+  if (LookingAt("export") || LookingAt("local")) {
+    DO(ParseVisibility(containing_file, &visibility));
+  }
+
+  if (LookingAt("message")) {
     LocationRecorder location(message_location,
                               DescriptorProto::kNestedTypeFieldNumber,
                               message->nested_type_size());
-    return ParseMessageDefinition(message->add_nested_type(), location,
-                                  containing_file);
+    return ParseMessageDefinition(message->add_nested_type(), visibility,
+                                  location, containing_file);
   } else if (LookingAt("enum")) {
     LocationRecorder location(message_location,
                               DescriptorProto::kEnumTypeFieldNumber,
                               message->enum_type_size());
-    return ParseEnumDefinition(message->add_enum_type(), location,
+    return ParseEnumDefinition(message->add_enum_type(), visibility, location,
                                containing_file);
   } else if (LookingAt("extensions")) {
     LocationRecorder location(message_location,
@@ -1078,18 +1042,6 @@ bool Parser::ParseMessageFieldNoLabel(
                               FieldDescriptorProto::kNameFieldNumber);
     location.RecordLegacyLocation(field, DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(field->mutable_name(), "Expected field name."));
-
-    if (!IsLowerUnderscore(field->name())) {
-      RecordWarning(absl::StrCat(
-          "Field name should be lowercase. Found: ", field->name(),
-          ". See: https://developers.google.com/protocol-buffers/docs/style"));
-    }
-    if (IsNumberFollowUnderscore(field->name())) {
-      RecordWarning(absl::StrCat(
-          "Number should not come right after an underscore. Found: ",
-          field->name(),
-          ". See: https://developers.google.com/protocol-buffers/docs/style"));
-    }
   }
   DO(Consume("=", "Missing field number."));
 
@@ -1538,7 +1490,7 @@ bool Parser::ParseOption(Message* options,
   }
 
   UninterpretedOption* uninterpreted_option =
-      DownCast<UninterpretedOption*>(options->GetReflection()->AddMessage(
+      DownCastMessage<UninterpretedOption>(options->GetReflection()->AddMessage(
           options, uninterpreted_option_field));
 
   // Parse dot-separated name.
@@ -1595,12 +1547,21 @@ bool Parser::ParseOption(Message* options,
       case io::Tokenizer::TYPE_IDENTIFIER: {
         value_location.AddPath(
             UninterpretedOption::kIdentifierValueFieldNumber);
-        if (is_negative) {
-          RecordError("Invalid '-' symbol before identifier.");
-          return false;
-        }
         std::string value;
         DO(ConsumeIdentifier(&value, "Expected identifier."));
+        if (is_negative) {
+          if (value == "inf") {
+            uninterpreted_option->set_double_value(
+                -std::numeric_limits<double>::infinity());
+          } else if (value == "nan") {
+            uninterpreted_option->set_double_value(
+                std::numeric_limits<double>::quiet_NaN());
+          } else {
+            RecordError("Identifier after '-' symbol must be inf or nan.");
+            return false;
+          }
+          break;
+        }
         uninterpreted_option->set_identifier_value(value);
         break;
       }
@@ -1760,8 +1721,7 @@ bool Parser::ParseExtensions(DescriptorProto* message,
     // Then copy the extension range options to all of the other ranges we've
     // parsed.
     for (int i = old_range_size + 1; i < message->extension_range_size(); i++) {
-      message->mutable_extension_range(i)->mutable_options()->CopyFrom(
-          *options);
+      *message->mutable_extension_range(i)->mutable_options() = *options;
     }
     // and copy source locations to the other ranges, too
     for (int i = old_range_size; i < message->extension_range_size(); i++) {
@@ -1819,18 +1779,22 @@ bool Parser::ParseReserved(DescriptorProto* message,
   }
 }
 
-bool Parser::ParseReservedName(std::string* name,
-                               absl::string_view error_message) {
+bool Parser::ParseReservedName(std::string* name, ErrorMaker error_message) {
   // Capture the position of the token, in case we have to report an
   // error after it is consumed.
   int line = input_->current().line;
   int col = input_->current().column;
   DO(ConsumeString(name, error_message));
   if (!io::Tokenizer::IsIdentifier(*name)) {
-    RecordWarning(
-        line, col,
-        absl::StrFormat("Reserved name \"%s\" is not a valid identifier.",
-                        *name));
+    // Before Edition 2023, it was possible to reserve any string literal. This
+    // doesn't really make sense if the string literal wasn't a valid
+    // identifier, so warn about it here.
+    // Note that this warning is also load-bearing for tests that intend to
+    // verify warnings work as expected today.
+    RecordWarning(line, col, [=] {
+      return absl::StrFormat("Reserved name \"%s\" is not a valid identifier.",
+                             *name);
+    });
   }
   return true;
 }
@@ -1847,7 +1811,7 @@ bool Parser::ParseReservedNames(DescriptorProto* message,
 }
 
 bool Parser::ParseReservedIdentifier(std::string* name,
-                                     absl::string_view error_message) {
+                                     ErrorMaker error_message) {
   DO(ConsumeIdentifier(name, error_message));
   return true;
 }
@@ -2143,6 +2107,7 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
 // Enums
 
 bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
+                                 const SymbolVisibility& visibility,
                                  const LocationRecorder& enum_location,
                                  const FileDescriptorProto* containing_file) {
   DO(Consume("enum"));
@@ -2158,6 +2123,10 @@ bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
   DO(ParseEnumBlock(enum_type, enum_location, containing_file));
 
   DO(ValidateEnum(enum_type));
+
+  if (visibility != SymbolVisibility::VISIBILITY_UNSET) {
+    enum_type->set_visibility(visibility);
+  }
 
   return true;
 }
@@ -2530,16 +2499,42 @@ bool Parser::ParsePackage(FileDescriptorProto* file,
 }
 
 bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
+                         RepeatedPtrField<std::string>* option_dependency,
                          RepeatedField<int32_t>* public_dependency,
                          RepeatedField<int32_t>* weak_dependency,
                          const LocationRecorder& root_location,
                          const FileDescriptorProto* containing_file) {
-  LocationRecorder location(root_location,
-                            FileDescriptorProto::kDependencyFieldNumber,
-                            dependency->size());
-
+  io::Tokenizer::Token import_start = input_->current();
   DO(Consume("import"));
+  std::string import_file;
+  if (LookingAt("option")) {
+    LocationRecorder option_import_location(
+        root_location, FileDescriptorProto::kOptionDependencyFieldNumber,
+        option_dependency->size());
+    option_import_location.StartAt(import_start);
+    if (edition_ < Edition::EDITION_2024) {
+      RecordError("option import is not supported before edition 2024.");
+    }
+    DO(Consume("option"));
+    DO(ConsumeString(&import_file,
+                     "Expected a string naming the file to import."));
+    *option_dependency->Add() = import_file;
 
+    option_import_location.RecordLegacyImportLocation(containing_file,
+                                                      import_file);
+    DO(ConsumeEndOfDeclaration(";", &option_import_location));
+    return true;
+  }
+
+  LocationRecorder import_location(root_location,
+                                   FileDescriptorProto::kDependencyFieldNumber,
+                                   dependency->size());
+  import_location.StartAt(import_start);
+  if (!option_dependency->empty()) {
+    RecordError(
+        "imports should precede any option imports to ensure proto files "
+        "can roundtrip.");
+  }
   if (LookingAt("public")) {
     LocationRecorder public_location(
         root_location, FileDescriptorProto::kPublicDependencyFieldNumber,
@@ -2554,14 +2549,42 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
     DO(Consume("weak"));
     *weak_dependency->Add() = dependency->size();
   }
-
-  std::string import_file;
   DO(ConsumeString(&import_file,
                    "Expected a string naming the file to import."));
   *dependency->Add() = import_file;
-  location.RecordLegacyImportLocation(containing_file, import_file);
 
-  DO(ConsumeEndOfDeclaration(";", &location));
+  import_location.RecordLegacyImportLocation(containing_file, import_file);
+  DO(ConsumeEndOfDeclaration(";", &import_location));
+  return true;
+}
+
+bool Parser::ParseVisibility(const FileDescriptorProto* containing_file,
+                             SymbolVisibility* out) {
+  if (containing_file == nullptr || out == nullptr) {
+    return false;
+  }
+
+  // Bail out of visibility checks if < 2024
+  if (containing_file->edition() <= Edition::EDITION_2023) {
+    return true;
+  }
+
+  if (TryConsume("export")) {
+    *out = SymbolVisibility::VISIBILITY_EXPORT;
+  } else if (TryConsume("local")) {
+    *out = SymbolVisibility::VISIBILITY_LOCAL;
+  }
+
+  // If we set a visibility make sure it's OK.
+  if (*out != SymbolVisibility::VISIBILITY_UNSET) {
+    if (!LookingAt("message") && !LookingAt("enum")) {
+      RecordError(
+          "'local' and 'export' visibility modifiers are valid only on "
+          "'message' "
+          "and 'enum'");
+      return false;
+    }
+  }
 
   return true;
 }

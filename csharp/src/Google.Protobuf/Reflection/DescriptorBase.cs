@@ -12,18 +12,30 @@ using System.Diagnostics;
 
 namespace Google.Protobuf.Reflection
 {
+    // Implementation note: The descriptors which don't derive from this class are FileDescriptor
+    // and FeatureSetDescriptor - the latter of which isn't a descriptor in exactly the same way
+    // that the others are anyway.
+
     /// <summary>
     /// Base class for nearly all descriptors, providing common functionality.
     /// </summary>
     [DebuggerDisplay("Type = {GetType().Name,nq}, FullName = {FullName}")]
     public abstract class DescriptorBase : IDescriptor
     {
-        internal DescriptorBase(FileDescriptor file, string fullName, int index)
+        internal DescriptorBase(FileDescriptor file, string fullName, int index, FeatureSetDescriptor features)
         {
             File = file;
             FullName = fullName;
             Index = index;
+            Features = features;
         }
+
+        /// <summary>
+        /// The feature set for this descriptor, including inherited features.
+        /// This is internal as external users should use the properties on individual
+        /// descriptor types (e.g. FieldDescriptor.IsPacked) rather than querying features directly.
+        /// </summary>
+        internal FeatureSetDescriptor Features { get; }
 
         /// <value>
         /// The index of this descriptor within its parent descriptor.

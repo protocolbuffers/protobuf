@@ -4,8 +4,11 @@
     <exec executable="${protoc}">
         <arg value="--java_out=lite:${generated.sources.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="--proto_path=${protobuf.java_source.dir}"/>
+        <arg value="${protobuf.java_source.dir}/google/protobuf/java_features.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/any.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/api.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/descriptor.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/duration.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/empty.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/field_mask.proto"/>

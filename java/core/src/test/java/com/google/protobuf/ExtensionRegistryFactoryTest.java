@@ -12,8 +12,8 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
-import protobuf_unittest.NonNestedExtension;
-import protobuf_unittest.NonNestedExtensionLite;
+import proto2_unittest.NonNestedExtension;
+import proto2_unittest.NonNestedExtensionLite;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -98,7 +98,7 @@ public class ExtensionRegistryFactoryTest extends TestCase {
           .that(NonNestedExtensionLite.nonNestedExtensionLite.getClass())
           .isInstanceOf(GeneratedMessageLite.GeneratedExtension.class);
       assertWithMessage("Extension is not registered in masqueraded full registry")
-          .that(fullRegistry1.findImmutableExtensionByName("protobuf_unittest.nonNestedExtension"))
+          .that(fullRegistry1.findImmutableExtensionByName("proto2_unittest.nonNestedExtension"))
           .isNull();
       GeneratedMessageLite.GeneratedExtension<NonNestedExtensionLite.MessageLiteToBeExtended, ?>
           extension =
@@ -110,7 +110,7 @@ public class ExtensionRegistryFactoryTest extends TestCase {
           .that(Extension.class.isAssignableFrom(NonNestedExtension.nonNestedExtension.getClass()))
           .isTrue();
       assertWithMessage("Extension is registered in masqueraded full registry")
-          .that(fullRegistry2.findImmutableExtensionByName("protobuf_unittest.nonNestedExtension"))
+          .that(fullRegistry2.findImmutableExtensionByName("proto2_unittest.nonNestedExtension"))
           .isNotNull();
     }
 

@@ -11,11 +11,12 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -100,6 +101,11 @@ std::vector<Sub> GenerateTrackerCalls(
       // Emit(), we need to include a newline here so that the line that follows
       // the annotation is on its own line.
       call_str.push_back('\n');
+      if (enable_tracking) {
+        call_str =
+            absl::StrCat("if (::", ProtobufNamespace(opts),
+                         "::internal::cpp::IsTrackingEnabled()) ", call_str);
+      }
     }
 
     subs.push_back(
@@ -148,14 +154,14 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
   return GenerateTrackerCalls(
       opts, message, absl::nullopt,
       {
-          Call("serialize", "OnSerialize"),
-          Call("deserialize", "OnDeserialize"),
+          Call("serialize", "OnSerialize").This("&this_"),
+          Call("deserialize", "OnDeserialize").This("_this"),
           // TODO: Ideally annotate_reflection should not exist and we
           // need to annotate all reflective calls on our own, however, as this
           // is a cause for side effects, i.e. reading values dynamically, we
           // want the users know that dynamic access can happen.
           Call("reflection", "OnGetMetadata").This(absl::nullopt),
-          Call("bytesize", "OnByteSize"),
+          Call("bytesize", "OnByteSize").This("&this_"),
           Call("mergefrom", "OnMergeFrom").This("_this").Arg("&from"),
           Call("unknown_fields", "OnUnknownFields"),
           Call("mutable_unknown_fields", "OnMutableUnknownFields"),
@@ -214,11 +220,9 @@ Getters RepeatedFieldGetters(const FieldDescriptor* field,
 
 Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string =
-      field->cpp_string_type() == FieldDescriptor::CppStringType::kString;
 
   Getters getters;
-  if (is_std_string && !field->default_value_string().empty()) {
+  if (IsArenaStringPtr(field) && !field->default_value_string().empty()) {
     getters.base =
         absl::Substitute("$0.IsDefault() ? &$1.get() : $0.UnsafeGetPointer()",
                          member, MakeDefaultFieldName(field));
@@ -235,11 +239,9 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   ABSL_CHECK(oneof != nullptr);
 
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string =
-      field->cpp_string_type() == FieldDescriptor::CppStringType::kString;
 
   std::string field_ptr = member;
-  if (is_std_string) {
+  if (IsArenaStringPtr(field)) {
     field_ptr = absl::Substitute("$0.UnsafeGetPointer()", member);
   }
 
@@ -248,7 +250,7 @@ Getters StringOneofGetters(const FieldDescriptor* field,
                        UnderscoresToCamelCase(field->name(), true));
 
   std::string default_field = MakeDefaultFieldName(field);
-  if (is_std_string) {
+  if (IsArenaStringPtr(field)) {
     absl::StrAppend(&default_field, ".get()");
   }
 

@@ -15,8 +15,8 @@ import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestMergeExceptionLite;
 import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 import com.google.protobuf.UnittestLite.TestParsingMergeLite;
-import protobuf_unittest.MapLiteUnittest;
-import protobuf_unittest.MapLiteUnittest.TestRequiredLite;
+import proto2_unittest.MapLiteUnittest;
+import proto2_unittest.MapLiteUnittest.TestRequiredLite;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -73,6 +73,18 @@ public class ParserLiteTest {
   public void testParseExtensionsLite() throws Exception {
     assertRoundTripEquals(
         TestUtilLite.getAllLiteExtensionsSet(), TestUtilLite.getExtensionRegistryLite());
+  }
+
+  @Test
+  public void testParseExtensionsLite_extensionIsImmutable() throws Exception {
+    TestAllExtensionsLite message =
+        TestAllExtensionsLite.parseFrom(
+            TestUtilLite.getAllLiteExtensionsSet().toByteArray(),
+            TestUtilLite.getExtensionRegistryLite());
+    Object nested = message.getExtension(UnittestLite.optionalNestedMessageExtensionLite);
+    if (nested instanceof GeneratedMessageLite) {
+      assertThat(((GeneratedMessageLite) nested).isMutable()).isFalse();
+    }
   }
 
   @Test

@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_SRC_GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
-#define GOOGLE_PROTOBUF_SRC_GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
+#ifndef GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
+#define GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
 
 #include <array>
 #include <atomic>
@@ -84,7 +84,7 @@ struct ThreadSafeArenaStats
   void* stack[kMaxStackDepth];
   static void RecordAllocateStats(ThreadSafeArenaStats* info, size_t used,
                                   size_t allocated, size_t wasted) {
-    if (PROTOBUF_PREDICT_TRUE(info == nullptr)) return;
+    if (ABSL_PREDICT_TRUE(info == nullptr)) return;
     RecordAllocateSlow(info, used, allocated, wasted);
   }
 
@@ -117,26 +117,26 @@ class ThreadSafeArenaStatsHandle {
       : info_(info) {}
 
   ~ThreadSafeArenaStatsHandle() {
-    if (PROTOBUF_PREDICT_TRUE(info_ == nullptr)) return;
+    if (ABSL_PREDICT_TRUE(info_ == nullptr)) return;
     UnsampleSlow(info_);
   }
 
   ThreadSafeArenaStatsHandle(ThreadSafeArenaStatsHandle&& other) noexcept
-      : info_(absl::exchange(other.info_, nullptr)) {}
+      : info_(std::exchange(other.info_, nullptr)) {}
 
   ThreadSafeArenaStatsHandle& operator=(
       ThreadSafeArenaStatsHandle&& other) noexcept {
-    if (PROTOBUF_PREDICT_FALSE(info_ != nullptr)) {
+    if (ABSL_PREDICT_FALSE(info_ != nullptr)) {
       UnsampleSlow(info_);
     }
-    info_ = absl::exchange(other.info_, nullptr);
+    info_ = std::exchange(other.info_, nullptr);
     return *this;
   }
 
   ThreadSafeArenaStats* MutableStats() { return info_; }
 
   friend void swap(ThreadSafeArenaStatsHandle& lhs,
-                   ThreadSafeArenaStatsHandle& rhs) {
+                   ThreadSafeArenaStatsHandle& rhs) noexcept {
     std::swap(lhs.info_, rhs.info_);
   }
 
@@ -154,7 +154,7 @@ extern PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state;
 // Returns an RAII sampling handle that manages registration and unregistation
 // with the global sampler.
 inline ThreadSafeArenaStatsHandle Sample() {
-  if (PROTOBUF_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
+  if (ABSL_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
     return ThreadSafeArenaStatsHandle(nullptr);
   }
   return ThreadSafeArenaStatsHandle(SampleSlow(global_sampling_state));
@@ -235,4 +235,4 @@ void SetThreadSafeArenazGlobalNextSample(int64_t next_sample);
 }  // namespace google
 
 #include "google/protobuf/port_undef.inc"
-#endif  // GOOGLE_PROTOBUF_SRC_PROTOBUF_ARENAZ_SAMPLER_H__
+#endif  // GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__

@@ -9,7 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestProto;
+import proto2_unittest.UnittestProto;
 import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;

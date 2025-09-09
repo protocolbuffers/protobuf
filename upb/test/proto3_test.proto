@@ -27,3 +27,13 @@ message TestMessage3 {
   optional TestMessage3 msg = 5;
   repeated TestMessage3 r_msg = 6;
 }
+
+// See the InitialFieldOneOf test in test_mini_table_oneof.cc.
+message TestOneOfInitialField {
+  oneof oneof_field {
+    int32 a = 1;
+    uint32 b = 2;
+  }
+
+  float c = 3;
+}

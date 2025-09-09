@@ -19,7 +19,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map.h"
-#include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
@@ -35,7 +34,7 @@ namespace protobuf {
 
 namespace internal {
 
-using unittest::TestAllTypes;
+using proto2_unittest::TestAllTypes;
 
 struct MapFieldTestPeer {
   static auto GetArena(const RepeatedPtrFieldBase& v) { return v.GetArena(); }
@@ -46,13 +45,13 @@ struct MapFieldTestPeer {
 };
 
 using TestMapField = ::google::protobuf::internal::MapField<
-    unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t,
+    proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t,
     ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
     ::google::protobuf::internal::WireFormatLite::TYPE_INT32>;
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
-  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
+  typedef proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32>
       MapFieldType;
@@ -62,7 +61,7 @@ class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
         map_field_(arena_.get()),
         map_field_base_(map_field_.get()) {
     // Get descriptors
-    map_descriptor_ = unittest::TestMap::descriptor()
+    map_descriptor_ = proto2_unittest::TestMap::descriptor()
                           ->FindFieldByName("map_int32_int32")
                           ->message_type();
     key_descriptor_ = map_descriptor_->map_key();
@@ -135,7 +134,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
-    MapFieldType* map_field = Arena::CreateMessage<MapFieldType>(&arena);
+    MapFieldType* map_field = Arena::Create<MapFieldType>(&arena);
 
     // Set content in map
     (*map_field->MutableMap())[100] = 101;
@@ -149,7 +148,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
     // repeated fields are allocated from arenas.
     // NoHeapChecker no_heap;
 
-    TestMapField* map_field = Arena::CreateMessage<TestMapField>(&arena);
+    TestMapField* map_field = Arena::Create<TestMapField>(&arena);
 
     // Trigger conversion to repeated field.
     EXPECT_TRUE(map_field->MutableRepeatedField() != nullptr);
@@ -160,8 +159,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
 }
 
 TEST_P(MapFieldBasePrimitiveTest, EnforceNoArena) {
-  std::unique_ptr<TestMapField> map_field(
-      Arena::CreateMessage<TestMapField>(nullptr));
+  std::unique_ptr<TestMapField> map_field(Arena::Create<TestMapField>(nullptr));
   EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()), nullptr);
 }
 
@@ -172,7 +170,7 @@ enum State { CLEAN, MAP_DIRTY, REPEATED_DIRTY };
 class MapFieldStateTest
     : public testing::TestWithParam<std::tuple<State, bool>> {
  protected:
-  typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
+  typedef proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
                    WireFormatLite::TYPE_INT32>
       MapFieldType;
@@ -442,8 +440,8 @@ TEST_P(MapFieldStateTest, MutableMapField) {
 }
 
 using MyMapField =
-    MapField<unittest::TestMap_MapInt32Int32Entry_DoNotUse, int32_t, int32_t,
-             internal::WireFormatLite::TYPE_INT32,
+    MapField<proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse, int32_t,
+             int32_t, internal::WireFormatLite::TYPE_INT32,
              internal::WireFormatLite::TYPE_INT32>;
 
 TEST(MapFieldTest, ConstInit) {
@@ -453,7 +451,21 @@ TEST(MapFieldTest, ConstInit) {
   EXPECT_EQ(field.size(), 0);
 }
 
+TEST(MapFieldTest, MutableMapDoesNotAllocatePayload) {
+  struct MaybePayload : MapFieldBase {
+    // Use a derived type to get access to the protected method.
+    // We steal the function pointer here to use below to inspect the instance.
+    static constexpr auto getter() { return &MaybePayload::maybe_payload; }
+  };
+  MyMapField field;
+  EXPECT_FALSE((field.*MaybePayload::getter())());
+  field.MutableMap();
+  EXPECT_FALSE((field.*MaybePayload::getter())());
+}
+
 
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -11,7 +11,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <unordered_map>
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -32,10 +32,12 @@ struct CMessageClass;
 // "Methods" that interacts with this DescriptorPool are in the cdescriptor_pool
 // namespace.
 typedef struct PyDescriptorPool {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
 
   // The C++ pool containing Descriptors.
   const DescriptorPool* pool;
+  // clang-format on
 
   // True if we should free the pointer above.
   bool is_owned;
@@ -65,9 +67,10 @@ typedef struct PyDescriptorPool {
   // Cache the options for any kind of descriptor.
   // Descriptor pointers are owned by the DescriptorPool above.
   // Python objects are owned by the map.
-  std::unordered_map<const void*, PyObject*>* descriptor_options;
+  absl::flat_hash_map<const void*, PyObject*>* descriptor_options;
+  // Similar cache for features.
+  absl::flat_hash_map<const void*, PyObject*>* descriptor_features;
 } PyDescriptorPool;
-
 
 extern PyTypeObject PyDescriptorPool_Type;
 

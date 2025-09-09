@@ -9,10 +9,10 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.Engine;
-import protobuf_unittest.TimingBelt;
-import protobuf_unittest.Vehicle;
-import protobuf_unittest.Wheel;
+import proto2_unittest.Engine;
+import proto2_unittest.TimingBelt;
+import proto2_unittest.Vehicle;
+import proto2_unittest.Wheel;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;

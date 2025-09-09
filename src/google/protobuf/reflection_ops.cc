@@ -13,13 +13,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -33,10 +34,9 @@ static const Reflection* GetReflectionOrDie(const Message& m) {
   const Reflection* r = m.GetReflection();
   if (r == nullptr) {
     const Descriptor* d = m.GetDescriptor();
-    const std::string& mtype = d ? d->name() : "unknown";
     // RawMessage is one known type for which GetReflection() returns nullptr.
-    ABSL_LOG(FATAL) << "Message does not support reflection (type " << mtype
-                    << ").";
+    ABSL_LOG(FATAL) << "Message does not support reflection (type "
+                    << (d ? d->name() : "unknown") << ").";
   }
   return r;
 }
@@ -191,7 +191,7 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
       for (const FieldDescriptor* field = begin; field != end; ++field) {
         if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
           const Descriptor* message_type = field->message_type();
-          if (PROTOBUF_PREDICT_FALSE(message_type->options().map_entry())) {
+          if (ABSL_PREDICT_FALSE(message_type->options().map_entry())) {
             if (message_type->field(1)->cpp_type() ==
                 FieldDescriptor::CPPTYPE_MESSAGE) {
               const MapFieldBase* map_field =
@@ -262,7 +262,13 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   std::vector<const FieldDescriptor*> fields;
   // Should be safe to skip stripped fields because required fields are not
   // stripped.
-  reflection->ListFields(message, &fields);
+  if (descriptor->options().map_entry()) {
+    // MapEntry objects always check the value regardless of has bit.
+    // We don't need to bother with the key.
+    fields = {descriptor->map_value()};
+  } else {
+    reflection->ListFields(message, &fields);
+  }
   for (const FieldDescriptor* field : fields) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
@@ -315,7 +321,9 @@ static bool IsMapValueMessageTyped(const FieldDescriptor* map_field) {
 void ReflectionOps::DiscardUnknownFields(Message* message) {
   const Reflection* reflection = GetReflectionOrDie(*message);
 
-  reflection->MutableUnknownFields(message)->Clear();
+  if (reflection->GetUnknownFields(*message).field_count() != 0) {
+    reflection->MutableUnknownFields(message)->Clear();
+  }
 
   // Walk through the fields of this message and DiscardUnknownFields on any
   // messages present.
@@ -327,10 +335,10 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
       continue;
     }
     // Discard the unknown fields in maps that contain message values.
-    if (field->is_map() && IsMapValueMessageTyped(field)) {
-      const MapFieldBase* map_field =
-          reflection->MutableMapData(message, field);
-      if (map_field->IsMapValid()) {
+    const MapFieldBase* map_field =
+        field->is_map() ? reflection->MutableMapData(message, field) : nullptr;
+    if (map_field != nullptr && map_field->IsMapValid()) {
+      if (IsMapValueMessageTyped(field)) {
         MapIterator iter(message, field);
         MapIterator end(message, field);
         for (map_field->MapBegin(&iter), map_field->MapEnd(&end); iter != end;
@@ -356,16 +364,12 @@ static std::string SubMessagePrefix(const std::string& prefix,
                                     const FieldDescriptor* field, int index) {
   std::string result(prefix);
   if (field->is_extension()) {
-    result.append("(");
-    result.append(field->full_name());
-    result.append(")");
+    absl::StrAppend(&result, "(", field->full_name(), ")");
   } else {
-    result.append(field->name());
+    absl::StrAppend(&result, field->name());
   }
   if (index != -1) {
-    result.append("[");
-    result.append(absl::StrCat(index));
-    result.append("]");
+    absl::StrAppend(&result, "[", index, "]");
   }
   result.append(".");
   return result;
@@ -383,7 +387,7 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
     for (int i = 0; i < field_count; i++) {
       if (descriptor->field(i)->is_required()) {
         if (!reflection->HasField(message, descriptor->field(i))) {
-          errors->push_back(prefix + descriptor->field(i)->name());
+          errors->push_back(absl::StrCat(prefix, descriptor->field(i)->name()));
         }
       }
     }
@@ -414,10 +418,10 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 }
 
 void GenericSwap(Message* lhs, Message* rhs) {
-#ifndef PROTOBUF_FORCE_COPY_IN_SWAP
-  ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
-  ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (!internal::DebugHardenForceCopyInSwap()) {
+    ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
+    ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
+  }
   // At least one of these must have an arena, so make `rhs` point to it.
   Arena* arena = rhs->GetArena();
   if (arena == nullptr) {
@@ -431,13 +435,13 @@ void GenericSwap(Message* lhs, Message* rhs) {
   tmp->CheckTypeAndMergeFrom(*lhs);
   lhs->Clear();
   lhs->CheckTypeAndMergeFrom(*rhs);
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  rhs->Clear();
-  rhs->CheckTypeAndMergeFrom(*tmp);
-  if (arena == nullptr) delete tmp;
-#else   // PROTOBUF_FORCE_COPY_IN_SWAP
-  rhs->GetReflection()->Swap(tmp, rhs);
-#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+  if (internal::DebugHardenForceCopyInSwap()) {
+    rhs->Clear();
+    rhs->CheckTypeAndMergeFrom(*tmp);
+    if (arena == nullptr) delete tmp;
+  } else {
+    rhs->GetReflection()->Swap(tmp, rhs);
+  }
 }
 
 }  // namespace internal

@@ -10,9 +10,9 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto;
+import proto2_unittest.UnittestProto.TestAllExtensions;
+import proto2_unittest.UnittestProto.TestAllTypes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

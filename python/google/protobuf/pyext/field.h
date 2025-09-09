@@ -20,10 +20,12 @@ namespace python {
 
 // A data descriptor that represents a field in a Message class.
 struct PyMessageFieldProperty {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
 
   // This pointer is owned by the same pool as the Message class it belongs to.
   const FieldDescriptor* field_descriptor;
+  // clang-format on
 };
 
 extern PyTypeObject* CFieldProperty_Type;

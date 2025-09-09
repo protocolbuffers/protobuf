@@ -13,8 +13,8 @@ option cc_enable_arenas = true;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-// In map_test_util.h we do "using namespace unittest = protobuf_unittest".
-package protobuf_unittest;
+// In map_test_util.h we do "using namespace unittest = proto2_unittest".
+package proto2_unittest;
 
 enum Proto2MapEnum {
   PROTO2_MAP_ENUM_FOO = 0;
@@ -68,7 +68,7 @@ message TestEnumMapPlusExtra {
 }
 
 message TestImportEnumMap {
-  map<int32, protobuf_unittest_import.ImportEnumForMap> import_enum_amp = 1;
+  map<int32, proto2_unittest_import.ImportEnumForMap> import_enum_amp = 1;
 }
 
 message TestIntIntMap {

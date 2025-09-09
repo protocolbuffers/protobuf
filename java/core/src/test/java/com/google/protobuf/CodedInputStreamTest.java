@@ -14,11 +14,13 @@ import static org.junit.Assert.assertThrows;
 
 import com.google.common.primitives.Bytes;
 import map_test.MapTestProto.MapContainer;
-import protobuf_unittest.UnittestProto.BoolMessage;
-import protobuf_unittest.UnittestProto.Int32Message;
-import protobuf_unittest.UnittestProto.Int64Message;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestRecursiveMessage;
+import proto2_unittest.UnittestProto.BoolMessage;
+import proto2_unittest.UnittestProto.Int32Message;
+import proto2_unittest.UnittestProto.Int64Message;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestRecursiveMessage;
+import com.google.testing.junit.testparameterinjector.TestParameter;
+import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -28,12 +30,12 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /** Unit test for {@link CodedInputStream}. */
-@RunWith(JUnit4.class)
+@RunWith(TestParameterInjector.class)
 public class CodedInputStreamTest {
 
   private static final int DEFAULT_BLOCK_SIZE = 4096;
@@ -43,7 +45,6 @@ public class CodedInputStreamTest {
   private static final byte[] NESTING_SGROUP = generateSGroupTags();
 
   private static final byte[] NESTING_SGROUP_WITH_INITIAL_BYTES = generateSGroupTagsForMapField();
-
 
   private enum InputType {
     ARRAY {
@@ -494,7 +495,7 @@ public class CodedInputStreamTest {
   /** Skipping a huge blob should not allocate excessive memory, so there should be no limit */
   @Test
   public void testSkipMaliciouslyHugeBlob() throws Exception {
-    InputStream is = new RepeatingInputStream(new byte[]{1}, Integer.MAX_VALUE);
+    InputStream is = new RepeatingInputStream(new byte[] {1}, Integer.MAX_VALUE);
     CodedInputStream.newInstance(is).skipRawBytes(Integer.MAX_VALUE);
   }
 
@@ -1406,6 +1407,41 @@ public class CodedInputStreamTest {
   }
 
   @Test
+  public void testByteBufferInputStreamReadBytesWithAliasConcurrently() {
+    int size = 127;
+    assertThat(CodedOutputStream.computeInt32SizeNoTag(size)).isEqualTo(1);
+    ByteBuffer input = ByteBuffer.allocateDirect(1 + size);
+    input.put(0, (byte) size);
+
+    Supplier<ByteString> embeddedBytes =
+        () -> {
+          try {
+            final CodedInputStream inputStream = CodedInputStream.newInstance(input, true);
+            inputStream.enableAliasing(true);
+            return inputStream.readBytes();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        };
+
+    assertThat(embeddedBytes.get().size()).isEqualTo(size);
+
+    // Concurrent reader should have no impact.
+    int iterations = 100000;
+    new Thread(
+            () -> {
+              for (int i = 0; i < iterations; i++) {
+                ByteString unused = embeddedBytes.get();
+              }
+            })
+        .start();
+
+    for (int i = 0; i < iterations; i++) {
+      assertThat(embeddedBytes.get().size()).isEqualTo(size);
+    }
+  }
+
+  @Test
   public void testIterableByteBufferInputStreamReadBytesWithAlias() throws Exception {
     ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
     CodedOutputStream output = CodedOutputStream.newInstance(byteArrayStream);
@@ -1489,6 +1525,38 @@ public class CodedInputStreamTest {
   }
 
   @Test
+  public void testSkipInvalidEndGroup(@TestParameter InputType inputType) throws Exception {
+    byte[] data = new byte[] {(byte) WireFormat.makeTag(1, WireFormat.WIRETYPE_END_GROUP)};
+
+    CodedInputStream input = CodedInputStream.newInstance(data);
+    assertThrows(InvalidProtocolBufferException.class, () -> input.skipField(input.readTag()));
+
+    CodedInputStream input2 = CodedInputStream.newInstance(data);
+    CodedOutputStream output = CodedOutputStream.newInstance(new byte[1]);
+    assertThrows(
+        InvalidProtocolBufferException.class, () -> input2.skipField(input2.readTag(), output));
+  }
+
+  @Test
+  public void testSkipInvalidEndGroup_nested(@TestParameter InputType inputType) throws Exception {
+    ByteString.Output output = ByteString.newOutput();
+    CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    codedOutput.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+    codedOutput.writeTag(2, WireFormat.WIRETYPE_END_GROUP);
+    codedOutput.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+    codedOutput.flush();
+    byte[] data = output.toByteString().toByteArray();
+
+    CodedInputStream input = CodedInputStream.newInstance(data);
+    assertThrows(InvalidProtocolBufferException.class, () -> input.skipField(input.readTag()));
+
+    CodedInputStream input2 = CodedInputStream.newInstance(data);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> input2.skipField(input2.readTag(), codedOutput));
+  }
+
+  @Test
   public void testSkipPastEndOfByteArrayInput() throws Exception {
     try {
       CodedInputStream.newInstance(new ByteArrayInputStream(new byte[100])).skipRawBytes(101);
@@ -1502,16 +1570,17 @@ public class CodedInputStreamTest {
   public void testMaliciousInputStream() throws Exception {
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     CodedOutputStream codedOutputStream = CodedOutputStream.newInstance(outputStream);
-    codedOutputStream.writeByteArrayNoTag(new byte[] { 0x0, 0x1, 0x2, 0x3, 0x4, 0x5 });
+    codedOutputStream.writeByteArrayNoTag(new byte[] {0x0, 0x1, 0x2, 0x3, 0x4, 0x5});
     codedOutputStream.flush();
     final List<byte[]> maliciousCapture = new ArrayList<>();
-    InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray()) {
-      @Override
-      public synchronized int read(byte[] b, int off, int len) {
-        maliciousCapture.add(b);
-        return super.read(b, off, len);
-      }
-    };
+    InputStream inputStream =
+        new ByteArrayInputStream(outputStream.toByteArray()) {
+          @Override
+          public synchronized int read(byte[] b, int off, int len) {
+            maliciousCapture.add(b);
+            return super.read(b, off, len);
+          }
+        };
 
     // test ByteString
 

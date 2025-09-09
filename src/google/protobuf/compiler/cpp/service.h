@@ -15,6 +15,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -31,8 +32,8 @@ class ServiceGenerator {
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       const Options& options)
       : descriptor_(descriptor), options_(&options), vars_(vars) {
-    vars_["classname"] = descriptor_->name();
-    vars_["full_name"] = descriptor_->full_name();
+    vars_["classname"] = std::string(descriptor_->name());
+    vars_["full_name"] = std::string(descriptor_->full_name());
   }
 
   ServiceGenerator(const ServiceGenerator&) = delete;

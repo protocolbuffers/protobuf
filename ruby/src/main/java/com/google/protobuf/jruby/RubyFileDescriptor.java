@@ -35,8 +35,6 @@ package com.google.protobuf.jruby;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.GenericDescriptor;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor.Syntax.*;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -86,27 +84,6 @@ public class RubyFileDescriptor extends RubyObject {
     return name == null ? context.nil : context.runtime.newString(name);
   }
 
-  /*
-   * call-seq:
-   *     FileDescriptor.syntax => syntax
-   *
-   * Returns this file descriptors syntax.
-   *
-   * Valid syntax versions are:
-   *     :proto2 or :proto3.
-   */
-  @JRubyMethod(name = "syntax")
-  public IRubyObject getSyntax(ThreadContext context) {
-    switch (LegacyFileDescriptor.getSyntax(fileDescriptor)) {
-      case PROTO2:
-        return context.runtime.newSymbol("proto2");
-      case PROTO3:
-        return context.runtime.newSymbol("proto3");
-      default:
-        return context.nil;
-    }
-  }
-
   @JRubyMethod
   public IRubyObject options(ThreadContext context) {
     RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
@@ -120,6 +97,28 @@ public class RubyFileDescriptor extends RubyObject {
         msg,
         CodedInputStream.newInstance(
             fileDescriptor.getOptions().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
+  /*
+   * call-seq:
+   *     FileDescriptor.to_proto => FileDescriptorProto
+   *
+   * Returns the `FileDescriptorProto` of this `FileDescriptor`.
+   */
+  @JRubyMethod(name = "to_proto")
+  public IRubyObject toProto(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor fileDescriptorProto =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.FileDescriptorProto"));
+    RubyClass msgClass = (RubyClass) fileDescriptorProto.msgclass(context);
+    RubyMessage msg = (RubyMessage) msgClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(
+            fileDescriptor.toProto().toByteString().toByteArray()), /*freeze*/
         true);
   }
 

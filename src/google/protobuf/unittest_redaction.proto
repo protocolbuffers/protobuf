@@ -1,0 +1,72 @@
+// Test proto for redaction
+edition = "2023";
+
+package proto2_unittest;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.google.protos";
+option java_outer_classname = "RedactionProto";
+option features.repeated_field_encoding = EXPANDED;
+option features.utf8_validation = NONE;
+
+extend .google.protobuf.FieldOptions {
+  MetaAnnotatedEnum meta_annotated_enum = 535801413;
+  repeated MetaAnnotatedEnum repeated_meta_annotated_enum = 535801414;
+  TestNestedMessageEnum test_nested_message_enum = 535801415;
+}
+
+message TestRedactedNestMessage {
+  string foo = 1;
+}
+
+message TestRepeatedRedactedNestMessage {
+  string bar = 1;
+}
+
+message TestMessageEnum {
+  repeated MetaAnnotatedEnum redactable_enum = 1;
+}
+
+message TestNestedMessageEnum {
+  repeated MetaAnnotatedEnum direct_enum = 1;
+  TestMessageEnum nested_enum = 2;
+  string redacted_string = 3 [debug_redact = true];
+}
+
+message TestRedactedMessage {
+  string text_field = 1 [deprecated = true];
+  string meta_annotated = 8 [(meta_annotated_enum) = TEST_REDACTABLE];
+  string repeated_meta_annotated = 9 [
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT,
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_REDACTABLE
+  ];
+  string unredacted_repeated_annotations = 10 [
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT,
+    (proto2_unittest.repeated_meta_annotated_enum) = TEST_NO_REDACT_AGAIN
+  ];
+  string unreported_non_meta_debug_redact_field = 17 [debug_redact = true];
+  google.protobuf.Any any_field = 18 [debug_redact = true];
+  string redactable_false = 19 [(meta_annotated_enum) = TEST_REDACTABLE_FALSE];
+  string test_direct_message_enum = 22
+      [(proto2_unittest.test_nested_message_enum) = {
+        direct_enum: [ TEST_NO_REDACT, TEST_REDACTABLE ]
+      }];
+  string test_nested_message_enum = 23
+      [(proto2_unittest.test_nested_message_enum) = {
+        nested_enum { redactable_enum: [ TEST_NO_REDACT, TEST_REDACTABLE ] }
+      }];
+  string test_redacted_message_enum = 24
+      [(proto2_unittest.test_nested_message_enum) = {
+        redacted_string: "redacted_but_doesnt_redact"
+      }];
+}
+
+enum MetaAnnotatedEnum {
+  TEST_NULL = 0;
+  TEST_REDACTABLE = 1 [debug_redact = true];
+  TEST_NO_REDACT = 2;
+  TEST_NO_REDACT_AGAIN = 3;
+  TEST_REDACTABLE_FALSE = 4 [debug_redact = false];
+}

@@ -12,20 +12,30 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/strings/match.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_visitor.h"
+#include "google/protobuf/io/printer.h"
 
 
 namespace google {
@@ -42,7 +52,6 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
     const Options& options) {
   bool is_oss = options.opensource_runtime;
   return {
-      {"proto_ns", std::string(ProtobufNamespace(options))},
       {"pb", absl::StrCat("::", ProtobufNamespace(options))},
       {"pbi", absl::StrCat("::", ProtobufNamespace(options), "::internal")},
 
@@ -56,6 +65,9 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
 
       {"hrule_thick", kThickSeparator},
       {"hrule_thin", kThinSeparator},
+
+      {"nullable", "PROTOBUF_NULLABLE"},
+      {"nonnull", "PROTOBUF_NONNULL"},
 
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that
@@ -77,6 +89,7 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
        "K"},
   };
 }
+
 
 }  // namespace
 
@@ -120,7 +133,9 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     if (key == "dllexport_decl") {
       file_options.dllexport_decl = value;
     } else if (key == "safe_boundary_check") {
-      file_options.safe_boundary_check = true;
+      file_options.bounds_check_mode = BoundsCheckMode::kReturnDefaultValue;
+    } else if (key == "enforced_boundary_check") {
+      file_options.bounds_check_mode = BoundsCheckMode::kAbort;
     } else if (key == "annotate_headers") {
       file_options.annotate_headers = true;
     } else if (key == "annotation_pragma_name") {
@@ -136,9 +151,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     } else if (key == "lite_implicit_weak_fields") {
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
-      if (!value.empty()) {
-        file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
+      int num_cc_files;
+      if (!value.empty() && absl::SimpleAtoi(value, &num_cc_files)) {
+        file_options.num_cc_files = num_cc_files;
       }
+    } else if (key == "descriptor_implicit_weak_messages") {
+      file_options.descriptor_implicit_weak_messages = true;
     } else if (key == "proto_h") {
       file_options.proto_h = true;
     } else if (key == "proto_static_reflection_h") {
@@ -178,7 +196,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   // The safe_boundary_check option controls behavior for Google-internal
   // protobuf APIs.
-  if (file_options.safe_boundary_check && file_options.opensource_runtime) {
+  if ((file_options.bounds_check_mode != BoundsCheckMode::kNoEnforcement) &&
+      file_options.opensource_runtime) {
     *error =
         "The safe_boundary_check option is not supported outside of Google.";
     return false;
@@ -210,6 +229,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     *error = std::string(validation_result.message());
     return false;
   }
+
 
   FileGenerator file_generator(file, file_options);
 
@@ -328,6 +348,16 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   return true;
 }
 
+static bool IsEnumMapType(const FieldDescriptor& field) {
+  if (!field.is_map()) return false;
+  for (int i = 0; i < field.message_type()->field_count(); ++i) {
+    if (field.message_type()->field(i)->type() == FieldDescriptor::TYPE_ENUM) {
+      return true;
+    }
+  }
+  return false;
+}
+
 absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
   absl::Status status = absl::OkStatus();
   google::protobuf::internal::VisitDescriptors(*file, [&](const FieldDescriptor& field) {
@@ -349,7 +379,8 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       // a lot of these conditions.  Note: we do still validate the
       // user-specified map field.
       if (unresolved_features.has_legacy_closed_enum() &&
-          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM) {
+          field.cpp_type() != FieldDescriptor::CPPTYPE_ENUM &&
+          !IsEnumMapType(field)) {
         status = absl::FailedPreconditionError(
             absl::StrCat("Field ", field.full_name(),
                          " specifies the legacy_closed_enum feature but has "
@@ -357,22 +388,29 @@ absl::Status CppGenerator::ValidateFeatures(const FileDescriptor* file) const {
       }
     }
 
-#ifdef PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
-    if (field.options().has_ctype()) {
-      if (field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
-        status = absl::FailedPreconditionError(absl::StrCat(
-            "Field ", field.full_name(),
-            " specifies ctype, but is not a string nor bytes field."));
-      }
-      if (field.options().ctype() == FieldOptions::CORD) {
-        if (field.is_extension()) {
-          status = absl::FailedPreconditionError(absl::StrCat(
-              "Extension ", field.full_name(),
-              " specifies ctype=CORD which is not supported for extensions."));
-        }
-      }
+    if ((unresolved_features.string_type() == pb::CppFeatures::CORD ||
+         field.legacy_proto_ctype() == FieldOptions::CORD) &&
+        field.is_extension()) {
+      status = absl::FailedPreconditionError(
+          absl::StrCat("Extension ", field.full_name(),
+                       " specifies CORD string type which is not supported "
+                       "for extensions."));
     }
-#endif  // !PROTOBUF_FUTURE_REMOVE_WRONG_CTYPE
+
+    if ((unresolved_features.has_string_type() ||
+         field.has_legacy_proto_ctype()) &&
+        field.cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+      status = absl::FailedPreconditionError(absl::StrCat(
+          "Field ", field.full_name(),
+          " specifies string_type, but is not a string nor bytes field."));
+    }
+
+    if (unresolved_features.has_string_type() &&
+        field.has_legacy_proto_ctype()) {
+      status = absl::FailedPreconditionError(absl::StrCat(
+          "Field ", field.full_name(),
+          " specifies both string_type and ctype which is not supported."));
+    }
   });
   return status;
 }

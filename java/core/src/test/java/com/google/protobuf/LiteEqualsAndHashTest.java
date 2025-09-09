@@ -8,11 +8,11 @@
 package com.google.protobuf;
 
 import junit.framework.TestCase;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 
 /**
  * Test generate equal and hash methods for the lite runtime.

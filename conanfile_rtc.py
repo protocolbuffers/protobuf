@@ -3,7 +3,7 @@ from conans import ConanFile
 
 class ProtobufConan(ConanFile):
     name = "protobuf"
-    version = "4.25.7"
+    version = "6.31.1"
     url = "https://github.com/Esri/protobuf/tree/runtimecore"
     license = "https://github.com/Esri/protobuf/blob/runtimecore/LICENSE"
     description = "Protocol Buffers (a.k.a. protobuf) are Google's language-neutral platform-neutral extensible mechanism for serializing structured data."

@@ -9,22 +9,23 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestMset.RawMessageSet;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
-import protobuf_unittest.UnittestMset.TestMessageSetExtension2;
-import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestExtensionInsideTable;
-import protobuf_unittest.UnittestProto.TestFieldOrderings;
-import protobuf_unittest.UnittestProto.TestOneof2;
-import protobuf_unittest.UnittestProto.TestOneofBackwardsCompatible;
-import protobuf_unittest.UnittestProto.TestPackedExtensions;
-import protobuf_unittest.UnittestProto.TestPackedTypes;
+import proto2_unittest.UnittestMset.RawMessageSet;
+import proto2_unittest.UnittestMset.TestMessageSetExtension1;
+import proto2_unittest.UnittestMset.TestMessageSetExtension2;
+import proto2_unittest.UnittestProto;
+import proto2_unittest.UnittestProto.TestAllExtensions;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestExtensionInsideTable;
+import proto2_unittest.UnittestProto.TestFieldOrderings;
+import proto2_unittest.UnittestProto.TestOneof2;
+import proto2_unittest.UnittestProto.TestOneofBackwardsCompatible;
+import proto2_unittest.UnittestProto.TestPackedExtensions;
+import proto2_unittest.UnittestProto.TestPackedTypes;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -38,6 +39,13 @@ public class WireFormatTest {
   private static final int TYPE_ID_2 =
       TestMessageSetExtension2.getDescriptor().getExtensions().get(0).getNumber();
   private static final int UNKNOWN_TYPE_ID = 1550055;
+
+  @After
+  public void tearDown() {
+    // Whether to parse message sets eagerly is stored in a global static. Since some tests modify
+    // the value, make sure to reset it between test runs.
+    ExtensionRegistryLite.setEagerlyParseMessageSets(false);
+  }
 
   @Test
   public void testSerialization() throws Exception {

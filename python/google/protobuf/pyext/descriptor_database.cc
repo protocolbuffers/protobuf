@@ -16,6 +16,8 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
@@ -54,7 +56,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
       message->message->GetDescriptor() == filedescriptor_descriptor) {
     // Fast path: Just use the pointer.
     FileDescriptorProto* file_proto =
-        static_cast<FileDescriptorProto*>(message->message);
+        google::protobuf::DownCastMessage<FileDescriptorProto>(message->message);
     *output = *file_proto;
     return true;
   } else {
@@ -144,6 +146,14 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
     return false;
   }
   Py_ssize_t size = PyList_Size(py_list.get());
+  if (size == -1) {
+    PyErr_Format(
+        PyExc_RuntimeError,
+        "FindAllExtensionNumbers() on fall back DB must return a list, not %S",
+        py_list.get());
+    PyErr_Print();
+    return false;
+  }
   int64_t item_value;
   for (Py_ssize_t i = 0 ; i < size; ++i) {
     ScopedPyObjectPtr item(PySequence_GetItem(py_list.get(), i));

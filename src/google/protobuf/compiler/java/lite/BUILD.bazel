@@ -1,0 +1,89 @@
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "field_generators",
+    srcs = [
+        "enum_field.cc",
+        "extension.cc",
+        "make_field_gens.cc",
+        "map_field.cc",
+        "message_field.cc",
+        "primitive_field.cc",
+        "string_field.cc",
+    ],
+    hdrs = [
+        "field_generator.h",
+        "make_field_gens.h",
+        # We don't actually want to put the remaining headers in `hdrs`.
+        # They are logically private, and should be in srcs=[], but
+        # unfortunately `strip_include_prefix` doesn't have any effect
+        # on headers listed in `srcs.`
+        "map_field.h",
+        "enum_field.h",
+        "extension.h",
+        "message_field.h",
+        "primitive_field.h",
+        "string_field.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:internal_helpers",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "lite",
+    srcs = [
+        "enum.cc",
+        "extension.cc",
+        "generator_factory.cc",
+        "message.cc",
+        "message_builder.cc",
+    ],
+    hdrs = [
+        "generator_factory.h",
+        # We don't actually want to put the remaining headers in `hdrs`.
+        # They are logically private, and should be in srcs=[], but
+        # unfortunately `strip_include_prefix` doesn't have any effect
+        # on headers listed in `srcs.`
+        "enum.h",
+        "extension.h",
+        "message.h",
+        "message_builder.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__subpackages__",
+        "//src/google/protobuf/compiler/kotlin:__subpackages__",
+    ],
+    deps = [
+        ":field_generators",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:internal_helpers",
+        "//src/google/protobuf/compiler/java/full:service",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)

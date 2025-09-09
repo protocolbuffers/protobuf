@@ -27,23 +27,34 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 ExtensionGenerator::ExtensionGenerator(
     absl::string_view root_or_message_class_name,
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
-    : method_name_(ExtensionMethodName(descriptor)),
-      full_method_name_(
-          absl::StrCat(root_or_message_class_name, "_", method_name_)),
-      descriptor_(descriptor) {
+    : root_or_message_class_name_(root_or_message_class_name),
+      method_name_(ExtensionMethodName(descriptor)),
+      descriptor_(descriptor),
+      generation_options_(generation_options) {
   ABSL_CHECK(!descriptor->is_map())
       << "error: Extension is a map<>!"
       << " That used to be blocked by the compiler.";
+  if (descriptor->containing_type()->options().message_set_wire_format()) {
+    ABSL_CHECK(descriptor->type() == FieldDescriptor::TYPE_MESSAGE)
+        << "error: Extension to a message_set_wire_format message and the type "
+           "wasn't a message!";
+    ABSL_CHECK(!descriptor->is_repeated())
+        << "error: Extension to a message_set_wire_format message should not "
+           "be repeated!";
+  }
 }
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
   printer->Emit(
-      {{"method_name", method_name_},
-       {"comments", [&] { EmitCommentsString(printer, descriptor_); }},
+      {Sub("method_name", method_name_).AnnotatedAs(descriptor_),
+       {"comments",
+        [&] { EmitCommentsString(printer, generation_options_, descriptor_); }},
        {"storage_attribute",
         IsRetainedName(method_name_) ? "NS_RETURNS_NOT_RETAINED" : ""},
        {"deprecated_attribute",
@@ -64,9 +75,6 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   std::vector<std::string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
   if (descriptor_->is_packed()) options.push_back("GPBExtensionPacked");
-  if (descriptor_->containing_type()->options().message_set_wire_format()) {
-    options.push_back("GPBExtensionSetWireFormat");
-  }
 
   printer->Emit(
       {{"default",
@@ -80,16 +88,17 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
        {"extended_type", ObjCClass(containing_type)},
        {"extension_type",
         absl::StrCat("GPBDataType", GetCapitalizedType(descriptor_))},
+       {"method_name", method_name_},
        {"number", descriptor_->number()},
        {"options", BuildFlagsString(FLAGTYPE_EXTENSION, options)},
-       {"full_method_name", full_method_name_},
+       {"root_or_message_class_name", root_or_message_class_name_},
        {"type", objc_type == OBJECTIVECTYPE_MESSAGE
                     ? ObjCClass(ClassName(descriptor_->message_type()))
                     : "Nil"}},
       R"objc(
         {
           .defaultValue.$default_name$ = $default$,
-          .singletonName = GPBStringifySymbol($full_method_name$),
+          .singletonName = GPBStringifySymbol($root_or_message_class_name$) "_$method_name$",
           .extendedClass.clazz = $extended_type$,
           .messageOrGroupClass.clazz = $type$,
           .enumDescriptorFunc = $enum_desc_func_name$,
@@ -130,14 +139,6 @@ void ExtensionGenerator::DetermineNeededFiles(
       deps->insert(value_enum_descriptor->file());
     }
   }
-}
-
-void ExtensionGenerator::GenerateRegistrationSource(
-    io::Printer* printer) const {
-  printer->Emit({{"full_method_name", full_method_name_}},
-                R"objc(
-                  [registry addExtension:$full_method_name$];
-                )objc");
 }
 
 }  // namespace objectivec

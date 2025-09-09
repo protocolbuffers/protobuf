@@ -10,7 +10,6 @@
 
 #import "GPBDictionary.h"
 #import "GPBDictionary_PackagePrivate.h"
-
 #import "GPBTestUtilities.h"
 
 #pragma mark - GPBAutocreatedDictionary Tests

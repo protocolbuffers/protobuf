@@ -9,7 +9,7 @@
 
 #import "GPBExtensionRegistry.h"
 
-@class GPBMessage;
+#import "GPBMessage.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -216,6 +216,11 @@ __attribute__((objc_subclassing_restricted))
  *                 is the value returned by the pushLimit: method.
  */
 - (void)popLimit:(size_t)oldLimit;
+
+/**
+ * @return The number of bytes from the current position to the current limit.
+ */
+- (size_t)bytesUntilLimit;
 
 /**
  * Verifies that the last call to -readTag returned the given tag value. This

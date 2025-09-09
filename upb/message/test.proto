@@ -14,7 +14,8 @@ package upb_test;
 import "google/protobuf/test_messages_proto3.proto";
 
 message TestExtensions {
-  extensions 1000 to max;
+  extensions 1000 to max
+  [verification = UNVERIFIED];
   extend TestExtensions {
     optional int32 optional_int32_ext = 1000;
   }
@@ -33,13 +34,19 @@ extend TestExtensions {
 message TestMessageSet {
   option message_set_wire_format = true;
 
-  extensions 4 to max;
+  extensions 4 to max
+  [verification = UNVERIFIED];
 }
 
 message MessageSetMember {
   optional int32 optional_int32 = 1;
   extend TestMessageSet {
-    optional MessageSetMember message_set_extension = 4;
+    optional MessageSetMember message_set_extension = 2000;
+  }
+  // Also extend a non-MessageSet with the same field number. This will allow us
+  // to test parsing a normal extension into a MessageSet.
+  extend TestExtensions {
+    optional MessageSetMember doppelganger_message_set_extension = 2000;
   }
 }
 
@@ -177,4 +184,33 @@ message TestMapFieldExtra {
 message TestNameConflict {
   map<string, string> map_field = 1;
   optional bool clear_map_field = 2;
+}
+
+message TestFreeze {
+  extensions 99 to max;
+
+  optional string str = 1;
+  optional TestFreeze msg = 2;
+
+  map<int32, int32> map_int = 10;
+  map<int32, TestFreeze> map_msg = 11;
+
+  repeated int32 array_int = 20;
+  repeated TestFreeze array_msg = 21;
+}
+
+extend TestFreeze {
+  optional TestFreeze nest = 100;
+}
+
+extend TestFreeze {
+  repeated Proto2EnumMessage rep_msg = 101;
+}
+
+message TestOneOfAlignment {
+  optional fixed32 pad = 6;
+  oneof value {
+    string str = 10;
+    fixed64 should_be_sixty_four_aligned = 11;
+  }
 }

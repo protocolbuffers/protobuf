@@ -38,10 +38,10 @@ absl::string_view StripDotProto(absl::string_view proto_file) {
 // Returns the Pascal-cased last part of the proto file. For example,
 // input of "google/protobuf/foo_bar.proto" would result in "FooBar".
 std::string GetFileNameBase(const FileDescriptor* descriptor) {
-    std::string proto_file = descriptor->name();
-    int lastslash = proto_file.find_last_of('/');
-    std::string base = proto_file.substr(lastslash + 1);
-    return UnderscoresToPascalCase(StripDotProto(base));
+  const absl::string_view proto_file = descriptor->name();
+  int lastslash = proto_file.find_last_of('/');
+  const absl::string_view base = proto_file.substr(lastslash + 1);
+  return UnderscoresToPascalCase(StripDotProto(base));
 }
 
 std::string ToCSharpName(absl::string_view name, const FileDescriptor* file) {
@@ -169,7 +169,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
     }
   }
   // Add a trailing "_" if the name should be altered.
-  if (input.size() > 0 && input[input.size() - 1] == '#') {
+  if (!input.empty() && input[input.size() - 1] == '#') {
     result += '_';
   }
 
@@ -184,10 +184,9 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   // start with a digit.
   // Note: not preserving leading underscores for all otherwise valid identifiers
   // so as to not break anything that relies on the existing behaviour
-  if (result.size() > 0 && ('0' <= result[0] && result[0] <= '9')
-      && input.size() > 0 && input[0] == '_')
-  {
-      result.insert(0, 1, '_');
+  if (!result.empty() && ('0' <= result[0] && result[0] <= '9') &&
+      !input.empty() && input[0] == '_') {
+    result.insert(0, 1, '_');
   }
   return result;
 }

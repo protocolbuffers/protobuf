@@ -13,7 +13,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 option optimize_for = SPEED;
 option csharp_namespace = "Google.ProtocolBuffers.TestProtos";

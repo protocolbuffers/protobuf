@@ -27,8 +27,9 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/compiler/cpp/unittest.h"
+#include "absl/base/attributes.h"
 #include "absl/strings/cord.h"
+#include "google/protobuf/compiler/cpp/unittest.h"
 #include "absl/strings/string_view.h"
 #ifndef _MSC_VER
 // We exclude this large proto because it's too large for
@@ -38,14 +39,14 @@
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/unittest_no_generic_services.pb.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/testing/googletest.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/compiler/cpp/test_bad_identifiers.pb.h"
+#include "google/protobuf/compiler/cpp/test_bad_identifiers_editions.pb.h"
+#include "google/protobuf/compiler/cpp/test_bad_identifiers_proto2.pb.h"
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/scc.h"
@@ -54,6 +55,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest_no_generic_services.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -65,6 +67,8 @@ namespace cpp {
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace cpp_unittest {
+
+using ::testing::UnorderedElementsAre;
 
 
 void DoNothing() {}
@@ -123,7 +127,7 @@ TEST(GENERATED_DESCRIPTOR_TEST_NAME, IdenticalDescriptors) {
 // limit for string literal size
 TEST(GENERATED_DESCRIPTOR_TEST_NAME, EnormousDescriptor) {
   const Descriptor* generated_descriptor =
-    ::protobuf_unittest::TestEnormousDescriptor::descriptor();
+    ::proto2_unittest::TestEnormousDescriptor::descriptor();
 
   EXPECT_TRUE(generated_descriptor != nullptr);
 }
@@ -484,25 +488,11 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
   UNITTEST::TestAllTypes message1, message2;
   TestUtil::SetAllFields(&message1);
 
-  // Note the address of one of the repeated fields, to verify it was swapped
-  // rather than copied.
-  const int32_t* addr = &message1.repeated_int32().Get(0);
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  const int32_t value = *addr;
-#endif
-
   using std::swap;
   swap(message1, message2);
 
   TestUtil::ExpectAllFieldsSet(message2);
   TestUtil::ExpectClear(message1);
-
-#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-  EXPECT_NE(addr, &message2.repeated_int32().Get(0));
-  EXPECT_EQ(value, message2.repeated_int32().Get(0));
-#else
-  EXPECT_EQ(addr, &message2.repeated_int32().Get(0));
-#endif
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructor) {
@@ -556,10 +546,11 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructor) {
   }
 }
 
+#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructorWithArenas) {
   Arena arena;
   UNITTEST::TestAllTypes* message1 =
-      Arena::CreateMessage<UNITTEST::TestAllTypes>(&arena);
+      Arena::Create<UNITTEST::TestAllTypes>(&arena);
   TestUtil::SetAllFields(message1);
 
   UNITTEST::TestAllTypes message2_stack(*message1);
@@ -576,7 +567,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, CopyConstructorWithArenas) {
   TestUtil::ExpectAllFieldsSet(*message2_heap);
 }
 
-#ifndef PROTOBUF_TEST_NO_DESCRIPTORS
 TEST(GENERATED_MESSAGE_TEST_NAME, UpcastCopyFrom) {
   // Test the CopyFrom method that takes in the generic const Message&
   // parameter.
@@ -852,7 +842,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestEmbedOptimizedForSize) {
 TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
   // Allocate explicitly on the heap to prevent arena creation.
   std::unique_ptr<UNITTEST::TestAllTypes> message1(
-    Arena::CreateMessage<UNITTEST::TestAllTypes>(nullptr));
+      Arena::Create<UNITTEST::TestAllTypes>(nullptr));
   // sizeof provides a lower bound on SpaceUsedLong().
   EXPECT_LE(sizeof(UNITTEST::TestAllTypes), message1->SpaceUsedLong());
   const size_t empty_message_size = message1->SpaceUsedLong();
@@ -893,7 +883,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
 TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {
   // Allocate explicitly on the heap to prevent arena creation.
   std::unique_ptr<UNITTEST::TestOneof2> message1(
-    Arena::CreateMessage<UNITTEST::TestOneof2>(nullptr));
+      Arena::Create<UNITTEST::TestOneof2>(nullptr));
   EXPECT_LE(sizeof(UNITTEST::TestOneof2), message1->SpaceUsedLong());
 
   const size_t empty_message_size = message1->SpaceUsedLong();
@@ -930,7 +920,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS
 
 TEST(GENERATED_MESSAGE_TEST_NAME, FieldConstantValues) {
-  UNITTEST::TestRequired message;
   EXPECT_EQ(UNITTEST::TestAllTypes_NestedMessage::kBbFieldNumber, 1);
   EXPECT_EQ(UNITTEST::TestAllTypes::kOptionalInt32FieldNumber, 1);
   EXPECT_EQ(UNITTEST::TestAllTypes::kOptionalgroupFieldNumber, 16);
@@ -1027,8 +1016,8 @@ TEST(GENERATED_ENUM_TEST_NAME, MinAndMax) {
   EXPECT_EQ(4, UNITTEST::TestAllTypes::NestedEnum_ARRAYSIZE);
 
   EXPECT_EQ(UNITTEST::FOREIGN_FOO, UNITTEST::ForeignEnum_MIN);
-  EXPECT_EQ(UNITTEST::FOREIGN_BAX, UNITTEST::ForeignEnum_MAX);
-  EXPECT_EQ(33, UNITTEST::ForeignEnum_ARRAYSIZE);
+  EXPECT_EQ(UNITTEST::FOREIGN_LARGE, UNITTEST::ForeignEnum_MAX);
+  EXPECT_EQ(123457, UNITTEST::ForeignEnum_ARRAYSIZE);
 
   EXPECT_EQ(1, UNITTEST::TestEnumWithDupValue_MIN);
   EXPECT_EQ(3, UNITTEST::TestEnumWithDupValue_MAX);
@@ -1315,17 +1304,17 @@ TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethod) {
 TEST_F(GENERATED_SERVICE_TEST_NAME, CallMethodTypeFailure) {
   // Verify death if we call Foo() with Bar's message types.
 
-#if PROTOBUF_RTTI && GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
+#if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
-    mock_service_.CallMethod(foo_, &mock_controller_,
-                             &foo_request_, &bar_response_, done_.get()),
-    "dynamic_cast");
+      mock_service_.CallMethod(foo_, &mock_controller_, &foo_request_,
+                               &bar_response_, done_.get()),
+      "DynamicCastMessage");
 
   mock_service_.Reset();
   EXPECT_DEBUG_DEATH(
-    mock_service_.CallMethod(foo_, &mock_controller_,
-                             &bar_request_, &foo_response_, done_.get()),
-    "dynamic_cast");
+      mock_service_.CallMethod(foo_, &mock_controller_, &bar_request_,
+                               &foo_response_, done_.get()),
+      "DynamicCastMessage");
 #endif  // GTEST_HAS_DEATH_TEST
 }
 
@@ -1600,8 +1589,7 @@ TEST_F(OneofTest, SetAllocatedString) {
 TEST_F(OneofTest, ArenaSetAllocatedString) {
   // Check that set_allocated_foo() works for strings.
   Arena arena;
-  UNITTEST::TestOneof2* message =
-      Arena::CreateMessage<UNITTEST::TestOneof2>(&arena);
+  UNITTEST::TestOneof2* message = Arena::Create<UNITTEST::TestOneof2>(&arena);
 
   EXPECT_FALSE(message->has_foo_string());
   const std::string kHello("hello");
@@ -2086,19 +2074,18 @@ TEST(HELPERS_TEST_NAME, TestSCC) {
   UNITTEST::TestMutualRecursionA a;
   MessageSCCAnalyzer scc_analyzer((Options()));
   const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
-  std::vector<std::string> names;
+  std::vector<absl::string_view> names;
   names.reserve(scc->descriptors.size());
   for (int i = 0; i < scc->descriptors.size(); i++) {
     names.push_back(scc->descriptors[i]->full_name());
   }
-  std::string package = a.GetDescriptor()->file()->package();
-  ASSERT_EQ(names.size(), 4);
-  std::sort(names.begin(), names.end());
-  EXPECT_EQ(names[0], absl::StrCat(package, ".TestMutualRecursionA"));
-  EXPECT_EQ(names[1], absl::StrCat(package, ".TestMutualRecursionA.SubGroup"));
-  EXPECT_EQ(names[2],
-            absl::StrCat(package, ".TestMutualRecursionA.SubMessage"));
-  EXPECT_EQ(names[3], absl::StrCat(package, ".TestMutualRecursionB"));
+  const absl::string_view package = a.GetDescriptor()->file()->package();
+  EXPECT_THAT(names,
+              UnorderedElementsAre(
+                  absl::StrCat(package, ".TestMutualRecursionA"),
+                  absl::StrCat(package, ".TestMutualRecursionA.SubGroup"),
+                  absl::StrCat(package, ".TestMutualRecursionA.SubMessage"),
+                  absl::StrCat(package, ".TestMutualRecursionB")));
 
   MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
   EXPECT_EQ(result.is_recursive, true);
@@ -2160,12 +2147,12 @@ namespace cpp_unittest {
 TEST_F(GENERATED_SERVICE_TEST_NAME, NoGenericServices) {
   // Verify that non-services in unittest_no_generic_services.proto were
   // generated.
-  ::protobuf_unittest::no_generic_services_test::TestMessage message;
+  ::proto2_unittest::no_generic_services_test::TestMessage message;
   message.set_a(1);
   message.SetExtension(
-      ::protobuf_unittest::no_generic_services_test::test_extension, 123);
-  ::protobuf_unittest::no_generic_services_test::TestEnum e =
-      ::protobuf_unittest::no_generic_services_test::FOO;
+      ::proto2_unittest::no_generic_services_test::test_extension, 123);
+  ::proto2_unittest::no_generic_services_test::TestEnum e =
+      ::proto2_unittest::no_generic_services_test::FOO;
   EXPECT_EQ(e, 1);
 
   // Verify that a ServiceDescriptor is generated for the service even if the

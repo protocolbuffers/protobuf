@@ -5,15 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBRootObject.h"
 #import "GPBRootObject_PackagePrivate.h"
 
+#import <CoreFoundation/CoreFoundation.h>
 #import <objc/runtime.h>
 #import <os/lock.h>
 
-#import <CoreFoundation/CoreFoundation.h>
-
 #import "GPBDescriptor.h"
 #import "GPBExtensionRegistry.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 @interface GPBExtensionDescriptor (GPBRootObject)

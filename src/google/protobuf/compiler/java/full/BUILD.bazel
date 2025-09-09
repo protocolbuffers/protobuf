@@ -1,0 +1,149 @@
+# We use abbreviated target names in this directory to work around:
+#     https://github.com/bazelbuild/bazel/issues/18683
+
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "fg",
+    hdrs = ["field_generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
+    deps = [
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/io:printer",
+    ],
+)
+
+# We have to expose the field generators individually (instead of just through the factory) because
+# the mutable generators delegate to them directly.
+cc_library(
+    name = "fgs",
+    srcs = [
+        "enum_field.cc",
+        "map_field.cc",
+        "message_field.cc",
+        "primitive_field.cc",
+        "string_field.cc",
+    ],
+    hdrs = [
+        "enum_field.h",
+        "map_field.h",
+        "message_field.h",
+        "primitive_field.h",
+        "string_field.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":fg",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:internal_helpers",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/functional:function_ref",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "mfg",
+    srcs = ["make_field_gens.cc"],
+    hdrs = ["make_field_gens.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/kotlin:__subpackages__"],
+    deps = [
+        ":fg",
+        ":fgs",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+    ],
+)
+
+cc_library(
+    name = "service",
+    srcs = ["service.cc"],
+    hdrs = ["service.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/java/lite:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "eg",
+    srcs = ["enum.cc"],
+    hdrs = ["enum.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:internal_helpers",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "full",
+    srcs = [
+        "extension.cc",
+        "generator_factory.cc",
+        "message.cc",
+        "message.h",
+        "message_builder.cc",
+    ],
+    hdrs = [
+        "generator_factory.h",
+        # We don't actually want to put the remaining headers in `hdrs`.
+        # They are logically private, and should be in srcs=[], but
+        # unfortunately `strip_include_prefix` doesn't have any effect
+        # on headers listed in `srcs.`
+        "message.h",
+        "extension.h",
+        "message_builder.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//src/google/protobuf/compiler/java:__pkg__",
+        "//src/google/protobuf/compiler/kotlin:__pkg__",
+    ],
+    deps = [
+        ":eg",
+        ":fg",
+        ":mfg",
+        ":service",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/compiler/java:generator_common",
+        "//src/google/protobuf/compiler/java:helpers",
+        "//src/google/protobuf/compiler/java:message_serialization",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)

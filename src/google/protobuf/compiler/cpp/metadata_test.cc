@@ -12,8 +12,6 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "google/protobuf/compiler/annotation_test_util.h"
@@ -45,7 +43,7 @@ class CppMetadataTest : public ::testing::Test {
         "--cpp_out=annotate_headers=true,"
         "annotation_pragma_name=pragma_name,"
         "annotation_guard_name=guard_name:",
-        TestTempDir());
+        ::testing::TempDir());
 
     const bool result = atu::RunProtoCompiler(filename, cpp_out, &cli, file);
 
@@ -54,7 +52,7 @@ class CppMetadataTest : public ::testing::Test {
     }
 
     std::string output_base =
-        absl::StrCat(TestTempDir(), "/", StripProto(filename));
+        absl::StrCat(::testing::TempDir(), "/", StripProto(filename));
 
     if (pb_cc != nullptr) {
       ABSL_CHECK_OK(File::GetContents(absl::StrCat(output_base, ".pb.cc"),

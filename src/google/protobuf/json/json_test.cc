@@ -173,99 +173,78 @@ TEST_P(JsonTest, TestWhitespaces) {
 )"));
 }
 
-TEST_P(JsonTest, TestDefaultValues) {
+
+TEST_P(JsonTest, TestAlwaysPrintFieldsWithNoPresence) {
   TestMessage m;
   EXPECT_THAT(ToJson(m), IsOkAndHolds("{}"));
 
   PrintOptions options;
-  options.always_print_primitive_fields = true;
-  EXPECT_THAT(ToJson(m, options), IsOkAndHolds("{\"boolValue\":false,"
-                                               "\"int32Value\":0,"
-                                               "\"int64Value\":\"0\","
-                                               "\"uint32Value\":0,"
-                                               "\"uint64Value\":\"0\","
-                                               "\"floatValue\":0,"
-                                               "\"doubleValue\":0,"
-                                               "\"stringValue\":\"\","
-                                               "\"bytesValue\":\"\","
-                                               "\"enumValue\":\"FOO\","
-                                               "\"repeatedBoolValue\":[],"
-                                               "\"repeatedInt32Value\":[],"
-                                               "\"repeatedInt64Value\":[],"
-                                               "\"repeatedUint32Value\":[],"
-                                               "\"repeatedUint64Value\":[],"
-                                               "\"repeatedFloatValue\":[],"
-                                               "\"repeatedDoubleValue\":[],"
-                                               "\"repeatedStringValue\":[],"
-                                               "\"repeatedBytesValue\":[],"
-                                               "\"repeatedEnumValue\":[],"
-                                               "\"repeatedMessageValue\":[]"
+  options.always_print_fields_with_no_presence = true;
+  EXPECT_THAT(ToJson(m, options), IsOkAndHolds(R"({"boolValue":false,)"
+                                               R"("int32Value":0,)"
+                                               R"("int64Value":"0",)"
+                                               R"("uint32Value":0,)"
+                                               R"("uint64Value":"0",)"
+                                               R"("floatValue":0,)"
+                                               R"("doubleValue":0,)"
+                                               R"("stringValue":"",)"
+                                               R"("bytesValue":"",)"
+                                               R"("enumValue":"FOO",)"
+                                               R"("repeatedBoolValue":[],)"
+                                               R"("repeatedInt32Value":[],)"
+                                               R"("repeatedInt64Value":[],)"
+                                               R"("repeatedUint32Value":[],)"
+                                               R"("repeatedUint64Value":[],)"
+                                               R"("repeatedFloatValue":[],)"
+                                               R"("repeatedDoubleValue":[],)"
+                                               R"("repeatedStringValue":[],)"
+                                               R"("repeatedBytesValue":[],)"
+                                               R"("repeatedEnumValue":[],)"
+                                               R"("repeatedMessageValue":[])"
                                                "}"));
 
   m.set_string_value("i am a test string value");
   m.set_bytes_value("i am a test bytes value");
-  EXPECT_THAT(
-      ToJson(m, options),
-      IsOkAndHolds("{\"boolValue\":false,"
-                   "\"int32Value\":0,"
-                   "\"int64Value\":\"0\","
-                   "\"uint32Value\":0,"
-                   "\"uint64Value\":\"0\","
-                   "\"floatValue\":0,"
-                   "\"doubleValue\":0,"
-                   "\"stringValue\":\"i am a test string value\","
-                   "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
-                   "\"enumValue\":\"FOO\","
-                   "\"repeatedBoolValue\":[],"
-                   "\"repeatedInt32Value\":[],"
-                   "\"repeatedInt64Value\":[],"
-                   "\"repeatedUint32Value\":[],"
-                   "\"repeatedUint64Value\":[],"
-                   "\"repeatedFloatValue\":[],"
-                   "\"repeatedDoubleValue\":[],"
-                   "\"repeatedStringValue\":[],"
-                   "\"repeatedBytesValue\":[],"
-                   "\"repeatedEnumValue\":[],"
-                   "\"repeatedMessageValue\":[]"
-                   "}"));
+  m.set_optional_bool_value(false);
+  m.set_optional_string_value("");
+  m.set_optional_bytes_value("");
+  EXPECT_THAT(ToJson(m, options),
+              IsOkAndHolds(R"({"boolValue":false,)"
+                           R"("int32Value":0,)"
+                           R"("int64Value":"0",)"
+                           R"("uint32Value":0,)"
+                           R"("uint64Value":"0",)"
+                           R"("floatValue":0,)"
+                           R"("doubleValue":0,)"
+                           R"("stringValue":"i am a test string value",)"
+                           R"("bytesValue":"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=",)"
+                           R"("enumValue":"FOO",)"
+                           R"("repeatedBoolValue":[],)"
+                           R"("repeatedInt32Value":[],)"
+                           R"("repeatedInt64Value":[],)"
+                           R"("repeatedUint32Value":[],)"
+                           R"("repeatedUint64Value":[],)"
+                           R"("repeatedFloatValue":[],)"
+                           R"("repeatedDoubleValue":[],)"
+                           R"("repeatedStringValue":[],)"
+                           R"("repeatedBytesValue":[],)"
+                           R"("repeatedEnumValue":[],)"
+                           R"("repeatedMessageValue":[],)"
+                           R"("optionalBoolValue":false,)"
+                           R"("optionalStringValue":"",)"
+                           R"("optionalBytesValue":"")"
+                           "}"));
 
   EXPECT_THAT(
-      ToJson(protobuf_unittest::TestAllTypes(), options),
+      ToJson(proto2_unittest::TestAllTypes(), options),
       IsOkAndHolds(
-          R"({"optionalInt32":0,"optionalInt64":"0","optionalUint32":0,)"
-          R"("optionalUint64":"0","optionalSint32":0,"optionalSint64":"0","optionalFixed32":0,)"
-          R"("optionalFixed64":"0","optionalSfixed32":0,"optionalSfixed64":"0",)"
-          R"("optionalFloat":0,"optionalDouble":0,"optionalBool":false,"optionalString":"",)"
-          R"("optionalBytes":"","optionalgroup":null,"optionalNestedEnum":"FOO","optionalForeignEnum":"FOREIGN_FOO",)"
-          R"("optionalImportEnum":"IMPORT_FOO","optionalStringPiece":"","optionalCord":"",)"
-          R"("repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
+          R"({"repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
           R"("repeatedSint32":[],"repeatedSint64":[],"repeatedFixed32":[],"repeatedFixed64":[],)"
           R"("repeatedSfixed32":[],"repeatedSfixed64":[],"repeatedFloat":[],"repeatedDouble":[],)"
           R"("repeatedBool":[],"repeatedString":[],"repeatedBytes":[],"repeatedgroup":[],)"
           R"("repeatedNestedMessage":[],"repeatedForeignMessage":[],"repeatedImportMessage":[],)"
           R"("repeatedNestedEnum":[],"repeatedForeignEnum":[],"repeatedImportEnum":[],)"
-          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[],"defaultInt32":41,)"
-          R"("defaultInt64":"42","defaultUint32":43,"defaultUint64":"44","defaultSint32":-45,)"
-          R"("defaultSint64":"46","defaultFixed32":47,"defaultFixed64":"48","defaultSfixed32":49,)"
-          R"("defaultSfixed64":"-50","defaultFloat":51.5,"defaultDouble":52000,"defaultBool":true,)"
-          R"("defaultString":"hello","defaultBytes":"d29ybGQ=","defaultNestedEnum":"BAR",)"
-          R"("defaultForeignEnum":"FOREIGN_BAR","defaultImportEnum":"IMPORT_BAR",)"
-          R"("defaultStringPiece":"abc","defaultCord":"123","optionalBytesCord":""})")) << *ToJson(protobuf_unittest::TestAllTypes(), options);
-
-  EXPECT_THAT(
-      ToJson(protobuf_unittest::TestExtremeDefaultValues(), options),
-      IsOkAndHolds(
-          R"({"escapedBytes":"XDAwMFwwMDFcMDA3XDAxMFwwMTRcblxyXHRcMDEzXFxcJ1wiXDM3Ng==")"
-          R"(,"largeUint32":4294967295,"largeUint64":"18446744073709551615",)"
-          R"("smallInt32":-2147483647,"smallInt64":"-9223372036854775807",)"
-          R"("utf8String":"ሴ","zeroFloat":0,"oneFloat":1,"smallFloat":1.5,)"
-          R"("negativeOneFloat":-1,"negativeFloat":-1.5,"largeFloat":2e+08,)"
-          R"("smallNegativeFloat":-8e-28,"infDouble":0,"negInfDouble":0,)"
-          R"("nanDouble":0,"infFloat":0,"negInfFloat":0,"nanFloat":0,)"
-          R"("cppTrigraph":"? ? ?? ?? ??? ??/ ??-","reallySmallInt32":-2147483648)"
-          R"(,"reallySmallInt64":"-9223372036854775808","stringWithZero":"hel\u0000lo")"
-          R"(,"bytesWithZero":"d29yXDAwMGxk","stringPieceWithZero":"ab\u0000c")"
-          R"(,"cordWithZero":"12\u00003","replacementString":"${unknown}"})"));
+          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[]})"));
 }
 
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
@@ -279,7 +258,7 @@ TEST_P(JsonTest, TestPreserveProtoFieldNames) {
 }
 
 TEST_P(JsonTest, Camels) {
-  protobuf_unittest::TestCamelCaseFieldNames m;
+  proto2_unittest::TestCamelCaseFieldNames m;
   m.set_stringfield("sTRINGfIELD");
 
   EXPECT_THAT(ToJson(m), IsOkAndHolds(R"({"StringField":"sTRINGfIELD"})"));
@@ -345,7 +324,7 @@ TEST_P(JsonTest, TestPrintEnumsAsIntsWithDefaultValue) {
 
   PrintOptions print_options;
   print_options.always_print_enums_as_ints = true;
-  print_options.always_print_primitive_fields = true;
+  print_options.always_print_fields_with_no_presence = true;
 
   auto printed = ToJson(orig, print_options);
   ASSERT_THAT(
@@ -359,21 +338,6 @@ TEST_P(JsonTest, TestPrintEnumsAsIntsWithDefaultValue) {
   EXPECT_EQ(parsed->enum_value3(), proto3::BAR);
 }
 
-TEST_P(JsonTest, TestPrintProto2EnumAsIntWithDefaultValue) {
-  protobuf_unittest::TestDefaultEnumValue orig;
-
-  PrintOptions print_options;
-  print_options.always_print_enums_as_ints = true;
-  print_options.always_print_primitive_fields = true;
-
-  auto printed = ToJson(orig, print_options);
-  ASSERT_THAT(printed, IsOkAndHolds("{\"enumValue\":2}"));
-
-  auto parsed = ToProto<protobuf_unittest::TestDefaultEnumValue>(*printed);
-  ASSERT_OK(parsed);
-
-  EXPECT_EQ(parsed->enum_value(), protobuf_unittest::DEFAULT);
-}
 
 TEST_P(JsonTest, QuotedEnumValue) {
   auto m = ToProto<TestEnumValue>(R"json(
@@ -381,6 +345,39 @@ TEST_P(JsonTest, QuotedEnumValue) {
   )json");
   ASSERT_OK(m);
   EXPECT_THAT(m->enum_value1(), proto3::BAR);
+}
+
+TEST_P(JsonTest, QuotedIntegerValue) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int32Value": "2"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->int32_value(), 2);
+}
+
+TEST_P(JsonTest, QuotedIntegerFloatValue) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int32Value": "2.0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->int32_value(), 2);
+}
+
+TEST_P(JsonTest, QuotedIntegerExponentValue) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int32Value": "1e2"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->int32_value(), 100);
+}
+
+TEST_P(JsonTest, TestInvalidIntegerValue) {
+  EXPECT_THAT(ToProto<TestMessage>(R"("{"int32Value": ""})"),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(ToProto<TestMessage>(R"("{"int32Value": 1.001})"),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+  EXPECT_THAT(ToProto<TestMessage>(R"("{"int32Value": "1.2e1"})"),
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, WebSafeBytes) {
@@ -532,6 +529,88 @@ TEST_P(JsonTest, ParseLegacySingleRepeatedField) {
                            R"("repeatedMessageValue":[{"value":-1}]})"));
 }
 
+TEST_P(JsonTest, ParseMapWithEnumValuesProto2) {
+  ParseOptions options;
+  options.ignore_unknown_fields = false;
+  proto2_unittest::TestMapOfEnums message;
+  const std::string input_json = R"json({
+    "enum_map": {
+      "key1": "PROTOCOL",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BUFFER",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "PROTOCOL",
+    }
+  })json";
+
+  // Without ignore_unknown_fields, the unknown enum string value fails to
+  // parse.
+  EXPECT_THAT(ToProto(message, input_json, options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, ParseMapWithEnumValuesProto3) {
+  ParseOptions options;
+  options.ignore_unknown_fields = false;
+  proto3::MapOfEnums message;
+  const std::string input_json = R"json({
+    "map": {
+      "key1": "FOO",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BAR",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "FOO",
+    }
+  })json";
+
+  // Without ignore_unknown_fields, the unknown enum string value fails to
+  // parse.
+  EXPECT_THAT(ToProto(message, input_json, options),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, ParseMapWithEnumValuesProto2WithUnknownFields) {
+  ParseOptions options;
+  options.ignore_unknown_fields = true;
+  proto2_unittest::TestMapOfEnums message;
+  const std::string input_json = R"json({
+    "enum_map": {
+      "key1": "PROTOCOL",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BUFFER",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "PROTOCOL",
+    }
+  })json";
+
+  ASSERT_OK(ToProto(message, input_json, options));
+
+  EXPECT_EQ(message.enum_map().size(), 3);
+  EXPECT_EQ(message.enum_map().contains("key2"), false);
+  EXPECT_EQ(message.enum_map().contains("key4"), false);
+}
+
+TEST_P(JsonTest, ParseMapWithEnumValuesProto3WithUnknownFields) {
+  ParseOptions options;
+  options.ignore_unknown_fields = true;
+  proto3::MapOfEnums message;
+  const std::string input_json = R"json({
+    "map": {
+      "key1": "FOO",
+      "key2": "UNKNOWN_ENUM_STRING_VALUE",
+      "key3": "BAR",
+      "key4": "UNKNOWN_ENUM_STRING_VALUE",
+      "key5": "FOO",
+    }
+  })json";
+
+  ASSERT_OK(ToProto(message, input_json, options));
+
+  EXPECT_EQ(message.map().size(), 3);
+  EXPECT_EQ(message.map().contains("key2"), false);
+  EXPECT_EQ(message.map().contains("key4"), false);
+}
+
 TEST_P(JsonTest, ParseMap) {
   TestMap message;
   (*message.mutable_string_map())["hello"] = 1234;
@@ -556,7 +635,7 @@ TEST_P(JsonTest, RepeatedMapKey) {
 TEST_P(JsonTest, ParsePrimitiveMapIn) {
   MapIn message;
   PrintOptions print_options;
-  print_options.always_print_primitive_fields = true;
+  print_options.always_print_fields_with_no_presence = true;
   auto printed = ToJson(message, print_options);
   ASSERT_THAT(
       ToJson(message, print_options),
@@ -570,7 +649,7 @@ TEST_P(JsonTest, ParsePrimitiveMapIn) {
 TEST_P(JsonTest, PrintPrimitiveOneof) {
   TestOneof message;
   PrintOptions options;
-  options.always_print_primitive_fields = true;
+  options.always_print_fields_with_no_presence = true;
   message.mutable_oneof_message_value();
   EXPECT_THAT(ToJson(message, options),
               IsOkAndHolds(R"({"oneofMessageValue":{"value":0}})"));
@@ -709,7 +788,7 @@ TEST_P(JsonTest, TestParsingAnyWithRequiredFields) {
   auto m = ToProto<TestAny>(R"json(
     {
       "value": {
-        "@type": "type.googleapis.com/protobuf_unittest.TestRequired",
+        "@type": "type.googleapis.com/proto2_unittest.TestRequired",
         "a": 5,
         "dummy2": 6,
         "b": 7
@@ -718,7 +797,7 @@ TEST_P(JsonTest, TestParsingAnyWithRequiredFields) {
   )json");
   ASSERT_OK(m);
 
-  protobuf_unittest::TestRequired t;
+  proto2_unittest::TestRequired t;
   // Can't use UnpackTo directly, since that checks IsInitialized.
   ASSERT_FALSE(m->value().UnpackTo(&t));
 
@@ -732,7 +811,7 @@ TEST_P(JsonTest, TestParsingAnyWithRequiredFields) {
   EXPECT_THAT(
       ToJson(*m),
       IsOkAndHolds(
-          R"({"value":{"@type":"type.googleapis.com/protobuf_unittest.TestRequired",)"
+          R"({"value":{"@type":"type.googleapis.com/proto2_unittest.TestRequired",)"
           R"("a":5,"dummy2":6,"b":7}})"));
 }
 
@@ -920,12 +999,12 @@ TEST_P(JsonTest, TestHugeBareString) {
 TEST_P(JsonTest, TestParsingUnknownEnumsProto2) {
   absl::string_view input = R"json({"ayuLmao": "UNKNOWN_VALUE"})json";
 
-  EXPECT_THAT(ToProto<protobuf_unittest::TestNumbers>(input),
+  EXPECT_THAT(ToProto<proto2_unittest::TestNumbers>(input),
               StatusIs(absl::StatusCode::kInvalidArgument));
 
   ParseOptions options;
   options.ignore_unknown_fields = true;
-  auto m = ToProto<protobuf_unittest::TestNumbers>(input, options);
+  auto m = ToProto<proto2_unittest::TestNumbers>(input, options);
   ASSERT_OK(m);
   EXPECT_FALSE(m->has_a());
 }
@@ -1032,36 +1111,36 @@ TEST_P(JsonTest, Extensions) {
     GTEST_SKIP();
   }
 
-  auto m = ToProto<protobuf_unittest::TestMixedFieldsAndExtensions>(R"json({
-    "[protobuf_unittest.TestMixedFieldsAndExtensions.c]": 42,
+  auto m = ToProto<proto2_unittest::TestMixedFieldsAndExtensions>(R"json({
+    "[proto2_unittest.TestMixedFieldsAndExtensions.c]": 42,
     "a": 5,
     "b": [1, 2, 3],
-    "[protobuf_unittest.TestMixedFieldsAndExtensions.d]": [1, 1, 2, 3, 5, 8, 13]
+    "[proto2_unittest.TestMixedFieldsAndExtensions.d]": [1, 1, 2, 3, 5, 8, 13]
   })json");
   ASSERT_OK(m);
   EXPECT_EQ(m->a(), 5);
   EXPECT_THAT(m->b(), ElementsAre(1, 2, 3));
-  EXPECT_EQ(m->GetExtension(protobuf_unittest::TestMixedFieldsAndExtensions::c),
+  EXPECT_EQ(m->GetExtension(proto2_unittest::TestMixedFieldsAndExtensions::c),
             42);
   EXPECT_THAT(
-      m->GetRepeatedExtension(protobuf_unittest::TestMixedFieldsAndExtensions::d),
+      m->GetRepeatedExtension(proto2_unittest::TestMixedFieldsAndExtensions::d),
       ElementsAre(1, 1, 2, 3, 5, 8, 13));
 
   EXPECT_THAT(
       ToJson(*m),
       IsOkAndHolds(
           R"({"a":5,)"
-          R"("[protobuf_unittest.TestMixedFieldsAndExtensions.c]":42,)"
+          R"("[proto2_unittest.TestMixedFieldsAndExtensions.c]":42,)"
           R"("b":[1,2,3],)"
-          R"("[protobuf_unittest.TestMixedFieldsAndExtensions.d]":[1,1,2,3,5,8,13]})"));
+          R"("[proto2_unittest.TestMixedFieldsAndExtensions.d]":[1,1,2,3,5,8,13]})"));
 
-  auto m2 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
+  auto m2 = ToProto<proto2_unittest::TestAllTypes>(R"json({
     "[this.extension.does.not.exist]": 42
   })json");
   EXPECT_THAT(m2, StatusIs(absl::StatusCode::kInvalidArgument));
 
-  auto m3 = ToProto<protobuf_unittest::TestAllTypes>(R"json({
-    "[protobuf_unittest.TestMixedFieldsAndExtensions.c]": 42
+  auto m3 = ToProto<proto2_unittest::TestAllTypes>(R"json({
+    "[proto2_unittest.TestMixedFieldsAndExtensions.c]": 42
   })json");
   EXPECT_THAT(m3, StatusIs(absl::StatusCode::kInvalidArgument));
 }
@@ -1297,15 +1376,6 @@ TEST_P(JsonTest, HtmlEscape) {
   EXPECT_THAT(ToJson(m),
               IsOkAndHolds(R"({"stringValue":"\u003c/script\u003e"})"));
 
-  proto3::TestEvilJson m2;
-  PrintOptions opts;
-  opts.always_print_primitive_fields = true;
-  EXPECT_THAT(
-      ToJson(m2, opts),
-      IsOkAndHolds(
-          R"({"regular_name":0,"\u003c/script\u003e":0,)"
-          R"("unbalanced\"quotes":0,)"
-          R"("\"\u003cscript\u003ealert('hello!);\u003c/script\u003e":0})"));
 }
 
 TEST_P(JsonTest, FieldOrder) {
@@ -1317,6 +1387,16 @@ TEST_P(JsonTest, FieldOrder) {
   ASSERT_OK(s);
   EXPECT_EQ(
       out, R"({"boolValue":true,"int64Value":"3","repeatedInt32Value":[2,2]})");
+}
+
+TEST_P(JsonTest, UnknownGroupField) {
+  // $ protoscope -s <<< "999: !{1: 99}"
+  std::string out;
+  absl::Status s = BinaryToJsonString(resolver_.get(),
+                                      "type.googleapis.com/proto3.TestMessage",
+                                      "\273>\010c\274>", &out);
+  ASSERT_OK(s);
+  EXPECT_EQ(out, "{}");
 }
 
 // JSON values get special treatment when it comes to pre-existing values in
@@ -1355,3 +1435,5 @@ TEST(JsonErrorTest, FieldNameAndSyntaxErrorInSeparateChunks) {
 }  // namespace json
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

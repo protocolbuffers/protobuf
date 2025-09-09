@@ -19,12 +19,12 @@ namespace Google.Protobuf.Reflection
     {
         internal EnumValueDescriptor(EnumValueDescriptorProto proto, FileDescriptor file,
                                      EnumDescriptor parent, int index)
-            : base(file, parent.FullName + "." + proto.Name, index)
+            : base(file, parent.FullName + "." + proto.Name, index, parent.Features.MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             EnumDescriptor = parent;
             file.DescriptorPool.AddSymbol(this);
-            file.DescriptorPool.AddEnumValueByNumber(this);
+            file.DescriptorPool.AddEnumValue(this);
         }
 
         internal EnumValueDescriptorProto Proto { get; }
@@ -64,7 +64,18 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public EnumValueOptions GetOptions() => Proto.Options?.Clone();
+        public EnumValueOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value enum value option for this descriptor
@@ -86,4 +97,3 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
- 

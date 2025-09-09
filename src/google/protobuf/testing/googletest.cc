@@ -22,15 +22,19 @@
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/testing/file.h"
+#include <gtest/gtest.h>
+
 #ifdef _MSC_VER
 // #include <direct.h>
 #else
 #include <unistd.h>
 #endif
-#include <stdio.h>
 #include <fcntl.h>
-#include <iostream>
-#include <fstream>
+#include <stdio.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 namespace google {
 namespace protobuf {
@@ -61,7 +65,7 @@ std::string TestSourceDir() {
 #ifndef _MSC_VER
   // automake sets the "srcdir" environment variable.
   char* result = getenv("srcdir");
-  if (result != NULL) {
+  if (result != nullptr) {
     return result;
   }
 #endif  // _MSC_VER
@@ -93,45 +97,13 @@ std::string TestSourceDir() {
 namespace {
 
 std::string GetTemporaryDirectoryName() {
-  // Tests run under Bazel "should not" use /tmp. Bazel sets this environment
-  // variable for tests to use instead.
-  char* from_environment = getenv("TEST_TMPDIR");
-  if (from_environment != NULL && from_environment[0] != '\0') {
-    return absl::StrCat(from_environment, "/protobuf_tmpdir");
-  }
-
-  // tmpnam() is generally not considered safe but we're only using it for
-  // testing.  We cannot use tmpfile() or mkstemp() since we're creating a
-  // directory.
-  char b[L_tmpnam + 1];     // HPUX multithread return 0 if s is 0
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-  std::string result = tmpnam(b);
-#pragma GCC diagnostic pop
 #ifdef _WIN32
-  // Avoid a trailing dot by changing it to an underscore. On Win32 the names of
-  // files and directories can, but should not, end with dot.
-  //
-  // In MS-DOS and FAT16 filesystem the filenames were 8dot3 style so it didn't
-  // make sense to have a name ending in dot without an extension, so the shell
-  // silently ignored trailing dots. To this day the Win32 API still maintains
-  // this behavior and silently ignores trailing dots in path arguments of
-  // functions such as CreateFile{A,W}. Even POSIX API function implementations
-  // seem to wrap the Win32 API functions (e.g. CreateDirectoryA) and behave
-  // this way.
-  // It's possible to avoid this behavior and create files / directories with
-  // trailing dots (using CreateFileW / CreateDirectoryW and prefixing the path
-  // with "\\?\") but these will be degenerate in the sense that you cannot
-  // chdir into such directories (or navigate into them with Windows Explorer)
-  // nor can you open such files with some programs (e.g. Notepad).
-  if (result[result.size() - 1] == '.') {
-    result[result.size() - 1] = '_';
-  }
-  // On Win32, tmpnam() returns a file prefixed with '\', but which is supposed
-  // to be used in the current working directory.  WTF?
-  if (absl::StartsWith(result, "\\")) {
-    result.erase(0, 1);
-  }
+  DWORD pid = GetCurrentProcessId();
+#else
+  int pid = getpid();
+#endif
+  std::string result = absl::StrCat(testing::TempDir(), "protobuf_tempdir.", pid);
+#ifdef _WIN32
   // The Win32 API accepts forward slashes as a path delimiter as long as the
   // path doesn't use the "\\?\" prefix.
   // Let's avoid confusion and use only forward slashes.
@@ -147,13 +119,14 @@ class TempDirDeleter {
   TempDirDeleter() {}
   ~TempDirDeleter() {
     if (!name_.empty()) {
-      File::DeleteRecursively(name_, NULL, NULL);
+      File::DeleteRecursively(name_, nullptr, nullptr);
     }
   }
 
   std::string GetTempDir() {
     if (name_.empty()) {
       name_ = GetTemporaryDirectoryName();
+      File::DeleteRecursively(name_, nullptr, nullptr);
       ABSL_CHECK(mkdir(name_.c_str(), 0777) == 0) << strerror(errno);
 
       // Stick a file in the directory that tells people what this is, in case
@@ -216,6 +189,7 @@ std::string GetCapturedTestStdout() {
 
   close(1);
   dup2(original_stdout_, 1);
+  close(original_stdout_);
   original_stdout_ = -1;
 
   std::string result;
@@ -231,6 +205,7 @@ std::string GetCapturedTestStderr() {
 
   close(2);
   dup2(original_stderr_, 2);
+  close(original_stderr_);
   original_stderr_ = -1;
 
   std::string result;

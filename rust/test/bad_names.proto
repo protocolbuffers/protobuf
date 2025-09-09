@@ -1,0 +1,56 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// LINT: LEGACY_NAMES
+
+// The purpose of this file is to be hostile on field/message/enum naming and
+// ensure that it works (e.g. collisions between names and language keywords,
+// collisions between two different field's accessor's names).
+
+syntax = "proto2";
+
+// Note: Ideally this test could be 'package type.if.else.true.false'
+// which would work in Rust but would break the C++ codegen.
+
+package type.type;
+
+message Self {
+  optional int32 for = 1;
+  optional Self self = 2;
+  optional bool true = 3;
+  optional string false = 4;
+  repeated int32 match = 5;
+  optional bool clear = 6;
+}
+
+message Pub {
+  enum Self {
+    enum = 0;
+  }
+}
+
+message enum {}
+
+message Ref {
+  oneof self {
+    .type.type.Pub.Self const = 3;
+  }
+}
+
+// A message where the accessors would collide that should still work. Note that
+// not all collisions problems are avoided, not least because C++ Proto does not
+// avoid all possible collisions (eg a field `x` and `clear_x` will often not
+// compile on C++).
+message AccessorsCollide {
+  message X {}
+  message SetX {}
+  optional SetX set_x = 2;
+  optional X x = 3;
+  oneof o {
+    bool x_mut = 5;
+  }
+}

@@ -17,7 +17,7 @@
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/options.h"
-#include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+#include "google/protobuf/compiler/objectivec/tf_decode_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -26,6 +26,8 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 std::string SafelyPrintIntToCode(int v) {
   if (v == std::numeric_limits<int>::min()) {
     // Some compilers try to parse -2147483648 as two tokens and then get spicy
@@ -39,7 +41,9 @@ std::string SafelyPrintIntToCode(int v) {
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
                              const GenerationOptions& generation_options)
-    : descriptor_(descriptor), name_(EnumName(descriptor_)) {
+    : descriptor_(descriptor),
+      generation_options_(generation_options),
+      name_(EnumName(descriptor_)) {
   // Track the names for the enum values, and if an alias overlaps a base
   // value, skip making a name for it. Likewise if two alias overlap, the
   // first one wins.
@@ -85,8 +89,11 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
 
   printer->Emit(
       {
-          {"enum_name", name_},
-          {"enum_comments", [&] { EmitCommentsString(printer, descriptor_); }},
+          Sub("enum_name", name_).AnnotatedAs(descriptor_),
+          {"enum_comments",
+           [&] {
+             EmitCommentsString(printer, generation_options_, descriptor_);
+           }},
           {"enum_deprecated_attribute",
            GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file())},
           {"maybe_unknown_value",
@@ -106,13 +113,16 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
           {"enum_values",
            [&] {
              CommentStringFlags comment_flags = kCommentStringFlags_None;
-             for (const auto* v : all_values_) {
+             for (const EnumValueDescriptor* v : all_values_) {
                if (alias_values_to_skip_.contains(v)) continue;
                printer->Emit(
                    {
-                       {"name", EnumValueName(v)},
+                       Sub("name", EnumValueName(v)).AnnotatedAs(v),
                        {"comments",
-                        [&] { EmitCommentsString(printer, v, comment_flags); }},
+                        [&] {
+                          EmitCommentsString(printer, generation_options_, v,
+                                             comment_flags);
+                        }},
                        {"deprecated_attribute",
                         GetOptionalDeprecatedAttribute(v)},
                        {"value", SafelyPrintIntToCode(v->number())},
@@ -125,6 +135,12 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
                comment_flags = kCommentStringFlags_AddLeadingNewline;
              }
            }},
+          Sub("descriptor_getter_name",
+              [&] { printer->Emit("$enum_name$_EnumDescriptor"); })
+              .AnnotatedAs(descriptor_),
+          Sub("is_valid_value_function",
+              [&] { printer->Emit("$enum_name$_IsValidValue"); })
+              .AnnotatedAs(descriptor_),
       },
       R"objc(
         #pragma mark - Enum $enum_name$
@@ -135,13 +151,13 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) const {
           $enum_values$
         };
 
-        GPBEnumDescriptor *$enum_name$_EnumDescriptor(void);
+        GPBEnumDescriptor *$descriptor_getter_name$(void);
 
         /**
          * Checks to see if the given value is defined by the enum or was not known at
          * the time this source was generated.
          **/
-        BOOL $enum_name$_IsValidValue(int32_t value);
+        BOOL $is_valid_value_function$(int32_t value);
       )objc");
   printer->Emit("\n");
 }
@@ -225,7 +241,6 @@ void EnumGenerator::GenerateSource(io::Printer* printer) const {
         GPBEnumDescriptor *$name$_EnumDescriptor(void) {
           static _Atomic(GPBEnumDescriptor*) descriptor = nil;
           if (!descriptor) {
-            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
             static const char *valueNames =
                 $values_name_blob$
             static const int32_t values[] = {
@@ -234,6 +249,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) const {
             $maybe_extra_text_format_decl$
             GPBEnumDescriptor *worker =
                 [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)
+                                           runtimeSupport:&$google_protobuf_runtime_support$
                                                valueNames:valueNames
                                                    values:values
                                                     count:(uint32_t)(sizeof(values) / sizeof(int32_t))

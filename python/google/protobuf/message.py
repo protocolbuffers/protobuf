@@ -13,6 +13,9 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+_INCONSISTENT_MESSAGE_ATTRIBUTES = ('Extensions',)
+
+
 class Error(Exception):
   """Base error type for this module."""
   pass
@@ -56,6 +59,29 @@ class Message(object):
     clone.MergeFrom(self)
     return clone
 
+  def __dir__(self):
+    """Provides the list of all accessible Message attributes."""
+    message_attributes = set(super().__dir__())
+
+    # TODO: Remove this once the UPB implementation is improved.
+    # The UPB proto implementation currently doesn't provide proto fields as
+    # attributes and they have to added.
+    if self.DESCRIPTOR is not None:
+      for field in self.DESCRIPTOR.fields:
+        message_attributes.add(field.name)
+
+    # The Fast C++ proto implementation provides inaccessible attributes that
+    # have to be removed.
+    for attribute in _INCONSISTENT_MESSAGE_ATTRIBUTES:
+      if attribute not in message_attributes:
+        continue
+      try:
+        getattr(self, attribute)
+      except AttributeError:
+        message_attributes.remove(attribute)
+
+    return sorted(message_attributes)
+
   def __eq__(self, other_msg):
     """Recursively compares two messages by value and structure."""
     raise NotImplementedError
@@ -73,6 +99,34 @@ class Message(object):
 
   def __unicode__(self):
     """Outputs a human-readable representation of the message."""
+    raise NotImplementedError
+
+  def __contains__(self, field_name_or_key):
+    """Checks if a certain field is set for the message.
+
+    Has presence fields return true if the field is set, false if the field is
+    not set. Fields without presence do raise `ValueError` (this includes
+    repeated fields, map fields, and implicit presence fields).
+
+    If field_name is not defined in the message descriptor, `ValueError` will
+    be raised.
+    Note: WKT Struct checks if the key is contained in fields. ListValue checks
+    if the item is contained in the list.
+
+    Args:
+      field_name_or_key: For Struct, the key (str) of the fields map. For
+        ListValue, any type that may be contained in the list. For other
+        messages, name of the field (str) to check for presence.
+
+    Returns:
+      bool: For Struct, whether the item is contained in fields. For ListValue,
+            whether the item is contained in the list. For other message,
+            whether a value has been set for the named field.
+
+    Raises:
+      ValueError: For normal messages,  if the `field_name_or_key` is not a
+                  member of this message or `field_name_or_key` is not a string.
+    """
     raise NotImplementedError
 
   def MergeFrom(self, other_msg):
@@ -338,11 +392,6 @@ class Message(object):
 
   @classmethod
   def FromString(cls, s):
-    raise NotImplementedError
-
-# TODO: Remove it in OSS
-  @staticmethod
-  def RegisterExtension(field_descriptor):
     raise NotImplementedError
 
   def _SetListener(self, message_listener):

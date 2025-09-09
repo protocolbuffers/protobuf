@@ -25,8 +25,8 @@ option cc_enable_arenas = true;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-// In test_util.h we do "using namespace unittest = protobuf_unittest".
-package protobuf_unittest.lazy_imports;
+// In test_util.h we do "using namespace unittest = proto2_unittest".
+package proto2_unittest.lazy_imports;
 
 // Protos optimized for SPEED use a strict superset of the generated code
 // of equivalent ones optimized for CODE_SIZE, so we should optimize all our

@@ -1,0 +1,50 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package google.protobuf.python.internal;
+
+message TestProto2 {
+  message NestedMessage {
+    // The field name "b" fails to compile in proto1 because it conflicts with
+    // a local variable named "b" in one of the generated methods.  Doh.
+    // This file needs to compile in proto1 to test backwards-compatibility.
+    optional int32 bb = 1;
+  }
+
+  enum NestedEnum {
+    UNSPECIFIED = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+    NEG = -1;  // Intentionally negative.
+  }
+
+  optional int32 optional_int32 = 1;
+  optional double optional_double = 12;
+  optional bool optional_bool = 13;
+  optional string optional_string = 14;
+  optional bytes optional_bytes = 15;
+
+  optional NestedMessage optional_nested_message = 18;
+  optional NestedEnum optional_nested_enum = 21;
+
+  repeated int32 repeated_int32 = 22;
+  repeated NestedMessage repeated_nested_message = 23;
+}
+
+message MessageWithSelfField {
+  optional int32 something = 1;
+  optional int32 self = 2;
+}
+
+message MessageWithSelfAndSelfUnderscoreField {
+  optional int32 something = 1;
+  optional int32 self = 2;
+  optional int32 self_ = 3 [json_name = "self_underscore"];
+}

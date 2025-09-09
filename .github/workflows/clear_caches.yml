@@ -3,7 +3,7 @@ name: Clear expensive caches to prevent unbounded growth
 on:
   schedule:
     # Run every 4 months at 10 AM UTC (2 AM PDT)
-    - cron: 0 10 1 */4 *
+    - cron: 0 10 5 */4 *
 
   # manual
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
       actions: write # permission is required to delete caches
       contents: read
     steps:
-      - uses: actions/cache@627f0f41f6904a5b1efbaed9f96d9eb58e92e920 # v3.2.4
+      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
           key: repository-cache-${{ github.ref_name }}-${{ runner.os }}-reset-${{ github.sha }}
@@ -31,5 +31,5 @@ jobs:
       - name: Create an empty cache with a single file
         run: |
           rm -rf .repository-cache
-          mkdir -p .repository-cache'
+          mkdir -p .repository-cache
           touch .repository-cache/reset_file

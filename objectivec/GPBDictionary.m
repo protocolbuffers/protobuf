@@ -5,12 +5,18 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#import "GPBDictionary.h"
 #import "GPBDictionary_PackagePrivate.h"
 
+#import "GPBCodedInputStream.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 // ------------------------------ NOTE ------------------------------
@@ -478,7 +484,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
       [(NSMutableDictionary *)mapDictionary setObject:value.valueString forKey:key.valueString];
     } else {
       if (valueDataType == GPBDataTypeEnum) {
-        if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:value.valueEnum]) {
+        if ([field.enumDescriptor isOpenOrValidValue:value.valueEnum]) {
           [mapDictionary setGPBGenericValue:&value forGPBGenericValueKey:&key];
         } else {
           NSData *data = [mapDictionary serializedDataForUnknownValue:value.valueEnum
@@ -1044,6 +1050,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
 //%  GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
 //%  WriteDict##KEY_NAME##Field(outputStream, key->value##KEY_NAME, kMapKeyFieldNumber, keyDataType);
 //%  WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+//%  [outputStream flush];
 //%  [outputStream release];
 //%  return data;
 //%}
@@ -2788,6 +2795,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictUInt32Field(outputStream, key->valueUInt32, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -4518,6 +4526,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictInt32Field(outputStream, key->valueInt32, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -6248,6 +6257,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictUInt64Field(outputStream, key->valueUInt64, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -7978,6 +7988,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictInt64Field(outputStream, key->valueInt64, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -9768,6 +9779,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictStringField(outputStream, key->valueString, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }
@@ -11741,6 +11753,7 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
   GPBCodedOutputStream *outputStream = [[GPBCodedOutputStream alloc] initWithData:data];
   WriteDictBoolField(outputStream, key->valueBool, kMapKeyFieldNumber, keyDataType);
   WriteDictEnumField(outputStream, value, kMapValueFieldNumber, GPBDataTypeEnum);
+  [outputStream flush];
   [outputStream release];
   return data;
 }

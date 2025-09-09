@@ -72,7 +72,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   (*variables)["type_name"] = type_name();
   (*variables)["extended_type"] = GetClassName(descriptor_->containing_type());
   (*variables)["name"] = name();
-  (*variables)["descriptor_name"] = descriptor_->name();
+  (*variables)["descriptor_name"] = std::string(descriptor_->name());
   (*variables)["default_value"] = default_value();
   (*variables)["capitalized_type_name"] = capitalized_type_name();
   (*variables)["number"] = number();

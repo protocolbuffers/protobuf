@@ -37,6 +37,9 @@ class LocalTestResult(unittest.TestResult):
   def addSkip(self, test, reason):
     pass
 
+  def addDuration(self, test, duration):
+    pass
+
 
 class ReferenceLeakCheckerMixin(object):
   """A mixin class for TestCase, which checks reference counts."""
@@ -59,11 +62,13 @@ class ReferenceLeakCheckerMixin(object):
     super(ReferenceLeakCheckerMixin, self).run(result=result)
     super(ReferenceLeakCheckerMixin, self).run(result=result)
 
-    oldrefcount = 0
     local_result = LocalTestResult(result)
     num_flakes = 0
-
     refcount_deltas = []
+
+    # Observe the refcount, then create oldrefcount which actually makes the
+    # refcount 1 higher than the recorded value immediately
+    oldrefcount = self._getRefcounts()
     while len(refcount_deltas) < self.NB_RUNS:
       oldrefcount = self._getRefcounts()
       super(ReferenceLeakCheckerMixin, self).run(result=local_result)
@@ -87,6 +92,10 @@ class ReferenceLeakCheckerMixin(object):
       result.addError(self, sys.exc_info())
 
   def _getRefcounts(self):
+    if hasattr(sys, "_clear_internal_caches"):  # Since 3.13
+      sys._clear_internal_caches()  # pylint: disable=protected-access
+    else:
+      sys._clear_type_cache()  # pylint: disable=protected-access
     copyreg.dispatch_table.clear()
     copyreg.dispatch_table.update(self._saved_pickle_registry)
     # It is sometimes necessary to gc.collect() multiple times, to ensure

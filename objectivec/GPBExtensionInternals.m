@@ -9,10 +9,15 @@
 
 #import <objc/runtime.h>
 
+#import "GPBCodedInputStream.h"
 #import "GPBCodedInputStream_PackagePrivate.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBDescriptor.h"
 #import "GPBDescriptor_PackagePrivate.h"
+#import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 GPB_INLINE size_t DataTypeSize(GPBDataType dataType) {
@@ -92,12 +97,7 @@ static size_t ComputeSerializedSizeIncludingTagOfObject(GPBExtensionDescription 
     FIELD_CASE2(Bytes)
     FIELD_CASE2(String)
     FIELD_CASE2(Group)
-    case GPBDataTypeMessage:
-      if (GPBExtensionIsWireFormat(description)) {
-        return GPBComputeMessageSetExtensionSize(description->fieldNumber, object);
-      } else {
-        return GPBComputeMessageSize(description->fieldNumber, object);
-      }
+    FIELD_CASE2(Message)
   }
 #undef FIELD_CASE
 #undef FIELD_CASE2
@@ -155,13 +155,7 @@ static void WriteObjectIncludingTagToCodedOutputStream(id object,
     FIELD_CASE2(Bytes)
     FIELD_CASE2(String)
     FIELD_CASE2(Group)
-    case GPBDataTypeMessage:
-      if (GPBExtensionIsWireFormat(description)) {
-        [output writeMessageSetExtension:description->fieldNumber value:object];
-      } else {
-        [output writeMessage:description->fieldNumber value:object];
-      }
-      return;
+    FIELD_CASE2(Message)
   }
 #undef FIELD_CASE
 #undef FIELD_CASE2

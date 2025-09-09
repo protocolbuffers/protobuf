@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_MESSAGE_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_MESSAGE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_MESSAGE_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_MESSAGE_H__
 
 #include <string>
 #include <vector>
@@ -25,7 +25,7 @@ class FieldGeneratorBase;
 class MessageGenerator : public SourceGeneratorBase {
  public:
   MessageGenerator(const Descriptor* descriptor, const Options* options);
-  ~MessageGenerator();
+  ~MessageGenerator() override;
 
   MessageGenerator(const MessageGenerator&) = delete;
   MessageGenerator& operator=(const MessageGenerator&) = delete;
@@ -39,7 +39,6 @@ class MessageGenerator : public SourceGeneratorBase {
   const Descriptor* descriptor_;
   std::vector<const FieldDescriptor*> fields_by_number_;
   int has_bit_field_count_;
-  uint end_tag_;
   bool has_extension_ranges_;
 
   void GenerateMessageSerializationMethods(io::Printer* printer);
@@ -68,4 +67,4 @@ class MessageGenerator : public SourceGeneratorBase {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_MESSAGE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_MESSAGE_H__

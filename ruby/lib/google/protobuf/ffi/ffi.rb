@@ -21,7 +21,7 @@ module Google
       Upb_Map_Begin = -1
 
       ## Encoding Status
-      Upb_Status_MaxMessage = 127
+      Upb_Status_MaxMessage = 511
       Upb_Encode_Deterministic = 1
       Upb_Encode_SkipUnknown = 2
 
@@ -35,6 +35,10 @@ module Google
 
       ## JSON Decoding options
       Upb_JsonDecode_IgnoreUnknown = 1
+
+      ## JSON Decoding results
+      Upb_JsonDecodeResult_Ok = 0
+      Upb_JsonDecodeResult_Error = 2
 
       typedef :pointer, :Array
       typedef :pointer, :DefPool
@@ -93,11 +97,6 @@ module Google
         :optional, 1,
         :required,
         :repeated
-      )
-
-      Syntax = enum(
-        :Proto2, 2,
-        :Proto3
       )
 
       # All the different kind of well known type messages. For simplicity of check,
@@ -189,6 +188,8 @@ module Google
                :array_val,:pointer,
                :str_val, StringView
       end
+
+      Upb_Message_Begin = -1
 
       class MutableMessageValue < ::FFI::Union
         layout :map, :Map,

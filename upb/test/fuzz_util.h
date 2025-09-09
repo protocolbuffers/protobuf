@@ -11,18 +11,19 @@
 #include <string>
 #include <vector>
 
+#include "upb/mem/arena.h"
 #include "upb/mini_table/extension_registry.h"
-// #include "upb/mini_table/types.h"
+#include "upb/mini_table/message.h"
 
 namespace upb {
 namespace fuzz {
 
 struct MiniTableFuzzInput {
-  // MiniDescripotrs for N messages, in the format accepted by
+  // MiniDescriptors for N messages, in the format accepted by
   // upb_MiniTable_Build().
   std::vector<std::string> mini_descriptors;
 
-  // MiniDescripotrs for N enums, in the format accepted by
+  // MiniDescriptors for N enums, in the format accepted by
   // upb_MiniTableEnum_Build().
   std::vector<std::string> enum_mini_descriptors;
 

@@ -5,23 +5,22 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(
-    "//bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
 load(
     "//bazel:upb_proto_library.bzl",
-    "upb_proto_library",
+    "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
+load(
+    "//upb/bazel:build_defs.bzl",
+    "UPB_DEFAULT_CPPOPTS",
+)
 
-# begin:google_only
-# package(default_applicable_licenses = ["//upb:license"])
-# end:google_only
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "parse_text_proto",
@@ -29,8 +28,8 @@ cc_library(
     hdrs = ["parse_text_proto.h"],
     visibility = ["//upb:__subpackages__"],
     deps = [
-        "//:protobuf",
-        "@com_google_googletest//:gtest",
+        "//src/google/protobuf",
+        "@googletest//:gtest",
     ],
 )
 
@@ -52,7 +51,7 @@ proto_library(
     deps = ["//:descriptor_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "proto3_test_upb_proto",
     testonly = 1,
     deps = [":proto3_test_proto"],
@@ -68,6 +67,7 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
+    visibility = ["//visibility:private"],
 )
 
 upb_minitable_proto_library(
@@ -77,11 +77,29 @@ upb_minitable_proto_library(
     deps = [":test_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
     deps = [":test_proto"],
+)
+
+proto_library(
+    name = "editions_test_proto",
+    testonly = 1,
+    srcs = ["editions_test.proto"],
+)
+
+upb_c_proto_library(
+    name = "editions_test_upb_c_proto",
+    testonly = 1,
+    deps = [":editions_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "editions_test_upb_proto_reflection",
+    testonly = 1,
+    deps = [":editions_test_proto"],
 )
 
 proto_library(
@@ -90,7 +108,7 @@ proto_library(
     deps = ["//:timestamp_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_cpp_upb_proto",
     deps = ["test_cpp_proto"],
 )
@@ -114,21 +132,21 @@ upb_minitable_proto_library(
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_messages_proto2_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
     deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_messages_proto3_upb_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "timestamp_upb_proto",
     deps = ["//:timestamp_proto"],
 )
@@ -146,10 +164,10 @@ cc_library(
     visibility = ["//upb:__subpackages__"],
     deps = [
         "//upb:base",
+        "//upb:mem",
         "//upb:message",
         "//upb:mini_descriptor",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
     ],
 )
@@ -161,8 +179,43 @@ cc_test(
     deps = [
         ":proto3_test_upb_proto",
         ":proto3_test_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
         "//upb:reflection",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "editions_test",
+    srcs = ["editions_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":editions_test_upb_c_proto",
+        ":editions_test_upb_proto_reflection",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:reflection",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "length_prefixed_test",
+    srcs = ["length_prefixed_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":test_messages_proto2_upb_minitable",
+        ":test_messages_proto2_upb_proto",
+        "//upb:base",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:message_compare",
+        "//upb:mini_table",
+        "//upb:wire",
+        "//upb/mem:internal",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -175,10 +228,12 @@ cc_test(
         ":test_cpp_upb_proto_reflection",
         ":timestamp_upb_proto",
         ":timestamp_upb_proto_reflection",
-        "@com_google_googletest//:gtest_main",
+        "//upb:base",
         "//upb:json",
         "//upb:port",
         "//upb:reflection",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -192,11 +247,12 @@ cc_test(
         ":test_messages_proto2_upb_proto",
         ":test_messages_proto3_upb_proto",
         ":test_upb_proto",
-        "@com_google_googletest//:gtest_main",
         "//upb:base",
         "//upb:mem",
         "//upb:message",
         "//upb:port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -207,11 +263,12 @@ cc_test(
     ],
     deps = [
         ":empty_upb_proto_reflection",
+        ":proto3_test_upb_proto",
         ":test_messages_proto2_upb_minitable",
         ":test_upb_proto",
-        "@com_google_googletest//:gtest_main",
         "//upb:mini_table",
-        "//upb:port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -252,7 +309,7 @@ upb_minitable_proto_library(
     deps = [":test_import_empty_srcs_proto"],
 )
 
-upb_proto_library(
+upb_c_proto_library(
     name = "test_import_empty_srcs_upb_proto",
     testonly = 1,
     deps = [":test_import_empty_srcs_proto"],
@@ -263,6 +320,38 @@ cc_test(
     srcs = ["test_import_empty_srcs.cc"],
     deps = [
         ":test_import_empty_srcs_upb_minitable_proto",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+            "**/test_*.cc",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_util",
+    srcs = [
+        "fuzz_util.cc",
+        "fuzz_util.h",
+        "parse_text_proto.h",
+    ],
+    visibility = ["//upb:__pkg__"],
+)
+
+filegroup(
+    name = "test_protos",
+    srcs = glob(
+        [
+            "**/*.proto",
+        ],
+    ),
+    visibility = ["//upb:__pkg__"],
 )

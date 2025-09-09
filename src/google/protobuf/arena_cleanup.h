@@ -9,15 +9,12 @@
 #define GOOGLE_PROTOBUF_ARENA_CLEANUP_H__
 
 #include <cstddef>
-#include <cstdint>
-#include <string>
+#include <cstring>
 #include <vector>
 
 #include "absl/base/attributes.h"
-#include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
-#include "absl/strings/cord.h"
-
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -25,178 +22,81 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+class SerialArena;
+
 namespace cleanup {
 
 // Helper function invoking the destructor of `object`
 template <typename T>
-void arena_destruct_object(void* object) {
+void arena_destruct_object(void* PROTOBUF_NONNULL object) {
   reinterpret_cast<T*>(object)->~T();
 }
 
-// Tag defines the type of cleanup / cleanup object. This tag is stored in the
-// lowest 2 bits of the `elem` value identifying the type of node. All node
-// types must start with a `uintptr_t` that stores `Tag` in its low two bits.
-enum class Tag : uintptr_t {
-  kDynamic = 0,  // DynamicNode
-  kString = 1,   // TaggedNode (std::string)
-  kCord = 2,     // TaggedNode (absl::Cord)
-};
-
-// DynamicNode contains the object (`elem`) that needs to be
+// CleanupNode contains the object (`elem`) that needs to be
 // destroyed, and the function to destroy it (`destructor`)
 // elem must be aligned at minimum on a 4 byte boundary.
-struct DynamicNode {
-  uintptr_t elem;
-  void (*destructor)(void*);
+struct CleanupNode {
+  // Optimization: performs a prefetch on the elem for the cleanup node. We
+  // explicitly use NTA prefetch here to avoid polluting remote caches: we are
+  // destroying these instances, there is no purpose for these cache lines to
+  // linger around in remote caches.
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void Prefetch() {
+    // TODO: we should also prefetch the destructor code once
+    // processors support code prefetching.
+    absl::PrefetchToLocalCacheNta(elem);
+  }
+
+  // Destroys the object referenced by the cleanup node.
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void Destroy() { destructor(elem); }
+
+  void* PROTOBUF_NONNULL elem;
+  void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL);
 };
 
-// TaggedNode contains a `std::string` or `absl::Cord` object (`elem`) that
-// needs to be destroyed. The lowest 2 bits of `elem` contain the non-zero
-// `kString` or `kCord` tag.
-struct TaggedNode {
-  uintptr_t elem;
+// Manages the list of cleanup nodes in a chunked linked list. Chunks grow by
+// factors of two up to a limit. Trivially destructible, but Cleanup() must be
+// called before destruction.
+class ChunkList {
+ public:
+  PROTOBUF_ALWAYS_INLINE void Add(
+      void* PROTOBUF_NONNULL elem,
+      void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL),
+      SerialArena& arena) {
+    if (ABSL_PREDICT_TRUE(next_ < limit_)) {
+      AddFromExisting(elem, destructor);
+      return;
+    }
+    AddFallback(elem, destructor, arena);
+  }
+
+  // Runs all inserted cleanups and frees allocated chunks. Must be called
+  // before destruction.
+  void Cleanup(const SerialArena& arena);
+
+ private:
+  struct Chunk;
+  friend class internal::SerialArena;
+
+  void AddFallback(void* PROTOBUF_NONNULL elem,
+                   void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL),
+                   SerialArena& arena);
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void AddFromExisting(
+      void* PROTOBUF_NONNULL elem,
+      void (*PROTOBUF_NONNULL destructor)(void* PROTOBUF_NONNULL)) {
+    *next_++ = CleanupNode{elem, destructor};
+  }
+
+  // Returns the pointers to the to-be-cleaned objects.
+  std::vector<void*> PeekForTesting();
+
+  Chunk* PROTOBUF_NULLABLE head_ = nullptr;
+  CleanupNode* PROTOBUF_NULLABLE next_ = nullptr;
+  CleanupNode* PROTOBUF_NULLABLE limit_ = nullptr;
+  // Current prefetch position. Data from `next_` up to but not including
+  // `prefetch_ptr_` is software prefetched. Used in SerialArena prefetching.
+  const char* PROTOBUF_NULLABLE prefetch_ptr_ = nullptr;
 };
-
-// EnableSpecializedTags() return true if the alignment of tagged objects
-// such as std::string allow us to poke tags in the 2 LSB bits.
-inline constexpr bool EnableSpecializedTags() {
-  // For now we require 2 bits
-  return alignof(std::string) >= 8 && alignof(absl::Cord) >= 8;
-}
-
-// Adds a cleanup entry identified by `tag` at memory location `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
-                                                    const void* elem_raw,
-                                                    void (*destructor)(void*)) {
-  auto elem = reinterpret_cast<uintptr_t>(elem_raw);
-  if (EnableSpecializedTags()) {
-    ABSL_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
-    switch (tag) {
-      case Tag::kString: {
-        TaggedNode n = {elem | static_cast<uintptr_t>(Tag::kString)};
-        memcpy(pos, &n, sizeof(n));
-        return;
-      }
-      case Tag::kCord: {
-        TaggedNode n = {elem | static_cast<uintptr_t>(Tag::kCord)};
-        memcpy(pos, &n, sizeof(n));
-        return;
-      }
-
-      case Tag::kDynamic:
-      default:
-        break;
-    }
-  }
-  DynamicNode n = {elem, destructor};
-  memcpy(pos, &n, sizeof(n));
-}
-
-// Optimization: performs a prefetch on `elem_address`.
-// Returns the size of the cleanup (meta) data at this address, allowing the
-// caller to advance cleanup iterators without needing to examine or know
-// anything about the underlying cleanup node or cleanup meta data / tags.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t
-PrefetchNode(const void* elem_address) {
-  if (EnableSpecializedTags()) {
-    uintptr_t elem;
-    memcpy(&elem, elem_address, sizeof(elem));
-    if (static_cast<Tag>(elem & 3) != Tag::kDynamic) {
-      return sizeof(TaggedNode);
-    }
-  }
-  return sizeof(DynamicNode);
-}
-
-// Destroys the object referenced by the cleanup node at memory location `pos`.
-// Returns the size of the cleanup (meta) data at this address, allowing the
-// caller to advance cleanup iterators without needing to examine or know
-// anything about the underlying cleanup node or cleanup meta data / tags.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t DestroyNode(const void* pos) {
-  uintptr_t elem;
-  memcpy(&elem, pos, sizeof(elem));
-  if (EnableSpecializedTags()) {
-    switch (static_cast<Tag>(elem & 3)) {
-      case Tag::kString: {
-        // Some compilers don't like fully qualified explicit dtor calls,
-        // so use an alias to avoid having to type `::`.
-        using T = std::string;
-        reinterpret_cast<T*>(elem - static_cast<uintptr_t>(Tag::kString))->~T();
-        return sizeof(TaggedNode);
-      }
-      case Tag::kCord: {
-        using T = absl::Cord;
-        reinterpret_cast<T*>(elem - static_cast<uintptr_t>(Tag::kCord))->~T();
-        return sizeof(TaggedNode);
-      }
-
-      case Tag::kDynamic:
-
-      default:
-        break;
-    }
-  }
-  static_cast<const DynamicNode*>(pos)->destructor(
-      reinterpret_cast<void*>(elem - static_cast<uintptr_t>(Tag::kDynamic)));
-  return sizeof(DynamicNode);
-}
-
-// Append in `out` the pointer to the to-be-cleaned object in `pos`.
-// Return the length of the cleanup node to allow the caller to advance the
-// position, like `DestroyNode` does.
-inline size_t PeekNode(const void* pos, std::vector<void*>& out) {
-  uintptr_t elem;
-  memcpy(&elem, pos, sizeof(elem));
-  out.push_back(reinterpret_cast<void*>(elem & ~3));
-  if (EnableSpecializedTags()) {
-    switch (static_cast<Tag>(elem & 3)) {
-      case Tag::kString:
-      case Tag::kCord:
-        return sizeof(TaggedNode);
-
-      case Tag::kDynamic:
-      default:
-        break;
-    }
-  }
-  return sizeof(DynamicNode);
-}
-
-// Returns the `tag` identifying the type of object for `destructor` or
-// kDynamic if `destructor` does not identify a well know object type.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void (*destructor)(void*)) {
-  if (EnableSpecializedTags()) {
-    if (destructor == &arena_destruct_object<std::string>) {
-      return Tag::kString;
-    }
-    if (destructor == &arena_destruct_object<absl::Cord>) {
-      return Tag::kCord;
-    }
-  }
-  return Tag::kDynamic;
-}
-
-// Returns the required size in bytes off the node type identified by `tag`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
-  if (!EnableSpecializedTags()) return sizeof(DynamicNode);
-
-  switch (tag) {
-    case Tag::kDynamic:
-      return sizeof(DynamicNode);
-    case Tag::kString:
-      return sizeof(TaggedNode);
-    case Tag::kCord:
-      return sizeof(TaggedNode);
-    default:
-      ABSL_DCHECK(false) << "Corrupted cleanup tag: " << static_cast<int>(tag);
-      return sizeof(DynamicNode);
-  }
-}
-
-// Returns the required size in bytes off the node type for `destructor`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(void (*destructor)(void*)) {
-  return destructor == nullptr ? 0 : Size(Type(destructor));
-}
 
 }  // namespace cleanup
 }  // namespace internal

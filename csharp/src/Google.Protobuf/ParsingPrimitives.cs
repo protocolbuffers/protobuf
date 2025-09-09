@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 //
@@ -11,10 +11,12 @@ using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
 
 namespace Google.Protobuf
 {
@@ -24,6 +26,9 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     internal static class ParsingPrimitives
     {
+        internal static readonly Encoding Utf8Encoding =
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+
         private const int StackallocThreshold = 256;
 
         /// <summary>
@@ -41,7 +46,7 @@ namespace Google.Protobuf
 
         /// <summary>
         /// Parses the next tag.
-        /// If the end of logical stream was reached, an invalid tag of 0 is returned. 
+        /// If the end of logical stream was reached, an invalid tag of 0 is returned.
         /// </summary>
         public static uint ParseTag(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
@@ -378,7 +383,7 @@ namespace Google.Protobuf
             // ReadUnaligned uses processor architecture for endianness.
             float result = Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(buffer.Slice(state.bufferPos, length)));
             state.bufferPos += length;
-            return result;  
+            return result;
         }
 
         private static unsafe float ParseFloatSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
@@ -576,7 +581,14 @@ namespace Google.Protobuf
                 {
                     fixed (byte* sourceBytes = &MemoryMarshal.GetReference(data))
                     {
-                        value = WritingPrimitives.Utf8Encoding.GetString(sourceBytes, length);
+                        try
+                        {
+                            value = Utf8Encoding.GetString(sourceBytes, length);
+                        }
+                        catch (DecoderFallbackException e)
+                        {
+                            throw InvalidProtocolBufferException.InvalidUtf8(e);
+                        }
                     }
                 }
 
@@ -618,8 +630,14 @@ namespace Google.Protobuf
                             // Make compiler happy by passing a new span created from pointer.
                             var tempSpan = new Span<byte>(pByteSpan, byteSpan.Length);
                             ReadRawBytesIntoSpan(ref buffer, ref state, length, tempSpan);
-
-                            return WritingPrimitives.Utf8Encoding.GetString(pByteSpan, length);
+                            try
+                            {
+                                return Utf8Encoding.GetString(pByteSpan, length);
+                            }
+                            catch (DecoderFallbackException e)
+                            {
+                                throw InvalidProtocolBufferException.InvalidUtf8(e);
+                            }
                         }
                     }
                 }
@@ -637,7 +655,15 @@ namespace Google.Protobuf
             // This will be called when reading from a Stream because we don't know the length of the stream,
             // or there is not enough data in the sequence. If there is not enough data then ReadRawBytes will
             // throw an exception.
-            return WritingPrimitives.Utf8Encoding.GetString(ReadRawBytes(ref buffer, ref state, length), 0, length);
+            byte[] bytes = ReadRawBytes(ref buffer, ref state, length);
+            try
+            {
+                return Utf8Encoding.GetString(bytes, 0, length);
+            }
+            catch (DecoderFallbackException e)
+            {
+                throw InvalidProtocolBufferException.InvalidUtf8(e);
+            }
         }
 
         /// <summary>
@@ -712,7 +738,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <remarks>
         /// ZigZag encodes signed integers into values that can be efficiently
-        /// encoded with varint.  (Otherwise, negative values must be 
+        /// encoded with varint.  (Otherwise, negative values must be
         /// sign-extended to 32 bits to be varint encoded, thus always taking
         /// 5 bytes on the wire.)
         /// </remarks>
@@ -726,7 +752,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <remarks>
         /// ZigZag encodes signed integers into values that can be efficiently
-        /// encoded with varint.  (Otherwise, negative values must be 
+        /// encoded with varint.  (Otherwise, negative values must be
         /// sign-extended to 64 bits to be varint encoded, thus always taking
         /// 10 bytes on the wire.)
         /// </remarks>
@@ -785,5 +811,25 @@ namespace Google.Protobuf
                 state.bufferPos += unreadSpan.Length;
             }
         }
+
+        /// <summary>
+        /// Read LittleEndian packed field from buffer of specified length into a span.
+        /// The amount of data available and the current limit should be checked before calling this method.
+        /// </summary>
+        internal static void ReadPackedFieldLittleEndian(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int length, Span<byte> outBuffer)
+        {
+            Debug.Assert(BitConverter.IsLittleEndian);
+
+            if (length <= state.bufferSize - state.bufferPos)
+            {
+                buffer.Slice(state.bufferPos, length).CopyTo(outBuffer);
+                state.bufferPos += length;
+            }
+            else
+            {
+                ReadRawBytesIntoSpan(ref buffer, ref state, length, outBuffer);
+            }
+        }
+
     }
 }

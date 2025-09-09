@@ -8,22 +8,24 @@
 // Author: Jacob Butcher (jbaum@google.com)
 //
 // Test file option java_string_check_utf8.
-syntax = "proto2";
+edition = "2023";
 
 package proto2_test_check_utf8_size;
 
+option features.utf8_validation = VERIFY;
 option java_outer_classname = "TestCheckUtf8Size";
-option java_string_check_utf8 = true;
 option optimize_for = CODE_SIZE;
 
 message StringWrapperSize {
-  required string req = 1;
-  optional string opt = 2;
+  string req = 1 [features.field_presence = LEGACY_REQUIRED];
+
+  string opt = 2;
   repeated string rep = 3;
 }
 
 message BytesWrapperSize {
-  required bytes req = 1;
-  optional bytes opt = 2;
+  bytes req = 1 [features.field_presence = LEGACY_REQUIRED];
+
+  bytes opt = 2;
   repeated bytes rep = 3;
 }

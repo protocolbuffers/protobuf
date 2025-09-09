@@ -5,7 +5,9 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load("//bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "text",
@@ -14,23 +16,95 @@ cc_library(
     ],
     hdrs = [
         "encode.h",
+        "options.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":internal",
+        "//upb:base",
         "//upb:eps_copy_input_stream",
-        "//upb:lex",
         "//upb:message",
-        "//upb:message_internal",
         "//upb:port",
         "//upb:reflection",
-        "//upb:wire",
-        "//upb:wire_reader",
-        "//upb:wire_types",
+        "//upb/hash",
+        "//upb/lex",
+        "//upb/message:internal",
+        "//upb/message:types",
     ],
 )
 
-# begin:github_only
+cc_library(
+    name = "debug",
+    srcs = [
+        "debug_string.c",
+    ],
+    hdrs = [
+        "debug_string.h",
+        "options.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":internal",
+        "//upb:base",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb/lex",
+        "//upb/message:internal",
+        "//upb/message:iterator",
+        "//upb/message:types",
+        "//upb/mini_table:internal",
+    ],
+)
+
+cc_library(
+    name = "internal",
+    srcs = [
+        "internal/encode.c",
+    ],
+    hdrs = [
+        "internal/encode.h",
+        "options.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//third_party/utf8_range",
+        "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:message",
+        "//upb:port",
+        "//upb:wire_reader",
+        "//upb/lex",
+        "//upb/message:internal",
+    ],
+)
+
+cc_test(
+    name = "encode_debug_test",
+    srcs = [
+        "encode_debug_test.cc",
+    ],
+    deps = [
+        ":debug",
+        "//upb:base",
+        "//upb:eps_copy_input_stream",
+        "//upb:mem",
+        "//upb:message",
+        "//upb:mini_table",
+        "//upb:port",
+        "//upb:wire_reader",
+        "//upb/message:internal",
+        "//upb/test:test_proto_upb_minitable",
+        "//upb/test:test_upb_proto",
+        "@abseil-cpp//absl/log:absl_log",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -40,8 +114,7 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
-# end:github_only

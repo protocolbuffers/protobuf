@@ -1,0 +1,50 @@
+################################################################################
+# Protocol Buffers Compiler - Generation of accessors for individual fields.
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "accessors",
+    srcs = [
+        "accessor_case.cc",
+        "accessors.cc",
+        "default_value.cc",
+        "map.cc",
+        "repeated_field.cc",
+        "singular_cord.cc",
+        "singular_message.cc",
+        "singular_scalar.cc",
+        "singular_string.cc",
+        "unsupported_field.cc",
+        "with_presence.cc",
+    ],
+    hdrs = [
+        "accessor_case.h",
+        "accessors.h",
+        "default_value.h",
+        "generator.h",
+        "with_presence.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler/cpp:names_internal",
+        "//src/google/protobuf/compiler/rust:context",
+        "//src/google/protobuf/compiler/rust:naming",
+        "//src/google/protobuf/compiler/rust:rust_field_type",
+        "//src/google/protobuf/compiler/rust:upb_helpers",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)

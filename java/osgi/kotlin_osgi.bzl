@@ -1,7 +1,7 @@
 """ Custom rule to generate OSGi Manifest for Kotlin """
 
 load("@rules_java//java:defs.bzl", "JavaInfo")
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 
 def osgi_kt_jvm_library(
         name,

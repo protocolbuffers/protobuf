@@ -9,6 +9,7 @@
 #define UPB_GENERATED_CODE_SUPPORT_H_
 
 // IWYU pragma: begin_exports
+#include "upb/base/upcast.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
@@ -26,8 +27,8 @@
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 #include "upb/wire/decode.h"
-#include "upb/wire/decode_fast.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/internal/decode_fast.h"
 // IWYU pragma: end_exports
 
 #endif  // UPB_GENERATED_CODE_SUPPORT_H_

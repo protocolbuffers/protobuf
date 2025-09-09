@@ -9,68 +9,97 @@
 
 #include <memory>
 
-#include "google/protobuf/compiler/rust/accessors/accessor_generator.h"
+#include "absl/log/absl_log.h"
+#include "google/protobuf/compiler/rust/accessors/accessor_case.h"
+#include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/context.h"
+#include "google/protobuf/compiler/rust/rust_field_type.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace rust {
 
+bool IsSupportedField(Context& ctx, const FieldDescriptor& field) {
+  if (ctx.is_upb()) {
+    // All fields supported on upb kernel.
+    return true;
+  }
+
+  // TODO: We do not support repeated strings on C++ kernel if
+  // they are not string_view or string type.
+  if (field.is_repeated() &&
+      field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kView &&
+      field.cpp_string_type() != FieldDescriptor::CppStringType::kString) {
+    return false;
+  }
+
+  // If cpp has made the accessors private, we can't make accessors on top.
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(field)) {
+    return false;
+  }
+
+  return true;
+}
+
 namespace {
 
 std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
-    const FieldDescriptor& desc) {
-  // We do not support [ctype=FOO] (used to set the field type in C++ to
-  // cord or string_piece) in V0 API.
-  if (desc.options().has_ctype()) {
+    Context& ctx, const FieldDescriptor& field) {
+  if (!IsSupportedField(ctx, field)) {
     return std::make_unique<UnsupportedField>();
   }
 
-  if (desc.is_repeated()) {
-    return std::make_unique<UnsupportedField>();
+  if (field.is_map()) {
+    return std::make_unique<Map>();
   }
 
-  switch (desc.type()) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_SFIXED64:
-    case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SINT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_FLOAT:
-    case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_BOOL:
+  if (field.is_repeated()) {
+    return std::make_unique<RepeatedField>();
+  }
+
+  switch (GetRustFieldType(field)) {
+    case RustFieldType::INT32:
+    case RustFieldType::INT64:
+    case RustFieldType::UINT32:
+    case RustFieldType::UINT64:
+    case RustFieldType::FLOAT:
+    case RustFieldType::DOUBLE:
+    case RustFieldType::BOOL:
+    case RustFieldType::ENUM:
       return std::make_unique<SingularScalar>();
-    case FieldDescriptor::TYPE_BYTES:
-    case FieldDescriptor::TYPE_STRING:
+    case RustFieldType::BYTES:
+    case RustFieldType::STRING:
+      if (ctx.is_cpp() &&
+          field.cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
+        return std::make_unique<SingularCord>();
+      }
       return std::make_unique<SingularString>();
-    case FieldDescriptor::TYPE_MESSAGE:
+    case RustFieldType::MESSAGE:
       return std::make_unique<SingularMessage>();
-
-    default:
-      return std::make_unique<UnsupportedField>();
   }
+
+  ABSL_LOG(ERROR) << "Unknown field type: " << field.type();
+  internal::Unreachable();
 }
 
 }  // namespace
 
-void GenerateAccessorMsgImpl(Context<FieldDescriptor> field) {
-  AccessorGeneratorFor(field.desc())->GenerateMsgImpl(field);
+void GenerateAccessorMsgImpl(Context& ctx, const FieldDescriptor& field,
+                             AccessorCase accessor_case) {
+  AccessorGeneratorFor(ctx, field)->GenerateMsgImpl(ctx, field, accessor_case);
 }
 
-void GenerateAccessorExternC(Context<FieldDescriptor> field) {
-  AccessorGeneratorFor(field.desc())->GenerateExternC(field);
+void GenerateAccessorExternC(Context& ctx, const FieldDescriptor& field) {
+  AccessorGeneratorFor(ctx, field)->GenerateExternC(ctx, field);
 }
 
-void GenerateAccessorThunkCc(Context<FieldDescriptor> field) {
-  AccessorGeneratorFor(field.desc())->GenerateThunkCc(field);
+void GenerateAccessorThunkCc(Context& ctx, const FieldDescriptor& field) {
+  AccessorGeneratorFor(ctx, field)->GenerateThunkCc(ctx, field);
 }
 
 }  // namespace rust

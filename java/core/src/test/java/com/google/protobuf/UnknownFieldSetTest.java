@@ -9,15 +9,16 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
-import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.ForeignEnum;
-import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestEmptyMessage;
-import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions;
-import protobuf_unittest.UnittestProto.TestPackedExtensions;
-import protobuf_unittest.UnittestProto.TestPackedTypes;
+import proto2_unittest.UnittestProto;
+import proto2_unittest.UnittestProto.ForeignEnum;
+import proto2_unittest.UnittestProto.TestAllExtensions;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestEmptyMessage;
+import proto2_unittest.UnittestProto.TestEmptyMessageWithExtensions;
+import proto2_unittest.UnittestProto.TestPackedExtensions;
+import proto2_unittest.UnittestProto.TestPackedTypes;
 import proto3_unittest.UnittestProto3;
 import java.util.List;
 import java.util.Map;
@@ -80,12 +81,70 @@ public class UnknownFieldSetTest {
   // =================================================================
 
   @Test
-  public void testFieldBuildersAreReusable() {
+  public void testFixed32FieldBuildersAreReusable() {
     UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
     fieldBuilder.addFixed32(10);
     UnknownFieldSet.Field first = fieldBuilder.build();
     UnknownFieldSet.Field second = fieldBuilder.build();
     fieldBuilder.addFixed32(11);
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testFixed64FieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addFixed64(10);
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addFixed64(11);
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testVarintFieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addVarint(10);
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addVarint(11);
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testLengthDelimitedFieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addLengthDelimited(ByteString.copyFromUtf8("foo"));
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addLengthDelimited(ByteString.copyFromUtf8("bar"));
+    UnknownFieldSet.Field third = fieldBuilder.build();
+
+    assertThat(first).isEqualTo(second);
+    assertThat(first).isNotEqualTo(third);
+  }
+
+  @Test
+  public void testGroupFieldBuildersAreReusable() {
+    UnknownFieldSet.Field.Builder fieldBuilder = UnknownFieldSet.Field.newBuilder();
+    fieldBuilder.addGroup(
+        UnknownFieldSet.newBuilder()
+            .addField(10, UnknownFieldSet.Field.newBuilder().addVarint(10).build())
+            .build());
+    UnknownFieldSet.Field first = fieldBuilder.build();
+    UnknownFieldSet.Field second = fieldBuilder.build();
+    fieldBuilder.addGroup(
+        UnknownFieldSet.newBuilder()
+            .addField(11, UnknownFieldSet.Field.newBuilder().addVarint(11).build())
+            .build());
     UnknownFieldSet.Field third = fieldBuilder.build();
 
     assertThat(first).isEqualTo(second);
@@ -207,6 +266,17 @@ public class UnknownFieldSetTest {
     } catch (IllegalArgumentException expected) {
       assertThat(expected).hasMessageThat().isEqualTo("-2 is not a valid field number.");
     }
+  }
+
+  @Test
+  public void testMergeFieldFromInvalidEndGroup() {
+    byte[] data = new byte[] {(byte) WireFormat.makeTag(1, WireFormat.WIRETYPE_END_GROUP)};
+    CodedInputStream input = CodedInputStream.newInstance(data);
+
+    UnknownFieldSet.Builder instance = UnknownFieldSet.newBuilder();
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> instance.mergeFieldFrom(input.readTag(), input));
   }
 
   @Test

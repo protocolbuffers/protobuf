@@ -11,7 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.Descriptors.Descriptor;
-import protobuf_unittest.UnittestProto;
+import proto2_unittest.UnittestProto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;

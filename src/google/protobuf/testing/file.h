@@ -21,7 +21,7 @@ namespace protobuf {
 const int DEFAULT_FILE_MODE = 0777;
 
 // Protocol buffer code only uses a couple static methods of File, and only
-// in tests.
+// in the Rust plugin and in tests.
 class File {
  public:
   File(const File&) = delete;
@@ -63,7 +63,7 @@ class File {
                                 void* dummy2);
 
   // Change working directory to given directory.
-  static bool ChangeWorkingDirectory(const std::string& new_working_directory);
+  static bool ChangeWorkingDirectory(absl::string_view new_working_directory);
 
   static absl::Status GetContents(const std::string& name, std::string* output,
                                   bool /*is_default*/) {

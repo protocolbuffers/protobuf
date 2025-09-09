@@ -8,12 +8,15 @@
 #endregion
 
 using Google.Protobuf.TestProtos;
+using LegacyFeaturesUnittest;
 using NUnit.Framework;
 using ProtobufUnittest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnitTest.Issues.TestProtos;
+using static Google.Protobuf.Reflection.FeatureSet.Types;
+using proto2 = Google.Protobuf.TestProtos.Proto2;
 
 namespace Google.Protobuf.Reflection
 {
@@ -199,6 +202,14 @@ namespace Google.Protobuf.Reflection
                 Assert.AreEqual(i, messageType.EnumTypes[i].Index);
             }
             TestDescriptorToProto(messageType.ToProto, messageType.Proto);
+        }
+
+        [Test]
+        public void MessageDescriptor_IsMapEntry()
+        {
+            var testMapMessage = TestMap.Descriptor;
+            Assert.False(testMapMessage.IsMapEntry);
+            Assert.True(testMapMessage.Fields[1].MessageType.IsMapEntry);
         }
 
         [Test]
@@ -452,6 +463,65 @@ namespace Google.Protobuf.Reflection
           // retention.
           Assert.AreEqual(0, proto.Options.GetExtension(
               UnittestRetentionExtensions.SourceRetentionOption));
+        }
+
+        [Test]
+        public void GetOptionsStripsFeatures()
+        {
+            var messageDescriptor = TestEditionsMessage.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("required_field");
+            // Note: ideally we'd test GetOptions() for other descriptor types as well, but that requires
+            // non-fields with features applied.
+            Assert.Null(fieldDescriptor.GetOptions().Features);
+        }
+
+        [Test]
+        public void LegacyRequiredTransform()
+        {
+            var messageDescriptor = TestEditionsMessage.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("required_field");
+            Assert.True(fieldDescriptor.IsRequired);
+        }
+
+        [Test]
+        public void LegacyGroupTransform()
+        {
+            var messageDescriptor = TestEditionsMessage.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("delimited_field");
+            Assert.AreEqual(FieldType.Group, fieldDescriptor.FieldType);
+        }
+
+        [Test]
+        public void LegacyInferRequired()
+        {
+            var messageDescriptor = proto2::TestRequired.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("a");
+            Assert.AreEqual(FieldPresence.LegacyRequired, fieldDescriptor.Features.FieldPresence);
+        }
+
+        [Test]
+        public void LegacyInferGroup()
+        {
+            var messageDescriptor = proto2::TestAllTypes.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("optionalgroup");
+            Assert.AreEqual(MessageEncoding.Delimited, fieldDescriptor.Features.MessageEncoding);
+        }
+
+        [Test]
+        public void LegacyInferProto2Packed()
+        {
+            var messageDescriptor = proto2::TestPackedTypes.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("packed_int32");
+            Assert.AreEqual(RepeatedFieldEncoding.Packed, fieldDescriptor.Features.RepeatedFieldEncoding);
+        }
+
+        [Test]
+        public void LegacyInferProto3Expanded()
+        {
+            var messageDescriptor = TestUnpackedTypes.Descriptor;
+            var fieldDescriptor = messageDescriptor.FindFieldByName("unpacked_int32");
+            Assert.NotNull(fieldDescriptor);
+            Assert.AreEqual(RepeatedFieldEncoding.Expanded, fieldDescriptor.Features.RepeatedFieldEncoding);
         }
 
         private static void TestDescriptorToProto(Func<IMessage> toProtoFunction, IMessage expectedProto)

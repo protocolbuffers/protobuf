@@ -36,6 +36,7 @@ files {
   "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
   "src/google/protobuf/map.cc",
   "src/google/protobuf/message_lite.cc",
+  "src/google/protobuf/micro_string.cc",
   "src/google/protobuf/parse_context.cc",
   "src/google/protobuf/port.cc",
   "src/google/protobuf/raw_ptr.cc",  
@@ -43,7 +44,7 @@ files {
   "src/google/protobuf/repeated_ptr_field.cc",
   "src/google/protobuf/stubs/common.cc",
   "src/google/protobuf/wire_format_lite.cc",
-  "third_party/utf8_range/utf8_validity.cc",
+  "third_party/utf8_range/utf8_range.c",
 }
 
 if (_PLATFORM_ANDROID) then

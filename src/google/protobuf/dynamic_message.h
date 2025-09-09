@@ -16,13 +16,16 @@
 #define GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 
 #include <algorithm>
-#include <memory>
+#include <cstddef>
+#include <cstdint>
+#include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_log.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"
 
@@ -76,7 +79,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 #ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
   explicit
 #endif
-      DynamicMessageFactory(const DescriptorPool* pool);
+      DynamicMessageFactory(const DescriptorPool* PROTOBUF_NONNULL pool);
   DynamicMessageFactory(const DynamicMessageFactory&) = delete;
   DynamicMessageFactory& operator=(const DynamicMessageFactory&) = delete;
 
@@ -105,14 +108,15 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   // prototype, so these must be destroyed before the DynamicMessageFactory
   // is destroyed.
   //
-  // The given descriptor must outlive the returned message, and hence must
-  // outlive the DynamicMessageFactory.
+  // The given descriptor must be non-null and outlive the returned message, and
+  // hence must outlive the DynamicMessageFactory.
   //
   // The method is thread-safe.
-  const Message* GetPrototype(const Descriptor* type) override;
+  const Message* PROTOBUF_NONNULL
+  GetPrototype(const Descriptor* PROTOBUF_NONNULL type) override;
 
  private:
-  const DescriptorPool* pool_;
+  const DescriptorPool* PROTOBUF_NULLABLE pool_;
   bool delegate_to_generated_factory_;
 
   struct TypeInfo;
@@ -120,15 +124,17 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   mutable absl::Mutex prototypes_mutex_;
 
   friend class DynamicMessage;
-  const Message* GetPrototypeNoLock(const Descriptor* type);
+  const Message* PROTOBUF_NONNULL
+  GetPrototypeNoLock(const Descriptor* PROTOBUF_NONNULL type);
 };
 
 // Helper for computing a sorted list of map entries via reflection.
 class PROTOBUF_EXPORT DynamicMapSorter {
  public:
-  static std::vector<const Message*> Sort(const Message& message, int map_size,
-                                          const Reflection* reflection,
-                                          const FieldDescriptor* field) {
+  static std::vector<const Message*> Sort(
+      const Message& message, int map_size,
+      const Reflection* PROTOBUF_NONNULL reflection,
+      const FieldDescriptor* PROTOBUF_NONNULL field) {
     std::vector<const Message*> result;
     result.reserve(map_size);
     RepeatedFieldRef<Message> map_field =
@@ -140,7 +146,7 @@ class PROTOBUF_EXPORT DynamicMapSorter {
     std::stable_sort(result.begin(), result.end(), comparator);
     // Complain if the keys aren't in ascending order.
 #ifndef NDEBUG
-    for (size_t j = 1; j < static_cast<size_t>(map_size); j++) {
+    for (size_t j = 1; j < static_cast<size_t>(map_size); ++j) {
       if (!comparator(result[j - 1], result[j])) {
         ABSL_LOG(ERROR) << (comparator(result[j], result[j - 1])
                                 ? "internal error in map key sorting"
@@ -154,10 +160,12 @@ class PROTOBUF_EXPORT DynamicMapSorter {
  private:
   class PROTOBUF_EXPORT MapEntryMessageComparator {
    public:
-    explicit MapEntryMessageComparator(const Descriptor* descriptor)
+    explicit MapEntryMessageComparator(
+        const Descriptor* PROTOBUF_NONNULL descriptor)
         : field_(descriptor->field(0)) {}
 
-    bool operator()(const Message* a, const Message* b) {
+    bool operator()(const Message* PROTOBUF_NONNULL a,
+                    const Message* PROTOBUF_NONNULL b) {
       const Reflection* reflection = a->GetReflection();
       switch (field_->cpp_type()) {
         case FieldDescriptor::CPPTYPE_BOOL: {
@@ -197,7 +205,7 @@ class PROTOBUF_EXPORT DynamicMapSorter {
     }
 
    private:
-    const FieldDescriptor* field_;
+    const FieldDescriptor* PROTOBUF_NONNULL field_;
   };
 };
 

@@ -7,6 +7,8 @@
 
 syntax = "proto2";
 
-// package intentionally left unspecified.
-
 message OtherMsgWithoutPackage {}
+
+enum OtherEnumWithoutPackage {
+  OTHER_ENUM_WITHOUT_PACKAGE_UNSPECIFIED = 0;
+}

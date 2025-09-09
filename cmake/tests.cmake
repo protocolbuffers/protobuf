@@ -6,6 +6,7 @@ option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake)
 
 set(lite_test_protos
   ${protobuf_lite_test_protos_files}
@@ -17,37 +18,28 @@ set(tests_protos
   ${util_test_protos_files}
 )
 
-set(protoc_cpp_args)
-if (protobuf_BUILD_SHARED_LIBS)
-  set(protoc_cpp_args "dllexport_decl=PROTOBUF_TEST_EXPORTS:")
-endif ()
-macro(compile_proto_file filename)
-  string(REPLACE .proto .pb.h pb_hdr ${filename})
-  string(REPLACE .proto .pb.cc pb_src ${filename})
-  add_custom_command(
-    OUTPUT ${pb_hdr} ${pb_src}
-    DEPENDS ${protobuf_PROTOC_EXE} ${filename}
-    COMMAND ${protobuf_PROTOC_EXE} ${filename}
-        --proto_path=${protobuf_SOURCE_DIR}/src
-        --cpp_out=${protoc_cpp_args}${protobuf_SOURCE_DIR}/src
-        --experimental_allow_proto3_optional
-  )
-endmacro(compile_proto_file)
+file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/src)
 
 set(lite_test_proto_files)
 foreach(proto_file ${lite_test_protos})
-  compile_proto_file(${proto_file})
-  set(lite_test_proto_files ${lite_test_proto_files} ${pb_src} ${pb_hdr})
+  protobuf_generate(
+    PROTOS ${proto_file}
+    LANGUAGE cpp
+    OUT_VAR pb_generated_files
+    IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+  )
+  set(lite_test_proto_files ${lite_test_proto_files} ${pb_generated_files})
 endforeach(proto_file)
 
 set(tests_proto_files)
 foreach(proto_file ${tests_protos})
-  if (MSVC AND protobuf_BUILD_SHARED_LIBS AND ${proto_file} MATCHES ".*enormous.*")
-    # Our enormous protos are too big for windows DLLs.
-    continue()
-  endif ()
-  compile_proto_file(${proto_file})
-  set(tests_proto_files ${tests_proto_files} ${pb_src} ${pb_hdr})
+  protobuf_generate(
+    PROTOS ${proto_file}
+    LANGUAGE cpp
+    OUT_VAR pb_generated_files
+    IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+  )
+  set(tests_proto_files ${tests_proto_files} ${pb_generated_files})
 endforeach(proto_file)
 
 set(common_test_files
@@ -62,6 +54,7 @@ set(tests_files
   ${protobuf_test_files}
   ${compiler_test_files}
   ${annotation_test_util_srcs}
+  ${editions_test_files}
   ${io_test_files}
   ${util_test_files}
   ${stubs_test_files}
@@ -92,7 +85,7 @@ else()
   set(protobuf_GTEST_ARGS)
 endif()
 
-add_library(libtest_common ${protobuf_SHARED_OR_STATIC}
+add_library(libtest_common STATIC
   ${tests_proto_files}
 )
 target_link_libraries(libtest_common
@@ -105,16 +98,12 @@ target_link_libraries(libtest_common
 if (MSVC)
   target_compile_options(libtest_common PRIVATE /bigobj)
 endif ()
-if(protobuf_BUILD_SHARED_LIBS)
-  target_compile_definitions(libtest_common
-    PUBLIC  PROTOBUF_USE_DLLS
-    PRIVATE LIBPROTOBUF_TEST_EXPORTS)
-endif()
 
 add_executable(tests ${tests_files} ${common_test_files})
 if (MSVC)
   target_compile_options(tests PRIVATE
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
+    /bigobj
   )
 endif()
 target_link_libraries(tests
@@ -151,7 +140,7 @@ target_link_libraries(test_plugin
   GTest::gmock
 )
 
-add_library(libtest_common_lite ${protobuf_SHARED_OR_STATIC}
+add_library(libtest_common_lite STATIC
   ${lite_test_proto_files}
 )
 target_link_libraries(libtest_common_lite
@@ -159,11 +148,6 @@ target_link_libraries(libtest_common_lite
   ${protobuf_ABSL_USED_TARGETS}
   GTest::gmock
 )
-if(protobuf_BUILD_SHARED_LIBS)
-  target_compile_definitions(libtest_common_lite
-    PUBLIC  PROTOBUF_USE_DLLS
-    PRIVATE LIBPROTOBUF_TEST_EXPORTS)
-endif()
 
 add_executable(lite-test
   ${protobuf_lite_test_files}
@@ -191,6 +175,73 @@ add_test(NAME full-test
   COMMAND tests ${protobuf_GTEST_ARGS}
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
+# This test involves observing and modifying the internal state of the global
+# descriptor pool, so it needs to be in its own binary to avoid conflicting
+# with other tests.
+add_executable(lazily-build-dependencies-test
+  ${lazily_build_dependencies_test_files}
+)
+
+target_link_libraries(lazily-build-dependencies-test
+  libtest_common
+  libtest_common_lite
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+  ${protobuf_ABSL_USED_TEST_TARGETS}
+  GTest::gmock_main
+)
+
+add_test(NAME lazily-build-dependencies-test
+  COMMAND lazily-build-dependencies-test ${protobuf_GTEST_ARGS}
+  WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
+
+if (protobuf_BUILD_LIBUPB)
+  set(upb_test_proto_genfiles)
+  foreach(proto_file ${upb_test_protos_files} ${descriptor_proto_proto_srcs})
+    foreach(generator upb upbdefs)
+      protobuf_generate(
+        PROTOS ${proto_file}
+        LANGUAGE ${generator}
+        GENERATE_EXTENSIONS .${generator}.h .${generator}.c
+        OUT_VAR pb_generated_files
+        IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+        IMPORT_DIRS ${protobuf_SOURCE_DIR}
+        PLUGIN protoc-gen-${generator}=$<TARGET_FILE:protobuf::protoc-gen-${generator}>
+        DEPENDENCIES $<TARGET_FILE:protobuf::protoc-gen-${generator}>
+      )
+      set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
+    endforeach()
+
+    # The minitable generator has a slightly different setup from the other upb
+    # generators, since it is built into protoc.
+    protobuf_generate(
+      PROTOS ${proto_file}
+      LANGUAGE upb_minitable
+      GENERATE_EXTENSIONS .upb_minitable.h .upb_minitable.c
+      OUT_VAR pb_generated_files
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}/src
+      IMPORT_DIRS ${protobuf_SOURCE_DIR}
+    )
+    set(upb_test_proto_genfiles ${upb_test_proto_genfiles} ${pb_generated_files})
+  endforeach(proto_file)
+
+  add_executable(upb-test
+    ${upb_test_files}
+    ${upb_test_proto_genfiles}
+    ${upb_test_util_files})
+
+  target_link_libraries(upb-test
+    ${protobuf_LIB_PROTOBUF}
+    ${protobuf_LIB_UPB}
+    ${protobuf_ABSL_USED_TARGETS}
+    ${protobuf_ABSL_USED_TEST_TARGETS}
+    GTest::gmock_main)
+
+  add_test(NAME upb-test
+    COMMAND upb-test ${protobuf_GTEST_ARGS}
+    WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
+endif()
+
 # For test purposes, remove headers that should already be installed.  This
 # prevents accidental conflicts and also version skew (since local headers take
 # precedence over installed headers).
@@ -200,7 +251,20 @@ add_custom_target(restore-installed-headers)
 
 file(GLOB_RECURSE _local_hdrs
   "${PROJECT_SOURCE_DIR}/src/*.h"
-  "${PROJECT_SOURCE_DIR}/src/*.inc")
+  "${PROJECT_SOURCE_DIR}/src/*.inc"
+)
+file(GLOB_RECURSE _local_upb_hdrs
+  "${PROJECT_SOURCE_DIR}/upb/*.h"
+)
+
+# Exclude test library headers.
+list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
+  ${compiler_test_utils_hdrs} ${upb_test_util_files} ${libprotoc_hdrs})
+foreach(_hdr ${_exclude_hdrs})
+  list(REMOVE_ITEM _local_hdrs ${_hdr})
+  list(REMOVE_ITEM _local_upb_hdrs ${_hdr})
+endforeach()
+list(APPEND _local_hdrs ${libprotoc_public_hdrs})
 
 # Exclude the bootstrapping that are directly used by tests.
 set(_exclude_hdrs
@@ -208,16 +272,25 @@ set(_exclude_hdrs
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/java_features.pb.h")
-
-# Exclude test library headers.
-list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
-  ${compiler_test_utils_hdrs})
 foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
 endforeach()
 
 foreach(_hdr ${_local_hdrs})
   string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
+  set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
+  add_custom_command(TARGET remove-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E remove -f "${_hdr}")
+  add_custom_command(TARGET save-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                        copy "${_hdr}" "${_tmp_file}" || true)
+  add_custom_command(TARGET restore-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                        copy "${_tmp_file}" "${_hdr}")
+endforeach()
+
+foreach(_hdr ${_local_upb_hdrs})
+  string(REPLACE "${protobuf_SOURCE_DIR}/upb" "" _file ${_hdr})
   set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
   add_custom_command(TARGET remove-installed-headers PRE_BUILD
                      COMMAND ${CMAKE_COMMAND} -E remove -f "${_hdr}")

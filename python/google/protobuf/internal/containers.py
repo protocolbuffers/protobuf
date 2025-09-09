@@ -136,17 +136,7 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
 
   def extend(self, elem_seq: Iterable[_T]) -> None:
     """Extends by appending the given iterable. Similar to list.extend()."""
-# TODO: Change OSS to raise error too
-    if elem_seq is None:
-      return
-    try:
-      elem_seq_iter = iter(elem_seq)
-    except TypeError:
-      if not elem_seq:
-        warnings.warn('Value is not iterable. Please remove the wrong '
-                      'usage. This will be changed to raise TypeError soon.')
-        return
-      raise
+    elem_seq_iter = iter(elem_seq)
     new_values = [self._type_checker.CheckValue(elem) for elem in elem_seq_iter]
     if new_values:
       self._values.extend(new_values)
@@ -422,6 +412,13 @@ class ScalarMap(MutableMapping[_K, _V]):
   def __repr__(self) -> str:
     return repr(self._values)
 
+  def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
+    if value == None:
+      raise ValueError('The value for scalar map setdefault must be set.')
+    if key not in self._values:
+      self.__setitem__(key, value)
+    return self[key]
+
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
     self._values.update(other._values)
     self._message_listener.Modified()
@@ -535,6 +532,12 @@ class MessageMap(MutableMapping[_K, _V]):
 
   def __repr__(self) -> str:
     return repr(self._values)
+
+  def setdefault(self, key: _K, value: Optional[_V] = None) -> _V:
+    raise NotImplementedError(
+        'Set message map value directly is not supported, call'
+        ' my_map[key].foo = 5'
+    )
 
   def MergeFrom(self, other: 'MessageMap[_K, _V]') -> None:
     # pylint: disable=protected-access

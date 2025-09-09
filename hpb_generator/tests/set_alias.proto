@@ -1,0 +1,28 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package hpb_unittest;
+
+message Child {
+  int32 peeps = 1;
+}
+
+message Parent {
+  int32 x = 2;
+  Child child = 3;
+  int64 out_of_order = 1;  // set_alias must work regardless of order
+}
+
+message ParentWithRepeated {
+  repeated Child children = 1;
+}
+
+message ParentWithMap {
+  map<int32, Child> child_map = 1;
+}

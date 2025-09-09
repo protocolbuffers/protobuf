@@ -1,0 +1,7 @@
+edition = "2023";
+
+package third_party_protobuf_editions_proto;
+
+message EditionsTransformNoop {
+  string string_field = 1;
+}

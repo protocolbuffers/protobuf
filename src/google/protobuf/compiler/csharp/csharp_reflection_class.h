@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_REFLECTION_CLASS_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_REFLECTION_CLASS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_REFLECTION_CLASS_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_REFLECTION_CLASS_H__
 
 #include <string>
 
@@ -23,7 +23,7 @@ namespace csharp {
 class ReflectionClassGenerator : public SourceGeneratorBase {
  public:
   ReflectionClassGenerator(const FileDescriptor* file, const Options* options);
-  ~ReflectionClassGenerator();
+  ~ReflectionClassGenerator() override;
 
   ReflectionClassGenerator(const ReflectionClassGenerator&) = delete;
   ReflectionClassGenerator& operator=(const ReflectionClassGenerator&) = delete;
@@ -49,4 +49,4 @@ class ReflectionClassGenerator : public SourceGeneratorBase {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_REFLECTION_CLASS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_REFLECTION_CLASS_H__

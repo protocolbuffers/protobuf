@@ -9,10 +9,10 @@
 
 #import "GPBDictionary.h"
 
-@class GPBCodedInputStream;
-@class GPBCodedOutputStream;
-@protocol GPBExtensionRegistry;
-@class GPBFieldDescriptor;
+#import "GPBCodedInputStream.h"
+#import "GPBCodedOutputStream.h"
+#import "GPBDescriptor.h"
+#import "GPBExtensionRegistry.h"
 
 @protocol GPBDictionaryInternalsProtocol
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field;

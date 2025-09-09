@@ -1,0 +1,30 @@
+"""Bazel module dependencies"""
+
+module(
+    name = "com_google_protobuf_examples",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "protobuf", version = "0.0.0", repo_name = "com_google_protobuf")
+local_path_override(
+    module_name = "protobuf",
+    path = "..",
+)
+
+bazel_dep(name = "com_google_protobuf-examples-with-hyphen", version = "0.0.0", dev_dependency = True)
+local_path_override(
+    module_name = "com_google_protobuf-examples-with-hyphen",
+    path = "examples_with_hyphen",
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_cc", version = "0.0.17")
+bazel_dep(name = "rules_java", version = "8.6.1")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "rules_python", version = "1.0.0")
+
+# For clang-cl configuration
+cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
+use_repo(cc_configure, "local_config_cc")

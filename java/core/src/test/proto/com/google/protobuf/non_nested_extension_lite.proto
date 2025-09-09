@@ -9,9 +9,11 @@
 //
 // A proto file with extensions for a MessageLite messages.
 
-syntax = "proto2";
+// LINT: LEGACY_NAMES
 
-package protobuf_unittest;
+edition = "2023";
+
+package proto2_unittest;
 
 option optimize_for = LITE_RUNTIME;
 
@@ -22,6 +24,6 @@ message MessageLiteToBeExtended {
 message MyNonNestedExtensionLite {}
 
 extend MessageLiteToBeExtended {
-  optional MyNonNestedExtensionLite nonNestedExtensionLite = 1;
-  optional bool package = 2006;
+  MyNonNestedExtensionLite nonNestedExtensionLite = 1;
+  bool package = 2006;
 }

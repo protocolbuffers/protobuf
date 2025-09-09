@@ -18,9 +18,14 @@ namespace Google.Protobuf
 {
     /// <summary>
     /// Methods for managing <see cref="ExtensionSet{TTarget}"/>s with null checking.
-    /// 
-    /// Most users will not use this class directly and its API is experimental and subject to change.
     /// </summary>
+    /// <remarks>
+    /// Most users will not use this class directly. Accessing extensions for a given message
+    /// is usually performed by obtaining the generated instance of
+    /// <see cref="Extension{TTarget,TValue}"/> or <see cref="RepeatedExtension{TTarget,TValue}"/>
+    /// and then calling methods on <see cref="IExtendableMessage{T}"/> (which is implemented by
+    /// all generated messages).
+    /// </remarks>
     public static class ExtensionSet
     {
         private static bool TryGetValue<TTarget>(ref ExtensionSet<TTarget> set, Extension extension, out IExtensionValue value) where TTarget : IExtendableMessage<TTarget>

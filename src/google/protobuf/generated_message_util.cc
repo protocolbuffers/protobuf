@@ -12,8 +12,8 @@
 #include "google/protobuf/generated_message_util.h"
 
 #include <atomic>
+#include <cstdint>
 #include <limits>
-#include <vector>
 
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/extension_set.h"
@@ -21,37 +21,74 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
 
+#ifndef PROTOBUF_PRAGMA_INIT_SEG_DONE
 PROTOBUF_PRAGMA_INIT_SEG
+#define PROTOBUF_PRAGMA_INIT_SEG_DONE
+#endif
 
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
-void DestroyMessage(const void* message) {
-  static_cast<const MessageLite*>(message)->~MessageLite();
-}
 void DestroyString(const void* s) {
   static_cast<const std::string*>(s)->~basic_string();
 }
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExplicitlyConstructedArenaString
-        fixed_address_empty_string{};  // NOLINT
-
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
+#if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
+
+// We add a single dummy entry to guarantee the section is never empty.
+struct DummyWeakDefault {
+  const Message* m;
+  WeakDescriptorDefaultTail tail;
+};
+DummyWeakDefault dummy_weak_default __attribute__((section("pb_defaults"))) = {
+    nullptr, {&dummy_weak_default.m, sizeof(dummy_weak_default)}};
+
+extern "C" {
+// When using --descriptor_implicit_weak_messages we expect the default instance
+// objects to live in the `pb_defaults` section. We load them all using the
+// __start/__end symbols provided by the linker.
+// Each object is its own type and size, so we use a `char` to load them
+// appropriately.
+extern const char __start_pb_defaults;
+extern const char __stop_pb_defaults;
+}
+static void InitWeakDefaults() {
+  // force link the dummy entry.
+  StrongPointer<DummyWeakDefault*, &dummy_weak_default>();
+  // We don't know the size of each object, but we know the layout of the tail.
+  // It contains a WeakDescriptorDefaultTail object.
+  // As such, we iterate the section backwards.
+  const char* start = &__start_pb_defaults;
+  const char* end = &__stop_pb_defaults;
+  while (start != end) {
+    auto* tail = reinterpret_cast<const WeakDescriptorDefaultTail*>(end) - 1;
+    end -= tail->size;
+    const Message* instance = reinterpret_cast<const Message*>(end);
+    *tail->target = instance;
+  }
+}
+#else
+void InitWeakDefaults() {}
+#endif
+
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
-  fixed_address_empty_string.DefaultConstruct();
-  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+  if (auto* to_destroy = fixed_address_empty_string.Init()) {
+    OnShutdownDestroyString(to_destroy);
+  }
+  InitWeakDefaults();
 
 
   init_protobuf_defaults_state.store(true, std::memory_order_release);
@@ -67,17 +104,6 @@ void InitProtobufDefaultsSlow() {
 // there is any object with reflection.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 static std::true_type init_empty_string =
     (InitProtobufDefaultsSlow(), std::true_type{});
-
-size_t StringSpaceUsedExcludingSelfLong(const std::string& str) {
-  const void* start = &str;
-  const void* end = &str + 1;
-  if (start <= str.data() && str.data() < end) {
-    // The string's data is stored inside the string object itself.
-    return 0;
-  } else {
-    return str.capacity();
-  }
-}
 
 template <typename T>
 const T& Get(const void* ptr) {

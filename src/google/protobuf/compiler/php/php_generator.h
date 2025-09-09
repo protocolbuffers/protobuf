@@ -8,12 +8,12 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 
+#include <cstdint>
+#include <string>
+
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/php/names.h"
 #include "google/protobuf/descriptor.h"
-
-#include <string>
-
 #include "google/protobuf/port_def.inc"
 
 namespace google {
@@ -25,11 +25,9 @@ struct Options;
 
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
-  virtual bool Generate(
-      const FileDescriptor* file,
-      const std::string& parameter,
-      GeneratorContext* generator_context,
-      std::string* error) const override;
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* generator_context,
+                std::string* error) const override;
 
   bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                    const std::string& parameter,
@@ -37,7 +35,13 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                    std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
+    return Feature::FEATURE_PROTO3_OPTIONAL;
+  }
+
+  Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
+    return {};
   }
 
  private:

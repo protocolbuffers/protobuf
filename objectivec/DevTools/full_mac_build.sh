@@ -7,7 +7,7 @@ set -eu
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
-readonly BazelFlags="${BAZEL_FLAGS:---announce_rc --macos_minimum_os=10.13}"
+readonly BazelFlags="${BAZEL_FLAGS:---announce_rc --macos_minimum_os=11.0}"
 
 # Invoke with BAZEL=bazelisk to use that instead.
 readonly BazelBin="${BAZEL:-bazel}"
@@ -219,6 +219,11 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -destination "platform=iOS Simulator,name=iPhone 13,OS=latest"
       )
       ;;
+    15.* | 16.*)
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 15,OS=latest"
+      )
+      ;;
     * )
       echo ""
       echo "ATTENTION: Time to update the simulator targets for Xcode ${XCODE_VERSION}"
@@ -277,6 +282,11 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
     13.* | 14.*)
       XCODEBUILD_TEST_BASE_TVOS+=(
         -destination "platform=tvOS Simulator,name=Apple TV 4K (2nd generation),OS=latest"
+      )
+      ;;
+    15.* | 16.*)
+      XCODEBUILD_TEST_BASE_TVOS+=(
+        -destination "platform=tvOS Simulator,name=Apple TV 4K (3rd generation),OS=latest"
       )
       ;;
     * )

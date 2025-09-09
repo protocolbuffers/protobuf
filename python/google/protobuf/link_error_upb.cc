@@ -13,7 +13,7 @@ extern "C" {
 // MUST match link_error_pure_python.cc's function signature.
 
 __attribute__((noinline)) __attribute__((optnone)) int
-go_SLASH_build_deps_on_BOTH_use_fast_cpp_protos_AND_use_pure_python() {
+go_SLASH_build_deps_on_multiple_python_proto_backends() {
   return 2;
 }
 

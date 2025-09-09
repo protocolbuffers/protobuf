@@ -18,8 +18,9 @@ namespace python {
 namespace field {
 
 static PyObject* Repr(PyMessageFieldProperty* self) {
-  return PyUnicode_FromFormat("<field property '%s'>",
-                              self->field_descriptor->full_name().c_str());
+  return PyUnicode_FromFormat(
+      "<field property '%s'>",
+      std::string(self->field_descriptor->full_name()).c_str());
 }
 
 static PyObject* DescrGet(PyMessageFieldProperty* self, PyObject* obj,
@@ -47,8 +48,8 @@ static PyObject* GetDescriptor(PyMessageFieldProperty* self, void* closure) {
 }
 
 static PyObject* GetDoc(PyMessageFieldProperty* self, void* closure) {
-  return PyUnicode_FromFormat("Field %s",
-                              self->field_descriptor->full_name().c_str());
+  return PyUnicode_FromFormat(
+      "Field %s", std::string(self->field_descriptor->full_name()).c_str());
 }
 
 static PyGetSetDef Getters[] = {

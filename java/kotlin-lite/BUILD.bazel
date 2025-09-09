@@ -1,9 +1,10 @@
-load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
-load("@rules_java//java:defs.bzl", "java_lite_proto_library")
+load("@rules_java//java:java_test.bzl", "java_test")
 load("@rules_jvm_external//:kt_defs.bzl", "kt_jvm_export")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//:protobuf.bzl", "internal_gen_kt_protos")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
+load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//build_defs:kotlin_opts.bzl", "protobuf_versioned_kt_jvm_library")
 
 java_lite_proto_library(
@@ -23,9 +24,11 @@ internal_gen_kt_protos(
     deps = [
         "//:any_proto",
         "//:api_proto",
+        "//:descriptor_proto",
         "//:duration_proto",
         "//:empty_proto",
         "//:field_mask_proto",
+        "//:java_features_proto",
         "//:source_context_proto",
         "//:struct_proto",
         "//:timestamp_proto",
@@ -67,12 +70,15 @@ protobuf_versioned_kt_jvm_library(
 kt_jvm_export(
     name = "kotlin-lite_mvn",
     deploy_env = [
-        "@com_github_jetbrains_kotlin//:kotlin-stdlib",
         "//java/lite",
     ],
     maven_coordinates = "com.google.protobuf:protobuf-kotlin-lite:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "//java/kotlin-lite:pom_template.xml",
-    resources = ["//:well_known_type_protos"],
+    resources = [
+        "//:java_features_proto",
+        "//:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
+    ],
     tags = ["manual"],
     runtime_deps = [
         ":kotlin-lite_bundle",
@@ -108,9 +114,9 @@ kt_jvm_library(
         "//java/kotlin:only_for_use_in_proto_generated_code_its_generator_and_tests",
         "//java/kotlin:shared_runtime",
         "//java/lite",
-        "@com_github_jetbrains_kotlin//:kotlin-test",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
+        "@rules_kotlin//kotlin/compiler:kotlin-test",
     ],
 )
 
@@ -204,8 +210,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_unittest_lite",
         "//java/core:test_util_lite",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 
@@ -221,8 +227,8 @@ kt_jvm_library(
     deps = [
         ":kotlin_proto3_unittest_lite",
         "//java/core:test_util_lite",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 
@@ -242,7 +248,6 @@ pkg_files(
         "generate-sources-build.xml",
         "generate-test-sources-build.xml",
         "lite.awk",
-        "pom.xml",
         "pom_template.xml",
         "process-lite-sources-build.xml",
     ],

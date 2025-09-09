@@ -7,14 +7,23 @@
 
 #include "google/protobuf/arenastring.h"
 
+#include <atomic>
+#include <cassert>
 #include <cstddef>
+#include <cstdint>
+#include <cstring>
+#include <string>
+#include <utility>
 
+#include "absl/base/const_init.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -42,7 +51,7 @@ constexpr size_t kNewAlign = alignof(std::max_align_t);
 constexpr size_t kStringAlign = alignof(std::string);
 
 static_assert((kStringAlign > kNewAlign ? kStringAlign : kNewAlign) >= 4, "");
-static_assert(alignof(ExplicitlyConstructedArenaString) >= 4, "");
+static_assert(alignof(GlobalEmptyString) >= 4, "");
 
 }  // namespace
 
@@ -105,19 +114,19 @@ void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
     tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
                                    : CreateString(value);
   } else {
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    if (arena == nullptr) {
-      auto* old = tagged_ptr_.GetIfAllocated();
-      tagged_ptr_ = CreateString(value);
-      delete old;
+    if (internal::DebugHardenForceCopyDefaultString()) {
+      if (arena == nullptr) {
+        auto* old = tagged_ptr_.GetIfAllocated();
+        tagged_ptr_ = CreateString(value);
+        delete old;
+      } else {
+        auto* old = UnsafeMutablePointer();
+        tagged_ptr_ = CreateArenaString(*arena, value);
+        old->assign("garbagedata");
+      }
     } else {
-      auto* old = UnsafeMutablePointer();
-      tagged_ptr_ = CreateArenaString(*arena, value);
-      old->assign("garbagedata");
+      UnsafeMutablePointer()->assign(value.data(), value.length());
     }
-#else   // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    UnsafeMutablePointer()->assign(value.data(), value.length());
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   }
 }
 
@@ -130,19 +139,19 @@ void ArenaStringPtr::Set(const std::string& value, Arena* arena) {
     tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
                                    : CreateString(value);
   } else {
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    if (arena == nullptr) {
-      auto* old = tagged_ptr_.GetIfAllocated();
-      tagged_ptr_ = CreateString(value);
-      delete old;
+    if (internal::DebugHardenForceCopyDefaultString()) {
+      if (arena == nullptr) {
+        auto* old = tagged_ptr_.GetIfAllocated();
+        tagged_ptr_ = CreateString(value);
+        delete old;
+      } else {
+        auto* old = UnsafeMutablePointer();
+        tagged_ptr_ = CreateArenaString(*arena, value);
+        old->assign("garbagedata");
+      }
     } else {
-      auto* old = UnsafeMutablePointer();
-      tagged_ptr_ = CreateArenaString(*arena, value);
-      old->assign("garbagedata");
+      UnsafeMutablePointer()->assign(value);
     }
-#else   // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    UnsafeMutablePointer()->assign(value);
-#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   }
 }
 

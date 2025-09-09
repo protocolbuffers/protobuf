@@ -4,13 +4,12 @@
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_ruby//ruby:defs.bzl", "ruby_library")
-load("//build_defs:internal_shell.bzl", "inline_sh_binary")
-load("//python:internal.bzl", "internal_copy_files")
-load("//ruby:defs.bzl", "internal_ruby_proto_library")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_ruby//ruby:defs.bzl", "rb_library")
 load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
 load("//conformance:defs.bzl", "conformance_test")
+load("//python:internal.bzl", "internal_copy_files")
+load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 ################################################################################
 # Ruby Runtime
@@ -43,7 +42,7 @@ selects.config_setting_group(
     name = "jruby_ffi",
     match_all = [
         ":ffi_enabled",
-        "@rules_ruby//ruby/runtime:config_jruby",
+        "@ruby//engine:jruby",
     ],
 )
 
@@ -51,7 +50,7 @@ selects.config_setting_group(
     name = "jruby_native",
     match_all = [
         ":ffi_disabled",
-        "@rules_ruby//ruby/runtime:config_jruby",
+        "@ruby//engine:jruby",
     ],
 )
 
@@ -59,7 +58,7 @@ selects.config_setting_group(
     name = "ruby_ffi",
     match_all = [
         ":ffi_enabled",
-        "@rules_ruby//ruby/runtime:config_ruby",
+        "@ruby//engine:ruby",
     ],
 )
 
@@ -67,7 +66,7 @@ selects.config_setting_group(
     name = "ruby_native",
     match_all = [
         ":ffi_disabled",
-        "@rules_ruby//ruby/runtime:config_ruby",
+        "@ruby//engine:ruby",
     ],
 )
 
@@ -101,7 +100,6 @@ internal_ruby_proto_library(
     name = "well_known_ruby_protos",
     srcs = [":copied_wkt_proto_files"],
     default_runtime = "",
-    includes = ["."],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
@@ -122,7 +120,6 @@ internal_ruby_proto_library(
     name = "conformance_test_ruby_proto",
     testonly = 1,
     srcs = [":copied_conformance_test_files"],
-    includes = ["."],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
@@ -130,7 +127,25 @@ internal_ruby_proto_library(
     deps = [":well_known_ruby_protos"],
 )
 
-ruby_library(
+internal_copy_files(
+    name = "copied_conformance_editions_test_files",
+    testonly = 1,
+    srcs = [
+        "//editions:golden/test_messages_proto2_editions.proto",
+        "//editions:golden/test_messages_proto3_editions.proto",
+    ],
+    strip_prefix = "editions/golden/",
+)
+
+internal_ruby_proto_library(
+    name = "conformance_editions_test_ruby_proto",
+    testonly = 1,
+    srcs = [":copied_conformance_editions_test_files"],
+    visibility = ["//conformance:__pkg__"],
+    deps = [":well_known_ruby_protos"],
+)
+
+rb_library(
     name = "protobuf",
     visibility = [
         "//visibility:public",
@@ -144,8 +159,8 @@ ruby_library(
 genrule(
     name = "jruby_release",
     srcs = [
-        "@utf8_range//:utf8_range_srcs",
-        "@utf8_range//:LICENSE",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//third_party/utf8_range:LICENSE",
         "//ruby/lib/google:copy_jar",
         "//ruby/lib/google:dist_files",
         "//ruby/ext/google/protobuf_c:dist_files",
@@ -157,10 +172,10 @@ genrule(
         set -eux
         mkdir tmp
         for src in $(SRCS); do
-            cp --parents -L "$$src" tmp
+            mkdir -p "tmp/$$(dirname $$src)" && cp -L "$$src" "tmp/$$src"
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
-        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+        for utf in $(execpaths //third_party/utf8_range:utf8_range_srcs) $(execpath //third_party/utf8_range:LICENSE); do
             mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
         for wkt in $(execpaths :well_known_ruby_protos); do
@@ -175,7 +190,7 @@ genrule(
     """,
     tags = ["manual"],
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": [],
+        "@ruby//engine:jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
@@ -183,8 +198,8 @@ genrule(
 genrule(
     name = "ruby_release",
     srcs = [
-        "@utf8_range//:utf8_range_srcs",
-        "@utf8_range//:LICENSE",
+        "//third_party/utf8_range:utf8_range_srcs",
+        "//third_party/utf8_range:LICENSE",
         "//ruby/ext/google/protobuf_c:dist_files",
         "//ruby/lib/google:dist_files",
         ":well_known_ruby_protos",
@@ -195,10 +210,10 @@ genrule(
         set -eux
         mkdir tmp
         for src in $(SRCS); do
-            cp --parents -L "$$src" "tmp"
+            mkdir -p "tmp/$$(dirname $$src)" && cp -L "$$src" "tmp/$$src"
         done
         mkdir -p "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
-        for utf in $(execpaths @utf8_range//:utf8_range_srcs) $(execpath @utf8_range//:LICENSE); do
+        for utf in $(execpaths //third_party/utf8_range:utf8_range_srcs) $(execpath //third_party/utf8_range:LICENSE); do
             mv "tmp/$$utf" "tmp/ruby/ext/google/protobuf_c/third_party/utf8_range"
         done
         for wkt in $(execpaths :well_known_ruby_protos); do
@@ -212,7 +227,7 @@ genrule(
     """,
     tags = ["manual"],
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_ruby": [],
+        "@ruby//engine:ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
 )
@@ -220,7 +235,7 @@ genrule(
 filegroup(
     name = "release",
     srcs = select({
-        "@rules_ruby//ruby/runtime:config_jruby": [":jruby_release"],
+        "@ruby//engine:jruby": [":jruby_release"],
         "//conditions:default": [":ruby_release"],
     }),
     tags = ["manual"],
@@ -230,30 +245,15 @@ filegroup(
 # Tests
 ################################################################################
 
-# Define this here so the descriptor paths match what we get in Rake tests.
-internal_ruby_proto_library(
-    name = "test_ruby_protos",
-    srcs = ["//ruby/tests:test_protos"],
-    includes = [
-        ".",
-        "ruby/tests",
-        "src",
-    ],
-    visibility = [
-        "//ruby:__subpackages__",
-    ],
-    deps = [":well_known_ruby_protos"],
-)
-
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_ruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":ruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
 )
 
 conformance_test(
@@ -262,23 +262,23 @@ conformance_test(
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
     },
     failure_list = "//conformance:failure_list_ruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":ruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
 )
 
 conformance_test(
     name = "conformance_test_jruby",
     failure_list = "//conformance:failure_list_jruby.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":jruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
 )
 
 conformance_test(
@@ -287,12 +287,12 @@ conformance_test(
         "PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION": "ffi",
     },
     failure_list = "//conformance:failure_list_jruby_ffi.txt",
+    maximum_edition = "2023",
     target_compatible_with = select({
         ":jruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     testee = "//conformance:conformance_ruby",
-    text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
 )
 
 ################################################################################

@@ -6,6 +6,11 @@ on:
     - cron: 0 10 * * *
   workflow_call:
     inputs:
+      continuous-run:
+        required: true
+        description: "Boolean string denoting whether this run is continuous --
+          empty string for presubmit, non-empty string for continuous."
+        type: string
       safe-checkout:
         required: false
         description: "The SHA key for the commit we want to run over"
@@ -15,20 +20,14 @@ on:
 permissions: {}
 jobs:
   test:
-    strategy:
-      fail-fast: false
-      matrix:
-        branch: [25.x]
-        os: [{ name: Linux, value: ubuntu-latest}]
-
-    name: Test staleness ${{ matrix.os.name }} ${{ github.head_ref && 'PR' || matrix.branch }}
-    runs-on: ${{ matrix.os.value }}
+    name: Test staleness
+    runs-on: ubuntu-latest
     if: ${{ github.event.repository.full_name == 'protocolbuffers/protobuf' }}
     steps:
-      - name: Checkout ${{ github.head_ref && 'PR' || matrix.branch }}
-        uses: protocolbuffers/protobuf-ci/checkout@v2
+      - name: Checkout
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
-          ref: ${{ inputs.safe-checkout || github.head_ref || matrix.branch }}
+          ref: ${{ inputs.safe-checkout || github.head_ref || github.ref }}
 
       - name: Mark runs associated with commits
         if: ${{ github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' }}
@@ -51,11 +50,17 @@ jobs:
         # In branches where automatic updates work as post-submits, we don't want to run staleness
         # tests along with user changes.  Any stale files will be automatically fixed in a follow-up
         # commit.
-        run: |
-          set -ex
-          echo "Please run ./regenerate_stale_files.sh to regenerate stale files";
-          if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
-            bazel query 'attr(tags, "staleness_test", //...)' | xargs bazel test $BAZEL_FLAGS
-          else
-            bazel query 'attr(tags, "staleness_test", //...)'
-          fi
+        uses: protocolbuffers/protobuf-ci/bazel@v4
+        with:
+          version: 7.1.2 # Bazel version
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: staleness
+          # TODO: Enable bzlmod once //python/dist is buildable.
+          bash: >
+            set -ex;
+            echo "Please run ./regenerate_stale_files.sh to regenerate stale files";
+            if [[ -z $COMMIT_TRIGGERED_RUN || -z $MAIN_RUN ]]; then
+            bazel query 'attr(tags, "staleness_test", //...)' --noenable_bzlmod | xargs bazel test $BAZEL_FLAGS;
+            else
+            bazel query 'attr(tags, "staleness_test", //...)' --noenable_bzlmod;
+            fi

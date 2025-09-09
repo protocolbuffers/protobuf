@@ -17,6 +17,7 @@ import com.google.protobuf.UnittestImportLite.ImportEnumLite;
 import com.google.protobuf.UnittestImportPublicLite.PublicImportMessageLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
 import com.google.protobuf.UnittestLite.ForeignMessageLite;
+import com.google.protobuf.UnittestLite.RecursiveGroup;
 import com.google.protobuf.UnittestLite.RecursiveMessage;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
@@ -33,14 +34,14 @@ import com.google.protobuf.testing.Proto3TestingLite.Proto3MessageLite;
 import map_lite_test.MapTestProto.MapContainer;
 import map_lite_test.MapTestProto.TestMap;
 import map_lite_test.MapTestProto.TestMap.MessageValue;
-import protobuf_unittest.NestedExtensionLite;
-import protobuf_unittest.NonNestedExtensionLite;
-import protobuf_unittest.UnittestProto.TestOneof2;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
+import proto2_unittest.NestedExtensionLite;
+import proto2_unittest.NonNestedExtensionLite;
+import proto2_unittest.UnittestProto.TestOneof2;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
+import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -2427,6 +2428,12 @@ public class LiteTest {
   }
 
   @Test
+  public void testParseFromEmptyBytes() throws Exception {
+    assertThat(TestAllTypesLite.parseFrom(new byte[] {}))
+        .isSameInstanceAs(TestAllTypesLite.getDefaultInstance());
+  }
+
+  @Test
   public void testParseFromByteBuffer() throws Exception {
     TestAllTypesLite message =
         TestAllTypesLite.newBuilder()
@@ -2610,6 +2617,17 @@ public class LiteTest {
     Throwable thrown =
         assertThrows(
             InvalidProtocolBufferException.class, () -> RecursiveMessage.parseFrom(data100));
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testParseFromBytes_recursiveKnownGroups() throws Exception {
+    byte[] data99 = makeRecursiveGroup(99).toByteArray();
+    byte[] data100 = makeRecursiveGroup(100).toByteArray();
+
+    RecursiveGroup unused = RecursiveGroup.parseFrom(data99);
+    Throwable thrown =
+        assertThrows(InvalidProtocolBufferException.class, () -> RecursiveGroup.parseFrom(data100));
     assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
   }
 
@@ -2915,7 +2933,7 @@ public class LiteTest {
   @Test
   public void testNullExtensionRegistry() throws Exception {
     try {
-      TestAllTypesLite.parseFrom(new byte[] {}, null);
+      TestAllTypesLite.parseFrom(TestUtilLite.getAllLiteSetBuilder().build().toByteArray(), null);
       assertWithMessage("expected exception").fail();
     } catch (NullPointerException expected) {
     }
@@ -3029,6 +3047,14 @@ public class LiteTest {
       return RecursiveMessage.getDefaultInstance();
     } else {
       return RecursiveMessage.newBuilder().setRecurse(makeRecursiveMessage(num - 1)).build();
+    }
+  }
+
+  private static RecursiveGroup makeRecursiveGroup(int num) {
+    if (num == 0) {
+      return RecursiveGroup.getDefaultInstance();
+    } else {
+      return RecursiveGroup.newBuilder().setRecurse(makeRecursiveGroup(num - 1)).build();
     }
   }
 }

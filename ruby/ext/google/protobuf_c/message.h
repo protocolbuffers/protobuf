@@ -36,7 +36,7 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
 
 // Gets or constructs a Ruby wrapper object for the given message. The wrapper
 // object will reference |arena| and ensure that it outlives this object.
-VALUE Message_GetRubyWrapper(upb_Message* msg, const upb_MessageDef* m,
+VALUE Message_GetRubyWrapper(const upb_Message* msg, const upb_MessageDef* m,
                              VALUE arena);
 
 // Gets the given field from this message.
@@ -53,10 +53,6 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
 // Returns a deep copy of the given message.
 upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
                                upb_Arena* arena);
-
-// Returns true if these two messages are equal.
-bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
-                   const upb_MessageDef* m);
 
 // Checks that this Ruby object is a message, and raises an exception if not.
 void Message_CheckClass(VALUE klass);
@@ -78,7 +74,7 @@ VALUE Message_decode_bytes(int size, const char* bytes, int options,
                            VALUE klass, bool freeze);
 
 // Recursively freeze message
-VALUE Message_internal_deep_freeze(VALUE _self);
+VALUE Message_freeze(VALUE _self);
 
 // Call at startup to register all types in this module.
 void Message_register(VALUE protobuf);

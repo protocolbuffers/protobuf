@@ -20,12 +20,13 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import calendar
 import collections.abc
 import datetime
-
+from typing import Union
+import warnings
 from google.protobuf.internal import field_mask
 
 FieldMask = field_mask.FieldMask
 
-_TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
+_TIMESTAMPFORMAT = '%Y-%m-%dT%H:%M:%S'
 _NANOS_PER_SECOND = 1000000000
 _NANOS_PER_MILLISECOND = 1000000
 _NANOS_PER_MICROSECOND = 1000
@@ -33,6 +34,8 @@ _MILLIS_PER_SECOND = 1000
 _MICROS_PER_SECOND = 1000000
 _SECONDS_PER_DAY = 24 * 3600
 _DURATION_SECONDS_MAX = 315576000000
+_TIMESTAMP_SECONDS_MIN = -62135596800
+_TIMESTAMP_SECONDS_MAX = 253402300799
 
 _EPOCH_DATETIME_NAIVE = datetime.datetime(1970, 1, 1, tzinfo=None)
 _EPOCH_DATETIME_AWARE = _EPOCH_DATETIME_NAIVE.replace(
@@ -45,8 +48,9 @@ class Any(object):
 
   __slots__ = ()
 
-  def Pack(self, msg, type_url_prefix='type.googleapis.com/',
-           deterministic=None):
+  def Pack(
+      self, msg, type_url_prefix='type.googleapis.com/', deterministic=None
+  ):
     """Packs the specified message into current Any message."""
     if len(type_url_prefix) < 1 or type_url_prefix[-1] != '/':
       self.type_url = '%s/%s' % (type_url_prefix, msg.DESCRIPTOR.full_name)
@@ -65,7 +69,7 @@ class Any(object):
   def TypeName(self):
     """Returns the protobuf type name of the inner message."""
     # Only last part is to be used: b/25630112
-    return self.type_url.split('/')[-1]
+    return self.type_url.rpartition('/')[2]
 
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
@@ -85,10 +89,10 @@ class Timestamp(object):
       and uses 3, 6 or 9 fractional digits as required to represent the
       exact time. Example of the return format: '1972-01-01T10:00:20.021Z'
     """
-    nanos = self.nanos % _NANOS_PER_SECOND
-    total_sec = self.seconds + (self.nanos - nanos) // _NANOS_PER_SECOND
-    seconds = total_sec % _SECONDS_PER_DAY
-    days = (total_sec - seconds) // _SECONDS_PER_DAY
+    _CheckTimestampValid(self.seconds, self.nanos)
+    nanos = self.nanos
+    seconds = self.seconds % _SECONDS_PER_DAY
+    days = (self.seconds - seconds) // _SECONDS_PER_DAY
     dt = datetime.datetime(1970, 1, 1) + datetime.timedelta(days, seconds)
 
     result = dt.isoformat()
@@ -110,8 +114,8 @@ class Timestamp(object):
 
     Args:
       value: A date string. Any fractional digits (or none) and any offset are
-          accepted as long as they fit into nano-seconds precision.
-          Example of accepted format: '1972-01-01T10:00:20.021-05:00'
+        accepted as long as they fit into nano-seconds precision. Example of
+        accepted format: '1972-01-01T10:00:20.021-05:00'
 
     Raises:
       ValueError: On parsing problems.
@@ -125,7 +129,8 @@ class Timestamp(object):
       timezone_offset = value.rfind('-')
     if timezone_offset == -1:
       raise ValueError(
-          'Failed to parse timestamp: missing valid timezone offset.')
+          'Failed to parse timestamp: missing valid timezone offset.'
+      )
     time_value = value[0:timezone_offset]
     # Parse datetime and nanos.
     point_position = time_value.find('.')
@@ -134,18 +139,20 @@ class Timestamp(object):
       nano_value = ''
     else:
       second_value = time_value[:point_position]
-      nano_value = time_value[point_position + 1:]
+      nano_value = time_value[point_position + 1 :]
     if 't' in second_value:
       raise ValueError(
-          'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
-          'lowercase \'t\' is not accepted'.format(second_value))
-    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFOMAT)
+          "time data '{0}' does not match format '%Y-%m-%dT%H:%M:%S', "
+          "lowercase 't' is not accepted".format(second_value)
+      )
+    date_object = datetime.datetime.strptime(second_value, _TIMESTAMPFORMAT)
     td = date_object - datetime.datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY
     if len(nano_value) > 9:
       raise ValueError(
           'Failed to parse Timestamp: nanos {0} more than '
-          '9 fractional digits.'.format(nano_value))
+          '9 fractional digits.'.format(nano_value)
+      )
     if nano_value:
       nanos = round(float('0.' + nano_value) * 1e9)
     else:
@@ -153,61 +160,80 @@ class Timestamp(object):
     # Parse timezone offsets.
     if value[timezone_offset] == 'Z':
       if len(value) != timezone_offset + 1:
-        raise ValueError('Failed to parse timestamp: invalid trailing'
-                         ' data {0}.'.format(value))
+        raise ValueError(
+            'Failed to parse timestamp: invalid trailing data {0}.'.format(
+                value
+            )
+        )
     else:
       timezone = value[timezone_offset:]
       pos = timezone.find(':')
       if pos == -1:
-        raise ValueError(
-            'Invalid timezone offset value: {0}.'.format(timezone))
+        raise ValueError('Invalid timezone offset value: {0}.'.format(timezone))
       if timezone[0] == '+':
-        seconds -= (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
+        seconds -= (int(timezone[1:pos]) * 60 + int(timezone[pos + 1 :])) * 60
       else:
-        seconds += (int(timezone[1:pos])*60+int(timezone[pos+1:]))*60
+        seconds += (int(timezone[1:pos]) * 60 + int(timezone[pos + 1 :])) * 60
     # Set seconds and nanos
+    _CheckTimestampValid(seconds, nanos)
     self.seconds = int(seconds)
     self.nanos = int(nanos)
 
   def GetCurrentTime(self):
     """Get the current UTC into Timestamp."""
-    self.FromDatetime(datetime.datetime.utcnow())
+    self.FromDatetime(datetime.datetime.now(tz=datetime.timezone.utc))
 
   def ToNanoseconds(self):
     """Converts Timestamp to nanoseconds since epoch."""
+    _CheckTimestampValid(self.seconds, self.nanos)
     return self.seconds * _NANOS_PER_SECOND + self.nanos
 
   def ToMicroseconds(self):
     """Converts Timestamp to microseconds since epoch."""
-    return (self.seconds * _MICROS_PER_SECOND +
-            self.nanos // _NANOS_PER_MICROSECOND)
+    _CheckTimestampValid(self.seconds, self.nanos)
+    return (
+        self.seconds * _MICROS_PER_SECOND + self.nanos // _NANOS_PER_MICROSECOND
+    )
 
   def ToMilliseconds(self):
     """Converts Timestamp to milliseconds since epoch."""
-    return (self.seconds * _MILLIS_PER_SECOND +
-            self.nanos // _NANOS_PER_MILLISECOND)
+    _CheckTimestampValid(self.seconds, self.nanos)
+    return (
+        self.seconds * _MILLIS_PER_SECOND + self.nanos // _NANOS_PER_MILLISECOND
+    )
 
   def ToSeconds(self):
     """Converts Timestamp to seconds since epoch."""
+    _CheckTimestampValid(self.seconds, self.nanos)
     return self.seconds
 
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds since epoch to Timestamp."""
-    self.seconds = nanos // _NANOS_PER_SECOND
-    self.nanos = nanos % _NANOS_PER_SECOND
+    seconds = nanos // _NANOS_PER_SECOND
+    nanos = nanos % _NANOS_PER_SECOND
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
 
   def FromMicroseconds(self, micros):
     """Converts microseconds since epoch to Timestamp."""
-    self.seconds = micros // _MICROS_PER_SECOND
-    self.nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
+    seconds = micros // _MICROS_PER_SECOND
+    nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds since epoch to Timestamp."""
-    self.seconds = millis // _MILLIS_PER_SECOND
-    self.nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
+    seconds = millis // _MILLIS_PER_SECOND
+    nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
 
   def FromSeconds(self, seconds):
     """Converts seconds since epoch to Timestamp."""
+    _CheckTimestampValid(seconds, 0)
     self.seconds = seconds
     self.nanos = 0
 
@@ -224,11 +250,12 @@ class Timestamp(object):
       Otherwise, returns a timezone-aware datetime in the input timezone.
     """
     # Using datetime.fromtimestamp for this would avoid constructing an extra
-    # timedelta object and possibly an extra datetime. Unfortuantely, that has
+    # timedelta object and possibly an extra datetime. Unfortunately, that has
     # the disadvantage of not handling the full precision (on all platforms, see
     # https://github.com/python/cpython/issues/109849) or full range (on some
     # platforms, see https://github.com/python/cpython/issues/110042) of
     # datetime.
+    _CheckTimestampValid(self.seconds, self.nanos)
     delta = datetime.timedelta(
         seconds=self.seconds,
         microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND),
@@ -252,8 +279,49 @@ class Timestamp(object):
     # manipulated into a long value of seconds.  During the conversion from
     # struct_time to long, the source date in UTC, and so it follows that the
     # correct transformation is calendar.timegm()
-    self.seconds = calendar.timegm(dt.utctimetuple())
-    self.nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    try:
+      seconds = calendar.timegm(dt.utctimetuple())
+      nanos = dt.microsecond * _NANOS_PER_MICROSECOND
+    except AttributeError as e:
+      raise AttributeError(
+          'Fail to convert to Timestamp. Expected a datetime like '
+          'object got {0} : {1}'.format(type(dt).__name__, e)
+      ) from e
+    _CheckTimestampValid(seconds, nanos)
+    self.seconds = seconds
+    self.nanos = nanos
+
+  def _internal_assign(self, dt):
+    self.FromDatetime(dt)
+
+  def __add__(self, value) -> datetime.datetime:
+    if isinstance(value, Duration):
+      return self.ToDatetime() + value.ToTimedelta()
+    return self.ToDatetime() + value
+
+  __radd__ = __add__
+
+  def __sub__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    if isinstance(value, Timestamp):
+      return self.ToDatetime() - value.ToDatetime()
+    elif isinstance(value, Duration):
+      return self.ToDatetime() - value.ToTimedelta()
+    return self.ToDatetime() - value
+
+  def __rsub__(self, dt) -> datetime.timedelta:
+    return dt - self.ToDatetime()
+
+
+def _CheckTimestampValid(seconds, nanos):
+  if seconds < _TIMESTAMP_SECONDS_MIN or seconds > _TIMESTAMP_SECONDS_MAX:
+    raise ValueError(
+        'Timestamp is not valid: Seconds {0} must be in range '
+        '[-62135596800, 253402300799].'.format(seconds))
+  if nanos < 0 or nanos >= _NANOS_PER_SECOND:
+    raise ValueError(
+        'Timestamp is not valid: Nanos {} must be in a range '
+        '[0, 999999].'.format(nanos)
+    )
 
 
 class Duration(object):
@@ -273,7 +341,7 @@ class Duration(object):
     _CheckDurationValid(self.seconds, self.nanos)
     if self.seconds < 0 or self.nanos < 0:
       result = '-'
-      seconds = - self.seconds + int((0 - self.nanos) // 1e9)
+      seconds = -self.seconds + int((0 - self.nanos) // 1e9)
       nanos = (0 - self.nanos) % 1e9
     else:
       result = ''
@@ -298,8 +366,8 @@ class Duration(object):
 
     Args:
       value: A string to be converted. The string must end with 's'. Any
-          fractional digits (or none) are accepted as long as they fit into
-          precision. For example: "1s", "1.01s", "1.0000001s", "-3.100s
+        fractional digits (or none) are accepted as long as they fit into
+        precision. For example: "1s", "1.01s", "1.0000001s", "-3.100s
 
     Raises:
       ValueError: On parsing problems.
@@ -307,8 +375,7 @@ class Duration(object):
     if not isinstance(value, str):
       raise ValueError('Duration JSON value not a string: {!r}'.format(value))
     if len(value) < 1 or value[-1] != 's':
-      raise ValueError(
-          'Duration must end with letter "s": {0}.'.format(value))
+      raise ValueError('Duration must end with letter "s": {0}.'.format(value))
     try:
       pos = value.find('.')
       if pos == -1:
@@ -317,15 +384,14 @@ class Duration(object):
       else:
         seconds = int(value[:pos])
         if value[0] == '-':
-          nanos = int(round(float('-0{0}'.format(value[pos: -1])) *1e9))
+          nanos = int(round(float('-0{0}'.format(value[pos:-1])) * 1e9))
         else:
-          nanos = int(round(float('0{0}'.format(value[pos: -1])) *1e9))
+          nanos = int(round(float('0{0}'.format(value[pos:-1])) * 1e9))
       _CheckDurationValid(seconds, nanos)
       self.seconds = seconds
       self.nanos = nanos
     except ValueError as e:
-      raise ValueError(
-          'Couldn\'t parse duration: {0} : {1}.'.format(value, e))
+      raise ValueError("Couldn't parse duration: {0} : {1}.".format(value, e))
 
   def ToNanoseconds(self):
     """Converts a Duration to nanoseconds."""
@@ -347,36 +413,51 @@ class Duration(object):
 
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds to Duration."""
-    self._NormalizeDuration(nanos // _NANOS_PER_SECOND,
-                            nanos % _NANOS_PER_SECOND)
+    self._NormalizeDuration(
+        nanos // _NANOS_PER_SECOND, nanos % _NANOS_PER_SECOND
+    )
 
   def FromMicroseconds(self, micros):
     """Converts microseconds to Duration."""
     self._NormalizeDuration(
         micros // _MICROS_PER_SECOND,
-        (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND)
+        (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND,
+    )
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds to Duration."""
     self._NormalizeDuration(
         millis // _MILLIS_PER_SECOND,
-        (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND)
+        (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND,
+    )
 
   def FromSeconds(self, seconds):
     """Converts seconds to Duration."""
     self.seconds = seconds
     self.nanos = 0
 
-  def ToTimedelta(self):
+  def ToTimedelta(self) -> datetime.timedelta:
     """Converts Duration to timedelta."""
     return datetime.timedelta(
-        seconds=self.seconds, microseconds=_RoundTowardZero(
-            self.nanos, _NANOS_PER_MICROSECOND))
+        seconds=self.seconds,
+        microseconds=_RoundTowardZero(self.nanos, _NANOS_PER_MICROSECOND),
+    )
 
   def FromTimedelta(self, td):
     """Converts timedelta to Duration."""
-    self._NormalizeDuration(td.seconds + td.days * _SECONDS_PER_DAY,
-                            td.microseconds * _NANOS_PER_MICROSECOND)
+    try:
+      self._NormalizeDuration(
+          td.seconds + td.days * _SECONDS_PER_DAY,
+          td.microseconds * _NANOS_PER_MICROSECOND,
+      )
+    except AttributeError as e:
+      raise AttributeError(
+          'Fail to convert to Duration. Expected a timedelta like '
+          'object got {0}: {1}'.format(type(td).__name__, e)
+      ) from e
+
+  def _internal_assign(self, td):
+    self.FromTimedelta(td)
 
   def _NormalizeDuration(self, seconds, nanos):
     """Set Duration by seconds and nanos."""
@@ -387,19 +468,33 @@ class Duration(object):
     self.seconds = seconds
     self.nanos = nanos
 
+  def __add__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    if isinstance(value, Timestamp):
+      return self.ToTimedelta() + value.ToDatetime()
+    return self.ToTimedelta() + value
+
+  __radd__ = __add__
+
+  def __sub__(self, value) -> datetime.timedelta:
+    return self.ToTimedelta() - value
+
+  def __rsub__(self, value) -> Union[datetime.datetime, datetime.timedelta]:
+    return value - self.ToTimedelta()
+
 
 def _CheckDurationValid(seconds, nanos):
   if seconds < -_DURATION_SECONDS_MAX or seconds > _DURATION_SECONDS_MAX:
     raise ValueError(
         'Duration is not valid: Seconds {0} must be in range '
-        '[-315576000000, 315576000000].'.format(seconds))
+        '[-315576000000, 315576000000].'.format(seconds)
+    )
   if nanos <= -_NANOS_PER_SECOND or nanos >= _NANOS_PER_SECOND:
     raise ValueError(
         'Duration is not valid: Nanos {0} must be in range '
-        '[-999999999, 999999999].'.format(nanos))
+        '[-999999999, 999999999].'.format(nanos)
+    )
   if (nanos < 0 and seconds > 0) or (nanos > 0 and seconds < 0):
-    raise ValueError(
-        'Duration is not valid: Sign mismatch.')
+    raise ValueError('Duration is not valid: Sign mismatch.')
 
 
 def _RoundTowardZero(value, divider):
@@ -464,9 +559,6 @@ class Struct(object):
   def __getitem__(self, key):
     return _GetStructValue(self.fields[key])
 
-  def __contains__(self, item):
-    return item in self.fields
-
   def __setitem__(self, key, value):
     _SetStructValue(self.fields[key], value)
 
@@ -478,6 +570,24 @@ class Struct(object):
 
   def __iter__(self):
     return iter(self.fields)
+
+  def _internal_assign(self, dictionary):
+    self.Clear()
+    self.update(dictionary)
+
+  def _internal_compare(self, other):
+    size = len(self)
+    if size != len(other):
+      return False
+    for key, value in self.items():
+      if key not in other:
+        return False
+      if isinstance(other[key], (dict, list)):
+        if not value._internal_compare(other[key]):
+          return False
+      elif value != other[key]:
+        return False
+    return True
 
   def keys(self):  # pylint: disable=invalid-name
     return self.fields.keys()
@@ -505,6 +615,7 @@ class Struct(object):
   def update(self, dictionary):  # pylint: disable=invalid-name
     for key, value in dictionary.items():
       _SetStructValue(self.fields[key], value)
+
 
 collections.abc.MutableMapping.register(Struct)
 
@@ -534,6 +645,22 @@ class ListValue(object):
   def __delitem__(self, key):
     del self.values[key]
 
+  def _internal_assign(self, elem_seq):
+    self.Clear()
+    self.extend(elem_seq)
+
+  def _internal_compare(self, other):
+    size = len(self)
+    if size != len(other):
+      return False
+    for i in range(size):
+      if isinstance(other[i], (dict, list)):
+        if not self[i]._internal_compare(other[i]):
+          return False
+      elif self[i] != other[i]:
+        return False
+    return True
+
   def items(self):
     for i in range(len(self)):
       yield self[i]
@@ -551,6 +678,7 @@ class ListValue(object):
     # Clear will mark list_value modified which will indeed create a list.
     list_value.Clear()
     return list_value
+
 
 collections.abc.MutableSequence.register(ListValue)
 

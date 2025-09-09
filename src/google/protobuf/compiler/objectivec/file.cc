@@ -22,6 +22,8 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -31,7 +33,6 @@
 #include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -42,7 +43,7 @@ namespace objectivec {
 namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.
-const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30007;
+const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 40311;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
@@ -138,6 +139,27 @@ void MakeDescriptors(
                     extension_generators, message_generators,
                     generation_options);
   }
+}
+
+void EmitLinkWKTs(absl::string_view name, io::Printer* p) {
+  absl::string_view::size_type last_slash = name.rfind('/');
+  std::string basename;
+  if (last_slash == absl::string_view::npos) {
+    basename = std::string(name);
+  } else {
+    basename = std::string(name.substr(last_slash + 1));
+  }
+
+  p->Emit({{"basename", StripProto(basename)}},
+          R"objc(
+            // This is to help make sure that the GPBWellKnownTypes.* categories get linked and
+            // developers do not have to use the `-ObjC` linker flag. More information
+            // here: https://medium.com/ios-os-x-development/categories-in-static-libraries-78e41f8ddb96
+            __attribute__((used)) static NSString* $basename$_importCategories(void) {
+              return GPBWellKnownTypesErrorDomain;
+            }
+          )objc");
+  p->Emit("\n");
 }
 
 void EmitSourceFwdDecls(const absl::btree_set<std::string>& fwd_decls,
@@ -242,10 +264,11 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
   return result;
 }
 
-FileGenerator::FileGenerator(const FileDescriptor* file,
+FileGenerator::FileGenerator(Edition edition, const FileDescriptor* file,
                              const GenerationOptions& generation_options,
                              CommonState& common_state)
-    : file_(file),
+    : edition_(edition),
+      file_(file),
       generation_options_(generation_options),
       common_state_(&common_state),
       root_class_name_(FileClassName(file)),
@@ -280,7 +303,8 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
   }
 }
 
-void FileGenerator::GenerateHeader(io::Printer* p) const {
+void FileGenerator::GenerateHeader(io::Printer* p,
+                                   absl::string_view info_path) const {
   GenerateFile(p, GeneratedFileType::kHeader, [&] {
     absl::btree_set<std::string> fwd_decls;
     for (const auto& generator : message_generators_) {
@@ -297,6 +321,18 @@ void FileGenerator::GenerateHeader(io::Printer* p) const {
     }
 
     p->Emit("NS_ASSUME_NONNULL_BEGIN\n\n");
+
+    if (!info_path.empty()) {
+      p->Emit({{"info_path", info_path},
+               {"guard", generation_options_.annotation_guard_name},
+               {"pragma", generation_options_.annotation_pragma_name}},
+              R"objc(
+                #ifdef $guard$
+                #pragma $pragma$ "$info_path$"
+                #endif  // $guard$
+              )objc");
+      p->Emit("\n");
+    }
 
     for (const auto& generator : enum_generators_) {
       generator->GenerateHeader(p);
@@ -386,6 +422,10 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
     EmitRootImplementation(p, deps_with_extensions);
     EmitFileDescription(p);
 
+    if (is_bundled_proto_ && HasWKTWithObjCCategory(file_)) {
+      EmitLinkWKTs(file_->name(), p);
+    }
+
     for (const auto& generator : enum_generators_) {
       generator->GenerateSource(p);
     }
@@ -396,6 +436,8 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   std::vector<const FileDescriptor*> deps_with_extensions =
       common_state_->CollectMinimalFileDepsContainingExtensions(file_);
   GeneratedFileOptions file_options;
@@ -417,6 +459,8 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
 }
 
 void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   // Enum implementation uses atomic in the generated code.
   GeneratedFileOptions file_options;
   file_options.extra_system_headers.push_back("stdatomic.h");
@@ -428,7 +472,9 @@ void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
   });
 }
 
-void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+void FileGenerator::GenerateSourceForMessage(size_t idx, io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
   const auto& generator = message_generators_[idx];
 
   absl::btree_set<std::string> fwd_decls;
@@ -486,6 +532,9 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       break;
     case GeneratedFileType::kSource:
       import_writer.AddRuntimeImport("GPBProtocolBuffers_RuntimeSupport.h");
+      if (is_bundled_proto_ && HasWKTWithObjCCategory(file_)) {
+        import_writer.AddRuntimeImport("GPBWellKnownTypes.h");
+      }
       import_writer.AddFile(file_, header_extension);
       if (HeadersUseForwardDeclarations()) {
         if (generation_options_.generate_minimal_imports) {
@@ -494,7 +543,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
           // #import the headers for anything that a plain dependency of this
           // proto file (that means they were just an include, not a "public"
           // include).
-          absl::flat_hash_set<std::string> public_import_names;
+          absl::flat_hash_set<absl::string_view> public_import_names;
           for (int i = 0; i < file_->public_dependency_count(); i++) {
             public_import_names.insert(file_->public_dependency(i)->name());
           }
@@ -558,10 +607,17 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
        // then honor the directives within the generators sources.
        "clangfmt", "clang-format"},
       {"root_class_name", root_class_name_},
+      {"google_protobuf_runtime_support",
+       absl::StrCat("GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_",
+                    GOOGLE_PROTOBUF_OBJC_VERSION)},
   });
 
   p->Emit(
       {
+          {"no_checked_in",
+           "NO CHECKED-IN"
+           // Intentional line breaker
+           " PROTOBUF GENCODE"},
           {"filename", file_->name()},
           {"google_protobuf_objc_version", GOOGLE_PROTOBUF_OBJC_VERSION},
           {"runtime_imports",
@@ -596,6 +652,7 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
       },
       R"objc(
         // Generated by the protocol buffer compiler.  DO NOT EDIT!
+        // $no_checked_in$
         // $clangfmt$ off
         // source: $filename$
 
@@ -686,7 +743,7 @@ void FileGenerator::EmitRootExtensionRegistryImplementation(
                    for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {
                      GPBExtensionDescriptor *extension =
                          [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]
-                                                                        usesClassRefs:YES];
+                                                                       runtimeSupport:&$google_protobuf_runtime_support$];
                      [registry addExtension:extension];
                      [self globallyRegisterExtension:extension];
                      [extension release];
@@ -719,7 +776,6 @@ void FileGenerator::EmitRootExtensionRegistryImplementation(
           // about thread safety and initialization of registry.
           static GPBExtensionRegistry* registry = nil;
           if (!registry) {
-            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
             registry = [[GPBExtensionRegistry alloc] init];
             $register_local_extensions$;
             $register_imports$
@@ -742,17 +798,17 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
     // mode.
     syntax = "GPBFileSyntaxUnknown";
   } else {
-    switch (FileDescriptorLegacy(file_).syntax()) {
-      case FileDescriptorLegacy::Syntax::SYNTAX_UNKNOWN:
+    switch (edition_) {
+      case Edition::EDITION_UNKNOWN:
         syntax = "GPBFileSyntaxUnknown";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO2:
+      case Edition::EDITION_PROTO2:
         syntax = "GPBFileSyntaxProto2";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_PROTO3:
+      case Edition::EDITION_PROTO3:
         syntax = "GPBFileSyntaxProto3";
         break;
-      case FileDescriptorLegacy::Syntax::SYNTAX_EDITIONS:
+      default:
         syntax = "GPBFileSyntaxProtoEditions";
         break;
     }
@@ -765,13 +821,11 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
            {"prefix_value",
             objc_prefix.empty() && !file_->options().has_objc_class_prefix()
                 ? "NULL"
-                : absl::StrCat("\"", objc_prefix, "\"")},
-           {"syntax", syntax}},
+                : absl::StrCat("\"", objc_prefix, "\"")}},
           R"objc(
-            static GPBFileDescription $file_description_name$ = {
+            static GPBFilePackageAndPrefix $file_description_name$ = {
               .package = $package_value$,
-              .prefix = $prefix_value$,
-              .syntax = $syntax$
+              .prefix = $prefix_value$
             };
           )objc");
   p->Emit("\n");

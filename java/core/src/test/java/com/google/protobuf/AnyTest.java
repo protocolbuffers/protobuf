@@ -11,7 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import any_test.AnyTestProto.TestAny;
-import protobuf_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestAllTypes;
 import java.util.Objects;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,8 +1,10 @@
 load(
-    "//bazel:build_defs.bzl",
+    "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
 )
+
+package(default_applicable_licenses = ["//:license"])
 
 cc_library(
     name = "mini_descriptor",
@@ -23,8 +25,10 @@ cc_library(
         "//upb:base",
         "//upb:mem",
         "//upb:mini_table",
-        "//upb:mini_table_internal",
         "//upb:port",
+        "//upb/base:internal",
+        "//upb/message:types",
+        "//upb/mini_table:internal",
     ],
 )
 
@@ -46,8 +50,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb:base",
-        "//upb:base_internal",
         "//upb:port",
+        "//upb/base:internal",
     ],
 )
 
@@ -58,18 +62,20 @@ cc_test(
     deps = [
         ":internal",
         ":mini_descriptor",
-        "//:protobuf",
-        "@com_google_googletest//:gtest_main",
+        "//src/google/protobuf",
         "//upb:base",
         "//upb:mem",
-        "//upb:message_accessors_internal",
+        "//upb:message",
         "//upb:mini_table",
+        "//upb:port",
         "//upb:wire",
-        "@com_google_absl//absl/container:flat_hash_set",
+        "//upb/message:internal",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
-# begin:github_only
 filegroup(
     name = "source_files",
     srcs = glob(
@@ -79,8 +85,17 @@ filegroup(
         ],
     ),
     visibility = [
-        "//upb/cmake:__pkg__",
         "//python/dist:__pkg__",
-    ]
+        "//upb/cmake:__pkg__",
+    ],
 )
-# end:github_only
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob(
+        [
+            "**/*test.cc",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)

@@ -36,7 +36,6 @@ import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
-import com.google.protobuf.LegacyDescriptorsUtil.LegacyFileDescriptor;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
@@ -141,6 +140,27 @@ public class RubyEnumDescriptor extends RubyObject {
         true);
   }
 
+  /*
+   * call-seq:
+   *     EnumDescriptor.to_proto => EnumDescriptorProto
+   *
+   * Returns the `EnumDescriptorProto` of this `EnumDescriptor`.
+   */
+  @JRubyMethod(name = "to_proto")
+  public IRubyObject toProto(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor enumDescriptorProto =
+        (RubyDescriptor)
+            pool.lookup(context, context.runtime.newString("google.protobuf.EnumDescriptorProto"));
+    RubyClass msgClass = (RubyClass) enumDescriptorProto.msgclass(context);
+    RubyMessage msg = (RubyMessage) msgClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(descriptor.toProto().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
   public boolean isValidValue(ThreadContext context, IRubyObject value) {
     EnumValueDescriptor enumValue;
 
@@ -176,8 +196,7 @@ public class RubyEnumDescriptor extends RubyObject {
     Ruby runtime = context.runtime;
 
     RubyModule enumModule = RubyModule.newModule(runtime);
-    boolean defaultValueRequiredButNotFound =
-        LegacyFileDescriptor.getSyntax(descriptor.getFile()) == LegacyFileDescriptor.Syntax.PROTO3;
+    boolean defaultValueRequiredButNotFound = !descriptor.isClosed();
     for (EnumValueDescriptor value : descriptor.getValues()) {
       String name = fixEnumConstantName(value.getName());
       // Make sure it's a valid constant name before trying to create it

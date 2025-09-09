@@ -19,6 +19,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -27,9 +28,12 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/java_features.pb.h"
+#include "google/protobuf/compiler/java/generator.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/wire_format.h"
 
@@ -41,8 +45,7 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-using internal::WireFormat;
-using internal::WireFormatLite;
+using ::google::protobuf::internal::WireFormatLite;
 
 const char kThickSeparator[] =
     "// ===================================================================\n";
@@ -52,16 +55,19 @@ const char kThinSeparator[] =
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
                               absl::string_view annotation_file,
                               Options options) {
+  printer->Print("@com.google.protobuf.Generated\n");
+
   if (annotation_file.empty()) {
     return;
   }
+  // Print javax.annotation.Generated to support Kythe indexing
   std::string ptemplate =
       "@javax.annotation.Generated(value=\"protoc\", comments=\"annotations:";
   ptemplate.push_back(delimiter);
   ptemplate.append("annotation_file");
   ptemplate.push_back(delimiter);
   ptemplate.append("\")\n");
-  printer->Print(ptemplate.c_str(), "annotation_file", annotation_file);
+  printer->Print(ptemplate, "annotation_file", annotation_file);
 }
 
 void PrintEnumVerifierLogic(
@@ -82,6 +88,25 @@ void PrintEnumVerifierLogic(
                          "      }");
   printer->Print(variables,
                  absl::StrCat(enum_verifier_string, terminating_string));
+}
+
+void PrintGencodeVersionValidator(io::Printer* printer, bool oss_runtime,
+                                  absl::string_view java_class_name) {
+  const auto& version = GetProtobufJavaVersion(oss_runtime);
+  printer->Print(
+      "com.google.protobuf.RuntimeVersion.validateProtobufGencodeVersion(\n"
+      "  com.google.protobuf.RuntimeVersion.RuntimeDomain.$domain$,\n"
+      "  $major$,\n"
+      "  $minor$,\n"
+      "  $patch$,\n"
+      "  $suffix$,\n"
+      "  $location$);\n",
+      "domain", oss_runtime ? "PUBLIC" : "GOOGLE_INTERNAL", "major",
+      absl::StrCat("/* major= */ ", version.major()), "minor",
+      absl::StrCat("/* minor= */ ", version.minor()), "patch",
+      absl::StrCat("/* patch= */ ", version.patch()), "suffix",
+      absl::StrCat("/* suffix= */ \"", version.suffix(), "\""), "location",
+      absl::StrCat(java_class_name, ".class.getName()"));
 }
 
 std::string UnderscoresToCamelCase(absl::string_view input,
@@ -548,7 +573,7 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
 
 bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field) {
   return GetJavaType(field) == JAVATYPE_BYTES &&
-         field->default_value_string() != "";
+         !field->default_value_string().empty();
 }
 
 constexpr absl::string_view bit_masks[] = {
@@ -811,8 +836,7 @@ bool HasRequiredFields(const Descriptor* type) {
 }
 
 bool IsRealOneof(const FieldDescriptor* descriptor) {
-  return descriptor->containing_oneof() &&
-         !OneofDescriptorLegacy(descriptor->containing_oneof()).is_synthetic();
+  return descriptor->real_containing_oneof();
 }
 
 bool HasRepeatedFields(const Descriptor* descriptor) {
@@ -859,86 +883,6 @@ void WriteUInt32ToUtf16CharSequence(uint32_t number,
   output->push_back(static_cast<uint16_t>(number));
 }
 
-int GetExperimentalJavaFieldTypeForSingular(const FieldDescriptor* field) {
-  // j/c/g/protobuf/FieldType.java lists field types in a slightly different
-  // order from FieldDescriptor::Type so we can't do a simple cast.
-  //
-  // TODO: Make j/c/g/protobuf/FieldType.java follow the same order.
-  int result = field->type();
-  if (result == FieldDescriptor::TYPE_GROUP) {
-    return 17;
-  } else if (result < FieldDescriptor::TYPE_GROUP) {
-    return result - 1;
-  } else {
-    return result - 2;
-  }
-}
-
-int GetExperimentalJavaFieldTypeForRepeated(const FieldDescriptor* field) {
-  if (field->type() == FieldDescriptor::TYPE_GROUP) {
-    return 49;
-  } else {
-    return GetExperimentalJavaFieldTypeForSingular(field) + 18;
-  }
-}
-
-int GetExperimentalJavaFieldTypeForPacked(const FieldDescriptor* field) {
-  int result = field->type();
-  if (result < FieldDescriptor::TYPE_STRING) {
-    return result + 34;
-  } else if (result > FieldDescriptor::TYPE_BYTES) {
-    return result + 30;
-  } else {
-    ABSL_LOG(FATAL) << field->full_name() << " can't be packed.";
-    return 0;
-  }
-}
-
-int GetExperimentalJavaFieldType(const FieldDescriptor* field) {
-  static const int kMapFieldType = 50;
-  static const int kOneofFieldTypeOffset = 51;
-
-  static const int kRequiredBit = 0x100;
-  static const int kUtf8CheckBit = 0x200;
-  static const int kCheckInitialized = 0x400;
-  static const int kLegacyEnumIsClosedBit = 0x800;
-  static const int kHasHasBit = 0x1000;
-  int extra_bits = field->is_required() ? kRequiredBit : 0;
-  if (field->type() == FieldDescriptor::TYPE_STRING && CheckUtf8(field)) {
-    extra_bits |= kUtf8CheckBit;
-  }
-  if (field->is_required() || (GetJavaType(field) == JAVATYPE_MESSAGE &&
-                               HasRequiredFields(field->message_type()))) {
-    extra_bits |= kCheckInitialized;
-  }
-  if (HasHasbit(field)) {
-    extra_bits |= kHasHasBit;
-  }
-  if (GetJavaType(field) == JAVATYPE_ENUM && !SupportUnknownEnumValue(field)) {
-    extra_bits |= kLegacyEnumIsClosedBit;
-  }
-
-  if (field->is_map()) {
-    if (!SupportUnknownEnumValue(MapValueField(field))) {
-      const FieldDescriptor* value = field->message_type()->map_value();
-      if (GetJavaType(value) == JAVATYPE_ENUM) {
-        extra_bits |= kLegacyEnumIsClosedBit;
-      }
-    }
-    return kMapFieldType | extra_bits;
-  } else if (field->is_packed()) {
-    return GetExperimentalJavaFieldTypeForPacked(field) | extra_bits;
-  } else if (field->is_repeated()) {
-    return GetExperimentalJavaFieldTypeForRepeated(field) | extra_bits;
-  } else if (IsRealOneof(field)) {
-    return (GetExperimentalJavaFieldTypeForSingular(field) +
-            kOneofFieldTypeOffset) |
-           extra_bits;
-  } else {
-    return GetExperimentalJavaFieldTypeForSingular(field) | extra_bits;
-  }
-}
-
 // Escape a UTF-16 character to be embedded in a Java string.
 void EscapeUtf16ToString(uint16_t code, std::string* output) {
   if (code == '\t') {
@@ -979,6 +923,72 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
 }
 
 
+namespace {
+
+// Gets the value of `nest_in_file_class` feature and returns whether the
+// generated class should be nested in the generated proto file Java class.
+template <typename Descriptor>
+inline bool NestInFileClass(const Descriptor& descriptor) {
+  auto nest_in_file_class =
+      JavaGenerator::GetResolvedSourceFeatureExtension(descriptor, pb::java)
+          .nest_in_file_class();
+  ABSL_CHECK(
+      nest_in_file_class !=
+      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN);
+
+  if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
+    return !descriptor.file()->options().java_multiple_files();
+  }
+  return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
+}
+
+// Returns whether the type should be nested in the file class for the given
+// descriptor, depending on different Protobuf Java API versions.
+// TODO: b/372482046 - Implement `nest_in_file_class` feature for mutable API.
+template <typename Descriptor>
+bool NestInFileClass(const Descriptor& descriptor, bool immutable) {
+  (void)immutable;
+  return NestInFileClass(descriptor);
+}
+
+template <typename Descriptor>
+absl::Status ValidateNestInFileClassFeatureHelper(
+    const Descriptor& descriptor) {
+  if (descriptor.containing_type() != nullptr) {
+    const pb::JavaFeatures& unresolved_features =
+        JavaGenerator::GetUnresolvedSourceFeatures(descriptor, pb::java);
+    if (unresolved_features.has_nest_in_file_class()) {
+      return absl::FailedPreconditionError(absl::StrCat(
+          "Feature next_in_file_class only applies to top-level types and is "
+          "not allowed to be set on the nexted type: ",
+          descriptor.full_name()));
+    }
+  }
+  return absl::OkStatus();
+}
+}  // namespace
+
+absl::Status ValidateNestInFileClassFeature(const Descriptor& descriptor) {
+  return ValidateNestInFileClassFeatureHelper(descriptor);
+}
+
+absl::Status ValidateNestInFileClassFeature(const EnumDescriptor& descriptor) {
+  return ValidateNestInFileClassFeatureHelper(descriptor);
+}
+
+bool NestedInFileClass(const Descriptor& descriptor, bool immutable) {
+  ABSL_CHECK_OK(ValidateNestInFileClassFeature(descriptor));
+  return NestInFileClass(descriptor, immutable);
+}
+
+bool NestedInFileClass(const EnumDescriptor& descriptor, bool immutable) {
+  ABSL_CHECK_OK(ValidateNestInFileClassFeature(descriptor));
+  return NestInFileClass(descriptor, immutable);
+}
+
+bool NestedInFileClass(const ServiceDescriptor& descriptor, bool immutable) {
+  return NestInFileClass(descriptor, immutable);
+}
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

@@ -14,10 +14,11 @@
 //        a. getDescriptor() is called on another message in the same file.
 //        b. use protobuf reflection to access the map field.
 // The symptom is a NullPointerException being thrown.
-syntax = "proto2";
+edition = "2023";
 
 package map_test;
 
+option features.utf8_validation = NONE;
 option java_package = "map_test";
 option java_outer_classname = "MapInitializationOrderTest";
 option java_multiple_files = true;
@@ -27,11 +28,12 @@ option java_multiple_files = true;
 
 message Message1 {
   map<string, bool> map_field = 1;
+
   extensions 1000 to max;
 }
 
 extend Message1 {
-  optional Message1 recursive_extension = 1001;
+  Message1 recursive_extension = 1001;
 }
 
 message RedactAllTypes {}

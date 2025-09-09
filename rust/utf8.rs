@@ -30,7 +30,8 @@ use std::str::from_utf8_unchecked;
 ///
 /// # Examples
 ///
-/// ```
+/// ```ignore
+/// use googletest::prelude::*;
 /// use utf8::Utf8Chunks;
 ///
 /// // An invalid UTF-8 string
@@ -40,10 +41,10 @@ use std::str::from_utf8_unchecked;
 /// let chunk = Utf8Chunks::new(bytes).next().unwrap();
 ///
 /// // The first three characters are valid UTF-8
-/// assert_eq!("foo", chunk.valid());
+/// assert_that!("foo", eq(chunk.valid()));
 ///
 /// // The fourth character is broken
-/// assert_eq!(b"\xF1\x80", chunk.invalid());
+/// assert_that!(b"\xF1\x80", eq(chunk.invalid()));
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Utf8Chunk<'a> {
@@ -132,7 +133,7 @@ impl fmt::Debug for Debug<'_> {
 /// This can be used to create functionality similar to
 /// [`String::from_utf8_lossy`] without allocating heap memory:
 ///
-/// ```
+/// ```ignore
 /// use utf8::Utf8Chunks;
 ///
 /// fn from_utf8_lossy<F>(input: &[u8], mut push: F) where F: FnMut(&str) {
@@ -241,7 +242,7 @@ impl<'a> Iterator for Utf8Chunks<'a> {
         /// # Safety
         /// `index` must be in-bounds for `x`
         unsafe fn split_at_unchecked(x: &[u8], index: usize) -> (&[u8], &[u8]) {
-            // SAFTEY: in-bounds as promised by the caller
+            // SAFETY: in-bounds as promised by the caller
             unsafe { (x.get_unchecked(..index), x.get_unchecked(index..)) }
         }
 

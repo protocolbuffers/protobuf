@@ -11,10 +11,10 @@
 #include <cfloat>
 #include <cstdint>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
@@ -27,7 +27,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/util/type_resolver.h"
@@ -203,8 +202,8 @@ PROTOBUF_NOINLINE static absl::Status MakeTooDeepError() {
 
 absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
                                     absl::optional<int32_t> current_group) {
+  std::vector<int32_t> group_stack;
   while (true) {
-    std::vector<int32_t> group_stack;
     uint32_t tag = stream.ReadTag();
     if (tag == 0) {
       return absl::OkStatus();
@@ -216,7 +215,8 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
     // EGROUP markers can show up as "unknown fields", so we need to handle them
     // before we even do field lookup. Being inside of a group behaves as if a
     // special field has been added to the message.
-    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP) {
+    if (wire_type == WireFormatLite::WIRETYPE_END_GROUP &&
+        group_stack.empty()) {
       if (!current_group.has_value()) {
         return MakeEndGroupWithoutGroupError(field_number);
       }
@@ -468,7 +468,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       }
       if (field.proto().kind() == Field::TYPE_STRING) {
         if (desc_->proto().syntax() == google::protobuf::SYNTAX_PROTO3 &&
-            utf8_range::IsStructurallyValid(buf)) {
+            !utf8_range::IsStructurallyValid(buf)) {
           return MakeProto3Utf8Error();
         }
       }
@@ -538,13 +538,13 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
 
   Value& slot = emplace_result.first->second;
   using value_type = std::decay_t<T>;
-  if (auto* extant = absl::get_if<value_type>(&slot)) {
+  if (auto* extant = std::get_if<value_type>(&slot)) {
     std::vector<value_type> repeated;
     repeated.push_back(std::move(*extant));
     repeated.push_back(std::forward<T>(value));
 
     slot = std::move(repeated);
-  } else if (auto* extant = absl::get_if<std::vector<value_type>>(&slot)) {
+  } else if (auto* extant = std::get_if<std::vector<value_type>>(&slot)) {
     extant->push_back(std::forward<T>(value));
   } else {
     absl::optional<absl::string_view> name =
@@ -565,3 +565,5 @@ absl::Status UntypedMessage::InsertField(const ResolverPool::Field& field,
 }  // namespace json_internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

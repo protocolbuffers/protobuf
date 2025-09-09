@@ -1,0 +1,14 @@
+edition = "2023";
+
+package proto2_unittest;
+
+option optimize_for = LITE_RUNTIME;
+
+// A file with only a single enum, without any use of it.
+// This is useful for testing enum specific codegen that is not directly related
+// to field codegen.
+
+enum OnlyOneEnum {
+  ONLY_ONE_ENUM_DEFAULT = 0;
+  ONLY_ONE_ENUM_VALID = 10;
+}

@@ -3,6 +3,7 @@
 # generated_code.rb is in the same directory as this test.
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
+require 'generated_code_editions_pb'
 require 'generated_code_pb'
 require 'test_import_pb'
 require 'test_ruby_package_pb'
@@ -19,5 +20,7 @@ class GeneratedCodeTest < Test::Unit::TestCase
     A::B::C::TestLowercaseNested::Lowercase.new
     FooBar::TestImportedMessage.new
     A::B::TestRubyPackageMessage.new
+    A::B::Editions::TestMessage.new
+    A::B::Editions::TestMessage::NestedMessage.new
   end
 end

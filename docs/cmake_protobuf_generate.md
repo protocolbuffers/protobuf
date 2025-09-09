@@ -118,18 +118,34 @@ Flag arguments:
 
 Single-value arguments:
 
-- `LANGUAGE` — A single value: cpp or python. Determines what kind of source files are being generated.
-- `OUT_VAR` — Name of a CMake variable that will be filled with the paths to the generated source files.
-- `EXPORT_MACRO` — Name of a macro that is applied to all generated Protobuf message classes and extern variables. It can, for example, be used to declare DLL exports.
-- `PROTOC_OUT_DIR` — Output directory of generated source files. Defaults to `CMAKE_CURRENT_BINARY_DIR`.
-- `PLUGIN` — An optional plugin executable. This could, for example, be the path to `grpc_cpp_plugin`.
-- `PLUGIN_OPTIONS` — Additional options provided to the plugin, such as `generate_mock_code=true` for the gRPC cpp plugin.
-- `DEPENDENCIES` — Arguments forwarded to the `DEPENDS` of the underlying `add_custom_command` invocation.
-- `TARGET` — CMake target that will have the generated files added as sources.
+-   `LANGUAGE` — A single value: cpp or python. Determines what kind of source
+    files are being generated.
+-   `OUT_VAR` — Name of a CMake variable that will be filled with the paths to
+    the generated source files.
+-   `EXPORT_MACRO` — Name of a macro that is applied to all generated Protobuf
+    message classes and extern variables. It can, for example, be used to
+    declare DLL exports.
+-   `PROTOC_EXE` — Command name, path, or CMake executable used to run protoc
+    commands. Defaults to `protobuf::protoc`.
+-   `PROTOC_OUT_DIR` — Output directory of generated source files. Defaults to
+    `CMAKE_CURRENT_BINARY_DIR`.
+-   `PLUGIN` — An optional plugin executable. This could, for example, be the
+    path to `grpc_cpp_plugin`.
+-   `PLUGIN_OPTIONS` — Additional options provided to the plugin, such as
+    `generate_mock_code=true` for the gRPC cpp plugin.
+-   `DEPENDENCIES` — Arguments forwarded to the `DEPENDS` of the underlying
+    `add_custom_command` invocation.
+-   `TARGET` — CMake target that will have the generated files added as sources.
 
 Multi-value arguments:
 
-- `PROTOS` — List of proto schema files. If omitted, then every source file ending in *proto* of `TARGET` will be used.
-- `IMPORT_DIRS` — A common parent directory for the schema files. For example, if the schema file is `proto/helloworld/helloworld.proto` and the import directory `proto/` then the generated files are `${PROTOC_OUT_DIR}/helloworld/helloworld.pb.h` and `${PROTOC_OUT_DIR}/helloworld/helloworld.pb.cc`.
-- `GENERATE_EXTENSIONS` — If LANGUAGE is omitted then this must be set to the extensions that protoc generates.
-- `PROTOC_OPTIONS` — Additional arguments that are forwarded to protoc.
+-   `PROTOS` — List of proto schema files. If omitted, then every source file
+    ending in *proto* of `TARGET` will be used.
+-   `IMPORT_DIRS` — A common parent directory for the schema files. For example,
+    if the schema file is `proto/helloworld/helloworld.proto` and the import
+    directory `proto/` then the generated files are
+    `${PROTOC_OUT_DIR}/helloworld/helloworld.pb.h` and
+    `${PROTOC_OUT_DIR}/helloworld/helloworld.pb.cc`.
+-   `GENERATE_EXTENSIONS` — If LANGUAGE is omitted then this must be set to the
+    extensions that protoc generates.
+-   `PROTOC_OPTIONS` — Additional arguments that are forwarded to protoc.

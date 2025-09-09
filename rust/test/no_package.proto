@@ -7,8 +7,10 @@
 
 syntax = "proto2";
 
-// package intentionally left unspecified.
-
-import public "google/protobuf/rust/test/no_package_import.proto";
+import public "rust/test/no_package_import.proto";
 
 message MsgWithoutPackage {}
+
+enum EnumWithoutPackage {
+  ENUM_WITHOUT_PACKAGE_UNSPECIFIED = 0;
+}

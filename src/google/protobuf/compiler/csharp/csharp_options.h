@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_OPTIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_OPTIONS_H__
 
 #include <string>
 
@@ -17,13 +17,13 @@ namespace csharp {
 
 // Generator options (used by csharp_generator.cc):
 struct Options {
-  Options() :
-      file_extension(".cs"),
-      base_namespace(""),
-      base_namespace_specified(false),
-      internal_access(false),
-      serializable(false) {
-  }
+  Options()
+      : file_extension(".cs"),
+        base_namespace(""),
+        base_namespace_specified(false),
+        internal_access(false),
+        serializable(false),
+        strip_nonfunctional_codegen(false) {}
   // Extension of the generated file. Defaults to ".cs"
   std::string file_extension;
   // Base namespace to use to create directory hierarchy. Defaults to "".
@@ -48,6 +48,8 @@ struct Options {
   // Whether the generated classes should have a global::System.Serializable attribute added
   // Defaults to false
   bool serializable;
+  // If true, strip out nonfunctional codegen.
+  bool strip_nonfunctional_codegen;
 };
 
 }  // namespace csharp
@@ -55,4 +57,4 @@ struct Options {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_OPTIONS_H__

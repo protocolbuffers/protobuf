@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2024 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -24,6 +24,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
@@ -31,7 +32,6 @@
 #include "absl/strings/strip.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 
 namespace google {
 namespace protobuf {
@@ -112,12 +112,33 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
     // a while loop, not a do/while loop.
 
     absl::string_view orig = format_string;
+    absl::string_view first_pp_directive;
     while (absl::ConsumePrefix(&format_string, "\n")) {
+      // clang-format will think a # at the beginning of the line in a raw
+      // string is a preprocessor directive and put it at the start of the line,
+      // which throws off indent calculation. Skip past those to find code that
+      // is indented more realistically.
+      if (absl::StartsWith(format_string, "#")) {
+        // We don't want to drop the first #... lines. We just want to skip
+        // through here. Remember to allow resetting later.
+        if (first_pp_directive.empty()) {
+          first_pp_directive = format_string;
+        }
+        size_t next_newline_index = format_string.find('\n');
+        if (next_newline_index != absl::string_view::npos) {
+          format_string = format_string.substr(next_newline_index);
+          continue;
+        }
+      }
       raw_string_indent = 0;
       format.is_raw_string = true;
       while (absl::ConsumePrefix(&format_string, " ")) {
         ++raw_string_indent;
       }
+    }
+    // Reset if we skipped through some #... lines, so that we don't drop them.
+    if (!first_pp_directive.empty()) {
+      format_string = first_pp_directive;
     }
 
     // If we consume the entire string, this probably wasn't a raw string and
@@ -126,6 +147,12 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
       format_string = orig;
       format.is_raw_string = false;
       raw_string_indent = 0;
+    }
+
+    // This means we have a preprocessor directive and we should not have eaten
+    // the newline.
+    if (!at_start_of_line_ && absl::StartsWith(format_string, "#")) {
+      format_string = orig;
     }
   }
 
@@ -153,6 +180,9 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
       if (comment_index != absl::string_view::npos) {
         line_text = line_text.substr(0, comment_index);
         if (absl::StripLeadingAsciiWhitespace(line_text).empty()) {
+          // If the first line is part of an ignored comment, consider that a
+          // first line as well.
+          is_first = false;
           continue;
         }
       }
@@ -547,6 +577,9 @@ void Printer::PrintImpl(absl::string_view format,
       // If we get this far, we can conclude the chunk is a substitution
       // variable; we rename the `chunk` variable to make this clear below.
       absl::string_view var = chunk.text;
+      if (substitution_listener_ != nullptr) {
+        substitution_listener_(var, opts.loc.value_or(SourceLocation()));
+      }
       if (opts.use_curly_brace_substitutions &&
           absl::ConsumePrefix(&var, "{")) {
         if (!Validate(var.size() == 1u, opts,

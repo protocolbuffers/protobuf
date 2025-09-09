@@ -7,7 +7,7 @@
 
 # require mixins before we hook them into the java & c code
 require 'google/protobuf/message_exts'
-require 'google/protobuf/object_cache'
+require 'google/protobuf/internal/object_cache'
 
 # We define these before requiring the platform-specific modules.
 # That way the module init can grab references to these.

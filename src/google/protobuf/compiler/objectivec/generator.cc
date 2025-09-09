@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <utility>
@@ -18,6 +19,7 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -61,8 +63,6 @@ std::string NumberedObjCMFileName(absl::string_view basename, int number) {
 }
 
 }  // namespace
-
-bool ObjectiveCGenerator::HasGenerateAll() const { return true; }
 
 bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
                                    const std::string& parameter,
@@ -294,6 +294,10 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "annotation_pragma_name") {
+      generation_options.annotation_pragma_name = options[i].second;
+    } else if (options[i].first == "annotation_guard_name") {
+      generation_options.annotation_guard_name = options[i].second;
     } else {
       *error =
           absl::StrCat("error: Unknown generator option: ", options[i].first);
@@ -310,6 +314,57 @@ bool ObjectiveCGenerator::GenerateAll(
   }
   if (generation_options.experimental_strip_nonfunctional_codegen) {
     generation_options.generate_minimal_imports = true;
+  }
+
+  // -----------------------------------------------------------------
+
+  // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
+  // error cases, so it seems to be ok to use as a back door for warnings.
+
+  // This is a way to turn off these warnings, the intent is that if you find
+  // this then you also did as asked and filed an issue so the need for the
+  // generation option is known. But it allows you to keep your builds quiet
+  // after opening the issue. The value of the environment variable should be
+  // a comma separated list of the names of the options to suppress their usage
+  // warning.
+  char* options_warnings_suppressions_cstr =
+      getenv("GPB_OBJC_SUPPRESS_DEPRECATED_OPTIONS_WARNINGS");
+  const absl::string_view options_warnings_suppressions =
+      options_warnings_suppressions_cstr != nullptr
+          ? options_warnings_suppressions_cstr
+          : "";
+  if (generation_options.headers_use_forward_declarations &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "headers_use_forward_declarations")) {
+    std::cerr << "WARNING: headers_use_forward_declarations is enabled, this "
+                 "is deprecated and will be removed in the future. If you have "
+                 "a need for enabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
+  }
+  if (!generation_options.generate_minimal_imports &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "generate_minimal_imports")) {
+    std::cerr << "WARNING: generate_minimal_imports is disabled, this is "
+                 "deprecated and will be removed in the future. If you have a "
+                 "need for disabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
+  }
+  if (!generation_options.strip_custom_options &&
+      !absl::StrContains(options_warnings_suppressions,
+                         "strip_custom_options")) {
+    std::cerr << "WARNING: strip_custom_options is disabled, this is deprecated"
+                 "and will be removed in the future. If you have a need for "
+                 "disabling it please file an issue at "
+                 "https://github.com/protocolbuffers/protobuf/issues with "
+                 "your use case."
+              << std::endl;
+    std::cerr.flush();
   }
 
   // -----------------------------------------------------------------
@@ -333,6 +388,19 @@ bool ObjectiveCGenerator::GenerateAll(
 
   // -----------------------------------------------------------------
 
+  if (generation_options.annotation_guard_name.empty() !=
+      generation_options.annotation_pragma_name.empty()) {
+    *error =
+        "error: both annotation_guard_name and annotation_pragma_name must "
+        "be set to output annotations";
+    return false;
+  }
+  bool should_annotate_headers =
+      !generation_options.annotation_pragma_name.empty() &&
+      !generation_options.annotation_guard_name.empty();
+
+  // -----------------------------------------------------------------
+
   // Validate the objc prefix/package pairings.
   if (!ValidateObjCClassPrefixes(files, validation_options, error)) {
     // *error will have been filled in.
@@ -341,19 +409,38 @@ bool ObjectiveCGenerator::GenerateAll(
 
   FileGenerator::CommonState state(!generation_options.strip_custom_options);
   for (const auto& file : files) {
-    const FileGenerator file_generator(file, generation_options, state);
+    const FileGenerator file_generator(GetEdition(*file), file,
+                                       generation_options, state);
     std::string filepath = FilePath(file);
 
     // Generate header.
     {
       auto output =
           absl::WrapUnique(context->Open(absl::StrCat(filepath, ".pbobjc.h")));
-      io::Printer printer(output.get());
-      file_generator.GenerateHeader(&printer);
+      GeneratedCodeInfo annotations;
+      io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+          &annotations);
+      io::Printer::Options options;
+      std::string info_path = "";
+      if (should_annotate_headers) {
+        info_path = absl::StrCat(filepath, ".pbobjc.h.meta");
+        options.annotation_collector = &annotation_collector;
+      }
+      io::Printer printer(output.get(), options);
+      file_generator.GenerateHeader(&printer, info_path);
       if (printer.failed()) {
         *error = absl::StrCat("error: internal error generating a header: ",
                               file->name());
         return false;
+      }
+
+      if (should_annotate_headers) {
+        auto info_output = absl::WrapUnique(context->Open(info_path));
+        if (!annotations.SerializeToZeroCopyStream(info_output.get())) {
+          *error = absl::StrCat("error: internal error writing annotations: ",
+                                info_path);
+          return false;
+        }
       }
     }
 
@@ -416,7 +503,7 @@ bool ObjectiveCGenerator::GenerateAll(
         }
       }
     }  // if (!headers_only && skip_impls.count(file->name()) == 0)
-  }    // for(file : files)
+  }  // for(file : files)
 
   return true;
 }

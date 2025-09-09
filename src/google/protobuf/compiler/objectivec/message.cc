@@ -26,7 +26,7 @@
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/compiler/objectivec/options.h"
-#include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+#include "google/protobuf/compiler/objectivec/tf_decode_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -37,6 +37,7 @@ namespace compiler {
 namespace objectivec {
 
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 struct FieldOrderingByNumber {
   inline bool operator()(const FieldDescriptor* a,
@@ -133,7 +134,7 @@ struct ExtensionRangeOrdering {
 
 // This is a reduced case of Descriptor::ExtensionRange with just start and end.
 struct SimpleExtensionRange {
-  SimpleExtensionRange(int start, int end) : start(start), end(end){};
+  SimpleExtensionRange(int start, int end) : start(start), end(end) {};
   int start;  // inclusive
   int end;    // exclusive
 
@@ -143,7 +144,7 @@ struct SimpleExtensionRange {
   static std::vector<SimpleExtensionRange> Normalize(
       const Descriptor* descriptor) {
     std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-    sorted_extensions.reserve(descriptor->extension_range_count());
+    sorted_extensions.reserve((size_t)descriptor->extension_range_count());
     for (int i = 0; i < descriptor->extension_range_count(); ++i) {
       sorted_extensions.push_back(descriptor->extension_range(i));
     }
@@ -168,7 +169,7 @@ struct SimpleExtensionRange {
 // and return it.
 const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
   const FieldDescriptor** fields =
-      new const FieldDescriptor*[descriptor->field_count()];
+      new const FieldDescriptor*[(size_t)descriptor->field_count()];
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
@@ -181,7 +182,7 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
 // array and return it.
 const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
   const FieldDescriptor** fields =
-      new const FieldDescriptor*[descriptor->field_count()];
+      new const FieldDescriptor*[(size_t)descriptor->field_count()];
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
@@ -202,8 +203,12 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
       class_name_(ClassName(descriptor_)),
       deprecated_attribute_(
           GetOptionalDeprecatedAttribute(descriptor, descriptor->file())) {
-  ABSL_DCHECK(!descriptor->options().map_entry())
+  ABSL_CHECK(!descriptor->options().map_entry())
       << "error: MessageGenerator create of a map<>!";
+  ABSL_CHECK(!descriptor->options().message_set_wire_format() ||
+             descriptor->field_count() == 0)
+      << "error: MessageGenerator message_set_wire_format should never have "
+         "fields!";
   for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     oneof_generators_.push_back(std::make_unique<OneofGenerator>(
         descriptor_->real_oneof_decl(i), generation_options));
@@ -214,8 +219,8 @@ MessageGenerator::MessageGenerator(const std::string& file_description_name,
   //    who needs has bits and assigning them.
   // 2. FieldGenerator::SetOneofIndexBase() overrides has_bit with a negative
   //    index that groups all the elements in the oneof.
-  size_t num_has_bits = field_generators_.CalculateHasBits();
-  size_t sizeof_has_storage = (num_has_bits + 31) / 32;
+  int num_has_bits = field_generators_.CalculateHasBits();
+  int sizeof_has_storage = (num_has_bits + 31) / 32;
   if (sizeof_has_storage == 0) {
     // In the case where no field needs has bits, don't let the _has_storage_
     // end up as zero length (zero length arrays are sort of a grey area
@@ -286,20 +291,24 @@ void MessageGenerator::DetermineObjectiveCClassDefinitions(
 }
 
 void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
-  auto vars = printer->WithVars({{"classname", class_name_}});
+  auto vars = printer->WithVars(
+      {Sub("classname", class_name_).AnnotatedAs(descriptor_)});
   printer->Emit(
-      {io::Printer::Sub("deprecated_attribute", deprecated_attribute_)
-           .WithSuffix(";"),
+      {Sub("deprecated_attribute", deprecated_attribute_).WithSuffix(";"),
        {"message_comments",
         [&] {
-          EmitCommentsString(printer, descriptor_,
+          EmitCommentsString(printer, generation_options_, descriptor_,
                              kCommentStringFlags_ForceMultiline);
         }},
        {"message_fieldnum_enum",
         [&] {
           if (descriptor_->field_count() == 0) return;
-          printer->Emit(R"objc(
-            typedef GPB_ENUM($classname$_FieldNumber) {
+          printer->Emit({Sub("field_number_enum_name",
+                             absl::StrCat(printer->LookupVar("classname"),
+                                          "_FieldNumber"))
+                             .AnnotatedAs(descriptor_)},
+                        R"objc(
+            typedef GPB_ENUM($field_number_enum_name$) {
               $message_fieldnum_enum_values$,
             };
           )objc");
@@ -336,6 +345,17 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
             }
             field_generators_.get(field).GeneratePropertyDeclaration(printer);
           }
+        }},
+       {"wkt_extra",
+        [&] {
+          if (!IsWKTWithObjCCategory(descriptor_)) {
+            return;
+          }
+          printer->Emit(R"objc(
+            // NOTE: There are some Objective-C specific methods/properties in
+            // GPBWellKnownTypes.h that will likely be useful.
+          )objc");
+          printer->Emit("\n");
         }}},
       R"objc(
         #pragma mark - $classname$
@@ -347,6 +367,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
         GPB_FINAL @interface $classname$ : GPBMessage
 
         $message_properties$
+        $wkt_extra$
         @end
       )objc");
   printer->Emit("\n");
@@ -393,7 +414,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
   bool need_defaults = field_generators_.DoesAnyFieldHaveNonZeroDefault();
 
   TextFormatDecodeData text_format_decode_data;
-  for (int i = 0; i < descriptor_->field_count(); ++i) {
+  for (size_t i = 0; i < (size_t)descriptor_->field_count(); ++i) {
     const FieldGenerator& field_generator =
         field_generators_.get(sorted_fields[i]);
     if (field_generator.needs_textformat_name_support()) {
@@ -408,10 +429,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
                     : "GPBMessageFieldDescription");
 
   std::vector<std::string> init_flags;
-  init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
-  init_flags.push_back("GPBDescriptorInitializationFlag_Proto3OptionalKnown");
-  init_flags.push_back(
-      "GPBDescriptorInitializationFlag_ClosedEnumSupportKnown");
   if (need_defaults) {
     init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
   }
@@ -452,7 +469,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
        {"sizeof_has_storage", sizeof_has_storage_},
        {"storage_fields",
         [&] {
-          for (int i = 0; i < descriptor_->field_count(); i++) {
+          for (size_t i = 0; i < (size_t)descriptor_->field_count(); i++) {
             field_generators_.get(size_order_fields[i])
                 .GenerateFieldStorageDeclaration(printer);
           }
@@ -467,10 +484,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
               // Start up the root class to support the scoped extensions.
               __unused Class rootStartup = [$root_class_name$ class];
             )objc");
-          } else {
-            // The Root class has a debug runtime check, so if not
-            // starting that up, add the check.
-            printer->Emit("GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
           }
         }},
        {"field_description_type", field_description_type},
@@ -485,7 +498,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
         }},
        {"declare_fields_static_fields",
         [&] {
-          for (int i = 0; i < descriptor_->field_count(); ++i) {
+          for (size_t i = 0; i < (size_t)descriptor_->field_count(); ++i) {
             const FieldGenerator& field_generator =
                 field_generators_.get(sorted_fields[i]);
             field_generator.GenerateFieldDescription(printer, need_defaults);
@@ -606,6 +619,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) const {
             GPBDescriptor *localDescriptor =
                 [GPBDescriptor allocDescriptorForClass:$class_reference$
                                            messageName:@"$message_name$"
+                                        runtimeSupport:&$google_protobuf_runtime_support$
                                        fileDescription:&$file_description_name$
                                                 fields:$fields$
                                             fieldCount:$fields_count$

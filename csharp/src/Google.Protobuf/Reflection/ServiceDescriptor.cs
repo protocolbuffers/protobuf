@@ -19,7 +19,7 @@ namespace Google.Protobuf.Reflection
     public sealed class ServiceDescriptor : DescriptorBase
     {
         internal ServiceDescriptor(ServiceDescriptorProto proto, FileDescriptor file, int index)
-            : base(file, file.ComputeFullName(null, proto.Name), index)
+            : base(file, file.ComputeFullName(null, proto.Name), index, file.Features.MergedWith(proto.Options?.Features))
         {
             Proto = proto;
             Methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.Method,
@@ -75,7 +75,18 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public ServiceOptions GetOptions() => Proto.Options?.Clone();
+        public ServiceOptions GetOptions()
+        {
+            var clone = Proto.Options?.Clone();
+            if (clone is null)
+            {
+                return null;
+            }
+            // Clients should be using feature accessor methods, not accessing features on the
+            // options proto.
+            clone.Features = null;
+            return clone;
+        }
 
         /// <summary>
         /// Gets a single value service option for this descriptor
@@ -105,4 +116,3 @@ namespace Google.Protobuf.Reflection
         }
     }
 }
- 

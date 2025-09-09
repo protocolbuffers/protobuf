@@ -11,6 +11,7 @@
 
 #import "GPBWellKnownTypes.h"
 
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 
 NSString *const GPBWellKnownTypesErrorDomain = GPBNSStringifySymbol(GPBWellKnownTypesErrorDomain);
@@ -113,10 +114,6 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
   return self;
 }
 
-- (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970 {
-  return [self initWithTimeInterval:timeIntervalSince1970];
-}
-
 - (NSTimeInterval)timeInterval {
   return TimeIntervalFromSecondsAndNanos(self.seconds, self.nanos);
 }
@@ -126,14 +123,6 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
   int32_t nanos = SecondsAndNanosFromTimeInterval(timeInterval, &seconds, NO);
   self.seconds = seconds;
   self.nanos = nanos;
-}
-
-- (NSTimeInterval)timeIntervalSince1970 {
-  return self.timeInterval;
-}
-
-- (void)setTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970 {
-  self.timeInterval = timeIntervalSince1970;
 }
 
 @end
@@ -195,6 +184,12 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
 }
 
 - (GPBMessage *)unpackMessageClass:(Class)messageClass error:(NSError **)errorPtr {
+  return [self unpackMessageClass:messageClass extensionRegistry:nil error:errorPtr];
+}
+
+- (nullable GPBMessage *)unpackMessageClass:(Class)messageClass
+                          extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                                      error:(NSError **)errorPtr {
   NSString *fullName = [messageClass descriptor].fullName;
   if (fullName.length == 0) {
     if (errorPtr) {
@@ -215,10 +210,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
     return nil;
   }
 
-  // Any is proto3, which means no extensions, so this assumes anything put
-  // within an any also won't need extensions. A second helper could be added
-  // if needed.
-  return [messageClass parseFromData:self.value error:errorPtr];
+  return [messageClass parseFromData:self.value extensionRegistry:extensionRegistry error:errorPtr];
 }
 
 @end

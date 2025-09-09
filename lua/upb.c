@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 /*
  * require("lua") -- A Lua extension for upb.
@@ -64,11 +41,13 @@
 /* Lua compatibility code *****************************************************/
 
 /* Shims for upcoming Lua 5.3 functionality. */
+#if LUA_VERSION_NUM < 503
 static bool lua_isinteger(lua_State* L, int argn) {
   LUPB_UNUSED(L);
   LUPB_UNUSED(argn);
   return false;
 }
+#endif
 
 /* Utility functions **********************************************************/
 
@@ -185,14 +164,18 @@ const char* lupb_checkstring(lua_State* L, int narg, size_t* len) {
  * the actual value is integral. */
 #define INTCHECK(type, ctype, min, max)                                        \
   ctype lupb_check##type(lua_State* L, int narg) {                             \
-    double n;                                                                  \
     if (lua_isinteger(L, narg)) {                                              \
-      return lua_tointeger(L, narg);                                           \
+      lua_Integer i = lua_tointeger(L, narg);                                  \
+      if (i < min || i > max) {                                                \
+        luaL_error(                                                            \
+            L, "number %d was not an integer or out of range for " #type, i);  \
+      }                                                                        \
+      return i;                                                                \
     }                                                                          \
                                                                                \
     /* Prevent implicit conversion from string. */                             \
     luaL_checktype(L, narg, LUA_TNUMBER);                                      \
-    n = lua_tonumber(L, narg);                                                 \
+    double n = lua_tonumber(L, narg);                                          \
                                                                                \
     /* Check this double has no fractional part and remains in bounds.         \
      * Consider INT64_MIN and INT64_MAX:                                       \

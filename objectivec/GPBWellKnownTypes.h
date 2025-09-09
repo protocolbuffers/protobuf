@@ -88,17 +88,6 @@ typedef NS_ENUM(NSInteger, GPBWellKnownTypesErrorCode) {
  **/
 - (instancetype)initWithTimeInterval:(NSTimeInterval)timeInterval;
 
-// These next two methods are deprecated because GBPDuration has no need of a
-// "base" time. The older methods were about symmetry with GBPTimestamp, but
-// the unix epoch usage is too confusing.
-
-/** Deprecated, use timeInterval instead. */
-@property(nonatomic, readwrite) NSTimeInterval timeIntervalSince1970
-    __attribute__((deprecated("Use timeInterval")));
-/** Deprecated, use initWithTimeInterval: instead. */
-- (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970
-    __attribute__((deprecated("Use initWithTimeInterval:")));
-
 @end
 
 #pragma mark - GPBAny
@@ -200,6 +189,24 @@ typedef NS_ENUM(NSInteger, GPBWellKnownTypesErrorCode) {
  *         nil on failure.
  */
 - (nullable GPBMessage *)unpackMessageClass:(Class)messageClass error:(NSError **)errorPtr;
+
+/**
+ * Unpacks the serialized message as if it was an instance of the given class.
+ *
+ * @note When checking type_url, the base URL is not checked, only the fully
+ *       qualified name.
+ *
+ * @param messageClass The class to use to deserialize the contained message.
+ * @param extensionRegistry The extension registry to use to look up extensions.
+ * @param errorPtr     Pointer to an error that will be populated if something
+ *                     goes wrong.
+ *
+ * @return An instance of the given class populated with the contained data, or
+ *         nil on failure.
+ */
+- (nullable GPBMessage *)unpackMessageClass:(Class)messageClass
+                          extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
+                                      error:(NSError **)errorPtr;
 
 @end
 

@@ -7,7 +7,8 @@
 
 #include "google/protobuf/any.h"
 
-#include "google/protobuf/arenastring.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message.h"
@@ -19,27 +20,31 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-bool AnyMetadata::PackFrom(Arena* arena, const Message& message) {
-  return PackFrom(arena, message, kTypeGoogleApisComPrefix);
+using UrlType = std::string;
+using ValueType = std::string;
+
+bool InternalPackFrom(const Message& message, UrlType* PROTOBUF_NONNULL dst_url,
+                      ValueType* PROTOBUF_NONNULL dst_value) {
+  return InternalPackFromLite(message, kTypeGoogleApisComPrefix,
+                              message.GetTypeName(), dst_url, dst_value);
 }
 
-bool AnyMetadata::PackFrom(Arena* arena, const Message& message,
-                           absl::string_view type_url_prefix) {
-  type_url_->Set(
-      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix), arena);
-  return message.SerializeToString(value_->Mutable(arena));
+bool InternalPackFrom(const Message& message, absl::string_view type_url_prefix,
+                      UrlType* PROTOBUF_NONNULL dst_url,
+                      ValueType* PROTOBUF_NONNULL dst_value) {
+  return InternalPackFromLite(message, type_url_prefix, message.GetTypeName(),
+                              dst_url, dst_value);
 }
 
-bool AnyMetadata::UnpackTo(Message* message) const {
-  if (!InternalIs(message->GetDescriptor()->full_name())) {
-    return false;
-  }
-  return message->ParseFromString(value_->Get());
+bool InternalUnpackTo(absl::string_view type_url, const ValueType& value,
+                      Message* PROTOBUF_NONNULL message) {
+  return InternalUnpackToLite(message->GetTypeName(), type_url, value, message);
 }
 
-bool GetAnyFieldDescriptors(const Message& message,
-                            const FieldDescriptor** type_url_field,
-                            const FieldDescriptor** value_field) {
+bool GetAnyFieldDescriptors(
+    const Message& message,
+    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL type_url_field,
+    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL value_field) {
   const Descriptor* descriptor = message.GetDescriptor();
   if (descriptor->full_name() != kAnyFullTypeName) {
     return false;

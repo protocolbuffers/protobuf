@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_HELPERS_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_HELPERS_H__
 
 #include <string>
 
@@ -85,9 +85,6 @@ inline bool IsMapEntryMessage(const Descriptor* descriptor) {
   return descriptor->options().map_entry();
 }
 
-// Checks if this descriptor is for a group and gets its end tag or 0 if it's not a group
-uint GetGroupEndTag(const Descriptor* descriptor);
-
 // Determines whether we're generating code for the proto representation of
 // descriptors etc, for use in the runtime. This is the only type which is
 // allowed to use proto2 syntax, and it generates internal classes.
@@ -101,7 +98,7 @@ inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
   if (!IsDescriptorProto(descriptor->file())) {
     return false;
   }
-  const std::string name = descriptor->name();
+  const absl::string_view name = descriptor->name();
   return name == "FileOptions" ||
       name == "MessageOptions" ||
       name == "FieldOptions" ||
@@ -143,4 +140,4 @@ inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_HELPERS_H__

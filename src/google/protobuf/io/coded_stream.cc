@@ -20,11 +20,16 @@
 #include <limits.h>
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
+#include <memory>
+#include <string>
 #include <utility>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -33,7 +38,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -74,7 +78,7 @@ inline uint8_t* CopyCordToArray(const absl::Cord& cord, uint8_t* target) {
 // CodedInputStream ==================================================
 
 CodedInputStream::~CodedInputStream() {
-  if (input_ != NULL) {
+  if (input_ != nullptr) {
     BackUpInputToCurrentPosition();
   }
 }
@@ -118,9 +122,9 @@ CodedInputStream::Limit CodedInputStream::PushLimit(int byte_limit) {
   // security: byte_limit is possibly evil, so check for negative values
   // and overflow. Also check that the new requested limit is before the
   // previous limit; otherwise we continue to enforce the previous limit.
-  if (PROTOBUF_PREDICT_TRUE(byte_limit >= 0 &&
-                            byte_limit <= INT_MAX - current_position &&
-                            byte_limit < current_limit_ - current_position)) {
+  if (ABSL_PREDICT_TRUE(byte_limit >= 0 &&
+                        byte_limit <= INT_MAX - current_position &&
+                        byte_limit < current_limit_ - current_position)) {
     current_limit_ = current_position + byte_limit;
     RecomputeBufferLimits();
   }
@@ -200,7 +204,7 @@ bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
   }
 
   count -= original_buffer_size;
-  buffer_ = NULL;
+  buffer_ = nullptr;
   buffer_end_ = buffer_;
 
   // Make sure this skip doesn't try to skip past the current limit.
@@ -257,7 +261,7 @@ bool CodedInputStream::ReadString(std::string* buffer, int size) {
     if (z.second) {
       // Oddly enough, memcpy() requires its first two args to be non-NULL even
       // if we copy 0 bytes.  So, we have ensured that z.first is non-NULL here.
-      ABSL_DCHECK(z.first != NULL);
+      ABSL_DCHECK(z.first != nullptr);
       memcpy(z.first, buffer_, size);
       Advance(size);
     }
@@ -331,7 +335,7 @@ bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
   // Make sure to not cross a limit set by PushLimit() or SetTotalBytesLimit().
   const int closest_limit = std::min(current_limit_, total_bytes_limit_);
   const int available = closest_limit - total_bytes_read_;
-  if (PROTOBUF_PREDICT_FALSE(size > available)) {
+  if (ABSL_PREDICT_FALSE(size > available)) {
     total_bytes_read_ = closest_limit;
     input_->ReadCord(output, available);
     return false;
@@ -341,17 +345,36 @@ bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
 }
 
 
-bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
-  uint8_t bytes[sizeof(*value)];
+bool CodedInputStream::ReadLittleEndian16Fallback(uint16_t* value) {
+  constexpr size_t kSize = sizeof(*value);
+  uint8_t bytes[kSize];
 
   const uint8_t* ptr;
-  if (BufferSize() >= static_cast<int64_t>(sizeof(*value))) {
+  if (BufferSize() >= static_cast<int64_t>(kSize)) {
     // Fast path:  Enough bytes in the buffer to read directly.
     ptr = buffer_;
-    Advance(sizeof(*value));
+    Advance(kSize);
   } else {
     // Slow path:  Had to read past the end of the buffer.
-    if (!ReadRaw(bytes, sizeof(*value))) return false;
+    if (!ReadRaw(bytes, kSize)) return false;
+    ptr = bytes;
+  }
+  ReadLittleEndian16FromArray(ptr, value);
+  return true;
+}
+
+bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
+  constexpr size_t kSize = sizeof(*value);
+  uint8_t bytes[kSize];
+
+  const uint8_t* ptr;
+  if (BufferSize() >= static_cast<int64_t>(kSize)) {
+    // Fast path:  Enough bytes in the buffer to read directly.
+    ptr = buffer_;
+    Advance(kSize);
+  } else {
+    // Slow path:  Had to read past the end of the buffer.
+    if (!ReadRaw(bytes, kSize)) return false;
     ptr = bytes;
   }
   ReadLittleEndian32FromArray(ptr, value);
@@ -359,16 +382,17 @@ bool CodedInputStream::ReadLittleEndian32Fallback(uint32_t* value) {
 }
 
 bool CodedInputStream::ReadLittleEndian64Fallback(uint64_t* value) {
-  uint8_t bytes[sizeof(*value)];
+  constexpr size_t kSize = sizeof(*value);
+  uint8_t bytes[kSize];
 
   const uint8_t* ptr;
-  if (BufferSize() >= static_cast<int64_t>(sizeof(*value))) {
+  if (BufferSize() >= static_cast<int64_t>(kSize)) {
     // Fast path:  Enough bytes in the buffer to read directly.
     ptr = buffer_;
-    Advance(sizeof(*value));
+    Advance(kSize);
   } else {
     // Slow path:  Had to read past the end of the buffer.
-    if (!ReadRaw(bytes, sizeof(*value))) return false;
+    if (!ReadRaw(bytes, kSize)) return false;
     ptr = bytes;
   }
   ReadLittleEndian64FromArray(ptr, value);
@@ -691,8 +715,8 @@ bool CodedInputStream::Refresh() {
     RecomputeBufferLimits();
     return true;
   } else {
-    buffer_ = NULL;
-    buffer_end_ = NULL;
+    buffer_ = nullptr;
+    buffer_end_ = nullptr;
     return false;
   }
 }
@@ -819,7 +843,7 @@ uint8_t* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
 
 uint8_t* EpsCopyOutputStream::Next() {
   ABSL_DCHECK(!had_error_);  // NOLINT
-  if (PROTOBUF_PREDICT_FALSE(stream_ == nullptr)) return Error();
+  if (ABSL_PREDICT_FALSE(stream_ == nullptr)) return Error();
   if (buffer_end_) {
     // We're in the patch buffer and need to fill up the previous buffer.
     std::memcpy(buffer_end_, buffer_, end_ - buffer_);
@@ -827,14 +851,14 @@ uint8_t* EpsCopyOutputStream::Next() {
     int size;
     do {
       void* data;
-      if (PROTOBUF_PREDICT_FALSE(!stream_->Next(&data, &size))) {
+      if (ABSL_PREDICT_FALSE(!stream_->Next(&data, &size))) {
         // Stream has an error, we use the patch buffer to continue to be
         // able to write.
         return Error();
       }
       ptr = static_cast<uint8_t*>(data);
     } while (size == 0);
-    if (PROTOBUF_PREDICT_TRUE(size > kSlopBytes)) {
+    if (ABSL_PREDICT_TRUE(size > kSlopBytes)) {
       std::memcpy(ptr, end_, kSlopBytes);
       end_ = ptr + size - kSlopBytes;
       buffer_end_ = nullptr;
@@ -857,7 +881,7 @@ uint8_t* EpsCopyOutputStream::Next() {
 
 uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
   do {
-    if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
+    if (ABSL_PREDICT_FALSE(had_error_)) return buffer_;
     int overrun = ptr - end_;
     ABSL_DCHECK(overrun >= 0);           // NOLINT
     ABSL_DCHECK(overrun <= kSlopBytes);  // NOLINT
@@ -893,7 +917,7 @@ uint8_t* EpsCopyOutputStream::WriteAliasedRaw(const void* data, int size,
   }
 }
 
-#ifndef PROTOBUF_LITTLE_ENDIAN
+#ifndef ABSL_IS_LITTLE_ENDIAN
 uint8_t* EpsCopyOutputStream::WriteRawLittleEndian32(const void* data, int size,
                                                    uint8_t* ptr) {
   auto p = static_cast<const uint8_t*>(data);
@@ -962,25 +986,17 @@ uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
   }
 }
 
-uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32_t num,
-                                                           const std::string& s,
-                                                           uint8_t* ptr) {
+uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(
+    uint32_t num, absl::string_view s, uint8_t* ptr) {
   ptr = EnsureSpace(ptr);
   uint32_t size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);
   return WriteRawMaybeAliased(s.data(), size, ptr);
 }
 
-uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, const std::string& s,
-                                               uint8_t* ptr) {
-  ptr = EnsureSpace(ptr);
-  uint32_t size = s.size();
-  ptr = WriteLengthDelim(num, size, ptr);
-  return WriteRaw(s.data(), size, ptr);
-}
-
-uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, absl::string_view s,
-                                               uint8_t* ptr) {
+uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num,
+                                                 absl::string_view s,
+                                                 uint8_t* ptr) {
   ptr = EnsureSpace(ptr);
   uint32_t size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);
@@ -1004,8 +1020,8 @@ uint8_t* CodedOutputStream::WriteCordToArray(const absl::Cord& cord,
 }
 
 
-uint8_t* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
-                                                     uint8_t* target) {
+uint8_t* CodedOutputStream::WriteStringWithSizeToArray(absl::string_view str,
+                                                       uint8_t* target) {
   ABSL_DCHECK_LE(str.size(), std::numeric_limits<uint32_t>::max());
   target = WriteVarint32ToArray(str.size(), target);
   return WriteStringToArray(str, target);

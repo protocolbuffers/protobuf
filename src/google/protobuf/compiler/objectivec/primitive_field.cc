@@ -47,9 +47,9 @@ int PrimitiveFieldGenerator::ExtraRuntimeHasBitsNeeded() const {
 void PrimitiveFieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
   if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
     // Set into the offset the has bit to use for the actual value.
-    variables_["storage_offset_value"] = absl::StrCat(index_base);
-    variables_["storage_offset_comment"] =
-        "  // Stored in _has_storage_ to save space.";
+    variables_.Set("storage_offset_value", absl::StrCat(index_base));
+    variables_.Set("storage_offset_comment",
+                   "  // Stored in _has_storage_ to save space.");
   }
 }
 
@@ -57,7 +57,7 @@ PrimitiveObjFieldGenerator::PrimitiveObjFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : ObjCObjFieldGenerator(descriptor, generation_options) {
-  variables_["property_storage_attribute"] = "copy";
+  variables_.Set("property_storage_attribute", "copy");
 }
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(

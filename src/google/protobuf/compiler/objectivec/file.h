@@ -16,6 +16,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
 #include "google/protobuf/compiler/objectivec/message.h"
@@ -55,7 +56,7 @@ class FileGenerator {
     const bool include_custom_options;
   };
 
-  FileGenerator(const FileDescriptor* file,
+  FileGenerator(Edition edition, const FileDescriptor* file,
                 const GenerationOptions& generation_options,
                 CommonState& common_state);
   ~FileGenerator() = default;
@@ -63,14 +64,14 @@ class FileGenerator {
   FileGenerator(const FileGenerator&) = delete;
   FileGenerator& operator=(const FileGenerator&) = delete;
 
-  void GenerateHeader(io::Printer* p) const;
+  void GenerateHeader(io::Printer* p, absl::string_view info_path) const;
   void GenerateSource(io::Printer* p) const;
 
-  int NumEnums() const { return enum_generators_.size(); }
-  int NumMessages() const { return message_generators_.size(); }
+  size_t NumEnums() const { return enum_generators_.size(); }
+  size_t NumMessages() const { return message_generators_.size(); }
 
   void GenerateGlobalSource(io::Printer* p) const;
-  void GenerateSourceForMessage(int idx, io::Printer* p) const;
+  void GenerateSourceForMessage(size_t idx, io::Printer* p) const;
   void GenerateSourceForEnums(io::Printer* p) const;
 
  private:
@@ -114,6 +115,7 @@ class FileGenerator {
            generation_options_.headers_use_forward_declarations;
   }
 
+  const Edition edition_;
   const FileDescriptor* file_;
   const GenerationOptions& generation_options_;
   mutable CommonState* common_state_;

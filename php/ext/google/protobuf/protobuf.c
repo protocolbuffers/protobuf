@@ -17,6 +17,7 @@
 #include "map.h"
 #include "message.h"
 #include "names.h"
+#include "print_options.h"
 
 // -----------------------------------------------------------------------------
 // Module "globals"
@@ -143,11 +144,11 @@ static PHP_GINIT_FUNCTION(protobuf) { protobuf_globals->global_symtab = NULL; }
 static PHP_RINIT_FUNCTION(protobuf) {
   // Create the global generated pool.
   // Reuse the symtab (if any) left to us by the last request.
-  upb_DefPool* symtab = PROTOBUF_G(global_symtab);
-  if (!symtab) {
-    PROTOBUF_G(global_symtab) = symtab = upb_DefPool_New();
-    zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
-    zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
+  if (!PROTOBUF_G(global_symtab)) {
+    zend_bool persistent = PROTOBUF_G(keep_descriptor_pool_after_request);
+    PROTOBUF_G(global_symtab) = upb_DefPool_New();
+    zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, persistent);
+    zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, persistent);
   }
 
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
@@ -292,6 +293,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
   Def_ModuleInit();
   Map_ModuleInit();
   Message_ModuleInit();
+  PrintOptions_ModuleInit();
   return SUCCESS;
 }
 
@@ -308,7 +310,7 @@ zend_module_entry protobuf_module_entry = {
     protobuf_functions,            // function list
     PHP_MINIT(protobuf),           // process startup
     PHP_MSHUTDOWN(protobuf),       // process shutdown
-    PHP_RINIT(protobuf),           // request shutdown
+    PHP_RINIT(protobuf),           // request startup
     PHP_RSHUTDOWN(protobuf),       // request shutdown
     NULL,                          // extension info
     PHP_PROTOBUF_VERSION,          // extension version

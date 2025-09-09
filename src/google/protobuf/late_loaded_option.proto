@@ -1,0 +1,13 @@
+edition = "2023";
+
+package proto2_unittest;
+
+import "google/protobuf/descriptor.proto";
+
+message LateLoadedOption {
+  int32 value = 1;
+
+  extend google.protobuf.MessageOptions {
+    LateLoadedOption ext = 95126892;
+  }
+}

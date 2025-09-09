@@ -12,8 +12,8 @@
 #include <cstddef>
 #include <vector>
 
-#include "google/protobuf/compiler/java/field.h"
-#include "google/protobuf/compiler/java/helpers.h"
+#include "absl/types/span.h"
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -29,12 +29,9 @@ void GenerateSerializeExtensionRange(io::Printer* printer,
 // Generates code to serialize all fields and extension ranges for the specified
 // message descriptor, sorting serialization calls in increasing order by field
 // number.
-//
-// Templatized to support different field generator implementations.
-template <typename FieldGenerator>
-void GenerateSerializeFieldsAndExtensions(
+inline void GenerateSerializeFieldsAndExtensions(
     io::Printer* printer,
-    const FieldGeneratorMap<FieldGenerator>& field_generators,
+    const std::vector<const FieldGenerator*>& field_generators,
     const Descriptor* descriptor, const FieldDescriptor** sorted_fields) {
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   sorted_extensions.reserve(descriptor->extension_range_count());
@@ -62,7 +59,8 @@ void GenerateSerializeFieldsAndExtensions(
     if (range != nullptr) {
       GenerateSerializeExtensionRange(printer, range);
     }
-    field_generators.get(field).GenerateSerializationCode(printer);
+    size_t idx = static_cast<size_t>(field->index());
+    field_generators[idx]->GenerateSerializationCode(printer);
   }
 
   // After serializing all fields, serialize any remaining extensions via a

@@ -8,14 +8,17 @@
 #include "google/protobuf/map.h"
 
 #include <algorithm>
-#include <functional>
-#include <iterator>
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <string>
-#include <type_traits>
 
-#include "absl/hash/hash.h"
-#include "absl/strings/string_view.h"
+#include "absl/base/optimization.h"
+#include "absl/functional/overload.h"
+#include "absl/log/absl_check.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
@@ -25,161 +28,140 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-const TableEntryPtr kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
+std::atomic<MapFieldBaseForParse::SyncFunc>
+    MapFieldBaseForParse::sync_map_with_repeated{};
 
-NodeBase* UntypedMapBase::DestroyTree(Tree* tree) {
-  NodeBase* head = tree->empty() ? nullptr : tree->begin()->second;
-  if (alloc_.arena() == nullptr) {
-    delete tree;
+NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
+
+void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
+  if (other.empty()) return;
+
+  // Do the merging in steps to avoid Key*Value number of instantiations and
+  // reduce code duplication per instantation.
+  NodeBase* nodes = nullptr;
+
+  // First, allocate all the nodes without types.
+  for (size_t i = 0; i < other.num_elements_; ++i) {
+    NodeBase* new_node = AllocNode();
+    new_node->next = nodes;
+    nodes = new_node;
   }
-  return head;
-}
 
-void UntypedMapBase::EraseFromTree(map_index_t b,
-                                   typename Tree::iterator tree_it) {
-  ABSL_DCHECK(TableEntryIsTree(b));
-  Tree* tree = TableEntryToTree(table_[b]);
-  if (tree_it != tree->begin()) {
-    NodeBase* prev = std::prev(tree_it)->second;
-    prev->next = prev->next->next;
-  }
-  tree->erase(tree_it);
-  if (tree->empty()) {
-    DestroyTree(tree);
-    table_[b] = TableEntryPtr{};
-  }
-}
+  // Then, copy the values.
+  VisitValueType([&](auto value_type) {
+    using Value = typename decltype(value_type)::type;
+    NodeBase* out_node = nodes;
 
-map_index_t UntypedMapBase::VariantBucketNumber(VariantKey key) const {
-  return BucketNumberFromHash(key.Hash());
-}
+    // Get the ClassData once to avoid redundant virtual function calls.
+    const internal::ClassData* class_data =
+        std::is_same_v<MessageLite, Value>
+            ? GetClassData(*other.GetValue<MessageLite>(other.begin().node_))
+            : nullptr;
 
-void UntypedMapBase::InsertUniqueInTree(map_index_t b, GetKey get_key,
-                                        NodeBase* node) {
-  if (TableEntryIsNonEmptyList(b)) {
-    // To save in binary size, we delegate to an out-of-line function to do
-    // the conversion.
-    table_[b] = ConvertToTree(TableEntryToNode(table_[b]), get_key);
-  }
-  ABSL_DCHECK(TableEntryIsTree(b))
-      << (void*)table_[b] << " " << (uintptr_t)table_[b];
-
-  Tree* tree = TableEntryToTree(table_[b]);
-  auto it = tree->try_emplace(get_key(node), node).first;
-  // Maintain the linked list of the nodes in the tree.
-  // For simplicity, they are in the same order as the tree iteration.
-  if (it != tree->begin()) {
-    NodeBase* prev = std::prev(it)->second;
-    prev->next = node;
-  }
-  auto next = std::next(it);
-  node->next = next != tree->end() ? next->second : nullptr;
-}
-
-void UntypedMapBase::TransferTree(Tree* tree, GetKey get_key) {
-  NodeBase* node = DestroyTree(tree);
-  do {
-    NodeBase* next = node->next;
-
-    map_index_t b = VariantBucketNumber(get_key(node));
-    // This is similar to InsertUnique, but with erasure.
-    if (TableEntryIsEmpty(b)) {
-      InsertUniqueInList(b, node);
-      index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
-    } else if (TableEntryIsNonEmptyList(b) && !TableEntryIsTooLong(b)) {
-      InsertUniqueInList(b, node);
-    } else {
-      InsertUniqueInTree(b, get_key, node);
+    for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
+      Value* out = GetValue<Value>(out_node);
+      out_node = out_node->next;
+      auto& in = *other.GetValue<Value>(it.node_);
+      if constexpr (std::is_same_v<MessageLite, Value>) {
+        class_data->PlacementNew(out, arena())->CheckTypeAndMergeFrom(in);
+      } else {
+        Arena::CreateInArenaStorage(out, this->arena_, in);
+      }
     }
+  });
 
-    node = next;
-  } while (node != nullptr);
+  // Finally, copy the keys and insert the nodes.
+  VisitKeyType([&](auto key_type) {
+    using Key = typename decltype(key_type)::type;
+    for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
+      NodeBase* node = nodes;
+      nodes = nodes->next;
+      const Key& in = *other.GetKey<Key>(it.node_);
+      Key* out = GetKey<Key>(node);
+      if (!internal::InitializeMapKey(out, in, this->arena_)) {
+        Arena::CreateInArenaStorage(out, this->arena_, in);
+      }
+
+      static_cast<KeyMapBase<Key>*>(this)->InsertOrReplaceNode(
+          static_cast<typename KeyMapBase<Key>::KeyNode*>(node));
+    }
+  });
 }
 
-TableEntryPtr UntypedMapBase::ConvertToTree(NodeBase* node, GetKey get_key) {
-  auto* tree = Arena::Create<Tree>(alloc_.arena(), typename Tree::key_compare(),
-                                   typename Tree::allocator_type(alloc_));
-  for (; node != nullptr; node = node->next) {
-    tree->try_emplace(get_key(node), node);
+void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
+  if (arena() == other.arena()) {
+    InternalSwap(&other);
+  } else {
+    UntypedMapBase tmp(arena_, type_info_);
+    InternalSwap(&tmp);
+
+    ABSL_DCHECK(empty());
+    UntypedMergeFrom(other);
+
+    other.ClearTable(true);
+    other.UntypedMergeFrom(tmp);
+
+    if (arena_ == nullptr) tmp.ClearTable(false);
   }
-  ABSL_DCHECK_EQ(MapTreeLengthThreshold(), tree->size());
-
-  // Relink the nodes.
-  NodeBase* next = nullptr;
-  auto it = tree->end();
-  do {
-    node = (--it)->second;
-    node->next = next;
-    next = node;
-  } while (it != tree->begin());
-
-  return TreeToTableEntry(tree);
 }
 
-void UntypedMapBase::ClearTable(const ClearInput input) {
+void UntypedMapBase::DeleteNode(NodeBase* node) {
+  const auto destroy = absl::Overload{
+      [](std::string* str) { str->~basic_string(); },
+      [](MessageLite* msg) { msg->DestroyInstance(); }, [](void*) {}};
+  VisitKey(node, destroy);
+  VisitValue(node, destroy);
+  DeallocNode(node);
+}
+
+void UntypedMapBase::ClearTableImpl(bool reset) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
-  if (alloc_.arena() == nullptr) {
-    const auto loop = [=](auto destroy_node) {
-      const TableEntryPtr* table = table_;
+  if (arena_ == nullptr) {
+    const auto loop = [this](auto destroy_node) {
+      NodeBase** table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
            b < end; ++b) {
-        NodeBase* node =
-            PROTOBUF_PREDICT_FALSE(internal::TableEntryIsTree(table[b]))
-                ? DestroyTree(TableEntryToTree(table[b]))
-                : TableEntryToNode(table[b]);
-
-        while (node != nullptr) {
+        for (NodeBase* node = table[b]; node != nullptr;) {
           NodeBase* next = node->next;
+          absl::PrefetchToLocalCacheNta(next);
           destroy_node(node);
-          SizedDelete(node, SizeFromInfo(input.size_info));
+          SizedDelete(node, type_info_.node_size);
           node = next;
         }
       }
     };
-    switch (input.destroy_bits) {
-      case 0:
-        loop([](NodeBase*) {});
-        break;
-      case kKeyIsString:
-        loop([](NodeBase* node) {
+
+    const auto dispatch_key = [&](auto value_handler) {
+      if (type_info_.key_type_kind() < TypeKind::kString) {
+        loop(value_handler);
+      } else if (type_info_.key_type_kind() == TypeKind::kString) {
+        loop([=](NodeBase* node) {
           static_cast<std::string*>(node->GetVoidKey())->~basic_string();
+          value_handler(node);
         });
-        break;
-      case kValueIsString:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<std::string*>(node->GetVoidValue(size_info))
-              ->~basic_string();
-        });
-        break;
-      case kKeyIsString | kValueIsString:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<std::string*>(node->GetVoidKey())->~basic_string();
-          static_cast<std::string*>(node->GetVoidValue(size_info))
-              ->~basic_string();
-        });
-        break;
-      case kValueIsProto:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->~MessageLite();
-        });
-        break;
-      case kKeyIsString | kValueIsProto:
-        loop([size_info = input.size_info](NodeBase* node) {
-          static_cast<std::string*>(node->GetVoidKey())->~basic_string();
-          static_cast<MessageLite*>(node->GetVoidValue(size_info))
-              ->~MessageLite();
-        });
-        break;
-      case kUseDestructFunc:
-        loop(input.destroy_node);
-        break;
+      } else {
+        Unreachable();
+      }
+    };
+
+    if (type_info_.value_type_kind() < TypeKind::kString) {
+      dispatch_key([](NodeBase*) {});
+    } else if (type_info_.value_type_kind() == TypeKind::kString) {
+      dispatch_key([&](NodeBase* node) {
+        GetValue<std::string>(node)->~basic_string();
+      });
+    } else if (type_info_.value_type_kind() == TypeKind::kMessage) {
+      dispatch_key([&](NodeBase* node) {
+        GetValue<MessageLite>(node)->DestroyInstance();
+      });
+    } else {
+      Unreachable();
     }
   }
 
-  if (input.reset_table) {
-    std::fill(table_, table_ + num_buckets_, TableEntryPtr{});
+  if (reset) {
+    std::fill(table_, table_ + num_buckets_, nullptr);
     num_elements_ = 0;
     index_of_first_non_null_ = num_buckets_;
   } else {
@@ -187,32 +169,90 @@ void UntypedMapBase::ClearTable(const ClearInput input) {
   }
 }
 
-auto UntypedMapBase::FindFromTree(map_index_t b, VariantKey key,
-                                  Tree::iterator* it) const -> NodeAndBucket {
-  Tree* tree = TableEntryToTree(table_[b]);
-  auto tree_it = tree->find(key);
-  if (it != nullptr) *it = tree_it;
-  if (tree_it != tree->end()) {
-    return {tree_it->second, b};
-  }
-  return {nullptr, b};
-}
-
-size_t UntypedMapBase::SpaceUsedInTable(size_t sizeof_node) const {
+size_t UntypedMapBase::SpaceUsedExcludingSelfLong() const {
   size_t size = 0;
   // The size of the table.
   size += sizeof(void*) * num_buckets_;
   // All the nodes.
-  size += sizeof_node * num_elements_;
-  // For each tree, count the overhead of those nodes.
-  // Two buckets at a time because we only care about trees.
-  for (map_index_t b = 0; b < num_buckets_; ++b) {
-    if (TableEntryIsTree(b)) {
-      size += sizeof(Tree);
-      size += sizeof(Tree::value_type) * TableEntryToTree(table_[b])->size();
-    }
-  }
+  size += type_info_.node_size * num_elements_;
+  VisitAllNodes([&](auto* key, auto* value) {
+    const auto space_used = absl::Overload{
+        [](const std::string* str) -> size_t {
+          return StringSpaceUsedExcludingSelfLong(*str);
+        },
+        [&](const MessageLite* msg) -> size_t {
+          const auto* class_data = GetClassData(*msg);
+          if (class_data->is_lite) return 0;
+          return class_data->full().descriptor_methods->space_used_long(*msg) -
+                 class_data->allocation_size();
+        },
+        [](const void*) -> size_t { return 0; }};
+    size += space_used(key);
+    size += space_used(value);
+  });
   return size;
+}
+
+static size_t AlignTo(size_t v, size_t alignment, size_t& max_align) {
+  max_align = std::max<size_t>(max_align, alignment);
+  return (v + alignment - 1) / alignment * alignment;
+}
+
+struct Offsets {
+  size_t start;
+  size_t end;
+};
+
+template <typename T>
+static Offsets AlignAndAddSize(size_t v, size_t& max_align) {
+  v = AlignTo(v, alignof(T), max_align);
+  return {v, v + sizeof(T)};
+}
+
+static Offsets AlignAndAddSizeDynamic(
+    size_t v, UntypedMapBase::TypeKind kind,
+    const MessageLite* value_prototype_if_message, size_t& max_align) {
+  switch (kind) {
+    case UntypedMapBase::TypeKind::kBool:
+      return AlignAndAddSize<bool>(v, max_align);
+    case UntypedMapBase::TypeKind::kU32:
+      return AlignAndAddSize<int32_t>(v, max_align);
+    case UntypedMapBase::TypeKind::kU64:
+      return AlignAndAddSize<int64_t>(v, max_align);
+    case UntypedMapBase::TypeKind::kFloat:
+      return AlignAndAddSize<float>(v, max_align);
+    case UntypedMapBase::TypeKind::kDouble:
+      return AlignAndAddSize<double>(v, max_align);
+    case UntypedMapBase::TypeKind::kString:
+      return AlignAndAddSize<std::string>(v, max_align);
+    case UntypedMapBase::TypeKind::kMessage: {
+      auto* class_data = GetClassData(*value_prototype_if_message);
+      v = AlignTo(v, class_data->alignment(), max_align);
+      return {v, v + class_data->allocation_size()};
+    }
+    default:
+      Unreachable();
+  }
+}
+
+template <typename T, typename U>
+T Narrow(U value) {
+  ABSL_CHECK_EQ(value, static_cast<T>(value));
+  return static_cast<T>(value);
+}
+
+UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
+    TypeKind key_type, TypeKind value_type,
+    const MessageLite* value_prototype_if_message) {
+  size_t max_align = alignof(NodeBase);
+  const auto key_offsets =
+      AlignAndAddSizeDynamic(sizeof(NodeBase), key_type, nullptr, max_align);
+  const auto value_offsets = AlignAndAddSizeDynamic(
+      key_offsets.end, value_type, value_prototype_if_message, max_align);
+  return TypeInfo{
+      Narrow<uint16_t>(AlignTo(value_offsets.end, max_align, max_align)),
+      Narrow<uint8_t>(value_offsets.start), static_cast<uint8_t>(key_type),
+      static_cast<uint8_t>(value_type)};
 }
 
 }  // namespace internal

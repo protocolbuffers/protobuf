@@ -31,8 +31,6 @@ import java.io.IOException;
  * @author xiangl@google.com (Xiang Li)
  */
 public class LazyFieldLite {
-  private static final ExtensionRegistryLite EMPTY_REGISTRY =
-      ExtensionRegistryLite.getEmptyRegistry();
 
   /*
    * The value associated with the LazyFieldLite object is stored in one or more of the following
@@ -91,6 +89,8 @@ public class LazyFieldLite {
    */
   private volatile ByteString memoizedBytes;
 
+  private volatile boolean corrupted;
+
   /** Constructs a LazyFieldLite with bytes that will be parsed lazily. */
   public LazyFieldLite(ExtensionRegistryLite extensionRegistry, ByteString bytes) {
     checkArguments(extensionRegistry, bytes);
@@ -112,7 +112,8 @@ public class LazyFieldLite {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }
@@ -153,7 +154,7 @@ public class LazyFieldLite {
    */
   public boolean containsDefaultInstance() {
     return memoizedBytes == ByteString.EMPTY
-        || value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY);
+        || (value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY));
   }
 
   /**
@@ -401,6 +402,7 @@ public class LazyFieldLite {
       } catch (InvalidProtocolBufferException e) {
         // Nothing is logged and no exceptions are thrown. Clients will be unaware that this proto
         // was invalid.
+        this.corrupted = true;
         this.value = defaultInstance;
         this.memoizedBytes = ByteString.EMPTY;
       }
@@ -414,5 +416,10 @@ public class LazyFieldLite {
     if (bytes == null) {
       throw new NullPointerException("found null ByteString");
     }
+  }
+
+  /** Returns whether the lazy field was corrupted and replaced with an empty message. */
+  boolean isCorrupted() {
+    return corrupted;
   }
 }

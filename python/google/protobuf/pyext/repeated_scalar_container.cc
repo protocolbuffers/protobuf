@@ -443,20 +443,6 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
   cmessage::AssureWritable(self->parent);
 
-  // TODO: Remove this in OSS
-  if (value == Py_None) {
-    PyErr_Warn(nullptr,
-               "Value is not iterable. Please remove the wrong usage."
-               " This will be changed to raise TypeError soon.");
-    Py_RETURN_NONE;
-  }
-  if ((Py_TYPE(value)->tp_as_sequence == nullptr) && PyObject_Not(value)) {
-    PyErr_Warn(nullptr,
-               "Value is not iterable. Please remove the wrong usage."
-               " This will be changed to raise TypeError soon.");
-    Py_RETURN_NONE;
-  }
-
   ScopedPyObjectPtr iter(PyObject_GetIter(value));
   if (iter == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Value must be iterable");
@@ -613,6 +599,17 @@ static PyObject* Reverse(PyObject* pself) {
   Py_RETURN_NONE;
 }
 
+static PyObject* Clear(PyObject* pself) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+  CMessage* cmessage = self->parent;
+  cmessage::AssureWritable(cmessage);
+  Message* message = cmessage->message;
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+  message->GetReflection()->ClearField(message, field_descriptor);
+  Py_RETURN_NONE;
+}
+
 static PyObject* Pop(PyObject* pself, PyObject* args) {
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) {
@@ -707,6 +704,8 @@ static PyMethodDef Methods[] = {
      "Sorts the repeated container."},
     {"reverse", reinterpret_cast<PyCFunction>(Reverse), METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", reinterpret_cast<PyCFunction>(Clear), METH_NOARGS,
+     "Clears the repeated container."},
     {"MergeFrom", static_cast<PyCFunction>(MergeFrom), METH_O,
      "Merges a repeated container into the current container."},
     {nullptr, nullptr}};

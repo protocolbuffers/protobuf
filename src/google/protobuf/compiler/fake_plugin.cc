@@ -11,6 +11,7 @@
 #include <unistd.h>
 #endif
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/escaping.h"
 #include "google/protobuf/compiler/plugin.pb.h"
@@ -36,6 +37,8 @@ int main(int argc, char* argv[]) {
   CodeGeneratorResponse response;
   response.set_supported_features(
       CodeGeneratorResponse::FEATURE_SUPPORTS_EDITIONS);
+  response.set_minimum_edition(google::protobuf::Edition::EDITION_PROTO2);
+  response.set_maximum_edition(google::protobuf::Edition::EDITION_MAX);
   response.add_file()->set_name(
       absl::StrCat(request.file_to_generate(0), ".request"));
   response.mutable_file(0)->set_content(

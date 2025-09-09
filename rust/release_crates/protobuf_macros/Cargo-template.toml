@@ -1,0 +1,22 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google LLC.  All rights reserved.
+
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+[package]
+name = "protobuf-macros"
+version = "{VERSION}"
+edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
+license = "BSD-3-Clause"
+rust-version = "1.79"
+description = "Protobuf proc macro implementation (internal)"
+
+[lib]
+path = "src/proto_proc_macro_impl.rs"
+proc-macro = true
+
+[dependencies]
+quote = "1.0.38"
+syn = { version = "2.0.98", features = ["full"] }

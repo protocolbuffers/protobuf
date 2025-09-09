@@ -4,7 +4,5 @@
 # By listing them here we can keep tabs on which ones are failing and be sure
 # that we don't introduce regressions in other tests.
 
-Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
-Required.Proto3.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
-Required.Proto2.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
-Required.Proto2.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE                               # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE                                  # Should have failed to parse, but didn't.

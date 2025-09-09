@@ -1,0 +1,130 @@
+
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package pb;
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "JavaFeaturesProto";
+
+extend google.protobuf.FeatureSet {
+  optional JavaFeatures java = 1001;
+}
+
+message JavaFeatures {
+  // Whether or not to treat an enum field as closed.  This option is only
+  // applicable to enum fields, and will be removed in the future.  It is
+  // consistent with the legacy behavior of using proto3 enum types for proto2
+  // fields.
+  optional bool legacy_closed_enum = 1 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2023,
+      edition_deprecated: EDITION_2023,
+      deprecation_warning: "The legacy closed enum behavior in Java is "
+                           "deprecated and is scheduled to be removed in "
+                           "edition 2025.  See http://protobuf.dev/programming-guides/enum/#java for "
+                           "more information.",
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "true" },
+    edition_defaults = { edition: EDITION_PROTO3, value: "false" }
+  ];
+
+  // The UTF8 validation strategy to use.
+  enum Utf8Validation {
+    // Invalid default, which should never be used.
+    UTF8_VALIDATION_UNKNOWN = 0;
+    // Respect the UTF8 validation behavior specified by the global
+    // utf8_validation feature.
+    DEFAULT = 1;
+    // Verifies UTF8 validity overriding the global utf8_validation
+    // feature. This represents the legacy java_string_check_utf8 option.
+    VERIFY = 2;
+  }
+  optional Utf8Validation utf8_validation = 2 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2023,
+      edition_deprecated: EDITION_2024,
+      deprecation_warning: "The Java-specific utf8 validation feature is "
+                           "deprecated and is scheduled to be removed in "
+                           "edition 2025.  Utf8 validation behavior should "
+                           "use the global cross-language utf8_validation "
+                           "feature.",
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "DEFAULT" }
+  ];
+
+  // Allows creation of large Java enums, extending beyond the standard
+  // constant limits imposed by the Java language.
+  optional bool large_enum = 3 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "false" }
+  ];
+
+  // Whether to use the old default outer class name scheme, or the new feature
+  // which adds a "Proto" suffix to the outer class name.
+  //
+  // Users will not be able to set this option, because we removed it in the
+  // same edition that it was introduced. But we use it to determine which
+  // naming scheme to use for outer class name defaults.
+  optional bool use_old_outer_classname_default = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+      edition_removed: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "true" },
+    edition_defaults = { edition: EDITION_2024, value: "false" }
+  ];
+
+  message NestInFileClassFeature {
+    enum NestInFileClass {
+      // Invalid default, which should never be used.
+      NEST_IN_FILE_CLASS_UNKNOWN = 0;
+      // Do not nest the generated class in the file class.
+      NO = 1;
+      // Nest the generated class in the file class.
+      YES = 2;
+      // Fall back to the `java_multiple_files` option. Users won't be able to
+      // set this option.
+      LEGACY = 3 [feature_support = {
+        edition_introduced: EDITION_2024
+        edition_removed: EDITION_2024
+      }];
+    }
+    reserved 1 to max;
+  }
+
+  // Whether to nest the generated class in the generated file class. This is
+  // only applicable to *top-level* messages, enums, and services.
+  optional NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_SERVICE,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY" },
+    edition_defaults = { edition: EDITION_2024, value: "NO" }
+  ];
+}

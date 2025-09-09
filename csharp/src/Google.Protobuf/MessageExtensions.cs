@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -175,11 +175,11 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Checks if all required fields in a message have values set. For proto3 messages, this returns true
+        /// Checks if all required fields in a message have values set. For proto3 messages, this returns true.
         /// </summary>
         public static bool IsInitialized(this IMessage message)
         {
-            if (message.Descriptor.File.Syntax == Syntax.Proto3)
+            if (message.Descriptor.File.Edition == Edition.Proto3)
             {
                 return true;
             }

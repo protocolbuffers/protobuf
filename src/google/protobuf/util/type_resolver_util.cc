@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/any.pb.h"
 #include "google/protobuf/source_context.pb.h"
 #include "google/protobuf/type.pb.h"
 #include "google/protobuf/wrappers.pb.h"
@@ -20,7 +21,6 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "google/protobuf/descriptor_legacy.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/util/type_resolver.h"
 
@@ -197,11 +197,11 @@ std::string DefaultValueAsString(const FieldDescriptor& descriptor) {
       if (descriptor.type() == FieldDescriptor::TYPE_BYTES) {
         return absl::CEscape(descriptor.default_value_string());
       } else {
-        return descriptor.default_value_string();
+        return std::string(descriptor.default_value_string());
       }
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
-      return descriptor.default_value_enum()->name();
+      return std::string(descriptor.default_value_enum()->name());
       break;
     case FieldDescriptor::CPPTYPE_MESSAGE:
       ABSL_DLOG(FATAL) << "Messages can't have default values!";
@@ -216,18 +216,15 @@ std::string GetTypeUrl(absl::string_view url_prefix, const T& descriptor) {
 }
 
 void ConvertFieldDescriptor(absl::string_view url_prefix,
-                            const FieldDescriptor& descriptor, Field* field) {
+                            const FieldDescriptor& descriptor,
+                            const FieldDescriptorProto& proto, Field* field) {
   field->set_kind(static_cast<Field::Kind>(descriptor.type()));
-  switch (descriptor.label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      field->set_cardinality(Field::CARDINALITY_OPTIONAL);
-      break;
-    case FieldDescriptor::LABEL_REPEATED:
-      field->set_cardinality(Field::CARDINALITY_REPEATED);
-      break;
-    case FieldDescriptor::LABEL_REQUIRED:
-      field->set_cardinality(Field::CARDINALITY_REQUIRED);
-      break;
+  if (descriptor.is_required()) {
+    field->set_cardinality(Field::CARDINALITY_REQUIRED);
+  } else if (descriptor.is_repeated()) {
+    field->set_cardinality(Field::CARDINALITY_REPEATED);
+  } else {
+    field->set_cardinality(Field::CARDINALITY_OPTIONAL);
   }
   field->set_number(descriptor.number());
   field->set_name(descriptor.name());
@@ -248,20 +245,28 @@ void ConvertFieldDescriptor(absl::string_view url_prefix,
     field->set_packed(true);
   }
 
-  ConvertFieldOptions(descriptor.options(), *field->mutable_options());
+  ConvertFieldOptions(proto.options(), *field->mutable_options());
 }
 
-Syntax ConvertSyntax(FileDescriptorLegacy::Syntax syntax) {
-  switch (syntax) {
-    default:
-      return Syntax::SYNTAX_PROTO2;
+Syntax ConvertSyntax(absl::string_view syntax) {
+  if (syntax == "proto2" || syntax.empty()) {
+    return Syntax::SYNTAX_PROTO2;
   }
+  if (syntax == "proto3") {
+    return Syntax::SYNTAX_PROTO3;
+  }
+
+  return Syntax::SYNTAX_EDITIONS;
 }
 
-void ConvertEnumDescriptor(const EnumDescriptor& descriptor, Enum* enum_type) {
+void ConvertEnumDescriptor(const EnumDescriptor& descriptor,
+                           const FileDescriptorProto& file,
+                           const EnumDescriptorProto& proto, Enum* enum_type) {
   enum_type->Clear();
-  enum_type->set_syntax(
-      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).syntax()));
+  enum_type->set_syntax(ConvertSyntax(file.syntax()));
+  if (enum_type->syntax() == Syntax::SYNTAX_EDITIONS) {
+    enum_type->set_edition(absl::StrCat(file.edition()));
+  }
 
   enum_type->set_name(descriptor.full_name());
   enum_type->mutable_source_context()->set_file_name(descriptor.file()->name());
@@ -271,28 +276,32 @@ void ConvertEnumDescriptor(const EnumDescriptor& descriptor, Enum* enum_type) {
     value->set_name(value_descriptor.name());
     value->set_number(value_descriptor.number());
 
-    ConvertEnumValueOptions(value_descriptor.options(),
+    ConvertEnumValueOptions(proto.value(i).options(),
                             *value->mutable_options());
   }
 
-  ConvertEnumOptions(descriptor.options(), *enum_type->mutable_options());
+  ConvertEnumOptions(proto.options(), *enum_type->mutable_options());
 }
 
 void ConvertDescriptor(absl::string_view url_prefix,
-                       const Descriptor& descriptor, Type* type) {
+                       const Descriptor& descriptor,
+                       const FileDescriptorProto& file,
+                       const DescriptorProto& proto, Type* type) {
   type->Clear();
   type->set_name(descriptor.full_name());
-  type->set_syntax(
-      ConvertSyntax(FileDescriptorLegacy(descriptor.file()).syntax()));
+  type->set_syntax(ConvertSyntax(file.syntax()));
+  if (type->syntax() == Syntax::SYNTAX_EDITIONS) {
+    type->set_edition(absl::StrCat(file.edition()));
+  }
   for (int i = 0; i < descriptor.field_count(); ++i) {
-    ConvertFieldDescriptor(url_prefix, *descriptor.field(i),
+    ConvertFieldDescriptor(url_prefix, *descriptor.field(i), proto.field(i),
                            type->add_fields());
   }
   for (int i = 0; i < descriptor.oneof_decl_count(); ++i) {
     type->add_oneofs(descriptor.oneof_decl(i)->name());
   }
   type->mutable_source_context()->set_file_name(descriptor.file()->name());
-  ConvertMessageOptions(descriptor.options(), *type->mutable_options());
+  ConvertMessageOptions(proto.options(), *type->mutable_options());
 }
 
 class DescriptorPoolTypeResolver : public TypeResolver {
@@ -314,7 +323,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
       return absl::NotFoundError(
           absl::StrCat("Invalid type URL, unknown type: ", type_name));
     }
-    ConvertDescriptor(url_prefix_, *descriptor, type);
+    *type = ConvertDescriptorToType(url_prefix_, *descriptor);
     return absl::Status();
   }
 
@@ -331,7 +340,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
       return absl::InvalidArgumentError(
           absl::StrCat("Invalid type URL, unknown type: ", type_name));
     }
-    ConvertEnumDescriptor(*descriptor, enum_type);
+    *enum_type = ConvertDescriptorToType(*descriptor);
     return absl::Status();
   }
 
@@ -364,17 +373,26 @@ TypeResolver* NewTypeResolverForDescriptorPool(absl::string_view url_prefix,
 Type ConvertDescriptorToType(absl::string_view url_prefix,
                              const Descriptor& descriptor) {
   Type type;
-  ConvertDescriptor(url_prefix, descriptor, &type);
+  FileDescriptorProto proto;
+  descriptor.file()->CopyHeadingTo(&proto);
+  descriptor.CopyTo(proto.add_message_type());
+  ConvertDescriptor(url_prefix, descriptor, proto, proto.message_type(0),
+                    &type);
   return type;
 }
 
 // Performs a direct conversion from an enum descriptor to a type proto.
 Enum ConvertDescriptorToType(const EnumDescriptor& descriptor) {
   Enum enum_type;
-  ConvertEnumDescriptor(descriptor, &enum_type);
+  FileDescriptorProto proto;
+  descriptor.file()->CopyHeadingTo(&proto);
+  descriptor.CopyTo(proto.add_enum_type());
+  ConvertEnumDescriptor(descriptor, proto, proto.enum_type(0), &enum_type);
   return enum_type;
 }
 
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

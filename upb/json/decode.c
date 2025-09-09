@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "upb/json/decode.h"
 
@@ -35,12 +12,24 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/lex/atoi.h"
 #include "upb/lex/unicode.h"
+#include "upb/mem/arena.h"
+#include "upb/message/array.h"
 #include "upb/message/map.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/encode.h"
 
@@ -52,6 +41,7 @@ typedef struct {
   upb_Arena* arena; /* TODO: should we have a tmp arena for tmp data? */
   const upb_DefPool* symtab;
   int depth;
+  int result;
   upb_Status* status;
   jmp_buf err;
   int line;
@@ -61,12 +51,17 @@ typedef struct {
   const upb_FieldDef* debug_field;
 } jsondec;
 
+typedef struct {
+  upb_MessageValue value;
+  bool ignore;
+} upb_JsonMessageValue;
+
 enum { JD_OBJECT, JD_ARRAY, JD_STRING, JD_NUMBER, JD_TRUE, JD_FALSE, JD_NULL };
 
 /* Forward declarations of mutually-recursive functions. */
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m);
-static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
+static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f);
 static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
                                    const upb_MessageDef* m);
 static void jsondec_object(jsondec* d, upb_Message* msg,
@@ -89,9 +84,13 @@ static bool jsondec_isvalue(const upb_FieldDef* f) {
          jsondec_isnullvalue(f);
 }
 
-UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
+static void jsondec_seterrmsg(jsondec* d, const char* msg) {
   upb_Status_SetErrorFormat(d->status, "Error parsing JSON @%d:%d: %s", d->line,
                             (int)(d->ptr - d->line_begin), msg);
+}
+
+UPB_NORETURN static void jsondec_err(jsondec* d, const char* msg) {
+  jsondec_seterrmsg(d, msg);
   UPB_LONGJMP(d->err, 1);
 }
 
@@ -106,7 +105,9 @@ UPB_NORETURN static void jsondec_errf(jsondec* d, const char* fmt, ...) {
   UPB_LONGJMP(d->err, 1);
 }
 
-static void jsondec_skipws(jsondec* d) {
+// Advances d->ptr until the next non-whitespace character or to the end of
+// the buffer.
+static void jsondec_consumews(jsondec* d) {
   while (d->ptr != d->end) {
     switch (*d->ptr) {
       case '\n':
@@ -122,7 +123,16 @@ static void jsondec_skipws(jsondec* d) {
         return;
     }
   }
-  jsondec_err(d, "Unexpected EOF");
+}
+
+// Advances d->ptr until the next non-whitespace character. Postcondition that
+// d->ptr is pointing at a valid non-whitespace character (will err if end of
+// buffer is reached).
+static void jsondec_skipws(jsondec* d) {
+  jsondec_consumews(d);
+  if (d->ptr == d->end) {
+    jsondec_err(d, "Unexpected EOF");
+  }
 }
 
 static bool jsondec_tryparsech(jsondec* d, char ch) {
@@ -157,6 +167,10 @@ static void jsondec_entrysep(jsondec* d) {
 }
 
 static int jsondec_rawpeek(jsondec* d) {
+  if (d->ptr == d->end) {
+    jsondec_err(d, "Unexpected EOF");
+  }
+
   switch (*d->ptr) {
     case '{':
       return JD_OBJECT;
@@ -272,7 +286,7 @@ static void jsondec_skipdigits(jsondec* d) {
 static double jsondec_number(jsondec* d) {
   const char* start = d->ptr;
 
-  assert(jsondec_rawpeek(d) == JD_NUMBER);
+  UPB_ASSERT(jsondec_rawpeek(d) == JD_NUMBER);
 
   /* Skip over the syntax of a number, as specified by JSON. */
   if (*d->ptr == '-') d->ptr++;
@@ -307,9 +321,19 @@ parse:
    * (strtod() accepts a superset of JSON syntax). */
   errno = 0;
   {
+    // Copy the number into a null-terminated scratch buffer since strtod
+    // expects a null-terminated string.
+    char nullz[64];
+    ptrdiff_t len = d->ptr - start;
+    if (len > (ptrdiff_t)(sizeof(nullz) - 1)) {
+      jsondec_err(d, "excessively long number");
+    }
+    memcpy(nullz, start, len);
+    nullz[len] = '\0';
+
     char* end;
-    double val = strtod(start, &end);
-    assert(end == d->ptr);
+    double val = strtod(nullz, &end);
+    UPB_ASSERT(end - nullz == len);
 
     /* Currently the min/max-val conformance tests fail if we check this.  Does
      * this mean the conformance tests are wrong or strtod() is wrong, or
@@ -450,7 +474,7 @@ static upb_StringView jsondec_string(jsondec* d) {
         }
         break;
       default:
-        if ((unsigned char)*d->ptr < 0x20) {
+        if ((unsigned char)ch < 0x20) {
           jsondec_err(d, "Invalid char in JSON string");
         }
         *end++ = ch;
@@ -647,6 +671,16 @@ static int64_t jsondec_strtoint64(jsondec* d, upb_StringView str) {
   return ret;
 }
 
+static void jsondec_checkempty(jsondec* d, upb_StringView str,
+                               const upb_FieldDef* f) {
+  if (str.size != 0) return;
+  d->result = kUpb_JsonDecodeResult_Error;
+  upb_Status_SetErrorFormat(d->status,
+                            "Empty string is not a valid number (field: %s). "
+                            "This will be an error in a future version.",
+                            upb_FieldDef_FullName(f));
+}
+
 /* Primitive value types ******************************************************/
 
 /* Parse INT32 or INT64 value. */
@@ -668,6 +702,7 @@ static upb_MessageValue jsondec_int(jsondec* d, const upb_FieldDef* f) {
     }
     case JD_STRING: {
       upb_StringView str = jsondec_string(d);
+      jsondec_checkempty(d, str, f);
       val.int64_val = jsondec_strtoint64(d, str);
       break;
     }
@@ -688,7 +723,7 @@ static upb_MessageValue jsondec_int(jsondec* d, const upb_FieldDef* f) {
 
 /* Parse UINT32 or UINT64 value. */
 static upb_MessageValue jsondec_uint(jsondec* d, const upb_FieldDef* f) {
-  upb_MessageValue val = {0};
+  upb_MessageValue val;
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER: {
@@ -705,6 +740,7 @@ static upb_MessageValue jsondec_uint(jsondec* d, const upb_FieldDef* f) {
     }
     case JD_STRING: {
       upb_StringView str = jsondec_string(d);
+      jsondec_checkempty(d, str, f);
       val.uint64_val = jsondec_strtouint64(d, str);
       break;
     }
@@ -725,7 +761,7 @@ static upb_MessageValue jsondec_uint(jsondec* d, const upb_FieldDef* f) {
 /* Parse DOUBLE or FLOAT value. */
 static upb_MessageValue jsondec_double(jsondec* d, const upb_FieldDef* f) {
   upb_StringView str;
-  upb_MessageValue val = {0};
+  upb_MessageValue val;
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER:
@@ -733,14 +769,26 @@ static upb_MessageValue jsondec_double(jsondec* d, const upb_FieldDef* f) {
       break;
     case JD_STRING:
       str = jsondec_string(d);
-      if (jsondec_streql(str, "NaN")) {
+      if (str.size == 0) {
+        jsondec_checkempty(d, str, f);
+        val.double_val = 0.0;
+      } else if (jsondec_streql(str, "NaN")) {
         val.double_val = NAN;
       } else if (jsondec_streql(str, "Infinity")) {
         val.double_val = INFINITY;
       } else if (jsondec_streql(str, "-Infinity")) {
         val.double_val = -INFINITY;
       } else {
-        val.double_val = strtod(str.data, NULL);
+        char* end;
+        val.double_val = strtod(str.data, &end);
+        if (end != str.data + str.size) {
+          d->result = kUpb_JsonDecodeResult_Error;
+          upb_Status_SetErrorFormat(
+              d->status,
+              "Non-number characters in quoted number (field: %s). "
+              "This will be an error in a future version.",
+              upb_FieldDef_FullName(f));
+        }
       }
       break;
     default:
@@ -768,19 +816,19 @@ static upb_MessageValue jsondec_strfield(jsondec* d, const upb_FieldDef* f) {
   return val;
 }
 
-static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
+static upb_JsonMessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
   switch (jsondec_peek(d)) {
     case JD_STRING: {
       upb_StringView str = jsondec_string(d);
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
           upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
-      upb_MessageValue val;
+      upb_JsonMessageValue val = {.ignore = false};
       if (ev) {
-        val.int32_val = upb_EnumValueDef_Number(ev);
+        val.value.int32_val = upb_EnumValueDef_Number(ev);
       } else {
         if (d->options & upb_JsonDecode_IgnoreUnknown) {
-          val.int32_val = 0;
+          val.ignore = true;
         } else {
           jsondec_errf(d, "Unknown enumerator: '" UPB_STRINGVIEW_FORMAT "'",
                        UPB_STRINGVIEW_ARGS(str));
@@ -790,15 +838,16 @@ static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
     }
     case JD_NULL: {
       if (jsondec_isnullvalue(f)) {
-        upb_MessageValue val;
+        upb_JsonMessageValue val = {.ignore = false};
         jsondec_null(d);
-        val.int32_val = 0;
+        val.value.int32_val = 0;
         return val;
       }
     }
       /* Fallthrough. */
     default:
-      return jsondec_int(d, f);
+      return (upb_JsonMessageValue){.value = jsondec_int(d, f),
+                                    .ignore = false};
   }
 }
 
@@ -837,17 +886,21 @@ static upb_MessageValue jsondec_bool(jsondec* d, const upb_FieldDef* f) {
 /* Composite types (array/message/map) ****************************************/
 
 static void jsondec_array(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Array* arr = upb_Message_Mutable(msg, f, d->arena).array;
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
-    upb_MessageValue elem = jsondec_value(d, f);
-    upb_Array_Append(arr, elem, d->arena);
+    upb_JsonMessageValue elem = jsondec_value(d, f);
+    if (!elem.ignore) {
+      upb_Array_Append(arr, elem.value, d->arena);
+    }
   }
   jsondec_arrend(d);
 }
 
 static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Map* map = upb_Message_Mutable(msg, f, d->arena).map;
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
@@ -855,17 +908,21 @@ static void jsondec_map(jsondec* d, upb_Message* msg, const upb_FieldDef* f) {
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
-    upb_MessageValue key, val;
+    upb_JsonMessageValue key, val;
     key = jsondec_value(d, key_f);
+    UPB_ASSUME(!key.ignore);  // Map key cannot be enum.
     jsondec_entrysep(d);
     val = jsondec_value(d, val_f);
-    upb_Map_Set(map, key, val, d->arena);
+    if (!val.ignore) {
+      upb_Map_Set(map, key.value, val.value, d->arena);
+    }
   }
   jsondec_objend(d);
 }
 
 static void jsondec_tomsg(jsondec* d, upb_Message* msg,
                           const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   if (upb_MessageDef_WellKnownType(m) == kUpb_WellKnown_Unspecified) {
     jsondec_object(d, msg, m);
   } else {
@@ -886,6 +943,7 @@ static upb_MessageValue jsondec_msg(jsondec* d, const upb_FieldDef* f) {
 
 static void jsondec_field(jsondec* d, upb_Message* msg,
                           const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_StringView name;
   const upb_FieldDef* f;
   const upb_FieldDef* preserved;
@@ -924,7 +982,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
   }
 
   if (upb_FieldDef_RealContainingOneof(f) &&
-      upb_Message_WhichOneof(msg, upb_FieldDef_ContainingOneof(f))) {
+      upb_Message_WhichOneofByDef(msg, upb_FieldDef_ContainingOneof(f))) {
     jsondec_err(d, "More than one field for this oneof.");
   }
 
@@ -940,8 +998,10 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
     const upb_MessageDef* subm = upb_FieldDef_MessageSubDef(f);
     jsondec_tomsg(d, submsg, subm);
   } else {
-    upb_MessageValue val = jsondec_value(d, f);
-    upb_Message_SetFieldByDef(msg, f, val, d->arena);
+    upb_JsonMessageValue val = jsondec_value(d, f);
+    if (!val.ignore) {
+      upb_Message_SetFieldByDef(msg, f, val.value, d->arena);
+    }
   }
 
   d->debug_field = preserved;
@@ -949,6 +1009,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
 
 static void jsondec_object(jsondec* d, upb_Message* msg,
                            const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
     jsondec_field(d, msg, m);
@@ -956,7 +1017,7 @@ static void jsondec_object(jsondec* d, upb_Message* msg,
   jsondec_objend(d);
 }
 
-static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
+static upb_MessageValue jsondec_nonenum(jsondec* d, const upb_FieldDef* f) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Bool:
       return jsondec_bool(d, f);
@@ -972,12 +1033,20 @@ static upb_MessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
     case kUpb_CType_String:
     case kUpb_CType_Bytes:
       return jsondec_strfield(d, f);
-    case kUpb_CType_Enum:
-      return jsondec_enum(d, f);
     case kUpb_CType_Message:
       return jsondec_msg(d, f);
+    case kUpb_CType_Enum:
     default:
       UPB_UNREACHABLE();
+  }
+}
+
+static upb_JsonMessageValue jsondec_value(jsondec* d, const upb_FieldDef* f) {
+  if (upb_FieldDef_CType(f) == kUpb_CType_Enum) {
+    return jsondec_enum(d, f);
+  } else {
+    return (upb_JsonMessageValue){.value = jsondec_nonenum(d, f),
+                                  .ignore = false};
   }
 }
 
@@ -1041,6 +1110,7 @@ static int64_t jsondec_unixtime(int y, int m, int d, int h, int min, int s) {
 
 static void jsondec_timestamp(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_MessageValue seconds;
   upb_MessageValue nanos;
   upb_StringView str = jsondec_string(d);
@@ -1106,6 +1176,7 @@ malformed:
 
 static void jsondec_duration(jsondec* d, upb_Message* msg,
                              const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_MessageValue seconds;
   upb_MessageValue nanos;
   upb_StringView str = jsondec_string(d);
@@ -1138,6 +1209,7 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
 
 static void jsondec_listvalue(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
   const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
@@ -1156,6 +1228,7 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
 
 static void jsondec_struct(jsondec* d, upb_Message* msg,
                            const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
@@ -1178,6 +1251,7 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
 
 static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
                                    const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_MessageValue val;
   const upb_FieldDef* f;
   upb_Message* submsg;
@@ -1266,6 +1340,7 @@ static upb_StringView jsondec_mask(jsondec* d, const char* buf,
 
 static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   /* repeated string paths = 1; */
   const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_Array* arr = upb_Message_Mutable(msg, paths_f, d->arena).array;
@@ -1289,6 +1364,7 @@ static void jsondec_fieldmask(jsondec* d, upb_Message* msg,
 
 static void jsondec_anyfield(jsondec* d, upb_Message* msg,
                              const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   if (upb_MessageDef_WellKnownType(m) == kUpb_WellKnown_Unspecified) {
     /* For regular types: {"@type": "[user type]", "f1": <V1>, "f2": <V2>}
      * where f1, f2, etc. are the normal fields of this type. */
@@ -1307,6 +1383,7 @@ static void jsondec_anyfield(jsondec* d, upb_Message* msg,
 
 static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
                                              const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* type_url_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* type_m;
   upb_StringView type_url = jsondec_string(d);
@@ -1336,6 +1413,7 @@ static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
 }
 
 static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   /* string type_url = 1;
    * bytes value = 2; */
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 2);
@@ -1404,13 +1482,16 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
 
 static void jsondec_wrapper(jsondec* d, upb_Message* msg,
                             const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 1);
-  upb_MessageValue val = jsondec_value(d, value_f);
-  upb_Message_SetFieldByDef(msg, value_f, val, d->arena);
+  upb_JsonMessageValue val = jsondec_value(d, value_f);
+  UPB_ASSUME(val.ignore == false);  // Wrapper cannot be an enum.
+  upb_Message_SetFieldByDef(msg, value_f, val.value, d->arena);
 }
 
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   switch (upb_MessageDef_WellKnownType(m)) {
     case kUpb_WellKnown_Any:
       jsondec_any(d, msg, m);
@@ -1449,17 +1530,32 @@ static void jsondec_wellknown(jsondec* d, upb_Message* msg,
   }
 }
 
-static bool upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
-                                   const upb_MessageDef* const m) {
-  if (UPB_SETJMP(d->err)) return false;
+static int upb_JsonDecoder_Decode(jsondec* const d, upb_Message* const msg,
+                                  const upb_MessageDef* const m) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  if (UPB_SETJMP(d->err)) return kUpb_JsonDecodeResult_Error;
 
   jsondec_tomsg(d, msg, m);
-  return true;
+
+  // Consume any trailing whitespace before checking if we read the entire
+  // input.
+  jsondec_consumews(d);
+
+  if (d->ptr == d->end) {
+    return d->result;
+  } else {
+    jsondec_seterrmsg(d, "unexpected trailing characters");
+    return kUpb_JsonDecodeResult_Error;
+  }
 }
 
-bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
-                    const upb_MessageDef* m, const upb_DefPool* symtab,
-                    int options, upb_Arena* arena, upb_Status* status) {
+int upb_JsonDecodeDetectingNonconformance(const char* buf, size_t size,
+                                          upb_Message* msg,
+                                          const upb_MessageDef* m,
+                                          const upb_DefPool* symtab,
+                                          int options, upb_Arena* arena,
+                                          upb_Status* status) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
   jsondec d;
 
   if (size == 0) return true;
@@ -1471,6 +1567,7 @@ bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
   d.status = status;
   d.options = options;
   d.depth = 64;
+  d.result = kUpb_JsonDecodeResult_Ok;
   d.line = 1;
   d.line_begin = d.ptr;
   d.debug_field = NULL;

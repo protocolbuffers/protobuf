@@ -8,16 +8,28 @@
 #ifndef UPB_HASH_INT_TABLE_H_
 #define UPB_HASH_INT_TABLE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "upb/hash/common.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
 typedef struct {
-  upb_table t;              // For entries that don't fit in the array part.
-  const upb_tabval* array;  // Array part of the table. See const note above.
-  size_t array_size;        // Array part size.
-  size_t array_count;       // Array part number of elements.
+  upb_table t;  // For entries that don't fit in the array part.
+  // Array part of the table.
+  // Pointers on this table are const so we can create static initializers for
+  // tables.  We cast away const sometimes, but *only* when the containing
+  // upb_table is known to be non-const.  This requires a bit of care, but
+  // the subtlety is confined to table.c.
+  const upb_value* array;
+  // Track presence in the array part. Each bit at index (key % 8) at the
+  // presence_mask[key/8] indicates if the element is present in the array part.
+  const uint8_t* presence_mask;
+  uint32_t array_size;   // Array part size.
+  uint32_t array_count;  // Array part number of elements.
 } upb_inttable;
 
 #ifdef __cplusplus
@@ -56,7 +68,11 @@ bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
 // Optimizes the table for the current set of entries, for both memory use and
 // lookup time. Client should call this after all entries have been inserted;
 // inserting more entries is legal, but will likely require a table resize.
-void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
+// Returns false if reallocation fails.
+bool upb_inttable_compact(upb_inttable* t, upb_Arena* a);
+
+// Clears the table.
+void upb_inttable_clear(upb_inttable* t);
 
 // Iteration over inttable:
 //
@@ -72,6 +88,14 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
 bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
                        intptr_t* iter);
 void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
+void upb_inttable_setentryvalue(upb_inttable* t, intptr_t iter, upb_value v);
+bool upb_inttable_done(const upb_inttable* t, intptr_t i);
+uintptr_t upb_inttable_iter_key(const upb_inttable* t, intptr_t iter);
+upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter);
+
+UPB_INLINE bool upb_inttable_arrhas(const upb_inttable* t, uintptr_t key) {
+  return (t->presence_mask[key / 8] & (1 << (key % 8))) != 0;
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

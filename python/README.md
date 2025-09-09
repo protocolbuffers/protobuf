@@ -2,6 +2,11 @@
 
 This directory contains the Protobuf library for Python.
 
+For user documentation about how to use Protobuf Python, see
+https://protobuf.dev/getting-started/pythontutorial/
+
+# Installation
+
 In most cases you should install the library using `pip` or another package
 manager:
 
@@ -12,10 +17,7 @@ $ pip install protobuf
 The packages released on https://pypi.org/project/protobuf/#files include both a
 source distribution and binary wheels.
 
-For user documentation about how to use Protobuf Python, see
-https://protobuf.dev/getting-started/pythontutorial/
-
-# Building packages from this repo
+## Building packages from this repo
 
 If for some reason you wish to build the packages directly from this repo, you
 can use the following Bazel commands:
@@ -28,6 +30,15 @@ $ bazel build //python/dist:binary_wheel
 The binary wheel will build against whatever version of Python is installed on
 your system. The source package is always the same and does not depend on a
 local version of Python.
+
+## Building from `setup.py`
+
+We support building from `setup.py`, but only from a Python source package.
+You cannot build from `setup.py` using the GitHub repo or the GitHub source
+tarball.
+
+To build a source package from this repo, see the instructions in the previous
+section.
 
 # Implementation backends
 

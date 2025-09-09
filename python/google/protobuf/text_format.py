@@ -42,9 +42,12 @@ _INTEGER_CHECKERS = (type_checkers.Uint32ValueChecker(),
                      type_checkers.Int64ValueChecker())
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
+_FLOAT_OCTAL_PREFIX = re.compile('-?0[0-9]+')
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
+
+_as_utf8_default = True
 
 
 class Error(Exception):
@@ -91,7 +94,7 @@ class TextWriter(object):
 
 def MessageToString(
     message,
-    as_utf8=False,
+    as_utf8=_as_utf8_default,
     as_one_line=False,
     use_short_repeated_primitives=False,
     pointy_brackets=False,
@@ -183,10 +186,40 @@ def _IsMapEntry(field):
           field.message_type.GetOptions().map_entry)
 
 
+def _IsGroupLike(field):
+  """Determines if a field is consistent with a proto2 group.
+
+  Args:
+    field: The field descriptor.
+
+  Returns:
+    True if this field is group-like, false otherwise.
+  """
+  # Groups are always tag-delimited.
+  if field.type != descriptor.FieldDescriptor.TYPE_GROUP:
+    return False
+
+  # Group fields always are always the lowercase type name.
+  if field.name != field.message_type.name.lower():
+    return False
+
+  if field.message_type.file != field.file:
+    return False
+
+  # Group messages are always defined in the same scope as the field.  File
+  # level extensions will compare NULL == NULL here, which is why the file
+  # comparison above is necessary to ensure both come from the same file.
+  return (
+      field.message_type.containing_type == field.extension_scope
+      if field.is_extension
+      else field.message_type.containing_type == field.containing_type
+  )
+
+
 def PrintMessage(message,
                  out,
                  indent=0,
-                 as_utf8=False,
+                 as_utf8=_as_utf8_default,
                  as_one_line=False,
                  use_short_repeated_primitives=False,
                  pointy_brackets=False,
@@ -248,7 +281,7 @@ def PrintField(field,
                value,
                out,
                indent=0,
-               as_utf8=False,
+               as_utf8=_as_utf8_default,
                as_one_line=False,
                use_short_repeated_primitives=False,
                pointy_brackets=False,
@@ -272,7 +305,7 @@ def PrintFieldValue(field,
                     value,
                     out,
                     indent=0,
-                    as_utf8=False,
+                    as_utf8=_as_utf8_default,
                     as_one_line=False,
                     use_short_repeated_primitives=False,
                     pointy_brackets=False,
@@ -328,7 +361,7 @@ class _Printer(object):
       self,
       out,
       indent=0,
-      as_utf8=False,
+      as_utf8=_as_utf8_default,
       as_one_line=False,
       use_short_repeated_primitives=False,
       pointy_brackets=False,
@@ -398,7 +431,7 @@ class _Printer(object):
       return False
     packed_message = _BuildMessageFromTypeName(message.TypeName(),
                                                self.descriptor_pool)
-    if packed_message:
+    if packed_message is not None:
       packed_message.MergeFromString(message.value)
       colon = ':' if self.force_colon else ''
       self.out.write('%s[%s]%s ' % (self.indent * ' ', message.type_url, colon))
@@ -529,7 +562,7 @@ class _Printer(object):
         else:
           out.write(field.full_name)
         out.write(']')
-      elif field.type == descriptor.FieldDescriptor.TYPE_GROUP:
+      elif _IsGroupLike(field):
         # For groups, use the capitalized name.
         out.write(field.message_type.name)
       else:
@@ -931,12 +964,10 @@ class _Parser(object):
         # names.
         if not field:
           field = message_descriptor.fields_by_name.get(name.lower(), None)
-          if field and field.type != descriptor.FieldDescriptor.TYPE_GROUP:
+          if field and not _IsGroupLike(field):
             field = None
-
-        if (field and field.type == descriptor.FieldDescriptor.TYPE_GROUP and
-            field.message_type.name != name):
-          field = None
+          if field and field.message_type.name != name:
+            field = None
 
       if not field and not self.allow_unknown_field:
         raise tokenizer.ParseErrorPreviousToken(
@@ -1135,7 +1166,9 @@ class _Parser(object):
           else:
             # For field that doesn't represent presence, try best effort to
             # check multiple scalars by compare to default values.
-            duplicate_error = bool(getattr(message, field.name))
+            duplicate_error = not decoder.IsDefaultScalarValue(
+                getattr(message, field.name)
+            )
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(
@@ -1163,7 +1196,7 @@ class _Parser(object):
         ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
       self._DetectSilentMarker(tokenizer, immediate_message_type, field_name)
       if tokenizer.LookingAt('['):
-        self._SkipRepeatedFieldValue(tokenizer)
+        self._SkipRepeatedFieldValue(tokenizer, immediate_message_type)
       else:
         self._SkipFieldValue(tokenizer)
     else:
@@ -1238,18 +1271,22 @@ class _Parser(object):
         not tokenizer.TryConsumeFloat()):
       raise ParseError('Invalid field value: ' + tokenizer.token)
 
-  def _SkipRepeatedFieldValue(self, tokenizer):
+  def _SkipRepeatedFieldValue(self, tokenizer, immediate_message_type):
     """Skips over a repeated field value.
 
     Args:
       tokenizer: A tokenizer to parse the field value.
     """
     tokenizer.Consume('[')
-    if not tokenizer.LookingAt(']'):
-      self._SkipFieldValue(tokenizer)
-      while tokenizer.TryConsume(','):
-        self._SkipFieldValue(tokenizer)
-    tokenizer.Consume(']')
+    if not tokenizer.TryConsume(']'):
+      while True:
+        if tokenizer.LookingAt('<') or tokenizer.LookingAt('{'):
+          self._SkipFieldMessage(tokenizer, immediate_message_type)
+        else:
+          self._SkipFieldValue(tokenizer)
+        if tokenizer.TryConsume(']'):
+          break
+        tokenizer.Consume(',')
 
 
 class Tokenizer(object):
@@ -1759,6 +1796,8 @@ def ParseFloat(text):
   Raises:
     ValueError: If a floating point number couldn't be parsed.
   """
+  if _FLOAT_OCTAL_PREFIX.match(text):
+    raise ValueError('Invalid octal float: %s' % text)
   try:
     # Assume Python compatible syntax.
     return float(text)
@@ -1774,9 +1813,9 @@ def ParseFloat(text):
     else:
       # assume '1.0f' format
       try:
-        return float(text.rstrip('f'))
+        return float(text.rstrip('fF'))
       except ValueError:
-        raise ValueError('Couldn\'t parse float: %s' % text)
+        raise ValueError("Couldn't parse float: %s" % text)
 
 
 def ParseBool(text):

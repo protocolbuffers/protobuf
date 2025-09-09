@@ -1,37 +1,15 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "python/unknown_fields.h"
 
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/message/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 #include "upb/wire/types.h"
@@ -41,8 +19,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* fields;
+  // clang-format on
 } PyUpb_UnknownFieldSet;
 
 static void PyUpb_UnknownFieldSet_Dealloc(PyObject* _self) {
@@ -55,6 +35,7 @@ PyUpb_UnknownFieldSet* PyUpb_UnknownFieldSet_NewBare(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   PyUpb_UnknownFieldSet* self =
       (void*)PyType_GenericAlloc(s->unknown_fields_type, 0);
+  self->fields = PyList_New(0);
   return self;
 }
 
@@ -141,7 +122,6 @@ err:
 static const char* PyUpb_UnknownFieldSet_BuildMessageSet(
     PyUpb_UnknownFieldSet* self, upb_EpsCopyInputStream* stream,
     const char* ptr) {
-  self->fields = PyList_New(0);
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag);
@@ -158,7 +138,6 @@ static const char* PyUpb_UnknownFieldSet_BuildMessageSet(
 
 err:
   Py_DECREF(self->fields);
-  self->fields = NULL;
   return NULL;
 }
 
@@ -222,7 +201,6 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
                                                const char* ptr,
                                                int group_number) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  self->fields = PyList_New(0);
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag);
@@ -251,7 +229,6 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
 
 err:
   Py_DECREF(self->fields);
-  self->fields = NULL;
   return NULL;
 }
 
@@ -269,24 +246,25 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   upb_Message* msg = PyUpb_Message_GetIfReified(py_msg);
   if (!msg) return &self->ob_base;
 
-  size_t size;
-  const char* ptr = upb_Message_GetUnknown(msg, &size);
-  if (size == 0) return &self->ob_base;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_StringView view;
+  while (upb_Message_NextUnknown(msg, &view, &iter)) {
+    const char* ptr = view.data;
+    upb_EpsCopyInputStream stream;
+    upb_EpsCopyInputStream_Init(&stream, &ptr, view.size, true);
+    const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(py_msg);
 
-  upb_EpsCopyInputStream stream;
-  upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
-  const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(py_msg);
+    bool ok;
+    if (upb_MessageDef_IsMessageSet(msgdef)) {
+      ok = PyUpb_UnknownFieldSet_BuildMessageSet(self, &stream, ptr) != NULL;
+    } else {
+      ok = PyUpb_UnknownFieldSet_Build(self, &stream, ptr, -1) != NULL;
+    }
 
-  bool ok;
-  if (upb_MessageDef_IsMessageSet(msgdef)) {
-    ok = PyUpb_UnknownFieldSet_BuildMessageSet(self, &stream, ptr) != NULL;
-  } else {
-    ok = PyUpb_UnknownFieldSet_Build(self, &stream, ptr, -1) != NULL;
-  }
-
-  if (!ok) {
-    Py_DECREF(&self->ob_base);
-    return NULL;
+    if (!ok) {
+      Py_DECREF(&self->ob_base);
+      return NULL;
+    }
   }
 
   return &self->ob_base;

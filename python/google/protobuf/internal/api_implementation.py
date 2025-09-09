@@ -13,6 +13,8 @@ import os
 import sys
 import warnings
 
+_GOOGLE3_PYTHON_UPB_DEFAULT = True
+
 
 def _ApiVersionToImplementationType(api_version):
   if api_version == 2:

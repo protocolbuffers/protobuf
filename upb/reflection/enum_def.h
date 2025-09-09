@@ -33,6 +33,7 @@ UPB_API const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(
 UPB_API const char* upb_EnumDef_FullName(const upb_EnumDef* e);
 bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
+bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e);
 
 // Creates a mini descriptor string for an enum, returns true on success.
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
@@ -40,6 +41,7 @@ bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
 
 const char* upb_EnumDef_Name(const upb_EnumDef* e);
 const UPB_DESC(EnumOptions) * upb_EnumDef_Options(const upb_EnumDef* e);
+const UPB_DESC(FeatureSet) * upb_EnumDef_ResolvedFeatures(const upb_EnumDef* e);
 
 upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i);
 int upb_EnumDef_ReservedNameCount(const upb_EnumDef* e);

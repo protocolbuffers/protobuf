@@ -1,32 +1,9 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2023 Google LLC.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
 //
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are
-// met:
-//
-//     * Redistributions of source code must retain the above copyright
-// notice, this list of conditions and the following disclaimer.
-//     * Redistributions in binary form must reproduce the above
-// copyright notice, this list of conditions and the following disclaimer
-// in the documentation and/or other materials provided with the
-// distribution.
-//     * Neither the name of Google LLC nor the names of its
-// contributors may be used to endorse or promote products derived from
-// this software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 
 #include "python/descriptor_pool.h"
 
@@ -35,6 +12,8 @@
 #include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/base/upcast.h"
+#include "upb/message/compare.h"
 #include "upb/reflection/def.h"
 #include "upb/util/def_to_proto.h"
 
@@ -43,8 +22,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   upb_DefPool* symtab;
+  // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
 } PyUpb_DescriptorPool;
 
@@ -99,6 +80,7 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
+  PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
   upb_DefPool_Free(self->symtab);
   PyUpb_ObjCache_Delete(self->symtab);
@@ -164,13 +146,67 @@ static bool PyUpb_DescriptorPool_TryLoadFilename(PyUpb_DescriptorPool* self,
   return ret;
 }
 
+static bool PyUpb_DescriptorPool_TryLoadExtension(PyUpb_DescriptorPool* self,
+                                                  const upb_MessageDef* m,
+                                                  int32_t field_number) {
+  if (!self->db) return false;
+  const char* full_name = upb_MessageDef_FullName(m);
+  PyObject* py_name = PyUnicode_FromStringAndSize(full_name, strlen(full_name));
+  PyObject* py_descriptor = PyObject_CallMethod(
+      self->db, "FindFileContainingExtension", "Oi", py_name, field_number);
+  Py_DECREF(py_name);
+  if (!py_descriptor) {
+    PyErr_Clear();
+    return false;
+  }
+  bool ret = PyUpb_DescriptorPool_TryLoadFileProto(self, py_descriptor);
+  Py_DECREF(py_descriptor);
+  return ret;
+}
+
+static void PyUpb_DescriptorPool_TryLoadAllExtensions(
+    PyUpb_DescriptorPool* self, const upb_MessageDef* m) {
+  if (!self->db) return;
+  const char* full_name = upb_MessageDef_FullName(m);
+  PyObject* py_name = PyUnicode_FromStringAndSize(full_name, strlen(full_name));
+  PyObject* py_list =
+      PyObject_CallMethod(self->db, "FindAllExtensionNumbers", "O", py_name);
+  Py_DECREF(py_name);
+  if (!py_list) {
+    PyErr_Clear();
+    return;
+  }
+  Py_ssize_t size = PyList_Size(py_list);
+  if (size == -1) {
+    PyErr_Format(
+        PyExc_RuntimeError,
+        "FindAllExtensionNumbers() on fall back DB must return a list, not %S",
+        py_list);
+    PyErr_Print();
+    Py_DECREF(py_list);
+    return;
+  }
+  int64_t field_number;
+  const upb_ExtensionRegistry* reg =
+      upb_DefPool_ExtensionRegistry(self->symtab);
+  const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    PyObject* item = PySequence_GetItem(py_list, i);
+    field_number = PyLong_AsLong(item);
+    Py_DECREF(item);
+    if (!upb_ExtensionRegistry_Lookup(reg, t, field_number)) {
+      PyUpb_DescriptorPool_TryLoadExtension(self, m, field_number);
+    }
+  }
+  Py_DECREF(py_list);
+}
+
 bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) { return true; }
 
 static bool PyUpb_DescriptorPool_LoadDependentFiles(
     PyUpb_DescriptorPool* self, google_protobuf_FileDescriptorProto* proto) {
   size_t n;
-  const upb_StringView* deps =
-      google_protobuf_FileDescriptorProto_dependency(proto, &n);
+  const upb_StringView* deps = google_protobuf_FileDescriptorProto_dependency(proto, &n);
   for (size_t i = 0; i < n; i++) {
     const upb_FileDef* dep = upb_DefPool_FindFileByNameWithSize(
         self->symtab, deps[i].data, deps[i].size);
@@ -213,14 +249,15 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   if (file) {
     // If the existing file is equal to the new file, then silently ignore the
     // duplicate add.
-    google_protobuf_FileDescriptorProto* existing =
-        upb_FileDef_ToProto(file, arena);
+    google_protobuf_FileDescriptorProto* existing = upb_FileDef_ToProto(file, arena);
     if (!existing) {
       PyErr_SetNone(PyExc_MemoryError);
       goto done;
     }
     const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
-    if (upb_Message_IsEqual(proto, existing, m)) {
+    const int options = kUpb_CompareOption_IncludeUnknownFields;
+    if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
+                                 options)) {
       result = PyUpb_FileDescriptor_Get(file);
       goto done;
     }
@@ -301,6 +338,48 @@ static PyObject* PyUpb_DescriptorPool_Add(PyObject* _self,
     return false;
   }
   return PyUpb_DescriptorPool_DoAdd(_self, file_desc);
+}
+
+static PyObject* PyUpb_DescriptorPool_SetFeatureSetDefaults(
+    PyObject* _self, PyObject* defaults) {
+  if (!PyUpb_Message_Verify(defaults)) {
+    return PyErr_Format(PyExc_TypeError,
+                        "SetFeatureSetDefaults called with invalid type");
+  }
+  const upb_MessageDef* m = PyUpb_Message_GetMsgdef(defaults);
+  const char* file_proto_name =
+      PYUPB_DESCRIPTOR_PROTO_PACKAGE ".FeatureSetDefaults";
+  if (strcmp(upb_MessageDef_FullName(m), file_proto_name) != 0) {
+    return PyErr_Format(
+        PyExc_TypeError,
+        "SetFeatureSetDefaults called with invalid type: got %s, expected %s",
+        upb_MessageDef_FullName(m), file_proto_name);
+  }
+  PyObject* subargs = PyTuple_New(0);
+  if (!subargs) return NULL;
+  PyObject* py_serialized =
+      PyUpb_Message_SerializeToString(defaults, subargs, NULL);
+  Py_DECREF(subargs);
+  if (!py_serialized) return NULL;
+  char* serialized;
+  Py_ssize_t size;
+  if (PyBytes_AsStringAndSize(py_serialized, &serialized, &size) < 0) {
+    goto err;
+  }
+
+  PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
+  upb_Status status;
+  if (!upb_DefPool_SetFeatureSetDefaults(self->symtab, serialized, size,
+                                         &status)) {
+    PyErr_SetString(PyExc_ValueError, upb_Status_ErrorMessage(&status));
+    goto err;
+  }
+
+  Py_DECREF(py_serialized);
+  Py_RETURN_NONE;
+err:
+  Py_DECREF(py_serialized);
+  return NULL;
 }
 
 /*
@@ -558,8 +637,15 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByNumber(PyObject* _self,
     return NULL;
   }
 
-  const upb_FieldDef* f = upb_DefPool_FindExtensionByNumber(
-      self->symtab, PyUpb_Descriptor_GetDef(message_descriptor), number);
+  const upb_MessageDef* message_def =
+      PyUpb_Descriptor_GetDef(message_descriptor);
+  const upb_FieldDef* f =
+      upb_DefPool_FindExtensionByNumber(self->symtab, message_def, number);
+  if (f == NULL && self->db) {
+    if (PyUpb_DescriptorPool_TryLoadExtension(self, message_def, number)) {
+      f = upb_DefPool_FindExtensionByNumber(self->symtab, message_def, number);
+    }
+  }
   if (f == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find Extension %d", number);
   }
@@ -571,6 +657,9 @@ static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
                                                         PyObject* msg_desc) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
   const upb_MessageDef* m = PyUpb_Descriptor_GetDef(msg_desc);
+  if (self->db) {
+    PyUpb_DescriptorPool_TryLoadAllExtensions(self, m);
+  }
   size_t n;
   const upb_FieldDef** ext = upb_DefPool_GetAllExtensions(self->symtab, m, &n);
   PyObject* ret = PyList_New(n);
@@ -594,6 +683,8 @@ static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
      "Adds the FileDescriptorProto and its types to this pool."},
     {"AddSerializedFile", PyUpb_DescriptorPool_AddSerializedFile, METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
+    {"SetFeatureSetDefaults", PyUpb_DescriptorPool_SetFeatureSetDefaults,
+     METH_O, "Sets the default feature mappings used during the build."},
     {"FindFileByName", PyUpb_DescriptorPool_FindFileByName, METH_O,
      "Searches for a file descriptor by its .proto name."},
     {"FindMessageTypeByName", PyUpb_DescriptorPool_FindMessageTypeByName,

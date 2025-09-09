@@ -52,14 +52,24 @@ class DescriptorDatabase(object):
       for name in _ExtractSymbols(message, package):
         self._AddSymbol(name, file_desc_proto)
     for enum in file_desc_proto.enum_type:
-      self._AddSymbol(('.'.join((package, enum.name))), file_desc_proto)
+      self._AddSymbol(
+          ('.'.join((package, enum.name)) if package else enum.name),
+          file_desc_proto,
+      )
       for enum_value in enum.value:
         self._file_desc_protos_by_symbol[
-            '.'.join((package, enum_value.name))] = file_desc_proto
+            '.'.join((package, enum_value.name)) if package else enum_value.name
+        ] = file_desc_proto
     for extension in file_desc_proto.extension:
-      self._AddSymbol(('.'.join((package, extension.name))), file_desc_proto)
+      self._AddSymbol(
+          ('.'.join((package, extension.name)) if package else extension.name),
+          file_desc_proto,
+      )
     for service in file_desc_proto.service:
-      self._AddSymbol(('.'.join((package, service.name))), file_desc_proto)
+      self._AddSymbol(
+          ('.'.join((package, service.name)) if package else service.name),
+          file_desc_proto,
+      )
 
   def FindFileByName(self, name):
     """Finds the file descriptor proto by file name.
@@ -102,6 +112,14 @@ class DescriptorDatabase(object):
     Raises:
       KeyError if no file contains the specified symbol.
     """
+    if symbol.count('.') == 1 and symbol[0] == '.':
+      symbol = symbol.lstrip('.')
+      warnings.warn(
+          'Please remove the leading "." when '
+          'FindFileContainingSymbol, this will turn to error '
+          'in 2026 Jan.',
+          RuntimeWarning,
+      )
     try:
       return self._file_desc_protos_by_symbol[symbol]
     except KeyError:

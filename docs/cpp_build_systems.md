@@ -177,7 +177,7 @@ For example:
 
 ```
 $ cat gen_file_lists_example/BUILD.bazel
-load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@protobuf//bazel:proto_library.bzl", "proto_library")
 load("//pkg:build_systems.bzl", "gen_cmake_file_lists")
 
 filegroup(

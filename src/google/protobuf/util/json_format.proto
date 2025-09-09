@@ -13,7 +13,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 message TestFlagsAndStrings {
   required int32 A = 1;
@@ -101,6 +101,7 @@ message TestMessageWithExtension {
 message TestExtension {
   extend TestMessageWithExtension {
     optional TestExtension ext = 100;
+    optional EnumValue enum_ext = 101;
   }
   optional string value = 1;
 }
@@ -113,4 +114,12 @@ enum EnumValue {
 
 message TestDefaultEnumValue {
   optional EnumValue enum_value = 1 [default = DEFAULT];
+}
+
+message TestMapOfEnums {
+  map<string, EnumValue> enum_map = 1;
+}
+
+message TestRepeatedEnum {
+  repeated EnumValue repeated_enum = 1;
 }

@@ -646,7 +646,7 @@ void Array_ModuleInit() {
   zend_object_handlers* h;
 
   // RepeatedField.
-  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\RepeatedField",
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\RepeatedField",
                    repeated_field_methods);
 
   RepeatedField_class_entry = zend_register_internal_class(&tmp_ce);
@@ -662,6 +662,12 @@ void Array_ModuleInit() {
   h->clone_obj = RepeatedField_clone_obj;
   h->get_properties = RepeatedField_GetProperties;
   h->get_property_ptr_ptr = RepeatedField_GetPropertyPtrPtr;
+
+  // RepeatedField alias (for backwards compatibility).
+  zend_register_class_alias_ex(
+      "Google\\Protobuf\\Internal\\RepeatedField",
+      strlen("Google\\Protobuf\\Internal\\RepeatedField"),
+      RepeatedField_class_entry, true);
 
   // RepeatedFieldIter
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\RepeatedFieldIter",

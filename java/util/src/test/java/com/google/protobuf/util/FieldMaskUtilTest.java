@@ -12,8 +12,8 @@ import static com.google.common.truth.Truth.assertWithMessage;
 
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
-import protobuf_unittest.UnittestProto.NestedTestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.NestedTestAllTypes;
+import proto2_unittest.UnittestProto.TestAllTypes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -224,7 +224,7 @@ public class FieldMaskUtilTest {
   }
 
   @Test
-  public void testSubstract() throws Exception {
+  public void testSubtract() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testRemoveFieldPath} to cover all scenarios.
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz");
@@ -234,7 +234,7 @@ public class FieldMaskUtilTest {
   }
 
   @Test
-  public void testSubstract_usingVarArgs() throws Exception {
+  public void testSubtract_usingVarArgs() throws Exception {
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz.bar");
     FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar.baz.quz");
     FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");

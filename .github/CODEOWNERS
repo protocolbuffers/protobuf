@@ -1,7 +1,3 @@
-/src/ @protocolbuffers/protobuf-compiler
-
-/src/google/protobuf/compiler/cpp @protocolbuffers/protobuf-cpp
-
 /csharp/ @protocolbuffers/protobuf-csharp
 /src/google/protobuf/compiler/csharp/ @protocolbuffers/protobuf-csharp
 
@@ -25,13 +21,3 @@
 
 /ruby/ @protocolbuffers/protobuf-ruby
 /src/google/protobuf/compiler/ruby/ @protocolbuffers/protobuf-ruby
-
-/build_defs/ @protocolbuffers/protobuf-btr
-/cmake/ @protocolbuffers/protobuf-btr
-/pkg/ @protocolbuffers/protobuf-btr
-/toolchain/ @protocolbuffers/protobuf-btr
-/conformance/ @protocolbuffers/protobuf-btr
-/kokoro/ @protocolbuffers/protobuf-btr
-/third_party/ @protocolbuffers/protobuf-btr
-*.bazel @protocolbuffers/protobuf-btr
-/.github/ @protocolbuffers/protobuf-btr

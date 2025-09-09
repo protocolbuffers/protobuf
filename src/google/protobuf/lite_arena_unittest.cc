@@ -6,8 +6,11 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "google/protobuf/arena_test_util.h"
-#include "google/protobuf/map_lite_test_util.h"
+#include "google/protobuf/map_lite_unittest.pb.h"
+#include "google/protobuf/map_test_util.h"
+
 #include <gtest/gtest.h>
+
 
 namespace google {
 namespace protobuf {
@@ -37,22 +40,21 @@ TEST_F(LiteArenaTest, MapNoHeapAllocation) {
     // Map.
     // internal::NoHeapChecker no_heap;
 
-    protobuf_unittest::TestArenaMapLite* from =
-        Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(arena_.get());
-    MapLiteTestUtil::SetArenaMapFields(from);
+    proto2_unittest::TestArenaMapLite* from =
+        Arena::Create<proto2_unittest::TestArenaMapLite>(arena_.get());
+    MapTestUtil::SetArenaMapFields(from);
     from->SerializeToString(&data);
 
-    protobuf_unittest::TestArenaMapLite* to =
-        Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(arena_.get());
+    proto2_unittest::TestArenaMapLite* to =
+        Arena::Create<proto2_unittest::TestArenaMapLite>(arena_.get());
     to->ParseFromString(data);
-    MapLiteTestUtil::ExpectArenaMapFieldsSet(*to);
+    MapTestUtil::ExpectArenaMapFieldsSet(*to);
   }
 }
 
 TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
-  protobuf_unittest::ForeignMessageArenaLite* message =
-      Arena::CreateMessage<protobuf_unittest::ForeignMessageArenaLite>(
-          arena_.get());
+  proto2_unittest::ForeignMessageArenaLite* message =
+      Arena::Create<proto2_unittest::ForeignMessageArenaLite>(arena_.get());
   std::string data = "\012\000";
   int original_capacity = data.capacity();
   while (data.capacity() <= original_capacity) {
@@ -65,3 +67,4 @@ TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+

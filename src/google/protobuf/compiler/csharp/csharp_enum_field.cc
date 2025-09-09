@@ -59,7 +59,7 @@ void EnumFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 }
 
 void EnumFieldGenerator::GenerateExtensionCode(io::Printer* printer) {
-  WritePropertyDocComment(printer, descriptor_);
+  WritePropertyDocComment(printer, options(), descriptor_);
   AddDeprecatedFlag(printer);
   printer->Print(
     variables_,

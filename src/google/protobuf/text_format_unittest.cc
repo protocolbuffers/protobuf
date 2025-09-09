@@ -15,9 +15,11 @@
 #include <stdlib.h>
 
 #include <atomic>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
@@ -34,16 +36,21 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_delimited.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
+#include "google/protobuf/unittest_redaction.pb.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -52,12 +59,27 @@
 namespace google {
 namespace protobuf {
 
+namespace internal {
+class UnsetFieldsMetadataTextFormatTestUtil {
+ public:
+  static const auto& GetRawIds(
+      const TextFormat::Parser::UnsetFieldsMetadata& metadata) {
+    return metadata.ids_;
+  }
+  static auto GetId(const Message& message, absl::string_view field) {
+    return TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
+        message, *message.GetDescriptor()->FindFieldByName(field));
+  }
+};
+}  // namespace internal
+
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace text_format_unittest {
 
-using ::google::protobuf::internal::kDebugStringSilentMarker;
+using ::google::protobuf::internal::UnsetFieldsMetadataTextFormatTestUtil;
 using ::testing::AllOf;
 using ::testing::HasSubstr;
+using ::testing::UnorderedElementsAre;
 
 // A basic string with different escapable characters for testing.
 constexpr absl::string_view kEscapeTestString =
@@ -69,7 +91,28 @@ constexpr absl::string_view kEscapeTestStringEscaped =
     "\"\\\"A string with \\' characters \\n and \\r newlines "
     "and \\t tabs and \\001 slashes \\\\ and  multiple   spaces\"";
 
-class TextFormatTest : public testing::Test {
+constexpr absl::string_view value_replacement = "\\[REDACTED\\]";
+
+constexpr absl::string_view kTextMarkerRegex = "goo\\.gle/.+  +";
+
+class TextFormatTestBase : public testing::Test {
+ public:
+  void SetUp() override {
+    // DebugString APIs insert a per-process randomized
+    // prefix. Here we obtain the prefixes by calling DebugString APIs on an
+    // empty proto. Note that Message::ShortDebugString() trims the last empty
+    // space so we have to add it back.
+    single_line_debug_format_prefix_ = proto_.ShortDebugString() + " ";
+    multi_line_debug_format_prefix_ = proto_.DebugString();
+  }
+
+ protected:
+  unittest::TestAllTypes proto_;
+  std::string single_line_debug_format_prefix_;
+  std::string multi_line_debug_format_prefix_;
+};
+
+class TextFormatTest : public TextFormatTestBase {
  public:
   static void SetUpTestSuite() {
     ABSL_CHECK_OK(File::GetContents(
@@ -84,7 +127,6 @@ class TextFormatTest : public testing::Test {
  protected:
   // Text format read from text_format_unittest_data.txt.
   const std::string proto_text_format_;
-  unittest::TestAllTypes proto_;
 
  private:
   static std::string static_proto_text_format_;
@@ -133,8 +175,8 @@ TEST_F(TextFormatTest, ShortDebugString) {
   proto_.mutable_optional_foreign_message();
 
   EXPECT_EQ(proto_.ShortDebugString(),
-            absl::StrCat("optional_int32: ", kDebugStringSilentMarker,
-                         "1 "
+            absl::StrCat(single_line_debug_format_prefix_,
+                         "optional_int32: 1 "
                          "optional_string: \"hello\" "
                          "optional_nested_message { bb: 2 } "
                          "optional_foreign_message { }"));
@@ -172,35 +214,25 @@ TEST_F(TextFormatTest, ShortFormat) {
 
   std::string value_replacement = "\\[REDACTED\\]";
   EXPECT_THAT(google::protobuf::ShortFormat(proto),
-              testing::MatchesRegex(
-                  "optional_redacted_string: " +
-                  value_replacement +
-                  " "
+              testing::MatchesRegex(absl::Substitute(
+                  "$1"
+                  "optional_redacted_string: $0 "
                   "optional_unredacted_string: \"bar\" "
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  " "
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  " "
+                  "repeated_redacted_string: $0 "
+                  "repeated_redacted_string: $0 "
                   "repeated_unredacted_string: \"3\" "
                   "repeated_unredacted_string: \"4\" "
-                  "optional_redacted_message: " +
-                  value_replacement +
-                  " "
+                  "optional_redacted_message: $0 "
                   "optional_unredacted_message \\{ "
                   "optional_unredacted_nested_string: \"world\" \\} "
-                  "repeated_redacted_message: " +
-                  value_replacement +
-                  " "
+                  "repeated_redacted_message: $0 "
                   "repeated_unredacted_message "
                   "\\{ optional_unredacted_nested_string: \"7\" \\} "
                   "repeated_unredacted_message "
                   "\\{ optional_unredacted_nested_string: \"8\" \\} "
-                  "map_redacted_string: " +
-                  value_replacement +
-                  " "
-                  "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}"));
+                  "map_redacted_string: $0 "
+                  "map_unredacted_string \\{ key: \"ghi\" value: \"jkl\" \\}",
+                  value_replacement, kTextMarkerRegex)));
 }
 
 TEST_F(TextFormatTest, Utf8Format) {
@@ -234,39 +266,28 @@ TEST_F(TextFormatTest, Utf8Format) {
   (*proto.mutable_map_redacted_string())["abc"] = "def";
   (*proto.mutable_map_unredacted_string())["ghi"] = "jkl";
 
-  std::string value_replacement = "\\[REDACTED\\]";
   EXPECT_THAT(google::protobuf::Utf8Format(proto),
-              testing::MatchesRegex(
-                  "optional_redacted_string: " +
-                  value_replacement +
-                  "\n"
+              testing::MatchesRegex(absl::Substitute(
+                  "$1\n"
+                  "optional_redacted_string: $0\n"
                   "optional_unredacted_string: \"bar\"\n"
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  "\n"
-                  "repeated_redacted_string: " +
-                  value_replacement +
-                  "\n"
+                  "repeated_redacted_string: $0\n"
+                  "repeated_redacted_string: $0\n"
                   "repeated_unredacted_string: \"3\"\n"
                   "repeated_unredacted_string: \"4\"\n"
-                  "optional_redacted_message: " +
-                  value_replacement +
-                  "\n"
+                  "optional_redacted_message: $0\n"
                   "optional_unredacted_message \\{\n  "
                   "optional_unredacted_nested_string: "
                   "\"\xE8\xB0\xB7\xE6\xAD\x8C\"\n\\}\n"
-                  "repeated_redacted_message: " +
-                  value_replacement +
-                  "\n"
+                  "repeated_redacted_message: $0\n"
                   "repeated_unredacted_message \\{\n  "
                   "optional_unredacted_nested_string: \"7\"\n\\}\n"
                   "repeated_unredacted_message \\{\n  "
                   "optional_unredacted_nested_string: \"8\"\n\\}\n"
-                  "map_redacted_string: " +
-                  value_replacement +
-                  "\n"
+                  "map_redacted_string: $0\n"
                   "map_unredacted_string \\{\n  "
-                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n"));
+                  "key: \"ghi\"\n  value: \"jkl\"\n\\}\n",
+                  value_replacement, kTextMarkerRegex)));
 }
 
 TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
@@ -336,8 +357,8 @@ TEST_F(TextFormatTest, StringEscape) {
 
   // Hardcode a correct value to test against.
   std::string correct_string =
-      absl::StrCat("optional_string: ", kDebugStringSilentMarker,
-                   kEscapeTestStringEscaped, "\n");
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "optional_string: ", kEscapeTestStringEscaped, "\n");
 
   // Compare.
   EXPECT_EQ(correct_string, debug_string);
@@ -345,8 +366,9 @@ TEST_F(TextFormatTest, StringEscape) {
   // the protocol buffer contains no UTF-8 text.
   EXPECT_EQ(correct_string, utf8_debug_string);
 
-  std::string expected_short_debug_string = absl::StrCat(
-      "optional_string: ", kDebugStringSilentMarker, kEscapeTestStringEscaped);
+  std::string expected_short_debug_string =
+      absl::StrCat(single_line_debug_format_prefix_,
+                   "optional_string: ", kEscapeTestStringEscaped);
   EXPECT_EQ(expected_short_debug_string, proto_.ShortDebugString());
 }
 
@@ -361,17 +383,30 @@ TEST_F(TextFormatTest, Utf8DebugString) {
 
   // Hardcode a correct value to test against.
   std::string correct_utf8_string =
-      absl::StrCat("optional_string: ", kDebugStringSilentMarker,
-                   "\"\350\260\267\346\255\214\"\n"
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "optional_string: \"\350\260\267\346\255\214\"\n"
                    "optional_bytes: \"\\350\\260\\267\\346\\255\\214\"\n");
   std::string correct_string =
-      absl::StrCat("optional_string: ", kDebugStringSilentMarker,
-                   "\"\\350\\260\\267\\346\\255\\214\"\n"
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "optional_string: \"\\350\\260\\267\\346\\255\\214\"\n"
                    "optional_bytes: \"\\350\\260\\267\\346\\255\\214\"\n");
 
   // Compare.
   EXPECT_EQ(correct_utf8_string, utf8_debug_string);
   EXPECT_EQ(correct_string, debug_string);
+}
+
+TEST_F(TextFormatTest, DelimitedPrintToString) {
+  editions_unittest::TestDelimited proto;
+  proto.mutable_grouplike()->set_a(9);
+  proto.mutable_notgrouplike()->set_b(8);
+  proto.mutable_nested()->mutable_notgrouplike()->set_a(7);
+
+  std::string output;
+  TextFormat::PrintToString(proto, &output);
+  EXPECT_EQ(output,
+            "nested {\n  notgrouplike {\n    a: 7\n  }\n}\nGroupLike {\n  a: "
+            "9\n}\nnotgrouplike {\n  b: 8\n}\n");
 }
 
 TEST_F(TextFormatTest, PrintUnknownFields) {
@@ -390,8 +425,9 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
   unknown_fields->AddVarint(8, 2);
   unknown_fields->AddVarint(8, 3);
 
-  EXPECT_EQ(absl::StrCat("5: ", kDebugStringSilentMarker,
-                         "1\n"
+  std::string message_text;
+  TextFormat::PrintToString(message, &message_text);
+  EXPECT_EQ(absl::StrCat("5: 1\n"
                          "5: 0x00000002\n"
                          "5: 0x0000000000000003\n"
                          "5: \"4\"\n"
@@ -401,7 +437,19 @@ TEST_F(TextFormatTest, PrintUnknownFields) {
                          "8: 1\n"
                          "8: 2\n"
                          "8: 3\n"),
-            message.DebugString());
+            message_text);
+
+  EXPECT_THAT(absl::StrCat(message), testing::MatchesRegex(absl::Substitute(
+                                         "$1\n"
+                                         "5: UNKNOWN_VARINT $0\n"
+                                         "5: UNKNOWN_FIXED32 $0\n"
+                                         "5: UNKNOWN_FIXED64 $0\n"
+                                         "5: UNKNOWN_STRING $0\n"
+                                         "5: UNKNOWN_GROUP $0\n"
+                                         "8: UNKNOWN_VARINT $0\n"
+                                         "8: UNKNOWN_VARINT $0\n"
+                                         "8: UNKNOWN_VARINT $0\n",
+                                         value_replacement, kTextMarkerRegex)));
 }
 
 TEST_F(TextFormatTest, PrintUnknownFieldsDeepestStackWorks) {
@@ -448,7 +496,7 @@ TEST_F(TextFormatTest, PrintUnknownFieldsHidden) {
 TEST_F(TextFormatTest, PrintUnknownMessage) {
   // Test heuristic printing of messages in an UnknownFieldSet.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   // Cases which should not be interpreted as sub-messages.
 
@@ -524,7 +572,7 @@ TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {
 TEST_F(TextFormatTest, PrintMessageWithIndent) {
   // Test adding an initial indent to printing.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.add_repeated_string("abc");
   message.add_repeated_string("def");
@@ -546,7 +594,7 @@ TEST_F(TextFormatTest, PrintMessageWithIndent) {
 TEST_F(TextFormatTest, PrintMessageSingleLine) {
   // Test printing a message on a single line.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.add_repeated_string("abc");
   message.add_repeated_string("def");
@@ -566,7 +614,7 @@ TEST_F(TextFormatTest, PrintMessageSingleLine) {
 TEST_F(TextFormatTest, PrintBufferTooSmall) {
   // Test printing a message to a buffer that is too small.
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.add_repeated_string("abc");
   message.add_repeated_string("def");
@@ -587,7 +635,7 @@ class CustomUInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, DefaultCustomFieldPrinter) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.set_optional_uint32(42);
   message.add_repeated_uint32(1);
@@ -611,7 +659,7 @@ class CustomInt32FieldValuePrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
 
   message.set_optional_int32(42);  // This will be handled by our Printer.
   message.add_repeated_int32(42);  // This will be printed as number.
@@ -626,7 +674,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
 }
 
 TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   TextFormat::Printer printer;
   const FieldDescriptor* const field =
       message.GetDescriptor()->FindFieldByName("optional_int32");
@@ -639,7 +687,7 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
 }
 
 TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   TextFormat::Printer printer;
   // nullptr printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
@@ -673,7 +721,7 @@ class CustomMessageFieldValuePrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, CustomPrinterForComments) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
   message.mutable_optional_import_message()->set_d(42);
   message.add_repeated_nested_message();
@@ -720,7 +768,7 @@ class CustomMessageContentFieldValuePrinter
 };
 
 TEST_F(TextFormatTest, CustomPrinterForMessageContent) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
   message.mutable_optional_import_message()->set_d(42);
   message.add_repeated_nested_message();
@@ -762,7 +810,7 @@ class CustomMultilineCommentPrinter : public TextFormat::FieldValuePrinter {
 };
 
 TEST_F(TextFormatTest, CustomPrinterForMultilineComments) {
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.mutable_optional_nested_message();
   message.mutable_optional_import_message()->set_d(42);
   TextFormat::Printer printer;
@@ -834,7 +882,7 @@ TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
               unittest::TestAllTypes::kRepeatedNestedMessageFieldNumber),
       new CompactRepeatedFieldPrinter));
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.add_repeated_nested_message()->set_bb(1);
   message.add_repeated_nested_message()->set_bb(2);
   message.add_repeated_nested_message()->set_bb(3);
@@ -884,7 +932,7 @@ TEST_F(TextFormatTest, MultilineStringPrinter) {
               unittest::TestAllTypes::kOptionalStringFieldNumber),
       new MultilineStringPrinter));
 
-  protobuf_unittest::TestAllTypes message;
+  proto2_unittest::TestAllTypes message;
   message.set_optional_string("first line\nsecond line\nthird line");
 
   std::string text;
@@ -956,6 +1004,7 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
   TestUtil::ExpectAllExtensionsSet(proto_);
 }
 
+
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
   // Create a parse string with a numerical value for an enum field.
   std::string parse_string =
@@ -987,8 +1036,8 @@ TEST_F(TextFormatTest, PrintUnknownEnumFieldProto3) {
   proto.add_repeated_nested_enum(
       static_cast<proto3_unittest::TestAllTypes::NestedEnum>(-2147483648));
 
-  EXPECT_EQ(absl::StrCat("repeated_nested_enum: ", kDebugStringSilentMarker,
-                         "10\n"
+  EXPECT_EQ(absl::StrCat(multi_line_debug_format_prefix_,
+                         "repeated_nested_enum: 10\n"
                          "repeated_nested_enum: -10\n"
                          "repeated_nested_enum: 2147483647\n"
                          "repeated_nested_enum: -2147483648\n"),
@@ -1007,86 +1056,185 @@ TEST_F(TextFormatTest, ParseUnknownEnumFieldProto3) {
   EXPECT_EQ(-2147483648, proto.repeated_nested_enum(3));
 }
 
-TEST_F(TextFormatTest, ErrorOnNoOpFieldsProto3) {
+TEST_F(TextFormatTest, PopulatesNoOpFields) {
   proto3_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
-  parser.ErrorOnNoOpFields(true);
+  TextFormat::Parser::UnsetFieldsMetadata no_op_fields;
+  parser.OutputNoOpFields(&no_op_fields);
+  using Peer = UnsetFieldsMetadataTextFormatTestUtil;
 
   {
+    no_op_fields = {};
     const absl::string_view singular_int_parse_string = "optional_int32: 0";
     EXPECT_TRUE(TextFormat::ParseFromString(singular_int_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(singular_int_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(singular_int_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_int32")));
   }
   {
+    no_op_fields = {};
     const absl::string_view singular_bool_parse_string = "optional_bool: false";
     EXPECT_TRUE(
         TextFormat::ParseFromString(singular_bool_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(singular_bool_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(singular_bool_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_bool")));
   }
   {
+    no_op_fields = {};
     const absl::string_view singular_string_parse_string =
         "optional_string: ''";
     EXPECT_TRUE(
         TextFormat::ParseFromString(singular_string_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(singular_string_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(singular_string_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_string")));
   }
   {
+    no_op_fields = {};
     const absl::string_view nested_message_parse_string =
         "optional_nested_message { bb: 0 } ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(nested_message_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(nested_message_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(nested_message_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(
+                    Peer::GetId(proto.optional_nested_message(), "bb")));
   }
   {
+    no_op_fields = {};
+    const absl::string_view nested_message_parse_string =
+        "optional_nested_message { bb: 1 } ";
+    EXPECT_TRUE(
+        TextFormat::ParseFromString(nested_message_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(nested_message_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
+  }
+  {
+    no_op_fields = {};
     const absl::string_view foreign_message_parse_string =
         "optional_foreign_message { c: 0 } ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(foreign_message_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(foreign_message_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(foreign_message_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(
+                    Peer::GetId(proto.optional_foreign_message(), "c")));
   }
   {
+    no_op_fields = {};
     const absl::string_view nested_enum_parse_string =
         "optional_nested_enum: ZERO ";
     EXPECT_TRUE(TextFormat::ParseFromString(nested_enum_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(nested_enum_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(nested_enum_parse_string, &proto));
+    EXPECT_THAT(
+        Peer::GetRawIds(no_op_fields),
+        UnorderedElementsAre(Peer::GetId(proto, "optional_nested_enum")));
   }
   {
+    no_op_fields = {};
     const absl::string_view foreign_enum_parse_string =
         "optional_foreign_enum: FOREIGN_ZERO ";
     EXPECT_TRUE(TextFormat::ParseFromString(foreign_enum_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(foreign_enum_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(foreign_enum_parse_string, &proto));
+    EXPECT_THAT(
+        Peer::GetRawIds(no_op_fields),
+        UnorderedElementsAre(Peer::GetId(proto, "optional_foreign_enum")));
   }
   {
+    no_op_fields = {};
     const absl::string_view string_piece_parse_string =
         "optional_string_piece: '' ";
     EXPECT_TRUE(TextFormat::ParseFromString(string_piece_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(string_piece_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(string_piece_parse_string, &proto));
+    EXPECT_THAT(
+        Peer::GetRawIds(no_op_fields),
+        UnorderedElementsAre(Peer::GetId(proto, "optional_string_piece")));
   }
   {
+    no_op_fields = {};
     const absl::string_view cord_parse_string = "optional_cord: '' ";
     EXPECT_TRUE(TextFormat::ParseFromString(cord_parse_string, &proto));
-    EXPECT_FALSE(parser.ParseFromString(cord_parse_string, &proto));
+    EXPECT_TRUE(parser.ParseFromString(cord_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_cord")));
   }
   {
+    no_op_fields = {};
     // Sanity check that repeated fields work the same.
     const absl::string_view repeated_int32_parse_string = "repeated_int32: 0 ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_int32_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(repeated_int32_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
   }
   {
+    no_op_fields = {};
     const absl::string_view repeated_bool_parse_string =
         "repeated_bool: false  ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_bool_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(repeated_bool_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
   }
   {
+    no_op_fields = {};
     const absl::string_view repeated_string_parse_string =
         "repeated_string: '' ";
     EXPECT_TRUE(
         TextFormat::ParseFromString(repeated_string_parse_string, &proto));
     EXPECT_TRUE(parser.ParseFromString(repeated_string_parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields), UnorderedElementsAre());
+  }
+}
+
+TEST_F(TextFormatTest, FieldsPopulatedCorrectly) {
+  using Peer = UnsetFieldsMetadataTextFormatTestUtil;
+  proto3_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  TextFormat::Parser::UnsetFieldsMetadata no_op_fields;
+  parser.OutputNoOpFields(&no_op_fields);
+  {
+    no_op_fields = {};
+    const absl::string_view parse_string = R"pb(
+      optional_int32: 0
+      optional_uint32: 10
+      optional_nested_message { bb: 0 }
+    )pb";
+    EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(
+                    Peer::GetId(proto, "optional_int32"),
+                    Peer::GetId(proto.optional_nested_message(), "bb")));
+  }
+  {
+    no_op_fields = {};
+    const absl::string_view parse_string = R"pb(
+      optional_bool: false
+      optional_uint32: 10
+      optional_nested_message { bb: 20 }
+    )pb";
+    EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_bool")));
+  }
+  {
+    // The address returned by the field is a string_view, which is a separate
+    // allocation. Check address directly.
+    no_op_fields = {};
+    const absl::string_view parse_string = "optional_string: \"\"";
+    EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_string")));
+  }
+  {
+    // The address returned by the field is a string_view, which is a separate
+    // allocation. Check address directly.
+    no_op_fields = {};
+    const absl::string_view parse_string = "optional_bytes: \"\"";
+    EXPECT_TRUE(parser.ParseFromString(parse_string, &proto));
+    EXPECT_THAT(Peer::GetRawIds(no_op_fields),
+                UnorderedElementsAre(Peer::GetId(proto, "optional_bytes")));
   }
 }
 
@@ -1190,6 +1338,32 @@ TEST_F(TextFormatTest, ParseShortRepeatedWithTrailingComma) {
   ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
   parse_string = "RepeatedGroup [{ a: 3 },]\n";
   ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+}
+
+TEST_F(TextFormatTest, ParseWithTrailingComma) {
+  EXPECT_TRUE(TextFormat::ParseFromString("optional_int32: 456 ,\n", &proto_));
+  EXPECT_TRUE(TextFormat::ParseFromString(
+      "optional_foreign_enum: FOREIGN_FOO ,", &proto_));
+  EXPECT_TRUE(
+      TextFormat::ParseFromString("repeated_string: [ \"foo\" ] ,", &proto_));
+  EXPECT_TRUE(TextFormat::ParseFromString(
+      "repeated_nested_message: [ { bb: 1 , } ]", &proto_));
+}
+
+TEST_F(TextFormatTest, ParseUnknownWithTrailingComma) {
+  TextFormat::Parser parser;
+  parser.AllowUnknownField(true);
+  parser.AllowUnknownExtension(true);
+
+  EXPECT_TRUE(parser.ParseFromString("unknown_int: 456 ,\n", &proto_));
+  EXPECT_TRUE(parser.ParseFromString("unknown_enum: FOREIGN_FOO ,", &proto_));
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown_repeated: [ \"foo\" ] ,", &proto_));
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown_message: { bb: 1 , } ,", &proto_));
+  EXPECT_TRUE(
+      parser.ParseFromString("unknown_message: { bb: 1 , } ,", &proto_));
+  EXPECT_TRUE(parser.ParseFromString("[foo.unknown_extension]: 1 ,", &proto_));
 }
 
 TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {
@@ -1340,8 +1514,8 @@ TEST_F(TextFormatTest, PrintExotic) {
   //   have this problem, so we switched to that instead.
 
   EXPECT_EQ(
-      absl::StrCat("repeated_int64: ", kDebugStringSilentMarker,
-                   "-9223372036854775808\n"
+      absl::StrCat(multi_line_debug_format_prefix_,
+                   "repeated_int64: -9223372036854775808\n"
                    "repeated_uint64: 18446744073709551615\n"
                    "repeated_double: 123.456\n"
                    "repeated_double: 1.23e+21\n"
@@ -1400,8 +1574,8 @@ TEST_F(TextFormatTest, PrintFloatPrecision) {
   message.add_repeated_double(1.2345678987654e100);
   message.add_repeated_double(1.23456789876543e100);
 
-  EXPECT_EQ(absl::StrCat("repeated_float: ", kDebugStringSilentMarker,
-                         "1\n"
+  EXPECT_EQ(absl::StrCat(multi_line_debug_format_prefix_,
+                         "repeated_float: 1\n"
                          "repeated_float: 1.2\n"
                          "repeated_float: 1.23\n"
                          "repeated_float: 1.234\n"
@@ -1535,7 +1709,7 @@ TEST_F(TextFormatTest, ParseExotic) {
 }
 
 TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
-  protobuf_unittest::TestFieldOrderings message;
+  proto2_unittest::TestFieldOrderings message;
   // Fields are listed in index order instead of field number.
   message.set_my_string("str");  // Field number 11
   message.set_my_int(12345);     // Field number 1
@@ -1544,20 +1718,20 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // Extension number 12.
   message
       .MutableExtension(
-          protobuf_unittest::TestExtensionOrderings2::test_ext_orderings2)
+          proto2_unittest::TestExtensionOrderings2::test_ext_orderings2)
       ->set_my_string("ext_str2");
   // Extension number 13.
   message
       .MutableExtension(
-          protobuf_unittest::TestExtensionOrderings1::test_ext_orderings1)
+          proto2_unittest::TestExtensionOrderings1::test_ext_orderings1)
       ->set_my_string("ext_str1");
   // Extension number 14.
   message
-      .MutableExtension(protobuf_unittest::TestExtensionOrderings2::
+      .MutableExtension(proto2_unittest::TestExtensionOrderings2::
                             TestExtensionOrderings3::test_ext_orderings3)
       ->set_my_string("ext_str3");
   // Extension number 50.
-  *message.MutableExtension(protobuf_unittest::my_extension_string) = "ext_str0";
+  *message.MutableExtension(proto2_unittest::my_extension_string) = "ext_str0";
 
   TextFormat::Printer printer;
   std::string text;
@@ -1565,28 +1739,28 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // By default, print in field number order.
   // my_int: 12345
   // my_string: "str"
-  // [protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {
+  // [proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {
   //   my_string: "ext_str2"
   // }
-  // [protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {
+  // [proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {
   //   my_string: "ext_str1"
   // }
-  // [protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
+  // [proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
   // {
   //   my_string: "ext_str3"
   // }
-  // [protobuf_unittest.my_extension_string]: "ext_str0"
+  // [proto2_unittest.my_extension_string]: "ext_str0"
   // my_float: 0.999
   printer.PrintToString(message, &text);
   EXPECT_EQ(
       "my_int: 12345\nmy_string: "
-      "\"str\"\n[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] "
+      "\"str\"\n[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] "
       "{\n  my_string: "
-      "\"ext_str2\"\n}\n[protobuf_unittest.TestExtensionOrderings1.test_ext_"
+      "\"ext_str2\"\n}\n[proto2_unittest.TestExtensionOrderings1.test_ext_"
       "orderings1] {\n  my_string: "
-      "\"ext_str1\"\n}\n[protobuf_unittest.TestExtensionOrderings2."
+      "\"ext_str1\"\n}\n[proto2_unittest.TestExtensionOrderings2."
       "TestExtensionOrderings3.test_ext_orderings3] {\n  my_string: "
-      "\"ext_str3\"\n}\n[protobuf_unittest.my_extension_string]: "
+      "\"ext_str3\"\n}\n[proto2_unittest.my_extension_string]: "
       "\"ext_str0\"\nmy_float: 0.999\n",
       text);
 
@@ -1594,28 +1768,28 @@ TEST_F(TextFormatTest, PrintFieldsInIndexOrder) {
   // my_string: "str"
   // my_int: 12345
   // my_float: 0.999
-  // [protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {
+  // [proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {
   //   my_string: "ext_str2"
   // }
-  // [protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {
+  // [proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {
   //   my_string: "ext_str1"
   // }
-  // [protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
+  // [proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3.test_ext_orderings3]
   // {
   //   my_string: "ext_str3"
   // }
-  // [protobuf_unittest.my_extension_string]: "ext_str0"
+  // [proto2_unittest.my_extension_string]: "ext_str0"
   printer.SetPrintMessageFieldsInIndexOrder(true);
   printer.PrintToString(message, &text);
   EXPECT_EQ(
       "my_string: \"str\"\nmy_int: 12345\nmy_float: "
-      "0.999\n[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] "
+      "0.999\n[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] "
       "{\n  my_string: "
-      "\"ext_str2\"\n}\n[protobuf_unittest.TestExtensionOrderings1.test_ext_"
+      "\"ext_str2\"\n}\n[proto2_unittest.TestExtensionOrderings1.test_ext_"
       "orderings1] {\n  my_string: "
-      "\"ext_str1\"\n}\n[protobuf_unittest.TestExtensionOrderings2."
+      "\"ext_str1\"\n}\n[proto2_unittest.TestExtensionOrderings2."
       "TestExtensionOrderings3.test_ext_orderings3] {\n  my_string: "
-      "\"ext_str3\"\n}\n[protobuf_unittest.my_extension_string]: \"ext_str0\"\n",
+      "\"ext_str3\"\n}\n[proto2_unittest.my_extension_string]: \"ext_str0\"\n",
       text);
 }
 
@@ -1900,36 +2074,57 @@ TEST_F(TextFormatParserTest, InvalidToken) {
                 1, 1);
 }
 
+
 TEST_F(TextFormatParserTest, InvalidFieldName) {
   ExpectFailure(
       "invalid_field: somevalue\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
+      "Message type \"proto2_unittest.TestAllTypes\" has no field named "
       "\"invalid_field\".",
       1, 14);
 }
 
-TEST_F(TextFormatParserTest, InvalidCapitalization) {
-  // We require that group names be exactly as they appear in the .proto.
-  ExpectFailure(
-      "optionalgroup {\na: 15\n}\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
-      "\"optionalgroup\".",
-      1, 15);
+TEST_F(TextFormatParserTest, GroupCapitalization) {
+  // We allow group names to be the field or message name.
+  unittest::TestAllTypes proto;
+  EXPECT_TRUE(parser_.ParseFromString("optionalgroup {\na: 15\n}\n", &proto));
+  EXPECT_TRUE(parser_.ParseFromString("OptionalGroup {\na: 15\n}\n", &proto));
+
   ExpectFailure(
       "OPTIONALgroup {\na: 15\n}\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
+      "Message type \"proto2_unittest.TestAllTypes\" has no field named "
       "\"OPTIONALgroup\".",
       1, 15);
   ExpectFailure(
       "Optional_Double: 10.0\n",
-      "Message type \"protobuf_unittest.TestAllTypes\" has no field named "
+      "Message type \"proto2_unittest.TestAllTypes\" has no field named "
       "\"Optional_Double\".",
       1, 16);
 }
 
+TEST_F(TextFormatParserTest, DelimitedCapitalization) {
+  editions_unittest::TestDelimited proto;
+  EXPECT_TRUE(parser_.ParseFromString("grouplike {\na: 1\n}\n", &proto));
+  EXPECT_EQ(proto.grouplike().a(), 1);
+  EXPECT_TRUE(parser_.ParseFromString("GroupLike {\na: 12\n}\n", &proto));
+  EXPECT_EQ(proto.grouplike().a(), 12);
+  EXPECT_TRUE(parser_.ParseFromString("notgrouplike {\na: 15\n}\n", &proto));
+  EXPECT_EQ(proto.notgrouplike().a(), 15);
+
+  ExpectFailure(
+      "groupLike {\na: 15\n}\n",
+      "Message type \"editions_unittest.TestDelimited\" has no field named "
+      "\"groupLike\".",
+      1, 11, &proto);
+  ExpectFailure(
+      "notGroupLike {\na: 15\n}\n",
+      "Message type \"editions_unittest.TestDelimited\" has no field named "
+      "\"notGroupLike\".",
+      1, 14, &proto);
+}
+
 TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {
   TextFormat::Parser parser;
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
 
   // These fields have a mismatching case.
   EXPECT_FALSE(parser.ParseFromString("Optional_Double: 10.0", &proto));
@@ -2050,7 +2245,7 @@ TEST_F(TextFormatParserTest, UnknownExtension) {
   // Non-matching delimiters.
   ExpectFailure("[blahblah]: 123",
                 "Extension \"blahblah\" is not defined or is not an "
-                "extension of \"protobuf_unittest.TestAllTypes\".",
+                "extension of \"proto2_unittest.TestAllTypes\".",
                 1, 11);
 }
 
@@ -2102,8 +2297,8 @@ TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
     EXPECT_CALL(
         log,
         Log(absl::LogSeverity::kError, testing::_,
-            "Error parsing text-format protobuf_unittest.TestAllTypes: "
-            "1:14: Message type \"protobuf_unittest.TestAllTypes\" has no field "
+            "Error parsing text-format proto2_unittest.TestAllTypes: "
+            "1:14: Message type \"proto2_unittest.TestAllTypes\" has no field "
             "named \"no_such_field\"."))
         .Times(1);
     log.StartCapturingLogs();
@@ -2117,7 +2312,7 @@ TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
     absl::ScopedMockLog log(absl::MockLogDefault::kDisallowUnexpected);
     EXPECT_CALL(log,
                 Log(absl::LogSeverity::kError, testing::_,
-                    "Error parsing text-format protobuf_unittest.TestAllTypes: "
+                    "Error parsing text-format proto2_unittest.TestAllTypes: "
                     "1:1: Invalid control characters encountered in text."))
         .Times(1);
     log.StartCapturingLogs();
@@ -2173,7 +2368,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
   std::string deep_input = absl::StrCat("unknown_nested_array: ", input);
   ExpectMessage(
       deep_input,
-      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "WARNING:Message type \"proto2_unittest.NestedTestAllTypes\" has no "
       "field named \"unknown_nested_array\".\n1:123: Message is too deep, the "
       "parser exceeded the configured recursion limit of 100.",
       1, 21, &message, false);
@@ -2196,7 +2391,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
   input = absl::Substitute(format, input);
   ExpectMessage(
       input,
-      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "WARNING:Message type \"proto2_unittest.NestedTestAllTypes\" has no "
       "field named \"unknown_child\".\n1:1716: Message is too deep, the parser "
       "exceeded the configured recursion limit of 100.",
       1, 14, &message, false);
@@ -2208,7 +2403,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
 TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
   Any any;
   std::string parse_string =
-      "[type.googleapis.com/protobuf_unittest.TestAllTypes] \t :  \t {\n"
+      "[type.googleapis.com/proto2_unittest.TestAllTypes] \t :  \t {\n"
       "  optional_int32: 321\n"
       "  optional_string: \"teststr0\"\n"
       "}\n";
@@ -2220,7 +2415,7 @@ TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
   std::string text;
   ASSERT_TRUE(printer.PrintToString(any, &text));
   EXPECT_EQ(text,
-            "[type.googleapis.com/protobuf_unittest.TestAllTypes] {\n"
+            "[type.googleapis.com/proto2_unittest.TestAllTypes] {\n"
             "  optional_int32: 321\n"
             "  optional_string: \"teststr0\"\n"
             "}\n");
@@ -2229,8 +2424,8 @@ TEST_F(TextFormatParserTest, ParseAnyFieldWithAdditionalWhiteSpaces) {
 TEST_F(TextFormatParserTest, ParseExtensionFieldWithAdditionalWhiteSpaces) {
   unittest::TestAllExtensions proto;
   std::string parse_string =
-      "[protobuf_unittest.optional_int32_extension]   : \t 101\n"
-      "[protobuf_unittest.optional_int64_extension] \t : 102\n";
+      "[proto2_unittest.optional_int32_extension]   : \t 101\n"
+      "[proto2_unittest.optional_int64_extension] \t : 102\n";
 
   ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
 
@@ -2238,8 +2433,8 @@ TEST_F(TextFormatParserTest, ParseExtensionFieldWithAdditionalWhiteSpaces) {
   std::string text;
   ASSERT_TRUE(printer.PrintToString(proto, &text));
   EXPECT_EQ(text,
-            "[protobuf_unittest.optional_int32_extension]: 101\n"
-            "[protobuf_unittest.optional_int64_extension]: 102\n");
+            "[proto2_unittest.optional_int32_extension]: 101\n"
+            "[proto2_unittest.optional_int64_extension]: 102\n");
 }
 
 TEST_F(TextFormatParserTest, ParseNormalFieldWithAdditionalWhiteSpaces) {
@@ -2277,7 +2472,7 @@ TEST_F(TextFormatParserTest, ParseNormalFieldWithAdditionalWhiteSpaces) {
 }
 
 TEST_F(TextFormatParserTest, ParseSkippedFieldWithAdditionalWhiteSpaces) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   parser.AllowUnknownField(true);
   EXPECT_TRUE(
@@ -2307,23 +2502,23 @@ class TextFormatMessageSetTest : public testing::Test {
 };
 const char TextFormatMessageSetTest::proto_text_format_[] =
     "message_set {\n"
-    "  [protobuf_unittest.TestMessageSetExtension1] {\n"
+    "  [proto2_unittest.TestMessageSetExtension1] {\n"
     "    i: 23\n"
     "  }\n"
-    "  [protobuf_unittest.TestMessageSetExtension2] {\n"
+    "  [proto2_unittest.TestMessageSetExtension2] {\n"
     "    str: \"foo\"\n"
     "  }\n"
     "}\n";
 
 TEST_F(TextFormatMessageSetTest, Serialize) {
-  protobuf_unittest::TestMessageSetContainer proto;
-  protobuf_unittest::TestMessageSetExtension1* item_a =
+  proto2_unittest::TestMessageSetContainer proto;
+  proto2_unittest::TestMessageSetExtension1* item_a =
       proto.mutable_message_set()->MutableExtension(
-          protobuf_unittest::TestMessageSetExtension1::message_set_extension);
+          proto2_unittest::TestMessageSetExtension1::message_set_extension);
   item_a->set_i(23);
-  protobuf_unittest::TestMessageSetExtension2* item_b =
+  proto2_unittest::TestMessageSetExtension2* item_b =
       proto.mutable_message_set()->MutableExtension(
-          protobuf_unittest::TestMessageSetExtension2::message_set_extension);
+          proto2_unittest::TestMessageSetExtension2::message_set_extension);
   item_b->set_str("foo");
   std::string actual_proto_text_format;
   TextFormat::PrintToString(proto, &actual_proto_text_format);
@@ -2331,19 +2526,19 @@ TEST_F(TextFormatMessageSetTest, Serialize) {
 }
 
 TEST_F(TextFormatMessageSetTest, Deserialize) {
-  protobuf_unittest::TestMessageSetContainer proto;
+  proto2_unittest::TestMessageSetContainer proto;
   ASSERT_TRUE(TextFormat::ParseFromString(proto_text_format_, &proto));
   EXPECT_EQ(
       23,
       proto.message_set()
           .GetExtension(
-              protobuf_unittest::TestMessageSetExtension1::message_set_extension)
+              proto2_unittest::TestMessageSetExtension1::message_set_extension)
           .i());
   EXPECT_EQ(
       "foo",
       proto.message_set()
           .GetExtension(
-              protobuf_unittest::TestMessageSetExtension2::message_set_extension)
+              proto2_unittest::TestMessageSetExtension2::message_set_extension)
           .str());
 
   // Ensure that these are the only entries present.
@@ -2354,7 +2549,7 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
 }
 
 TEST(TextFormatUnknownFieldTest, TestUnknownField) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   // Unknown field is not permitted by default.
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 12345", &proto));
@@ -2458,7 +2653,7 @@ TEST(TextFormatUnknownFieldTest, TestUnknownField) {
 }
 
 TEST(TextFormatUnknownFieldTest, TestAnyInUnknownField) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   parser.AllowUnknownField(true);
   EXPECT_TRUE(
@@ -2470,7 +2665,7 @@ TEST(TextFormatUnknownFieldTest, TestAnyInUnknownField) {
 }
 
 TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
-  protobuf_unittest::TestAllTypes proto;
+  proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   std::string message_with_ext =
       "[test.extension1] {\n"
@@ -2490,6 +2685,101 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
   EXPECT_TRUE(parser.ParseFromString(message_with_ext, &proto));
   // Unknown fields are still not accepted.
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 1", &proto));
+}
+
+TEST(AbslStringifyTest, DebugStringIsTheSame) {
+  unittest::TestAllTypes proto;
+  proto.set_optional_int32(1);
+  proto.set_optional_string("foo");
+
+  EXPECT_THAT(proto.DebugString(), absl::StrCat(proto));
+}
+
+TEST(AbslStringifyTest, TextFormatIsUnchanged) {
+  unittest::TestAllTypes proto;
+  proto.set_optional_int32(1);
+  proto.set_optional_string("foo");
+
+  std::string text;
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &text));
+  EXPECT_EQ(
+      "optional_int32: 1\n"
+      "optional_string: \"foo\"\n",
+      text);
+}
+
+TEST(AbslStringifyTest, StringifyHasRedactionMarker) {
+  unittest::TestAllTypes proto;
+  proto.set_optional_int32(1);
+  proto.set_optional_string("foo");
+
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "$0\n"
+                                       "optional_int32: 1\n"
+                                       "optional_string: \"foo\"\n",
+                                       kTextMarkerRegex)));
+}
+
+
+TEST(AbslStringifyTest, StringifyMetaAnnotatedIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_meta_annotated("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "$0\n"
+                                       "meta_annotated: $1\n",
+                                       kTextMarkerRegex, value_replacement)));
+}
+
+TEST(AbslStringifyTest, StringifyRepeatedMetaAnnotatedIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_repeated_meta_annotated("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "$0\n"
+                                       "repeated_meta_annotated: $1\n",
+                                       kTextMarkerRegex, value_replacement)));
+}
+
+TEST(AbslStringifyTest, StringifyRepeatedMetaAnnotatedIsNotRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_unredacted_repeated_annotations("foo");
+  EXPECT_THAT(absl::StrCat(proto),
+              testing::MatchesRegex(
+                  absl::Substitute("$0\n"
+                                   "unredacted_repeated_annotations: \"foo\"\n",
+                                   kTextMarkerRegex)));
+}
+
+TEST(AbslStringifyTest, TextFormatMetaAnnotatedIsNotRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_meta_annotated("foo");
+  std::string text;
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &text));
+  EXPECT_EQ("meta_annotated: \"foo\"\n", text);
+}
+TEST(AbslStringifyTest, StringifyDirectMessageEnumIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_test_direct_message_enum("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "$0\n"
+                                       "test_direct_message_enum: $1\n",
+                                       kTextMarkerRegex, value_replacement)));
+}
+TEST(AbslStringifyTest, StringifyNestedMessageEnumIsRedacted) {
+  unittest::TestRedactedMessage proto;
+  proto.set_test_nested_message_enum("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "$0\n"
+                                       "test_nested_message_enum: $1\n",
+                                       kTextMarkerRegex, value_replacement)));
+}
+
+TEST(AbslStringifyTest, StringifyRedactedOptionDoesNotRedact) {
+  unittest::TestRedactedMessage proto;
+  proto.set_test_redacted_message_enum("foo");
+  EXPECT_THAT(absl::StrCat(proto), testing::MatchesRegex(absl::Substitute(
+                                       "$0\n"
+                                       "test_redacted_message_enum: \"foo\"\n",
+                                       kTextMarkerRegex)));
 }
 
 

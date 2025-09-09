@@ -167,6 +167,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeInt32List(int fieldNumber, List<Integer> value, boolean packed)
       throws IOException {
+    if (value instanceof IntArrayList) {
+      writeInt32ListInternal(fieldNumber, (IntArrayList) value, packed);
+    } else {
+      writeInt32ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeInt32ListInternal(int fieldNumber, IntArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeInt32SizeNoTag(value.getInt(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeInt32NoTag(value.getInt(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeInt32(fieldNumber, value.getInt(i));
+      }
+    }
+  }
+
+  private void writeInt32ListInternal(int fieldNumber, List<Integer> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -191,6 +223,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeFixed32List(int fieldNumber, List<Integer> value, boolean packed)
       throws IOException {
+    if (value instanceof IntArrayList) {
+      writeFixed32ListInternal(fieldNumber, (IntArrayList) value, packed);
+    } else {
+      writeFixed32ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeFixed32ListInternal(int fieldNumber, IntArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeFixed32SizeNoTag(value.getInt(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeFixed32NoTag(value.getInt(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeFixed32(fieldNumber, value.getInt(i));
+      }
+    }
+  }
+
+  private void writeFixed32ListInternal(int fieldNumber, List<Integer> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -214,6 +278,38 @@ final class CodedOutputStreamWriter implements Writer {
 
   @Override
   public void writeInt64List(int fieldNumber, List<Long> value, boolean packed) throws IOException {
+    if (value instanceof LongArrayList) {
+      writeInt64ListInternal(fieldNumber, (LongArrayList) value, packed);
+    } else {
+      writeInt64ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeInt64ListInternal(int fieldNumber, LongArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeInt64SizeNoTag(value.getLong(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeInt64NoTag(value.getLong(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeInt64(fieldNumber, value.getLong(i));
+      }
+    }
+  }
+
+  private void writeInt64ListInternal(int fieldNumber, List<Long> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -234,9 +330,40 @@ final class CodedOutputStreamWriter implements Writer {
       }
     }
   }
-
   @Override
   public void writeUInt64List(int fieldNumber, List<Long> value, boolean packed)
+      throws IOException {
+    if (value instanceof LongArrayList) {
+      writeUInt64ListInternal(fieldNumber, (LongArrayList) value, packed);
+    } else {
+      writeUInt64ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeUInt64ListInternal(int fieldNumber, LongArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeUInt64SizeNoTag(value.getLong(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeUInt64NoTag(value.getLong(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeUInt64(fieldNumber, value.getLong(i));
+      }
+    }
+  }
+
+  private void writeUInt64ListInternal(int fieldNumber, List<Long> value, boolean packed)
       throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
@@ -262,6 +389,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeFixed64List(int fieldNumber, List<Long> value, boolean packed)
       throws IOException {
+    if (value instanceof LongArrayList) {
+      writeFixed64ListInternal(fieldNumber, (LongArrayList) value, packed);
+    } else {
+      writeFixed64ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeFixed64ListInternal(int fieldNumber, LongArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeFixed64SizeNoTag(value.getLong(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeFixed64NoTag(value.getLong(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeFixed64(fieldNumber, value.getLong(i));
+      }
+    }
+  }
+
+  private void writeFixed64ListInternal(int fieldNumber, List<Long> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -285,6 +444,38 @@ final class CodedOutputStreamWriter implements Writer {
 
   @Override
   public void writeFloatList(int fieldNumber, List<Float> value, boolean packed)
+      throws IOException {
+    if (value instanceof FloatArrayList) {
+      writeFloatListInternal(fieldNumber, (FloatArrayList) value, packed);
+    } else {
+      writeFloatListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeFloatListInternal(int fieldNumber, FloatArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeFloatSizeNoTag(value.getFloat(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeFloatNoTag(value.getFloat(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeFloat(fieldNumber, value.getFloat(i));
+      }
+    }
+  }
+
+  private void writeFloatListInternal(int fieldNumber, List<Float> value, boolean packed)
       throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
@@ -310,6 +501,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeDoubleList(int fieldNumber, List<Double> value, boolean packed)
       throws IOException {
+    if (value instanceof DoubleArrayList) {
+      writeDoubleListInternal(fieldNumber, (DoubleArrayList) value, packed);
+    } else {
+      writeDoubleListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeDoubleListInternal(int fieldNumber, DoubleArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeDoubleSizeNoTag(value.getDouble(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeDoubleNoTag(value.getDouble(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeDouble(fieldNumber, value.getDouble(i));
+      }
+    }
+  }
+
+  private void writeDoubleListInternal(int fieldNumber, List<Double> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -334,6 +557,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeEnumList(int fieldNumber, List<Integer> value, boolean packed)
       throws IOException {
+    if (value instanceof IntArrayList) {
+      writeEnumListInternal(fieldNumber, (IntArrayList) value, packed);
+    } else {
+      writeEnumListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeEnumListInternal(int fieldNumber, IntArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeEnumSizeNoTag(value.getInt(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeEnumNoTag(value.getInt(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeEnum(fieldNumber, value.getInt(i));
+      }
+    }
+  }
+
+  private void writeEnumListInternal(int fieldNumber, List<Integer> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -357,6 +612,38 @@ final class CodedOutputStreamWriter implements Writer {
 
   @Override
   public void writeBoolList(int fieldNumber, List<Boolean> value, boolean packed)
+      throws IOException {
+    if (value instanceof BooleanArrayList) {
+      writeBoolListInternal(fieldNumber, (BooleanArrayList) value, packed);
+    } else {
+      writeBoolListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeBoolListInternal(int fieldNumber, BooleanArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeBoolSizeNoTag(value.getBoolean(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeBoolNoTag(value.getBoolean(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeBool(fieldNumber, value.getBoolean(i));
+      }
+    }
+  }
+
+  private void writeBoolListInternal(int fieldNumber, List<Boolean> value, boolean packed)
       throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
@@ -411,6 +698,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeUInt32List(int fieldNumber, List<Integer> value, boolean packed)
       throws IOException {
+    if (value instanceof IntArrayList) {
+      writeUInt32ListInternal(fieldNumber, (IntArrayList) value, packed);
+    } else {
+      writeUInt32ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeUInt32ListInternal(int fieldNumber, IntArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeUInt32SizeNoTag(value.getInt(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeUInt32NoTag(value.getInt(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeUInt32(fieldNumber, value.getInt(i));
+      }
+    }
+  }
+
+  public void writeUInt32ListInternal(int fieldNumber, List<Integer> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -434,6 +753,38 @@ final class CodedOutputStreamWriter implements Writer {
 
   @Override
   public void writeSFixed32List(int fieldNumber, List<Integer> value, boolean packed)
+      throws IOException {
+    if (value instanceof IntArrayList) {
+      writeSFixed32ListInternal(fieldNumber, (IntArrayList) value, packed);
+    } else {
+      writeSFixed32ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeSFixed32ListInternal(int fieldNumber, IntArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeSFixed32SizeNoTag(value.getInt(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSFixed32NoTag(value.getInt(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSFixed32(fieldNumber, value.getInt(i));
+      }
+    }
+  }
+
+  private void writeSFixed32ListInternal(int fieldNumber, List<Integer> value, boolean packed)
       throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
@@ -459,6 +810,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeSFixed64List(int fieldNumber, List<Long> value, boolean packed)
       throws IOException {
+    if (value instanceof LongArrayList) {
+      writeSFixed64ListInternal(fieldNumber, (LongArrayList) value, packed);
+    } else {
+      writeSFixed64ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeSFixed64ListInternal(int fieldNumber, LongArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeSFixed64SizeNoTag(value.getLong(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSFixed64NoTag(value.getLong(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSFixed64(fieldNumber, value.getLong(i));
+      }
+    }
+  }
+
+  private void writeSFixed64ListInternal(int fieldNumber, List<Long> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -483,6 +866,38 @@ final class CodedOutputStreamWriter implements Writer {
   @Override
   public void writeSInt32List(int fieldNumber, List<Integer> value, boolean packed)
       throws IOException {
+    if (value instanceof IntArrayList) {
+      writeSInt32ListInternal(fieldNumber, (IntArrayList) value, packed);
+    } else {
+      writeSInt32ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeSInt32ListInternal(int fieldNumber, IntArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeSInt32SizeNoTag(value.getInt(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSInt32NoTag(value.getInt(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSInt32(fieldNumber, value.getInt(i));
+      }
+    }
+  }
+
+  public void writeSInt32ListInternal(int fieldNumber, List<Integer> value, boolean packed)
+      throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
 
@@ -506,6 +921,38 @@ final class CodedOutputStreamWriter implements Writer {
 
   @Override
   public void writeSInt64List(int fieldNumber, List<Long> value, boolean packed)
+      throws IOException {
+    if (value instanceof LongArrayList) {
+      writeSInt64ListInternal(fieldNumber, (LongArrayList) value, packed);
+    } else {
+      writeSInt64ListInternal(fieldNumber, value, packed);
+    }
+  }
+
+  private void writeSInt64ListInternal(int fieldNumber, LongArrayList value, boolean packed)
+      throws IOException {
+    if (packed) {
+      output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);
+
+      // Compute and write the length of the data.
+      int dataSize = 0;
+      for (int i = 0; i < value.size(); ++i) {
+        dataSize += CodedOutputStream.computeSInt64SizeNoTag(value.getLong(i));
+      }
+      output.writeUInt32NoTag(dataSize);
+
+      // Write the data itself, without any tags.
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSInt64NoTag(value.getLong(i));
+      }
+    } else {
+      for (int i = 0; i < value.size(); ++i) {
+        output.writeSInt64(fieldNumber, value.getLong(i));
+      }
+    }
+  }
+
+  private void writeSInt64ListInternal(int fieldNumber, List<Long> value, boolean packed)
       throws IOException {
     if (packed) {
       output.writeTag(fieldNumber, WIRETYPE_LENGTH_DELIMITED);

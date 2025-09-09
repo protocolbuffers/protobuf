@@ -311,11 +311,13 @@ int64_t TimeUtil::DurationToNanoseconds(const Duration& duration) {
 }
 
 int64_t TimeUtil::DurationToMicroseconds(const Duration& duration) {
-  return RoundTowardZero(DurationToNanoseconds(duration), kNanosPerMicrosecond);
+  return DurationToSeconds(duration) * kMicrosPerSecond +
+         RoundTowardZero(duration.nanos(), kNanosPerMicrosecond);
 }
 
 int64_t TimeUtil::DurationToMilliseconds(const Duration& duration) {
-  return RoundTowardZero(DurationToNanoseconds(duration), kNanosPerMillisecond);
+  return DurationToSeconds(duration) * kMillisPerSecond +
+         RoundTowardZero(duration.nanos(), kNanosPerMillisecond);
 }
 
 int64_t TimeUtil::DurationToSeconds(const Duration& duration) {
@@ -439,7 +441,7 @@ void ToUint128(const Duration& value, absl::uint128* result, bool* negative) {
   }
 }
 
-void ToDuration(const absl::uint128& value, bool negative, Duration* duration) {
+void ToDuration(const absl::uint128 value, bool negative, Duration* duration) {
   int64_t seconds =
       static_cast<int64_t>(absl::Uint128Low64(value / kNanosPerSecond));
   int32_t nanos =
@@ -558,3 +560,5 @@ Duration operator-(const Timestamp& t1, const Timestamp& t2) {
 }
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

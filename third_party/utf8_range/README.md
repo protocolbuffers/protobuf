@@ -23,7 +23,7 @@ Four UTF-8 validation methods are compared on both x86 and Arm platforms. Benchm
 * Run "make" to build. Built and tested with gcc-7.3.
 * Run "./utf8" to see all command line options.
 * Benchmark
-  * Run "./utf8 bench" to bechmark all algorithms with [default test file](https://raw.githubusercontent.com/cyb70289/utf8/master/UTF-8-demo.txt).
+  * Run "./utf8 bench" to benchmark all algorithms with [default test file](https://raw.githubusercontent.com/cyb70289/utf8/master/UTF-8-demo.txt).
   * Run "./utf8 bench size NUM" to benchmark specified string size.
 * Run "./utf8 test" to test all algorithms with positive and negative test cases.
 * To benchmark or test specific algorithm, run something like "./utf8 bench range".
@@ -123,8 +123,8 @@ To implement above operations efficiently with SIMD:
 * For 16 input bytes, use lookup table to map C0..DF to 1, E0..EF to 2, F0..FF to 3, others to 0. Save to first_len.
 * Map C0..FF to 8, we get range indices for First Byte.
 * Shift first_len one byte, we get range indices for Second Byte.
-* Saturate substract first_len by one(3->2, 2->1, 1->0, 0->0), then shift two bytes, we get range indices for Third Byte.
-* Saturate substract first_len by two(3->1, 2->0, 1->0, 0->0), then shift three bytes, we get range indices for Fourth Byte.
+* Saturate subtract first_len by one(3->2, 2->1, 1->0, 0->0), then shift two bytes, we get range indices for Third Byte.
+* Saturate subtract first_len by two(3->1, 2->0, 1->0, 0->0), then shift three bytes, we get range indices for Fourth Byte.
 
 Example(assume no previous data)
 
@@ -191,8 +191,8 @@ NEON ```tbl``` instruction is very convenient for table lookup:
 
 Leverage these features, we can solve the problem with as few as **two** operations:
 * Precreate a 16x2 lookup table, where table[0]=2, table[13]=3, table[16]=3, table[20]=4, table[others]=0.
-* Substract input bytes with E0 (E0 -> 0, ED -> 13, F0 -> 16, F4 -> 20).
-* Use the substracted byte as index of lookup table and get range adjustment directly.
+* Subtract input bytes with E0 (E0 -> 0, ED -> 13, F0 -> 16, F4 -> 20).
+* Use the subtracted byte as index of lookup table and get range adjustment directly.
   * For indices less than 32, we get zero or required adjustment value per input byte
   * For out of bound indices, we get zero per ```tbl``` behaviour
 
@@ -208,10 +208,10 @@ We can still leverage these features to solve the problem in **five** operations
 * Precreate two tables:
   * table_df[1] = 2, table_df[14] = 3, table_df[others] = 0
   * table_ef[1] = 3, table_ef[5] = 4, table_ef[others] = 0
-* Substract input bytes with EF (E0 -> 241, ED -> 254, F0 -> 1, F4 -> 5) to get the temporary indices
+* Subtract input bytes with EF (E0 -> 241, ED -> 254, F0 -> 1, F4 -> 5) to get the temporary indices
 * Get range index for E0,ED
-  * Saturate substract temporary indices with 240 (E0 -> 1, ED -> 14, all values below 240 becomes 0)
-  * Use substracted indices to look up table_df, get the correct adjustment
+  * Saturate subtract temporary indices with 240 (E0 -> 1, ED -> 14, all values below 240 becomes 0)
+  * Use subtracted indices to look up table_df, get the correct adjustment
 * Get range index for F0,F4
   * Saturate add temporary indices with 112(0x70) (F0 -> 0x71, F4 -> 0x75, all values above 16 will be larger than 128(7-th bit set))
   * Use added indices to look up table_ef, get the correct adjustment (index 0x71,0x75 returns 1st,5th elements, per ```pshufb``` behaviour)

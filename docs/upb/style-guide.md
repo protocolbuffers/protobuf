@@ -2,7 +2,7 @@
 
 <!--*
 # Document freshness: For more information, see go/fresh-source.
-freshness: { owner: 'haberman' reviewed: '2022-05-08' }
+freshness: { owner: 'haberman' reviewed: '2024-02-05' }
 *-->
 
 Since upb is written in pure C, we supplement the
@@ -47,19 +47,31 @@ PyObject* PyUpb_CMessage_GetAttr(PyObject* _self, PyObject* attr);
 
 ### Private Functions and Members
 
-Since we do not have `private` in C++, we use a leading underscore convention
-to mark internal functions and variables that should only be accessed from
-upb:
+Since we do not have `private` in C++, we use the `UPB_PRIVATE()` macro to mark
+internal functions and variables that should only be accessed from upb:
 
 ```c++
 // Internal-only function.
-int64_t _upb_Int64_FromLL();
+int64_t UPB_PRIVATE(upb_Int64_FromLL)();
 
 // Internal-only members. Underscore prefixes are only necessary when the
 // structure is defined in a header file.
 typedef struct {
-  const int32_t* _values;  // List of values <0 or >63
-  uint64_t _mask;          // Bits are set for acceptable value 0 <= x < 64
-  int _value_count;
+  const int32_t* UPB_PRIVATE(values);
+  uint64_t UPB_PRIVATE(mask);
+  int UPB_PRIVATE(value_count);
 } upb_MiniTableEnum;
+
+// Using these members in an internal function.
+int upb_SomeFunction(const upb_MiniTableEnum* e) {
+  return e->UPB_PRIVATE(value_count);
+}
 ```
+
+This prevents users from accessing these symbols, because `UPB_PRIVATE()`
+is defined in `port_def.inc` and undefined in `port_undef.inc`, and these
+textual headers are not accessible by users.
+
+It is only necessary to use `UPB_PRIVATE()` for things defined in headers.
+For symbols in `.c` files, it is sufficient to mark private functions with
+`static`.

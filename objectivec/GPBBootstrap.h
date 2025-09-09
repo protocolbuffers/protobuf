@@ -5,6 +5,9 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+// For int32_t in GPB_ENUM/GPB_ENUM_FWD_DECLARE below.
+#import <stdint.h>
+
 /**
  * The Objective C runtime has complete enough info that most protos don’t end
  * up using this, so leaving it on is no cost or very little cost.  If you
@@ -111,14 +114,26 @@
 // Current library runtime version.
 // - Gets bumped when the runtime makes changes to the interfaces between the
 //   generated code and runtime (things added/removed, etc).
-#define GOOGLE_PROTOBUF_OBJC_VERSION 30007
+#define GOOGLE_PROTOBUF_OBJC_VERSION 40311
 
 // Minimum runtime version supported for compiling/running against.
 // - Gets changed when support for the older generated code is dropped.
-#define GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION 30001
+#define GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION 30007
 
-// This is a legacy constant now frozen in time for old generated code. If
-// GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION ever gets moved above 30001 then
-// this should also change to break code compiled with an old runtime that
-// can't be supported any more.
-#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001
+// ----------------------------------------------------------------------------
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+// Exported linker symbols that the generated code expects to be present. They
+// serve to ensure at link time (whether statically or dynamically) that the
+// protoc generated sources are being linked with a library that supports them.
+// The values are only removed when GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION
+// is updated to make them no longer valid.
+extern const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310;  // NOLINT
+extern const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311;  // NOLINT
+
+#if defined(__cplusplus)
+}  // extern "C"
+#endif

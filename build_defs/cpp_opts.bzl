@@ -17,17 +17,15 @@ COPTS = select({
         "/wd4996",  # The compiler encountered a deprecated declaration.
     ],
     "//conditions:default": [
-        "-DHAVE_ZLIB",
-        "-Woverloaded-virtual",
         "-Wno-sign-compare",
-        "-Wno-nonnull",
-        "-Werror",
     ],
 })
 
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
+    "@platforms//os:android": [],
     "//build_defs:config_android": [],
+    "//build_defs:config_android-legacy-default-crosstool": [],
     "//build_defs:config_android-stlport": [],
     "//build_defs:config_android-libcpp": [],
     "//build_defs:config_android-gnu-libstdcpp": [],
@@ -35,12 +33,17 @@ LINK_OPTS = select({
     "//build_defs:config_msvc": [
         # Suppress linker warnings about files with no symbols defined.
         "-ignore:4221",
-        "/utf-8",
+        "Shell32.lib",
     ],
     "@platforms//os:macos": [
         "-lpthread",
         "-lm",
         "-framework CoreFoundation",
+    ],
+    "@platforms//os:windows": [
+        "-ldbghelp",
+        "-lpthread",
+        "-lm",
     ],
     "//conditions:default": [
         "-lpthread",

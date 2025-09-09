@@ -28,8 +28,8 @@ message TestMessageSet {
   extensions 530000000 to max
   [declaration = {
     number: 1952731290,
-    full_name: ".protobuf_unittest_v1api.TestMessageSetExtension3.message_set_extension",
-    type: ".protobuf_unittest_v1api.TestMessageSetExtension3"
+    full_name: ".proto2_unittest_v1api.TestMessageSetExtension3.message_set_extension",
+    type: ".proto2_unittest_v1api.TestMessageSetExtension3"
   }];
 }
 

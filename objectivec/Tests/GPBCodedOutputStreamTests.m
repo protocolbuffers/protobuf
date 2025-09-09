@@ -5,10 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#import "GPBTestUtilities.h"
-
 #import "GPBCodedInputStream.h"
+#import "GPBCodedOutputStream.h"
 #import "GPBCodedOutputStream_PackagePrivate.h"
+#import "GPBTestUtilities.h"
+#import "GPBUtilities.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "objectivec/Tests/Unittest.pbobjc.h"
 
@@ -329,7 +330,7 @@
   // This test exists to verify that CFStrings with embedded NULLs still expose
   // their raw buffer if they are backed by UTF8 storage. If this fails, the
   // quick/direct access paths in GPBCodedOutputStream that depend on
-  // CFStringGetCStringPtr need to be re-evalutated (maybe just removed).
+  // CFStringGetCStringPtr need to be re-evaluated (maybe just removed).
   // And yes, we do get NULLs in strings from some servers.
 
   char zeroTest[] = "\0Test\0String";
@@ -391,6 +392,29 @@
   const char* cString = "raw";
   XCTAssertThrowsSpecificNamed([codedOutput writeRawPtr:cString offset:0 length:strlen(cString)],
                                NSException, GPBCodedOutputStreamException_WriteFailed);
+}
+
+- (void)testThatDeallocNeverThrows {
+  uint8_t buffer[1] = {0};
+
+  // Output stream which can write precisely 1 byte of data before it's full.
+  NSOutputStream* output = [[[NSOutputStream alloc] initToBuffer:buffer
+                                                        capacity:sizeof(buffer)] autorelease];
+
+  NSMutableData* outputBuffer = [NSMutableData data];
+  GPBCodedOutputStream* codedOutput =
+      [[GPBCodedOutputStream alloc] initWithOutputStream:output data:outputBuffer];
+
+  [codedOutput writeRawByte:0x23];
+  [codedOutput flush];
+
+  // Put one more byte in the output buffer.
+  [codedOutput writeRawByte:0x42];
+  XCTAssertThrowsSpecificNamed([codedOutput flush], NSException,
+                               GPBCodedOutputStreamException_WriteFailed);
+
+  // -dealloc must not throw when it flushes, even if a previous flush failed.
+  XCTAssertNoThrow([codedOutput release]);
 }
 
 @end

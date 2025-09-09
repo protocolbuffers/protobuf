@@ -51,13 +51,13 @@ message TestAllTypes {
 
   NestedMessage optional_nested_message = 18;
   ForeignMessage optional_foreign_message = 19;
-  protobuf_unittest.TestAllTypes optional_proto2_message = 20;
+  proto2_unittest.TestAllTypes optional_proto2_message = 20;
 
   NestedEnum optional_nested_enum = 21;
   ForeignEnum optional_foreign_enum = 22;
   // N.B.: proto2-enum-type fields not allowed, because their default values
   // might not be zero.
-  // optional protobuf_unittest.ForeignEnum          optional_proto2_enum     =
+  // optional proto2_unittest.ForeignEnum          optional_proto2_enum     =
   // 23;
 
   string optional_string_piece = 24 [ctype = STRING_PIECE];
@@ -84,7 +84,7 @@ message TestAllTypes {
 
   repeated NestedMessage repeated_nested_message = 48;
   repeated ForeignMessage repeated_foreign_message = 49;
-  repeated protobuf_unittest.TestAllTypes repeated_proto2_message = 50;
+  repeated proto2_unittest.TestAllTypes repeated_proto2_message = 50;
 
   repeated NestedEnum repeated_nested_enum = 51;
   repeated ForeignEnum repeated_foreign_enum = 52;
@@ -92,7 +92,7 @@ message TestAllTypes {
   repeated string repeated_string_piece = 54 [ctype = STRING_PIECE];
   repeated string repeated_cord = 55 [ctype = CORD];
 
-  repeated NestedMessage repeated_lazy_message = 57 [lazy = true];
+  repeated NestedMessage repeated_lazy_message = 57;
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;
@@ -102,14 +102,27 @@ message TestAllTypes {
   }
 }
 
+message TestAllMapTypes {
+  map<int32, bytes> map_int32_bytes = 1;
+  map<int32, ForeignEnum> map_int32_foreign_enum = 2;
+  map<int32, ForeignMessage> map_int32_foreign_message = 3;
+  map<int32, ExplicitForeignMessage> map_int32_explicit_foreign_message = 4;
+}
+
 message TestProto2Required {
-  protobuf_unittest.TestRequired proto2 = 1;
+  proto2_unittest.TestRequired proto2 = 1;
 }
 
 // Define these after TestAllTypes to make sure the compiler can handle
 // that.
 message ForeignMessage {
   int32 c = 1;
+}
+
+// Same as ForeignMessage, but all fields have explicit presence.
+// It can be useful for testing explicit-implicit presence interop behaviour.
+message ExplicitForeignMessage {
+  int32 c = 1 [features.field_presence = EXPLICIT];
 }
 
 enum ForeignEnum {

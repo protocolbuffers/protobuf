@@ -33,7 +33,8 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   opts.add_whitespace = options.add_whitespace;
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
   opts.always_print_enums_as_ints = options.always_print_enums_as_ints;
-  opts.always_print_primitive_fields = options.always_print_primitive_fields;
+  opts.always_print_fields_with_no_presence =
+      options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
   // TODO: Drop this setting.
@@ -83,20 +84,35 @@ absl::Status JsonToBinaryString(google::protobuf::util::TypeResolver* resolver,
 
 absl::Status MessageToJsonString(const Message& message, std::string* output,
                                  const PrintOptions& options) {
+  io::StringOutputStream out(output);
+  return MessageToJsonStream(message, &out, options);
+}
+
+absl::Status MessageToJsonStream(const Message& message,
+                                 io::ZeroCopyOutputStream* json_output,
+                                 const PrintOptions& options) {
   google::protobuf::json_internal::WriterOptions opts;
   opts.add_whitespace = options.add_whitespace;
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
   opts.always_print_enums_as_ints = options.always_print_enums_as_ints;
-  opts.always_print_primitive_fields = options.always_print_primitive_fields;
+  opts.always_print_fields_with_no_presence =
+      options.always_print_fields_with_no_presence;
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
   // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
 
-  return google::protobuf::json_internal::MessageToJsonString(message, output, opts);
+  return google::protobuf::json_internal::MessageToJsonStream(message, json_output, opts);
 }
 
 absl::Status JsonStringToMessage(absl::string_view input, Message* message,
+                                 const ParseOptions& options) {
+  io::ArrayInputStream input_stream(input.data(), input.size());
+  return JsonStreamToMessage(&input_stream, message, options);
+}
+
+absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
+                                 Message* message,
                                  const ParseOptions& options) {
   google::protobuf::json_internal::ParseOptions opts;
   opts.ignore_unknown_fields = options.ignore_unknown_fields;
@@ -105,8 +121,10 @@ absl::Status JsonStringToMessage(absl::string_view input, Message* message,
   // TODO: Drop this setting.
   opts.allow_legacy_syntax = true;
 
-  return google::protobuf::json_internal::JsonStringToMessage(input, message, opts);
+  return google::protobuf::json_internal::JsonStreamToMessage(input, message, opts);
 }
 }  // namespace json
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

@@ -47,12 +47,12 @@ module Google
       def_delegators :to_ary,
         :&, :*, :-, :'<=>',
         :assoc, :bsearch, :bsearch_index, :combination, :compact, :count,
-        :cycle, :dig, :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
-        :include?, :index, :inspect, :join,
+        :cycle, :difference, :dig, :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
+        :include?, :index, :inspect, :intersection, :join,
         :pack, :permutation, :product, :pretty_print, :pretty_print_cycle,
         :rassoc, :repeated_combination, :repeated_permutation, :reverse,
         :rindex, :rotate, :sample, :shuffle, :shelljoin,
-        :to_s, :transpose, :uniq, :|
+        :to_s, :transpose, :union, :uniq, :|
 
 
       def first(n=nil)
@@ -94,7 +94,6 @@ module Google
       end
 
       # array aliases into enumerable
-      alias_method :each_index, :each_with_index
       alias_method :slice, :[]
       alias_method :values_at, :select
       alias_method :map, :collect
@@ -145,7 +144,7 @@ module Google
       end
 
 
-      %w(collect! compact! delete_if fill flatten! insert reverse!
+      %w(collect! compact! delete_if each_index fill flatten! insert reverse!
         rotate! select! shuffle! sort! sort_by! uniq!).each do |method_name|
         define_array_wrapper_with_result_method(method_name)
       end

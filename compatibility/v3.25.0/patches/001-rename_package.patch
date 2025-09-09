@@ -1,0 +1,748 @@
+diff --git a/java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto b/java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto
+index bcb219e29..1f875f38e 100644
+--- a/java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto
++++ b/java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto
+@@ -8,7 +8,7 @@
+ // A regression test for b/74087933
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/unittest.proto";
+ import "google/protobuf/unittest_proto3.proto";
+@@ -17,6 +17,6 @@ option optimize_for = CODE_SIZE;
+ option java_multiple_files = true;
+ 
+ message TestCachedFieldSizeMessage {
+-  optional protobuf_unittest.TestPackedTypes proto2_child = 1;
++  optional proto2_unittest.TestPackedTypes proto2_child = 1;
+   optional proto3_unittest.TestPackedTypes proto3_child = 2;
+ }
+diff --git a/java/core/src/test/proto/com/google/protobuf/field_presence_test.proto b/java/core/src/test/proto/com/google/protobuf/field_presence_test.proto
+index 638ffc1d7..e54fc7ad6 100644
+--- a/java/core/src/test/proto/com/google/protobuf/field_presence_test.proto
++++ b/java/core/src/test/proto/com/google/protobuf/field_presence_test.proto
+@@ -29,7 +29,7 @@ message TestAllTypes {
+   bytes optional_bytes = 3;
+   NestedEnum optional_nested_enum = 4;
+   NestedMessage optional_nested_message = 5;
+-  protobuf_unittest.TestRequired optional_proto2_message = 6;
++  proto2_unittest.TestRequired optional_proto2_message = 6;
+   NestedMessage optional_lazy_message = 7 [lazy = true];
+ 
+   oneof oneof_field {
+@@ -39,7 +39,7 @@ message TestAllTypes {
+     bytes oneof_bytes = 14;
+     NestedEnum oneof_nested_enum = 15;
+     NestedMessage oneof_nested_message = 16;
+-    protobuf_unittest.TestRequired oneof_proto2_message = 17;
++    proto2_unittest.TestRequired oneof_proto2_message = 17;
+   }
+ 
+   repeated int32 repeated_int32 = 21;
+@@ -47,7 +47,7 @@ message TestAllTypes {
+   repeated bytes repeated_bytes = 23;
+   repeated NestedEnum repeated_nested_enum = 24;
+   repeated NestedMessage repeated_nested_message = 25;
+-  repeated protobuf_unittest.TestRequired repeated_proto2_message = 26;
++  repeated proto2_unittest.TestRequired repeated_proto2_message = 26;
+   repeated NestedEnum packed_nested_enum = 27 [packed = true];
+ }
+ 
+@@ -57,7 +57,7 @@ message TestOptionalFieldsOnly {
+   bytes optional_bytes = 3;
+   TestAllTypes.NestedEnum optional_nested_enum = 4;
+   TestAllTypes.NestedMessage optional_nested_message = 5;
+-  protobuf_unittest.TestRequired optional_proto2_message = 6;
++  proto2_unittest.TestRequired optional_proto2_message = 6;
+   TestAllTypes.NestedMessage optional_lazy_message = 7 [lazy = true];
+ }
+ 
+@@ -67,5 +67,5 @@ message TestRepeatedFieldsOnly {
+   repeated bytes repeated_bytes = 23;
+   repeated TestAllTypes.NestedEnum repeated_nested_enum = 24;
+   repeated TestAllTypes.NestedMessage repeated_nested_message = 25;
+-  repeated protobuf_unittest.TestRequired repeated_proto2_message = 26;
++  repeated proto2_unittest.TestRequired repeated_proto2_message = 26;
+ }
+diff --git a/java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto b/java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto
+index acd28cd3c..82705387a 100644
+--- a/java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto
++++ b/java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto
+@@ -11,7 +11,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ message LazyMessageLite {
+   optional int32 num = 1;
+diff --git a/java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto b/java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto
+index 3dabb1633..ed5c01379 100644
+--- a/java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto
++++ b/java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto
+@@ -9,7 +9,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest.lite_equals_and_hash;
++package proto2_unittest.lite_equals_and_hash;
+ 
+ 
+ message TestOneofEquals {
+diff --git a/java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto b/java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto
+index baadf0616..251b37802 100644
+--- a/java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto
++++ b/java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto
+@@ -13,7 +13,7 @@ syntax = "proto2";
+ 
+ // Some generic_services option(s) added automatically.
+ // See:  http://go/proto2-generic-services-default
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/descriptor.proto";
+ import "google/protobuf/unittest.proto";
+diff --git a/java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto b/java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto
+index 04a50047b..957e7980f 100644
+--- a/java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto
++++ b/java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto
+@@ -9,7 +9,7 @@
+ //
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ option java_multiple_files = true;
+ option java_outer_classname = "NestedBuilders";
+diff --git a/java/core/src/test/proto/com/google/protobuf/nested_extension.proto b/java/core/src/test/proto/com/google/protobuf/nested_extension.proto
+index ef7c56086..64966fb5b 100644
+--- a/java/core/src/test/proto/com/google/protobuf/nested_extension.proto
++++ b/java/core/src/test/proto/com/google/protobuf/nested_extension.proto
+@@ -12,7 +12,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "com/google/protobuf/non_nested_extension.proto";
+ 
+diff --git a/java/core/src/test/proto/com/google/protobuf/nested_extension_lite.proto b/java/core/src/test/proto/com/google/protobuf/nested_extension_lite.proto
+index c409b1a3c..23a67a0e8 100644
+--- a/java/core/src/test/proto/com/google/protobuf/nested_extension_lite.proto
++++ b/java/core/src/test/proto/com/google/protobuf/nested_extension_lite.proto
+@@ -13,7 +13,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "com/google/protobuf/non_nested_extension_lite.proto";
+ 
+diff --git a/java/core/src/test/proto/com/google/protobuf/non_nested_extension.proto b/java/core/src/test/proto/com/google/protobuf/non_nested_extension.proto
+index 4ab97c81e..0949d93b1 100644
+--- a/java/core/src/test/proto/com/google/protobuf/non_nested_extension.proto
++++ b/java/core/src/test/proto/com/google/protobuf/non_nested_extension.proto
+@@ -11,7 +11,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ 
+ message MessageToBeExtended {
+diff --git a/java/core/src/test/proto/com/google/protobuf/non_nested_extension_lite.proto b/java/core/src/test/proto/com/google/protobuf/non_nested_extension_lite.proto
+index d5051a440..500d9b0e0 100644
+--- a/java/core/src/test/proto/com/google/protobuf/non_nested_extension_lite.proto
++++ b/java/core/src/test/proto/com/google/protobuf/non_nested_extension_lite.proto
+@@ -11,7 +11,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ option optimize_for = LITE_RUNTIME;
+ 
+diff --git a/java/core/src/test/proto/com/google/protobuf/outer_class_name_test.proto b/java/core/src/test/proto/com/google/protobuf/outer_class_name_test.proto
+index 3020616e1..ce751628d 100644
+--- a/java/core/src/test/proto/com/google/protobuf/outer_class_name_test.proto
++++ b/java/core/src/test/proto/com/google/protobuf/outer_class_name_test.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ 
+ // This message's name is the same with the default outer class name of this
+diff --git a/java/core/src/test/proto/com/google/protobuf/outer_class_name_test2.proto b/java/core/src/test/proto/com/google/protobuf/outer_class_name_test2.proto
+index 032716793..c0284756b 100644
+--- a/java/core/src/test/proto/com/google/protobuf/outer_class_name_test2.proto
++++ b/java/core/src/test/proto/com/google/protobuf/outer_class_name_test2.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ 
+ message TestMessage2 {
+diff --git a/java/core/src/test/proto/com/google/protobuf/outer_class_name_test3.proto b/java/core/src/test/proto/com/google/protobuf/outer_class_name_test3.proto
+index f22298916..c8e265bbd 100644
+--- a/java/core/src/test/proto/com/google/protobuf/outer_class_name_test3.proto
++++ b/java/core/src/test/proto/com/google/protobuf/outer_class_name_test3.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ 
+ message TestMessage3 {
+diff --git a/java/core/src/test/proto/com/google/protobuf/test_custom_options.proto b/java/core/src/test/proto/com/google/protobuf/test_custom_options.proto
+index 40a93523d..2f2d0dcaa 100644
+--- a/java/core/src/test/proto/com/google/protobuf/test_custom_options.proto
++++ b/java/core/src/test/proto/com/google/protobuf/test_custom_options.proto
+@@ -11,7 +11,7 @@
+ // initialized.
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/unittest_custom_options.proto";
+ 
+diff --git a/src/google/protobuf/any_test.proto b/src/google/protobuf/any_test.proto
+index db8c97c1c..05b0c8bcd 100644
+--- a/src/google/protobuf/any_test.proto
++++ b/src/google/protobuf/any_test.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto3";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/any.proto";
+ 
+diff --git a/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto b/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
+index b339ec0f6..de91a2db2 100644
+--- a/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
++++ b/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
+@@ -22,7 +22,7 @@ option cc_generic_services = true;  // auto-added
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ // Test that fields can have names like "input" and "i" which are also used
+ // internally by the code generator for local variables.
+diff --git a/src/google/protobuf/compiler/cpp/test_large_enum_value.proto b/src/google/protobuf/compiler/cpp/test_large_enum_value.proto
+index 4031e107a..321adbd04 100644
+--- a/src/google/protobuf/compiler/cpp/test_large_enum_value.proto
++++ b/src/google/protobuf/compiler/cpp/test_large_enum_value.proto
+@@ -10,7 +10,7 @@
+ // referenced in any C++ code.
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ message TestLargeEnumValue {
+   enum EnumWithLargeValue {
+diff --git a/src/google/protobuf/compiler/java/message_serialization_unittest.proto b/src/google/protobuf/compiler/java/message_serialization_unittest.proto
+index e426a1b68..e1d8e60bf 100644
+--- a/src/google/protobuf/compiler/java/message_serialization_unittest.proto
++++ b/src/google/protobuf/compiler/java/message_serialization_unittest.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ option java_multiple_files = true;
+ option java_package = "";
+diff --git a/src/google/protobuf/map_lite_unittest.proto b/src/google/protobuf/map_lite_unittest.proto
+index b7ff3c508..242f1b25b 100644
+--- a/src/google/protobuf/map_lite_unittest.proto
++++ b/src/google/protobuf/map_lite_unittest.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/unittest_lite.proto";
+ 
+diff --git a/src/google/protobuf/map_proto2_unittest.proto b/src/google/protobuf/map_proto2_unittest.proto
+index 34a381289..b9af246e2 100644
+--- a/src/google/protobuf/map_proto2_unittest.proto
++++ b/src/google/protobuf/map_proto2_unittest.proto
+@@ -13,8 +13,8 @@ option cc_enable_arenas = true;
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-// In map_test_util.h we do "using namespace unittest = protobuf_unittest".
+-package protobuf_unittest;
++// In map_test_util.h we do "using namespace unittest = proto2_unittest".
++package proto2_unittest;
+ 
+ enum Proto2MapEnum {
+   PROTO2_MAP_ENUM_FOO = 0;
+diff --git a/src/google/protobuf/map_proto3_unittest.proto b/src/google/protobuf/map_proto3_unittest.proto
+index 1181b2998..fdce22e56 100644
+--- a/src/google/protobuf/map_proto3_unittest.proto
++++ b/src/google/protobuf/map_proto3_unittest.proto
+@@ -14,7 +14,7 @@ option features.field_presence = IMPLICIT;
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-// In map_test_util.h we do "using namespace unittest = protobuf_unittest".
++// In map_test_util.h we do "using namespace unittest = proto2_unittest".
+ package proto3_unittest;
+ 
+ message TestProto3BytesMap {
+diff --git a/src/google/protobuf/map_unittest.proto b/src/google/protobuf/map_unittest.proto
+index 11be80836..4800a0937 100644
+--- a/src/google/protobuf/map_unittest.proto
++++ b/src/google/protobuf/map_unittest.proto
+@@ -13,8 +13,8 @@ import "google/protobuf/unittest.proto";
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-// In map_test_util.h we do "using namespace unittest = protobuf_unittest".
+-package protobuf_unittest;
++// In map_test_util.h we do "using namespace unittest = proto2_unittest".
++package proto2_unittest;
+ 
+ // Tests maps.
+ message TestMap {
+diff --git a/src/google/protobuf/unittest.proto b/src/google/protobuf/unittest.proto
+index 2970a6ba1..751e23086 100644
+--- a/src/google/protobuf/unittest.proto
++++ b/src/google/protobuf/unittest.proto
+@@ -26,8 +26,8 @@ import "google/protobuf/unittest_import.proto";
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-// In test_util.h we do "using namespace unittest = protobuf_unittest".
+-package protobuf_unittest;
++// In test_util.h we do "using namespace unittest = proto2_unittest".
++package proto2_unittest;
+ 
+ // Protos optimized for SPEED use a strict superset of the generated code
+ // of equivalent ones optimized for CODE_SIZE, so we should optimize all our
+@@ -1192,8 +1192,8 @@ message TestHugeFieldNumbers {
+ 
+   extensions 536860000 to 536869999 [declaration = {
+     number: 536860000
+-    full_name: ".protobuf_unittest.test_all_types"
+-    type: ".protobuf_unittest.TestAllTypes"
++    full_name: ".proto2_unittest.test_all_types"
++    type: ".proto2_unittest.TestAllTypes"
+   }];
+ }
+ 
+@@ -1229,7 +1229,7 @@ message TestNestedGroupExtensionOuter {
+         //[metadata = {
+         // NOTE: can't write type there due to some clever build gen code at
+         // http://google3/net/proto2/internal/BUILD;l=1247;rcl=411090862
+-        // type: "protobuf_unittest.TestNestedGroupExtensionInnerExtension",
++        // type: "proto2_unittest.TestNestedGroupExtensionInnerExtension",
+         // name: "inner",
+         // }]
+         ;
+diff --git a/src/google/protobuf/unittest_custom_options.proto b/src/google/protobuf/unittest_custom_options.proto
+index ca6bec7a6..012b477b2 100644
+--- a/src/google/protobuf/unittest_custom_options.proto
++++ b/src/google/protobuf/unittest_custom_options.proto
+@@ -27,7 +27,7 @@ import "google/protobuf/descriptor.proto";
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ // Some simple test custom options of various types.
+ 
+@@ -240,7 +240,7 @@ extend ComplexOptionType2 {
+ }
+ 
+ extend google.protobuf.MessageOptions {
+-  optional protobuf_unittest.ComplexOptionType1 complex_opt1 = 7646756;
++  optional proto2_unittest.ComplexOptionType1 complex_opt1 = 7646756;
+   optional ComplexOptionType2 complex_opt2 = 7636949;
+   optional ComplexOptionType3 complex_opt3 = 7636463;
+   optional group ComplexOpt6 = 7595468 {
+@@ -250,19 +250,19 @@ extend google.protobuf.MessageOptions {
+ 
+ // Note that we try various different ways of naming the same extension.
+ message VariousComplexOptions {
+-  option (.protobuf_unittest.complex_opt1).foo = 42;
+-  option (protobuf_unittest.complex_opt1).(.protobuf_unittest.mooo) = 324;
+-  option (.protobuf_unittest.complex_opt1).(protobuf_unittest.corge).moo = 876;
+-  option (protobuf_unittest.complex_opt1).foo4 = 99;
+-  option (protobuf_unittest.complex_opt1).foo4 = 88;
++  option (.proto2_unittest.complex_opt1).foo = 42;
++  option (proto2_unittest.complex_opt1).(.proto2_unittest.mooo) = 324;
++  option (.proto2_unittest.complex_opt1).(proto2_unittest.corge).moo = 876;
++  option (proto2_unittest.complex_opt1).foo4 = 99;
++  option (proto2_unittest.complex_opt1).foo4 = 88;
+   option (complex_opt2).baz = 987;
+   option (complex_opt2).(grault) = 654;
+   option (complex_opt2).bar.foo = 743;
+   option (complex_opt2).bar.(mooo) = 1999;
+-  option (complex_opt2).bar.(protobuf_unittest.corge).moo = 2008;
++  option (complex_opt2).bar.(proto2_unittest.corge).moo = 2008;
+   option (complex_opt2).(garply).foo = 741;
+-  option (complex_opt2).(garply).(.protobuf_unittest.mooo) = 1998;
+-  option (complex_opt2).(protobuf_unittest.garply).(corge).moo = 2121;
++  option (complex_opt2).(garply).(.proto2_unittest.mooo) = 1998;
++  option (complex_opt2).(proto2_unittest.garply).(corge).moo = 2121;
+   option (ComplexOptionType2.ComplexOptionType4.complex_opt4).waldo = 1971;
+   option (complex_opt2).fred.waldo = 321;
+   option (complex_opt2).barney = {
+@@ -271,7 +271,7 @@ message VariousComplexOptions {
+   option (complex_opt2).barney = {
+     waldo: 212
+   };
+-  option (protobuf_unittest.complex_opt3).moo = 9;
++  option (proto2_unittest.complex_opt3).moo = 9;
+   option (complex_opt3).complexoptiontype5.plugh = 22;
+   option (complexopt6).xyzzy = 24;
+ }
+@@ -350,18 +350,18 @@ option (fileopt) = {
+   // Include a google.protobuf.FileOptions and recursively extend it with
+   // another fileopt.
+   file {
+-    [protobuf_unittest.fileopt] { s: 'FileExtensionAnnotation' }
++    [proto2_unittest.fileopt] { s: 'FileExtensionAnnotation' }
+   }
+ 
+   // A message set inside an option value
+   mset {
+-    [protobuf_unittest.AggregateMessageSetElement.message_set_extension] {
++    [proto2_unittest.AggregateMessageSetElement.message_set_extension] {
+       s: 'EmbeddedMessageSetElement'
+     }
+   }
+ 
+   any {
+-    [type.googleapis.com/protobuf_unittest.AggregateMessageSetElement] {
++    [type.googleapis.com/proto2_unittest.AggregateMessageSetElement] {
+       s: 'EmbeddedMessageSetElement'
+     }
+   }
+diff --git a/src/google/protobuf/unittest_embed_optimize_for.proto b/src/google/protobuf/unittest_embed_optimize_for.proto
+index f4f2f8944..ef9b567ee 100644
+--- a/src/google/protobuf/unittest_embed_optimize_for.proto
++++ b/src/google/protobuf/unittest_embed_optimize_for.proto
+@@ -13,7 +13,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/unittest_optimize_for.proto";
+ 
+diff --git a/src/google/protobuf/unittest_enormous_descriptor.proto b/src/google/protobuf/unittest_enormous_descriptor.proto
+index a8b6452a5..5a1acd8eb 100644
+--- a/src/google/protobuf/unittest_enormous_descriptor.proto
++++ b/src/google/protobuf/unittest_enormous_descriptor.proto
+@@ -16,7 +16,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ option java_package = "com.google.protobuf";
+ 
+ // Avoid generating insanely long methods.
+diff --git a/src/google/protobuf/unittest_extension_set.proto b/src/google/protobuf/unittest_extension_set.proto
+index 0aa923c34..1f67b5ba8 100644
+--- a/src/google/protobuf/unittest_extension_set.proto
++++ b/src/google/protobuf/unittest_extension_set.proto
+@@ -13,7 +13,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ option optimize_for = SPEED;
+ option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
+diff --git a/src/google/protobuf/unittest_lazy_dependencies.proto b/src/google/protobuf/unittest_lazy_dependencies.proto
+index 5df67c775..204389b68 100644
+--- a/src/google/protobuf/unittest_lazy_dependencies.proto
++++ b/src/google/protobuf/unittest_lazy_dependencies.proto
+@@ -24,8 +24,8 @@ option cc_enable_arenas = true;
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-// In test_util.h we do "using namespace unittest = protobuf_unittest".
+-package protobuf_unittest.lazy_imports;
++// In test_util.h we do "using namespace unittest = proto2_unittest".
++package proto2_unittest.lazy_imports;
+ 
+ // Protos optimized for SPEED use a strict superset of the generated code
+ // of equivalent ones optimized for CODE_SIZE, so we should optimize all our
+diff --git a/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto b/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto
+index 3b055dc66..7de13531c 100644
+--- a/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto
++++ b/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto
+@@ -25,8 +25,8 @@ option cc_enable_arenas = true;
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-// In test_util.h we do "using namespace unittest = protobuf_unittest".
+-package protobuf_unittest.lazy_imports;
++// In test_util.h we do "using namespace unittest = proto2_unittest".
++package proto2_unittest.lazy_imports;
+ 
+ // Protos optimized for SPEED use a strict superset of the generated code
+ // of equivalent ones optimized for CODE_SIZE, so we should optimize all our
+diff --git a/src/google/protobuf/unittest_lazy_dependencies_enum.proto b/src/google/protobuf/unittest_lazy_dependencies_enum.proto
+index 851abc426..4bbe318b3 100644
+--- a/src/google/protobuf/unittest_lazy_dependencies_enum.proto
++++ b/src/google/protobuf/unittest_lazy_dependencies_enum.proto
+@@ -25,8 +25,8 @@ option cc_enable_arenas = true;
+ 
+ // We don't put this in a package within proto2 because we need to make sure
+ // that the generated code doesn't depend on being in the proto2 namespace.
+-// In test_util.h we do "using namespace unittest = protobuf_unittest".
+-package protobuf_unittest.lazy_imports;
++// In test_util.h we do "using namespace unittest = proto2_unittest".
++package proto2_unittest.lazy_imports;
+ 
+ // Protos optimized for SPEED use a strict superset of the generated code
+ // of equivalent ones optimized for CODE_SIZE, so we should optimize all our
+diff --git a/src/google/protobuf/unittest_lite.proto b/src/google/protobuf/unittest_lite.proto
+index 1848a2a1a..003fddb1c 100644
+--- a/src/google/protobuf/unittest_lite.proto
++++ b/src/google/protobuf/unittest_lite.proto
+@@ -11,7 +11,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/unittest_import_lite.proto";
+ 
+@@ -439,8 +439,8 @@ message TestHugeFieldNumbersLite {
+ 
+   extensions 536860000 to 536869999 [declaration = {
+     number: 536860000
+-    full_name: ".protobuf_unittest.test_all_types_lite"
+-    type: ".protobuf_unittest.TestAllTypesLite"
++    full_name: ".proto2_unittest.test_all_types_lite"
++    type: ".proto2_unittest.TestAllTypesLite"
+   }];
+ }
+ 
+diff --git a/src/google/protobuf/unittest_lite_imports_nonlite.proto b/src/google/protobuf/unittest_lite_imports_nonlite.proto
+index 681e6a87a..9399896d1 100644
+--- a/src/google/protobuf/unittest_lite_imports_nonlite.proto
++++ b/src/google/protobuf/unittest_lite_imports_nonlite.proto
+@@ -11,7 +11,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/unittest.proto";
+ 
+diff --git a/src/google/protobuf/unittest_mset.proto b/src/google/protobuf/unittest_mset.proto
+index 8c7a7b15e..94b47127f 100644
+--- a/src/google/protobuf/unittest_mset.proto
++++ b/src/google/protobuf/unittest_mset.proto
+@@ -16,7 +16,7 @@ syntax = "proto2";
+ 
+ import "google/protobuf/unittest_mset_wire_format.proto";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ option cc_enable_arenas = true;
+ option optimize_for = SPEED;
+diff --git a/src/google/protobuf/unittest_no_field_presence.proto b/src/google/protobuf/unittest_no_field_presence.proto
+index ba27ef41d..2c9f833a0 100644
+--- a/src/google/protobuf/unittest_no_field_presence.proto
++++ b/src/google/protobuf/unittest_no_field_presence.proto
+@@ -51,13 +51,13 @@ message TestAllTypes {
+ 
+   NestedMessage optional_nested_message = 18;
+   ForeignMessage optional_foreign_message = 19;
+-  protobuf_unittest.TestAllTypes optional_proto2_message = 20;
++  proto2_unittest.TestAllTypes optional_proto2_message = 20;
+ 
+   NestedEnum optional_nested_enum = 21;
+   ForeignEnum optional_foreign_enum = 22;
+   // N.B.: proto2-enum-type fields not allowed, because their default values
+   // might not be zero.
+-  // optional protobuf_unittest.ForeignEnum          optional_proto2_enum     =
++  // optional proto2_unittest.ForeignEnum          optional_proto2_enum     =
+   // 23;
+ 
+   string optional_string_piece = 24 [ctype = STRING_PIECE];
+@@ -84,7 +84,7 @@ message TestAllTypes {
+ 
+   repeated NestedMessage repeated_nested_message = 48;
+   repeated ForeignMessage repeated_foreign_message = 49;
+-  repeated protobuf_unittest.TestAllTypes repeated_proto2_message = 50;
++  repeated proto2_unittest.TestAllTypes repeated_proto2_message = 50;
+ 
+   repeated NestedEnum repeated_nested_enum = 51;
+   repeated ForeignEnum repeated_foreign_enum = 52;
+@@ -103,7 +103,7 @@ message TestAllTypes {
+ }
+ 
+ message TestProto2Required {
+-  protobuf_unittest.TestRequired proto2 = 1;
++  proto2_unittest.TestRequired proto2 = 1;
+ }
+ 
+ // Define these after TestAllTypes to make sure the compiler can handle
+diff --git a/src/google/protobuf/unittest_no_generic_services.proto b/src/google/protobuf/unittest_no_generic_services.proto
+index af3ecb578..3b1ab626c 100644
+--- a/src/google/protobuf/unittest_no_generic_services.proto
++++ b/src/google/protobuf/unittest_no_generic_services.proto
+@@ -9,7 +9,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest.no_generic_services_test;
++package proto2_unittest.no_generic_services_test;
+ 
+ 
+ // *_generic_services are false by default.
+diff --git a/src/google/protobuf/unittest_optimize_for.proto b/src/google/protobuf/unittest_optimize_for.proto
+index c5e170724..147fa4eb8 100644
+--- a/src/google/protobuf/unittest_optimize_for.proto
++++ b/src/google/protobuf/unittest_optimize_for.proto
+@@ -13,7 +13,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/unittest.proto";
+ 
+diff --git a/src/google/protobuf/unittest_proto3_bad_macros.proto b/src/google/protobuf/unittest_proto3_bad_macros.proto
+index 14fbcde25..827907367 100644
+--- a/src/google/protobuf/unittest_proto3_bad_macros.proto
++++ b/src/google/protobuf/unittest_proto3_bad_macros.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto3";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ option csharp_namespace = "ProtobufUnittest";
+ option java_multiple_files = true;
+diff --git a/src/google/protobuf/unittest_proto3_optional.proto b/src/google/protobuf/unittest_proto3_optional.proto
+index 1169847f9..1354212b1 100644
+--- a/src/google/protobuf/unittest_proto3_optional.proto
++++ b/src/google/protobuf/unittest_proto3_optional.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto3";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/descriptor.proto";
+ 
+@@ -68,8 +68,8 @@ message TestProto3OptionalMessage {
+ }
+ 
+ message Proto3OptionalExtensions {
+-  option (protobuf_unittest.Proto3OptionalExtensions.ext_no_optional) = 8;
+-  option (protobuf_unittest.Proto3OptionalExtensions.ext_with_optional) = 16;
++  option (proto2_unittest.Proto3OptionalExtensions.ext_no_optional) = 8;
++  option (proto2_unittest.Proto3OptionalExtensions.ext_with_optional) = 16;
+ 
+   extend google.protobuf.MessageOptions {
+     int32 ext_no_optional = 355886728;
+diff --git a/src/google/protobuf/unittest_retention.proto b/src/google/protobuf/unittest_retention.proto
+index 999836383..6c31846a2 100644
+--- a/src/google/protobuf/unittest_retention.proto
++++ b/src/google/protobuf/unittest_retention.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/descriptor.proto";
+ 
+diff --git a/src/google/protobuf/unittest_well_known_types.proto b/src/google/protobuf/unittest_well_known_types.proto
+index 05f25d6ad..a6105a043 100644
+--- a/src/google/protobuf/unittest_well_known_types.proto
++++ b/src/google/protobuf/unittest_well_known_types.proto
+@@ -7,7 +7,7 @@
+ 
+ syntax = "proto3";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ option csharp_namespace = "Google.Protobuf.TestProtos";
+ option java_multiple_files = true;
+diff --git a/src/google/protobuf/util/json_format.proto b/src/google/protobuf/util/json_format.proto
+index 7cb311139..7b193ec53 100644
+--- a/src/google/protobuf/util/json_format.proto
++++ b/src/google/protobuf/util/json_format.proto
+@@ -13,7 +13,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ message TestFlagsAndStrings {
+   required int32 A = 1;
+diff --git a/src/google/protobuf/util/json_format_proto3.proto b/src/google/protobuf/util/json_format_proto3.proto
+index 8818adc6e..c888168ce 100644
+--- a/src/google/protobuf/util/json_format_proto3.proto
++++ b/src/google/protobuf/util/json_format_proto3.proto
+@@ -175,7 +175,7 @@ message TestEvilJson {
+ }
+ 
+ message TestExtensions {
+-  .protobuf_unittest.TestAllExtensions extensions = 1;
++  .proto2_unittest.TestAllExtensions extensions = 1;
+ }
+ 
+ message TestEnumValue {
+diff --git a/src/google/protobuf/util/message_differencer_unittest.proto b/src/google/protobuf/util/message_differencer_unittest.proto
+index 032f4b9b7..bde6197c0 100644
+--- a/src/google/protobuf/util/message_differencer_unittest.proto
++++ b/src/google/protobuf/util/message_differencer_unittest.proto
+@@ -14,7 +14,7 @@
+ 
+ syntax = "proto2";
+ 
+-package protobuf_unittest;
++package proto2_unittest;
+ 
+ import "google/protobuf/any.proto";
+ 

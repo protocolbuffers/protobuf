@@ -18,8 +18,4 @@
 uint64_t shared_Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
                              uint64_t seed, upb_Status* status);
 
-// Returns true if these two messages are equal.
-bool shared_Message_Equal(const upb_Message* m1, const upb_Message* m2,
-                          const upb_MessageDef* m, upb_Status* status);
-
 #endif  // RUBY_PROTOBUF_SHARED_MESSAGE_H_

@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/has_bits.h"
@@ -30,18 +31,9 @@
 
 namespace google {
 namespace protobuf {
-class Arena;
-namespace internal {
-template <typename Derived, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-class MapField;
-}
-}  // namespace protobuf
-}  // namespace google
 
-namespace google {
-namespace protobuf {
+class Arena;
+
 namespace internal {
 
 // MapEntry is the returned google::protobuf::Message when calling AddMessage of
@@ -70,8 +62,7 @@ namespace internal {
 // The in-memory types of primitive types can be inferred from its proto type,
 // while we need to explicitly specify the cpp type if proto type is
 // TYPE_MESSAGE to infer the in-memory type.
-template <typename Derived, typename Key, typename Value,
-          WireFormatLite::FieldType kKeyFieldType,
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
 class MapEntry : public Message {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
@@ -84,124 +75,59 @@ class MapEntry : public Message {
   using KeyOnMemory = typename KeyTypeHandler::TypeOnMemory;
   using ValueOnMemory = typename ValueTypeHandler::TypeOnMemory;
 
-  // Constants for field number.
-  static const int kKeyFieldNumber = 1;
-  static const int kValueFieldNumber = 2;
-
-  // Constants for field tag.
-  static const uint8_t kKeyTag =
-      GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(kKeyFieldNumber, KeyTypeHandler::kWireType);
-  static const uint8_t kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
-      kValueFieldNumber, ValueTypeHandler::kWireType);
-  static const size_t kTagSize = 1;
-
  public:
-  constexpr MapEntry()
-      : key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()),
-        _has_bits_{} {}
-
-  explicit MapEntry(Arena* arena)
-      : Message(arena),
-        key_(KeyTypeHandler::Constinit()),
-        value_(ValueTypeHandler::Constinit()),
-        _has_bits_{} {}
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+  constexpr MapEntry() {}
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  using Message::Message;
 
   MapEntry(const MapEntry&) = delete;
   MapEntry& operator=(const MapEntry&) = delete;
 
-  ~MapEntry() override {
+  ~MapEntry() PROTOBUF_OVERRIDE {
+    // Make sure that `Value` is never a derived message type.
+    // We don't want to instantiate the template with every unique derived type.
+    // The assertion is in the destructor because we need `Value` to be
+    // complete to test it.
+    static_assert(!std::is_base_of<Message, Value>::value ||
+                      std::is_same<Message, Value>::value,
+                  "");
+
     if (GetArena() != nullptr) return;
-    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
-    KeyTypeHandler::DeleteNoArena(key_);
-    ValueTypeHandler::DeleteNoArena(value_);
+    SharedDtor(*this);
   }
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  // accessors ======================================================
-
-  inline const auto& key() const {
-    return KeyTypeHandler::GetExternalReference(key_);
-  }
-  inline const auto& value() const {
-    return ValueTypeHandler::DefaultIfNotInitialized(value_);
-  }
-  inline auto* mutable_key() {
-    _has_bits_[0] |= 0x00000001u;
-    return KeyTypeHandler::EnsureMutable(&key_, GetArena());
-  }
-  inline auto* mutable_value() {
-    _has_bits_[0] |= 0x00000002u;
-    return ValueTypeHandler::EnsureMutable(&value_, GetArena());
-  }
-
-  // TODO: These methods currently differ in behavior from the ones
-  // implemented via reflection. This means that a MapEntry does not behave the
-  // same as an equivalent object made via DynamicMessage.
-
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final {
-    while (!ctx->Done(&ptr)) {
-      uint32_t tag;
-      ptr = ReadTag(ptr, &tag);
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      if (tag == kKeyTag) {
-        auto* key = mutable_key();
-        ptr = KeyTypeHandler::Read(ptr, ctx, key);
-        if (!Derived::ValidateKey(key)) return nullptr;
-      } else if (tag == kValueTag) {
-        auto* value = mutable_value();
-        ptr = ValueTypeHandler::Read(ptr, ctx, value);
-        if (!Derived::ValidateValue(value)) return nullptr;
-      } else {
-        if (tag == 0 || WireFormatLite::GetTagWireType(tag) ==
-                            WireFormatLite::WIRETYPE_END_GROUP) {
-          ctx->SetLastTag(tag);
-          return ptr;
-        }
-        ptr = UnknownFieldParse(tag, static_cast<std::string*>(nullptr), ptr,
-                                ctx);
-      }
-      GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-    }
-    return ptr;
-  }
-
-  size_t ByteSizeLong() const final {
-    size_t size = 0;
-    size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));
-    size += kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value()));
-    _cached_size_.Set(ToCachedSize(size));
-    return size;
-  }
-
-  ::uint8_t* _InternalSerialize(::uint8_t* ptr,
-                                io::EpsCopyOutputStream* stream) const final {
-    ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
-    return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
-  }
-
-  bool IsInitialized() const final {
-    return ValueTypeHandler::IsInitialized(value_);
-  }
-
-  Message* New(Arena* arena) const final {
-    return Arena::CreateMessage<Derived>(arena);
-  }
-
-  CachedSize* AccessCachedSize() const final { return &_cached_size_; }
+  struct _Internal;
 
  protected:
   friend class google::protobuf::Arena;
-  template <typename C, typename K, typename V, WireFormatLite::FieldType,
-            WireFormatLite::FieldType>
-  friend class MapField;
 
-  KeyOnMemory key_;
-  ValueOnMemory value_;
-  HasBits<1> _has_bits_;
-  mutable CachedSize _cached_size_;
+  static void SharedDtor(MessageLite& msg) {
+    auto& this_ = static_cast<MapEntry&>(msg);
+    this_._internal_metadata_.template Delete<UnknownFieldSet>();
+    KeyTypeHandler::DeleteNoArena(this_._impl_.key_);
+    ValueTypeHandler::DeleteNoArena(this_._impl_.value_);
+  }
+
+  // Field naming follows the convention of generated messages to make code
+  // sharing easier.
+  struct {
+    HasBits<1> _has_bits_{};
+    CachedSize _cached_size_{};
+
+    KeyOnMemory key_{KeyTypeHandler::Constinit()};
+    ValueOnMemory value_{ValueTypeHandler::Constinit()};
+  } _impl_;
+};
+
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntry<Key, Value, kKeyFieldType, kValueFieldType>::_Internal {
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(MapEntry, _impl_._has_bits_);
 };
 
 }  // namespace internal

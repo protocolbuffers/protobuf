@@ -1,0 +1,16 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package proto2_unittest;
+
+import "google/protobuf/cpp_features.proto";
+
+message EntryProto {
+  bytes value = 3 [features.(pb.cpp).string_type = CORD];
+}

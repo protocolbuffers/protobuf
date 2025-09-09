@@ -1,0 +1,16 @@
+Index: ruby/private/download/BUILD.tpl
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/ruby/private/download/BUILD.tpl b/ruby/private/download/BUILD.tpl
+--- a/ruby/private/download/BUILD.tpl	(revision 26e0ba621cb82933f28a59373cb6a7afe54fae95)
++++ b/ruby/private/download/BUILD.tpl	(date 1745340325192)
+@@ -33,6 +33,7 @@
+         ["dist/lib/**/*.jar"],
+         allow_empty = True,
+     ),
++    neverlink = True,
+ )
+
+ rb_toolchain(

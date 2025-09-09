@@ -24,6 +24,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/csharp_enum_field.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
+#include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_map_field.h"
 #include "google/protobuf/compiler/csharp/csharp_message_field.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
@@ -34,6 +35,7 @@
 #include "google/protobuf/compiler/csharp/csharp_wrapper_field.h"
 #include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/compiler/retention.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
@@ -87,11 +89,11 @@ CSharpType GetCSharpType(FieldDescriptor::Type type) {
       // types are added.
   }
   ABSL_LOG(FATAL) << "Can't get here.";
-  return (CSharpType) -1;
+  return (CSharpType)-1;
 }
 
-// Convert a string which is expected to be SHOUTY_CASE (but may not be *precisely* shouty)
-// into a PascalCase string. Precise rules implemented:
+// Convert a string which is expected to be SHOUTY_CASE (but may not be
+// *precisely* shouty) into a PascalCase string. Precise rules implemented:
 
 // Previous input character      Current character         Case
 // Any                           Non-alphanumeric          Skipped
@@ -124,12 +126,11 @@ std::string ShoutyToPascalCase(absl::string_view input) {
   return result;
 }
 
-// Attempt to remove a prefix from a value, ignoring casing and skipping underscores.
-// (foo, foo_bar) => bar - underscore after prefix is skipped
-// (FOO, foo_bar) => bar - casing is ignored
-// (foo_bar, foobarbaz) => baz - underscore in prefix is ignored
-// (foobar, foo_barbaz) => baz - underscore in value is ignored
-// (foo, bar) => bar - prefix isn't matched; return original value
+// Attempt to remove a prefix from a value, ignoring casing and skipping
+// underscores. (foo, foo_bar) => bar - underscore after prefix is skipped (FOO,
+// foo_bar) => bar - casing is ignored (foo_bar, foobarbaz) => baz - underscore
+// in prefix is ignored (foobar, foo_barbaz) => baz - underscore in value is
+// ignored (foo, bar) => bar - prefix isn't matched; return original value
 std::string TryRemovePrefix(absl::string_view prefix, absl::string_view value) {
   // First normalize to a lower-case no-underscores prefix to match against
   std::string prefix_to_match = "";
@@ -142,13 +143,14 @@ std::string TryRemovePrefix(absl::string_view prefix, absl::string_view value) {
   // This keeps track of how much of value we've consumed
   size_t prefix_index, value_index;
   for (prefix_index = 0, value_index = 0;
-      prefix_index < prefix_to_match.size() && value_index < value.size();
-      value_index++) {
+       prefix_index < prefix_to_match.size() && value_index < value.size();
+       value_index++) {
     // Skip over underscores in the value
     if (value[value_index] == '_') {
       continue;
     }
-    if (absl::ascii_tolower(value[value_index]) != prefix_to_match[prefix_index++]) {
+    if (absl::ascii_tolower(value[value_index]) !=
+        prefix_to_match[prefix_index++]) {
       // Failed to match the prefix - bail out early.
       return std::string(value);
     }
@@ -164,7 +166,8 @@ std::string TryRemovePrefix(absl::string_view prefix, absl::string_view value) {
     value_index++;
   }
 
-  // If there's nothing left (e.g. it was a prefix with only underscores afterwards), don't strip.
+  // If there's nothing left (e.g. it was a prefix with only underscores
+  // afterwards), don't strip.
   if (value_index == value.size()) {
     return std::string(value);
   }
@@ -181,50 +184,12 @@ std::string GetEnumValueName(absl::string_view enum_name,
                              absl::string_view enum_value_name) {
   std::string stripped = TryRemovePrefix(enum_name, enum_value_name);
   std::string result = ShoutyToPascalCase(stripped);
-  // Just in case we have an enum name of FOO and a value of FOO_2... make sure the returned
-  // string is a valid identifier.
+  // Just in case we have an enum name of FOO and a value of FOO_2... make sure
+  // the returned string is a valid identifier.
   if (absl::ascii_isdigit(result[0])) {
     return absl::StrCat("_", result);
   }
   return result;
-}
-
-uint GetGroupEndTag(const Descriptor* descriptor) {
-  const Descriptor* containing_type = descriptor->containing_type();
-  if (containing_type != NULL) {
-    const FieldDescriptor* field;
-    for (int i = 0; i < containing_type->field_count(); i++) {
-      field = containing_type->field(i);
-      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-          field->message_type() == descriptor) {
-        return internal::WireFormatLite::MakeTag(
-            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-      }
-    }
-    for (int i = 0; i < containing_type->extension_count(); i++) {
-      field = containing_type->extension(i);
-      if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-          field->message_type() == descriptor) {
-        return internal::WireFormatLite::MakeTag(
-            field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-      }
-    }
-  } else {
-    const FileDescriptor* containing_file = descriptor->file();
-    if (containing_file != NULL) {
-      const FieldDescriptor* field;
-      for (int i = 0; i < containing_file->extension_count(); i++) {
-        field = containing_file->extension(i);
-        if (field->type() == FieldDescriptor::Type::TYPE_GROUP &&
-            field->message_type() == descriptor) {
-          return internal::WireFormatLite::MakeTag(
-              field->number(), internal::WireFormatLite::WIRETYPE_END_GROUP);
-        }
-      }
-    }
-  }
-
-  return 0;
 }
 
 std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
@@ -237,14 +202,15 @@ std::string GetFullExtensionName(const FieldDescriptor* descriptor) {
                       GetPropertyName(descriptor));
 }
 
-// Groups are hacky:  The name of the field is just the lower-cased name
-// of the group type.  In C#, though, we would like to retain the original
-// capitalization of the type name.
+// Groups in proto2 are hacky: The name of the field is just the lower-cased
+// name of the group type. In C#, though, we would like to retain the original
+// capitalization of the type name. Fields with an encoding of "delimited" in
+// editions are like groups, but have a real name, so we use that.
 std::string GetFieldName(const FieldDescriptor* descriptor) {
-  if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
-    return descriptor->message_type()->name();
+  if (internal::cpp::IsGroupLike(*descriptor)) {
+    return std::string(descriptor->message_type()->name());
   } else {
-    return descriptor->name();
+    return std::string(descriptor->name());
   }
 }
 
@@ -254,37 +220,32 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // Names of members declared or overridden in the message.
-  static const auto& reserved_member_names = *new absl::flat_hash_set<absl::string_view>({
-    "Types",
-    "Descriptor",
-    "Equals",
-    "ToString",
-    "GetHashCode",
-    "WriteTo",
-    "Clone",
-    "CalculateSize",
-    "MergeFrom",
-    "OnConstruction",
-    "Parser"
-    });
+  static const auto& reserved_member_names =
+      *new absl::flat_hash_set<absl::string_view>(
+          {"Types", "Descriptor", "Equals", "ToString", "GetHashCode",
+           "WriteTo", "Clone", "CalculateSize", "MergeFrom", "OnConstruction",
+           "Parser"});
 
   // TODO: consider introducing csharp_property_name field option
   std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
   // Avoid either our own type name or reserved names.
-  // There are various ways of ending up with naming collisions, but we try to avoid obvious
-  // ones. In particular, we avoid the names of all the members we generate.
-  // Note that we *don't* add an underscore for MemberwiseClone or GetType. Those generate
-  // warnings, but not errors; changing the name now could be a breaking change.
-  if (property_name == descriptor->containing_type()->name()
-      || reserved_member_names.find(property_name) != reserved_member_names.end()) {
+  // There are various ways of ending up with naming collisions, but we try to
+  // avoid obvious ones. In particular, we avoid the names of all the members we
+  // generate. Note that we *don't* add an underscore for MemberwiseClone or
+  // GetType. Those generate warnings, but not errors; changing the name now
+  // could be a breaking change.
+  if (property_name == descriptor->containing_type()->name() ||
+      reserved_member_names.find(property_name) !=
+          reserved_member_names.end()) {
     absl::StrAppend(&property_name, "_");
   }
   return property_name;
 }
 
 std::string GetOneofCaseName(const FieldDescriptor* descriptor) {
-  // The name in a oneof case enum is the same as for the property, but as we always have a "None"
-  // value as well, we need to reserve that by appending an underscore.
+  // The name in a oneof case enum is the same as for the property, but as we
+  // always have a "None" value as well, we need to reserve that by appending an
+  // underscore.
   std::string property_name = GetPropertyName(descriptor);
   return property_name == "None" ? "None_" : property_name;
 }
@@ -294,29 +255,47 @@ std::string GetOneofCaseName(const FieldDescriptor* descriptor) {
 // returns -1.
 int GetFixedSize(FieldDescriptor::Type type) {
   switch (type) {
-    case FieldDescriptor::TYPE_INT32   : return -1;
-    case FieldDescriptor::TYPE_INT64   : return -1;
-    case FieldDescriptor::TYPE_UINT32  : return -1;
-    case FieldDescriptor::TYPE_UINT64  : return -1;
-    case FieldDescriptor::TYPE_SINT32  : return -1;
-    case FieldDescriptor::TYPE_SINT64  : return -1;
-    case FieldDescriptor::TYPE_FIXED32 : return internal::WireFormatLite::kFixed32Size;
-    case FieldDescriptor::TYPE_FIXED64 : return internal::WireFormatLite::kFixed64Size;
-    case FieldDescriptor::TYPE_SFIXED32: return internal::WireFormatLite::kSFixed32Size;
-    case FieldDescriptor::TYPE_SFIXED64: return internal::WireFormatLite::kSFixed64Size;
-    case FieldDescriptor::TYPE_FLOAT   : return internal::WireFormatLite::kFloatSize;
-    case FieldDescriptor::TYPE_DOUBLE  : return internal::WireFormatLite::kDoubleSize;
+    case FieldDescriptor::TYPE_INT32:
+      return -1;
+    case FieldDescriptor::TYPE_INT64:
+      return -1;
+    case FieldDescriptor::TYPE_UINT32:
+      return -1;
+    case FieldDescriptor::TYPE_UINT64:
+      return -1;
+    case FieldDescriptor::TYPE_SINT32:
+      return -1;
+    case FieldDescriptor::TYPE_SINT64:
+      return -1;
+    case FieldDescriptor::TYPE_FIXED32:
+      return internal::WireFormatLite::kFixed32Size;
+    case FieldDescriptor::TYPE_FIXED64:
+      return internal::WireFormatLite::kFixed64Size;
+    case FieldDescriptor::TYPE_SFIXED32:
+      return internal::WireFormatLite::kSFixed32Size;
+    case FieldDescriptor::TYPE_SFIXED64:
+      return internal::WireFormatLite::kSFixed64Size;
+    case FieldDescriptor::TYPE_FLOAT:
+      return internal::WireFormatLite::kFloatSize;
+    case FieldDescriptor::TYPE_DOUBLE:
+      return internal::WireFormatLite::kDoubleSize;
 
-    case FieldDescriptor::TYPE_BOOL    : return internal::WireFormatLite::kBoolSize;
-    case FieldDescriptor::TYPE_ENUM    : return -1;
+    case FieldDescriptor::TYPE_BOOL:
+      return internal::WireFormatLite::kBoolSize;
+    case FieldDescriptor::TYPE_ENUM:
+      return -1;
 
-    case FieldDescriptor::TYPE_STRING  : return -1;
-    case FieldDescriptor::TYPE_BYTES   : return -1;
-    case FieldDescriptor::TYPE_GROUP   : return -1;
-    case FieldDescriptor::TYPE_MESSAGE : return -1;
+    case FieldDescriptor::TYPE_STRING:
+      return -1;
+    case FieldDescriptor::TYPE_BYTES:
+      return -1;
+    case FieldDescriptor::TYPE_GROUP:
+      return -1;
+    case FieldDescriptor::TYPE_MESSAGE:
+      return -1;
 
-    // No default because we want the compiler to complain if any new
-    // types are added.
+      // No default because we want the compiler to complain if any new
+      // types are added.
   }
   ABSL_LOG(FATAL) << "Can't get here.";
   return -1;
@@ -373,41 +352,51 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
         if (descriptor->is_map()) {
           return new MapFieldGenerator(descriptor, presenceIndex, options);
         } else {
-          return new RepeatedMessageFieldGenerator(descriptor, presenceIndex, options);
+          return new RepeatedMessageFieldGenerator(descriptor, presenceIndex,
+                                                   options);
         }
       } else {
         if (IsWrapperType(descriptor)) {
           if (descriptor->real_containing_oneof()) {
-            return new WrapperOneofFieldGenerator(descriptor, presenceIndex, options);
+            return new WrapperOneofFieldGenerator(descriptor, presenceIndex,
+                                                  options);
           } else {
-            return new WrapperFieldGenerator(descriptor, presenceIndex, options);
+            return new WrapperFieldGenerator(descriptor, presenceIndex,
+                                             options);
           }
         } else {
           if (descriptor->real_containing_oneof()) {
-            return new MessageOneofFieldGenerator(descriptor, presenceIndex, options);
+            return new MessageOneofFieldGenerator(descriptor, presenceIndex,
+                                                  options);
           } else {
-            return new MessageFieldGenerator(descriptor, presenceIndex, options);
+            return new MessageFieldGenerator(descriptor, presenceIndex,
+                                             options);
           }
         }
       }
     case FieldDescriptor::TYPE_ENUM:
       if (descriptor->is_repeated()) {
-        return new RepeatedEnumFieldGenerator(descriptor, presenceIndex, options);
+        return new RepeatedEnumFieldGenerator(descriptor, presenceIndex,
+                                              options);
       } else {
         if (descriptor->real_containing_oneof()) {
-          return new EnumOneofFieldGenerator(descriptor, presenceIndex, options);
+          return new EnumOneofFieldGenerator(descriptor, presenceIndex,
+                                             options);
         } else {
           return new EnumFieldGenerator(descriptor, presenceIndex, options);
         }
       }
     default:
       if (descriptor->is_repeated()) {
-        return new RepeatedPrimitiveFieldGenerator(descriptor, presenceIndex, options);
+        return new RepeatedPrimitiveFieldGenerator(descriptor, presenceIndex,
+                                                   options);
       } else {
         if (descriptor->real_containing_oneof()) {
-          return new PrimitiveOneofFieldGenerator(descriptor, presenceIndex, options);
+          return new PrimitiveOneofFieldGenerator(descriptor, presenceIndex,
+                                                  options);
         } else {
-          return new PrimitiveFieldGenerator(descriptor, presenceIndex, options);
+          return new PrimitiveFieldGenerator(descriptor, presenceIndex,
+                                             options);
         }
       }
   }

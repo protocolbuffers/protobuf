@@ -12,8 +12,8 @@ import java.nio.ByteBuffer;
 
 /**
  * Provides a number of unsafe byte operations to be used by advanced applications with high
- * performance requirements. These methods are referred to as "unsafe" because they
- * potentially expose the backing buffer of a {@link ByteString} to the application.
+ * performance requirements. These methods are referred to as "unsafe" because they potentially
+ * expose the backing buffer of a {@link ByteString} to the application.
  *
  * <p><strong>DISCLAIMER:</strong> The methods in this class should only be called if it is
  * guaranteed that the buffer backing the {@link ByteString} will never change! Mutation of a {@link
@@ -38,7 +38,6 @@ import java.nio.ByteBuffer;
  * parts of the code base modifying the buffer. In fact, both parts of the code base may be correct
  * - it is the bridging with the unsafe operations that was in error!
  */
-@ExperimentalApi
 public final class UnsafeByteOperations {
   private UnsafeByteOperations() {}
 

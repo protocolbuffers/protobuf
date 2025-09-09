@@ -97,7 +97,7 @@ class MockGeneratorContext : public GeneratorContext {
 
   io::ZeroCopyOutputStream* Open(const std::string& filename) override {
     auto& map_slot = files_[filename];
-    map_slot.reset(new std::string);
+    map_slot = std::make_unique<std::string>();
     return new io::StringOutputStream(map_slot.get());
   }
 
@@ -121,12 +121,6 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
   // of the data to compare to.
   absl::flat_hash_map<absl::string_view, std::string> vpath_map;
   absl::flat_hash_map<absl::string_view, std::string> rpath_map;
-  rpath_map["google/protobuf/test_messages_proto2"] =
-      "net/proto2/z_generated_example/test_messages_proto2";
-  rpath_map["google/protobuf/test_messages_proto3"] =
-      "net/proto2/z_generated_example/test_messages_proto3";
-  rpath_map["net/proto2/internal/proto2_weak"] =
-      "net/proto2/z_generated_example/proto2_weak";
 
   DiskSourceTree source_tree;
   source_tree.MapPath("", TestUtil::TestSourceDir());

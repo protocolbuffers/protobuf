@@ -55,12 +55,23 @@ option optimize_for = SPEED;
 // files it parses.
 message FileDescriptorSet {
   repeated FileDescriptorProto file = 1;
+
+  // Extensions for tooling.
+  extensions 536000000 [declaration = {
+    number: 536000000
+    type: ".buf.descriptor.v1.FileDescriptorSetExtension"
+    full_name: ".buf.descriptor.v1.buf_file_descriptor_set_extension"
+  }];
 }
 
 // The full set of known editions.
 enum Edition {
   // A placeholder for an unknown edition value.
   EDITION_UNKNOWN = 0;
+
+  // A placeholder edition for specifying default behaviors *before* a feature
+  // was first introduced.  This is effectively an "infinite past".
+  EDITION_LEGACY = 900;
 
   // Legacy syntax "editions".  These pre-date editions, but behave much like
   // distinct editions.  These can't be used to specify the edition of proto
@@ -73,14 +84,20 @@ enum Edition {
   // should not be depended on, but they will always be time-ordered for easy
   // comparison.
   EDITION_2023 = 1000;
+  EDITION_2024 = 1001;
 
   // Placeholder editions for testing feature resolution.  These should not be
-  // used or relyed on outside of tests.
+  // used or relied on outside of tests.
   EDITION_1_TEST_ONLY = 1;
   EDITION_2_TEST_ONLY = 2;
   EDITION_99997_TEST_ONLY = 99997;
   EDITION_99998_TEST_ONLY = 99998;
   EDITION_99999_TEST_ONLY = 99999;
+
+  // Placeholder for specifying unbounded edition support.  This should only
+  // ever be used by plugins that can expect to never require any changes to
+  // support a new edition.
+  EDITION_MAX = 0x7FFFFFFF;
 }
 
 // Describes a complete .proto file.
@@ -95,6 +112,10 @@ message FileDescriptorProto {
   // Indexes of the weak imported files in the dependency list.
   // For Google-internal migration only. Do not use.
   repeated int32 weak_dependency = 11;
+
+  // Names of files imported by this file purely for the purpose of providing
+  // option extensions. These are excluded from the dependency list above.
+  repeated string option_dependency = 15;
 
   // All top-level definitions in this file.
   repeated DescriptorProto message_type = 4;
@@ -114,9 +135,15 @@ message FileDescriptorProto {
   // The supported values are "proto2", "proto3", and "editions".
   //
   // If `edition` is present, this value must be "editions".
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional string syntax = 12;
 
   // The edition of the proto file.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional Edition edition = 14;
 }
 
@@ -153,6 +180,9 @@ message DescriptorProto {
   // Reserved field names, which may not be used by fields in the same message.
   // A given name may only be reserved once.
   repeated string reserved_name = 10;
+
+  // Support for `export` and `local` keywords on enums.
+  optional SymbolVisibility visibility = 11;
 }
 
 message ExtensionRangeOptions {
@@ -202,7 +232,8 @@ message ExtensionRangeOptions {
   // The verification state of the range.
   // TODO: flip the default to DECLARATION once all empty ranges
   // are marked as UNVERIFIED.
-  optional VerificationState verification = 3 [default = UNVERIFIED];
+  optional VerificationState verification = 3
+      [default = UNVERIFIED, retention = RETENTION_SOURCE];
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
@@ -294,12 +325,12 @@ message FieldDescriptorProto {
   // If true, this is a proto3 "optional". When a proto3 field is optional, it
   // tracks presence regardless of field type.
   //
-  // When proto3_optional is true, this field must be belong to a oneof to
-  // signal to old proto3 clients that presence is tracked for this field. This
-  // oneof is known as a "synthetic" oneof, and this field must be its sole
-  // member (each proto3 optional field gets its own synthetic oneof). Synthetic
-  // oneofs exist in the descriptor only, and do not generate any API. Synthetic
-  // oneofs must be ordered after all "real" oneofs.
+  // When proto3_optional is true, this field must belong to a oneof to signal
+  // to old proto3 clients that presence is tracked for this field. This oneof
+  // is known as a "synthetic" oneof, and this field must be its sole member
+  // (each proto3 optional field gets its own synthetic oneof). Synthetic oneofs
+  // exist in the descriptor only, and do not generate any API. Synthetic oneofs
+  // must be ordered after all "real" oneofs.
   //
   // For message fields, proto3_optional doesn't create any semantic change,
   // since non-repeated message fields always track presence. However it still
@@ -348,6 +379,9 @@ message EnumDescriptorProto {
   // Reserved enum value names, which may not be reused. A given name may only
   // be reserved once.
   repeated string reserved_name = 5;
+
+  // Support for `export` and `local` keywords on enums.
+  optional SymbolVisibility visibility = 6;
 }
 
 // Describes a value within an enum.
@@ -441,12 +475,16 @@ message FileOptions {
   // This option does nothing.
   optional bool java_generate_equals_and_hash = 20 [deprecated=true];
 
-  // If set true, then the Java2 code generator will generate code that
-  // throws an exception whenever an attempt is made to assign a non-UTF-8
-  // byte sequence to a string field.
-  // Message reflection will do the same.
-  // However, an extension field still accepts non-UTF-8 byte sequences.
-  // This option has no effect on when used with the lite runtime.
+  // A proto2 file can set this to true to opt in to UTF-8 checking for Java,
+  // which will throw an exception if invalid UTF-8 is parsed from the wire or
+  // assigned to a string field.
+  //
+  // TODO: clarify exactly what kinds of field types this option
+  // applies to, and update these docs accordingly.
+  //
+  // Proto3 files already perform these checks. Setting the option explicitly to
+  // false has no effect: it cannot be used to opt proto3 files out of UTF-8
+  // checks.
   optional bool java_string_check_utf8 = 27 [default = false];
 
   // Generated classes can be optimized for speed or code size.
@@ -478,7 +516,8 @@ message FileOptions {
   optional bool cc_generic_services = 16 [default = false];
   optional bool java_generic_services = 17 [default = false];
   optional bool py_generic_services = 18 [default = false];
-  optional bool php_generic_services = 42 [default = false];
+  reserved 42;  // removed php_generic_services
+  reserved "php_generic_services";
 
   // Is this file deprecated?
   // Depending on the target platform, this can emit Deprecated annotations
@@ -523,6 +562,9 @@ message FileOptions {
   optional string ruby_package = 45;
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 50;
 
   // The parser stores options it doesn't recognize here.
@@ -570,10 +612,6 @@ message MessageOptions {
 
   reserved 4, 5, 6;
 
-  // NOTE: Do not set the option in .proto files. Always use the maps syntax
-  // instead. The option should only be implicitly set by the proto compiler
-  // parser.
-  //
   // Whether the message is an automatically generated map entry type for the
   // maps field.
   //
@@ -591,6 +629,10 @@ message MessageOptions {
   // use a native map in the target language to hold the keys and values.
   // The reflection APIs in such implementations still need to work as
   // if the field is a repeated message field.
+  //
+  // NOTE: Do not set the option in .proto files. Always use the maps syntax
+  // instead. The option should only be implicitly set by the proto compiler
+  // parser.
   optional bool map_entry = 7;
 
   reserved 8;  // javalite_serializable
@@ -609,6 +651,9 @@ message MessageOptions {
   optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 12;
 
   // The parser stores options it doesn't recognize here. See above.
@@ -619,13 +664,14 @@ message MessageOptions {
 }
 
 message FieldOptions {
+  // NOTE: ctype is deprecated. Use `features.(pb.cpp).string_type` instead.
   // The ctype option instructs the C++ code generator to use a different
   // representation of the field than it normally would.  See the specific
   // options below.  This option is only implemented to support use of
   // [ctype=CORD] and [ctype=STRING] (the default) on non-repeated fields of
-  // type "bytes" in the open source release -- sorry, we'll try to include
-  // other types in a future version!
-  optional CType ctype = 1 [default = STRING];
+  // type "bytes" in the open source release.
+  // TODO: make ctype actually deprecated.
+  optional CType ctype = 1 [/*deprecated = true,*/ default = STRING];
   enum CType {
     // Default mode.
     STRING = 0;
@@ -689,19 +735,11 @@ message FieldOptions {
   // call from multiple threads concurrently, while non-const methods continue
   // to require exclusive access.
   //
-  // Note that implementations may choose not to check required fields within
-  // a lazy sub-message.  That is, calling IsInitialized() on the outer message
-  // may return true even if the inner message has missing required fields.
-  // This is necessary because otherwise the inner message would have to be
-  // parsed in order to perform the check, defeating the purpose of lazy
-  // parsing.  An implementation which chooses not to check required fields
-  // must be consistent about it.  That is, for any particular sub-message, the
-  // implementation must either *always* check its required fields, or *never*
-  // check its required fields, regardless of whether or not the message has
-  // been parsed.
-  //
-  // As of May 2022, lazy verifies the contents of the byte stream during
-  // parsing.  An invalid byte stream will cause the overall parsing to fail.
+  // Note that lazy message fields are still eagerly verified to check
+  // ill-formed wireformat or missing required fields. Calling IsInitialized()
+  // on the outer message would fail if the inner message has missing required
+  // fields. Failed verification would result in parsing failure (except when
+  // uninitialized messages are acceptable).
   optional bool lazy = 5 [default = false];
 
   // unverified_lazy does no correctness checks on the byte stream. This should
@@ -723,8 +761,6 @@ message FieldOptions {
   optional bool debug_redact = 16 [default = false];
 
   // If set to RETENTION_SOURCE, the option will be omitted from the binary.
-  // Note: as of January 2023, support for this is in progress and does not yet
-  // have an effect (b/264593489).
   enum OptionRetention {
     RETENTION_UNKNOWN = 0;
     RETENTION_RUNTIME = 1;
@@ -735,8 +771,7 @@ message FieldOptions {
 
   // This indicates the types of entities that the field may apply to when used
   // as an option. If it is unset, then the field may be freely used as an
-  // option on any kind of entity. Note: as of January 2023, support for this is
-  // in progress and does not yet have an effect (b/264593489).
+  // option on any kind of entity.
   enum OptionTargetType {
     TARGET_TYPE_UNKNOWN = 0;
     TARGET_TYPE_FILE = 1;
@@ -759,7 +794,32 @@ message FieldOptions {
   repeated EditionDefault edition_defaults = 20;
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 21;
+
+  // Information about the support window of a feature.
+  message FeatureSupport {
+    // The edition that this feature was first available in.  In editions
+    // earlier than this one, the default assigned to EDITION_LEGACY will be
+    // used, and proto files will not be able to override it.
+    optional Edition edition_introduced = 1;
+
+    // The edition this feature becomes deprecated in.  Using this after this
+    // edition may trigger warnings.
+    optional Edition edition_deprecated = 2;
+
+    // The deprecation warning text if this feature is used after the edition it
+    // was marked deprecated in.
+    optional string deprecation_warning = 3;
+
+    // The edition this feature is no longer available in.  In editions after
+    // this one, the last default assigned will be used, and proto files will
+    // not be able to override it.
+    optional Edition edition_removed = 4;
+  }
+  optional FeatureSupport feature_support = 22;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -773,6 +833,9 @@ message FieldOptions {
 
 message OneofOptions {
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 1;
 
   // The parser stores options it doesn't recognize here. See above.
@@ -805,6 +868,9 @@ message EnumOptions {
   optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 7;
 
   // The parser stores options it doesn't recognize here. See above.
@@ -822,12 +888,18 @@ message EnumValueOptions {
   optional bool deprecated = 1 [default = false];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 2;
 
   // Indicate that fields annotated with this enum value should not be printed
   // out when using debug formats, e.g. when the field contains sensitive
   // credentials.
   optional bool debug_redact = 3 [default = false];
+
+  // Information about the support window of a feature value.
+  optional FieldOptions.FeatureSupport feature_support = 4;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -839,6 +911,9 @@ message EnumValueOptions {
 message ServiceOptions {
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 34;
 
   // Note:  Field numbers 1 through 32 are reserved for Google's internal RPC
@@ -884,6 +959,9 @@ message MethodOptions {
       [default = IDEMPOTENCY_UNKNOWN];
 
   // Any features defined in the specific edition.
+  // WARNING: This field should only be used by protobuf plugins or special
+  // cases like the proto compiler. Other uses are discouraged and
+  // developers should rely on the protoreflect APIs for their client language.
   optional FeatureSet features = 35;
 
   // The parser stores options it doesn't recognize here. See above.
@@ -941,7 +1019,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "EXPLICIT" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "EXPLICIT" },
     edition_defaults = { edition: EDITION_PROTO3, value: "IMPLICIT" },
     edition_defaults = { edition: EDITION_2023, value: "EXPLICIT" }
   ];
@@ -955,7 +1036,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "CLOSED" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "CLOSED" },
     edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" }
   ];
 
@@ -968,20 +1052,27 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "EXPANDED" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "EXPANDED" },
     edition_defaults = { edition: EDITION_PROTO3, value: "PACKED" }
   ];
 
   enum Utf8Validation {
     UTF8_VALIDATION_UNKNOWN = 0;
-    NONE = 1;
     VERIFY = 2;
+    NONE = 3;
+    reserved 1;
   }
   optional Utf8Validation utf8_validation = 4 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "NONE" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "NONE" },
     edition_defaults = { edition: EDITION_PROTO3, value: "VERIFY" }
   ];
 
@@ -994,7 +1085,10 @@ message FeatureSet {
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FIELD,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "LENGTH_PREFIXED" }
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LENGTH_PREFIXED" }
   ];
 
   enum JsonFormat {
@@ -1007,16 +1101,95 @@ message FeatureSet {
     targets = TARGET_TYPE_MESSAGE,
     targets = TARGET_TYPE_ENUM,
     targets = TARGET_TYPE_FILE,
-    edition_defaults = { edition: EDITION_PROTO2, value: "LEGACY_BEST_EFFORT" },
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY_BEST_EFFORT" },
     edition_defaults = { edition: EDITION_PROTO3, value: "ALLOW" }
   ];
 
+  enum EnforceNamingStyle {
+    ENFORCE_NAMING_STYLE_UNKNOWN = 0;
+    STYLE2024 = 1;
+    STYLE_LEGACY = 2;
+  }
+  optional EnforceNamingStyle enforce_naming_style = 7 [
+    retention = RETENTION_SOURCE,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_EXTENSION_RANGE,
+    targets = TARGET_TYPE_MESSAGE,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_ONEOF,
+    targets = TARGET_TYPE_ENUM,
+    targets = TARGET_TYPE_ENUM_ENTRY,
+    targets = TARGET_TYPE_SERVICE,
+    targets = TARGET_TYPE_METHOD,
+    feature_support = {
+      edition_introduced: EDITION_2024,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "STYLE_LEGACY" },
+    edition_defaults = { edition: EDITION_2024, value: "STYLE2024" }
+  ];
+
+  message VisibilityFeature {
+    enum DefaultSymbolVisibility {
+      DEFAULT_SYMBOL_VISIBILITY_UNKNOWN = 0;
+
+      // Default pre-EDITION_2024, all UNSET visibility are export.
+      EXPORT_ALL = 1;
+
+      // All top-level symbols default to export, nested default to local.
+      EXPORT_TOP_LEVEL = 2;
+
+      // All symbols default to local.
+      LOCAL_ALL = 3;
+
+      // All symbols local by default. Nested types cannot be exported.
+      // With special case caveat for message { enum {} reserved 1 to max; }
+      // This is the recommended setting for new protos.
+      STRICT = 4;
+    }
+    reserved 1 to max;
+  }
+  optional VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility =
+      8 [
+        retention = RETENTION_SOURCE,
+        targets = TARGET_TYPE_FILE,
+        feature_support = {
+          edition_introduced: EDITION_2024,
+        },
+        edition_defaults = { edition: EDITION_LEGACY, value: "EXPORT_ALL" },
+        edition_defaults = { edition: EDITION_2024, value: "EXPORT_TOP_LEVEL" }
+      ];
+
   reserved 999;
 
-  extensions 1000;  // for Protobuf C++
-  extensions 1001;  // for Protobuf Java
+  extensions 1000 to 9994 [
+    declaration = {
+      number: 1000,
+      full_name: ".pb.cpp",
+      type: ".pb.CppFeatures"
+    },
+    declaration = {
+      number: 1001,
+      full_name: ".pb.java",
+      type: ".pb.JavaFeatures"
+    },
+    declaration = { number: 1002, full_name: ".pb.go", type: ".pb.GoFeatures" },
+    declaration = {
+      number: 1003,
+      full_name: ".pb.python",
+      type: ".pb.PythonFeatures"
+    },
+    declaration = {
+      number: 9990,
+      full_name: ".pb.proto1",
+      type: ".pb.Proto1Features"
+    }
+  ];
 
   extensions 9995 to 9999;  // For internal testing
+  extensions 10000;         // for https://github.com/bufbuild/protobuf-es
 }
 
 // A compiled specification for the defaults of a set of features.  These
@@ -1030,7 +1203,15 @@ message FeatureSetDefaults {
   // be used.  This field must be in strict ascending order by edition.
   message FeatureSetEditionDefault {
     optional Edition edition = 3;
-    optional FeatureSet features = 2;
+
+    // Defaults of features that can be overridden in this edition.
+    optional FeatureSet overridable_features = 4;
+
+    // Defaults of features that can't be overridden in this edition.
+    optional FeatureSet fixed_features = 5;
+
+    reserved 1, 2;
+    reserved "features";
   }
   repeated FeatureSetEditionDefault defaults = 1;
 
@@ -1098,7 +1279,7 @@ message SourceCodeInfo {
     // location.
     //
     // Each element is a field number or an index.  They form a path from
-    // the root FileDescriptorProto to the place where the definition occurs.
+    // the root FileDescriptorProto to the place where the definition appears.
     // For example, this path:
     //   [ 4, 3, 2, 7, 1 ]
     // refers to:
@@ -1177,6 +1358,13 @@ message SourceCodeInfo {
     optional string trailing_comments = 4;
     repeated string leading_detached_comments = 6;
   }
+
+  // Extensions for tooling.
+  extensions 536000000 [declaration = {
+    number: 536000000
+    type: ".buf.descriptor.v1.SourceCodeInfoExtension"
+    full_name: ".buf.descriptor.v1.buf_source_code_info_extension"
+  }];
 }
 
 // Describes the relationship between generated code and its original source
@@ -1215,4 +1403,15 @@ message GeneratedCodeInfo {
     }
     optional Semantic semantic = 5;
   }
+}
+
+// Describes the 'visibility' of a symbol with respect to the proto import
+// system. Symbols can only be imported when the visibility rules do not prevent
+// it (ex: local symbols cannot be imported).  Visibility modifiers can only set
+// on `message` and `enum` as they are the only types available to be referenced
+// from other files.
+enum SymbolVisibility {
+  VISIBILITY_UNSET = 0;
+  VISIBILITY_LOCAL = 1;
+  VISIBILITY_EXPORT = 2;
 }

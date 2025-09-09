@@ -4,9 +4,7 @@
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
 old_gc = GC.stress
-# Ruby 2.7.0 - 2.7.1 has a GC bug in its parser, so turn off stress for now
-# See https://bugs.ruby-lang.org/issues/16807
-GC.stress = 0x01 | 0x04 unless RUBY_VERSION.match?(/^2\.7\./)
+GC.stress = 0x01 | 0x04
 require 'generated_code_pb'
 require 'generated_code_proto2_pb'
 GC.stress = old_gc

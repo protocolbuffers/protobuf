@@ -46,6 +46,7 @@ import com.google.protobuf.util.proto.JsonTestProto.TestRecursive;
 import com.google.protobuf.util.proto.JsonTestProto.TestStruct;
 import com.google.protobuf.util.proto.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.proto.JsonTestProto.TestWrappers;
+import com.google.protobuf.util.proto.JsonTestProto2.TestAllTypesProto2;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -83,8 +84,8 @@ public class JsonFormatTest {
   private void setAllFields(TestAllTypes.Builder builder) {
     builder.setOptionalInt32(1234);
     builder.setOptionalInt64(1234567890123456789L);
-    builder.setOptionalUint32(5678);
-    builder.setOptionalUint64(2345678901234567890L);
+    builder.setOptionalUint32(-1);
+    builder.setOptionalUint64(-1L);
     builder.setOptionalSint32(9012);
     builder.setOptionalSint64(3456789012345678901L);
     builder.setOptionalFixed32(3456);
@@ -189,8 +190,8 @@ public class JsonFormatTest {
             "{\n"
                 + "  \"optionalInt32\": 1234,\n"
                 + "  \"optionalInt64\": \"1234567890123456789\",\n"
-                + "  \"optionalUint32\": 5678,\n"
-                + "  \"optionalUint64\": \"2345678901234567890\",\n"
+                + "  \"optionalUint32\": 4294967295,\n"
+                + "  \"optionalUint64\": \"18446744073709551615\",\n"
                 + "  \"optionalSint32\": 9012,\n"
                 + "  \"optionalSint64\": \"3456789012345678901\",\n"
                 + "  \"optionalFixed32\": 3456,\n"
@@ -1483,50 +1484,59 @@ public class JsonFormatTest {
   }
 
   @Test
-  public void testIncludingDefaultValueFields() throws Exception {
+  public void testDefaultValueOptionsProto3() throws Exception {
     TestAllTypes message = TestAllTypes.getDefaultInstance();
     assertThat(JsonFormat.printer().print(message)).isEqualTo("{\n}");
-    assertThat(JsonFormat.printer().includingDefaultValueFields().print(message))
-        .isEqualTo(
-            "{\n"
-                + "  \"optionalInt32\": 0,\n"
-                + "  \"optionalInt64\": \"0\",\n"
-                + "  \"optionalUint32\": 0,\n"
-                + "  \"optionalUint64\": \"0\",\n"
-                + "  \"optionalSint32\": 0,\n"
-                + "  \"optionalSint64\": \"0\",\n"
-                + "  \"optionalFixed32\": 0,\n"
-                + "  \"optionalFixed64\": \"0\",\n"
-                + "  \"optionalSfixed32\": 0,\n"
-                + "  \"optionalSfixed64\": \"0\",\n"
-                + "  \"optionalFloat\": 0.0,\n"
-                + "  \"optionalDouble\": 0.0,\n"
-                + "  \"optionalBool\": false,\n"
-                + "  \"optionalString\": \"\",\n"
-                + "  \"optionalBytes\": \"\",\n"
-                + "  \"optionalNestedEnum\": \"FOO\",\n"
-                + "  \"repeatedInt32\": [],\n"
-                + "  \"repeatedInt64\": [],\n"
-                + "  \"repeatedUint32\": [],\n"
-                + "  \"repeatedUint64\": [],\n"
-                + "  \"repeatedSint32\": [],\n"
-                + "  \"repeatedSint64\": [],\n"
-                + "  \"repeatedFixed32\": [],\n"
-                + "  \"repeatedFixed64\": [],\n"
-                + "  \"repeatedSfixed32\": [],\n"
-                + "  \"repeatedSfixed64\": [],\n"
-                + "  \"repeatedFloat\": [],\n"
-                + "  \"repeatedDouble\": [],\n"
-                + "  \"repeatedBool\": [],\n"
-                + "  \"repeatedString\": [],\n"
-                + "  \"repeatedBytes\": [],\n"
-                + "  \"repeatedNestedMessage\": [],\n"
-                + "  \"repeatedNestedEnum\": [],\n"
-                + "  \"optionalAliasedEnum\": \"ALIAS_FOO\"\n"
-                + "}");
+
+    String expectedJsonWithDefaults =
+        "{\n"
+            + "  \"optionalInt32\": 0,\n"
+            + "  \"optionalInt64\": \"0\",\n"
+            + "  \"optionalUint32\": 0,\n"
+            + "  \"optionalUint64\": \"0\",\n"
+            + "  \"optionalSint32\": 0,\n"
+            + "  \"optionalSint64\": \"0\",\n"
+            + "  \"optionalFixed32\": 0,\n"
+            + "  \"optionalFixed64\": \"0\",\n"
+            + "  \"optionalSfixed32\": 0,\n"
+            + "  \"optionalSfixed64\": \"0\",\n"
+            + "  \"optionalFloat\": 0.0,\n"
+            + "  \"optionalDouble\": 0.0,\n"
+            + "  \"optionalBool\": false,\n"
+            + "  \"optionalString\": \"\",\n"
+            + "  \"optionalBytes\": \"\",\n"
+            + "  \"optionalNestedEnum\": \"FOO\",\n"
+            + "  \"repeatedInt32\": [],\n"
+            + "  \"repeatedInt64\": [],\n"
+            + "  \"repeatedUint32\": [],\n"
+            + "  \"repeatedUint64\": [],\n"
+            + "  \"repeatedSint32\": [],\n"
+            + "  \"repeatedSint64\": [],\n"
+            + "  \"repeatedFixed32\": [],\n"
+            + "  \"repeatedFixed64\": [],\n"
+            + "  \"repeatedSfixed32\": [],\n"
+            + "  \"repeatedSfixed64\": [],\n"
+            + "  \"repeatedFloat\": [],\n"
+            + "  \"repeatedDouble\": [],\n"
+            + "  \"repeatedBool\": [],\n"
+            + "  \"repeatedString\": [],\n"
+            + "  \"repeatedBytes\": [],\n"
+            + "  \"repeatedNestedMessage\": [],\n"
+            + "  \"repeatedNestedEnum\": [],\n"
+            + "  \"optionalAliasedEnum\": \"ALIAS_FOO\",\n"
+            + "  \"repeatedRecursive\": []\n"
+            + "}";
+
+    assertThat(JsonFormat.printer().alwaysPrintFieldsWithNoPresence().print(message))
+        .isEqualTo(expectedJsonWithDefaults);
+  }
+
+  @Test
+  public void testDefaultValueForSpecificFieldsOptionProto2() throws Exception {
+    TestAllTypesProto2 message = TestAllTypesProto2.getDefaultInstance();
 
     Set<FieldDescriptor> fixedFields = new HashSet<>();
-    for (FieldDescriptor fieldDesc : TestAllTypes.getDescriptor().getFields()) {
+    for (FieldDescriptor fieldDesc : TestAllTypesProto2.getDescriptor().getFields()) {
       if (fieldDesc.getName().contains("_fixed")) {
         fixedFields.add(fieldDesc);
       }
@@ -1541,7 +1551,7 @@ public class JsonFormatTest {
                 + "  \"repeatedFixed64\": []\n"
                 + "}");
 
-    TestAllTypes messageNonDefaults =
+    TestAllTypesProto2 messageNonDefaults =
         message.toBuilder().setOptionalInt64(1234).setOptionalFixed32(3232).build();
     assertThat(
             JsonFormat.printer().includingDefaultValueFields(fixedFields).print(messageNonDefaults))
@@ -1553,168 +1563,6 @@ public class JsonFormatTest {
                 + "  \"repeatedFixed32\": [],\n"
                 + "  \"repeatedFixed64\": []\n"
                 + "}");
-
-    try {
-      JsonFormat.printer().includingDefaultValueFields().includingDefaultValueFields();
-      assertWithMessage("IllegalStateException is expected.").fail();
-    } catch (IllegalStateException e) {
-      // Expected.
-      assertWithMessage("Exception message should mention includingDefaultValueFields.")
-          .that(e.getMessage().contains("includingDefaultValueFields"))
-          .isTrue();
-    }
-
-    try {
-      JsonFormat.printer().includingDefaultValueFields().includingDefaultValueFields(fixedFields);
-      assertWithMessage("IllegalStateException is expected.").fail();
-    } catch (IllegalStateException e) {
-      // Expected.
-      assertWithMessage("Exception message should mention includingDefaultValueFields.")
-          .that(e.getMessage().contains("includingDefaultValueFields"))
-          .isTrue();
-    }
-
-    try {
-      JsonFormat.printer().includingDefaultValueFields(fixedFields).includingDefaultValueFields();
-      assertWithMessage("IllegalStateException is expected.").fail();
-    } catch (IllegalStateException e) {
-      // Expected.
-      assertWithMessage("Exception message should mention includingDefaultValueFields.")
-          .that(e.getMessage().contains("includingDefaultValueFields"))
-          .isTrue();
-    }
-
-    try {
-      JsonFormat.printer()
-          .includingDefaultValueFields(fixedFields)
-          .includingDefaultValueFields(fixedFields);
-      assertWithMessage("IllegalStateException is expected.").fail();
-    } catch (IllegalStateException e) {
-      // Expected.
-      assertWithMessage("Exception message should mention includingDefaultValueFields.")
-          .that(e.getMessage().contains("includingDefaultValueFields"))
-          .isTrue();
-    }
-
-    Set<FieldDescriptor> intFields = new HashSet<>();
-    for (FieldDescriptor fieldDesc : TestAllTypes.getDescriptor().getFields()) {
-      if (fieldDesc.getName().contains("_int")) {
-        intFields.add(fieldDesc);
-      }
-    }
-
-    try {
-      JsonFormat.printer()
-          .includingDefaultValueFields(intFields)
-          .includingDefaultValueFields(fixedFields);
-      assertWithMessage("IllegalStateException is expected.").fail();
-    } catch (IllegalStateException e) {
-      // Expected.
-      assertWithMessage("Exception message should mention includingDefaultValueFields.")
-          .that(e.getMessage().contains("includingDefaultValueFields"))
-          .isTrue();
-    }
-
-    try {
-      JsonFormat.printer().includingDefaultValueFields(null);
-      assertWithMessage("IllegalArgumentException is expected.").fail();
-    } catch (IllegalArgumentException e) {
-      // Expected.
-      assertWithMessage("Exception message should mention includingDefaultValueFields.")
-          .that(e.getMessage().contains("includingDefaultValueFields"))
-          .isTrue();
-    }
-
-    try {
-      JsonFormat.printer().includingDefaultValueFields(Collections.<FieldDescriptor>emptySet());
-      assertWithMessage("IllegalArgumentException is expected.").fail();
-    } catch (IllegalArgumentException e) {
-      // Expected.
-      assertWithMessage("Exception message should mention includingDefaultValueFields.")
-          .that(e.getMessage().contains("includingDefaultValueFields"))
-          .isTrue();
-    }
-
-    TestMap mapMessage = TestMap.getDefaultInstance();
-    assertThat(JsonFormat.printer().print(mapMessage)).isEqualTo("{\n}");
-    assertThat(JsonFormat.printer().includingDefaultValueFields().print(mapMessage))
-        .isEqualTo(
-            "{\n"
-                + "  \"int32ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"int64ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"uint32ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"uint64ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"sint32ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"sint64ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"fixed32ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"fixed64ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"sfixed32ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"sfixed64ToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"boolToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"stringToInt32Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToInt64Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToUint32Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToUint64Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToSint32Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToSint64Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToFixed32Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToFixed64Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToSfixed32Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToSfixed64Map\": {\n"
-                + "  },\n"
-                + "  \"int32ToFloatMap\": {\n"
-                + "  },\n"
-                + "  \"int32ToDoubleMap\": {\n"
-                + "  },\n"
-                + "  \"int32ToBoolMap\": {\n"
-                + "  },\n"
-                + "  \"int32ToStringMap\": {\n"
-                + "  },\n"
-                + "  \"int32ToBytesMap\": {\n"
-                + "  },\n"
-                + "  \"int32ToMessageMap\": {\n"
-                + "  },\n"
-                + "  \"int32ToEnumMap\": {\n"
-                + "  }\n"
-                + "}");
-
-    TestOneof oneofMessage = TestOneof.getDefaultInstance();
-    assertThat(JsonFormat.printer().print(oneofMessage)).isEqualTo("{\n}");
-    assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
-        .isEqualTo("{\n}");
-
-    oneofMessage = TestOneof.newBuilder().setOneofInt32(42).build();
-    assertThat(JsonFormat.printer().print(oneofMessage)).isEqualTo("{\n  \"oneofInt32\": 42\n}");
-    assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
-        .isEqualTo("{\n  \"oneofInt32\": 42\n}");
-
-    TestOneof.Builder oneofBuilder = TestOneof.newBuilder();
-    mergeFromJson("{\n" + "  \"oneofNullValue\": null \n" + "}", oneofBuilder);
-    oneofMessage = oneofBuilder.build();
-    assertThat(JsonFormat.printer().print(oneofMessage))
-        .isEqualTo("{\n  \"oneofNullValue\": null\n}");
-    assertThat(JsonFormat.printer().includingDefaultValueFields().print(oneofMessage))
-        .isEqualTo("{\n  \"oneofNullValue\": null\n}");
   }
 
   @Test
@@ -1763,8 +1611,8 @@ public class JsonFormatTest {
             "{"
                 + "\"optionalInt32\":1234,"
                 + "\"optionalInt64\":\"1234567890123456789\","
-                + "\"optionalUint32\":5678,"
-                + "\"optionalUint64\":\"2345678901234567890\","
+                + "\"optionalUint32\":4294967295,"
+                + "\"optionalUint64\":\"18446744073709551615\","
                 + "\"optionalSint32\":9012,"
                 + "\"optionalSint64\":\"3456789012345678901\","
                 + "\"optionalFixed32\":3456,"
