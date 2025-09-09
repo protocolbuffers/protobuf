@@ -503,6 +503,18 @@ void WriteLengthDelimited(uint32_t num, absl::string_view val, std::string* s) {
   s->append(val.data(), val.size());
 }
 
+std::pair<const char*, uint8_t> VarintParseSlow8(const char* p,
+                                                   uint32_t res) {
+  // Accept >1 bytes
+  for (std::uint32_t i = 1; i < 10; i++) {
+    uint32_t byte = static_cast<uint8_t>(p[i]);
+    if (ABSL_PREDICT_TRUE(byte < 128)) {
+      return {p + i + 1, res};
+    }
+  }
+  return {nullptr, 0};
+}
+
 std::pair<const char*, uint32_t> VarintParseSlow32(const char* p,
                                                    uint32_t res) {
   for (std::uint32_t i = 1; i < 5; i++) {

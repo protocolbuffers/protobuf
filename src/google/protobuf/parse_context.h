@@ -41,6 +41,10 @@
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER) && defined(__ARM_FEATURE_SVE)
+#include <arm_sve.h>
+#endif
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -257,6 +261,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename Add, typename SizeCb>
   [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add,
                                              SizeCb size_callback);
+
+  template <typename T>
+  [[nodiscard]] const char* ReadPackedVarintRaw(const char* ptr, RepeatedField<T>& rep);
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -726,9 +733,17 @@ T UnalignedLoadAndIncrement(const char** ptr) {
 }
 
 PROTOBUF_EXPORT
+std::pair<const char*, uint8_t> VarintParseSlow8(const char* p, uint32_t res);
+PROTOBUF_EXPORT
 std::pair<const char*, uint32_t> VarintParseSlow32(const char* p, uint32_t res);
 PROTOBUF_EXPORT
 std::pair<const char*, uint64_t> VarintParseSlow64(const char* p, uint32_t res);
+
+inline const char* VarintParseSlow(const char* p, uint32_t res, uint8_t* out) {
+  auto tmp = VarintParseSlow8(p, res);
+  *out = tmp.second;
+  return tmp.first;
+}
 
 inline const char* VarintParseSlow(const char* p, uint32_t res, uint32_t* out) {
   auto tmp = VarintParseSlow32(p, res);
@@ -951,6 +966,13 @@ PROTOBUF_ALWAYS_INLINE std::pair<const char*, uint32_t> VarintParseSlowArm32(
     return {nullptr, 0};
   }
   return {info.p, result};
+}
+
+[[maybe_unused]] static const char* VarintParseSlowArm(const char* p, uint8_t* out,
+                                      uint64_t first8) {
+  auto tmp = VarintParseSlow8(p, first8);
+  *out = tmp.second;
+  return tmp.first;
 }
 
 static const char* VarintParseSlowArm(const char* p, uint32_t* out,
@@ -1317,6 +1339,119 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   ptr += block_size;
   if (size != block_size) return nullptr;
   return ptr;
+}
+
+#if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER) && defined(__ARM_FEATURE_SVE)
+template <typename T>
+inline const char* ReadPackedVarintArrayRaw(const char* ptr, const char* end, RepeatedField<T>& rep) {
+  auto rep_ptr = rep.mutable_data() + rep.size();
+  while (ptr < end) {
+    if (ABSL_PREDICT_FALSE(*ptr < 0x80)) {
+      // Take as many bytes as we can from the buffer.
+      // Fast path: take contiguous 1-byte numbers
+      svbool_t p = svwhilelt_b8(0ll, (end - ptr));
+      svuint8_t zero = svdup_u8_z(p, 0);
+      svuint8_t buffer_data = svld1(p, (const uint8_t*)ptr);
+      
+      svbool_t term = svcmpge_u8(p, buffer_data, svdup_u8(0x80)); // Predicate active for every set 8th bit
+      
+      // Actual predicate for taking values
+      svbool_t brk = svbrkb_z(p, term);
+      
+      uint64_t size = svcntp_b8(p, brk); // Count the number of values to take
+      
+      // Reserve capacity and write back to values
+      auto base = rep.size();
+      rep.ResizeUninitialized(base + size);
+      rep_ptr = rep.mutable_data() + base;
+
+      auto out_ptr = reinterpret_cast<uint8_t*>(rep_ptr);
+
+      if (sizeof(T) == 8) {
+        // For 64-bit values, we can split the contiguous 8-bit values into two halves.
+        // For each half, expand them into 16-bits, and store interleaved with 3 zeroed 16-bit values.
+        svuint16_t lower = svunpklo_u16(buffer_data);
+        svuint16_t upper = svunpkhi_u16(buffer_data);
+
+        svuint16_t zero_u16 = svreinterpret_u16_u8(zero);
+
+        svbool_t lo = svunpklo(brk);
+        svbool_t hi = svunpkhi(brk);
+
+        svuint16x4_t lower_tuple = svcreate4_u16(lower, zero_u16, zero_u16, zero_u16);
+        svst4_u16(lo, reinterpret_cast<uint16_t*>(out_ptr), lower_tuple);
+        out_ptr += svcntp_b8(p, lo) * 8;
+
+        svuint16x4_t upper_tuple = svcreate4_u16(upper, zero_u16, zero_u16, zero_u16);
+        svst4_u16(hi, reinterpret_cast<uint16_t*>(out_ptr), upper_tuple);
+      } else if (sizeof(T) == 4) {
+        // For 32-bit values, store interleaved with 3 zeroed 8-bit values.
+        svuint8x4_t tuple = svcreate4_u8(buffer_data, zero, zero, zero);
+        svst4_u8(brk, out_ptr, tuple);
+      } else if (sizeof(T) == 1) {
+        svst1_u8(brk, out_ptr, buffer_data);
+      }
+      
+      rep_ptr += size;
+      ptr += size;
+    } else {
+      T varint;
+      ptr = VarintParse(ptr, &varint);
+      if (ptr == nullptr) return nullptr;
+      rep.Add(varint);
+      rep_ptr++;
+    }
+  }
+  return ptr;
+}
+#else
+template <typename T>
+inline const char* ReadPackedVarintArrayRaw(const char* ptr, const char* end, RepeatedField<T>& rep) {
+  while (ptr < end) {
+    T varint;
+    ptr = VarintParse(ptr, &varint);
+    if (ptr == nullptr) return nullptr;
+    rep.Add(varint);
+  }
+  return ptr;
+}
+#endif
+
+template <typename T>
+inline const char* EpsCopyInputStream::ReadPackedVarintRaw(const char* ptr, RepeatedField<T>& rep) {
+  int size = ReadSize(&ptr);
+
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+  int chunk_size = static_cast<int>(buffer_end_ - ptr);
+  while (size > chunk_size) {
+    ptr = ReadPackedVarintArrayRaw(ptr, buffer_end_, rep);
+    if (ptr == nullptr) return nullptr;
+    int overrun = static_cast<int>(ptr - buffer_end_);
+    ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
+    if (size - chunk_size <= kSlopBytes) {
+      // The current buffer contains all the information needed, we don't need
+      // to flip buffers. However we must parse from a buffer with enough space
+      // so we are not prone to a buffer overflow.
+      char buf[kSlopBytes + 10] = {};
+      std::memcpy(buf, buffer_end_, kSlopBytes);
+      ABSL_CHECK_LE(size - chunk_size, kSlopBytes);
+      auto end = buf + (size - chunk_size);
+      auto res = ReadPackedVarintArrayRaw(buf + overrun, end, rep);
+      if (res == nullptr || res != end) return nullptr;
+      return buffer_end_ + (res - buf);
+    }
+    size -= overrun + chunk_size;
+    ABSL_DCHECK_GT(size, 0);
+    // We must flip buffers
+    if (limit_ <= kSlopBytes) return nullptr;
+    ptr = Next();
+    if (ptr == nullptr) return nullptr;
+    ptr += overrun;
+    chunk_size = static_cast<int>(buffer_end_ - ptr);
+  }
+  auto end = ptr + size;
+  ptr = ReadPackedVarintArrayRaw(ptr, end, rep);
+  return end == ptr ? ptr : nullptr;
 }
 
 template <typename Add>

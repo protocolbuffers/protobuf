@@ -1231,27 +1231,36 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
   });
 }
 
+template<typename FieldType, typename TagType>
+PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarintRaw(PROTOBUF_TC_PARAM_DECL) {
+  if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  ptr += sizeof(TagType);
+  // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
+  // pending hasbits now:
+  SyncHasbits(msg, hasbits, table);
+  auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
+  return ctx->ReadPackedVarintRaw(ptr, field);
+}
+
 PROTOBUF_NOINLINE const char* TcParser::FastV8P1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return PackedVarint<bool, uint8_t>(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return PackedVarintRaw<uint8_t, uint8_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV8P2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return PackedVarint<bool, uint16_t>(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return PackedVarintRaw<uint8_t, uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32P1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return PackedVarint<uint32_t, uint8_t>(
-      PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return PackedVarintRaw<uint32_t, uint8_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV32P2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return PackedVarint<uint32_t, uint16_t>(
-      PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return PackedVarintRaw<uint32_t, uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64P1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return PackedVarint<uint64_t, uint8_t>(
-      PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return PackedVarintRaw<uint64_t, uint8_t>(PROTOBUF_TC_PARAM_PASS);
 }
 PROTOBUF_NOINLINE const char* TcParser::FastV64P2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return PackedVarint<uint64_t, uint16_t>(
-      PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return PackedVarintRaw<uint64_t, uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastZ32P1(PROTOBUF_TC_PARAM_DECL) {

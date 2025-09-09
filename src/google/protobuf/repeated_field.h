@@ -384,6 +384,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   // O(new_size - size()).
   void Resize(size_type new_size, const Element& value);
 
+  // Like STL resize. Leaves appeneded elements uninitialized.
+  // Like Truncate() if new_size <= size(), otherwise this is
+  // O(new_size - size()).
+  void ResizeUninitialized(size_type new_size);
+
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
   PROTOBUF_FUTURE_ADD_NODISCARD pointer mutable_data()
@@ -813,6 +818,25 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
     Element* elem = elements(is_soo);
     Element* first = elem + ExchangeCurrentSize(is_soo, new_size);
     std::uninitialized_fill(first, elem + new_size, value);
+  } else if (new_size < old_size) {
+    Element* elem = unsafe_elements(is_soo);
+    Destroy(elem + new_size, elem + old_size);
+    ExchangeCurrentSize(is_soo, new_size);
+  }
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::ResizeUninitialized(int new_size) {
+  ABSL_DCHECK_GE(new_size, 0);
+  bool is_soo = this->is_soo();
+  const int old_size = size(is_soo);
+  if (new_size > old_size) {
+    if (new_size > Capacity(is_soo)) {
+      Grow(is_soo, old_size, new_size);
+      is_soo = false;
+    }
+    Element* elem = elements(is_soo);
+    Element* first = elem + ExchangeCurrentSize(is_soo, new_size);
   } else if (new_size < old_size) {
     Element* elem = unsafe_elements(is_soo);
     Destroy(elem + new_size, elem + old_size);
