@@ -34,5 +34,5 @@ filegroup(
             "src/**/*",
         ],
     ),
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
