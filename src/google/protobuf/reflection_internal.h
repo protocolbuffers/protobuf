@@ -298,11 +298,13 @@ class MapFieldAccessor final : public RepeatedPtrFieldMessageAccessor {
  protected:
   const RepeatedFieldType* GetRepeatedField(const Field* data) const override {
     return reinterpret_cast<const RepeatedFieldType*>(
-        &(reinterpret_cast<const MapFieldBase*>(data)->GetRepeatedField()));
+        &(reinterpret_cast<const MapFieldBase*>(data)
+              ->GetRepeatedFieldAlreadyCreated()));
   }
   RepeatedFieldType* MutableRepeatedField(Field* data) const override {
     return reinterpret_cast<RepeatedFieldType*>(
-        reinterpret_cast<MapFieldBase*>(data)->MutableRepeatedField());
+        reinterpret_cast<MapFieldBase*>(data)
+            ->MutableRepeatedFieldAlreadyCreated());
   }
 };
 

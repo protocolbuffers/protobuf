@@ -148,7 +148,7 @@ static auto DefaultEntryToTypeInfo(
 DynamicMapField::DynamicMapField(const Message* default_entry,
                                  const Message* mapped_default_entry_if_message,
                                  Arena* arena)
-    : MapFieldBase(default_entry, arena),
+    : MapFieldBase(default_entry),
       map_(arena, DefaultEntryToTypeInfo(default_entry,
                                          mapped_default_entry_if_message)) {
   // This invariant is required by `GetMapRaw` to easily access the map
@@ -158,7 +158,7 @@ DynamicMapField::DynamicMapField(const Message* default_entry,
 }
 
 DynamicMapField::~DynamicMapField() {
-  ABSL_DCHECK_EQ(arena(), nullptr);
+  ABSL_DCHECK_EQ(map_.arena(), nullptr);
   map_.ClearTable(false);
 }
 
