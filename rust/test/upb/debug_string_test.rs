@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use map_unittest_rust_proto::TestMapWithMessages;
-use protobuf_upb::proto;
+use protobuf_upb::prelude::*;
 use unittest_rust_proto::{
     test_all_types::NestedEnum as NestedEnumProto2,
     test_all_types::NestedMessage as NestedMessageProto2, TestAllTypes as TestAllTypesProto2,
@@ -28,7 +28,7 @@ fn test_debug_string() {
     repeated_string.push("Hello World");
 
     let mut msg_map = TestMapWithMessages::new();
-    println!("EMPTY MSG: {:?}", msg_map); // Make sure that we can print an empty message. 
+    println!("EMPTY MSG: {:?}", msg_map); // Make sure that we can print an empty message.
     msg_map.map_string_all_types_mut().insert("hello", msg.as_view());
     msg_map.map_string_all_types_mut().insert("fizz", msg.as_view());
     msg_map.map_string_all_types_mut().insert("boo", msg.as_view());

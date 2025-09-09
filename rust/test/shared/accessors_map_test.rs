@@ -14,6 +14,7 @@ use enums_rust_proto::{test_map_with_nested_enum, TestMapWithNestedEnum};
 use googletest::prelude::*;
 use map_unittest_rust_proto::{MapEnum, TestMap, TestMapWithMessages};
 use paste::paste;
+use protobuf::prelude::*;
 use protobuf::ProtoString;
 use std::collections::HashMap;
 use unittest_rust_proto::TestAllTypes;

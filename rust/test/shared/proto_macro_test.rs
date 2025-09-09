@@ -16,7 +16,7 @@ mod protos;
 use protos::*;
 
 use googletest::prelude::*;
-use protobuf::proto;
+use protobuf::prelude::*;
 use unittest_rust_proto::{
     test_all_types::{self, NestedMessage},
     NestedTestAllTypes, TestAllTypes,

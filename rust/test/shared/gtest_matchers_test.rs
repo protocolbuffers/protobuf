@@ -7,7 +7,7 @@
 
 use googletest::prelude::*;
 use paste::paste;
-use protobuf::proto;
+use protobuf::prelude::*;
 use protobuf_gtest_matchers::proto_eq;
 use unittest_proto3_rust_proto::test_all_types::NestedMessage;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;

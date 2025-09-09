@@ -798,14 +798,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
           $raw_arena_getter_for_message$
 
-          pub fn as_view(&self) -> $Msg$View<'_> {
-            $pbr$::MessageViewInner::view_of_owned(&self.inner).into()
-          }
-
-          pub fn as_mut(&mut self) -> $Msg$Mut<'_> {
-            $pbr$::MessageMutInner::mut_of_owned(&mut self.inner).into()
-          }
-
           $accessor_fns$
         }  // impl $Msg$
 
@@ -819,21 +811,21 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         impl $std$::clone::Clone for $Msg$ {
           fn clone(&self) -> Self {
-            self.as_view().to_owned()
+            $pb$::AsView::as_view(self).to_owned()
           }
         }
 
         impl $pb$::AsView for $Msg$ {
           type Proxied = Self;
           fn as_view(&self) -> $Msg$View<'_> {
-            self.as_view()
+            $pbr$::MessageViewInner::view_of_owned(&self.inner).into()
           }
         }
 
         impl $pb$::AsMut for $Msg$ {
           type MutProxied = Self;
           fn as_mut(&mut self) -> $Msg$Mut<'_> {
-            self.as_mut()
+            $pbr$::MessageMutInner::mut_of_owned(&mut self.inner).into()
           }
         }
 
