@@ -591,16 +591,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
         }
 
-        impl $pb$::Parse for $Msg$ {
-          fn parse(serialized: &[u8]) -> $Result$<Self, $pb$::ParseError> {
-            Self::parse(serialized)
-          }
-
-          fn parse_dont_enforce_required(serialized: &[u8]) -> $Result$<Self, $pb$::ParseError> {
-            Self::parse_dont_enforce_required(serialized)
-          }
-        }
-
         impl $std$::fmt::Debug for $Msg$ {
           fn fmt(&self, f: &mut $std$::fmt::Formatter<'_>) -> $std$::fmt::Result {
             $Msg::debug$
@@ -807,16 +797,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           }
 
           $raw_arena_getter_for_message$
-
-          pub fn parse(data: &[u8]) -> $Result$<Self, $pb$::ParseError> {
-            let mut msg = Self::new();
-            $pb$::ClearAndParse::clear_and_parse(&mut msg, data).map(|_| msg)
-          }
-
-          pub fn parse_dont_enforce_required(data: &[u8]) -> $Result$<Self, $pb$::ParseError> {
-            let mut msg = Self::new();
-            $pb$::ClearAndParse::clear_and_parse_dont_enforce_required(&mut msg, data).map(|_| msg)
-          }
 
           pub fn as_view(&self) -> $Msg$View<'_> {
             $pbr$::MessageViewInner::view_of_owned(&self.inner).into()
