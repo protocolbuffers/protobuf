@@ -347,6 +347,8 @@ class DynamicMessage final : public Message {
   // If `T` is not `void`, it will mask bits off the offset via alignment.
   // Used to remove feature masks that are part of the reflection
   // implementation.
+  template <typename T>
+  uint32_t FieldOffset(int i) const;
   template <typename T = void>
   T* MutableRaw(int i);
   template <typename T = void>
@@ -441,21 +443,20 @@ DynamicMessage::DynamicMessage(DynamicMessageFactory::TypeInfo* type_info,
 }
 
 template <typename T>
-inline T* DynamicMessage::MutableRaw(int i) {
-  uint32_t mask = ~uint32_t{};
+inline uint32_t DynamicMessage::FieldOffset(int i) const {
+  uint32_t mask = ~uint32_t{0};
   if constexpr (!std::is_void_v<T>) {
     mask = ~(uint32_t{alignof(T)} - 1);
   }
-  return reinterpret_cast<T*>(OffsetToPointer(type_info_->offsets[i] & mask));
+  return type_info_->offsets[i] & mask;
+}
+template <typename T>
+inline T* DynamicMessage::MutableRaw(int i) {
+  return reinterpret_cast<T*>(OffsetToPointer(FieldOffset<T>(i)));
 }
 template <typename T>
 inline const T& DynamicMessage::GetRaw(int i) const {
-  uint32_t mask = ~uint32_t{};
-  if constexpr (!std::is_void_v<T>) {
-    mask = ~(uint32_t{alignof(T)} - 1);
-  }
-  return *reinterpret_cast<const T*>(
-      OffsetToPointer(type_info_->offsets[i] & mask));
+  return *reinterpret_cast<const T*>(OffsetToPointer(FieldOffset<T>(i)));
 }
 inline void* DynamicMessage::MutableExtensionsRaw() {
   return OffsetToPointer(type_info_->extensions_offset);
