@@ -374,6 +374,14 @@ void TypeConversions(Context& ctx, const Descriptor& msg) {
             impl $pbr$::EntityType for $Msg$ {
                 type Tag = $pbr$::MessageTag;
             }
+
+            impl<'msg> $pbr$::EntityType for $Msg$View<'msg> {
+                type Tag = $pbr$::ViewProxyTag;
+            }
+
+            impl<'msg> $pbr$::EntityType for $Msg$Mut<'msg> {
+                type Tag = $pbr$::MutProxyTag;
+            }
             )rs");
   }
 }

@@ -653,8 +653,9 @@ impl<'msg> InnerMapMut<'msg> {
 }
 
 /// This trait allows us to associate a tag with each type of protobuf entity. The tag indicates
-/// whether the entity is a message, enum, or primitive. The main purpose of this is to allow us to
-/// have separate blanket implementations of UpbTypeConversions for messages and enums.
+/// whether the entity is a message, enum, primitive, view proxy, or mut proxy. The main purpose of
+/// this is to allow us to have separate blanket implementations of UpbTypeConversions for messages
+/// and enums.
 pub trait EntityType {
     type Tag;
 }
@@ -662,6 +663,8 @@ pub trait EntityType {
 pub struct MessageTag;
 pub struct EnumTag;
 pub struct PrimitiveTag;
+pub struct ViewProxyTag;
+pub struct MutProxyTag;
 
 macro_rules! impl_entity_type_for_primitives {
     ($($t:ty,)*) => {
