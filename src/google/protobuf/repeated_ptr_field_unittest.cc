@@ -168,7 +168,7 @@ TEST(RepeatedPtrFieldTest, ClearThenReserveMore) {
   // calls here.
   RepeatedPtrField<std::string> field;
   for (int i = 0; i < 32; i++) {
-    *field.Add() = std::string("abcdefghijklmnopqrstuvwxyz0123456789");
+    *field.Add() = "abcdefghijklmnopqrstuvwxyz0123456789";
   }
   EXPECT_EQ(32, field.size());
   field.Clear();

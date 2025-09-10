@@ -34,7 +34,6 @@ using ::proto2_nofieldpresence_unittest::TestAllTypes;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::IsEmpty;
-using ::testing::Not;
 using ::testing::StrEq;
 using ::testing::UnorderedPointwise;
 
