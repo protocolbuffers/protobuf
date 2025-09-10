@@ -17,11 +17,11 @@
 #include <vector>
 
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
-class FileDescriptor;  // descriptor.h
 namespace io {
 class Printer;  // printer.h
 }
@@ -74,6 +74,7 @@ class FileGenerator {
 
   bool ShouldIncludeDependency(const FileDescriptor* descriptor,
                                bool immutable_api_);
+
 
   const FileDescriptor* file_;
   std::string java_package_;
