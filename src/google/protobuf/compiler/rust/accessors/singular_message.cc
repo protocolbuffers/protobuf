@@ -82,22 +82,22 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                    {{"getter_mut_thunk", ThunkName(ctx, field, "get_mut")}},
                    R"rs(
                   let raw_msg = unsafe { $getter_mut_thunk$(self.raw_msg()) };
-                  $msg_type$Mut::from_parent(
-                    $pbi$::Private,
-                    self.as_message_mut_inner($pbi$::Private),
-                    raw_msg)
+                  $pbr$::MessageMutInner::from_parent(
+                      self.as_message_mut_inner($pbi$::Private),
+                      raw_msg
+                  ).into()
                  )rs");
              } else {
                ctx.Emit({}, R"rs(
                   let ptr = unsafe {
                     self.inner.ptr_mut().get_or_create_mutable_message_at_index(
-                      $upb_mt_field_index$, self.arena()
+                      $upb_mt_field_index$, self.inner.arena()
                     ).unwrap()
                   };
-                  $msg_type$Mut::from_parent(
-                    $pbi$::Private,
-                    self.as_message_mut_inner($pbi$::Private),
-                    ptr)
+                  $pbr$::MessageMutInner::from_parent(
+                      self.as_message_mut_inner($pbi$::Private),
+                      ptr
+                  ).into()
                 )rs");
              }
            }},

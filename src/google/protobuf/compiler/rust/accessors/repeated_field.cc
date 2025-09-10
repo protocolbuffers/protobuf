@@ -74,12 +74,12 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       unsafe {
                         let raw_array = self.inner.ptr_mut().get_or_create_mutable_array_at_index(
                           $upb_mt_field_index$,
-                          self.arena()
+                          self.inner.arena()
                         ).expect("alloc should not fail");
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
                           $pbr$::InnerRepeatedMut::new(
-                            raw_array, self.arena(),
+                            raw_array, self.inner.arena(),
                           ),
                         )
                       }
@@ -113,7 +113,7 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       let val = src.into_proxied($pbi$::Private);
                       let inner = val.inner($pbi$::Private);
 
-                      self.arena().fuse(inner.arena());
+                      self.inner.arena().fuse(inner.arena());
                       unsafe {
                           <Self as $pbr$::UpbGetMessagePtrMut>::get_ptr_mut(self, $pbi$::Private)
                               .set_array_at_index(

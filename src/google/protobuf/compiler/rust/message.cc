@@ -78,26 +78,6 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
   ABSL_LOG(FATAL) << "unreachable";
 }
 
-void MessageMutFromParent(Context& ctx, const Descriptor& msg) {
-  ctx.Emit({{"MsgPtrType",
-             [&] {
-               ctx.Emit(ctx.is_cpp() ? "$pbr$::RawMessage"
-                                     : "$pbr$::MessagePtr<$Msg$>");
-             }}},
-           R"rs(
-          #[doc(hidden)]
-          pub fn from_parent<ParentT: $pb$::Message>(
-                     _private: $pbi$::Private,
-                     parent: $pbr$::MessageMutInner<'msg, ParentT>,
-                     ptr: $MsgPtrType$)
-            -> Self {
-            Self {
-              inner: $pbr$::MessageMutInner::from_parent(parent, ptr)
-            }
-          }
-      )rs");
-}
-
 void CppMessageExterns(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
 
@@ -451,7 +431,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           {"Msg::new", [&] { MessageNew(ctx, msg); }},
           {"Msg::drop", [&] { MessageDrop(ctx, msg); }},
           {"Msg::debug", [&] { MessageDebug(ctx, msg); }},
-          {"MsgMut::from_parent", [&] { MessageMutFromParent(ctx, msg); }},
           {"default_instance_impl",
            [&] { GenerateDefaultInstanceImpl(ctx, msg); }},
           {"raw_msg",
@@ -512,26 +491,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                    $oneofs$
                 )rs");
              ctx.PopModule();
-           }},
-          {"raw_arena_getter_for_message",
-           [&] {
-             if (ctx.is_upb()) {
-               ctx.Emit({}, R"rs(
-                  fn arena(&mut self) -> &$pbr$::Arena {
-                    self.inner.arena()
-                  }
-                  )rs");
-             }
-           }},
-          {"raw_arena_getter_for_msgmut",
-           [&] {
-             if (ctx.is_upb()) {
-               ctx.Emit({}, R"rs(
-                  fn arena(&mut self) -> &$pbr$::Arena {
-                    self.inner.arena()
-                  }
-                  )rs");
-             }
            }},
           {"accessor_fns_for_views",
            [&] {
@@ -715,8 +674,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         #[allow(dead_code)]
         impl<'msg> $Msg$Mut<'msg> {
-          $MsgMut::from_parent$
-
           $raw_msg$
 
           #[doc(hidden)]
@@ -728,8 +685,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           pub fn to_owned(&self) -> $Msg$ {
             $pb$::AsView::as_view(self).to_owned()
           }
-
-          $raw_arena_getter_for_msgmut$
 
           $accessor_fns_for_muts$
         }
@@ -795,8 +750,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           pub fn as_message_mut_inner(&mut self, _private: $pbi$::Private) -> $pbr$::MessageMutInner<'_, $Msg$> {
             $pbr$::MessageMutInner::mut_of_owned(&mut self.inner)
           }
-
-          $raw_arena_getter_for_message$
 
           pub fn as_view(&self) -> $Msg$View<'_> {
             $pbr$::MessageViewInner::view_of_owned(&self.inner).into()

@@ -89,9 +89,9 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                       unsafe {
                         let raw_map = <Self as $pbr$::UpbGetMessagePtrMut>::get_ptr_mut(self, $pbi$::Private)
                           .get_or_create_mutable_map_at_index(
-                            $upb_mt_field_index$, self.arena()).unwrap();
+                            $upb_mt_field_index$, self.inner.arena()).unwrap();
                         let inner = $pbr$::InnerMapMut::new(
-                          raw_map, self.arena());
+                          raw_map, self.inner.arena());
                         $pb$::MapMut::from_inner($pbi$::Private, inner)
                       }
                     })rs");
@@ -120,7 +120,7 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                     let val_as_mut = val.as_mut();
                     let mut inner = val_as_mut.inner($pbi$::Private);
 
-                    self.arena().fuse(inner.arena());
+                    self.inner.arena().fuse(inner.arena());
                     unsafe {
                         <Self as $pbr$::UpbGetMessagePtrMut>::get_ptr_mut(self, $pbi$::Private)
                             .set_map_at_index(
