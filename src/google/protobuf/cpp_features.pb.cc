@@ -176,6 +176,7 @@ CppFeatures::~CppFeatures() {
 }
 inline void CppFeatures::SharedDtor(MessageLite& self) {
   CppFeatures& this_ = static_cast<CppFeatures&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
