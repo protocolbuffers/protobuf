@@ -729,6 +729,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
+  ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
   const TcParseTableBase* inner_table =
       aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
   do {
@@ -1797,6 +1798,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   auto& field = RefAt<FieldType>(msg, data.offset());
+  ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
 
   const auto validate_last_string = [expected_tag, table, &field] {
     switch (utf8) {
@@ -2740,6 +2742,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
   RepeatedPtrFieldBase& field =
       MaybeCreateRepeatedRefAt<RepeatedPtrFieldBase, is_split>(
           base, entry.offset, msg);
+  ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
   const TcParseTableBase* inner_table =
       GetTableFromAux(type_card, *table->field_aux(&entry));
 
