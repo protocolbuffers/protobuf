@@ -90,6 +90,7 @@ cc_test(
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/hash",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/synchronization",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
