@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -15,6 +16,7 @@ pub struct CodeGen {
     output_dir: PathBuf,
     includes: Vec<PathBuf>,
     dependencies: Vec<Dependency>,
+    protoc_path: PathBuf,
 }
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -66,6 +68,10 @@ fn expected_protoc_version(cargo_version: &str) -> String {
     v.join(".")
 }
 
+fn protoc_from_env() -> PathBuf {
+    env::var_os("PROTOC").map(PathBuf::from).unwrap_or(PathBuf::from("protoc"))
+}
+
 impl CodeGen {
     pub fn new() -> Self {
         Self {
@@ -73,6 +79,7 @@ impl CodeGen {
             output_dir: PathBuf::from(std::env::var("OUT_DIR").unwrap()).join("protobuf_generated"),
             includes: Vec::new(),
             dependencies: Vec::new(),
+            protoc_path: protoc_from_env(),
         }
     }
 
@@ -108,6 +115,13 @@ impl CodeGen {
         self
     }
 
+    /// Set the path to protoc executable to be used. This can either be a file name which is
+    /// searched for in the PATH or an absolute path to use a specific executable.
+    pub fn protoc_path(&mut self, protoc_path: impl AsRef<Path>) -> &mut Self {
+        self.protoc_path = protoc_path.as_ref().to_owned();
+        self
+    }
+
     fn expected_generated_rs_files(&self) -> Vec<PathBuf> {
         self.inputs
             .iter()
@@ -133,7 +147,7 @@ impl CodeGen {
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
-        let mut version_cmd = std::process::Command::new("protoc");
+        let mut version_cmd = std::process::Command::new(&self.protoc_path);
         let output = version_cmd.arg("--version").output().map_err(|e| {
             format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())
         })?;
@@ -147,7 +161,7 @@ impl CodeGen {
             );
         }
 
-        let mut cmd = std::process::Command::new("protoc");
+        let mut cmd = std::process::Command::new(&self.protoc_path);
         for input in &self.inputs {
             cmd.arg(input);
         }
@@ -214,5 +228,32 @@ mod tests {
         assert_that!(expected_protoc_version("4.30.0-beta"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-pre"), eq("30.0"));
         assert_that!(expected_protoc_version("4.30.0-rc.1"), eq("30.0-rc1"));
+    }
+
+    /// Creates a new codegen with the given OUT_DIR, instead of using the env variable.
+    fn new_codegen(out_dir: &PathBuf) -> CodeGen {
+        CodeGen {
+            inputs: Vec::new(),
+            output_dir: out_dir.join("protobuf_generated"),
+            includes: Vec::new(),
+            dependencies: Vec::new(),
+            protoc_path: protoc_from_env(),
+        }
+    }
+
+    #[googletest::test]
+    fn test_protoc_path() {
+        let out_dir = PathBuf::from("fake_dir");
+        // Verify the default path.
+        let codegen = new_codegen(&out_dir);
+        assert_that!(codegen.protoc_path, eq(&protoc_from_env()));
+
+        // Verify that the path can be set.
+        let mut codegen = new_codegen(&out_dir);
+        codegen.protoc_path(PathBuf::from("/path/to/protoc"));
+        assert_that!(codegen.protoc_path, eq(&PathBuf::from("/path/to/protoc")));
+        let mut codegen = new_codegen(&out_dir);
+        codegen.protoc_path(PathBuf::from("protoc-27.1"));
+        assert_that!(codegen.protoc_path, eq(&PathBuf::from("protoc-27.1")));
     }
 }
