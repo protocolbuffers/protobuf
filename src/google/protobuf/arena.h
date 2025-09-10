@@ -429,8 +429,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
     template <typename... Args>
     static T* PROTOBUF_NONNULL Construct(void* PROTOBUF_NONNULL ptr,
+                                         Arena* PROTOBUF_NULLABLE arena,
                                          Args&&... args) {
-      return new (ptr) T(static_cast<Args&&>(args)...);
+      return new (ptr) T(arena, static_cast<Args&&>(args)...);
     }
 
     static PROTOBUF_ALWAYS_INLINE T* PROTOBUF_NONNULL New() {
