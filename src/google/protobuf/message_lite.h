@@ -82,6 +82,9 @@ class MessageTableTester;
 
 namespace internal {
 
+void GenericSwap(MessageLite* lhs, MessageLite* rhs);
+void GenericSwap(Message* lhs, Message* rhs);
+
 namespace v2 {
 class TableDriven;
 class TableDrivenMessage;
@@ -974,6 +977,15 @@ class PROTOBUF_EXPORT MessageLite {
   virtual const internal::ClassData* GetClassData() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
+  // Merges the contents of `other` into `this`. This is faster than
+  // `CheckTypeAndMergeFrom()` and should be preferred by friended internal
+  // callers that have the right `ClassData` handy.
+  // REQUIRES: Both `this` and `other` are the exact same class as represented
+  // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
+  // in release builds (probably a crash).
+  void MergeFromWithClassData(const MessageLite& other,
+                              const internal::ClassData* data);
+
   internal::InternalMetadata _internal_metadata_;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   const internal::ClassData* _class_data_;
@@ -1116,21 +1128,14 @@ class PROTOBUF_EXPORT MessageLite {
 
   template <typename Type>
   friend const internal::ClassData* internal::GetClassData(const Type& msg);
+  friend void internal::GenericSwap(MessageLite* lhs, MessageLite* rhs);
+  friend void internal::GenericSwap(Message* lhs, Message* rhs);
 
   static bool CheckFieldPresence(const internal::ParseContext& ctx,
                                  const MessageLite& msg,
                                  MessageLite::ParseFlags parse_flags);
 
   void LogInitializationErrorMessage() const;
-
-  // Merges the contents of `other` into `this`. This is faster than
-  // `CheckTypeAndMergeFrom()` and should be preferred by friended internal
-  // callers that have the right `ClassData` handy.
-  // REQUIRES: Both `this` and `other` are the exact same class as represented
-  // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
-  // in release builds (probably a crash).
-  void MergeFromWithClassData(const MessageLite& other,
-                              const internal::ClassData* data);
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 

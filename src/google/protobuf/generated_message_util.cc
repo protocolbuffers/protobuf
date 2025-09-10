@@ -12,8 +12,13 @@
 #include "google/protobuf/generated_message_util.h"
 
 #include <atomic>
+#include <climits>
 #include <cstdint>
-#include <limits>
+#include <memory>
+#include <string>
+#include <type_traits>
+
+#include "absl/log/absl_check.h"
 
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/extension_set.h"
@@ -380,13 +385,14 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
   }
 }
 
-void GenericSwap(MessageLite* m1, MessageLite* m2) {
-  std::unique_ptr<MessageLite> tmp(m1->New());
-  tmp->CheckTypeAndMergeFrom(*m1);
-  m1->Clear();
-  m1->CheckTypeAndMergeFrom(*m2);
-  m2->Clear();
-  m2->CheckTypeAndMergeFrom(*tmp);
+void GenericSwap(MessageLite* lhs, MessageLite* rhs) {
+  const ClassData* class_data = GetClassData(*lhs);
+  std::unique_ptr<MessageLite> tmp(class_data->New(nullptr));
+  tmp->MergeFromWithClassData(*lhs, class_data);
+  lhs->Clear();
+  lhs->MergeFromWithClassData(*rhs, class_data);
+  rhs->Clear();
+  rhs->MergeFromWithClassData(*tmp, class_data);
 }
 
 // Returns a message owned by this Arena.  This may require Own()ing or
