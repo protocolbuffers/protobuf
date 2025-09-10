@@ -26,6 +26,7 @@ public final class ImportOptionTest {
     UnknownFieldSet unknownFieldsMessage = messageDescriptor.getOptions().getUnknownFields();
     UnknownFieldSet unknownFieldsField = fieldDescriptor.getOptions().getUnknownFields();
 
+    // Using the extension ensures UnittestCustomOptions is linked in and referenced
     assertThat(fileDescriptor.getOptions().getExtension(UnittestCustomOptions.fileOpt1))
         .isEqualTo(1);
     assertThat(messageDescriptor.getOptions().getExtension(UnittestCustomOptions.messageOpt1))
@@ -34,7 +35,7 @@ public final class ImportOptionTest {
         .isEqualTo(3);
 
     // TODO: Since `option_deps` are treated as `deps` in Bazel 7, the unknown
-    // fields are not empty.  Once we drop Bazel 7 support we can test that these are filled with
+    // fields will be empty.  Once we drop Bazel 7 support we can test that these are filled with
     // unknown fields.
     assertThat(unknownFieldsFile.asMap().size()).isAtMost(1);
     assertThat(unknownFieldsMessage.asMap().size()).isAtMost(1);
