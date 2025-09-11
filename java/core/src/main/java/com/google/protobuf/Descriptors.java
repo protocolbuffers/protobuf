@@ -99,7 +99,7 @@ public final class Descriptors {
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
                         Internal.ISO_8859_1),
                     registry));
-          } catch (Exception e) {
+          } catch (InvalidProtocolBufferException e) {
             throw new AssertionError(e);
           }
         }
@@ -197,6 +197,7 @@ public final class Descriptors {
 
     /** Get the {@code FileOptions}, defined in {@code descriptor.proto}. */
     public FileOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       if (this.options == null) {
         FileOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -534,6 +535,18 @@ public final class Descriptors {
       return internalBuildGeneratedFileFrom(descriptorDataParts, dependencies);
     }
 
+    public void internalUpdateExtensionRegistry(ExtensionRegistry registry) {
+      this.registry = registry;
+    }
+
+    public static void internalUpdateFileDescriptor(FileDescriptor descriptor) {
+      if (descriptor.registry == null) {
+        return;
+      }
+      internalUpdateFileDescriptor(descriptor, descriptor.registry);
+      descriptor.registry = null;
+    }
+
     /**
      * This method is to be called by generated code only. It updates the FileDescriptorProto
      * associated with the descriptor by parsing it again with the given ExtensionRegistry. This is
@@ -580,6 +593,7 @@ public final class Descriptors {
     private final FileDescriptorTables tables;
     private final boolean placeholder;
     private volatile boolean featuresResolved;
+    private ExtensionRegistry registry;
 
     private FileDescriptor(
         final FileDescriptorProto proto,
@@ -867,6 +881,7 @@ public final class Descriptors {
 
     /** Get the {@code MessageOptions}, defined in {@code descriptor.proto}. */
     public MessageOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       if (this.options == null) {
         MessageOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -1524,6 +1539,7 @@ public final class Descriptors {
 
     /** Get the {@code FieldOptions}, defined in {@code descriptor.proto}. */
     public FieldOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       if (this.options == null) {
         FieldOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2358,6 +2374,7 @@ public final class Descriptors {
 
     /** Get the {@code EnumOptions}, defined in {@code descriptor.proto}. */
     public EnumOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       if (this.options == null) {
         EnumOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2641,6 +2658,8 @@ public final class Descriptors {
 
     /** Get the {@code EnumValueOptions}, defined in {@code descriptor.proto}. */
     public EnumValueOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
+
       if (this.options == null) {
         EnumValueOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2747,6 +2766,8 @@ public final class Descriptors {
 
     /** Get the {@code ServiceOptions}, defined in {@code descriptor.proto}. */
     public ServiceOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
+
       if (this.options == null) {
         ServiceOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2915,6 +2936,8 @@ public final class Descriptors {
 
     /** Get the {@code MethodOptions}, defined in {@code descriptor.proto}. */
     public MethodOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
+
       if (this.options == null) {
         MethodOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -3547,6 +3570,7 @@ public final class Descriptors {
     }
 
     public OneofOptions getOptions() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       if (this.options == null) {
         OneofOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
