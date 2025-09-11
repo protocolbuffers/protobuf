@@ -1442,6 +1442,20 @@ bool IsStringOrMessage(const FieldDescriptor* field) {
   return false;
 }
 
+bool IsRepeatedPtrField(const FieldDescriptor* field) {
+  if (!field->is_repeated() || field->is_map()) {
+    return false;
+  }
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return true;
+    case FieldDescriptor::CPPTYPE_STRING:
+      return field->cpp_string_type() != FieldDescriptor::CppStringType::kCord;
+    default:
+      return false;
+  }
+}
+
 bool IsAnyMessage(const FileDescriptor* descriptor) {
   return descriptor->name() == kAnyProtoFile;
 }
