@@ -143,7 +143,8 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
   for (; src < end_assign; ++dst, ++src) {
     (*dst)->assign(**src);
   }
-  if (Arena* const arena = arena_) {
+  Arena* const arena = GetArena();
+  if (arena != nullptr) {
     for (; src < end; ++dst, ++src) {
       *dst = Arena::Create<std::string>(arena, **src);
     }

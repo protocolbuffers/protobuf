@@ -168,9 +168,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   ~RepeatedPtrFieldBase() {
 #ifndef NDEBUG
-    // Try to trigger segfault / asan failure in non-opt builds if arena_
-    // lifetime has ended before the destructor.
-    if (arena_) (void)arena_->SpaceAllocated();
+    // Try to trigger segfault / asan failure in non-opt builds if the arena
+    // lifetime has ended before the destructor. Note that `GetArena()` is
+    // not free, but this is debug-only.
+    const Arena* arena = GetArena();
+    if (arena != nullptr) (void)arena->SpaceAllocated();
 #endif
   }
 
@@ -228,7 +230,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
     // TODO: arena check is redundant once all `RepeatedPtrField`s
     // with non-null arena are owned by the arena.
-    if (ABSL_PREDICT_FALSE(arena_ != nullptr)) return;
+    if (ABSL_PREDICT_FALSE(GetArena() != nullptr)) return;
 
     using H = CommonHandler<TypeHandler>;
     int n = allocated_size();
@@ -481,7 +483,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // this case because otherwise a loop calling AddAllocated() followed by
       // Clear() would leak memory.
       using H = CommonHandler<TypeHandler>;
-      Delete<H>(element_at(current_size_), arena_);
+      Delete<H>(element_at(current_size_), GetArena());
     } else if (current_size_ < allocated_size()) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
