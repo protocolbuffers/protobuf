@@ -28,9 +28,6 @@ extern crate upb;
 use crate::upb;
 
 // Temporarily 'pub' since the gencode is directly referencing various parts of upb.
-pub use upb::upb_MiniTableEnum_Build;
-pub use upb::upb_MiniTable_Build;
-pub use upb::upb_MiniTable_Link;
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
 pub use upb::AssociatedMiniTableEnum;
@@ -60,6 +57,50 @@ unsafe impl Sync for MiniTablePtr {}
 pub struct MiniTableEnumPtr(pub RawMiniTableEnum);
 unsafe impl Send for MiniTableEnumPtr {}
 unsafe impl Sync for MiniTableEnumPtr {}
+
+/// # Safety
+/// - `mini_descriptor` must be a valid MiniDescriptor.
+pub unsafe fn build_mini_table(mini_descriptor: &'static str) -> RawMiniTable {
+    unsafe {
+        NonNull::new_unchecked(upb_MiniTable_Build(
+            mini_descriptor.as_ptr(),
+            mini_descriptor.len(),
+            THREAD_LOCAL_ARENA.with(|a| a.raw()),
+            std::ptr::null_mut(),
+        ))
+    }
+}
+
+/// # Safety
+/// - `mini_descriptor` must be a valid enum MiniDescriptor.
+pub unsafe fn build_enum_mini_table(mini_descriptor: &'static str) -> RawMiniTableEnum {
+    unsafe {
+        NonNull::new_unchecked(upb_MiniTableEnum_Build(
+            mini_descriptor.as_ptr(),
+            mini_descriptor.len(),
+            THREAD_LOCAL_ARENA.with(|a| a.raw()),
+            std::ptr::null_mut(),
+        ))
+    }
+}
+
+/// # Safety
+/// - All arguments must point to valid MiniTables.
+pub fn link_mini_table(
+    mini_table: RawMiniTable,
+    submessages: &[RawMiniTable],
+    subenums: &[RawMiniTableEnum],
+) {
+    unsafe {
+        assert!(upb_MiniTable_Link(
+            mini_table,
+            submessages.as_ptr(),
+            submessages.len(),
+            subenums.as_ptr(),
+            subenums.len()
+        ));
+    }
+}
 
 impl From<&ProtoStr> for PtrAndLen {
     fn from(s: &ProtoStr) -> Self {
@@ -1151,7 +1192,8 @@ where
 
 impl<T> MatcherEq for T
 where
-    Self: AssociatedMiniTable + AsView + Debug,
+    Self: AsView + Debug,
+    <Self as AsView>::Proxied: AssociatedMiniTable,
     for<'a> View<'a, <Self as AsView>::Proxied>: UpbGetMessagePtr,
 {
     fn matches(&self, o: &Self) -> bool {
@@ -1159,7 +1201,7 @@ where
             upb_Message_IsEqual(
                 self.as_view().get_ptr(Private).raw(),
                 o.as_view().get_ptr(Private).raw(),
-                Self::mini_table(),
+                <Self as AsView>::Proxied::mini_table(),
                 0,
             )
         }
@@ -1178,7 +1220,7 @@ fn clear_and_parse_helper<T>(
     decode_options: i32,
 ) -> Result<(), ParseError>
 where
-    T: AssociatedMiniTable + UpbGetMessagePtrMut + UpbGetArena,
+    T: UpbGetMessagePtrMut + UpbGetArena,
 {
     Clear::clear(msg);
     // SAFETY:
@@ -1199,7 +1241,7 @@ where
 
 impl<T> ClearAndParse for T
 where
-    Self: AssociatedMiniTable + UpbGetMessagePtrMut + UpbGetArena,
+    Self: UpbGetMessagePtrMut + UpbGetArena,
 {
     fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, upb::wire::decode_options::CHECK_REQUIRED)
@@ -1212,7 +1254,7 @@ where
 
 impl<T> Serialize for T
 where
-    Self: AssociatedMiniTable + UpbGetMessagePtr,
+    Self: UpbGetMessagePtr,
 {
     fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
         //~ TODO: This discards the info we have about the reason
@@ -1236,7 +1278,8 @@ where
 
 impl<T> CopyFrom for T
 where
-    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    Self: AsView + UpbGetArena + UpbGetMessagePtr,
+    Self::Proxied: AssociatedMiniTable,
     for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
 {
     fn copy_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
@@ -1246,7 +1289,7 @@ where
             assert!(upb_Message_DeepCopy(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
-                <Self as AssociatedMiniTable>::mini_table(),
+                <Self::Proxied as AssociatedMiniTable>::mini_table(),
                 self.get_arena(Private).raw()
             ));
         }
@@ -1255,7 +1298,8 @@ where
 
 impl<T> MergeFrom for T
 where
-    Self: AsView + AssociatedMiniTable + UpbGetArena + UpbGetMessagePtr,
+    Self: AsView + UpbGetArena + UpbGetMessagePtr,
+    Self::Proxied: AssociatedMiniTable,
     for<'a> View<'a, Self::Proxied>: UpbGetMessagePtr,
 {
     fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
@@ -1264,7 +1308,7 @@ where
             assert!(upb_Message_MergeFrom(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
-                <Self as AssociatedMiniTable>::mini_table(),
+                <Self::Proxied as AssociatedMiniTable>::mini_table(),
                 // Use a nullptr for the ExtensionRegistry.
                 std::ptr::null(),
                 self.get_arena(Private).raw()

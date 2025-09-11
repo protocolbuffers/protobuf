@@ -16,7 +16,6 @@ rust_library(
         "associated_mini_table.rs",
         "lib.rs",
         "message.rs",
-        "mini_table.rs",
         "owned_arena_box.rs",
         "text.rs",
         "wire.rs",

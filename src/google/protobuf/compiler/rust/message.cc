@@ -188,16 +188,8 @@ void UpbMiniTableLinking(Context& ctx, const Descriptor& msg,
         }},
        {"minitable_symbol_name", QualifiedUpbMiniTableName(ctx, msg)}},
       R"rs(
-      let submessages = [
-        $submessages$
-      ];
-      let subenums = [
-        $subenums$
-      ];
-      assert!($pbr$::upb_MiniTable_Link(
-          $minitable_symbol_name$.0,
-          submessages.as_ptr(), submessages.len(),
-          subenums.as_ptr(), subenums.len()));
+      $pbr$::link_mini_table(
+          $minitable_symbol_name$.0, &[$submessages$], &[$subenums$]);
   )rs");
 }
 
@@ -238,12 +230,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
                         {"mini_descriptor_length", mini_descriptor.size()}},
                        R"rs(
                        $minitable_symbol_name$.0 =
-                           $std$::ptr::NonNull::new_unchecked(
-                               $pbr$::upb_MiniTable_Build(
-                                   "$mini_descriptor$".as_ptr(),
-                                   $mini_descriptor_length$,
-                                   $pbr$::THREAD_LOCAL_ARENA.with(|a| a.raw()),
-                                   $std$::ptr::null_mut()));
+                           $pbr$::build_mini_table("$mini_descriptor$");
               )rs");
             }
             for (const Descriptor* d : scc.descriptors) {
@@ -286,19 +273,6 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
         }
       }
 
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$View<'_> {
-        #[inline(always)]
-        fn mini_table() -> $pbr$::RawMiniTable {
-          <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
-        }
-      }
-
-      unsafe impl $pbr$::AssociatedMiniTable for $Msg$Mut<'_> {
-        #[inline(always)]
-        fn mini_table() -> $pbr$::RawMiniTable {
-          <$Msg$ as $pbr$::AssociatedMiniTable>::mini_table()
-        }
-      }
       unsafe impl $pbr$::UpbGetMessagePtrMut for $Msg$ {
         type Msg = $Msg$;
         fn get_ptr_mut(&mut self, _private: $pbi$::Private) -> $pbr$::MessagePtr<$Msg$> {
