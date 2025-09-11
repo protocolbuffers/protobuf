@@ -466,7 +466,13 @@ public final class Timestamps {
         subtractExact(start.getNanos(), length.getNanos()));
   }
 
-  static Timestamp normalizedTimestamp(long seconds, int nanos) {
+  /**
+   * Normalizes a timestamp.
+   *
+   * <p>This is a convenience method for converting a pair of seconds and nanos to a {@link
+   * Timestamp} in a way that normalizes the result.
+   */
+  public static Timestamp normalizedTimestamp(long seconds, int nanos) {
     // This only checks seconds, because nanos can intentionally overflow to increment the seconds
     // when normalized.
     if (!isValidSeconds(seconds)) {
