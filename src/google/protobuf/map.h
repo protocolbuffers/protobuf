@@ -1421,7 +1421,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   void swap(Map& other) {
     if (arena() == other.arena()) {
-      InternalSwap(&other);
+      this->InternalSwap(&other);
     } else {
       size_t other_size = other.size();
       Node* other_copy = this->CloneFromOther(other);
@@ -1431,10 +1431,6 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
         this->MergeIntoEmpty(other_copy, other_size);
       }
     }
-  }
-
-  void InternalSwap(Map* other) {
-    internal::UntypedMapBase::InternalSwap(other);
   }
 
   hasher hash_function() const { return {}; }
