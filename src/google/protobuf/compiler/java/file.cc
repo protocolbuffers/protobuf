@@ -466,6 +466,7 @@ void FileGenerator::Generate(io::Printer* printer) {
 
 void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     io::Printer* printer) {
+  MaybeGenerateGetCollectedExtensionRegistryForImmutable(printer);
   printer->Print(
       "public static com.google.protobuf.Descriptors.FileDescriptor\n"
       "    getDescriptor() {\n"
@@ -523,9 +524,6 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   // To find those extensions, we need to parse the data into a dynamic message
   // of the FileDescriptor based on the builder-pool, then we can use
   // reflections to find all extension fields
-  FieldDescriptorSet extensions;
-  FieldDescriptorSet optional_extensions;
-  CollectExtensions(*file_, options_, &extensions, &optional_extensions);
 
   // Force descriptor initialization of all dependencies.
   for (int i = 0; i < file_->dependency_count(); i++) {
@@ -537,7 +535,29 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     }
   }
 
+  printer->Print(
+      "com.google.protobuf.ExtensionRegistry registry =\n"
+      "    getCollectedExtensionRegistry();\n");
+  printer->Print("descriptor.internalUpdateExtensionRegistry(registry);\n");
+
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void FileGenerator::MaybeGenerateGetCollectedExtensionRegistryForImmutable(
+    io::Printer* printer) {
+  int bytecode_estimate = 0;
+  int method_num = 0;
+
+  FieldDescriptorSet extensions;
+  FieldDescriptorSet optional_extensions;
+  CollectExtensions(*file_, options_, &extensions, &optional_extensions);
+
   if (!extensions.empty() || !optional_extensions.empty()) {
+    printer->Print(
+        "protected static com.google.protobuf.ExtensionRegistry "
+        "getCollectedExtensionRegistry() {\n");
+    printer->Indent();
     // Must construct an ExtensionRegistry containing all existing extensions
     // and use it to parse the descriptor data again to recognize extensions.
     printer->Print(
@@ -573,13 +593,10 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
           "private static void _clinit_autosplit_dinit_$method_num$(\n"
           "    com.google.protobuf.ExtensionRegistry registry) {\n");
     }
-    printer->Print(
-        "com.google.protobuf.Descriptors.FileDescriptor\n"
-        "    .internalUpdateFileDescriptor(descriptor, registry);\n");
+    printer->Print("return registry;\n");
+    printer->Outdent();
+    printer->Print("}\n");
   }
-
-  printer->Outdent();
-  printer->Print("}\n");
 }
 
 

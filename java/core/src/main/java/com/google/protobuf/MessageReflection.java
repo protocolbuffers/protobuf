@@ -29,7 +29,7 @@ class MessageReflection {
       boolean alwaysWriteRequiredFields)
       throws IOException {
     final boolean isMessageSet =
-        message.getDescriptorForType().getOptions().getMessageSetWireFormat();
+        message.getDescriptorForType().getRawOptions().getMessageSetWireFormat();
     if (alwaysWriteRequiredFields) {
       fields = new TreeMap<FieldDescriptor, Object>(fields);
       for (final FieldDescriptor field : message.getDescriptorForType().getFields()) {
@@ -62,7 +62,7 @@ class MessageReflection {
   static int getSerializedSize(Message message, Map<FieldDescriptor, Object> fields) {
     int size = 0;
     final boolean isMessageSet =
-        message.getDescriptorForType().getOptions().getMessageSetWireFormat();
+        message.getDescriptorForType().getRawOptions().getMessageSetWireFormat();
 
     for (final Map.Entry<Descriptors.FieldDescriptor, Object> entry : fields.entrySet()) {
       final Descriptors.FieldDescriptor field = entry.getKey();
@@ -1106,7 +1106,7 @@ class MessageReflection {
       MergeTarget target,
       int tag)
       throws IOException {
-    if (type.getOptions().getMessageSetWireFormat() && tag == WireFormat.MESSAGE_SET_ITEM_TAG) {
+    if (type.getRawOptions().getMessageSetWireFormat() && tag == WireFormat.MESSAGE_SET_ITEM_TAG) {
       mergeMessageSetExtensionFromCodedStream(
           input, unknownFields, extensionRegistry, type, target);
       return true;
