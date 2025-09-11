@@ -71,7 +71,10 @@ def fuzzing_py_install_deps():
 _build_file = """
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_python//python:py_runtime.bzl", "py_runtime")
 load("@rules_python//python:py_runtime_pair.bzl", "py_runtime_pair")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 
 cc_library(
    name = "python_headers",
