@@ -41,6 +41,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_arena.pb.h"
@@ -1375,16 +1376,16 @@ TEST(ArenaTest, ArenaOneofReflection) {
 void TestSwapRepeatedField(Arena* arena1, Arena* arena2) {
   // Test "safe" (copying) semantics for direct Swap() on RepeatedPtrField
   // between arenas.
-  RepeatedPtrField<TestAllTypes> field1(arena1);
-  RepeatedPtrField<TestAllTypes> field2(arena2);
+  auto* field1 = Arena::Create<RepeatedPtrField<TestAllTypes>>(arena1);
+  auto* field2 = Arena::Create<RepeatedPtrField<TestAllTypes>>(arena2);
   for (int i = 0; i < 10; i++) {
     TestAllTypes* t = Arena::Create<TestAllTypes>(arena1);
     t->set_optional_string("field1");
     t->set_optional_int32(i);
     if (arena1 != nullptr) {
-      field1.UnsafeArenaAddAllocated(t);
+      field1->UnsafeArenaAddAllocated(t);
     } else {
-      field1.AddAllocated(t);
+      field1->AddAllocated(t);
     }
   }
   for (int i = 0; i < 5; i++) {
@@ -1392,22 +1393,29 @@ void TestSwapRepeatedField(Arena* arena1, Arena* arena2) {
     t->set_optional_string("field2");
     t->set_optional_int32(i);
     if (arena2 != nullptr) {
-      field2.UnsafeArenaAddAllocated(t);
+      field2->UnsafeArenaAddAllocated(t);
     } else {
-      field2.AddAllocated(t);
+      field2->AddAllocated(t);
     }
   }
-  field1.Swap(&field2);
-  EXPECT_EQ(5, field1.size());
-  EXPECT_EQ(10, field2.size());
-  EXPECT_TRUE(std::string("field1") == field2.Get(0).optional_string());
-  EXPECT_TRUE(std::string("field2") == field1.Get(0).optional_string());
+  field1->Swap(field2);
+  EXPECT_EQ(5, field1->size());
+  EXPECT_EQ(10, field2->size());
+  EXPECT_TRUE(std::string("field1") == field2->Get(0).optional_string());
+  EXPECT_TRUE(std::string("field2") == field1->Get(0).optional_string());
   // Ensure that fields retained their original order:
-  for (int i = 0; i < field1.size(); i++) {
-    EXPECT_EQ(i, field1.Get(i).optional_int32());
+  for (int i = 0; i < field1->size(); i++) {
+    EXPECT_EQ(i, field1->Get(i).optional_int32());
   }
-  for (int i = 0; i < field2.size(); i++) {
-    EXPECT_EQ(i, field2.Get(i).optional_int32());
+  for (int i = 0; i < field2->size(); i++) {
+    EXPECT_EQ(i, field2->Get(i).optional_int32());
+  }
+
+  if (arena1 == nullptr) {
+    delete field1;
+  }
+  if (arena2 == nullptr) {
+    delete field2;
   }
 }
 
