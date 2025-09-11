@@ -136,9 +136,11 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 ]
 
 python.defaults(python_version = SUPPORTED_PYTHON_VERSIONS[-1])
-use_repo(
-    python,
-    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+system_python = use_repo_rule("//python/dist:system_python.bzl", "system_python")
+
+system_python(
+    name = "system_python",
+    minimum_python_version = SUPPORTED_PYTHON_VERSIONS[0],
 )
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
