@@ -553,23 +553,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     UnsafeArenaAddAllocated<H>(value);
   }
 
+  // TODO - Outline this function so a future change can use a
+  // type in its implementation that requires `RepeatedPtrFieldBase` to be fully
+  // defined.
   template <typename TypeHandler>
-  PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other) {
-    ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
-
-    // Copy semantics in this case. We try to improve efficiency by placing the
-    // temporary on |other|'s arena so that messages are copied twice rather
-    // than three times.
-    RepeatedPtrFieldBase temp(other->GetArena());
-    if (!this->empty()) {
-      temp.MergeFrom<typename TypeHandler::Type>(*this);
-    }
-    this->CopyFrom<TypeHandler>(*other);
-    other->InternalSwap(&temp);
-    if (temp.NeedsDestroy()) {
-      temp.Destroy<TypeHandler>();
-    }
-  }
+  PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other);
 
   // Gets the Arena on which this RepeatedPtrField stores its elements.
   inline Arena* GetArena() const { return arena_; }
@@ -835,6 +823,25 @@ inline void* RepeatedPtrFieldBase::AddInternal(
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
   factory(arena, result);
   return result;
+}
+
+template <typename TypeHandler>
+PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
+    RepeatedPtrFieldBase* other) {
+  ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
+
+  // Copy semantics in this case. We try to improve efficiency by placing the
+  // temporary on |other|'s arena so that messages are copied twice rather
+  // than three times.
+  RepeatedPtrFieldBase temp(other->GetArena());
+  if (!this->empty()) {
+    temp.MergeFrom<typename TypeHandler::Type>(*this);
+  }
+  this->CopyFrom<TypeHandler>(*other);
+  other->InternalSwap(&temp);
+  if (temp.NeedsDestroy()) {
+    temp.Destroy<TypeHandler>();
+  }
 }
 
 PROTOBUF_EXPORT void InternalOutOfLineDeleteMessageLite(MessageLite* message);
