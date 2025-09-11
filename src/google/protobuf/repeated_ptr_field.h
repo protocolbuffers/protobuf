@@ -586,6 +586,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
+  friend google::protobuf::Arena;
+
   template <typename T>
   friend class Arena::InternalHelper;
 
@@ -952,6 +954,49 @@ class GenericTypeHandler<std::string> {
   static constexpr bool has_default_instance() { return true; }
 };
 
+
+template <typename T>
+struct IsRepeatedPtrFieldType {
+  static constexpr bool value = false;
+};
+
+template <>
+struct IsRepeatedPtrFieldType<RepeatedPtrFieldBase> {
+  static constexpr bool value = true;
+};
+
+template <typename Element>
+struct IsRepeatedPtrFieldType<RepeatedPtrField<Element>> {
+  static constexpr bool value = true;
+};
+
+// This class maps RepeatedPtrField(Base)? types to the types that we will use
+// to represent them when allocated on an arena. This is necessary because
+// `RepeatedPtrField`s do not own an arena pointer, but can be allocated
+// directly on an arena. In this case, we will use a wrapper class that holds
+// both the arena pointer and the repeated field, and points the repeated field
+// to the arena pointer.
+//
+// Additionally, split repeated pointer fields will use this representation when
+// allocated, regardless of whether they are on an arena or not.
+template <typename T>
+struct RepeatedPtrFieldArenaRep {};
+
+template <>
+struct RepeatedPtrFieldArenaRep<RepeatedPtrFieldBase> {
+  // TODO - With removed arena pointers, we will need a class that
+  // holds both the arena pointer and the repeated field, and points the
+  // repeated to the arena pointer.
+  using Type = RepeatedPtrFieldBase;
+};
+
+template <typename Element>
+struct RepeatedPtrFieldArenaRep<RepeatedPtrField<Element>> {
+  // TODO - With removed arena pointers, we will need a class that
+  // holds both the arena pointer and the repeated field, and points the
+  // repeated to the arena pointer.
+  using Type = RepeatedPtrField<Element>;
+};
 
 }  // namespace internal
 
