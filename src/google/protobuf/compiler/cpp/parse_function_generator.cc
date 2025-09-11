@@ -93,8 +93,7 @@ ParseFunctionGenerator::BuildFieldOptions(
         field,
         index < has_bit_indices.size() ? has_bit_indices[index]
                                        : internal::kNoHasbit,
-        GetPresenceProbability(field, options)
-            .value_or(kUnknownPresenceProbability),
+        GetPresenceProbability(field, options),
         GetLazyStyle(field, options, scc_analyzer),
         IsStringInlined(field, options),
         IsImplicitWeakField(field, options, scc_analyzer),
