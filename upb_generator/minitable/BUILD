@@ -58,6 +58,7 @@ cc_library(
     hdrs = ["names.h"],
     visibility = [
         "//hpb_generator:__pkg__",
+        "//src/google/protobuf/compiler/interop:__pkg__",
         "//src/google/protobuf/compiler/rust:__pkg__",
         "//third_party/kotlin/protobuf/generator/native:__pkg__",
         "//upb_generator:__subpackages__",
