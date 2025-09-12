@@ -97,7 +97,7 @@ TEST_P(MapFieldBasePrimitiveTest, SpaceUsedExcludingSelf) {
 TEST_P(MapFieldBasePrimitiveTest, GetRepeatedField) {
   const RepeatedPtrField<Message>& repeated =
       reinterpret_cast<const RepeatedPtrField<Message>&>(
-          map_field_base_->GetRepeatedField());
+          map_field_base_->GetRepeatedField(arena_.get()));
   EXPECT_EQ(2, repeated.size());
   for (int i = 0; i < repeated.size(); i++) {
     const Message& message = repeated.Get(i);
@@ -110,7 +110,7 @@ TEST_P(MapFieldBasePrimitiveTest, GetRepeatedField) {
 TEST_P(MapFieldBasePrimitiveTest, MutableRepeatedField) {
   RepeatedPtrField<Message>* repeated =
       reinterpret_cast<RepeatedPtrField<Message>*>(
-          map_field_base_->MutableRepeatedField());
+          map_field_base_->MutableRepeatedField(arena_.get()));
   EXPECT_EQ(2, repeated->size());
   for (int i = 0; i < repeated->size(); i++) {
     const Message& message = repeated->Get(i);
@@ -139,7 +139,7 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
     (*map_field->MutableMap())[100] = 101;
 
     // Trigger conversion to repeated field.
-    map_field->GetRepeatedField();
+    map_field->GetRepeatedField(&arena);
   }
 
   {
@@ -150,16 +150,18 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
     TestMapField* map_field = Arena::Create<TestMapField>(&arena);
 
     // Trigger conversion to repeated field.
-    EXPECT_TRUE(map_field->MutableRepeatedField() != nullptr);
+    EXPECT_TRUE(map_field->MutableRepeatedField(&arena) != nullptr);
 
-    EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()),
+    EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField(&arena)),
               &arena);
   }
 }
 
 TEST_P(MapFieldBasePrimitiveTest, EnforceNoArena) {
   std::unique_ptr<TestMapField> map_field(Arena::Create<TestMapField>(nullptr));
-  EXPECT_EQ(MapFieldTestPeer::GetArena(map_field->GetRepeatedField()), nullptr);
+  EXPECT_EQ(
+      MapFieldTestPeer::GetArena(map_field->GetRepeatedField(arena_.get())),
+      nullptr);
 }
 
 namespace {
@@ -199,7 +201,7 @@ class MapFieldStateTest
     MapFieldBase* map_field_base = map_field;
     Map<int32_t, int32_t>* map = map_field->MutableMap();
     (*map)[0] = 0;
-    map_field_base->GetRepeatedField();
+    map_field_base->GetRepeatedField(arena_.get());
     Expect(map_field, CLEAN, 1, 1);
   }
 
@@ -212,7 +214,7 @@ class MapFieldStateTest
   void MakeRepeatedDirty(MapFieldType* map_field) {
     MakeMapDirty(map_field);
     MapFieldBase* map_field_base = map_field;
-    map_field_base->MutableRepeatedField();
+    map_field_base->MutableRepeatedField(arena_.get());
     // We use map_ because we don't want to disturb the syncing
     map_field->map_.clear();
 
@@ -329,7 +331,7 @@ TEST_P(MapFieldStateTest, SwapClean) {
   ArenaHolder<MapFieldType> other(arena_.get());
   AddOneStillClean(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(arena_.get(), other.get(), arena_.get());
 
   Expect(map_field_.get(), CLEAN, 1, 1);
 
@@ -352,7 +354,7 @@ TEST_P(MapFieldStateTest, SwapMapDirty) {
   ArenaHolder<MapFieldType> other(arena_.get());
   MakeMapDirty(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(arena_.get(), other.get(), arena_.get());
 
   Expect(map_field_.get(), MAP_DIRTY, 1, 0);
 
@@ -375,7 +377,7 @@ TEST_P(MapFieldStateTest, SwapRepeatedDirty) {
   ArenaHolder<MapFieldType> other(arena_.get());
   MakeRepeatedDirty(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(arena_.get(), other.get(), arena_.get());
 
   Expect(map_field_.get(), REPEATED_DIRTY, 0, 1);
 
@@ -419,7 +421,7 @@ TEST_P(MapFieldStateTest, SpaceUsedExcludingSelf) {
 }
 
 TEST_P(MapFieldStateTest, GetMapField) {
-  map_field_base_->GetRepeatedField();
+  map_field_base_->GetRepeatedField(arena_.get());
 
   if (state_ != REPEATED_DIRTY) {
     Expect(map_field_.get(), CLEAN, 1, 1);
@@ -429,7 +431,7 @@ TEST_P(MapFieldStateTest, GetMapField) {
 }
 
 TEST_P(MapFieldStateTest, MutableMapField) {
-  map_field_base_->MutableRepeatedField();
+  map_field_base_->MutableRepeatedField(arena_.get());
 
   if (state_ != REPEATED_DIRTY) {
     Expect(map_field_.get(), REPEATED_DIRTY, 1, 1);
