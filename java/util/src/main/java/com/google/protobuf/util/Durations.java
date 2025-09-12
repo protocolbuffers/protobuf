@@ -439,7 +439,13 @@ public final class Durations {
         subtractExact(d1.getNanos(), d2.getNanos()));
   }
 
-  static Duration normalizedDuration(long seconds, int nanos) {
+  /**
+   * Normalizes a duration.
+   *
+   * <p>This is a convenience method for converting a pair of seconds and nanos to a {@link
+   * Duration} in a way that normalizes the result.
+   */
+  public static Duration normalizedDuration(long seconds, int nanos) {
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = addExact(seconds, nanos / NANOS_PER_SECOND);
       nanos %= NANOS_PER_SECOND;
