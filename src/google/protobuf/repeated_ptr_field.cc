@@ -43,13 +43,13 @@ std::string* CloneSlow(Arena* arena, const std::string& value) {
   return Arena::Create<std::string>(arena, value);
 }
 
-void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
+void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   ABSL_DCHECK(extend_amount > 0);
+  ABSL_DCHECK_EQ(arena, GetArena());
   constexpr size_t kPtrSize = sizeof(rep()->elements[0]);
   constexpr size_t kMaxSize = std::numeric_limits<size_t>::max();
   constexpr size_t kMaxCapacity = (kMaxSize - kRepHeaderSize) / kPtrSize;
   const int old_capacity = Capacity();
-  Arena* arena = GetArena();
   Rep* new_rep = nullptr;
 
   int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
@@ -92,10 +92,11 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   return &new_rep->elements[current_size_];
 }
 
-void RepeatedPtrFieldBase::Reserve(int capacity) {
+void RepeatedPtrFieldBase::Reserve(int capacity, Arena* arena) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   int delta = capacity - Capacity();
   if (delta > 0) {
-    InternalExtend(delta);
+    InternalExtend(delta, arena);
   }
 }
 
@@ -132,18 +133,18 @@ memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
 
 template <>
 void RepeatedPtrFieldBase::MergeFrom<std::string>(
-    const RepeatedPtrFieldBase& from) {
+    const RepeatedPtrFieldBase& from, Arena* arena) {
   Prefetch5LinesFrom1Line(&from);
+  ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size));
+  auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<std::string* const*>(from.elements());
   auto end = src + from.current_size_;
   auto end_assign = src + std::min(ClearedCount(), from.current_size_);
   for (; src < end_assign; ++dst, ++src) {
     (*dst)->assign(**src);
   }
-  Arena* const arena = GetArena();
   if (arena != nullptr) {
     for (; src < end; ++dst, ++src) {
       *dst = Arena::Create<std::string>(arena, **src);
@@ -175,11 +176,12 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
 }
 
 void RepeatedPtrFieldBase::MergeFromConcreteMessage(
-    const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
+    const RepeatedPtrFieldBase& from, Arena* arena, CopyFn copy_fn) {
   Prefetch5LinesFrom1Line(&from);
+  ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
-  void** dst = InternalReserve(new_size);
+  void** dst = InternalReserve(new_size, arena);
   const void* const* src = from.elements();
   auto end = src + from.current_size_;
   constexpr ptrdiff_t kPrefetchstride = 1;
@@ -188,7 +190,6 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetArena();
   if (from.current_size_ >= kPrefetchstride) {
     auto prefetch_end = end - kPrefetchstride;
     for (; src < prefetch_end; ++src, ++dst) {
@@ -208,12 +209,13 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
 
 template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
-    const RepeatedPtrFieldBase& from) {
+    const RepeatedPtrFieldBase& from, Arena* arena) {
   Prefetch5LinesFrom1Line(&from);
+  ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
   ABSL_DCHECK(from.current_size_ > 0);
   int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
+  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
   auto end = src + from.current_size_;
   const ClassData* class_data = GetClassData(*src[0]);
@@ -222,7 +224,6 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
     ABSL_DCHECK(*src != nullptr);
     *dst = class_data->New(arena);

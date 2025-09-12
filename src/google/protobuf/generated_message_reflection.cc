@@ -658,6 +658,8 @@ template <bool unsafe_shallow_swap>
 void SwapFieldHelper::SwapRepeatedStringField(const Reflection* r, Message* lhs,
                                               Message* rhs,
                                               const FieldDescriptor* field) {
+  Arena* lhs_arena = lhs->GetArena();
+  Arena* rhs_arena = rhs->GetArena();
   switch (field->cpp_string_type()) {
     case FieldDescriptor::CppStringType::kCord: {
       auto* lhs_cord = r->MutableRaw<RepeatedField<absl::Cord>>(lhs, field);
@@ -676,7 +678,8 @@ void SwapFieldHelper::SwapRepeatedStringField(const Reflection* r, Message* lhs,
       if (unsafe_shallow_swap) {
         lhs_string->InternalSwap(rhs_string);
       } else {
-        lhs_string->Swap<GenericTypeHandler<std::string>>(rhs_string);
+        lhs_string->Swap<GenericTypeHandler<std::string>>(lhs_arena, rhs_string,
+                                                          rhs_arena);
       }
       break;
     }
@@ -810,7 +813,8 @@ void SwapFieldHelper::SwapRepeatedMessageField(const Reflection* r,
     if (unsafe_shallow_swap) {
       lhs_rm->InternalSwap(rhs_rm);
     } else {
-      lhs_rm->Swap<GenericTypeHandler<Message>>(rhs_rm);
+      lhs_rm->Swap<GenericTypeHandler<Message>>(lhs->GetArena(), rhs_rm,
+                                                rhs->GetArena());
     }
   }
 }
@@ -2715,7 +2719,8 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
       // We can guarantee here that repeated and result are either both heap
       // allocated or arena owned. So it is safe to call the unsafe version
       // of AddAllocated.
-      repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message> >(result);
+      repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
+          message->GetArena(), result);
     }
 
     return result;
@@ -2737,7 +2742,8 @@ void Reflection::AddAllocatedMessage(Message* message,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    repeated->AddAllocated<GenericTypeHandler<Message>>(new_entry);
+    repeated->AddAllocated<GenericTypeHandler<Message>>(message->GetArena(),
+                                                        new_entry);
     SetHasBitForRepeated(message, field);
   }
 }
@@ -2758,7 +2764,8 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(new_entry);
+    repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
+        message->GetArena(), new_entry);
     SetHasBitForRepeated(message, field);
   }
 }
