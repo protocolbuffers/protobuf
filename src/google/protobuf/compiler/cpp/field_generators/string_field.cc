@@ -758,7 +758,8 @@ class RepeatedString : public FieldGeneratorBase {
     // `if (!from.empty()) { body(); }` for both split and non-split cases.
     auto body = [&] {
       p->Emit(R"cc(
-        _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+        _this->_internal_mutable_$name$()->MergeFromWithArena(
+            internal_visibility(), _this->GetArena(), from._internal_$name$());
       )cc");
     };
     if (!should_split()) {
@@ -793,7 +794,8 @@ class RepeatedString : public FieldGeneratorBase {
     if (should_split()) {
       p->Emit(R"cc(
         if (!from._internal_$name$().empty()) {
-          _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+          _internal_mutable_$name$()->MergeFromWithArena(
+              internal_visibility(), GetArena(), from._internal_$name$());
         }
       )cc");
     }
@@ -869,7 +871,8 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
-          ::std::string* _s = _internal_mutable_$name_internal$()->Add();
+          ::std::string* _s = _internal_mutable_$name_internal$()->AddWithArena(
+              internal_visibility(), GetArena());
           $set_hasbit$;
           $annotate_add_mutable$;
           // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
@@ -907,7 +910,8 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         inline void $Msg$::add_$name$(Arg_&& value, Args_... args) {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
-          $pbi$::AddToRepeatedPtrField(*_internal_mutable_$name_internal$(),
+          $pbi$::AddToRepeatedPtrField(internal_visibility(), GetArena(),
+                                       *_internal_mutable_$name_internal$(),
                                        ::std::forward<Arg_>(value),
                                        args... $bytes_tag$);
           $set_hasbit$;

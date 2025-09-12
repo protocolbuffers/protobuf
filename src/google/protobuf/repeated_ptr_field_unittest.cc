@@ -620,7 +620,7 @@ TEST(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
   ElemT* concrete_new_elem = static_cast<ElemT*>(base_new_elem);
   concrete_new_elem->set_bb(456);
   base_field->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
-      base_new_elem);
+      &arena, base_new_elem);
   Message* base_new_elem_roundtrip =
       base_field->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
   ASSERT_NE(base_new_elem_roundtrip, nullptr);
@@ -819,20 +819,33 @@ TEST(RepeatedPtrFieldTest, CopyConstruct) {
   EXPECT_EQ("1", destination1.Get(0));
   EXPECT_EQ("2", destination1.Get(1));
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  RepeatedPtrField<std::string> destination2(
+      token, /*internal_metadata_offset=*/0, source);
+#else
   RepeatedPtrField<std::string> destination2(token, nullptr, source);
+#endif
   ASSERT_EQ(2, destination2.size());
   EXPECT_EQ("1", destination2.Get(0));
   EXPECT_EQ("2", destination2.Get(1));
 }
 
 TEST(RepeatedPtrFieldTest, CopyConstructWithArena) {
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   auto token = internal::InternalVisibilityForTesting{};
+#endif
   RepeatedPtrField<std::string> source;
   source.Add()->assign("1");
   source.Add()->assign("2");
 
   Arena arena;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  auto destination_container =
+      Arena::Create<RepeatedPtrField<std::string>>(&arena, source);
+  auto& destination = *destination_container;
+#else
   RepeatedPtrField<std::string> destination(token, &arena, source);
+#endif
   ASSERT_EQ(2, destination.size());
   EXPECT_EQ("1", destination.Get(0));
   EXPECT_EQ("2", destination.Get(1));
