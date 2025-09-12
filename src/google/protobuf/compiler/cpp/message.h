@@ -148,7 +148,9 @@ class MessageGenerator {
     // Some field has logic that needs to run.
     bool needs_to_run_constructor = false;
   };
-  NewOpRequirements GetNewOp(io::Printer* arena_emitter) const;
+  NewOpRequirements GetNewOp(io::Printer* arena_emitter,
+                             bool without_rpf_arena_ptrs) const;
+  void GenerateNewOp(io::Printer* p, bool without_rpf_arena_ptrs) const;
 
 
   // Helpers for GenerateSerializeWithCachedSizes().

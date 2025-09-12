@@ -300,6 +300,43 @@ struct EnumTraitsImpl {
 template <typename T>
 using EnumTraits = decltype(EnumTraitsImpl::value<T>);
 
+template <typename T, size_t FieldOffset>
+struct MessageInternalMetadataOffsetHelper {
+  static_assert(
+      static_cast<ssize_t>(offsetof(T, _internal_metadata_)) -
+              static_cast<ssize_t>(FieldOffset) >=
+          ssize_t{INT_MIN},
+      "Offset from `_internal_metadata_` to the `RepeatedPtrField` is "
+      "underflowing an int, likely meaning your message body is too large.");
+  static_assert(
+      static_cast<ssize_t>(offsetof(T, _internal_metadata_)) -
+              static_cast<ssize_t>(FieldOffset) <=
+          ssize_t{INT_MAX},
+      "Offset from `_internal_metadata_` to the `RepeatedPtrField` is "
+      "overflowing an int, likely meaning your message body is too large.");
+
+  static constexpr int kOffset =
+      static_cast<int>(offsetof(T, _internal_metadata_)) -
+      static_cast<int>(FieldOffset);
+};
+
+template <typename T>
+int MessageInternalMetadataOffset(size_t field_offset) {
+  constexpr ssize_t kInternalMetadataOffset =
+      static_cast<ssize_t>(offsetof(T, _internal_metadata_));
+  ABSL_DCHECK_GE(kInternalMetadataOffset - static_cast<ssize_t>(field_offset),
+                 ssize_t{INT_MIN})
+      << "Offset from `_internal_metadata_` to the `RepeatedPtrField` is "
+         "underflowing an int, likely meaning your message body is too large.";
+  ABSL_DCHECK_LE(kInternalMetadataOffset - static_cast<ssize_t>(field_offset),
+                 ssize_t{INT_MAX})
+      << "Offset from `_internal_metadata_` to the `RepeatedPtrField` is "
+         "overflowing an int, likely meaning your message body is too large.";
+
+  return static_cast<int>(kInternalMetadataOffset) -
+         static_cast<int>(field_offset);
+}
+
 class SwapFieldHelper;
 
 // See parse_context.h for explanation
@@ -1113,6 +1150,10 @@ class PROTOBUF_EXPORT MessageLite {
   friend class Arena::InternalHelper;
   template <typename Type>
   friend struct FallbackMessageTraits;
+  template <typename T, size_t FieldOffset>
+  friend struct internal::MessageInternalMetadataOffsetHelper;
+  template <typename T>
+  friend int internal::MessageInternalMetadataOffset(size_t field_offset);
 
   template <typename Type>
   friend const internal::ClassData* internal::GetClassData(const Type& msg);
