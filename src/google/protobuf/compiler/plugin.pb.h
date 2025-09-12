@@ -1361,7 +1361,8 @@ inline void CodeGeneratorRequest::clear_file_to_generate() {
 inline ::std::string* PROTOBUF_NONNULL CodeGeneratorRequest::add_file_to_generate()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_file_to_generate()->Add();
+  ::std::string* _s = _internal_mutable_file_to_generate()->AddWithArena(
+      internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return _s;
@@ -1385,7 +1386,8 @@ inline void CodeGeneratorRequest::set_file_to_generate(int index, Arg_&& value, 
 template <typename Arg_, typename... Args_>
 inline void CodeGeneratorRequest::add_file_to_generate(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_file_to_generate(),
+  ::google::protobuf::internal::AddToRepeatedPtrField(internal_visibility(), GetArena(),
+                               *_internal_mutable_file_to_generate(),
                                ::std::forward<Arg_>(value),
                                args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
@@ -1510,7 +1512,8 @@ inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::prot
 inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_proto_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_proto_file()->Add();
+  ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_proto_file()->AddWithArena(
+      internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _add;
@@ -1558,7 +1561,8 @@ inline const ::google::protobuf::FileDescriptorProto& CodeGeneratorRequest::sour
 inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_source_file_descriptors()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_source_file_descriptors()->Add();
+  ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_source_file_descriptors()->AddWithArena(
+      internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _add;
@@ -2175,7 +2179,8 @@ inline const ::google::protobuf::compiler::CodeGeneratorResponse_File& CodeGener
 inline ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL CodeGeneratorResponse::add_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::compiler::CodeGeneratorResponse_File* _add = _internal_mutable_file()->Add();
+  ::google::protobuf::compiler::CodeGeneratorResponse_File* _add = _internal_mutable_file()->AddWithArena(
+      internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
   return _add;

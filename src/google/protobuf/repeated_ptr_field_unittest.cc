@@ -620,7 +620,7 @@ TEST(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
   ElemT* concrete_new_elem = static_cast<ElemT*>(base_new_elem);
   concrete_new_elem->set_bb(456);
   base_field->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
-      base_new_elem);
+      &arena, base_new_elem);
   Message* base_new_elem_roundtrip =
       base_field->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
   ASSERT_NE(base_new_elem_roundtrip, nullptr);

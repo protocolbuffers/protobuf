@@ -831,7 +831,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      $Submsg$* _add = _internal_mutable_$name_internal$()->Add();
+      $Submsg$* _add = _internal_mutable_$name_internal$()->AddWithArena(
+          internal_visibility(), GetArena());
       $set_hasbit$;
       $annotate_add_mutable$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
@@ -908,7 +909,8 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
   // `if (!from.empty()) { body(); }` for both split and non-split cases.
   auto body = [&] {
     p->Emit(R"cc(
-      _this->_internal_mutable$_weak$_$name$()->MergeFrom(
+      _this->_internal_mutable$_weak$_$name$()->MergeFromWithArena(
+          internal_visibility(), _this->GetArena(),
           from._internal$_weak$_$name$());
     )cc");
   };
@@ -940,7 +942,8 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
       if (!from._internal$_weak$_$name$().empty()) {
-        _internal_mutable$_weak$_$name$()->MergeFrom(from._internal$_weak$_$name$());
+        _internal_mutable$_weak$_$name$()->MergeFromWithArena(
+            internal_visibility(), GetArena(), from._internal$_weak$_$name$());
       }
     )cc");
   }
