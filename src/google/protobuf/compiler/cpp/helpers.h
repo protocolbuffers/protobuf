@@ -375,15 +375,8 @@ PROTOC_EXPORT bool IsRarelyPresent(const FieldDescriptor* field,
 // Returns true if `field` is likely to be present based on PDProto profile.
 bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
-std::optional<float> GetPresenceProbability(const FieldDescriptor* field,
-                                            const Options& options);
-
-// GetFieldGroupPresenceProbability computes presence probability for a group of
-// fields. It uses the absence probability (easier to compute)
-// (1 - p1) * (1 - p2) * ... * (1 - pn), and in the end the aggregate presence
-// probability can be expressed as (1 - all_absent_probability).
-std::optional<float> GetFieldGroupPresenceProbability(
-    const std::vector<const FieldDescriptor*>& fields, const Options& options);
+float GetPresenceProbability(const FieldDescriptor* field,
+                             const Options& options);
 
 // Returns the "hasbit mode" of the field, which may depend on profile data.
 internal::cpp::HasbitMode GetFieldHasbitMode(const FieldDescriptor* field,
