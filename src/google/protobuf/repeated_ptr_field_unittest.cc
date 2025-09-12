@@ -27,6 +27,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -49,6 +50,15 @@ using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Ge;
 using ::testing::Le;
+
+using String = std::string;
+using SmallMsg = proto2_unittest::ForeignMessage;
+using LargeMsg = proto2_unittest::TestAllTypes;
+
+namespace {
+enum WithArena : bool { kNoArena = false, kArena = true };
+enum AddMode { kIntoNew, kIntoCleared };
+}  // namespace
 
 TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
   using It = RepeatedPtrField<std::string>::pointer_iterator;
