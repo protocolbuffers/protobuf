@@ -397,7 +397,19 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @throws IndexOutOfBoundsException if {@code offset} or {@code size} are out of bounds
    */
   public static ByteString copyFrom(byte[] bytes, int offset, int size) {
+    try {
+      return copyFrom(bytes, offset, size, /* requireUtf8= */ false);
+    } catch (IOException e) {
+      throw new AssertionError("Expected no IOException", e);
+    }
+  }
+
+  static ByteString copyFrom(byte[] bytes, int offset, int size, boolean requireUtf8)
+      throws IOException {
     checkRange(offset, offset + size, bytes.length);
+    if (requireUtf8 && !Utf8.isValidUtf8(bytes, offset, offset + size)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     return new LiteralByteString(byteArrayCopier.copyFrom(bytes, offset, size));
   }
 
@@ -416,6 +428,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * library.
    */
   static ByteString wrap(ByteBuffer buffer) {
+    try {
+      return wrap(buffer, /* requireUtf8= */ false);
+    } catch (IOException e) {
+      throw new AssertionError("Expected no IOException", e);
+    }
+  }
+
+  static ByteString wrap(ByteBuffer buffer, boolean requireUtf8) throws IOException {
+    if (requireUtf8 && !Utf8.isValidUtf8(buffer)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     if (buffer.hasArray()) {
       final int offset = buffer.arrayOffset();
       return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
@@ -434,6 +457,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * to force a classload of ByteString before LiteralByteString.
    */
   static ByteString wrap(byte[] bytes) {
+    try {
+      return wrap(bytes, /* requireUtf8= */ false);
+    } catch (IOException e) {
+      throw new AssertionError("Expected no IOException", e);
+    }
+  }
+
+  static ByteString wrap(byte[] bytes, boolean requireUtf8) throws IOException {
+    if (requireUtf8 && !Utf8.isValidUtf8(bytes)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     // TODO: Return EMPTY when bytes are empty to reduce allocations?
     return new LiteralByteString(bytes);
   }
@@ -443,6 +477,18 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * to force a classload of ByteString before BoundedByteString and LiteralByteString.
    */
   static ByteString wrap(byte[] bytes, int offset, int length) {
+    try {
+      return wrap(bytes, offset, length, /* requireUtf8= */ false);
+    } catch (IOException e) {
+      throw new AssertionError("Expected no IOException", e);
+    }
+  }
+
+  static ByteString wrap(byte[] bytes, int offset, int length, boolean requireUtf8)
+      throws IOException {
+    if (requireUtf8 && !Utf8.isValidUtf8(bytes, offset, offset + length)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     return new BoundedByteString(bytes, offset, length);
   }
 
@@ -935,6 +981,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /** Base class for leaf {@link ByteString}s (i.e. non-ropes). */
   abstract static class LeafByteString extends ByteString {
     private static final long serialVersionUID = 1L;
+
+    protected String internalStringForm = null;
 
     @Override
     protected final int getTreeDepth() {
@@ -1457,7 +1505,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
     @Override
     protected final String toStringInternal(Charset charset) {
-      return new String(bytes, getOffsetIntoBytes(), size(), charset);
+      if (internalStringForm != null) {
+        return internalStringForm;
+      }
+      internalStringForm = new String(bytes, getOffsetIntoBytes(), size(), charset);
+      return internalStringForm;
     }
 
     // =================================================================
@@ -1791,6 +1843,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
     @Override
     protected String toStringInternal(Charset charset) {
+      if (internalStringForm != null) {
+        return internalStringForm;
+      }
       final byte[] bytes;
       final int offset;
       final int length;
@@ -1804,7 +1859,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         offset = 0;
         length = bytes.length;
       }
-      return new String(bytes, offset, length, charset);
+      internalStringForm = new String(bytes, offset, length, charset);
+      return internalStringForm;
     }
 
     @Override
