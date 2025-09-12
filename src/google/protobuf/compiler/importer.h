@@ -101,11 +101,11 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
   }
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(const std::string& filename,
+  bool FindFileByName(StringViewArg filename,
                       FileDescriptorProto* output) override;
-  bool FindFileContainingSymbol(const std::string& symbol_name,
+  bool FindFileContainingSymbol(StringViewArg symbol_name,
                                 FileDescriptorProto* output) override;
-  bool FindFileContainingExtension(const std::string& containing_type,
+  bool FindFileContainingExtension(StringViewArg containing_type,
                                    int field_number,
                                    FileDescriptorProto* output) override;
 
