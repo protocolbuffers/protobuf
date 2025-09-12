@@ -631,9 +631,9 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 }
 
 MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
-                                  RepeatedPtrFieldBase& field) {
+                                  RepeatedPtrFieldBase& field, Arena* arena) {
   return field.AddFromClassData<GenericTypeHandler<MessageLite>>(
-      table->class_data);
+      arena, table->class_data);
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>
@@ -734,7 +734,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
       aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
   do {
     ptr += sizeof(TagType);
-    MessageLite* submsg = AddMessage(inner_table, field);
+    MessageLite* submsg = AddMessage(inner_table, field, msg->GetArena());
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoop(submsg, ptr, ctx, inner_table);
     };
@@ -1821,7 +1821,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
                         field.PrepareForParse())) {
     do {
       ptr += sizeof(TagType);
-      ptr = ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
+      ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
 
       if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
         PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2550,12 +2550,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
-    const char* ptr, SerialArena* serial_arena, ParseContext* ctx,
+    const char* ptr, Arena* arena, SerialArena* serial_arena, ParseContext* ctx,
     RepeatedPtrField<std::string>& field) {
   int size = ReadSize(&ptr);
   if (ABSL_PREDICT_FALSE(!ptr)) return {};
   auto* str = new (serial_arena->AllocateFromStringBlock()) std::string();
-  field.AddAllocatedForParse(str);
+  field.AddAllocatedForParse(str, arena);
   ptr = ctx->ReadString(ptr, size, str);
   if (ABSL_PREDICT_FALSE(!ptr)) return {};
   PROTOBUF_ASSUME(ptr != nullptr);
@@ -2593,7 +2593,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
                             field.PrepareForParse())) {
         do {
           ptr = ptr2;
-          ptr = ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
+          ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
           if (ABSL_PREDICT_FALSE(ptr == nullptr ||
                                  !MpVerifyUtf8(field[field.size() - 1], table,
                                                entry, xform_val))) {
@@ -2751,7 +2751,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
   const char* ptr2 = ptr;
   uint32_t next_tag;
   do {
-    MessageLite* value = AddMessage(inner_table, field);
+    MessageLite* value = AddMessage(inner_table, field, msg->GetArena());
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoopPreserveNone(value, ptr, ctx, inner_table);
     };
