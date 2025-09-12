@@ -383,7 +383,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         // This variable must not be referenced except by protobuf generated
         // code.
         pub(crate) static mut $minitable_symbol_name$: $pbr$::MiniTablePtr =
-            $pbr$::MiniTablePtr($std$::ptr::NonNull::dangling());
+            $pbr$::MiniTablePtr($pbr$::RawMiniTable::dangling());
     )rs");
   }
 

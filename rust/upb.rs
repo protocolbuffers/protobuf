@@ -62,7 +62,7 @@ unsafe impl Sync for MiniTableEnumPtr {}
 /// - `mini_descriptor` must be a valid MiniDescriptor.
 pub unsafe fn build_mini_table(mini_descriptor: &'static str) -> RawMiniTable {
     unsafe {
-        NonNull::new_unchecked(upb_MiniTable_Build(
+        RawMiniTable::new(upb_MiniTable_Build(
             mini_descriptor.as_ptr(),
             mini_descriptor.len(),
             THREAD_LOCAL_ARENA.with(|a| a.raw()),
@@ -75,7 +75,7 @@ pub unsafe fn build_mini_table(mini_descriptor: &'static str) -> RawMiniTable {
 /// - `mini_descriptor` must be a valid enum MiniDescriptor.
 pub unsafe fn build_enum_mini_table(mini_descriptor: &'static str) -> RawMiniTableEnum {
     unsafe {
-        NonNull::new_unchecked(upb_MiniTableEnum_Build(
+        RawMiniTableEnum::new(upb_MiniTableEnum_Build(
             mini_descriptor.as_ptr(),
             mini_descriptor.len(),
             THREAD_LOCAL_ARENA.with(|a| a.raw()),

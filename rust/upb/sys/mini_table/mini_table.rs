@@ -15,10 +15,30 @@ use sys::mem::arena::RawArena;
 use sys::opaque_pointee::opaque_pointee;
 
 opaque_pointee!(upb_MiniTable);
-pub type RawMiniTable = NonNull<upb_MiniTable>;
+#[repr(transparent)]
+#[derive(Copy, Clone)]
+pub struct RawMiniTable(NonNull<upb_MiniTable>);
+
+impl RawMiniTable {
+    pub const fn dangling() -> RawMiniTable {
+        RawMiniTable(NonNull::dangling())
+    }
+
+    pub unsafe fn new(m: *mut upb_MiniTable) -> RawMiniTable {
+        RawMiniTable(unsafe { NonNull::new_unchecked(m) })
+    }
+}
 
 opaque_pointee!(upb_MiniTableEnum);
-pub type RawMiniTableEnum = NonNull<upb_MiniTableEnum>;
+#[repr(transparent)]
+#[derive(Copy, Clone)]
+pub struct RawMiniTableEnum(NonNull<upb_MiniTableEnum>);
+
+impl RawMiniTableEnum {
+    pub unsafe fn new(m: *mut upb_MiniTableEnum) -> RawMiniTableEnum {
+        RawMiniTableEnum(unsafe { NonNull::new_unchecked(m) })
+    }
+}
 
 opaque_pointee!(upb_MiniTableField);
 pub type RawMiniTableField = NonNull<upb_MiniTableField>;
