@@ -53,6 +53,7 @@
 namespace google {
 namespace protobuf {
 
+class DynamicMessage;
 class Message;
 class Reflection;
 
@@ -63,17 +64,22 @@ namespace internal {
 
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
+class MapFieldBase;
 
-}  // namespace internal
+class MapFieldBase;
 
-namespace internal {
 template <typename It>
 class RepeatedPtrIterator;
 template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
-}  // namespace internal
+template <typename T>
+class AllocatedRepeatedPtrFieldBackInsertIterator;
 
-namespace internal {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+class RepeatedPtrFieldWithArenaBase;
+template <typename Element>
+class RepeatedPtrFieldWithArena;
+#endif
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -83,12 +89,16 @@ inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
   std::swap_ranges(a, a + N, b);
 }
 
-// A trait that tells offset of `T::arena_`.
+// A trait that tells offset of `T::internal_metadata_offset_`.
 //
 // Do not use this struct - it exists for internal use only.
 template <typename T>
-struct ArenaOffsetHelper {
+struct InternalMetadataOffsetOffsetHelper {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  static constexpr size_t value = offsetof(T, internal_metadata_offset_);
+#else
   static constexpr size_t value = offsetof(T, arena_);
+#endif
 };
 
 // Copies the object in the arena.
@@ -151,6 +161,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   static constexpr int kSSOCapacity = 1;
 
  protected:
+  // The offset to arena to use when there is no arena.
+  static constexpr int kSentinelInternalMetadataOffset = 0;
+
   // We use the same TypeHandler for all Message types to deduplicate generated
   // code.
   template <typename TypeHandler>
@@ -159,9 +172,24 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       GenericTypeHandler<MessageLite>, TypeHandler>::type;
 
   constexpr RepeatedPtrFieldBase()
-      : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(nullptr) {}
+      : tagged_rep_or_elem_(nullptr),
+        current_size_(0),
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        internal_metadata_offset_(kSentinelInternalMetadataOffset)
+#else
+        arena_(nullptr)
+#endif
+  {
+  }
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  constexpr explicit RepeatedPtrFieldBase(int internal_metadata_offset)
+      : tagged_rep_or_elem_(nullptr),
+        current_size_(0),
+        internal_metadata_offset_(internal_metadata_offset) {}
+#else
   explicit RepeatedPtrFieldBase(Arena* arena)
       : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(arena) {}
+#endif
 
   RepeatedPtrFieldBase(const RepeatedPtrFieldBase&) = delete;
   RepeatedPtrFieldBase& operator=(const RepeatedPtrFieldBase&) = delete;
@@ -207,17 +235,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  Value<TypeHandler>* Add() {
-    return cast<TypeHandler>(AddInternal(TypeHandler::GetNewFunc()));
+  Value<TypeHandler>* Add(Arena* arena) {
+    return cast<TypeHandler>(AddInternal(arena, TypeHandler::GetNewFunc()));
   }
 
   template <typename TypeHandler>
-  void Add(Value<TypeHandler>&& value) {
+  void Add(Arena* arena, Value<TypeHandler>&& value) {
     if (ClearedCount() > 0) {
       *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
           std::move(value);
     } else {
-      AddInternal(TypeHandler::GetNewWithMoveFunc(std::move(value)));
+      AddInternal(arena, TypeHandler::GetNewWithMoveFunc(std::move(value)));
     }
   }
 
@@ -285,10 +313,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: `prototype` must not be nullptr.
   template <typename TypeHandler>
   PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromPrototype(
-      const Value<TypeHandler>* prototype) {
+      Arena* arena, const Value<TypeHandler>* prototype) {
     using H = CommonHandler<TypeHandler>;
-    Value<TypeHandler>* result =
-        cast<TypeHandler>(AddInternal(H::GetNewFromPrototypeFunc(prototype)));
+    Value<TypeHandler>* result = cast<TypeHandler>(
+        AddInternal(arena, H::GetNewFromPrototypeFunc(prototype)));
     return result;
   }
 
@@ -301,10 +329,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: `class_data` must not be nullptr.
   template <typename TypeHandler>
   PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromClassData(
-      const ClassData* class_data) {
+      Arena* arena, const ClassData* class_data) {
     using H = CommonHandler<TypeHandler>;
-    Value<TypeHandler>* result =
-        cast<TypeHandler>(AddInternal(H::GetNewFromClassDataFunc(class_data)));
+    Value<TypeHandler>* result = cast<TypeHandler>(
+        AddInternal(arena, H::GetNewFromClassDataFunc(class_data)));
     return result;
   }
 
@@ -320,20 +348,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   // Appends all message values from `from` to this instance.
   template <typename T>
-  void MergeFrom(const RepeatedPtrFieldBase& from) {
+  void MergeFrom(const RepeatedPtrFieldBase& from, Arena* arena) {
     static_assert(std::is_base_of<MessageLite, T>::value, "");
     if constexpr (!std::is_base_of<Message, T>::value) {
       // For LITE objects we use the generic MergeFrom to save on binary size.
-      return MergeFrom<MessageLite>(from);
+      return MergeFrom<MessageLite>(from, arena);
     }
-    MergeFromConcreteMessage(from, Arena::CopyConstruct<T>);
+    MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>);
   }
 
   inline void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
     ABSL_DCHECK(this != rhs);
 
-    // Swap all fields except arena pointer at once.
-    internal::memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
+    // Swap all fields except arena offset and arena pointer at once.
+    internal::memswap<
+        InternalMetadataOffsetOffsetHelper<RepeatedPtrFieldBase>::value>(
         reinterpret_cast<char*>(this), reinterpret_cast<char*>(rhs));
   }
 
@@ -345,10 +374,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Similar to `AddAllocated` but faster.
   //
   // Pre-condition: PrepareForParse() is true.
-  void AddAllocatedForParse(void* value) {
+  void AddAllocatedForParse(void* value, Arena* arena) {
     ABSL_DCHECK(PrepareForParse());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
-      *InternalExtend(1) = value;
+      *InternalExtend(1, arena) = value;
       ++rep()->allocated_size;
     } else {
       if (using_sso()) {
@@ -371,16 +400,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  void CopyFrom(const RepeatedPtrFieldBase& other) {
+  void CopyFrom(const RepeatedPtrFieldBase& other, Arena* arena) {
+    ABSL_DCHECK_EQ(arena, GetArena());
     if (&other == this) return;
     Clear<TypeHandler>();
     if (other.empty()) return;
-    MergeFrom<typename TypeHandler::Type>(other);
+    MergeFrom<typename TypeHandler::Type>(other, arena);
   }
 
   void CloseGap(int start, int num);
 
-  void Reserve(int capacity);
+  void Reserve(int capacity, Arena* arena);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -406,11 +436,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  PROTOBUF_NDEBUG_INLINE void Swap(RepeatedPtrFieldBase* other) {
-    if (internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
+  PROTOBUF_NDEBUG_INLINE void Swap(Arena* arena, RepeatedPtrFieldBase* other,
+                                   Arena* other_arena) {
+    ABSL_DCHECK_EQ(arena, GetArena());
+    ABSL_DCHECK_EQ(other_arena, other->GetArena());
+    if (internal::CanUseInternalSwap(arena, other_arena)) {
       InternalSwap(other);
     } else {
-      SwapFallback<TypeHandler>(other);
+      SwapFallback<TypeHandler>(arena, other, other_arena);
     }
   }
 
@@ -448,10 +481,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  void AddAllocated(Value<TypeHandler>* value) {
+  void AddAllocated(Arena* arena, Value<TypeHandler>* value) {
+    ABSL_DCHECK_EQ(arena, GetArena());
     ABSL_DCHECK_NE(value, nullptr);
     Arena* element_arena = TypeHandler::GetArena(value);
-    Arena* arena = GetArena();
     if (arena != element_arena || AllocatedSizeAtCapacity()) {
       AddAllocatedSlowWithCopy<TypeHandler>(value, element_arena, arena);
       return;
@@ -470,12 +503,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  void UnsafeArenaAddAllocated(Value<TypeHandler>* value) {
+  void UnsafeArenaAddAllocated(Arena* arena, Value<TypeHandler>* value) {
+    ABSL_DCHECK_EQ(arena, GetArena());
     ABSL_DCHECK_NE(value, nullptr);
     // Make room for the new pointer.
     if (SizeAtCapacity()) {
       // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1);
+      InternalExtend(1, arena);
       ++rep()->allocated_size;
     } else if (AllocatedSizeAtCapacity()) {
       // There is no more space in the pointer array because it contains some
@@ -483,7 +517,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // this case because otherwise a loop calling AddAllocated() followed by
       // Clear() would leak memory.
       using H = CommonHandler<TypeHandler>;
-      Delete<H>(element_at(current_size_), GetArena());
+      Delete<H>(element_at(current_size_), arena);
     } else if (current_size_ < allocated_size()) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
@@ -498,10 +532,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  PROTOBUF_FUTURE_ADD_NODISCARD Value<TypeHandler>* ReleaseLast() {
+  PROTOBUF_FUTURE_ADD_NODISCARD Value<TypeHandler>* ReleaseLast(Arena* arena) {
+    ABSL_DCHECK_EQ(arena, GetArena());
     Value<TypeHandler>* result = UnsafeArenaReleaseLast<TypeHandler>();
     // Now perform a copy if we're on an arena.
-    Arena* arena = GetArena();
 
     if (internal::DebugHardenForceCopyInRelease()) {
       auto* new_result = copy<TypeHandler>(result);
@@ -542,6 +576,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // or load (mine).
       Value<TypeHandler>* value, Arena* value_arena, Arena* my_arena) {
     using H = CommonHandler<TypeHandler>;
+    ABSL_DCHECK_EQ(my_arena, GetArena());
+    ABSL_DCHECK_EQ(value_arena, TypeHandler::GetArena(value));
     // Ensure that either the value is in the same arena, or if not, we do the
     // appropriate thing: Own() it (if it's on heap and we're in an arena) or
     // copy it to our arena/heap (otherwise).
@@ -552,21 +588,38 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       value = cast<TypeHandler>(CloneSlow(my_arena, *value));
     }
 
-    UnsafeArenaAddAllocated<H>(value);
+    UnsafeArenaAddAllocated<H>(my_arena, value);
   }
 
-  // TODO - Outline this function so a future change can use a
-  // type in its implementation that requires `RepeatedPtrFieldBase` to be fully
-  // defined.
   template <typename TypeHandler>
-  PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other);
+  PROTOBUF_NOINLINE void SwapFallback(Arena* arena, RepeatedPtrFieldBase* other,
+                                      Arena* other_arena);
+
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  inline const InternalMetadata& GetInternalMetadata() const {
+    ABSL_DCHECK(internal_metadata_offset_ != kSentinelInternalMetadataOffset);
+    return *reinterpret_cast<const InternalMetadata*>(
+        reinterpret_cast<const char*>(this) + internal_metadata_offset_);
+  }
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
   // Gets the Arena on which this RepeatedPtrField stores its elements.
-  inline Arena* GetArena() const { return arena_; }
+  inline Arena* GetArena() const {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+    if (internal_metadata_offset_ == kSentinelInternalMetadataOffset) {
+      return nullptr;
+    }
+    return GetInternalMetadata().arena();
+#else
+    return arena_;
+#endif
+  }
 
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
     return PROTOBUF_FIELD_OFFSET(RepeatedPtrFieldBase, arena_);
   }
+#endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
  private:
   // Tests that need to access private methods.
@@ -575,6 +628,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  friend internal::RepeatedPtrFieldWithArenaBase;
+#endif
 
   friend google::protobuf::Arena;
 
@@ -591,7 +648,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // The MapFieldBase implementation needs to call protected methods directly,
   // reinterpreting pointers as being to Message instead of a specific Message
   // subclass.
-  friend class MapFieldBase;
+  friend MapFieldBase;
   friend struct MapFieldTestPeer;
 
   // The table-driven MergePartialFromCodedStream implementation needs to
@@ -605,10 +662,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   friend class internal::TcParser;  // TODO: Remove this friend.
 
-  // Expose offset of `arena_` without exposing the member itself.
-  // Used to optimize code size of `InternalSwap` method.
+  // Expose offset of `internal_metadata_offset_` without exposing the member
+  // itself. Used to optimize code size of `InternalSwap` method.
   template <typename T>
-  friend struct ArenaOffsetHelper;
+  friend struct InternalMetadataOffsetOffsetHelper;
 
   // The reflection implementation needs to call protected methods directly,
   // reinterpreting pointers as being to Message instead of a specific Message
@@ -731,29 +788,29 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   // Appends all messages from `from` to this instance, using the
   // provided `copy_fn` copy function to copy existing messages.
-  void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from,
+  void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from, Arena* arena,
                                 CopyFn copy_fn);
 
   // Extends capacity by at least |extend_amount|. Returns a pointer to the
   // next available element slot.
   //
   // Pre-condition: |extend_amount| must be > 0.
-  void** InternalExtend(int extend_amount);
+  void** InternalExtend(int extend_amount, Arena* arena);
 
   // Ensures that capacity is at least `n` elements.
   // Returns a pointer to the element directly beyond the last element.
-  inline void** InternalReserve(int n) {
+  inline void** InternalReserve(int n, Arena* arena) {
     if (n <= Capacity()) {
       void** elements = using_sso() ? &tagged_rep_or_elem_ : rep()->elements;
       return elements + current_size_;
     }
-    return InternalExtend(n - Capacity());
+    return InternalExtend(n - Capacity(), arena);
   }
 
   // Common implementation used by various Add* methods. `factory` is an object
   // used to construct a new element unless there are spare cleared elements
   // ready for reuse. Returns pointer to the new element.
-  void* AddInternal(absl::FunctionRef<ElementNewFn> factory);
+  void* AddInternal(Arena* arena, absl::FunctionRef<ElementNewFn> factory);
 
   // A few notes on internal representation:
   //
@@ -768,8 +825,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // significant performance for memory-sensitive workloads.
   void* tagged_rep_or_elem_;
   int current_size_;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  int internal_metadata_offset_ = 0;
+#else
   const int arena_offset_placeholder_do_not_use_ = 0;
   Arena* arena_;
+#endif
 };
 
 // Appends all message values from `from` to this instance using the abstract
@@ -777,23 +838,23 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 // other locations where the underlying type is unavailable
 template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
-    const RepeatedPtrFieldBase& from);
+    const RepeatedPtrFieldBase& from, Arena* arena);
 
 template <>
 inline void RepeatedPtrFieldBase::MergeFrom<Message>(
-    const RepeatedPtrFieldBase& from) {
-  return MergeFrom<MessageLite>(from);
+    const RepeatedPtrFieldBase& from, Arena* arena) {
+  return MergeFrom<MessageLite>(from, arena);
 }
 
 // Appends all `std::string` values from `from` to this instance.
 template <>
 PROTOBUF_EXPORT void RepeatedPtrFieldBase::MergeFrom<std::string>(
-    const RepeatedPtrFieldBase& from);
+    const RepeatedPtrFieldBase& from, Arena* arena);
 
 
 inline void* RepeatedPtrFieldBase::AddInternal(
-    absl::FunctionRef<ElementNewFn> factory) {
-  Arena* const arena = GetArena();
+    Arena* arena, absl::FunctionRef<ElementNewFn> factory) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     factory(arena, tagged_rep_or_elem_);
@@ -805,7 +866,7 @@ inline void* RepeatedPtrFieldBase::AddInternal(
       ExchangeCurrentSize(1);
       return tagged_rep_or_elem_;
     }
-    void*& result = *InternalExtend(1);
+    void*& result = *InternalExtend(1, arena);
     factory(arena, result);
     Rep* r = rep();
     r->allocated_size = 2;
@@ -814,7 +875,7 @@ inline void* RepeatedPtrFieldBase::AddInternal(
   }
   Rep* r = rep();
   if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
-    InternalExtend(1);
+    InternalExtend(1, arena);
     r = rep();
   } else {
     if (ClearedCount() > 0) {
@@ -827,19 +888,52 @@ inline void* RepeatedPtrFieldBase::AddInternal(
   return result;
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+// A container that holds a RepeatedPtrFieldBase and an arena pointer. This is
+// only used for `RepeatedPtrFieldBase::SwapFallback`, which temporarily needs
+// a RepeatedPtrFieldBase and an arena pointer to avoid doing extra copies, but
+// doesn't have complete type information on `Element` yet.
+class RepeatedPtrFieldWithArenaBase {
+ public:
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  static const int kInternalMetadataOffset;
+
+  explicit RepeatedPtrFieldWithArenaBase(Arena* arena)
+      : internal_metadata_(arena),
+        field_(/*internal_metadata_offset=*/kInternalMetadataOffset) {}
+
+  RepeatedPtrFieldBase& field() { return field_; }
+
+ private:
+  // Clang thinks this field is unused, but field_ accesses it indirectly
+  // through internal_metadata_offset_.
+  [[maybe_unused]] const InternalMetadata internal_metadata_;
+  RepeatedPtrFieldBase field_;
+};
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+
 template <typename TypeHandler>
 PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
-    RepeatedPtrFieldBase* other) {
+    Arena* arena, RepeatedPtrFieldBase* other, Arena* other_arena) {
   ABSL_DCHECK(!internal::CanUseInternalSwap(GetArena(), other->GetArena()));
+  ABSL_DCHECK_EQ(arena, GetArena());
+  ABSL_DCHECK_EQ(other_arena, other->GetArena());
 
   // Copy semantics in this case. We try to improve efficiency by placing the
   // temporary on |other|'s arena so that messages are copied twice rather
   // than three times.
-  RepeatedPtrFieldBase temp(other->GetArena());
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  RepeatedPtrFieldWithArenaBase temp_container(other_arena);
+  RepeatedPtrFieldBase& temp = temp_container.field();
+#else
+  RepeatedPtrFieldBase temp(other_arena);
+#endif
   if (!this->empty()) {
-    temp.MergeFrom<typename TypeHandler::Type>(*this);
+    temp.MergeFrom<typename TypeHandler::Type>(*this, other_arena);
   }
-  this->CopyFrom<TypeHandler>(*other);
+  this->CopyFrom<TypeHandler>(*other, arena);
   other->InternalSwap(&temp);
   if (temp.NeedsDestroy()) {
     temp.Destroy<TypeHandler>();
@@ -993,18 +1087,20 @@ struct RepeatedPtrFieldArenaRep {};
 
 template <>
 struct RepeatedPtrFieldArenaRep<RepeatedPtrFieldBase> {
-  // TODO - With removed arena pointers, we will need a class that
-  // holds both the arena pointer and the repeated field, and points the
-  // repeated to the arena pointer.
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  using Type = RepeatedPtrFieldWithArenaBase;
+#else
   using Type = RepeatedPtrFieldBase;
+#endif
 };
 
 template <typename Element>
 struct RepeatedPtrFieldArenaRep<RepeatedPtrField<Element>> {
-  // TODO - With removed arena pointers, we will need a class that
-  // holds both the arena pointer and the repeated field, and points the
-  // repeated to the arena pointer.
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  using Type = RepeatedPtrFieldWithArena<Element>;
+#else
   using Type = RepeatedPtrField<Element>;
+#endif
 };
 
 }  // namespace internal
@@ -1055,6 +1151,15 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   constexpr RepeatedPtrField();
 
   // Arena enabled constructors: for internal use only.
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  constexpr RepeatedPtrField(internal::InternalVisibility,
+                             int internal_metadata_offset)
+      : RepeatedPtrField(internal_metadata_offset) {}
+  RepeatedPtrField(internal::InternalVisibility, int internal_metadata_offset,
+                   const RepeatedPtrField& rhs)
+      : RepeatedPtrField(internal_metadata_offset, rhs) {}
+
+#else
   RepeatedPtrField(internal::InternalVisibility, Arena* arena)
       : RepeatedPtrField(arena) {}
   RepeatedPtrField(internal::InternalVisibility, Arena* arena,
@@ -1064,6 +1169,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // TODO: make constructor private
   [[deprecated("Use Arena::Create<RepeatedPtrField<...>>(Arena*) instead")]]
   explicit RepeatedPtrField(Arena* arena);
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
@@ -1071,12 +1177,26 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   RepeatedPtrField(Iter begin, Iter end);
 
   RepeatedPtrField(const RepeatedPtrField& rhs)
-      : RepeatedPtrField(nullptr, rhs) {}
+      : RepeatedPtrField(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+            /*internal_metadata_offset=*/kSentinelInternalMetadataOffset,
+#else
+            /*arena=*/nullptr,
+#endif
+            rhs) {
+  }
   RepeatedPtrField& operator=(const RepeatedPtrField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
+      : RepeatedPtrField(
+            /*internal_metadata_offset=*/kSentinelInternalMetadataOffset,
+            std::move(rhs)) {}
+#else
   RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
       : RepeatedPtrField(nullptr, std::move(rhs)) {}
+#endif
   RepeatedPtrField& operator=(RepeatedPtrField&& other) noexcept
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
@@ -1329,28 +1449,81 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     internal::RepeatedPtrFieldBase::InternalSwap(other);
   }
 
+  // For internal use only.
+  //
+  // Like `Add()`, but uses the given arena instead of calling `GetArena()`. It
+  // is the responsibility of the caller to ensure that this arena is the same
+  // as the arena returned from `GetArena()`.
+  pointer AddWithArena(internal::InternalVisibility,
+                       Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
+  // For internal use only.
+  //
+  // Like `Add(Element&&)`, but uses the given arena instead of calling
+  // `GetArena()`. It is the responsibility of the caller to ensure that this
+  // arena is the same as the arena returned from `GetArena()`.
+  void AddWithArena(internal::InternalVisibility, Arena* arena,
+                    Element&& value);
+
+  // For internal use only.
+  //
+  // Like `MergeFrom(const RepeatedPtrField& other)`, but uses the given arena
+  // instead of calling `GetArena()`. It is the responsibility of the caller to
+  // ensure that this arena is the same as the arena returned from `GetArena()`.
+  void MergeFromWithArena(internal::InternalVisibility, Arena* arena,
+                          const RepeatedPtrField& other);
+
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   using RepeatedPtrFieldBase::InternalGetArenaOffset;
+#endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
  private:
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
+  friend RepeatedPtrFieldBase;
+
+  // Friended to allow calling `AddAllocated` from our private base class with
+  // arena pointers, which may be cached in the iterator. This saves us needing
+  // to call `GetArena()` on the `RepeatedPtrField` every insertion, which has 2
+  // levels of indirection.
+  template <typename T>
+  friend class internal::AllocatedRepeatedPtrFieldBackInsertIterator;
+
   friend class Arena;
+
+  friend class google::protobuf::DynamicMessage;
+
+  friend class internal::MapFieldBase;
 
   friend class internal::TcParser;
 
   template <typename T>
   friend struct WeakRepeatedPtrField;
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  friend internal::RepeatedPtrFieldWithArena<Element>;
+#endif
+
+  // The MapFieldBase implementation needs to be able to static_cast down to
+  // `RepeatedPtrFieldBase`.
+  friend internal::MapFieldBase;
+
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  constexpr explicit RepeatedPtrField(int internal_metadata_offset);
+  RepeatedPtrField(int internal_metadata_offset, const RepeatedPtrField& rhs);
+  RepeatedPtrField(int internal_metadata_offset, RepeatedPtrField&& rhs);
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
   RepeatedPtrField(Arena* arena, RepeatedPtrField&& rhs);
+#endif
 
 
-  void AddAllocatedForParse(Element* p) {
-    return RepeatedPtrFieldBase::AddAllocatedForParse(p);
+  void AddAllocatedForParse(Element* p, Arena* arena) {
+    return RepeatedPtrFieldBase::AddAllocatedForParse(p, arena);
   }
 };
 
@@ -1362,6 +1535,25 @@ constexpr RepeatedPtrField<Element>::RepeatedPtrField()
   StaticValidityCheck();
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+template <typename Element>
+constexpr inline RepeatedPtrField<Element>::RepeatedPtrField(
+    int internal_metadata_offset)
+    : RepeatedPtrFieldBase(internal_metadata_offset) {
+  // We can't have StaticValidityCheck here because that requires Element to be
+  // a complete type, and in split repeated fields cases, we call
+  // CreateMessage<RepeatedPtrField<T>> for incomplete Ts.
+}
+
+template <typename Element>
+inline RepeatedPtrField<Element>::RepeatedPtrField(int internal_metadata_offset,
+                                                   const RepeatedPtrField& rhs)
+    : RepeatedPtrFieldBase(internal_metadata_offset) {
+  StaticValidityCheck();
+  MergeFrom(rhs);
+}
+
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena)
     : RepeatedPtrFieldBase(arena) {
@@ -1375,8 +1567,10 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena,
                                                    const RepeatedPtrField& rhs)
     : RepeatedPtrFieldBase(arena) {
   StaticValidityCheck();
-  MergeFrom(rhs);
+  if (rhs.empty()) return;
+  RepeatedPtrFieldBase::MergeFrom<Element>(rhs, arena);
 }
+#endif
 
 template <typename Element>
 template <typename Iter, typename>
@@ -1403,6 +1597,23 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
   return *this;
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+template <typename Element>
+inline RepeatedPtrField<Element>::RepeatedPtrField(int internal_metadata_offset,
+                                                   RepeatedPtrField&& rhs)
+    : RepeatedPtrFieldBase(internal_metadata_offset) {
+  // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
+  // is on a different arena.
+  Arena* arena = GetArena();
+  Arena* rhs_arena = rhs.GetArena();
+  if (internal::CanMoveWithInternalSwap(arena, rhs_arena)) {
+    InternalSwap(&rhs);
+  } else {
+    RepeatedPtrFieldBase::CopyFrom<TypeHandler>(rhs, arena);
+  }
+}
+
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena,
                                                    RepeatedPtrField&& rhs)
@@ -1412,9 +1623,10 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena,
   if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
   } else {
-    CopyFrom(rhs);
+    RepeatedPtrFieldBase::CopyFrom<TypeHandler>(rhs, arena);
   }
 }
+#endif
 
 template <typename Element>
 inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
@@ -1422,10 +1634,12 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (internal::CanMoveWithInternalSwap(GetArena(), other.GetArena())) {
+    Arena* arena = GetArena();
+    Arena* other_arena = other.GetArena();
+    if (internal::CanMoveWithInternalSwap(arena, other_arena)) {
       InternalSwap(&other);
     } else {
-      CopyFrom(other);
+      RepeatedPtrFieldBase::CopyFrom<TypeHandler>(other, arena);
     }
   }
   return *this;
@@ -1468,12 +1682,24 @@ inline Element* RepeatedPtrField<Element>::Mutable(int index)
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::Add()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return RepeatedPtrFieldBase::Add<TypeHandler>();
+  return RepeatedPtrFieldBase::Add<TypeHandler>(GetArena());
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::AddWithArena(
+    internal::InternalVisibility, Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return RepeatedPtrFieldBase::Add<TypeHandler>(arena);
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Element&& value) {
-  RepeatedPtrFieldBase::Add<TypeHandler>(std::move(value));
+  RepeatedPtrFieldBase::Add<TypeHandler>(GetArena(), std::move(value));
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
+    internal::InternalVisibility, Arena* arena, Element&& value) {
+  RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
 }
 
 template <typename Element>
@@ -1575,12 +1801,19 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::MergeFrom(
     const RepeatedPtrField& other) {
   if (other.empty()) return;
-  RepeatedPtrFieldBase::MergeFrom<Element>(other);
+  RepeatedPtrFieldBase::MergeFrom<Element>(other, GetArena());
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::MergeFromWithArena(
+    internal::InternalVisibility, Arena* arena, const RepeatedPtrField& other) {
+  if (other.empty()) return;
+  RepeatedPtrFieldBase::MergeFrom<Element>(other, arena);
 }
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::CopyFrom(const RepeatedPtrField& other) {
-  RepeatedPtrFieldBase::CopyFrom<TypeHandler>(other);
+  RepeatedPtrFieldBase::CopyFrom<TypeHandler>(other, GetArena());
 }
 
 template <typename Element>
@@ -1622,7 +1855,7 @@ inline const Element* const* RepeatedPtrField<Element>::data() const
 template <typename Element>
 inline void RepeatedPtrField<Element>::Swap(RepeatedPtrField* other) {
   if (this == other) return;
-  RepeatedPtrFieldBase::Swap<TypeHandler>(other);
+  RepeatedPtrFieldBase::Swap<TypeHandler>(GetArena(), other, other->GetArena());
 }
 
 template <typename Element>
@@ -1656,17 +1889,17 @@ inline size_t RepeatedPtrField<Element>::SpaceUsedExcludingSelfLong() const {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
-  RepeatedPtrFieldBase::AddAllocated<TypeHandler>(value);
+  RepeatedPtrFieldBase::AddAllocated<TypeHandler>(GetArena(), value);
 }
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaAddAllocated(Element* value) {
-  RepeatedPtrFieldBase::UnsafeArenaAddAllocated<TypeHandler>(value);
+  RepeatedPtrFieldBase::UnsafeArenaAddAllocated<TypeHandler>(GetArena(), value);
 }
 
 template <typename Element>
 inline Element* RepeatedPtrField<Element>::ReleaseLast() {
-  return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>();
+  return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>(GetArena());
 }
 
 template <typename Element>
@@ -1677,7 +1910,7 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
-  return RepeatedPtrFieldBase::Reserve(new_size);
+  return RepeatedPtrFieldBase::Reserve(new_size, GetArena());
 }
 
 template <typename Element>
@@ -1708,8 +1941,19 @@ class RustRepeatedMessageHelper {
     return static_cast<size_t>(field.size());
   }
 
+  static auto Add(RepeatedPtrFieldBase& field, const MessageLite* prototype) {
+    return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
+        field.GetArena(), prototype);
+  }
+
+  static void CopyFrom(const RepeatedPtrFieldBase& src,
+                       RepeatedPtrFieldBase& dst) {
+    dst.Clear<GenericTypeHandler<google::protobuf::MessageLite>>();
+    dst.MergeFrom<google::protobuf::MessageLite>(src, dst.GetArena());
+  }
+
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.Reserve(field.size() + additional);
+    field.Reserve(field.size() + additional, field.GetArena());
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
@@ -2080,10 +2324,14 @@ class AllocatedRepeatedPtrFieldBackInsertIterator {
 
   explicit AllocatedRepeatedPtrFieldBackInsertIterator(
       RepeatedPtrField<T>* const mutable_field)
-      : field_(mutable_field) {}
+      : field_(mutable_field), arena_(mutable_field->GetArena()) {}
   AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator=(
       T* const ptr_to_value) {
-    field_->AddAllocated(ptr_to_value);
+    // Directly call AddAllocated with the cached arena pointer. This avoids
+    // the cost of calling `GetArena()` on `RepeatedPtrField`, which is
+    // expensive.
+    field_->RepeatedPtrFieldBase::template AddAllocated<
+        typename RepeatedPtrField<T>::TypeHandler>(arena_, ptr_to_value);
     return *this;
   }
   AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator*() { return *this; }
@@ -2094,6 +2342,7 @@ class AllocatedRepeatedPtrFieldBackInsertIterator {
 
  private:
   RepeatedPtrField<T>* field_;
+  Arena* arena_;
 };
 
 // Almost identical to AllocatedRepeatedPtrFieldBackInsertIterator. This one
@@ -2160,6 +2409,80 @@ inline T* CheckedMutableOrAbort(RepeatedPtrField<T>* field, int index) {
   return field->Mutable(index);
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+// A container that holds a RepeatedPtrField<Element> and an arena pointer. This
+// is used for both directly arena-allocated RepeatedPtrField's and split
+// RepeatedPtrField's. Both cases need to return the correct thing when a user
+// calls `GetArena()` on the RepeatedPtrField.
+//
+// Since RepeatedPtrField's can only point to an existing arena pointer "nearby"
+// in memory, we will need to store the arena pointer alongside individually
+// allocated RepeatedPtrField's.
+template <typename Element>
+class RepeatedPtrFieldWithArena {
+ public:
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  static const int kInternalMetadataOffset;
+
+  explicit inline RepeatedPtrFieldWithArena(Arena* arena)
+      : internal_metadata_(arena) {
+    new (field_storage_) RepeatedPtrField<Element>(
+        /*internal_metadata_offset=*/kInternalMetadataOffset);
+  }
+
+  RepeatedPtrFieldWithArena(Arena* arena,
+                            const RepeatedPtrField<Element>& other)
+      : internal_metadata_(arena) {
+    ABSL_DCHECK_NE(arena, nullptr);
+    new (field_storage_) RepeatedPtrField<Element>(
+        /*internal_metadata_offset=*/kInternalMetadataOffset, other);
+  }
+
+  RepeatedPtrFieldWithArena(Arena* arena, RepeatedPtrField<Element>&& other)
+      : internal_metadata_(arena) {
+    ABSL_DCHECK_NE(arena, nullptr);
+    new (field_storage_) RepeatedPtrField<Element>(
+        /*internal_metadata_offset=*/kInternalMetadataOffset, std::move(other));
+  }
+
+  ~RepeatedPtrFieldWithArena() { field().~RepeatedPtrField<Element>(); }
+
+  const RepeatedPtrField<Element>& field() const {
+    return *reinterpret_cast<const RepeatedPtrField<Element>*>(field_storage_);
+  }
+  RepeatedPtrField<Element>& field() {
+    return *reinterpret_cast<RepeatedPtrField<Element>*>(field_storage_);
+  }
+
+  void Clear() { field().Clear(); }
+
+ private:
+  // Clang thinks this field is unused, but field_ accesses it indirectly
+  // through internal_metadata_offset_.
+  [[maybe_unused]] const InternalMetadata internal_metadata_;
+  // We can't have a member with type `RepeatedPtrField<Element>` here because
+  // that will require `Element` to be a complete type, and in split repeated
+  // fields cases, we call `CreateMessage<RepeatedPtrField<T>>` for incomplete
+  // `T`s. When the constructor of `RepeatedPtrFieldWithArena` is invoked, both
+  // the constructor and destructor of all members are pulled in, and the
+  // destructor of `RepeatedPtrField<Element>` calls
+  // `StaticValidityCheck<Element>`, which requires `Element` to be a complete
+  // type.
+  alignas(RepeatedPtrField<Element>) uint8_t
+      field_storage_[sizeof(RepeatedPtrField<Element>)];
+};
+
+template <typename Element>
+const int RepeatedPtrFieldWithArena<Element>::kInternalMetadataOffset =
+    static_cast<int>(
+        offsetof(RepeatedPtrFieldWithArena<Element>, internal_metadata_)) -
+    static_cast<int>(
+        offsetof(RepeatedPtrFieldWithArena<Element>, field_storage_));
+
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+
 }  // namespace internal
 
 // Provides a back insert iterator for RepeatedPtrField instances,
@@ -2214,7 +2537,7 @@ namespace internal {
 // Size optimization for `memswap<N>` - supplied below N is used by every
 // `RepeatedPtrField<T>`.
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE void
-memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
+memswap<InternalMetadataOffsetOffsetHelper<RepeatedPtrFieldBase>::value>(
     char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
 }  // namespace internal
 
