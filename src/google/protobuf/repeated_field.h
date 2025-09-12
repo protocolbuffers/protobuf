@@ -256,13 +256,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");
-  static_assert(!std::is_const<Element>::value,
+  static_assert(!std::is_const_v<Element>,
                 "We do not support const value types.");
-  static_assert(!std::is_volatile<Element>::value,
+  static_assert(!std::is_volatile_v<Element>,
                 "We do not support volatile value types.");
-  static_assert(!std::is_pointer<Element>::value,
+  static_assert(!std::is_pointer_v<Element>,
                 "We do not support pointer value types.");
-  static_assert(!std::is_reference<Element>::value,
+  static_assert(!std::is_reference_v<Element>,
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
@@ -294,8 +294,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   explicit RepeatedField(Arena* arena);
 
   template <typename Iter,
-            typename = typename std::enable_if<std::is_constructible<
-                Element, decltype(*std::declval<Iter>())>::value>::type>
+            typename = std::enable_if_t<std::is_constructible_v<
+                Element, decltype(*std::declval<Iter>())>>>
   RepeatedField(Iter begin, Iter end);
 
   // Arena enabled constructors: for internal use only.
@@ -964,9 +964,9 @@ inline void RepeatedField<Element>::AddInputIterator(Iter begin, Iter end) {
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
-  if (std::is_base_of<
+  if (std::is_base_of_v<
           std::forward_iterator_tag,
-          typename std::iterator_traits<Iter>::iterator_category>::value) {
+          typename std::iterator_traits<Iter>::iterator_category>) {
     AddForwardIterator(begin, end);
   } else {
     AddInputIterator(begin, end);
@@ -1310,7 +1310,7 @@ template <typename Element>
 class RepeatedIterator {
  private:
   using traits =
-      std::iterator_traits<typename std::remove_const<Element>::type*>;
+      std::iterator_traits<std::remove_const_t<Element>*>;
 
  public:
   // Note: value_type is never cv-qualified.
@@ -1326,8 +1326,8 @@ class RepeatedIterator {
   // Allows "upcasting" from RepeatedIterator<T**> to
   // RepeatedIterator<const T*const*>.
   template <typename OtherElement,
-            typename std::enable_if<std::is_convertible<
-                OtherElement*, pointer>::value>::type* = nullptr>
+            std::enable_if_t<std::is_convertible_v<
+                OtherElement*, pointer>>* = nullptr>
   constexpr RepeatedIterator(
       const RepeatedIterator<OtherElement>& other) noexcept
       : it_(other.it_) {}

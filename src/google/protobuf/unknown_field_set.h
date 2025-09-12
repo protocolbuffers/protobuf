@@ -259,17 +259,17 @@ class PROTOBUF_EXPORT UnknownFieldSet {
 
   template <typename MessageType,
             typename std::enable_if_t<
-                std::is_base_of<Message, MessageType>::value, int> = 0>
+                std::is_base_of_v<Message, MessageType>, int> = 0>
   bool InternalMergeFromMessage(const MessageType& message) {
     MergeFrom(message.GetReflection()->GetUnknownFields(message));
     return true;
   }
 
   template <typename MessageType,
-            typename std::enable_if<
-                std::is_base_of<MessageLite, MessageType>::value &&
-                    !std::is_base_of<Message, MessageType>::value,
-                int>::type = 0>
+            std::enable_if_t<
+                std::is_base_of_v<MessageLite, MessageType> &&
+                    !std::is_base_of_v<Message, MessageType>,
+                int> = 0>
   bool InternalMergeFromMessage(const MessageType& message) {
     const auto& unknown_fields = message.unknown_fields();
     io::ArrayInputStream array_stream(unknown_fields.data(),
