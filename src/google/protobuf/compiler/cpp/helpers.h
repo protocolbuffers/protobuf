@@ -525,6 +525,11 @@ bool IsV2ParseEnabledForMessage(const Descriptor* descriptor,
 bool IsV2EnabledForMessage(const Descriptor* descriptor,
                            const Options& options);
 
+// Returns true if a message (descriptor) needs v2 verify function because it
+// may (transitively) contain a required field.
+bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options,
+                    MessageSCCAnalyzer* scc_analyzer);
+
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
 bool IsV2CodegenEnabled(const Options& options);
 bool ShouldGenerateV2Code(const Descriptor* descriptor, const Options& options);
