@@ -50,8 +50,11 @@ enum NotAllowed {
   ISSET = 44;
   LIST = 45;
   MATCH = 46;
+  MIXED = 81;
   NAMESPACE = 47;
+  NEVER = 82;
   NEW = 48;
+  OBJECT = 83;
   OR = 49;
   PARENT = 77;
   PRINT = 50;
