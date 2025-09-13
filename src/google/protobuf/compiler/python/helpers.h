@@ -25,6 +25,7 @@ std::string StrippedModuleName(absl::string_view filename);
 bool ContainsPythonKeyword(absl::string_view module_name);
 bool IsPythonKeyword(absl::string_view name);
 std::string ResolveKeyword(absl::string_view name);
+std::string EscapeKeyword(absl::string_view name);
 std::string GetFileName(const FileDescriptor* file_des,
                         absl::string_view suffix);
 bool HasGenericServices(const FileDescriptor* file);
