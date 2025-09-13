@@ -133,6 +133,7 @@ struct ExtensionInfo {
   constexpr ExtensionInfo(const MessageLite* extendee, int param_number,
                           FieldType type_param, bool isrepeated, bool ispacked,
                           LazyEagerVerifyFnType verify_func,
+                          LazyEagerVerifyV2FnType verify_v2_func,
                           LazyAnnotation islazy = LazyAnnotation::kUndefined)
       : message(extendee),
         number(param_number),
@@ -141,7 +142,8 @@ struct ExtensionInfo {
         is_packed(ispacked),
         is_lazy(islazy),
         enum_validity_check(),
-        lazy_eager_verify_func(verify_func) {}
+        lazy_eager_verify_func(verify_func),
+        lazy_eager_verify_v2_func(verify_v2_func) {}
 
   const MessageLite* message = nullptr;
   int number = 0;
@@ -193,6 +195,7 @@ struct ExtensionInfo {
   // verification of the raw bytes.
   // If nullptr then no verification is performed.
   LazyEagerVerifyFnType lazy_eager_verify_func = nullptr;
+  LazyEagerVerifyV2FnType lazy_eager_verify_v2_func = nullptr;
 };
 
 
@@ -278,7 +281,19 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        bool is_packed,
                                        const MessageLite* prototype,
                                        LazyEagerVerifyFnType verify_func,
+                                       LazyEagerVerifyV2FnType verify_v2_func,
                                        LazyAnnotation is_lazy);
+
+  // For backward compatibility. To be removed.
+  static void RegisterMessageExtension(const MessageLite* extendee, int number,
+                                       FieldType type, bool is_repeated,
+                                       bool is_packed,
+                                       const MessageLite* prototype,
+                                       LazyEagerVerifyFnType verify_func,
+                                       LazyAnnotation is_lazy) {
+    RegisterMessageExtension(extendee, number, type, is_repeated, is_packed,
+                             prototype, verify_func, nullptr, is_lazy);
+  }
 
   // In weak descriptor mode we register extensions in two phases.
   // This function determines if it is the right time to register a particular
@@ -1663,6 +1678,7 @@ class MessageTypeTraits {
 // Used by WireFormatVerify to extract the verify function from the registry.
 LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
     const MessageLite* extendee, int number);
+
 
 // forward declaration.
 class RepeatedMessageGenericTypeTraits;
