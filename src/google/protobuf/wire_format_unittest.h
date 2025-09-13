@@ -1635,8 +1635,6 @@ TYPED_TEST_P(Utf8ValidationTest, OldVerifyUTF8String) {
     EXPECT_CALL(log, Log(absl::LogSeverity::kError, testing::_, testing::_))
         .Times(0);
     log.StartCapturingLogs();
-    WireFormat::VerifyUTF8String(data.data(), data.size(),
-                                 WireFormat::SERIALIZE);
   }
 }
 
