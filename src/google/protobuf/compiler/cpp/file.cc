@@ -32,6 +32,9 @@
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/enum.h"
+#include "google/protobuf/compiler/cpp/enum_strategy.h"
+#include "google/protobuf/compiler/cpp/enum_strategy_scoped.h"
+#include "google/protobuf/compiler/cpp/enum_strategy_unscoped.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/message.h"
@@ -547,7 +550,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
 void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
   // For MSVC builds, we use #pragma init_seg to move the initialization of our
   // libraries to happen before the user code.
-  // This worksaround the fact that MSVC does not do constant initializers when
+  // This works around the fact that MSVC does not do constant initializers when
   // required by the standard.
   p->Emit(R"cc(
     PROTOBUF_PRAGMA_INIT_SEG
@@ -1432,9 +1435,12 @@ class FileGenerator::ForwardDeclarations {
               Sub("enum", e.first).AnnotatedAs(e.second),
               {"DEPRECATED",
                e.second->options().deprecated() ? "[[deprecated]]" : ""},
+              {"enum_keywords", EnumStrategy::EnumIsUnscoped(e.second)
+                                    ? UnscopedEnumStrategy::kEnumKeywords
+                                    : ScopedEnumStrategy::kEnumKeywords},
           },
           R"cc(
-            enum $DEPRECATED $$enum$ : int;
+            $enum_keywords$ $DEPRECATED $$enum$ : int;
             $dllexport_decl $extern const uint32_t $enum$_internal_data_[];
           )cc");
     }

@@ -22,9 +22,11 @@
 // correctly and produces the interfaces we expect, which is why this test
 // is written this way.
 
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "absl/base/attributes.h"
