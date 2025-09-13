@@ -830,7 +830,7 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    internal::RuntimeAssertInBounds(index, size());
+  internal::RuntimeAssertInBounds(index, size());
   return elements(is_soo())[index];
 }
 
@@ -853,7 +853,7 @@ inline Element& RepeatedField<Element>::at(int index)
 template <typename Element>
 inline Element* RepeatedField<Element>::Mutable(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    internal::RuntimeAssertInBounds(index, size());
+  internal::RuntimeAssertInBounds(index, size());
   return &elements(is_soo())[index];
 }
 
@@ -1283,7 +1283,6 @@ inline void RepeatedField<Element>::Truncate(int new_size) {
 template <>
 PROTOBUF_EXPORT size_t
 RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const;
-
 
 // -------------------------------------------------------------------
 
