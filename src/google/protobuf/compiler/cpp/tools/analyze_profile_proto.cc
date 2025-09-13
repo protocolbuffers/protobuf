@@ -560,7 +560,7 @@ ParallelRunResults RunInParallel(
   ParallelRunResults results;
   {
     ThreadPool threads{static_cast<int>(std::min(num_runs, num_workers))};
-    threads.StartWorkers();
+
     for (size_t i = 0; i < num_runs; ++i) {
       threads.Schedule([i, num_runs, get_run_id, do_work, &results, &mu]() {
         // Asynchronous section.
