@@ -72,6 +72,11 @@ using ::google::protobuf::internal::cpp::HasbitMode;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 using Sub = ::google::protobuf::io::Printer::Sub;
 
+template <typename T>
+inline std::string PrintUnsignedLiteral(T value) {
+  return absl::StrCat(value, "u");
+}
+
 // Create an expression that evaluates to
 //  "for all i, (_has_bits_[i] & masks[i]) == masks[i]"
 // masks is allowed to be shorter than _has_bits_, but at least one element of
@@ -4672,6 +4677,9 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateVerify(io::Printer* p) {
+}
+
+void MessageGenerator::GenerateVerifyV2(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateSerializeOneofFields(
