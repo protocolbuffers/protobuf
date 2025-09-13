@@ -219,6 +219,12 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
 //                                 const DescriptorPool* pool,
 //                                 vector<const FieldDescriptor*>* output) const
 
+bool ExtensionSet::IsEmpty() const {
+  if (IsCompletelyEmpty()) return true;
+  return !AnyOfNoPrefetch(
+      [](const int number, const Extension& ext) { return ext.IsSet(); });
+}
+
 bool ExtensionSet::Has(int number) const {
   const Extension* ext = FindOrNull(number);
   if (ext == nullptr) return false;
