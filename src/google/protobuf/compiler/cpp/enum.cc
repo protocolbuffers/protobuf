@@ -15,16 +15,19 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/algorithm/container.h"
 #include "absl/container/btree_map.h"
-#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/cpp/enum_strategy.h"
+#include "google/protobuf/compiler/cpp/enum_strategy_scoped.h"
+#include "google/protobuf/compiler/cpp/enum_strategy_unscoped.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
@@ -39,31 +42,6 @@ namespace cpp {
 namespace {
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-absl::flat_hash_map<absl::string_view, std::string> EnumVars(
-    const EnumDescriptor* enum_, const Options& options,
-    const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
-  auto classname = ClassName(enum_, false);
-  return {
-      {"Enum", std::string(enum_->name())},
-      {"Enum_", ResolveKnownNameCollisions(enum_->name(),
-                                           enum_->containing_type() != nullptr
-                                               ? NameContext::kMessage
-                                               : NameContext::kFile,
-                                           NameKind::kType)},
-      {"Msg_Enum", classname},
-      {"::Msg_Enum", QualifiedClassName(enum_, options)},
-      {"Msg_Enum_",
-       enum_->containing_type() == nullptr ? "" : absl::StrCat(classname, "_")},
-      {"kMin", absl::StrCat(min->number())},
-      {"kMax", absl::StrCat(max->number())},
-      {"return_type", CppGenerator::GetResolvedSourceFeatures(*enum_)
-                              .GetExtension(::pb::cpp)
-                              .enum_name_uses_string_view()
-                          ? "::absl::string_view"
-                          : "const ::std::string&"},
-  };
-}
-
 // The ARRAYSIZE constant is the max enum value plus 1. If the max enum value
 // is kint32max, ARRAYSIZE will overflow. In such cases we should omit the
 // generation of the ARRAYSIZE constant.
@@ -77,22 +55,6 @@ bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
   return max_value != std::numeric_limits<int32_t>::max();
 }
 }  // namespace
-EnumGenerator::ValueLimits EnumGenerator::ValueLimits::FromEnum(
-    const EnumDescriptor* descriptor) {
-  const EnumValueDescriptor* min_desc = descriptor->value(0);
-  const EnumValueDescriptor* max_desc = descriptor->value(0);
-
-  for (int i = 1; i < descriptor->value_count(); ++i) {
-    if (descriptor->value(i)->number() < min_desc->number()) {
-      min_desc = descriptor->value(i);
-    }
-    if (descriptor->value(i)->number() > max_desc->number()) {
-      max_desc = descriptor->value(i);
-    }
-  }
-
-  return EnumGenerator::ValueLimits{min_desc, max_desc};
-}
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
                              const Options& options)
@@ -100,7 +62,13 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
       options_(options),
       generate_array_size_(ShouldGenerateArraySize(descriptor)),
       has_reflection_(HasDescriptorMethods(enum_->file(), options_)),
-      limits_(ValueLimits::FromEnum(enum_)) {
+      limits_(ValueLimits::FromEnum(enum_)),
+      enum_vars_(EnumVars(enum_, options_, limits_.min, limits_.max)),
+      enum_strategy_(EnumStrategy::EnumIsUnscoped(enum_)
+                         ? static_cast<std::unique_ptr<EnumStrategy>>(
+                               std::make_unique<UnscopedEnumStrategy>())
+                         : static_cast<std::unique_ptr<EnumStrategy>>(
+                               std::make_unique<ScopedEnumStrategy>())) {
   // The conditions here for what is "sparse" are not rigorously
   // chosen.
   size_t values_range = static_cast<size_t>(limits_.max->number()) -
@@ -120,8 +88,8 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
       sorted_unique_values_.end());
 }
 
-void EnumGenerator::GenerateDefinition(io::Printer* p) {
-  auto v1 = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+void EnumGenerator::GenerateEnumHelpers(io::Printer* p) const {
+  auto v1 = p->WithVars(enum_vars_);
 
   auto v2 = p->WithVars({
       Sub("Msg_Enum_Enum_MIN",
@@ -131,55 +99,9 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
           absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_MAX"))
           .AnnotatedAs(enum_),
   });
-  p->Emit(
-      {
-          {"values",
-           [&] {
-             for (int i = 0; i < enum_->value_count(); ++i) {
-               const auto* value = enum_->value(i);
-               p->Emit(
-                   {
-                       Sub("Msg_Enum_VALUE",
-                           absl::StrCat(p->LookupVar("Msg_Enum_"),
-                                        EnumValueName(value)))
-                           .AnnotatedAs(value),
-                       {"kNumber", Int32ToString(value->number())},
-                       {"DEPRECATED",
-                        value->options().deprecated() ? "[[deprecated]]" : ""},
-                   },
-                   R"cc(
-                     $Msg_Enum_VALUE$$ DEPRECATED$ = $kNumber$,
-                   )cc");
-             }
-           }},
-          // Only emit annotations for the $Msg_Enum$ used in the `enum`
-          // definition.
-          Sub("Msg_Enum_annotated", p->LookupVar("Msg_Enum"))
-              .AnnotatedAs(enum_),
-          {"open_enum_sentinels",
-           [&] {
-             if (enum_->is_closed()) {
-               return;
-             }
-
-             // For open enum semantics: generate min and max sentinel values
-             // equal to INT32_MIN and INT32_MAX
-             p->Emit({{"Msg_Enum_Msg_Enum_",
-                       absl::StrCat(p->LookupVar("Msg_Enum"), "_",
-                                    p->LookupVar("Msg_Enum_"))}},
-                     R"cc(
-                       $Msg_Enum_Msg_Enum_$INT_MIN_SENTINEL_DO_NOT_USE_ =
-                           ::std::numeric_limits<::int32_t>::min(),
-                       $Msg_Enum_Msg_Enum_$INT_MAX_SENTINEL_DO_NOT_USE_ =
-                           ::std::numeric_limits<::int32_t>::max(),
-                     )cc");
-           }},
-      },
+  p->Emit(  //
+      {},
       R"cc(
-        enum $Msg_Enum_annotated$ : int {
-          $values$,
-          $open_enum_sentinels$,
-        };
 
         $dllexport_decl $extern const uint32_t $Msg_Enum$_internal_data_[];
         inline constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ =
@@ -276,8 +198,13 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   }
 }
 
+void EnumGenerator::GenerateDefinition(io::Printer* p) const {
+  GenerateEnumDefinitionBlock(p);
+  GenerateEnumHelpers(p);
+}
+
 void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
-  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+  auto v = p->WithVars(enum_vars_);
 
   p->Emit(R"cc(
     template <>
@@ -295,75 +222,8 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
 }
 
 
-void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
-  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
-
-  p->Emit({Sub("Enum_", p->LookupVar("Enum_")).AnnotatedAs(enum_)}, R"cc(
-    using $Enum_$ = $Msg_Enum$;
-  )cc");
-
-  for (int j = 0; j < enum_->value_count(); ++j) {
-    const auto* value = enum_->value(j);
-    p->Emit(
-        {
-            Sub("VALUE", EnumValueName(enum_->value(j))).AnnotatedAs(value),
-            {"DEPRECATED",
-             value->options().deprecated() ? "[[deprecated]]" : ""},
-        },
-        R"cc(
-          $DEPRECATED $static constexpr $Enum_$ $VALUE$ = $Msg_Enum$_$VALUE$;
-        )cc");
-  }
-
-  p->Emit(
-      {
-          Sub("Enum_MIN", absl::StrCat(enum_->name(), "_MIN"))
-              .AnnotatedAs(enum_),
-          Sub("Enum_MAX", absl::StrCat(enum_->name(), "_MAX"))
-              .AnnotatedAs(enum_),
-      },
-      R"cc(
-        static inline bool $Enum$_IsValid(int value) {
-          return $Msg_Enum$_IsValid(value);
-        }
-        static constexpr $Enum_$ $Enum_MIN$ = $Msg_Enum$_$Enum$_MIN;
-        static constexpr $Enum_$ $Enum_MAX$ = $Msg_Enum$_$Enum$_MAX;
-      )cc");
-
-  if (generate_array_size_) {
-    p->Emit(
-        {
-            Sub("Enum_ARRAYSIZE", absl::StrCat(enum_->name(), "_ARRAYSIZE"))
-                .AnnotatedAs(enum_),
-        },
-        R"cc(
-          static constexpr int $Enum_ARRAYSIZE$ = $Msg_Enum$_$Enum$_ARRAYSIZE;
-        )cc");
-  }
-
-  if (has_reflection_) {
-    p->Emit(R"(
-      static inline const $pb$::EnumDescriptor* $nonnull$ $Enum$_descriptor() {
-        return $Msg_Enum$_descriptor();
-      }
-    )");
-  }
-
-  p->Emit(R"cc(
-    template <typename T>
-    static inline $return_type$ $Enum$_Name(T value) {
-      return $Msg_Enum$_Name(value);
-    }
-    static inline bool $Enum$_Parse(
-        //~
-        ::absl::string_view name, $Enum_$* $nonnull$ value) {
-      return $Msg_Enum$_Parse(name, value);
-    }
-  )cc");
-}
-
 void EnumGenerator::GenerateIsValid(io::Printer* p) const {
-  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+  auto v = p->WithVars(enum_vars_);
 
   // For simple enums we skip the generic ValidateEnum call and use better
   // codegen. It matches the speed of the previous switch-based codegen.
@@ -405,7 +265,7 @@ void EnumGenerator::GenerateIsValid(io::Printer* p) const {
 }
 
 void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
-  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+  auto v = p->WithVars(enum_vars_);
 
   if (has_reflection_) {
     p->Emit({{"idx", idx}}, R"cc(
