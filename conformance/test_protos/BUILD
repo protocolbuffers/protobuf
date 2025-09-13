@@ -24,6 +24,9 @@ proto_library(
     name = "test_messages_edition2023_proto",
     srcs = ["test_messages_edition2023.proto"],
     visibility = ["//visibility:public"],
+    deps = [
+        "//:struct_proto",
+    ],
 )
 
 java_lite_proto_library(
@@ -45,14 +48,17 @@ internal_py_proto_library(
     name = "test_messages_edition2023_py_pb2",
     srcs = [":test_messages_edition2023.proto"],
     srcs_version = "PY2AND3",
+    deps = ["//python:well_known_types_py_pb2"],
 )
 
 internal_objc_proto_library(
     name = "test_messages_edition2023_objc_proto",
     srcs = [":test_messages_edition2023.proto"],
+    proto_deps = ["//:well_known_type_protos"],
 )
 
 internal_ruby_proto_library(
     name = "test_messages_edition2023_ruby_proto",
     srcs = ["test_messages_edition2023.proto"],
+    deps = ["//ruby:well_known_ruby_protos"],
 )
