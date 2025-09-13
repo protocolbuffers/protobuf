@@ -121,6 +121,7 @@ class MessageGenerator {
   void GenerateOneofClear(io::Printer* p);
   void GenerateVerifyDecl(io::Printer* p);
   void GenerateVerify(io::Printer* p);
+  void GenerateVerifyV2(io::Printer* p);
   void GenerateAnnotationDecl(io::Printer* p);
   void GenerateSerializeWithCachedSizes(io::Printer* p);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p);
