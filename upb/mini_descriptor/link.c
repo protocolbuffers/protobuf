@@ -74,6 +74,17 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
     return false;
   }
 
+  if ((table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) &&
+      !upb_MiniTableEnum_CheckValue(sub, 0)) {
+    // An enum used in a map must include 0 as a value.  This matches a check
+    // performed in protoc ("Enum value in map must define 0 as the first
+    // value").  Protoc should ensure that we never get here.
+    //
+    // This ends up being important if we receive wire messages where a map
+    // entry omits the value (and thus defaults to 0).
+    return false;
+  }
+
   upb_MiniTableSub* table_sub =
       (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];
   *table_sub = upb_MiniTableSub_FromEnum(sub);
