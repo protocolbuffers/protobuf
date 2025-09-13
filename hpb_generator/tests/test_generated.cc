@@ -21,8 +21,10 @@
 #include "hpb/arena.h"
 #include "hpb/backend/upb/interop.h"
 #include "hpb/hpb.h"
+#include "hpb/options.h"
 #include "hpb/ptr.h"
 #include "hpb/requires.h"
+#include "hpb/status.h"
 
 namespace {
 
@@ -403,6 +405,30 @@ TEST(CppGeneratedCode, MessageMapStringKeyAndInt32Value) {
   test_model.delete_str_to_int_map("first");
   auto result_after_delete = test_model.get_str_to_int_map("first");
   EXPECT_EQ(false, result_after_delete.ok());
+}
+
+TEST(CppGeneratedCode, HpbStatus) {
+  TestModel model;
+  model.set_str1("lightweight status");
+  hpb::Arena arena;
+  absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(&model, arena);
+  EXPECT_EQ(true, bytes.ok());
+
+  hpb::StatusOr<TestModel> parsed_model = ::hpb::Parse<TestModel>(
+      bytes.value(), hpb::ParseOptionsWithEmptyRegistry());
+  EXPECT_EQ(true, parsed_model.ok());
+  EXPECT_EQ("lightweight status", parsed_model.value().str1());
+}
+
+TEST(CppGeneratedCode, HpbStatusFail) {
+  hpb::StatusOr<TestModel> status = ::hpb::Parse<TestModel>(
+      "definitely not a proto", hpb::ParseOptionsWithEmptyRegistry());
+  EXPECT_EQ(false, status.ok());
+  EXPECT_EQ(status.error(), "Wire format was corrupt");
+
+  absl::StatusOr<TestModel> to_absl_status = status.ToAbslStatusOr();
+  EXPECT_EQ(false, to_absl_status.ok());
+  EXPECT_EQ(to_absl_status.status().message(), "Wire format was corrupt");
 }
 
 TEST(CppGeneratedCode, SerializeUsingArena) {
