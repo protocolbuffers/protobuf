@@ -773,7 +773,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteEnumPacked(int num, const T& r, int size,
                                                   uint8_t* ptr) {
-    return WriteVarintPacked(num, r, size, ptr, Encode64);
+    auto encode = [](auto v) { return Encode64(static_cast<uint64_t>(v)); };
+    return WriteVarintPacked(num, r, size, ptr, encode);
   }
 
   template <typename T>

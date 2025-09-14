@@ -7634,46 +7634,106 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   AllocateOptions(proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
                   "google.protobuf.EnumValueOptions", alloc);
 
-  // Again, enum values are weird because we makes them appear as siblings
-  // of the enum type instead of children of it.  So, we use
-  // parent->containing_type() as the value's parent.
-  bool added_to_outer_scope =
-      AddSymbol(result->full_name(), parent->containing_type(), result->name(),
-                proto, Symbol::EnumValue(result, 0));
-
-  // However, we also want to be able to search for values within a single
-  // enum type, so we add it as a child of the enum type itself, too.
-  // Note:  This could fail, but if it does, the error has already been
-  //   reported by the above AddSymbol() call, so we ignore the return code.
-  bool added_to_inner_scope = file_tables_->AddAliasUnderParent(
-      parent, result->name(), Symbol::EnumValue(result, 1));
-
-  if (added_to_inner_scope && !added_to_outer_scope) {
-    // This value did not conflict with any values defined in the same enum,
-    // but it did conflict with some other symbol defined in the enum type's
-    // scope.  Let's print an additional error to explain this.
-    std::string outer_scope;
-    if (parent->containing_type() == nullptr) {
-      outer_scope = std::string(file_->package());
+  // NOTE: THIS CHECK IS WRONG.  But we don't seem to have reliable access to
+  // the features here.
+  //const auto& cpp_features = parent->file()->options().features().GetExtension(::pb::cpp);
+  //const auto& cpp_features = GetParentFeatures(parent).GetExtension(pb::cpp);
+  LOG(ERROR) << "Building enum value: " << proto.name() << " in enum: " << parent->full_name();  // log enum value and parent name
+  bool is_scoped_enum = false;
+  if (parent->file()->edition() < Edition::EDITION_2024) {
+    // Definitively unscoped.
+  }
+  else if (parent->full_name().starts_with("pb")) {
+    // Presumably unscoped, potentially bootstrapping.
+  }
+  else if (parent->full_name().starts_with("jimedwards")) {
+    // Hack
+    is_scoped_enum = true;
+  }
+  #if 0
+  else if (parent->is_placeholder() || parent->file()->is_placeholder()) {
+    // Placeholder, can't get features -- assume unscoped.
+    LOG(ERROR) << "placeholder";
+  }
+  else if (parent->file()->options_ == nullptr) {
+    LOG(ERROR) << "options_ is nullptr";
+  } else if (!parent->file()->options_->has_features()) {
+    LOG(ERROR) << "options_->has_features() is false";
+  }
+  else {
+    LOG(ERROR) << "parent: " << parent;
+    LOG(ERROR) << "parent->file(): " << parent->file();
+    LOG(ERROR) << "parent->file()->options_: " << parent->file()->options_;
+    LOG(ERROR) << "parent->file()->options().has_features(): " << parent->file()->options().has_features();
+    LOG(ERROR) << "parent->file()->options().features(): " << &parent->file()->options().features();
+    LOG(ERROR) << "parent->file()->options().features().HasExtension(pb::cpp): " << parent->file()->options().features().HasExtension(pb::cpp);
+    LOG(ERROR) << "parent->file()->options().features().GetExtension(pb::cpp): " << &parent->file()->options().features().GetExtension(pb::cpp);
+    const auto features = internal::InternalFeatureHelper::GetFeatures(*parent);
+    LOG(ERROR) << "features: " << &features;
+    // Somehow features can return a reference to nullptr.
+    if (true) {  // NOLINT
+      LOG(ERROR) << "entered";
+      is_scoped_enum = features.GetExtension(pb::cpp).legacy_unscoped_enum() == false;
     } else {
-      outer_scope = std::string(parent->containing_type()->full_name());
+      LOG(ERROR) << "features is nullptr";
     }
+  }
+  #endif
 
-    if (outer_scope.empty()) {
-      outer_scope = "the global scope";
-    } else {
-      outer_scope = absl::StrCat("\"", outer_scope, "\"");
+  //bool is_scoped_enum = parent->file()->edition() >= Edition::EDITION_2024;
+                        // &&
+                        // !parent->file()
+                        //      ->options()
+                        //      .features()
+                        //      .GetExtension(::pb::cpp).legacy_unscoped_enum() == false;
+
+  if (!is_scoped_enum) {
+    // Again, enum values are weird because we makes them appear as siblings
+    // of the enum type instead of children of it.  So, we use
+    // parent->containing_type() as the value's parent.
+    bool added_to_outer_scope =
+        AddSymbol(result->full_name(), parent->containing_type(),
+                  result->name(), proto, Symbol::EnumValue(result, 0));
+
+    // However, we also want to be able to search for values within a single
+    // enum type, so we add it as a child of the enum type itself, too.
+    // Note:  This could fail, but if it does, the error has already been
+    //   reported by the above AddSymbol() call, so we ignore the return code.
+    bool added_to_inner_scope = file_tables_->AddAliasUnderParent(
+        parent, result->name(), Symbol::EnumValue(result, 1));
+
+    if (added_to_inner_scope && !added_to_outer_scope) {
+      // This value did not conflict with any values defined in the same enum,
+      // but it did conflict with some other symbol defined in the enum type's
+      // scope.  Let's print an additional error to explain this.
+      std::string outer_scope;
+      if (parent->containing_type() == nullptr) {
+        outer_scope = std::string(file_->package());
+      } else {
+        outer_scope = std::string(parent->containing_type()->full_name());
+      }
+
+      if (outer_scope.empty()) {
+        outer_scope = "the global scope";
+      } else {
+        outer_scope = absl::StrCat("\"", outer_scope, "\"");
+      }
+
+      AddError(
+          result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+          [&] {
+            return absl::StrCat(
+                "Note that enum values use C++ scoping rules, meaning that "
+                "enum values are siblings of their type, not children of it.  "
+                "Therefore, \"",
+                result->name(), "\" must be unique within ", outer_scope,
+                ", not just within \"", parent->name(), "\".");
+          });
     }
-
-    AddError(
-        result->full_name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-          return absl::StrCat(
-              "Note that enum values use C++ scoping rules, meaning that "
-              "enum values are siblings of their type, not children of it.  "
-              "Therefore, \"",
-              result->name(), "\" must be unique within ", outer_scope,
-              ", not just within \"", parent->name(), "\".");
-        });
+  } else {
+    // Scoped Enums
+    file_tables_->AddAliasUnderParent(
+        parent, result->name(), Symbol::EnumValue(result, 1));
   }
 
   // An enum is allowed to define two numbers that refer to the same value.

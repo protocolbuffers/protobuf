@@ -17,6 +17,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/cpp/enum_strategy.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -43,6 +44,9 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
   auto enum_name = QualifiedClassName(field->enum_type(), opts);
   return {
       {"Enum", enum_name},
+      {"RepeatedValueType", EnumStrategy::EnumIsUnscoped(field->enum_type())
+                                ? "int"
+                                : QualifiedClassName(field->enum_type(), opts)},
       {"kDefault", Int32ToString(default_value->number())},
       Sub("assert_valid", is_open ? ""
                                   : absl::Substitute(
@@ -69,7 +73,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override {
     p->Emit(R"cc(
-      int $name$_;
+      int $name$_; /* WTFJIM! */
     )cc");
   }
 
@@ -110,14 +114,15 @@ class SingularEnum : public FieldGeneratorBase {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          $number$, this_._internal_$name$(), target);
+          $number$, static_cast<int>(this_._internal_$name$()), target);
     )cc");
   }
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size += $kTagBytes$ +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
+      total_size +=
+          $kTagBytes$ + ::_pbi::WireFormatLite::EnumSize(
+                            static_cast<int>(this_._internal_$name$()));
     )cc");
   }
 
@@ -217,7 +222,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline void $Msg$::_internal_set_$name_internal$($Enum$ value) {
         $TsanDetectConcurrentMutation$;
         $assert_valid$;
-        $field_$ = value;
+        $field_$ = static_cast<int>(value);
       }
     )cc");
   }
@@ -239,11 +244,11 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GeneratePrivateMembers(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        $pbi$::RawPtr<$pb$::RepeatedField<int>> $name$_;
+        $pbi$::RawPtr<$pb$::RepeatedField<$RepeatedValueType$>> $name$_;
       )cc");
     } else {
       p->Emit(R"cc(
-        $pb$::RepeatedField<int> $name$_;
+        $pb$::RepeatedField<$RepeatedValueType$> $name$_;
       )cc");
     }
 
@@ -392,12 +397,12 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ $Enum$ $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, $Enum$ value);
     $DEPRECATED$ void $add_name$($Enum$ value);
-    $DEPRECATED$ const $pb$::RepeatedField<int>& $name$() const;
-    $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
+    $DEPRECATED$ const $pb$::RepeatedField<$RepeatedValueType$>& $name$() const;
+    $DEPRECATED$ $pb$::RepeatedField<$RepeatedValueType$>* $nonnull$ $mutable_name$();
 
     private:
-    const $pb$::RepeatedField<int>& $_internal_name$() const;
-    $pb$::RepeatedField<int>* $nonnull$ $_internal_mutable_name$();
+    const $pb$::RepeatedField<$RepeatedValueType$>& $_internal_name$() const;
+    $pb$::RepeatedField<$RepeatedValueType$>* $nonnull$ $_internal_mutable_name$();
 
     public:
   )cc");
@@ -436,7 +441,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline const $pb$::RepeatedField<int>& $Msg$::$name$() const
+    inline const $pb$::RepeatedField<$RepeatedValueType$>& $Msg$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_list$;
@@ -445,8 +450,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $pb$::RepeatedField<int>* $nonnull$ $Msg$::mutable_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    inline $pb$::RepeatedField<$RepeatedValueType$>* $nonnull$
+    $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $set_hasbit$;
       $annotate_mutable_list$;
@@ -457,29 +462,31 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   )cc");
   if (should_split()) {
     p->Emit(R"cc(
-      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
-          const {
+      inline const $pb$::RepeatedField<$RepeatedValueType$>&
+      $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::RepeatedField<int>* $nonnull$
+      inline $pb$::RepeatedField<$RepeatedValueType$>* $nonnull$
       $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
-          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedField<int>>(GetArena()));
+          $field_$.Set(
+              $pb$::Arena::Create<$pb$::RepeatedField<$RepeatedValueType$>>(
+                  GetArena()));
         }
         return $field_$.Get();
       }
     )cc");
   } else {
     p->Emit(R"cc(
-      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
-          const {
+      inline const $pb$::RepeatedField<$RepeatedValueType$>&
+      $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline $pb$::RepeatedField<int>* $nonnull$
+      inline $pb$::RepeatedField<$RepeatedValueType$>* $nonnull$
       $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;

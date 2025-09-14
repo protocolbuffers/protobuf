@@ -1005,6 +1005,16 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
   return "";
 }
 
+std::string DefaultValueForInitializer(const Options& options,
+                                       const FieldDescriptor* field) {
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return Int32ToString(field->default_value_enum()->number());
+    default:
+      return DefaultValue(options, field);
+  }
+}
+
 // Convert a file name into a valid identifier.
 std::string FilenameIdentifier(absl::string_view filename) {
   std::string result;

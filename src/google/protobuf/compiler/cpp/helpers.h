@@ -269,6 +269,9 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field);
 // Compatibility function for callers outside proto2.
 std::string DefaultValue(const FieldDescriptor* field);
 
+std::string DefaultValueForInitializer(const Options& options,
+                                       const FieldDescriptor* field);
+
 // Convert a file name into a valid identifier.
 std::string FilenameIdentifier(absl::string_view filename);
 

@@ -623,6 +623,14 @@ class PROTOBUF_EXPORT WireFormatLite {
   static size_t EnumSizeWithPackedTagSize(
       const RepeatedField<int>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
+  template <typename T>
+  static size_t EnumSizeWithPackedTagSize(
+      const RepeatedField<T>& value, size_t tag_size,
+      const internal::CachedSize& cached_size) {
+    return EnumSizeWithPackedTagSize(
+        reinterpret_cast<const RepeatedField<int>&>(value), tag_size,
+        cached_size);
+  }
 
   // These types always have the same size.
   static constexpr size_t kFixed32Size = 4;

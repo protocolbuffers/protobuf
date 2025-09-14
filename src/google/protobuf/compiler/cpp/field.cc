@@ -158,7 +158,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
   if (field_->is_repeated()) {
     p->Emit("$name$_{}");
   } else {
-    p->Emit({{"default", DefaultValue(options_, field_)}},
+    p->Emit({{"default", DefaultValueForInitializer(options_, field_)}},
             "$name$_{$default$}");
   }
 }
