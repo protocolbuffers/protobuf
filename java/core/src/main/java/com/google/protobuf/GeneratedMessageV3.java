@@ -42,6 +42,41 @@ public abstract class GeneratedMessageV3
   }
 
   /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+   * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
+   */
+  protected static IntList newIntList() {
+    return new IntArrayList();
+  }
+
+  /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+   * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
+   */
+  protected static LongList newLongList() {
+    return new LongArrayList();
+  }
+
+  /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+   * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
+   */
+  protected static FloatList newFloatList() {
+    return new FloatArrayList();
+  }
+
+  /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+   * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
+   */
+  protected static DoubleList newDoubleList() {
+    return new DoubleArrayList();
+  }
+
+  /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
+   * (5.x). Users should update gencode to >= 4.26.x which no longer uses this.
+   */
+  protected static BooleanList newBooleanList() {
+    return new BooleanArrayList();
+  }
+
+  /* @deprecated This method is deprecated, and slated for removal in the next Java breaking change
    * (5.x). Users should update gencode to >= 4.26.x which uses makeMutableCopy() instead.
    */
   @Deprecated
