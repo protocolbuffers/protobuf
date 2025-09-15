@@ -74,7 +74,7 @@ platform(
 
 config_setting(
     name = "aarch64",
-    values = {"cpu": "linux-aarch_64"},
+    values = {"cpu": "linux-aarch64"},
 )
 
 config_setting(
