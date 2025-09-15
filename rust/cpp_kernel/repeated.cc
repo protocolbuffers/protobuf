@@ -144,8 +144,7 @@ void proto2_rust_RepeatedField_Message_clear(RepeatedPtrFieldBase* field) {
 
 void proto2_rust_RepeatedField_Message_copy_from(
     RepeatedPtrFieldBase* dst, const RepeatedPtrFieldBase* src) {
-  dst->Clear<GenericTypeHandler<google::protobuf::MessageLite>>();
-  dst->MergeFrom<google::protobuf::MessageLite>(*src);
+  RustRepeatedMessageHelper::CopyFrom(*src, *dst);
 }
 
 void proto2_rust_RepeatedField_Message_reserve(RepeatedPtrFieldBase* field,
