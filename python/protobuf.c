@@ -58,6 +58,12 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // -----------------------------------------------------------------------------
 
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
+#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
+  /* Calling `PyState_FindModule` during interpreter shutdown causes a crash. */
+  if (Py_IsFinalizing()) {
+    return NULL;
+  }
+#endif
   PyObject* module = PyState_FindModule(&module_def);
   return module ? PyModule_GetState(module) : NULL;
 }
