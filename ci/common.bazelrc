@@ -38,6 +38,7 @@ build:ubsan --copt=-fno-sanitize=nonnull-attribute
 # See https://github.com/bazelbuild/bazel/issues/20161
 build --experimental_remote_cache_eviction_retries=5
 build --remote_download_outputs=all
+build --toolchain_resolution_debug='@@bazel_tools//tools/cpp:toolchain_type'
 
 # Build with all --incompatible flags that we can. This helps us prepare for
 # upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
