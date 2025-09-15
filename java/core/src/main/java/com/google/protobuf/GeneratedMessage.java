@@ -450,22 +450,62 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   protected void makeExtensionsImmutable() {
     warnPre22Gencode(getClass());
+   }
+
+  protected static IntList newIntList() {
+    return new IntArrayList();
+  }
+
+  protected static IntList mutableCopy(IntList list) {
+    return makeMutableCopy(list);
+  }
+
+  protected static LongList mutableCopy(LongList list) {
+    return makeMutableCopy(list);
+  }
+
+  protected static FloatList mutableCopy(FloatList list) {
+    return makeMutableCopy(list);
+  }
+
+  protected static DoubleList mutableCopy(DoubleList list) {
+    return makeMutableCopy(list);
+  }
+
+  protected static BooleanList mutableCopy(BooleanList list) {
+    return makeMutableCopy(list);
   }
 
   protected static LongList emptyLongList() {
     return LongArrayList.emptyList();
   }
 
+  protected static LongList newLongList() {
+    return new LongArrayList();
+  }
+
   protected static FloatList emptyFloatList() {
     return FloatArrayList.emptyList();
+  }
+
+  protected static FloatList newFloatList() {
+    return new FloatArrayList();
   }
 
   protected static DoubleList emptyDoubleList() {
     return DoubleArrayList.emptyList();
   }
 
+  protected static DoubleList newDoubleList() {
+    return new DoubleArrayList();
+  }
+
   protected static BooleanList emptyBooleanList() {
     return BooleanArrayList.emptyList();
+  }
+
+  protected static BooleanList newBooleanList() {
+    return new BooleanArrayList();
   }
 
   protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
@@ -1146,6 +1186,39 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     @Override
     public boolean isInitialized() {
       return super.isInitialized() && extensionsAreInitialized();
+    }
+
+    // TODO: remove mutating method from immutable type
+    @Override
+    protected boolean parseUnknownField(
+        CodedInputStream input,
+        UnknownFieldSet.Builder unknownFields,
+        ExtensionRegistryLite extensionRegistry,
+        int tag)
+        throws IOException {
+      return MessageReflection.mergeFieldFrom(
+          input,
+          input.shouldDiscardUnknownFields() ? null : unknownFields,
+          extensionRegistry,
+          getDescriptorForType(),
+          new MessageReflection.ExtensionAdapter(extensions),
+          tag);
+    }
+
+    /**
+     * Delegates to parseUnknownField. This method is obsolete, but we must retain it for
+     * compatibility with older generated code.
+     *
+     * <p>TODO: remove mutating method from immutable type
+     */
+    @Override
+    protected boolean parseUnknownFieldProto3(
+        CodedInputStream input,
+        UnknownFieldSet.Builder unknownFields,
+        ExtensionRegistryLite extensionRegistry,
+        int tag)
+        throws IOException {
+      return parseUnknownField(input, unknownFields, extensionRegistry, tag);
     }
 
     /**
