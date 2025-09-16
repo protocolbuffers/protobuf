@@ -1188,7 +1188,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1463,7 +1464,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1741,7 +1743,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -1978,7 +1981,8 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -2189,7 +2193,8 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -2961,7 +2966,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -3218,7 +3224,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -3425,7 +3432,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -3629,7 +3637,8 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -3920,7 +3929,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -4314,7 +4324,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -4513,7 +4524,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -4741,7 +4753,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -5158,7 +5171,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -5564,7 +5578,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -6014,7 +6029,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -6481,7 +6497,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -7190,7 +7207,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -7869,7 +7887,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -8110,7 +8129,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -8566,7 +8586,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -9013,7 +9034,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -9457,7 +9479,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -9679,7 +9702,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -9955,7 +9979,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -10362,7 +10387,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -10601,7 +10627,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -10827,7 +10854,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -11064,7 +11092,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -11355,7 +11384,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -11740,7 +11770,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -12185,7 +12216,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -12585,7 +12617,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -12654,7 +12687,8 @@ inline const ::google::protobuf::FileDescriptorProto& FileDescriptorSet::file(in
 inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL FileDescriptorSet::add_file()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_file()->Add();
+  ::google::protobuf::FileDescriptorProto* _add = _internal_mutable_file()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorSet.file)
   return _add;
@@ -12833,7 +12867,8 @@ inline void FileDescriptorProto::clear_dependency() {
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::add_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_dependency()->Add();
+  ::std::string* _s = _internal_mutable_dependency()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.dependency)
   return _s;
@@ -12857,9 +12892,10 @@ inline void FileDescriptorProto::set_dependency(int index, Arg_&& value, Args_..
 template <typename Arg_, typename... Args_>
 inline void FileDescriptorProto::add_dependency(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_dependency(),
-                               ::std::forward<Arg_>(value),
-                               args... );
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_dependency(), ::std::forward<Arg_>(value),
+      args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
@@ -13002,7 +13038,8 @@ inline void FileDescriptorProto::clear_option_dependency() {
 inline ::std::string* PROTOBUF_NONNULL FileDescriptorProto::add_option_dependency()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_option_dependency()->Add();
+  ::std::string* _s = _internal_mutable_option_dependency()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000080U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.option_dependency)
   return _s;
@@ -13026,9 +13063,10 @@ inline void FileDescriptorProto::set_option_dependency(int index, Arg_&& value, 
 template <typename Arg_, typename... Args_>
 inline void FileDescriptorProto::add_option_dependency(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_option_dependency(),
-                               ::std::forward<Arg_>(value),
-                               args... );
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_option_dependency(), ::std::forward<Arg_>(value),
+      args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000080U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.option_dependency)
 }
@@ -13088,7 +13126,8 @@ inline const ::google::protobuf::DescriptorProto& FileDescriptorProto::message_t
 inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::add_message_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::DescriptorProto* _add = _internal_mutable_message_type()->Add();
+  ::google::protobuf::DescriptorProto* _add = _internal_mutable_message_type()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.message_type)
   return _add;
@@ -13142,7 +13181,8 @@ inline const ::google::protobuf::EnumDescriptorProto& FileDescriptorProto::enum_
 inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::add_enum_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
+  ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.enum_type)
   return _add;
@@ -13196,7 +13236,8 @@ inline const ::google::protobuf::ServiceDescriptorProto& FileDescriptorProto::se
 inline ::google::protobuf::ServiceDescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::add_service()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::ServiceDescriptorProto* _add = _internal_mutable_service()->Add();
+  ::google::protobuf::ServiceDescriptorProto* _add = _internal_mutable_service()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.service)
   return _add;
@@ -13250,7 +13291,8 @@ inline const ::google::protobuf::FieldDescriptorProto& FileDescriptorProto::exte
 inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL FileDescriptorProto::add_extension()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
+  ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.extension)
   return _add;
@@ -13899,7 +13941,8 @@ inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::field(in
 inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProto::add_field()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_field()->Add();
+  ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_field()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.field)
   return _add;
@@ -13953,7 +13996,8 @@ inline const ::google::protobuf::FieldDescriptorProto& DescriptorProto::extensio
 inline ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL DescriptorProto::add_extension()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->Add();
+  ::google::protobuf::FieldDescriptorProto* _add = _internal_mutable_extension()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension)
   return _add;
@@ -14007,7 +14051,8 @@ inline const ::google::protobuf::DescriptorProto& DescriptorProto::nested_type(i
 inline ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL DescriptorProto::add_nested_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::DescriptorProto* _add = _internal_mutable_nested_type()->Add();
+  ::google::protobuf::DescriptorProto* _add = _internal_mutable_nested_type()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.nested_type)
   return _add;
@@ -14061,7 +14106,8 @@ inline const ::google::protobuf::EnumDescriptorProto& DescriptorProto::enum_type
 inline ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL DescriptorProto::add_enum_type()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->Add();
+  ::google::protobuf::EnumDescriptorProto* _add = _internal_mutable_enum_type()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.enum_type)
   return _add;
@@ -14115,7 +14161,8 @@ inline const ::google::protobuf::DescriptorProto_ExtensionRange& DescriptorProto
 inline ::google::protobuf::DescriptorProto_ExtensionRange* PROTOBUF_NONNULL DescriptorProto::add_extension_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::DescriptorProto_ExtensionRange* _add = _internal_mutable_extension_range()->Add();
+  ::google::protobuf::DescriptorProto_ExtensionRange* _add = _internal_mutable_extension_range()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension_range)
   return _add;
@@ -14169,7 +14216,8 @@ inline const ::google::protobuf::OneofDescriptorProto& DescriptorProto::oneof_de
 inline ::google::protobuf::OneofDescriptorProto* PROTOBUF_NONNULL DescriptorProto::add_oneof_decl()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::OneofDescriptorProto* _add = _internal_mutable_oneof_decl()->Add();
+  ::google::protobuf::OneofDescriptorProto* _add = _internal_mutable_oneof_decl()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000020U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.oneof_decl)
   return _add;
@@ -14322,7 +14370,8 @@ inline const ::google::protobuf::DescriptorProto_ReservedRange& DescriptorProto:
 inline ::google::protobuf::DescriptorProto_ReservedRange* PROTOBUF_NONNULL DescriptorProto::add_reserved_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::DescriptorProto_ReservedRange* _add = _internal_mutable_reserved_range()->Add();
+  ::google::protobuf::DescriptorProto_ReservedRange* _add = _internal_mutable_reserved_range()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000040U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_range)
   return _add;
@@ -14359,7 +14408,8 @@ inline void DescriptorProto::clear_reserved_name() {
 inline ::std::string* PROTOBUF_NONNULL DescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_reserved_name()->Add();
+  ::std::string* _s = _internal_mutable_reserved_name()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000080U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.DescriptorProto.reserved_name)
   return _s;
@@ -14383,9 +14433,10 @@ inline void DescriptorProto::set_reserved_name(int index, Arg_&& value, Args_...
 template <typename Arg_, typename... Args_>
 inline void DescriptorProto::add_reserved_name(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_reserved_name(),
-                               ::std::forward<Arg_>(value),
-                               args... );
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_reserved_name(), ::std::forward<Arg_>(value),
+      args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000080U);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
@@ -14710,7 +14761,8 @@ inline const ::google::protobuf::UninterpretedOption& ExtensionRangeOptions::uni
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ExtensionRangeOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
   return _add;
@@ -14764,7 +14816,8 @@ inline const ::google::protobuf::ExtensionRangeOptions_Declaration& ExtensionRan
 inline ::google::protobuf::ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL ExtensionRangeOptions::add_declaration()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::ExtensionRangeOptions_Declaration* _add = _internal_mutable_declaration()->Add();
+  ::google::protobuf::ExtensionRangeOptions_Declaration* _add = _internal_mutable_declaration()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.declaration)
   return _add;
@@ -15855,7 +15908,8 @@ inline const ::google::protobuf::EnumValueDescriptorProto& EnumDescriptorProto::
 inline ::google::protobuf::EnumValueDescriptorProto* PROTOBUF_NONNULL EnumDescriptorProto::add_value()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::EnumValueDescriptorProto* _add = _internal_mutable_value()->Add();
+  ::google::protobuf::EnumValueDescriptorProto* _add = _internal_mutable_value()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.value)
   return _add;
@@ -16008,7 +16062,8 @@ inline const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& EnumDesc
 inline ::google::protobuf::EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL EnumDescriptorProto::add_reserved_range()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::EnumDescriptorProto_EnumReservedRange* _add = _internal_mutable_reserved_range()->Add();
+  ::google::protobuf::EnumDescriptorProto_EnumReservedRange* _add = _internal_mutable_reserved_range()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_range)
   return _add;
@@ -16045,7 +16100,8 @@ inline void EnumDescriptorProto::clear_reserved_name() {
 inline ::std::string* PROTOBUF_NONNULL EnumDescriptorProto::add_reserved_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_reserved_name()->Add();
+  ::std::string* _s = _internal_mutable_reserved_name()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
   return _s;
@@ -16069,9 +16125,10 @@ inline void EnumDescriptorProto::set_reserved_name(int index, Arg_&& value, Args
 template <typename Arg_, typename... Args_>
 inline void EnumDescriptorProto::add_reserved_name(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_reserved_name(),
-                               ::std::forward<Arg_>(value),
-                               args... );
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_reserved_name(), ::std::forward<Arg_>(value),
+      args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
@@ -16437,7 +16494,8 @@ inline const ::google::protobuf::MethodDescriptorProto& ServiceDescriptorProto::
 inline ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL ServiceDescriptorProto::add_method()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::MethodDescriptorProto* _add = _internal_mutable_method()->Add();
+  ::google::protobuf::MethodDescriptorProto* _add = _internal_mutable_method()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceDescriptorProto.method)
   return _add;
@@ -18015,7 +18073,8 @@ inline const ::google::protobuf::UninterpretedOption& FileOptions::uninterpreted
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FileOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00100000U);
   // @@protoc_insertion_point(field_add:google.protobuf.FileOptions.uninterpreted_option)
   return _add;
@@ -18317,7 +18376,8 @@ inline const ::google::protobuf::UninterpretedOption& MessageOptions::uninterpre
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MessageOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000040U);
   // @@protoc_insertion_point(field_add:google.protobuf.MessageOptions.uninterpreted_option)
   return _add;
@@ -18975,7 +19035,8 @@ inline const ::google::protobuf::FieldOptions_EditionDefault& FieldOptions::edit
 inline ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL FieldOptions::add_edition_defaults()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FieldOptions_EditionDefault* _add = _internal_mutable_edition_defaults()->Add();
+  ::google::protobuf::FieldOptions_EditionDefault* _add = _internal_mutable_edition_defaults()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.edition_defaults)
   return _add;
@@ -19227,7 +19288,8 @@ inline const ::google::protobuf::UninterpretedOption& FieldOptions::uninterprete
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL FieldOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.uninterpreted_option)
   return _add;
@@ -19384,7 +19446,8 @@ inline const ::google::protobuf::UninterpretedOption& OneofOptions::uninterprete
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL OneofOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.OneofOptions.uninterpreted_option)
   return _add;
@@ -19628,7 +19691,8 @@ inline const ::google::protobuf::UninterpretedOption& EnumOptions::uninterpreted
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumOptions.uninterpreted_option)
   return _add;
@@ -19942,7 +20006,8 @@ inline const ::google::protobuf::UninterpretedOption& EnumValueOptions::uninterp
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL EnumValueOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValueOptions.uninterpreted_option)
   return _add;
@@ -20128,7 +20193,8 @@ inline const ::google::protobuf::UninterpretedOption& ServiceOptions::uninterpre
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL ServiceOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceOptions.uninterpreted_option)
   return _add;
@@ -20346,7 +20412,8 @@ inline const ::google::protobuf::UninterpretedOption& MethodOptions::uninterpret
 inline ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL MethodOptions::add_uninterpreted_option()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->Add();
+  ::google::protobuf::UninterpretedOption* _add = _internal_mutable_uninterpreted_option()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.MethodOptions.uninterpreted_option)
   return _add;
@@ -20506,7 +20573,8 @@ inline const ::google::protobuf::UninterpretedOption_NamePart& UninterpretedOpti
 inline ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL UninterpretedOption::add_name()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::UninterpretedOption_NamePart* _add = _internal_mutable_name()->Add();
+  ::google::protobuf::UninterpretedOption_NamePart* _add = _internal_mutable_name()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.UninterpretedOption.name)
   return _add;
@@ -21356,7 +21424,8 @@ inline const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& Fe
 inline ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL FeatureSetDefaults::add_defaults()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* _add = _internal_mutable_defaults()->Add();
+  ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* _add = _internal_mutable_defaults()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.FeatureSetDefaults.defaults)
   return _add;
@@ -21699,7 +21768,8 @@ inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
 inline ::std::string* PROTOBUF_NONNULL SourceCodeInfo_Location::add_leading_detached_comments()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_leading_detached_comments()->Add();
+  ::std::string* _s = _internal_mutable_leading_detached_comments()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   return _s;
@@ -21723,9 +21793,10 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, Ar
 template <typename Arg_, typename... Args_>
 inline void SourceCodeInfo_Location::add_leading_detached_comments(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_leading_detached_comments(),
-                               ::std::forward<Arg_>(value),
-                               args... );
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_leading_detached_comments(), ::std::forward<Arg_>(value),
+      args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
@@ -21789,7 +21860,8 @@ inline const ::google::protobuf::SourceCodeInfo_Location& SourceCodeInfo::locati
 inline ::google::protobuf::SourceCodeInfo_Location* PROTOBUF_NONNULL SourceCodeInfo::add_location()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::SourceCodeInfo_Location* _add = _internal_mutable_location()->Add();
+  ::google::protobuf::SourceCodeInfo_Location* _add = _internal_mutable_location()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.location)
   return _add;
@@ -22060,7 +22132,8 @@ inline const ::google::protobuf::GeneratedCodeInfo_Annotation& GeneratedCodeInfo
 inline ::google::protobuf::GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL GeneratedCodeInfo::add_annotation()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::GeneratedCodeInfo_Annotation* _add = _internal_mutable_annotation()->Add();
+  ::google::protobuf::GeneratedCodeInfo_Annotation* _add = _internal_mutable_annotation()->AddWithArena(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.annotation)
   return _add;

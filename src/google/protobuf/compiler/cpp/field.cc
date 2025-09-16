@@ -39,8 +39,19 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+namespace {
 using ::google::protobuf::internal::WireFormat;
 using Sub = ::google::protobuf::io::Printer::Sub;
+
+void InternalMetadataOffsetFormatString(io::Printer* p) {
+  p->Emit(R"cc(
+    $pbi$::InternalMetadataOffset::Build<
+        $classtype$, offsetof($classtype$, _impl_.$name$_)>()
+  )cc");
+}
+
+}  // namespace
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
@@ -156,7 +167,19 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_repeated()) {
-    p->Emit("$name$_{}");
+    if (IsRepeatedPtrField(field_)) {
+      p->Emit({{"internal_metadata_offset",
+                [p] { InternalMetadataOffsetFormatString(p); }}},
+              R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+                $name$_{visibility, $internal_metadata_offset$}
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+                $name$_ {}
+#endif
+              )cc");
+    } else {
+      p->Emit("$name$_{}");
+    }
   } else {
     p->Emit({{"default", DefaultValue(options_, field_)}},
             "$name$_{$default$}");
@@ -170,6 +193,16 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   } else if (field_->is_repeated()) {
     if (ShouldSplit(field_, options_)) {
       p->Emit("$name$_{}");  // RawPtr<Repeated>
+    } else if (IsRepeatedPtrField(field_)) {
+      p->Emit({{"internal_metadata_offset",
+                [p] { InternalMetadataOffsetFormatString(p); }}},
+              R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+                $name$_{visibility, $internal_metadata_offset$}
+#else
+                $name$_ { visibility, arena }
+#endif
+              )cc");
     } else {
       p->Emit("$name$_{visibility, arena}");
     }
@@ -182,7 +215,19 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_repeated()) {
-    p->Emit("$name$_{visibility, arena, from.$name$_}");
+    if (IsRepeatedPtrField(field_)) {
+      p->Emit({{"internal_metadata_offset",
+                [p] { InternalMetadataOffsetFormatString(p); }}},
+              R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+                $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+#else
+                $name$_ { visibility, arena, from.$name$_ }
+#endif
+              )cc");
+    } else {
+      p->Emit("$name$_{visibility, arena, from.$name$_}");
+    }
   } else {
     p->Emit("$name$_{from.$name$_}");
   }

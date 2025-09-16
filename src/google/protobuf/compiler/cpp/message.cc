@@ -1722,7 +1722,8 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
         struct Impl_ {
           //~ TODO: check if/when there is a need for an
           //~ outline dtor.
-          inline explicit constexpr Impl_($pbi$::ConstantInitialized) noexcept;
+          inline explicit constexpr Impl_($pbi$::InternalVisibility visibility,
+                                          $pbi$::ConstantInitialized) noexcept;
           inline explicit Impl_(
               //~
               $pbi$::InternalVisibility visibility,
@@ -3198,6 +3199,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   p->Emit({{"init", [&] { GenerateImplMemberInit(p, InitType::kConstexpr); }}},
           R"cc(
             inline constexpr $classname$::Impl_::Impl_(
+                [[maybe_unused]] $pbi$::InternalVisibility visibility,
                 ::_pbi::ConstantInitialized) noexcept
                 //~
                 $init$ {}
@@ -3213,7 +3215,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
 #else   // PROTOBUF_CUSTOM_VTABLE
             : $superclass$(),
 #endif  // PROTOBUF_CUSTOM_VTABLE
-              _impl_(::_pbi::ConstantInitialized()) {
+              _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
         }
       )cc");
 }
@@ -3963,7 +3965,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
 }
 
 MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
-    io::Printer* arena_emitter) const {
+    io::Printer* arena_emitter, bool without_rpf_arena_ptrs) const {
   size_t arena_seeding_count = 0;
   NewOpRequirements op;
   if (IsBootstrapProto(options_, descriptor_->file())) {
@@ -4023,8 +4025,12 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
         print_arena_offset("Alt");
       }
     } else if (field->is_repeated()) {
-      op.needs_arena_seeding = true;
-      print_arena_offset();
+      if (without_rpf_arena_ptrs && IsRepeatedPtrField(field)) {
+        op.needs_memcpy = true;
+      } else {
+        op.needs_arena_seeding = true;
+        print_arena_offset();
+      }
     } else {
       const auto& generator = field_generators_.get(field);
       if (generator.has_trivial_zero_default()) {
@@ -4078,20 +4084,9 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
   return op;
 }
 
-void MessageGenerator::GenerateClassData(io::Printer* p) {
-  const auto new_op = GetNewOp(nullptr);
-  // Always generate PlacementNew_ because we might need it for different
-  // reasons. EnableCustomNewFor<T> might be false in this compiler, or the
-  // object might be too large for arena seeding.
-  // We mark `inline` to avoid library bloat if the function is unused.
-  p->Emit(R"cc(
-    inline void* $nonnull$ $classname$::PlacementNew_(
-        //~
-        const void* $nonnull$, void* $nonnull$ mem,
-        $pb$::Arena* $nullable$ arena) {
-      return ::new (mem) $classname$(arena);
-    }
-  )cc");
+void MessageGenerator::GenerateNewOp(io::Printer* p,
+                                     bool without_rpf_arena_ptrs) const {
+  const auto new_op = GetNewOp(nullptr, without_rpf_arena_ptrs);
   if (new_op.needs_to_run_constructor) {
     p->Emit(R"cc(
       constexpr auto $classname$::InternalNewImpl_() {
@@ -4101,7 +4096,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     )cc");
   } else if (new_op.needs_arena_seeding) {
     p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"},
-             {"arena_offsets", [&] { GetNewOp(p); }}},
+             {"arena_offsets", [&] { GetNewOp(p, without_rpf_arena_ptrs); }}},
             R"cc(
               constexpr auto $classname$::InternalNewImpl_() {
                 constexpr auto arena_bits = $pbi$::EncodePlacementArenaOffsets({
@@ -4118,14 +4113,46 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               }
             )cc");
   } else {
-    p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"},
-             {"arena_offsets", [&] { GetNewOp(p); }}},
+    p->Emit({{"copy_type", new_op.needs_memcpy ? "CopyInit" : "ZeroInit"}},
             R"cc(
               constexpr auto $classname$::InternalNewImpl_() {
                 return $pbi$::MessageCreator::$copy_type$(sizeof($classname$),
                                                           alignof($classname$));
               }
             )cc");
+  }
+}
+
+void MessageGenerator::GenerateClassData(io::Printer* p) {
+  // Always generate PlacementNew_ because we might need it for different
+  // reasons. EnableCustomNewFor<T> might be false in this compiler, or the
+  // object might be too large for arena seeding.
+  // We mark `inline` to avoid library bloat if the function is unused.
+  p->Emit(R"cc(
+    inline void* $nonnull$ $classname$::PlacementNew_(
+        //~
+        const void* $nonnull$, void* $nonnull$ mem,
+        $pb$::Arena* $nullable$ arena) {
+      return ::new (mem) $classname$(arena);
+    }
+  )cc");
+
+  if (absl::c_any_of(FieldRange(descriptor_), [](const FieldDescriptor* field) {
+        return IsRepeatedPtrField(field);
+      })) {
+    p->Emit({{"new_op",
+              [&] { GenerateNewOp(p, /*without_rpf_arena_ptrs=*/false); }},
+             {"new_op_without_rpf_arena_ptrs",
+              [&] { GenerateNewOp(p, /*without_rpf_arena_ptrs=*/true); }}},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+              $new_op_without_rpf_arena_ptrs$;
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+              $new_op$;
+#endif
+            )cc");
+  } else {
+    GenerateNewOp(p, /*without_rpf_arena_ptrs=*/false);
   }
 
   auto vars = p->WithVars(

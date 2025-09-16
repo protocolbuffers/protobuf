@@ -740,6 +740,8 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
 
+  bool RequiresArena(GeneratorFunction function) const override;
+
  private:
   const Options* opts_;
   bool has_required_;
@@ -748,7 +750,11 @@ class RepeatedMessage : public FieldGeneratorBase {
 void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+      $pbi$::RawPtr<$pbi$::$Weak$RepeatedPtrFieldWithArena<$Submsg$>> $name$_;
+#else
       $pbi$::RawPtr<$pb$::$Weak$RepeatedPtrField<$Submsg$>> $name$_;
+#endif
     )cc");
   } else {
     p->Emit("$pb$::$Weak$RepeatedPtrField< $Submsg$ > $name$_;\n");
@@ -831,7 +837,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      $Submsg$* _add = _internal_mutable_$name_internal$()->Add();
+      $Submsg$* _add = _internal_mutable_$name_internal$()->AddWithArena(
+          $pb$::MessageLite::internal_visibility(), GetArena());
       $set_hasbit$;
       $annotate_add_mutable$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
@@ -854,17 +861,31 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
       $Msg$::_internal$_weak$_$name_internal$() const {
         $TsanDetectConcurrentRead$;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        return $field_$->field();
+#else
         return *$field_$;
+#endif
       }
       inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
       $Msg$::_internal_mutable$_weak$_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+          $field_$.Set($superclass$::DefaultConstruct<
+                       $pbi$::$Weak$RepeatedPtrFieldWithArena<$Submsg$>>(
+              GetArena()));
+#else
           $field_$.Set($superclass$::DefaultConstruct<
                        $pb$::$Weak$RepeatedPtrField<$Submsg$>>(GetArena()));
+#endif
         }
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+        return &$field_$->field();
+#else
         return $field_$.Get();
+#endif
       }
     )cc");
   } else {
@@ -908,7 +929,8 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
   // `if (!from.empty()) { body(); }` for both split and non-split cases.
   auto body = [&] {
     p->Emit(R"cc(
-      _this->_internal_mutable$_weak$_$name$()->MergeFrom(
+      _this->_internal_mutable$_weak$_$name$()->MergeFromWithArena(
+          $pb$::MessageLite::internal_visibility(), arena,
           from._internal$_weak$_$name$());
     )cc");
   };
@@ -940,7 +962,9 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
       if (!from._internal$_weak$_$name$().empty()) {
-        _internal_mutable$_weak$_$name$()->MergeFrom(from._internal$_weak$_$name$());
+        _internal_mutable$_weak$_$name$()->MergeFromWithArena(
+            $pb$::MessageLite::internal_visibility(), arena,
+            from._internal$_weak$_$name$());
       }
     )cc");
   }
@@ -1047,6 +1071,15 @@ void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
 }
 
 bool RepeatedMessage::NeedsIsInitialized() const { return has_required_; }
+
+bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
+  switch (func) {
+    case GeneratorFunction::kMergeFrom:
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(
