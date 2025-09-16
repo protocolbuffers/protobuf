@@ -71,6 +71,8 @@ template <typename It>
 class RepeatedPtrIterator;
 template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
+template <typename T>
+class AllocatedRepeatedPtrFieldBackInsertIterator;
 }  // namespace internal
 
 namespace internal {
@@ -452,10 +454,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  void AddAllocated(Value<TypeHandler>* value) {
+  void AddAllocated(Arena* arena, Value<TypeHandler>* value) {
+    ABSL_DCHECK_EQ(arena, GetArena());
     ABSL_DCHECK_NE(value, nullptr);
     Arena* element_arena = TypeHandler::GetArena(value);
-    Arena* arena = GetArena();
     if (arena != element_arena || AllocatedSizeAtCapacity()) {
       AddAllocatedSlowWithCopy<TypeHandler>(value, element_arena, arena);
       return;
@@ -1342,6 +1344,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
+  // Friended to allow calling `AddAllocated` from our private base class with
+  // arena pointers, which may be cached in the iterator. This saves us needing
+  // to call `GetArena()` on the `RepeatedPtrField` every insertion, which has 2
+  // levels of indirection.
+  template <typename T>
+  friend class internal::AllocatedRepeatedPtrFieldBackInsertIterator;
+
   friend class Arena;
 
   friend class internal::TcParser;
@@ -1666,7 +1675,7 @@ inline size_t RepeatedPtrField<Element>::SpaceUsedExcludingSelfLong() const {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
-  RepeatedPtrFieldBase::AddAllocated<TypeHandler>(value);
+  RepeatedPtrFieldBase::AddAllocated<TypeHandler>(GetArena(), value);
 }
 
 template <typename Element>
@@ -2101,10 +2110,14 @@ class AllocatedRepeatedPtrFieldBackInsertIterator {
 
   explicit AllocatedRepeatedPtrFieldBackInsertIterator(
       RepeatedPtrField<T>* const mutable_field)
-      : field_(mutable_field) {}
+      : field_(mutable_field), arena_(mutable_field->GetArena()) {}
   AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator=(
       T* const ptr_to_value) {
-    field_->AddAllocated(ptr_to_value);
+    // Directly call AddAllocated with the cached arena pointer. This avoids
+    // the cost of calling `GetArena()` on `RepeatedPtrField`, which is
+    // expensive.
+    field_->RepeatedPtrFieldBase::template AddAllocated<
+        typename RepeatedPtrField<T>::TypeHandler>(arena_, ptr_to_value);
     return *this;
   }
   AllocatedRepeatedPtrFieldBackInsertIterator<T>& operator*() { return *this; }
@@ -2115,6 +2128,7 @@ class AllocatedRepeatedPtrFieldBackInsertIterator {
 
  private:
   RepeatedPtrField<T>* field_;
+  Arena* arena_;
 };
 
 // Almost identical to AllocatedRepeatedPtrFieldBackInsertIterator. This one

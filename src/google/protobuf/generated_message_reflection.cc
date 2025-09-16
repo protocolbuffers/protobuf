@@ -2741,7 +2741,8 @@ void Reflection::AddAllocatedMessage(Message* message,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    repeated->AddAllocated<GenericTypeHandler<Message>>(new_entry);
+    repeated->AddAllocated<GenericTypeHandler<Message>>(message->GetArena(),
+                                                        new_entry);
     SetHasBitForRepeated(message, field);
   }
 }
