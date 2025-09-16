@@ -63,10 +63,12 @@ void ExtensionSet::AppendToList(
           //   lazily-initialized, so they might not even be constructed until
           //   AppendToList() is called.
 
-          if (ext.descriptor == nullptr) {
+          const auto* field_descriptor =
+              ext.descriptor_or_prototype.GetFieldDescriptor();
+          if (field_descriptor == nullptr) {
             output->push_back(pool->FindExtensionByNumber(extendee, number));
           } else {
-            output->push_back(ext.descriptor);
+            output->push_back(field_descriptor);
           }
         }
       },
@@ -357,7 +359,7 @@ size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
 
 inline size_t ExtensionSet::RepeatedMessage_SpaceUsedExcludingSelfLong(
     RepeatedPtrFieldBase* field) {
-  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message> >();
+  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
 }
 
 size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
@@ -418,7 +420,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
 uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     const MessageLite* extendee, uint8_t* target) const {
   io::EpsCopyOutputStream stream(
-      target, MessageSetByteSize(),
+      target, MessageSetByteSize(extendee),
       io::CodedOutputStream::IsDefaultSerializationDeterministic());
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);
