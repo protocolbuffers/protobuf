@@ -43,6 +43,7 @@ class UnknownFieldSet;
 
 namespace internal {
 
+
 enum {
   kInlinedStringAuxIdx = 0,
   kSplitOffsetAuxIdx = 1,
@@ -853,6 +854,9 @@ class PROTOBUF_EXPORT TcParser final {
   // Optimized small tag varint parser for int32/int64
   template <typename FieldType>
   PROTOBUF_CC static const char* FastVarintS1(PROTOBUF_TC_PARAM_DECL);
+
+  static LazyEagerVerifyFnType GetLazyEagerVerifyFn(
+      const google::protobuf::internal::TcParseTableBase* table, uint32_t field_number);
 
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, bool is_split,
