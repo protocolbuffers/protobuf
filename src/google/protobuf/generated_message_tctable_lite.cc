@@ -631,9 +631,9 @@ PROTOBUF_ALWAYS_INLINE MessageLite* TcParser::NewMessage(
 }
 
 MessageLite* TcParser::AddMessage(const TcParseTableBase* table,
-                                  RepeatedPtrFieldBase& field) {
+                                  RepeatedPtrFieldBase& field, Arena* arena) {
   return field.AddFromClassData<GenericTypeHandler<MessageLite>>(
-      table->class_data);
+      arena, table->class_data);
 }
 
 template <typename TagType, bool group_coding, bool aux_is_table>
@@ -726,15 +726,16 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   }
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
+  Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
-  ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
+  ABSL_DCHECK_EQ(field.GetArena(), arena);
   const TcParseTableBase* inner_table =
       aux_is_table ? aux.table : aux.message_default()->GetTcParseTable();
   do {
     ptr += sizeof(TagType);
-    MessageLite* submsg = AddMessage(inner_table, field);
+    MessageLite* submsg = AddMessage(inner_table, field, arena);
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoop(submsg, ptr, ctx, inner_table);
     };
@@ -2751,7 +2752,7 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
   const char* ptr2 = ptr;
   uint32_t next_tag;
   do {
-    MessageLite* value = AddMessage(inner_table, field);
+    MessageLite* value = AddMessage(inner_table, field, msg->GetArena());
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoopPreserveNone(value, ptr, ctx, inner_table);
     };

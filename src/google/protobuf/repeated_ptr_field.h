@@ -207,17 +207,17 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  Value<TypeHandler>* Add() {
-    return cast<TypeHandler>(AddInternal(TypeHandler::GetNewFunc()));
+  Value<TypeHandler>* Add(Arena* arena) {
+    return cast<TypeHandler>(AddInternal(arena, TypeHandler::GetNewFunc()));
   }
 
   template <typename TypeHandler>
-  void Add(Value<TypeHandler>&& value) {
+  void Add(Arena* arena, Value<TypeHandler>&& value) {
     if (ClearedCount() > 0) {
       *cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1))) =
           std::move(value);
     } else {
-      AddInternal(TypeHandler::GetNewWithMoveFunc(std::move(value)));
+      AddInternal(arena, TypeHandler::GetNewWithMoveFunc(std::move(value)));
     }
   }
 
@@ -285,10 +285,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: `prototype` must not be nullptr.
   template <typename TypeHandler>
   PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromPrototype(
-      const Value<TypeHandler>* prototype) {
+      Arena* arena, const Value<TypeHandler>* prototype) {
     using H = CommonHandler<TypeHandler>;
-    Value<TypeHandler>* result =
-        cast<TypeHandler>(AddInternal(H::GetNewFromPrototypeFunc(prototype)));
+    Value<TypeHandler>* result = cast<TypeHandler>(
+        AddInternal(arena, H::GetNewFromPrototypeFunc(prototype)));
     return result;
   }
 
@@ -301,10 +301,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Pre-condition: `class_data` must not be nullptr.
   template <typename TypeHandler>
   PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromClassData(
-      const ClassData* class_data) {
+      Arena* arena, const ClassData* class_data) {
     using H = CommonHandler<TypeHandler>;
-    Value<TypeHandler>* result =
-        cast<TypeHandler>(AddInternal(H::GetNewFromClassDataFunc(class_data)));
+    Value<TypeHandler>* result = cast<TypeHandler>(
+        AddInternal(arena, H::GetNewFromClassDataFunc(class_data)));
     return result;
   }
 
@@ -758,7 +758,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Common implementation used by various Add* methods. `factory` is an object
   // used to construct a new element unless there are spare cleared elements
   // ready for reuse. Returns pointer to the new element.
-  void* AddInternal(absl::FunctionRef<ElementNewFn> factory);
+  void* AddInternal(Arena* arena, absl::FunctionRef<ElementNewFn> factory);
 
   // A few notes on internal representation:
   //
@@ -797,8 +797,8 @@ PROTOBUF_EXPORT void RepeatedPtrFieldBase::MergeFrom<std::string>(
 
 
 inline void* RepeatedPtrFieldBase::AddInternal(
-    absl::FunctionRef<ElementNewFn> factory) {
-  Arena* const arena = GetArena();
+    Arena* arena, absl::FunctionRef<ElementNewFn> factory) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     factory(arena, tagged_rep_or_elem_);
@@ -1478,12 +1478,12 @@ inline Element* RepeatedPtrField<Element>::Mutable(int index)
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::Add()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return RepeatedPtrFieldBase::Add<TypeHandler>();
+  return RepeatedPtrFieldBase::Add<TypeHandler>(GetArena());
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Element&& value) {
-  RepeatedPtrFieldBase::Add<TypeHandler>(std::move(value));
+  RepeatedPtrFieldBase::Add<TypeHandler>(GetArena(), std::move(value));
 }
 
 template <typename Element>
@@ -1716,6 +1716,11 @@ class RustRepeatedMessageHelper {
 
   static size_t Size(const RepeatedPtrFieldBase& field) {
     return static_cast<size_t>(field.size());
+  }
+
+  static auto Add(RepeatedPtrFieldBase& field, const MessageLite* prototype) {
+    return field.AddFromPrototype<GenericTypeHandler<MessageLite>>(
+        field.GetArena(), prototype);
   }
 
   static void CopyFrom(const RepeatedPtrFieldBase& src,

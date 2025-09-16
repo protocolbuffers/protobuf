@@ -746,7 +746,7 @@ class PROTOBUF_EXPORT TcParser final {
       uint16_t type_card, TcParseTableBase::FieldAux aux);
   static MessageLite* NewMessage(const TcParseTableBase* table, Arena* arena);
   static MessageLite* AddMessage(const TcParseTableBase* table,
-                                 RepeatedPtrFieldBase& field);
+                                 RepeatedPtrFieldBase& field, Arena* arena);
 
   template <typename T>
   static inline const T& GetFieldAtMaybeSplit(const void* x, size_t offset,
