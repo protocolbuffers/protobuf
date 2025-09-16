@@ -87,11 +87,11 @@ void MiniTable(Context& ctx, const EnumDescriptor& desc,
             {"mini_descriptor_length", mini_descriptor.size()}},
            R"rs(
     unsafe impl $pbr$::AssociatedMiniTableEnum for $name$ {
-      fn mini_table() -> $pbr$::RawMiniTableEnum {
-        static MINI_TABLE: $std$::sync::OnceLock<$pbr$::MiniTableEnumPtr> =
+      fn mini_table() -> $pbr$::MiniTableEnumPtr {
+        static MINI_TABLE: $std$::sync::OnceLock<$pbr$::MiniTableEnumInitPtr> =
             $std$::sync::OnceLock::new();
         MINI_TABLE.get_or_init(|| unsafe {
-          $pbr$::MiniTableEnumPtr(
+          $pbr$::MiniTableEnumInitPtr(
               $pbr$::build_enum_mini_table("$mini_descriptor$"))
         }).0
       }

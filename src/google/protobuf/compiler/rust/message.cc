@@ -250,13 +250,13 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
       // lock-free.
       R"rs(
       unsafe impl $pbr$::AssociatedMiniTable for $name$ {
-        fn mini_table() -> $pbr$::RawMiniTable {
-          static ONCE_LOCK: $std$::sync::OnceLock<$pbr$::MiniTablePtr> =
+        fn mini_table() -> $pbr$::MiniTablePtr {
+          static ONCE_LOCK: $std$::sync::OnceLock<$pbr$::MiniTableInitPtr> =
               $std$::sync::OnceLock::new();
           unsafe {
             ONCE_LOCK.get_or_init(|| {
               $mini_table_impl$
-              $pbr$::MiniTablePtr($minitable_symbol_name$.0)
+              $pbr$::MiniTableInitPtr($minitable_symbol_name$.0)
             }).0
           }
         }
@@ -382,8 +382,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
              R"rs(
         // This variable must not be referenced except by protobuf generated
         // code.
-        pub(crate) static mut $minitable_symbol_name$: $pbr$::MiniTablePtr =
-            $pbr$::MiniTablePtr($std$::ptr::NonNull::dangling());
+        pub(crate) static mut $minitable_symbol_name$: $pbr$::MiniTableInitPtr =
+            $pbr$::MiniTableInitPtr($pbr$::MiniTablePtr::dangling());
     )rs");
   }
 
