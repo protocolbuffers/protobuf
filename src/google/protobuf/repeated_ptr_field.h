@@ -505,10 +505,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  PROTOBUF_FUTURE_ADD_NODISCARD Value<TypeHandler>* ReleaseLast() {
+  PROTOBUF_FUTURE_ADD_NODISCARD Value<TypeHandler>* ReleaseLast(Arena* arena) {
+    ABSL_DCHECK_EQ(arena, GetArena());
     Value<TypeHandler>* result = UnsafeArenaReleaseLast<TypeHandler>();
     // Now perform a copy if we're on an arena.
-    Arena* arena = GetArena();
 
     if (internal::DebugHardenForceCopyInRelease()) {
       auto* new_result = copy<TypeHandler>(result);
@@ -1688,7 +1688,7 @@ inline void RepeatedPtrField<Element>::UnsafeArenaAddAllocated(Element* value) {
 
 template <typename Element>
 inline Element* RepeatedPtrField<Element>::ReleaseLast() {
-  return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>();
+  return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>(GetArena());
 }
 
 template <typename Element>

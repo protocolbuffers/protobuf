@@ -1647,12 +1647,14 @@ Message* Reflection::ReleaseLast(Message* message,
         MutableExtensionSet(message)->ReleaseLast(field->number()));
   } else {
     if (IsMapFieldInApi(field)) {
-      released = MutableRaw<MapFieldBase>(message, field)
-                     ->MutableRepeatedField()
-                     ->ReleaseLast<GenericTypeHandler<Message>>();
+      released =
+          MutableRaw<MapFieldBase>(message, field)
+              ->MutableRepeatedField()
+              ->ReleaseLast<GenericTypeHandler<Message>>(message->GetArena());
     } else {
-      released = MutableRaw<RepeatedPtrFieldBase>(message, field)
-                     ->ReleaseLast<GenericTypeHandler<Message>>();
+      released =
+          MutableRaw<RepeatedPtrFieldBase>(message, field)
+              ->ReleaseLast<GenericTypeHandler<Message>>(message->GetArena());
     }
   }
   if (internal::DebugHardenForceCopyInRelease()) {
