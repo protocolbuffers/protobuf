@@ -476,12 +476,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  void UnsafeArenaAddAllocated(Value<TypeHandler>* value) {
+  void UnsafeArenaAddAllocated(Arena* arena, Value<TypeHandler>* value) {
+    ABSL_DCHECK_EQ(arena, GetArena());
     ABSL_DCHECK_NE(value, nullptr);
     // Make room for the new pointer.
     if (SizeAtCapacity()) {
       // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1, GetArena());
+      InternalExtend(1, arena);
       ++rep()->allocated_size;
     } else if (AllocatedSizeAtCapacity()) {
       // There is no more space in the pointer array because it contains some
@@ -489,7 +490,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // this case because otherwise a loop calling AddAllocated() followed by
       // Clear() would leak memory.
       using H = CommonHandler<TypeHandler>;
-      Delete<H>(element_at(current_size_), GetArena());
+      Delete<H>(element_at(current_size_), arena);
     } else if (current_size_ < allocated_size()) {
       // We have some cleared objects.  We don't care about their order, so we
       // can just move the first one to the end to make space.
@@ -548,6 +549,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // or load (mine).
       Value<TypeHandler>* value, Arena* value_arena, Arena* my_arena) {
     using H = CommonHandler<TypeHandler>;
+    ABSL_DCHECK_EQ(my_arena, GetArena());
+    ABSL_DCHECK_EQ(value_arena, TypeHandler::GetArena(value));
     // Ensure that either the value is in the same arena, or if not, we do the
     // appropriate thing: Own() it (if it's on heap and we're in an arena) or
     // copy it to our arena/heap (otherwise).
@@ -558,7 +561,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       value = cast<TypeHandler>(CloneSlow(my_arena, *value));
     }
 
-    UnsafeArenaAddAllocated<H>(value);
+    UnsafeArenaAddAllocated<H>(my_arena, value);
   }
 
   // TODO - Outline this function so a future change can use a
@@ -1680,7 +1683,7 @@ inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaAddAllocated(Element* value) {
-  RepeatedPtrFieldBase::UnsafeArenaAddAllocated<TypeHandler>(value);
+  RepeatedPtrFieldBase::UnsafeArenaAddAllocated<TypeHandler>(GetArena(), value);
 }
 
 template <typename Element>
