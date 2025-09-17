@@ -16,10 +16,7 @@ cc_library(
     srcs = ["make_mini_table.cc"],
     hdrs = ["make_mini_table.h"],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = [
-        "//upb:__pkg__",
-        "//upb:__subpackages__",
-    ],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         "//upb/base",
         "//upb/mem",
@@ -39,10 +36,7 @@ cc_library(
     name = "field_types",
     testonly = True,
     hdrs = ["field_types.h"],
-    visibility = [
-        "//upb:__pkg__",
-        "//upb:__subpackages__",
-    ],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         ":wire_message",
         "//upb/base",
@@ -58,10 +52,7 @@ cc_library(
     testonly = True,
     srcs = ["wire_message.cc"],
     hdrs = ["wire_message.h"],
-    visibility = [
-        "//upb:__pkg__",
-        "//upb:__subpackages__",
-    ],
+    visibility = ["//upb:__subpackages__"],
     deps = [
         "//upb/base:internal",
         "//upb/wire:reader",

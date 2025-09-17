@@ -27,13 +27,12 @@ extern crate upb;
 #[cfg(not(bzl))]
 use crate::upb;
 
-// Temporarily 'pub' since the gencode is directly referencing various parts of upb.
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
 pub use upb::AssociatedMiniTableEnum;
 pub use upb::MessagePtr;
-pub use upb::RawMiniTable;
-pub use upb::RawMiniTableEnum;
+pub type MiniTablePtr = upb::RawMiniTable;
+pub type MiniTableEnumPtr = upb::RawMiniTableEnum;
 use upb::*;
 
 pub fn debug_string<T: UpbGetMessagePtr>(msg: &T) -> String {
@@ -49,20 +48,20 @@ pub(crate) type PtrAndLen = upb::StringView;
 // This struct represents a raw minitable pointer. We need it to be Send and Sync so that we can
 // store it in a static OnceLock for lazy initialization of minitables. It should not be used for
 // any other purpose.
-pub struct MiniTablePtr(pub RawMiniTable);
-unsafe impl Send for MiniTablePtr {}
-unsafe impl Sync for MiniTablePtr {}
+pub struct MiniTableInitPtr(pub MiniTablePtr);
+unsafe impl Send for MiniTableInitPtr {}
+unsafe impl Sync for MiniTableInitPtr {}
 
 // Same as above, but for enum minitables.
-pub struct MiniTableEnumPtr(pub RawMiniTableEnum);
-unsafe impl Send for MiniTableEnumPtr {}
-unsafe impl Sync for MiniTableEnumPtr {}
+pub struct MiniTableEnumInitPtr(pub MiniTableEnumPtr);
+unsafe impl Send for MiniTableEnumInitPtr {}
+unsafe impl Sync for MiniTableEnumInitPtr {}
 
 /// # Safety
 /// - `mini_descriptor` must be a valid MiniDescriptor.
-pub unsafe fn build_mini_table(mini_descriptor: &'static str) -> RawMiniTable {
+pub unsafe fn build_mini_table(mini_descriptor: &'static str) -> MiniTablePtr {
     unsafe {
-        NonNull::new_unchecked(upb_MiniTable_Build(
+        MiniTablePtr::new(upb_MiniTable_Build(
             mini_descriptor.as_ptr(),
             mini_descriptor.len(),
             THREAD_LOCAL_ARENA.with(|a| a.raw()),
@@ -73,9 +72,9 @@ pub unsafe fn build_mini_table(mini_descriptor: &'static str) -> RawMiniTable {
 
 /// # Safety
 /// - `mini_descriptor` must be a valid enum MiniDescriptor.
-pub unsafe fn build_enum_mini_table(mini_descriptor: &'static str) -> RawMiniTableEnum {
+pub unsafe fn build_enum_mini_table(mini_descriptor: &'static str) -> MiniTableEnumPtr {
     unsafe {
-        NonNull::new_unchecked(upb_MiniTableEnum_Build(
+        MiniTableEnumPtr::new(upb_MiniTableEnum_Build(
             mini_descriptor.as_ptr(),
             mini_descriptor.len(),
             THREAD_LOCAL_ARENA.with(|a| a.raw()),
@@ -87,9 +86,9 @@ pub unsafe fn build_enum_mini_table(mini_descriptor: &'static str) -> RawMiniTab
 /// # Safety
 /// - All arguments must point to valid MiniTables.
 pub unsafe fn link_mini_table(
-    mini_table: RawMiniTable,
-    submessages: &[RawMiniTable],
-    subenums: &[RawMiniTableEnum],
+    mini_table: MiniTablePtr,
+    submessages: &[MiniTablePtr],
+    subenums: &[MiniTableEnumPtr],
 ) {
     unsafe {
         assert!(upb_MiniTable_Link(
