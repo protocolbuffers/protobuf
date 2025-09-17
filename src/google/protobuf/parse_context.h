@@ -163,7 +163,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // This add is safe due to the invariant above, because
     // ptr - buffer_end_ <= kSlopBytes.
     limit += static_cast<int>(ptr - buffer_end_);
-    limit_end_ = buffer_end_ + (std::min)(0, limit);
+    limit_end_ = std::min(buffer_end_, buffer_end_ + limit);
     auto old_limit = limit_;
     limit_ = limit;
     return LimitToken(old_limit - limit);
@@ -176,7 +176,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (ABSL_PREDICT_FALSE(!EndedAtLimit())) return false;
     // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
-    limit_end_ = buffer_end_ + (std::min)(0, limit_);
+    limit_end_ = std::min(buffer_end_, buffer_end_ + limit_);
     return true;
   }
 
