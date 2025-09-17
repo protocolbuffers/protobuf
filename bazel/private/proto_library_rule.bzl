@@ -375,6 +375,9 @@ List of files containing extension declarations. This attribute is only allowed
 for use with MessageSet.
 """,
         ),
+        "_authenticity_check": attr.label(
+            default = "//bazel/private:authenticity_check",
+        ),
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
         "_experimental_proto_descriptor_sets_include_source_info": attr.label(

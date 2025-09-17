@@ -1,5 +1,11 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load(":native_bool_flag.bzl", "native_bool_flag")
+load(":protoc_authenticity.bzl", "protoc_authenticity")
+
+protoc_authenticity(
+    name = "authenticity_check",
+    visibility = ["//visibility:public"],
+)
 
 package(default_applicable_licenses = ["//:license"])
 
