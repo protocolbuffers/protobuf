@@ -1072,6 +1072,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   RepeatedPtrField(internal::InternalVisibility, Arena* arena,
                    const RepeatedPtrField& rhs)
       : RepeatedPtrField(arena, rhs) {}
+  RepeatedPtrField(internal::InternalVisibility, Arena* arena,
+                   RepeatedPtrField&& rhs)
+      : RepeatedPtrField(arena, std::move(rhs)) {}
 
   // TODO: make constructor private
   [[deprecated("Use Arena::Create<RepeatedPtrField<...>>(Arena*) instead")]]
