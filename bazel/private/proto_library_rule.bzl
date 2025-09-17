@@ -113,6 +113,7 @@ def _proto_library_impl(ctx):
             default_runfiles = ctx.runfiles(),  # empty
             data_runfiles = data_runfiles,
         ),
+        OutputGroupInfo(_validation = depset([ctx.attr._authenticity_check[OutputGroupInfo]._validation])),
     ]
 
 def _process_srcs(ctx, srcs, import_prefix, strip_import_prefix):
@@ -374,6 +375,9 @@ lang_proto_library that is not in one of the listed packages.""",
 List of files containing extension declarations. This attribute is only allowed
 for use with MessageSet.
 """,
+        ),
+        "_authenticity_check": attr.label(
+            default = "//bazel/private:authenticity_check",
         ),
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
