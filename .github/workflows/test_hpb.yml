@@ -39,5 +39,5 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: hpb_linux
           bazel: >-
-            ${{ matrix.bazel_cmd }} --cxxopt=-Wno-trigraphs
+            ${{ matrix.bazel_cmd }}
             ${{ matrix.targets }} ${{ matrix.config.flags }}

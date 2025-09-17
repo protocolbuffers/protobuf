@@ -34,5 +34,5 @@ extend TestModel {
   bool bool_ext = 13011 [default = true];
 
   string string_ext = 13012 [default = "mishpacha"];
-  string string_trigraph_ext = 13013 [default = "bseder??!bseder"];
+  string string_escape_ext = 13013 [default = "bseder\"bseder"];
 }

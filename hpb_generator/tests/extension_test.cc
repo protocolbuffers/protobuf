@@ -39,8 +39,8 @@ using ::hpb_unittest::someotherpackage::protos::int64_ext;
 using ::hpb_unittest::someotherpackage::protos::repeated_int32_ext;
 using ::hpb_unittest::someotherpackage::protos::repeated_int64_ext;
 using ::hpb_unittest::someotherpackage::protos::repeated_string_ext;
+using ::hpb_unittest::someotherpackage::protos::string_escape_ext;
 using ::hpb_unittest::someotherpackage::protos::string_ext;
-using ::hpb_unittest::someotherpackage::protos::string_trigraph_ext;
 using ::hpb_unittest::someotherpackage::protos::uint32_ext;
 using ::hpb_unittest::someotherpackage::protos::uint64_ext;
 
@@ -392,11 +392,11 @@ TEST(CppGeneratedCode, GetExtensionStringWithDefault) {
   EXPECT_THAT(res, IsOkAndHolds("mishpacha"));
 }
 
-TEST(CppGeneratedCode, GetExtensionStringWithDefaultAndTrigraph) {
+TEST(CppGeneratedCode, GetExtensionStringWithDefaultAndTestEscaping) {
   TestModel model;
-  auto res = hpb::GetExtension(&model, string_trigraph_ext);
+  auto res = hpb::GetExtension(&model, string_escape_ext);
   EXPECT_TRUE(res.ok());
-  EXPECT_THAT(res, IsOkAndHolds("bseder??!bseder"));
+  EXPECT_THAT(res, IsOkAndHolds("bseder\"bseder"));
 }
 
 TEST(CppGeneratedCode, GetExtensionOnMutableChild) {
