@@ -301,6 +301,11 @@ class PROTOBUF_EXPORT ExtensionSet {
   void AppendToList(const Descriptor* extendee, const DescriptorPool* pool,
                     std::vector<const FieldDescriptor*>* output) const;
 
+  // Whether there are any fields which are currently present. Note that this
+  // is different from IsCompletelyEmpty(), which returns false if the list has
+  // any capacity; and Size(), which also accounts for cleared fields.
+  bool IsEmpty() const;
+
   // =================================================================
   // Accessors
   //
@@ -747,6 +752,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     void Clear();
     int GetSize() const;
     void Free();
+    bool IsSet() const { return is_repeated ? GetSize() > 0 : !is_cleared; }
     size_t SpaceUsedExcludingSelfLong() const;
     bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
                        int number, Arena* arena) const;
@@ -1004,6 +1010,19 @@ class PROTOBUF_EXPORT ExtensionSet {
     for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
   }
 
+  // Loops through [begin, end), and returns true as soon as some element
+  // satisfies predicate. Returns false if no element satisfies predicate.
+  template <typename Iterator, typename KeyValueFunctor>
+  static bool AnyOfNoPrefetch(Iterator begin, Iterator end,
+                              KeyValueFunctor predicate) {
+    for (Iterator it = begin; it != end; ++it) {
+      if (predicate(it->first, it->second)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   // Applies a functor to the <int, Extension&> pairs in sorted order.
   template <typename KeyValueFunctor>
   void ForEachNoPrefetch(KeyValueFunctor func) {
@@ -1024,6 +1043,18 @@ class PROTOBUF_EXPORT ExtensionSet {
       return;
     }
     ForEachNoPrefetch(flat_begin(), flat_end(), std::move(func));
+  }
+
+  // Loops through all <int, Extension&> pairs in sorted order, and returns true
+  // as soon as some element satisfies `predicate`. Returns false if no element
+  // satisfies predicate.
+  template <typename KeyValueFunctor>
+  bool AnyOfNoPrefetch(KeyValueFunctor predicate) const {
+    if (ABSL_PREDICT_FALSE(is_large())) {
+      return AnyOfNoPrefetch(map_.large->begin(), map_.large->end(),
+                             std::move(predicate));
+    }
+    return AnyOfNoPrefetch(flat_begin(), flat_end(), std::move(predicate));
   }
 
   // Returns true if nothing is allocated in the ExtensionSet.
