@@ -113,6 +113,7 @@ def _proto_library_impl(ctx):
             default_runfiles = ctx.runfiles(),  # empty
             data_runfiles = data_runfiles,
         ),
+        OutputGroupInfo(_validation = depset([ctx.attr._authenticity_check[OutputGroupInfo]._validation])),
     ]
 
 def _process_srcs(ctx, srcs, import_prefix, strip_import_prefix):
