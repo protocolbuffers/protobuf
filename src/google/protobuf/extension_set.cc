@@ -1025,7 +1025,7 @@ void ExtensionSet::Swap(const MessageLite* extendee, ExtensionSet* other) {
 
 void ExtensionSet::InternalSwap(ExtensionSet* other) {
   using std::swap;
-  swap(arena_, other->arena_);
+  ABSL_DCHECK_EQ(arena_, other->arena_);
   swap(flat_capacity_, other->flat_capacity_);
   swap(flat_size_, other->flat_size_);
   swap(map_, other->map_);
