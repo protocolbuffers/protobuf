@@ -23,6 +23,7 @@
 #include "hpb_generator/gen_utils.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
+#include "upb_generator/c/names.h"
 
 namespace google {
 namespace protobuf {
@@ -146,6 +147,31 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
     ctx.Emit("\n");
   });
 
+  ctx.Emit("namespace hpb::internal {\n");
+  const std::vector<const google::protobuf::Descriptor*> messages_to_emit_helpers =
+      SortedMessages(file);
+  for (auto desc : messages_to_emit_helpers) {
+    if (desc->map_key() != nullptr) {
+      continue;
+    }
+    std::string outer_namespace =
+        absl::StrCat(NamespaceFromPackageName(file->package()), "::");
+    if (file->package().empty()) {
+      outer_namespace = "";
+    }
+    ctx.Emit({{"class_name", ClassName(desc)},
+              {"outer_namespace", outer_namespace},
+              {"c_api_msg_type",
+               upb::generator::CApiMessageType(desc->full_name())}},
+             R"cc(
+               template <>
+               struct AssociatedUpbTypes<$outer_namespace$$class_name$> {
+                 using CMessageType = $c_api_msg_type$;
+               };
+             )cc");
+  }
+
+  ctx.Emit("}  // namespace hpb::internal\n");
   ctx.Emit(
       "#include \"hpb/internal/os_macros_restore.inc\"\n");
   ctx.Emit("\n#include \"upb/port/undef.inc\"\n\n");
