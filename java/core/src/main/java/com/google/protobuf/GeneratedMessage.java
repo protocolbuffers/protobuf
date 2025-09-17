@@ -450,7 +450,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   protected void makeExtensionsImmutable() {
     warnPre22Gencode(getClass());
-   }
+  }
 
   protected static LongList emptyLongList() {
     return LongArrayList.emptyList();
