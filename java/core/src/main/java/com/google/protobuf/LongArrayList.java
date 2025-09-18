@@ -54,6 +54,16 @@ final class LongArrayList extends AbstractProtobufList<Long>
     this.size = size;
   }
 
+  /**
+   * Constructs a new mutable {@code LongArrayList} containing the same elements as {@code other}.
+   */
+  LongArrayList(LongArrayList other, boolean isMutable) {
+    this(
+        other.size == 0 ? EMPTY_ARRAY : Arrays.copyOf(other.array, other.size),
+        other.size,
+        isMutable);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();

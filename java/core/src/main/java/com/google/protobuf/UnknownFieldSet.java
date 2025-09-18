@@ -12,11 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Objects;
+import java.util.function.IntFunction;
 
 /**
  * {@code UnknownFieldSet} keeps track of fields which were seen when parsing a protocol
@@ -33,12 +33,12 @@ import java.util.TreeMap;
  */
 public final class UnknownFieldSet implements MessageLite {
 
-  private final TreeMap<Integer, Field> fields;
+  private final IntTreeMap<Field> fields;
+  private volatile int memoizedSerializedSize = -1;
+  private volatile int memoizedSerializedSizeAsMessageSet = -1;
 
-  /**
-   * Construct an {@code UnknownFieldSet} around the given map.
-   */
-  private UnknownFieldSet(TreeMap<Integer, Field> fields) {
+  /** Construct an {@code UnknownFieldSet} around the given map. */
+  private UnknownFieldSet(IntTreeMap<Field> fields) {
     this.fields = fields;
   }
 
@@ -63,7 +63,7 @@ public final class UnknownFieldSet implements MessageLite {
   }
 
   private static final UnknownFieldSet defaultInstance =
-      new UnknownFieldSet(new TreeMap<Integer, Field>());
+      new UnknownFieldSet(new IntTreeMap<Field>());
 
   @Override
   public boolean equals(
@@ -76,10 +76,6 @@ public final class UnknownFieldSet implements MessageLite {
 
   @Override
   public int hashCode() {
-    if (fields.isEmpty()) { // avoid allocation of iterator.
-      // This optimization may not be helpful but it is needed for the allocation tests to pass.
-      return 0;
-    }
     return fields.hashCode();
   }
 
@@ -94,30 +90,27 @@ public final class UnknownFieldSet implements MessageLite {
     if (fields.isEmpty()) {
       return Collections.emptyMap();
     }
-    return (Map<Integer, Field>) fields.clone();
+    return Collections.unmodifiableMap(fields);
   }
 
   /** Check if the given field number is present in the set. */
   public boolean hasField(int number) {
-    return fields.containsKey(number);
+    return fields.containsKeyFast(number);
   }
 
   /** Get a field by number. Returns an empty field if not present. Never returns {@code null}. */
   public Field getField(int number) {
-    Field result = fields.get(number);
+    Field result = fields.getFast(number);
     return (result == null) ? Field.getDefaultInstance() : result;
   }
 
   /** Serializes the set and writes it to {@code output}. */
   @Override
   public void writeTo(CodedOutputStream output) throws IOException {
-    if (fields.isEmpty()) {
-      // Avoid allocating an iterator.
-      return;
-    }
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-      Field field = entry.getValue();
-      field.writeTo(entry.getKey(), output);
+    IntTreeNode<Field> entry = fields.min();
+    while (entry != null) {
+      entry.getValue().writeTo(entry.getKeyAsInt(), output);
+      entry = IntTreeMap.next(entry);
     }
   }
 
@@ -186,75 +179,77 @@ public final class UnknownFieldSet implements MessageLite {
   /** Get the number of bytes required to encode this set. */
   @Override
   public int getSerializedSize() {
-    int result = 0;
-    if (fields.isEmpty()) {
-      // Avoid allocating an iterator.
-      return result;
-    }
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-      result += entry.getValue().getSerializedSize(entry.getKey());
+    int result = memoizedSerializedSize;
+    if (result == -1) {
+      result = 0;
+      IntTreeNode<Field> entry = fields.min();
+      while (entry != null) {
+        result += entry.getValue().getSerializedSize(entry.getKeyAsInt());
+        entry = IntTreeMap.next(entry);
+      }
+      memoizedSerializedSize = result;
     }
     return result;
   }
 
   /** Serializes the set and writes it to {@code output} using {@code MessageSet} wire format. */
   public void writeAsMessageSetTo(CodedOutputStream output) throws IOException {
-    if (fields.isEmpty()) {
-      // Avoid allocating an iterator.
-      return;
-    }
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-      entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), output);
+    IntTreeNode<Field> entry = fields.min();
+    while (entry != null) {
+      entry.getValue().writeAsMessageSetExtensionTo(entry.getKeyAsInt(), output);
+      entry = IntTreeMap.next(entry);
     }
   }
 
   /** Serializes the set and writes it to {@code writer}. */
   void writeTo(Writer writer) throws IOException {
-    if (fields.isEmpty()) {
-      // Avoid allocating an iterator.
-      return;
-    }
     if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
       // Write fields in descending order.
-      for (Map.Entry<Integer, Field> entry : fields.descendingMap().entrySet()) {
-        entry.getValue().writeTo(entry.getKey(), writer);
+      IntTreeNode<Field> entry = fields.max();
+      while (entry != null) {
+        entry.getValue().writeTo(entry.getKeyAsInt(), writer);
+        entry = IntTreeMap.prev(entry);
       }
     } else {
       // Write fields in ascending order.
-      for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-        entry.getValue().writeTo(entry.getKey(), writer);
+      IntTreeNode<Field> entry = fields.min();
+      while (entry != null) {
+        entry.getValue().writeTo(entry.getKeyAsInt(), writer);
+        entry = IntTreeMap.next(entry);
       }
     }
   }
 
   /** Serializes the set and writes it to {@code writer} using {@code MessageSet} wire format. */
   void writeAsMessageSetTo(Writer writer) throws IOException {
-    if (fields.isEmpty()) {
-      // Avoid allocating an iterator.
-      return;
-    }
     if (writer.fieldOrder() == Writer.FieldOrder.DESCENDING) {
       // Write fields in descending order.
-      for (Map.Entry<Integer, Field> entry : fields.descendingMap().entrySet()) {
-        entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), writer);
+      IntTreeNode<Field> entry = fields.max();
+      while (entry != null) {
+        entry.getValue().writeAsMessageSetExtensionTo(entry.getKeyAsInt(), writer);
+        entry = IntTreeMap.prev(entry);
       }
     } else {
       // Write fields in ascending order.
-      for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-        entry.getValue().writeAsMessageSetExtensionTo(entry.getKey(), writer);
+      IntTreeNode<Field> entry = fields.min();
+      while (entry != null) {
+        entry.getValue().writeAsMessageSetExtensionTo(entry.getKeyAsInt(), writer);
+        entry = IntTreeMap.next(entry);
       }
     }
   }
 
   /** Get the number of bytes required to encode this set using {@code MessageSet} wire format. */
   public int getSerializedSizeAsMessageSet() {
-    int result = 0;
-    if (fields.isEmpty()) {
-      // Avoid allocating an iterator.
-      return result;
-    }
-    for (Map.Entry<Integer, Field> entry : fields.entrySet()) {
-      result += entry.getValue().getSerializedSizeAsMessageSetExtension(entry.getKey());
+    int result = memoizedSerializedSizeAsMessageSet;
+    if (result == -1) {
+      result = 0;
+      IntTreeNode<Field> entry = fields.min();
+      while (entry != null) {
+        result += entry.getValue().getSerializedSizeAsMessageSetExtension(entry.getKeyAsInt());
+        entry = IntTreeMap.next(entry);
+      }
+      memoizedSerializedSizeAsMessageSet = result;
     }
     return result;
   }
@@ -309,10 +304,17 @@ public final class UnknownFieldSet implements MessageLite {
    * <p>Use {@link UnknownFieldSet#newBuilder()} to construct a {@code Builder}.
    */
   public static final class Builder implements MessageLite.Builder {
-    // This constructor should never be called directly (except from 'create').
-    private Builder() {}
 
-    private TreeMap<Integer, Field.Builder> fieldBuilders = new TreeMap<>();
+    // This constructor should never be called directly (except from 'create').
+    private Builder() {
+      this(new IntTreeMap<>());
+    }
+
+    private Builder(IntTreeMap<Field.Builder> fieldBuilders) {
+      this.fieldBuilders = fieldBuilders;
+    }
+
+    private IntTreeMap<Field.Builder> fieldBuilders;
 
     private static Builder create() {
       return new Builder();
@@ -322,16 +324,10 @@ public final class UnknownFieldSet implements MessageLite {
      * Get a field builder for the given field number which includes any values that already exist.
      */
     private Field.Builder getFieldBuilder(int number) {
-      if (number == 0) {
-        return null;
-      } else {
-        Field.Builder builder = fieldBuilders.get(number);
-        if (builder == null) {
-          builder = Field.newBuilder();
-          fieldBuilders.put(number, builder);
-        }
-        return builder;
+      if (number <= 0) {
+        throw new IllegalArgumentException(number + " is not a valid field number.");
       }
+      return fieldBuilders.computeIfAbsent(number, Field.Builder.COMPUTE_FUNCTION);
     }
 
     /**
@@ -343,9 +339,11 @@ public final class UnknownFieldSet implements MessageLite {
       if (fieldBuilders.isEmpty()) {
         result = getDefaultInstance();
       } else {
-        TreeMap<Integer, Field> fields = new TreeMap<>();
-        for (Map.Entry<Integer, Field.Builder> entry : fieldBuilders.entrySet()) {
-          fields.put(entry.getKey(), entry.getValue().build());
+        IntTreeMap<Field> fields = new IntTreeMap<>();
+        IntTreeNode<Field.Builder> entry = fieldBuilders.min();
+        while (entry != null) {
+          fields.put(entry.getKeyAsInt(), entry.getValue().build());
+          entry = IntTreeMap.next(entry);
         }
         result = new UnknownFieldSet(fields);
       }
@@ -360,13 +358,12 @@ public final class UnknownFieldSet implements MessageLite {
 
     @Override
     public Builder clone() {
-      Builder clone = UnknownFieldSet.newBuilder();
-      for (Map.Entry<Integer, Field.Builder> entry : fieldBuilders.entrySet()) {
-        Integer key = entry.getKey();
-        Field.Builder value = entry.getValue();
-        clone.fieldBuilders.put(key, value.clone());
+      IntTreeMap<Field.Builder> clone = new IntTreeMap<>();
+      IntTreeNode<Field.Builder> entry = fieldBuilders.min();
+      while (entry != null) {
+        clone.put(entry.getKeyAsInt(), entry.getValue().clone());
       }
-      return clone;
+      return new Builder(clone);
     }
 
     @Override
@@ -377,7 +374,7 @@ public final class UnknownFieldSet implements MessageLite {
     /** Reset the builder to an empty set. */
     @Override
     public Builder clear() {
-      fieldBuilders = new TreeMap<>();
+      fieldBuilders = new IntTreeMap<>();
       return this;
     }
 
@@ -390,9 +387,7 @@ public final class UnknownFieldSet implements MessageLite {
       if (number <= 0) {
         throw new IllegalArgumentException(number + " is not a valid field number.");
       }
-      if (fieldBuilders.containsKey(number)) {
-        fieldBuilders.remove(number);
-      }
+      fieldBuilders.removeFast(number);
       return this;
     }
 
@@ -401,10 +396,10 @@ public final class UnknownFieldSet implements MessageLite {
      * {@code other}'s values for that field will be appended to the values in this set.
      */
     public Builder mergeFrom(UnknownFieldSet other) {
-      if (other != getDefaultInstance()) {
-        for (Map.Entry<Integer, Field> entry : other.fields.entrySet()) {
-          mergeField(entry.getKey(), entry.getValue());
-        }
+      IntTreeNode<Field> entry = other.fields.min();
+      while (entry != null) {
+        mergeField(entry.getKeyAsInt(), entry.getValue());
+        entry = IntTreeMap.next(entry);
       }
       return this;
     }
@@ -416,9 +411,6 @@ public final class UnknownFieldSet implements MessageLite {
      * @throws IllegalArgumentException if number is not positive
      */
     public Builder mergeField(int number, final Field field) {
-      if (number <= 0) {
-        throw new IllegalArgumentException(number + " is not a valid field number.");
-      }
       if (hasField(number)) {
         getFieldBuilder(number).mergeFrom(field);
       } else {
@@ -437,9 +429,6 @@ public final class UnknownFieldSet implements MessageLite {
      * @throws IllegalArgumentException if number is not positive
      */
     public Builder mergeVarintField(int number, int value) {
-      if (number <= 0) {
-        throw new IllegalArgumentException(number + " is not a valid field number.");
-      }
       getFieldBuilder(number).addVarint(value);
       return this;
     }
@@ -452,16 +441,16 @@ public final class UnknownFieldSet implements MessageLite {
      * @throws IllegalArgumentException if number is not positive
      */
     public Builder mergeLengthDelimitedField(int number, ByteString value) {
-      if (number <= 0) {
-        throw new IllegalArgumentException(number + " is not a valid field number.");
-      }
       getFieldBuilder(number).addLengthDelimited(value);
       return this;
     }
 
     /** Check if the given field number is present in the set. */
     public boolean hasField(int number) {
-      return fieldBuilders.containsKey(number);
+      if (number <= 0) {
+        throw new IllegalArgumentException(number + " is not a valid field number.");
+      }
+      return fieldBuilders.containsKeyFast(number);
     }
 
     /**
@@ -487,12 +476,13 @@ public final class UnknownFieldSet implements MessageLite {
       if (fieldBuilders.isEmpty()) {
         return Collections.emptyMap();
       }
-
-      TreeMap<Integer, Field> fields = new TreeMap<>();
-      for (Map.Entry<Integer, Field.Builder> entry : fieldBuilders.entrySet()) {
-        fields.put(entry.getKey(), entry.getValue().build());
+      IntTreeMap<Field> fields = new IntTreeMap<>();
+      IntTreeNode<Field.Builder> entry = fieldBuilders.min();
+      while (entry != null) {
+        fields.put(entry.getKeyAsInt(), entry.getValue().build());
+        entry = IntTreeMap.next(entry);
       }
-      return Collections.unmodifiableMap(fields);
+      return fields;
     }
 
     /** Parse an entire message from {@code input} and merge its fields into this set. */
@@ -749,17 +739,23 @@ public final class UnknownFieldSet implements MessageLite {
       if (!(other instanceof Field)) {
         return false;
       }
-      return Arrays.equals(getIdentityArray(), ((Field) other).getIdentityArray());
+      Field that = (Field) other;
+      return Objects.equals(varint, that.varint)
+          && Objects.equals(fixed32, that.fixed32)
+          && Objects.equals(fixed64, that.fixed64)
+          && Objects.equals(lengthDelimited, that.lengthDelimited)
+          && Objects.equals(group, that.group);
     }
 
     @Override
     public int hashCode() {
-      return Arrays.hashCode(getIdentityArray());
-    }
-
-    /** Returns the array of objects to be used to uniquely identify this {@link Field} instance. */
-    private Object[] getIdentityArray() {
-      return new Object[] {varint, fixed32, fixed64, lengthDelimited, group};
+      int result = 1;
+      result = 31 * result + Objects.hashCode(varint);
+      result = 31 * result + Objects.hashCode(fixed32);
+      result = 31 * result + Objects.hashCode(fixed64);
+      result = 31 * result + Objects.hashCode(lengthDelimited);
+      result = 31 * result + Objects.hashCode(group);
+      return result;
     }
 
     /**
@@ -783,15 +779,15 @@ public final class UnknownFieldSet implements MessageLite {
     @SuppressWarnings({"ForeachList", "ForeachListWithUserVar"}) // No iterator allocation.
     public void writeTo(int fieldNumber, CodedOutputStream output) throws IOException {
       for (int i = 0; i < varint.size(); i++) {
-        long value = varint.get(i);
+        long value = varint.getLong(i);
         output.writeUInt64(fieldNumber, value);
       }
       for (int i = 0; i < fixed32.size(); i++) {
-        int value = fixed32.get(i);
+        int value = fixed32.getInt(i);
         output.writeFixed32(fieldNumber, value);
       }
       for (int i = 0; i < fixed64.size(); i++) {
-        long value = fixed64.get(i);
+        long value = fixed64.getLong(i);
         output.writeFixed64(fieldNumber, value);
       }
       for (int i = 0; i < lengthDelimited.size(); i++) {
@@ -809,15 +805,15 @@ public final class UnknownFieldSet implements MessageLite {
     public int getSerializedSize(int fieldNumber) {
       int result = 0;
       for (int i = 0; i < varint.size(); i++) {
-        long value = varint.get(i);
+        long value = varint.getLong(i);
         result += CodedOutputStream.computeUInt64Size(fieldNumber, value);
       }
       for (int i = 0; i < fixed32.size(); i++) {
-        int value = fixed32.get(i);
+        int value = fixed32.getInt(i);
         result += CodedOutputStream.computeFixed32Size(fieldNumber, value);
       }
       for (int i = 0; i < fixed64.size(); i++) {
-        long value = fixed64.get(i);
+        long value = fixed64.getLong(i);
         result += CodedOutputStream.computeFixed64Size(fieldNumber, value);
       }
       for (int i = 0; i < lengthDelimited.size(); i++) {
@@ -901,9 +897,9 @@ public final class UnknownFieldSet implements MessageLite {
       return result;
     }
 
-    private List<Long> varint;
-    private List<Integer> fixed32;
-    private List<Long> fixed64;
+    private LongArrayList varint;
+    private IntArrayList fixed32;
+    private LongArrayList fixed64;
     private List<ByteString> lengthDelimited;
     private List<UnknownFieldSet> group;
 
@@ -913,6 +909,11 @@ public final class UnknownFieldSet implements MessageLite {
      * <p>Use {@link Field#newBuilder()} to construct a {@code Builder}.
      */
     public static final class Builder {
+
+      @SuppressWarnings("UnnecessaryLambda")
+      private static final IntFunction<Field.Builder> COMPUTE_FUNCTION =
+          (ignored) -> new Field.Builder();
+
       // This constructor should only be called directly from 'create' and 'clone'.
       private Builder() {
         result = new Field();
@@ -931,17 +932,17 @@ public final class UnknownFieldSet implements MessageLite {
         if (result.varint == null) {
           copy.varint = null;
         } else {
-          copy.varint = new ArrayList<>(result.varint);
+          copy.varint = new LongArrayList(result.varint, /* isMutable= */ true);
         }
         if (result.fixed32 == null) {
           copy.fixed32 = null;
         } else {
-          copy.fixed32 = new ArrayList<>(result.fixed32);
+          copy.fixed32 = new IntArrayList(result.fixed32, /* isMutable= */ true);
         }
         if (result.fixed64 == null) {
           copy.fixed64 = null;
         } else {
-          copy.fixed64 = new ArrayList<>(result.fixed64);
+          copy.fixed64 = new LongArrayList(result.fixed64, /* isMutable= */ true);
         }
         if (result.lengthDelimited == null) {
           copy.lengthDelimited = null;
@@ -965,19 +966,19 @@ public final class UnknownFieldSet implements MessageLite {
       public Field build() {
         Field built = new Field();
         if (result.varint == null) {
-          built.varint = Collections.emptyList();
+          built.varint = LongArrayList.emptyList();
         } else {
-          built.varint = Collections.unmodifiableList(new ArrayList<>(result.varint));
+          built.varint = new LongArrayList(result.varint, /* isMutable= */ false);
         }
         if (result.fixed32 == null) {
-          built.fixed32 = Collections.emptyList();
+          built.fixed32 = IntArrayList.emptyList();
         } else {
-          built.fixed32 = Collections.unmodifiableList(new ArrayList<>(result.fixed32));
+          built.fixed32 = new IntArrayList(result.fixed32, /* isMutable= */ false);
         }
         if (result.fixed64 == null) {
-          built.fixed64 = Collections.emptyList();
+          built.fixed64 = LongArrayList.emptyList();
         } else {
-          built.fixed64 = Collections.unmodifiableList(new ArrayList<>(result.fixed64));
+          built.fixed64 = new LongArrayList(result.fixed64, /* isMutable= */ false);
         }
         if (result.lengthDelimited == null) {
           built.lengthDelimited = Collections.emptyList();
@@ -1007,19 +1008,19 @@ public final class UnknownFieldSet implements MessageLite {
       public Builder mergeFrom(Field other) {
         if (!other.varint.isEmpty()) {
           if (result.varint == null) {
-            result.varint = new ArrayList<Long>();
+            result.varint = new LongArrayList();
           }
           result.varint.addAll(other.varint);
         }
         if (!other.fixed32.isEmpty()) {
           if (result.fixed32 == null) {
-            result.fixed32 = new ArrayList<Integer>();
+            result.fixed32 = new IntArrayList();
           }
           result.fixed32.addAll(other.fixed32);
         }
         if (!other.fixed64.isEmpty()) {
           if (result.fixed64 == null) {
-            result.fixed64 = new ArrayList<>();
+            result.fixed64 = new LongArrayList();
           }
           result.fixed64.addAll(other.fixed64);
         }
@@ -1041,27 +1042,27 @@ public final class UnknownFieldSet implements MessageLite {
       /** Add a varint value. */
       public Builder addVarint(long value) {
         if (result.varint == null) {
-          result.varint = new ArrayList<>();
+          result.varint = new LongArrayList();
         }
-        result.varint.add(value);
+        result.varint.addLong(value);
         return this;
       }
 
       /** Add a fixed32 value. */
       public Builder addFixed32(int value) {
         if (result.fixed32 == null) {
-          result.fixed32 = new ArrayList<>();
+          result.fixed32 = new IntArrayList();
         }
-        result.fixed32.add(value);
+        result.fixed32.addInt(value);
         return this;
       }
 
       /** Add a fixed64 value. */
       public Builder addFixed64(long value) {
         if (result.fixed64 == null) {
-          result.fixed64 = new ArrayList<>();
+          result.fixed64 = new LongArrayList();
         }
-        result.fixed64.add(value);
+        result.fixed64.addLong(value);
         return this;
       }
 
