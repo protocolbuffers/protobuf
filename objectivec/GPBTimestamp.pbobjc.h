@@ -139,16 +139,17 @@ typedef GPB_ENUM(GPBTimestamp_FieldNumber) {
 GPB_FINAL @interface GPBTimestamp : GPBMessage
 
 /**
- * Represents seconds of UTC time since Unix epoch
- * 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
- * 9999-12-31T23:59:59Z inclusive.
+ * Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must
+ * be between -315576000000 and 315576000000 inclusive (which corresponds to
+ * 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z).
  **/
 @property(nonatomic, readwrite) int64_t seconds;
 
 /**
- * Non-negative fractions of a second at nanosecond resolution. Negative
- * second values with fractions must still have non-negative nanos values
- * that count forward in time. Must be from 0 to 999,999,999
+ * Non-negative fractions of a second at nanosecond resolution. This field is
+ * the nanosecond portion of the duration, not an alternative to seconds.
+ * Negative second values with fractions must still have non-negative nanos
+ * values that count forward in time. Must be between 0 and 999,999,999
  * inclusive.
  **/
 @property(nonatomic, readwrite) int32_t nanos;
