@@ -18,6 +18,7 @@
 #include <limits>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
@@ -653,29 +654,26 @@ std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
     const Message& message, bool base_message) {
   const Descriptor* descriptor = message.GetDescriptor();
 
-  tmp_message_fields_.clear();
-  tmp_message_fields_.reserve(descriptor->field_count() + 1);
+  std::vector<const FieldDescriptor*> message_fields;
+  message_fields.reserve(descriptor->field_count() + 1);
 
   const Reflection* reflection = message.GetReflection();
   if (descriptor->options().map_entry()) {
     if (this->scope_ == PARTIAL && base_message) {
-      reflection->ListFields(message, &tmp_message_fields_);
+      reflection->ListFields(message, &message_fields);
     } else {
       // Map entry fields are always considered present.
       for (int i = 0; i < descriptor->field_count(); i++) {
-        tmp_message_fields_.push_back(descriptor->field(i));
+        message_fields.push_back(descriptor->field(i));
       }
     }
   } else {
-    reflection->ListFields(message, &tmp_message_fields_);
+    reflection->ListFields(message, &message_fields);
   }
   // Add sentinel values to deal with the
   // case where the number of the fields in
   // each list are different.
-  tmp_message_fields_.push_back(nullptr);
-
-  std::vector<const FieldDescriptor*> message_fields(
-      tmp_message_fields_.begin(), tmp_message_fields_.end());
+  message_fields.push_back(nullptr);
 
   return message_fields;
 }
