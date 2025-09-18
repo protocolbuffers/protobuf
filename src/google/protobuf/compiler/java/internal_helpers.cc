@@ -306,7 +306,7 @@ void GenerateLarge(
                   "  }\n");
             }
             printer->Print(
-                "  return getDescriptor().getValues().get(index());\n"
+                "  return getDescriptor().getValue(index());\n"
                 "}\n"
                 "public final com.google.protobuf.Descriptors.EnumDescriptor\n"
                 "    getDescriptorForType() {\n"
@@ -328,7 +328,7 @@ void GenerateLarge(
               // immutable outer class).
               printer->Print(
                   "  return "
-                  "$file$.getDescriptor().getEnumTypes().get($index$);\n",
+                  "$file$.getDescriptor().getEnumType($index$);\n",
                   "file",
                   name_resolver->GetClassName(descriptor->file(),
                                               immutable_api),
@@ -336,7 +336,7 @@ void GenerateLarge(
             } else {
               printer->Print(
                   "  return "
-                  "$parent$.$descriptor$.getEnumTypes().get($index$);\n",
+                  "$parent$.$descriptor$.getEnumType($index$);\n",
                   "parent",
                   name_resolver->GetClassName(descriptor->containing_type(),
                                               immutable_api),

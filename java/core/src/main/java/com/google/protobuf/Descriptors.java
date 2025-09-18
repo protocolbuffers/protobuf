@@ -2236,7 +2236,7 @@ public final class Descriptors {
             case ENUM:
               // We guarantee elsewhere that an enum type always has at least
               // one possible value.
-              defaultValue = getEnumType().getValues().get(0);
+              defaultValue = getEnumType().getValue(0);
               break;
             case MESSAGE:
               defaultValue = null;
@@ -2378,6 +2378,14 @@ public final class Descriptors {
     /** Get a list of defined values for this enum. */
     public List<EnumValueDescriptor> getValues() {
       return Collections.unmodifiableList(Arrays.asList(values));
+    }
+
+    public int getValueCount() {
+      return values.length;
+    }
+
+    public EnumValueDescriptor getValue(int index) {
+      return values[index];
     }
 
     /** Determines if the given field number is reserved. */
