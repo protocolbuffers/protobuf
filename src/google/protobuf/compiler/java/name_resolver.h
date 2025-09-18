@@ -126,7 +126,6 @@ class PROTOC_EXPORT ClassNameResolver {
 
   template <typename Descriptor>
   std::string GetJavaClassPackage(const Descriptor& descriptor, bool immutable);
-
 };
 
 }  // namespace java
