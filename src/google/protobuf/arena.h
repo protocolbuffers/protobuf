@@ -446,10 +446,19 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                                          Arena* PROTOBUF_NULLABLE arena,
                                          Args&&... args) {
       if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
-        using ArenaRepT = typename internal::RepeatedPtrFieldArenaRep<T>::Type;
-        auto* arena_repr =
-            new (ptr) ArenaRepT(arena, static_cast<Args&&>(args)...);
-        return arena_repr;
+        if (ABSL_PREDICT_FALSE(arena == nullptr)) {
+          return new (ptr) T(static_cast<Args&&>(args)...);
+        } else {
+          using ArenaRepT =
+              typename internal::RepeatedPtrFieldArenaRep<T>::Type;
+          auto* arena_repr =
+              new (ptr) ArenaRepT(arena, static_cast<Args&&>(args)...);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+          return &arena_repr->field();
+#else
+          return arena_repr;
+#endif
+        }
       } else {
         return new (ptr) T(arena, static_cast<Args&&>(args)...);
       }
@@ -559,7 +568,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       using ArenaRepT = typename internal::RepeatedPtrFieldArenaRep<T>::Type;
       auto* arena_repr =
           arena->DoCreateMessage<ArenaRepT>(static_cast<Args&&>(args)...);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+      return &arena_repr->field();
+#else
       return arena_repr;
+#endif
     }
   }
 
