@@ -37,7 +37,7 @@ enum NameEquality { NO_MATCH, EXACT_EQUAL, EQUAL_IGNORE_CASE };
 // Thread-safety note: This class is *not* thread-safe.
 class PROTOC_EXPORT ClassNameResolver {
  public:
-  explicit ClassNameResolver(const Options& options = {}) : options_(options) {}
+  ClassNameResolver() = default;
   ~ClassNameResolver() = default;
 
   ClassNameResolver(const ClassNameResolver&) = delete;
@@ -112,8 +112,6 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetClassFullName(absl::string_view name_without_package,
                                const FileDescriptor* file, bool immutable,
                                bool is_own_file, bool kotlin);
-
-  Options options_;
 
  private:
   // Get the Java Class style full name of a message.

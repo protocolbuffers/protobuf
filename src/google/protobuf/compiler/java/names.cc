@@ -117,7 +117,7 @@ std::string ClassName(const FileDescriptor* descriptor) {
 
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
                             Options options) {
-  return ClassNameResolver(options).GetFileJavaPackage(file, immutable);
+  return ClassNameResolver().GetFileJavaPackage(file, immutable);
 }
 
 std::string FileJavaPackage(const FileDescriptor* file, Options options) {

@@ -33,9 +33,7 @@ namespace java {
 
 SharedCodeGenerator::SharedCodeGenerator(const FileDescriptor* file,
                                          const Options& options)
-    : name_resolver_(new ClassNameResolver(options)),
-      file_(file),
-      options_(options) {}
+    : name_resolver_(new ClassNameResolver()), file_(file), options_(options) {}
 
 SharedCodeGenerator::~SharedCodeGenerator() = default;
 
