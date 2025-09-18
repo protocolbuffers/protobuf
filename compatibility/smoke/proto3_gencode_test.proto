@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package legacy_gencode_test;
+package legacy_gencode_test.proto3;
 
 message TestMessage {
   optional string x = 2;

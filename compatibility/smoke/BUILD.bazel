@@ -1,17 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_test")
 
-[java_test(
-    name = "smoke_test_v%s" % gencode_version,
-    srcs = ["SmokeTest.java"],
-    test_class = "smoke.SmokeTest",
-    deps = [
-	"//java/core",
-	"//:protobuf_java_util",
-	"//compatibility/smoke/v%s:checked_in_gencode" % gencode_version,
-	"@protobuf_maven_dev//:com_google_truth_truth",
-	"@protobuf_maven_dev//:junit_junit",
-    ]) for gencode_version in (
-      "3.19.0",
-      # NEXT_VERSION_HERE
-    )]
+load("//compatibility/smoke:stale_gencode_smoke_test.bzl", "stale_gencode_smoke_test");
+
+stale_gencode_smoke_test("3.19.0")
 

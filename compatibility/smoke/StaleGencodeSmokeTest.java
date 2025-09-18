@@ -9,7 +9,7 @@ package smoke;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import legacy_gencode_test.Test.TestMessage;
+import legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.util.JsonFormat;
@@ -21,9 +21,9 @@ import org.junit.runners.JUnit4;
 
 /** Unit test that touches a few behaviors on old versions of generated code. */
 @RunWith(JUnit4.class)
-public class SmokeTest {
+public class StaleGencodeSmokeTest {
   @Test
-  public void builderWorks() {
+  public void testBuilder() {
 	  TestMessage.Builder b = TestMessage.newBuilder();
 	  b.setX("hello");
           assertThat(b.getX()).isEqualTo("hello");
@@ -38,7 +38,7 @@ public class SmokeTest {
   }
 
   @Test
-  public void reflectionWorks() {
+  public void testReflection() {
 	  TestMessage.Builder b = TestMessage.newBuilder();
 	  b.setX("hello");
 	  TestMessage msg = b.build();
@@ -50,7 +50,7 @@ public class SmokeTest {
 
 
   @Test
-  public void serializeParseWorks() throws Exception {
+  public void testSerializeParse() throws Exception {
 	  TestMessage.Builder b = TestMessage.newBuilder();
 	  b.setX("hello");
 	  TestMessage msg = b.build();
@@ -60,7 +60,7 @@ public class SmokeTest {
 
 
   @Test
-  public void serializeParseJsonWorks() throws Exception {
+  public void testSerializeParseJson() throws Exception {
 	  TestMessage.Builder b = TestMessage.newBuilder();
 	  b.setX("hello");
 	  TestMessage msg = b.build();

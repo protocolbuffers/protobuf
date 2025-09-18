@@ -18,12 +18,12 @@ PROTOC="/tmp/protoc-$VER/bin/protoc"
 $PROTOC --version
 
 mkdir -p v$VER
-$PROTOC test.proto --java_out=v$VER
+$PROTOC proto3_gencode_test.proto --java_out=v$VER
 
 cp CHECKED_IN_GENCODE_BUILD.bazel.template v$VER/BUILD.bazel
 
 # Add the new version at the end of the version list for tests.
-sed -i "/NEXT_VERSION_HERE/i\      \"$VER\"," BUILD.bazel
+sed -i "stale_gencode_smoke_test(\"$VER\")" BUILD.bazel
 
 
 
