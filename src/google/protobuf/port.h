@@ -706,8 +706,6 @@ constexpr bool EnableCustomNewFor() {
 }
 #endif
 
-constexpr bool IsOss() { return true; }
-
 // Counter library for debugging internal protobuf logic.
 // It allows instrumenting code that has different options (eg fast vs slow
 // path) to get visibility into how much we are hitting each path.

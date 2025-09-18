@@ -192,6 +192,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":code_generator",
+        ":code_generator_lite",
         ":importer",
         ":retention",
         ":versions",

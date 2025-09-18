@@ -53,8 +53,6 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   ParseGeneratorParameter(parameter, &options);
   Options file_options;
 
-  file_options.opensource_runtime = opensource_runtime_;
-
   for (auto& option : options) {
     if (option.first == "output_list_file") {
       file_options.output_list_file = option.second;

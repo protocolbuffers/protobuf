@@ -34,6 +34,7 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:field_common",
         "//src/google/protobuf/compiler/java:generator_common",
@@ -77,6 +78,7 @@ cc_library(
         ":field_generators",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:field_common",
         "//src/google/protobuf/compiler/java:generator_common",

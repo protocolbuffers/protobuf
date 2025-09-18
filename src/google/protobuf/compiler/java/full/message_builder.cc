@@ -22,6 +22,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -395,8 +396,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
 
   // We include these methods only in open source to maintain long term ABI
   // compatibility, and there should be no need to include them in Google3.
-  if (context_->options().opensource_runtime &&
-      descriptor_->extension_range_count() > 0) {
+  if (google::protobuf::internal::IsOss() && descriptor_->extension_range_count() > 0) {
     printer->Print(
         "public <Type> Builder setExtension(\n"
         "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"

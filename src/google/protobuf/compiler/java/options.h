@@ -35,7 +35,6 @@ struct Options {
   // When set, the protoc will generate the current files and all the transitive
   // dependencies as lite runtime.
   bool enforce_lite;
-  bool opensource_runtime = google::protobuf::internal::IsOss();
   // If true, we should build .meta files and emit @Generated annotations into
   // generated code.
   bool annotate_code;

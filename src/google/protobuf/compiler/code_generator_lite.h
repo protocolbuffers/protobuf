@@ -37,6 +37,17 @@ PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 PROTOC_EXPORT bool IsKnownFeatureProto(absl::string_view filename);
 
 }  // namespace compiler
+
+namespace internal {
+
+PROTOC_EXPORT bool IsOss();
+
+#ifndef PROTO2_OPENSOURCE
+void SetIsOss(bool new_is_oss);
+#endif
+
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

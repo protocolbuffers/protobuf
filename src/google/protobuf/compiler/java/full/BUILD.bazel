@@ -39,6 +39,7 @@ cc_library(
         ":fg",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:field_common",
         "//src/google/protobuf/compiler/java:generator_common",
@@ -80,6 +81,7 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
@@ -98,6 +100,7 @@ cc_library(
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
@@ -141,6 +144,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler/java:context",
         "//src/google/protobuf/compiler/java:field_common",
         "//src/google/protobuf/compiler/java:generator_common",

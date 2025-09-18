@@ -25,6 +25,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -95,7 +96,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
       {"classname", std::string(descriptor_->name())},
   };
 
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
   }
   if (descriptor_->extension_range_count() > 0) {
@@ -221,7 +222,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
     vars["oneof_index"] = absl::StrCat((oneof)->index());
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       // oneofCase_ and oneof_
       printer->Print(vars,
                      "private int $oneof_name$Case_ = 0;\n"
@@ -249,7 +250,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
                    "private $oneof_capitalized_name$Case(int value) {\n"
                    "  this.value = value;\n"
                    "}\n");
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           vars,
           "/**\n"
@@ -261,7 +262,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
           "}\n"
           "\n");
     }
-    if (!context_->options().opensource_runtime) {
+    if (!google::protobuf::internal::IsOss()) {
       printer->Print(
           "@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
     }
@@ -667,7 +668,7 @@ void ImmutableMessageLiteGenerator::GenerateParseFromMethods(
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_),
       "parsedelimitedreturnannotation",
-      context_->options().opensource_runtime
+      google::protobuf::internal::IsOss()
           ? ""
           : "@com.google.protobuf.Internal.ProtoMethodMayReturnNull");
 }

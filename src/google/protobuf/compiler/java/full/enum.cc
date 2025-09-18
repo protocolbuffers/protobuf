@@ -18,6 +18,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -75,7 +76,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
     return;
   }
 
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
   }
   printer->Print(
@@ -130,7 +131,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print("static {\n");
   printer->Indent();
-  PrintGencodeVersionValidator(printer, context_->options().opensource_runtime,
+  PrintGencodeVersionValidator(printer, google::protobuf::internal::IsOss(),
                                descriptor_->name());
   printer->Outdent();
   printer->Print("}\n");
@@ -188,7 +189,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
       "  return value;\n"
       "}\n"
       "\n");
-  if (context_->options().opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(
         "/**\n"
         " * @param value The numeric wire value of the corresponding enum "
@@ -209,7 +210,7 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
       "entry.\n"
       " * @return The enum associated with the given numeric wire value.\n"
       " */\n");
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print("@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
   }
   printer->Print(

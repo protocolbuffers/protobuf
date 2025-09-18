@@ -17,6 +17,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -68,7 +69,7 @@ void SetEnumVariables(
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (HasHasbit(descriptor)) {
-    if (!context->options().opensource_runtime) {
+    if (!google::protobuf::internal::IsOss()) {
       (*variables)["bit_field_id"] = absl::StrCat(messageBitIndex / 32);
       (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
       (*variables)["bit_field_mask"] =
@@ -149,7 +150,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
 
 void ImmutableEnumFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print(variables_,
                    "@com.google.protobuf.ProtoField(\n"
                    "  isRequired=$required$)\n");

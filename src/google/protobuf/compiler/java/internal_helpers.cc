@@ -22,6 +22,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -141,7 +142,7 @@ void GenerateLarge(
                                 : "com.google.protobuf.ProtocolMessageEnum"},
        {"proto_non_null_annotation",
         [&] {
-          if (!context->options().opensource_runtime) {
+          if (!google::protobuf::internal::IsOss()) {
             printer->Emit(R"(
               @com.google.protobuf.Internal.ProtoNonnullApi
             )");
@@ -149,7 +150,7 @@ void GenerateLarge(
         }},
        {"method_return_null_annotation",
         [&] {
-          if (!context->options().opensource_runtime) {
+          if (!google::protobuf::internal::IsOss()) {
             printer->Emit(R"(
               @com.google.protobuf.Internal.ProtoMethodMayReturnNull
             )");
@@ -170,8 +171,7 @@ void GenerateLarge(
        {"gen_code_version_validator",
         [&] {
           if (!context->EnforceLite()) {
-            PrintGencodeVersionValidator(printer,
-                                         context->options().opensource_runtime,
+            PrintGencodeVersionValidator(printer, google::protobuf::internal::IsOss(),
                                          descriptor->name());
           }
         }},
@@ -204,7 +204,7 @@ void GenerateLarge(
         }},
        {"deprecated_value_of_func",
         [&] {
-          if (context->options().opensource_runtime) {
+          if (google::protobuf::internal::IsOss()) {
             printer->Emit(R"(
               /**
                * @param value The numeric wire value of the corresponding enum entry.
@@ -472,7 +472,7 @@ void GenerateLarge(
          {"count", absl::StrCat(count)},
          {"method_return_null_annotation",
           [&] {
-            if (!context->options().opensource_runtime) {
+            if (!google::protobuf::internal::IsOss()) {
               printer->Emit(R"(
                           @com.google.protobuf.Internal.ProtoMethodMayReturnNull
                         )");

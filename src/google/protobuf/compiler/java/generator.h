@@ -57,17 +57,10 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
     return {GetExtensionReflection(pb::java)};
   }
 
-  void set_opensource_runtime(bool opensource) {
-    opensource_runtime_ = opensource;
-  }
-
   using CodeGenerator::GetEdition;
   using CodeGenerator::GetResolvedSourceFeatureExtension;
   using CodeGenerator::GetResolvedSourceFeatures;
   using CodeGenerator::GetUnresolvedSourceFeatures;
-
- private:
-  bool opensource_runtime_ = google::protobuf::internal::IsOss();
 };
 
 }  // namespace java

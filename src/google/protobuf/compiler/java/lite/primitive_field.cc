@@ -17,6 +17,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -209,7 +210,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
         variables_,
         "private static final $field_type$ $bytes_default$ = $default$;\n");
   }
-  if (!context_->options().opensource_runtime) {
+  if (!google::protobuf::internal::IsOss()) {
     printer->Print(variables_,
                    "@com.google.protobuf.ProtoField(\n"
                    "  isRequired=$required$)\n");
