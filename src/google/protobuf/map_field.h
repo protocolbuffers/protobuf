@@ -30,6 +30,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unknown_field_set.h"
 
 
@@ -389,7 +390,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     // callers responsibility to have these calls properly ordered.
     if (auto* p = maybe_payload()) {
       // If we don't have a payload, it is already assumed `STATE_MODIFIED_MAP`.
-      p->state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+      p->set_state(STATE_MODIFIED_MAP, std::memory_order_relaxed);
     }
   }
 
@@ -429,18 +430,43 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     CLEAN = 2,                    // data in map and repeated field are same
   };
 
-  struct ReflectionPayload {
-    explicit ReflectionPayload(Arena* arena) : repeated_field(arena) {}
-    RepeatedPtrField<Message> repeated_field;
+  class ReflectionPayload {
+   public:
+    explicit ReflectionPayload(Arena* arena) : repeated_field_(arena) {}
 
-    absl::Mutex mutex;  // The thread to synchronize map and repeated
-                        // field needs to get lock first;
-    std::atomic<State> state{STATE_MODIFIED_MAP};
+    RepeatedPtrField<Message>& repeated_field() {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+      return repeated_field_.field();
+#else
+      return repeated_field_;
+#endif
+    }
+
+    absl::Mutex& mutex() { return mutex_; }
+
+    State state(std::memory_order memory_order) const {
+      return state_.load(memory_order);
+    }
+    void set_state(State state, std::memory_order memory_order) {
+      state_.store(state, memory_order);
+    }
+
+    void Swap(ReflectionPayload& other);
+
+   private:
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+    RepeatedPtrFieldWithArena<Message> repeated_field_;
+#else
+    RepeatedPtrField<Message> repeated_field_;
+#endif
+    absl::Mutex mutex_;  // The thread to synchronize map and repeated
+                         // field needs to get lock first;
+    std::atomic<State> state_{STATE_MODIFIED_MAP};
   };
 
   Arena* arena() const {
     auto p = payload_.load(std::memory_order_acquire);
-    if (IsPayload(p)) return ToPayload(p)->repeated_field.GetArena();
+    if (IsPayload(p)) return ToPayload(p)->repeated_field().GetArena();
     return ToArena(p);
   }
 
@@ -458,7 +484,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   State state() const {
     auto* p = maybe_payload();
-    return p != nullptr ? p->state.load(std::memory_order_acquire)
+    return p != nullptr ? p->state(std::memory_order_acquire)
                         // The default
                         : STATE_MODIFIED_MAP;
   }

@@ -62,6 +62,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
+#include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
@@ -496,6 +497,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   }
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+    size_t field_offset = FieldOffset<void>(i);
+    const auto offset =
+        internal::InternalMetadataOffset::BuildFromDynamicOffset<
+            DynamicMessage>(field_offset);
+#endif
     void* field_ptr = MutableRaw(i);
     if (InRealOneof(field)) {
       continue;
@@ -571,7 +578,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->InitDefault();
             } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+              new (field_ptr) RepeatedPtrField<std::string>(offset);
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
               new (field_ptr) RepeatedPtrField<std::string>(arena);
+#endif
             }
             break;
         }
@@ -599,7 +610,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                     : nullptr,
                 arena);
           } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+            new (field_ptr) RepeatedPtrField<Message>(offset);
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
             new (field_ptr) RepeatedPtrField<Message>(arena);
+#endif
           }
         }
         break;
