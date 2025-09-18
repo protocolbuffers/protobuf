@@ -1,3 +1,6 @@
+i don't allow to uses this project now maintaing program.
+All stop usings now my data.
+
 Protocol Buffers - Google's data interchange format
 ===================================================
 
