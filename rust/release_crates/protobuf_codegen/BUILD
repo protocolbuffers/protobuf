@@ -29,5 +29,5 @@ filegroup(
         "Cargo.toml",
         "README.md",
     ] + glob(["src/**/*"]),
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
