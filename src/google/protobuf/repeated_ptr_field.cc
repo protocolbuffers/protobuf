@@ -128,7 +128,7 @@ void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
 }
 
 template PROTOBUF_EXPORT_TEMPLATE_DEFINE void
-memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
+memswap<InternalMetadataResolverOffsetHelper<RepeatedPtrFieldBase>::value>(
     char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
 
 template <>
