@@ -4473,6 +4473,23 @@ struct OptionsToInterpret {
 
 class DescriptorBuilder {
  public:
+  enum class BuildFileEntryType : uint8_t { kStart, kEnd, kError };
+
+  struct BuildFileEntry {
+    std::unique_ptr<DescriptorBuilder> builder;
+    DescriptorBuilder* builder_ptr;
+    BuildFileEntryType type;
+    const FileDescriptorProto* proto;
+    const FileDescriptor* result = nullptr;
+  };
+
+  static void HandleBuildFileStart(DescriptorBuilder& builder,
+                                   const FileDescriptorProto& proto,
+                                   std::vector<BuildFileEntry>& entries);
+
+  static const FileDescriptor* HandleBuildFileEnd(
+      DescriptorBuilder* builder, const FileDescriptorProto& proto);
+
   static std::unique_ptr<DescriptorBuilder> New(
       const DescriptorPool* pool, DescriptorPool::Tables* tables,
       DescriptorPool::DeferredValidation& deferred_validation,
@@ -4484,6 +4501,7 @@ class DescriptorBuilder {
   ~DescriptorBuilder();
 
   const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
+  const FileDescriptor* BuildFile2(const FileDescriptorProto& proto);
 
  private:
   DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
@@ -4703,6 +4721,15 @@ class DescriptorBuilder {
       absl::Span<const int> options_path, absl::string_view option_name,
       internal::FlatAllocator& alloc);
 
+  static void BuildFileStatic(DescriptorBuilder& builder,
+                              const FileDescriptorProto& proto);
+
+  static const FileDescriptor* BuildFileStaticPreamble(
+      DescriptorBuilder& builder, const FileDescriptorProto& proto,
+      bool check_matches_existing);
+
+  static const FileDescriptor* BuildFileStaticPostamble(
+      DescriptorBuilder& builder, const FileDescriptorProto& proto);
   // Allocates and resolves any feature sets that need to be owned by a given
   // descriptor. This also strips features out of the mutable options message to
   // prevent leaking of unresolved features.
@@ -6130,7 +6157,15 @@ PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
     existing_proto.set_syntax("proto2");
   }
 
-  return existing_proto.SerializeAsString() == proto.SerializeAsString();
+  bool result = existing_proto.SerializeAsString() == proto.SerializeAsString();
+  if (!result) {
+    // LOG(DO_NOT_SUBMIT) << "ExistingFileMatchesProto: " << result << " "
+    //                    << existing_proto.SerializeAsString().size() << " "
+    //                    << proto.SerializeAsString().size();
+    // LOG(FATAL) << existing_proto.ShortDebugString() << "\n\n\n"
+    //                   << proto.ShortDebugString();
+  }
+  return result;
 }
 
 // These PlanAllocationSize functions will gather into the FlatAllocator all the
@@ -6272,33 +6307,41 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
   }
 }
 
-const FileDescriptor* DescriptorBuilder::BuildFile(
-    const FileDescriptorProto& proto) {
-  // Ensure the generated pool has been lazily initialized.  This is most
-  // important for protos that use C++-specific features, since that extension
-  // is only registered lazily and we always parse options into the generated
-  // pool.
-  if (pool_ != DescriptorPool::internal_generated_pool()) {
-    DescriptorPool::generated_pool();
-  }
-
-  filename_ = proto.name();
+const FileDescriptor* DescriptorBuilder::BuildFileStaticPreamble(
+    DescriptorBuilder& builder, const FileDescriptorProto& proto,
+    bool check_matches_existing) {
+  // LOG(DO_NOT_SUBMIT) << "BuildFileStaticPreamble: Entry"
+  //                    << proto.name();
+  // LOG(DO_NOT_SUBMIT) << &builder << " " << builder.tables_ << " " <<
+  // proto.name() <<  " " << &proto;
+  builder.filename_ = proto.name();
 
   // Check if the file already exists and is identical to the one being built.
   // Note:  This only works if the input is canonical -- that is, it
   //   fully-qualifies all type names, has no UninterpretedOptions, etc.
   //   This is fine, because this idempotency "feature" really only exists to
   //   accommodate one hack in the proto1->proto2 migration layer.
-  const FileDescriptor* existing_file = tables_->FindFile(filename_);
+  // LOG(DO_NOT_SUBMIT) << "BuildFileStaticPreamble: FindFile: " <<
+  // builder.tables_;
+
+  const FileDescriptor* existing_file =
+      builder.tables_->FindFile(builder.filename_);
   if (existing_file != nullptr) {
+    // LOG(DO_NOT_SUBMIT) << "BuildFileStaticPreamble:
+    // ExistingFileMatchesProto";
+
     // File already in pool.  Compare the existing one to the input.
-    if (ExistingFileMatchesProto(existing_file->edition(), existing_file,
+    if (!check_matches_existing ||
+        ExistingFileMatchesProto(existing_file->edition(), existing_file,
                                  proto)) {
+      // LOG(DO_NOT_SUBMIT) << "BuildFileStaticPreamble: Returning existing"
+      //                    << proto.name();
+
       // They're identical.  Return the existing descriptor.
       return existing_file;
     }
-
-    // Not a match.  The error will be detected and handled later.
+    // LOG(DO_NOT_SUBMIT) << "BuildFileStaticPreamble: ExistingFileMatchesProto
+    // MISMATCH: "; Not a match.  The error will be detected and handled later.
   }
 
   // Check to see if this file is already on the pending files list.
@@ -6310,61 +6353,258 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   //   mid-file, but that's pretty ugly, and I'm pretty sure there are
   //   some languages out there that do not allow recursive dependencies
   //   at all.
-  for (size_t i = 0; i < tables_->pending_files_.size(); i++) {
-    if (tables_->pending_files_[i] == proto.name()) {
-      AddRecursiveImportError(proto, i);
+  for (size_t i = 0; i < builder.tables_->pending_files_.size(); i++) {
+    if (builder.tables_->pending_files_[i] == proto.name()) {
+      builder.AddRecursiveImportError(proto, i);
+      // LOG(DO_NOT_SUBMIT) << "BuildFileStaticPreamble: Returning recursive
+      // error"
+      //                    << proto.name();
       return nullptr;
     }
   }
 
   static const int kMaximumPackageLength = 511;
   if (proto.package().size() > kMaximumPackageLength) {
-    AddError(proto.package(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Package name is too long");
+    builder.AddError(proto.package(), proto,
+                     DescriptorPool::ErrorCollector::NAME,
+                     "Package name is too long");
     return nullptr;
   }
+  // didn't find it yet, but no errors.
+  return nullptr;
+}
 
+void DescriptorBuilder::BuildFileStatic(DescriptorBuilder& builder,
+                                        const FileDescriptorProto& proto) {
   // If we have a fallback_database_, and we aren't doing lazy import building,
   // attempt to load all dependencies now, before checkpointing tables_.  This
   // avoids confusion with recursive checkpoints.
-  if (!pool_->lazily_build_dependencies_) {
-    if (pool_->fallback_database_ != nullptr) {
-      tables_->pending_files_.push_back(proto.name());
+  if (!builder.pool_->lazily_build_dependencies_) {
+    if (builder.pool_->fallback_database_ != nullptr) {
+      builder.tables_->pending_files_.push_back(proto.name());
       for (int i = 0;
            i < proto.dependency_size() + proto.option_dependency_size(); i++) {
         absl::string_view name =
             i >= proto.dependency_size()
                 ? proto.option_dependency(i - proto.dependency_size())
                 : proto.dependency(i);
-        if (tables_->FindFile(name) == nullptr &&
-            (pool_->underlay_ == nullptr ||
-             pool_->underlay_->FindFileByName(name) == nullptr)) {
-          // We don't care what this returns since we'll find out below anyway.
-          pool_->TryFindFileInFallbackDatabase(name, deferred_validation_);
+        if (builder.tables_->FindFile(name) == nullptr &&
+            (builder.pool_->underlay_ == nullptr ||
+             builder.pool_->underlay_->FindFileByName(name) == nullptr)) {
+          if (builder.pool_->tables_->known_bad_files_.contains(name)) {
+            continue;
+          } else {
+            FileDescriptorProto& file_proto =
+                builder.deferred_validation_.CreateProto();
+
+            bool found_in_fallback_database =
+                builder.pool_->fallback_database_->FindFileByName(
+                    std::string(name), &file_proto);
+            if (!found_in_fallback_database) {
+              builder.pool_->tables_->known_bad_files_.emplace(name);
+            } else {
+              builder.pool_->mutex_->AssertHeld();
+              builder.pool_->build_started_ = true;
+              const FileDescriptor* result;
+              const auto build_file = [&] {
+                result = DescriptorBuilder::New(
+                             builder.pool_, builder.pool_->tables_.get(),
+                             builder.deferred_validation_,
+                             builder.pool_->default_error_collector_)
+                             ->BuildFile(file_proto);
+              };
+              if (builder.pool_->dispatcher_ != nullptr) {
+                (*builder.pool_->dispatcher_)(build_file);
+              } else {
+                build_file();
+              }
+              if (result == nullptr) {
+                builder.pool_->tables_->known_bad_files_.insert(proto.name());
+              }
+            }
+          }
         }
       }
-      tables_->pending_files_.pop_back();
+      builder.tables_->pending_files_.pop_back();
     }
   }
+}
 
+const FileDescriptor* DescriptorBuilder::BuildFileStaticPostamble(
+    DescriptorBuilder& builder, const FileDescriptorProto& proto) {
   // Checkpoint the tables so that we can roll back if something goes wrong.
-  tables_->AddCheckpoint();
+  builder.tables_->AddCheckpoint();
 
   auto alloc = absl::make_unique<internal::FlatAllocator>();
   PlanAllocationSize(proto, *alloc);
-  alloc->FinalizePlanning(tables_);
-  FileDescriptor* result = BuildFileImpl(proto, *alloc);
 
-  file_tables_->FinalizeTables();
+  alloc->FinalizePlanning(builder.tables_);
+  FileDescriptor* result = builder.BuildFileImpl(proto, *alloc);
+
+  builder.file_tables_->FinalizeTables();
   if (result) {
-    tables_->ClearLastCheckpoint();
+    builder.tables_->ClearLastCheckpoint();
     result->finished_building_ = true;
     alloc->ExpectConsumed();
   } else {
-    tables_->RollbackToLastCheckpoint(deferred_validation_);
+    builder.tables_->RollbackToLastCheckpoint(builder.deferred_validation_);
   }
 
   return result;
+}
+
+const FileDescriptor* DescriptorBuilder::BuildFile(
+
+    const FileDescriptorProto& proto) {
+  /*
+  // Ensure the generated pool has been lazily initialized.  This is most
+  // important for protos that use C++-specific features, since that extension
+  // is only registered lazily and we always parse options into the generated
+  // pool.
+  if (pool_ != DescriptorPool::internal_generated_pool()) {
+    DescriptorPool::generated_pool();
+  }
+  if (const FileDescriptor* result = BuildFileStaticPreamble(*this, proto);
+      result != nullptr) {
+    return result;
+  }
+  if (had_errors_) {
+    return nullptr;
+  }
+  BuildFileStatic(*this, proto);
+  return BuildFileStaticPostamble(*this, proto);
+*/
+  return BuildFile2(proto);
+}
+
+void DescriptorBuilder::HandleBuildFileStart(
+    DescriptorBuilder& builder, const FileDescriptorProto& proto,
+    std::vector<BuildFileEntry>& entries) {
+  builder.pool_->mutex_->AssertHeld();
+  auto sub_builder = DescriptorBuilder::New(
+      builder.pool_, builder.pool_->tables_.get(), builder.deferred_validation_,
+      builder.pool_->default_error_collector_);
+  // DescriptorBuilder* sub_builder_ptr = sub_builder.get();
+  DescriptorBuilder* sub_builder_ptr = &builder;
+
+  entries.push_back(BuildFileEntry{std::move(sub_builder), sub_builder_ptr,
+                                   BuildFileEntryType::kEnd, &proto});
+  builder.tables_->pending_files_.push_back(proto.name());
+  for (int i = 0; i < proto.dependency_size() + proto.option_dependency_size();
+       i++) {
+    absl::string_view name =
+        i >= proto.dependency_size()
+            ? proto.option_dependency(i - proto.dependency_size())
+            : proto.dependency(i);
+    if (builder.tables_->FindFile(name) == nullptr &&
+        (builder.pool_->underlay_ == nullptr ||
+         builder.pool_->underlay_->FindFileByName(name) == nullptr)) {
+      if (builder.pool_->tables_->known_bad_files_.contains(name)) {
+        continue;
+      }
+      FileDescriptorProto& file_proto =
+          builder.deferred_validation_.CreateProto();
+
+      bool found_in_fallback_database =
+          builder.pool_->fallback_database_->FindFileByName(std::string(name),
+                                                            &file_proto);
+      if (!found_in_fallback_database) {
+        builder.pool_->tables_->known_bad_files_.emplace(name);
+        continue;
+      }
+      entries.push_back(
+          {nullptr, sub_builder_ptr, BuildFileEntryType::kStart, &file_proto});
+    }
+  }
+}
+
+const FileDescriptor* DescriptorBuilder::HandleBuildFileEnd(
+    DescriptorBuilder* builder, const FileDescriptorProto& proto) {
+  // Might need to check on this
+  builder->tables_->pending_files_.pop_back();
+
+  builder->pool_->build_started_ = true;
+  const FileDescriptor* result =
+    DescriptorBuilder::BuildFileStaticPostamble(*builder, proto);
+  if (result == nullptr) {
+    builder->pool_->tables_->known_bad_files_.insert(proto.name());
+  }
+  return result;
+}
+
+
+// Additional test coverage:
+// Need to test:
+//
+// Make sure a grandchild that is resolve first doesn't cause a problem when
+//  we result the child after (we have a check that existing protos should
+//  match exactly, but the old code structurally bipased this since it
+//  had a special existance check that didn't need an exact match).
+//   import A;
+//   import B;
+//
+//   B.proto:
+//   import A; 
+const FileDescriptor* DescriptorBuilder::BuildFile2(
+    const FileDescriptorProto& proto) {
+  // Ensure the generated pool has been lazily initialized.  This is most
+  // important for protos that use C++-specific features, since that extension
+  // is only registered lazily and we always parse options into the generated
+  // pool.
+  if (pool_ != DescriptorPool::internal_generated_pool()) {
+    DescriptorPool::generated_pool();
+  }
+
+  if (pool_->lazily_build_dependencies_ ||
+      pool_->fallback_database_ == nullptr) {
+    if (const FileDescriptor* result =
+            BuildFileStaticPreamble(*this, proto, true);
+        result != nullptr) {
+      return result;
+    }
+    if (had_errors_) {
+      return nullptr;
+    }
+    return BuildFileStaticPostamble(*this, proto);
+  }
+
+  std::vector<BuildFileEntry> entries;
+
+  entries.push_back({nullptr, this, BuildFileEntryType::kStart, &proto});
+  while (!entries.empty()) {
+    BuildFileEntry entry = std::move(entries.back());
+    entries.pop_back();
+    if (entry.type == BuildFileEntryType::kError) {
+      // Do nothing.
+      continue;
+    } else if (entry.type == BuildFileEntryType::kStart) {
+      if (const FileDescriptor* result = BuildFileStaticPreamble(
+              *entry.builder_ptr, *entry.proto,
+              /*check_matches_existing=*/entry.proto == &proto);
+          result != nullptr) {
+
+        // Produce a result directly, no need to add children
+        entries.push_back({std::move(entry.builder), entry.builder_ptr,
+                           BuildFileEntryType::kEnd, entry.proto, result});
+      } else if (entry.builder_ptr->had_errors_) {
+        entries.push_back(
+            {nullptr, nullptr, BuildFileEntryType::kError, entry.proto});
+      } else {
+        HandleBuildFileStart(*entry.builder_ptr, *entry.proto, entries);
+      }
+    } else if (entry.type == BuildFileEntryType::kEnd) {
+      if (entry.result == nullptr) {
+        entry.builder_ptr->filename_ = entry.proto->name();
+        entry.result = HandleBuildFileEnd(entry.builder_ptr, *entry.proto);
+      }
+    }
+    if (entries.empty()) {
+      return entry.result;
+    }
+  }
+  CHECK(false) << "Fell off the end of BuildFile2";
+  // This should never happen.
+  return nullptr;
 }
 
 FileDescriptor* DescriptorBuilder::BuildFileImpl(
@@ -6492,9 +6732,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     }
 
     if (dependency == result) {
-      // Recursive import.  dependency/result is not fully initialized, and it's
-      // dangerous to try to do anything with it.  The recursive import error
-      // will be detected and reported in DescriptorBuilder::BuildFile().
+      // Recursive import.  dependency/result is not fully initialized, and
+      // it's dangerous to try to do anything with it.  The recursive import
+      // error will be detected and reported in
+      // DescriptorBuilder::BuildFile().
       return nullptr;
     }
 
@@ -6641,8 +6882,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
       option_interpreter.InterpretNonExtensionOptions(&(*iter));
     }
 
-    // Handle feature resolution.  This must occur after option interpretation,
-    // but before validation.
+    // Handle feature resolution.  This must occur after option
+    // interpretation, but before validation.
     {
       auto cleanup = DisableTracking();
       internal::VisitDescriptors(
@@ -6670,8 +6911,9 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         });
 
     // Interpret any remaining uninterpreted options gathered into
-    // options_to_interpret_ during descriptor building.  Cross-linking has made
-    // extension options known, so all interpretations should now succeed.
+    // options_to_interpret_ during descriptor building.  Cross-linking has
+    // made extension options known, so all interpretations should now
+    // succeed.
     for (std::vector<OptionsToInterpret>::iterator iter =
              options_to_interpret_.begin();
          iter != options_to_interpret_.end(); ++iter) {
@@ -6683,8 +6925,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     }
   }
 
-  // Validate options. See comments at InternalSetLazilyBuildDependencies about
-  // error checking and lazy import building.
+  // Validate options. See comments at InternalSetLazilyBuildDependencies
+  // about error checking and lazy import building.
   if (!had_errors_ && !pool_->lazily_build_dependencies_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
