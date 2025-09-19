@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.ToIntFunction;
 import java.util.logging.Logger;
 
 /**
@@ -1328,13 +1329,7 @@ public final class Descriptors {
   /** Describes a field of a message type. */
   public static final class FieldDescriptor extends GenericDescriptor
       implements Comparable<FieldDescriptor>, FieldSet.FieldDescriptorLite<FieldDescriptor> {
-    private static final NumberGetter<FieldDescriptor> NUMBER_GETTER =
-        new NumberGetter<FieldDescriptor>() {
-          @Override
-          public int getNumber(FieldDescriptor fieldDescriptor) {
-            return fieldDescriptor.getNumber();
-          }
-        };
+    private static final ToIntFunction<FieldDescriptor> NUMBER_GETTER = FieldDescriptor::getNumber;
 
     /**
      * Get the index of this descriptor within its parent.
@@ -2581,13 +2576,7 @@ public final class Descriptors {
           }
         };
 
-    static final NumberGetter<EnumValueDescriptor> NUMBER_GETTER =
-        new NumberGetter<EnumValueDescriptor>() {
-          @Override
-          public int getNumber(EnumValueDescriptor enumValueDescriptor) {
-            return enumValueDescriptor.getNumber();
-          }
-        };
+    static final ToIntFunction<EnumValueDescriptor> NUMBER_GETTER = EnumValueDescriptor::getNumber;
 
     /**
      * Get the index of this descriptor within its parent.
@@ -3621,14 +3610,14 @@ public final class Descriptors {
     private FieldDescriptor[] fields;
   }
 
-  private static <T> T binarySearch(T[] array, int size, NumberGetter<T> getter, int number) {
+  private static <T> T binarySearch(T[] array, int size, ToIntFunction<T> getter, int number) {
     int left = 0;
     int right = size - 1;
 
     while (left <= right) {
       int mid = (left + right) / 2;
       T midValue = array[mid];
-      int midValueNumber = getter.getNumber(midValue);
+      int midValueNumber = getter.applyAsInt(midValue);
       if (number < midValueNumber) {
         right = mid - 1;
       } else if (number > midValueNumber) {
@@ -3638,9 +3627,5 @@ public final class Descriptors {
       }
     }
     return null;
-  }
-
-  private interface NumberGetter<T> {
-    int getNumber(T t);
   }
 }
