@@ -297,6 +297,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 
   struct WireFormatNoOpSink {
+    static constexpr bool kIsLazySink = false;
     void Flush(const char* p) {}
     void Append(absl::string_view view) {}
     void Reset(const char* p) {}
@@ -531,6 +532,14 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
 using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
+
+struct WireFormatLazyFieldSink;
+
+using LazyEagerVerifyV2FnType = const char* (*)(const char* ptr,
+                                                ParseContext* ctx,
+                                                WireFormatLazyFieldSink& sink);
+using LazyEagerVerifyV2FnRef =
+    std::remove_pointer<LazyEagerVerifyV2FnType>::type&;
 
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
