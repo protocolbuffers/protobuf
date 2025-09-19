@@ -336,7 +336,7 @@ class TextFormat::Parser::ParserImpl {
   }
   ParserImpl(const ParserImpl&) = delete;
   ParserImpl& operator=(const ParserImpl&) = delete;
-  ~ParserImpl() {}
+  ~ParserImpl() = default;
 
   // Parses the ASCII representation specified in input and saves the
   // information into the output pointer (a Message). Returns
@@ -1369,7 +1369,7 @@ class TextFormat::Parser::ParserImpl {
 
     ParserErrorCollector(const ParserErrorCollector&) = delete;
     ParserErrorCollector& operator=(const ParserErrorCollector&) = delete;
-    ~ParserErrorCollector() override {}
+    ~ParserErrorCollector() override = default;
 
     void RecordError(int line, int column, absl::string_view message) override {
       parser_->ReportError(line, column, message);
@@ -1714,7 +1714,7 @@ class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
 
 // ===========================================================================
 // Implementation of the default Finder for extensions.
-TextFormat::Finder::~Finder() {}
+TextFormat::Finder::~Finder() = default;
 
 const FieldDescriptor* TextFormat::Finder::FindExtension(
     Message* message, const std::string& name) const {
@@ -1753,7 +1753,7 @@ TextFormat::Parser::Parser()
       allow_singular_overwrites_(false),
       recursion_limit_(std::numeric_limits<int>::max()) {}
 
-TextFormat::Parser::~Parser() {}
+TextFormat::Parser::~Parser() = default;
 
 namespace {
 
@@ -1879,7 +1879,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(absl::string_view input,
 
 // ===========================================================================
 
-TextFormat::BaseTextGenerator::~BaseTextGenerator() {}
+TextFormat::BaseTextGenerator::~BaseTextGenerator() = default;
 
 namespace {
 
@@ -1901,7 +1901,7 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
 // The default implementation for FieldValuePrinter. We just delegate the
 // implementation to the default FastFieldValuePrinter to avoid duplicating the
 // logic.
-TextFormat::FieldValuePrinter::FieldValuePrinter() {}
+TextFormat::FieldValuePrinter::FieldValuePrinter() = default;
 TextFormat::FieldValuePrinter::~FieldValuePrinter() {}
 
 #define FORWARD_IMPL(fn, ...)            \
@@ -1961,8 +1961,8 @@ std::string TextFormat::FieldValuePrinter::PrintMessageEnd(
 }
 #undef FORWARD_IMPL
 
-TextFormat::FastFieldValuePrinter::FastFieldValuePrinter() {}
-TextFormat::FastFieldValuePrinter::~FastFieldValuePrinter() {}
+TextFormat::FastFieldValuePrinter::FastFieldValuePrinter() = default;
+TextFormat::FastFieldValuePrinter::~FastFieldValuePrinter() = default;
 void TextFormat::FastFieldValuePrinter::PrintBool(
     bool val, BaseTextGenerator* generator) const {
   if (val) {
