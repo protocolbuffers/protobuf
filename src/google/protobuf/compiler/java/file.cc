@@ -523,9 +523,9 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   // To find those extensions, we need to parse the data into a dynamic message
   // of the FileDescriptor based on the builder-pool, then we can use
   // reflections to find all extension fields
-  FieldDescriptorSet extensions;
-  FieldDescriptorSet optional_extensions;
-  CollectExtensions(*file_, options_, &extensions, &optional_extensions);
+  // FieldDescriptorSet extensions;
+  // FieldDescriptorSet optional_extensions;
+  // CollectExtensions(*file_, options_, &extensions, &optional_extensions);
 
   // Force descriptor initialization of all dependencies.
   for (int i = 0; i < file_->dependency_count(); i++) {
@@ -537,6 +537,76 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     }
   }
 
+  // TODO: Try out *not* reparsing to recognize extensions here, to try doing
+  // parsing custom options lazily when options are accessed instead.
+  // if (!extensions.empty() ||
+  // !optional_extensions.empty()) {
+  //   // Must construct an ExtensionRegistry containing all existing extensions
+  //   // and use it to parse the descriptor data again to recognize extensions.
+  //   printer->Print(
+  //       "com.google.protobuf.ExtensionRegistry registry =\n"
+  //       "    com.google.protobuf.ExtensionRegistry.newInstance();\n");
+  //   FieldDescriptorSet::iterator it;
+  //   for (const FieldDescriptor* field : extensions) {
+  //     std::unique_ptr<ExtensionGenerator> generator(
+  //         generator_factory_->NewExtensionGenerator(field));
+  //     bytecode_estimate += generator->GenerateRegistrationCode(printer);
+  //     MaybeRestartJavaMethod(
+  //         printer, &bytecode_estimate, &method_num,
+  //         "_clinit_autosplit_dinit_$method_num$(registry);\n",
+  //         "private static void _clinit_autosplit_dinit_$method_num$(\n"
+  //         "    com.google.protobuf.ExtensionRegistry registry) {\n");
+  //   }
+  //   for (const FieldDescriptor* field : optional_extensions) {
+  //     std::unique_ptr<ExtensionGenerator> generator(
+  //         generator_factory_->NewExtensionGenerator(field));
+  //     printer->Emit({{"scope", field->extension_scope() != nullptr
+  //                                  ? name_resolver_->GetImmutableClassName(
+  //                                        field->extension_scope())
+  //                                  : name_resolver_->GetImmutableClassName(
+  //                                        field->file())},
+  //                    {"name", UnderscoresToCamelCaseCheckReserved(field)}},
+  //                   R"java(
+  //                     addOptionalExtension(registry, "$scope$", "$name$");
+  //                   )java");
+  //     bytecode_estimate += 8;
+  //     MaybeRestartJavaMethod(
+  //         printer, &bytecode_estimate, &method_num,
+  //         "_clinit_autosplit_dinit_$method_num$(registry);\n",
+  //         "private static void _clinit_autosplit_dinit_$method_num$(\n"
+  //         "    com.google.protobuf.ExtensionRegistry registry) {\n");
+  //   }
+  //   printer->Print(
+  //       "com.google.protobuf.Descriptors.FileDescriptor\n"
+  //       "    .internalUpdateFileDescriptor(descriptor, registry);\n");
+  // }
+  printer->Print(
+      "com.google.protobuf.ExtensionRegistry registry =\n"
+      "    getCollectedExtensionRegistry();\n");
+  printer->Print("descriptor.internalUpdateExtensionRegistry(registry);\n");
+  // printer->Print(
+  //     "com.google.protobuf.Descriptors.FileDescriptor\n"
+  //     "    .internalUpdateFileDescriptor(descriptor, registry);\n");
+
+  printer->Outdent();
+  printer->Print("}\n");
+
+  GenerateDescriptorGetCollectedExtensionRegistry(printer);
+}
+
+void FileGenerator::GenerateDescriptorGetCollectedExtensionRegistry(
+    io::Printer* printer) {
+  int bytecode_estimate = 0;
+  int method_num = 0;
+
+  printer->Print(
+      "public static com.google.protobuf.ExtensionRegistry "
+      "getCollectedExtensionRegistry() {\n");
+  printer->Indent();
+
+  FieldDescriptorSet extensions;
+  FieldDescriptorSet optional_extensions;
+  CollectExtensions(*file_, options_, &extensions, &optional_extensions);
   if (!extensions.empty() || !optional_extensions.empty()) {
     // Must construct an ExtensionRegistry containing all existing extensions
     // and use it to parse the descriptor data again to recognize extensions.
@@ -573,11 +643,10 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
           "private static void _clinit_autosplit_dinit_$method_num$(\n"
           "    com.google.protobuf.ExtensionRegistry registry) {\n");
     }
-    printer->Print(
-        "com.google.protobuf.Descriptors.FileDescriptor\n"
-        "    .internalUpdateFileDescriptor(descriptor, registry);\n");
+    printer->Print("return registry;\n");
+  } else {
+    printer->Print("return null;\n");
   }
-
   printer->Outdent();
   printer->Print("}\n");
 }
