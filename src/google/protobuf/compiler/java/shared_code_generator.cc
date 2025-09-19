@@ -82,7 +82,8 @@ void SharedCodeGenerator::Generate(
 
     printer->Print(
 
-        "public final class $classname$ {\n"
+        "public final class $classname$ extends "
+        "com.google.protobuf.GeneratedFile {\n"
         "  /* This variable is to be called by generated code only. It "
         "returns\n"
         "  * an incomplete descriptor for internal use only. */\n"
@@ -195,7 +196,11 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
     }
   }
 
-  printer->Print("    });\n");
+  printer->Print(
+      "    }, $registry$);\n", "registry",
+      options_.bootstrap
+          ? "com.google.protobuf.ExtensionRegistry.getEmptyRegistry()"
+          : "internalGetBuiltinExtensionRegistry()");
 }
 
 }  // namespace java

@@ -108,6 +108,10 @@ public final class UnknownFieldSet implements MessageLite {
     return (result == null) ? Field.getDefaultInstance() : result;
   }
 
+  public int getFieldCount() {
+    return fields.size();
+  }
+
   /** Serializes the set and writes it to {@code output}. */
   @Override
   public void writeTo(CodedOutputStream output) throws IOException {
@@ -674,6 +678,14 @@ public final class UnknownFieldSet implements MessageLite {
       // UnknownFieldSets do not have required fields, so they are always
       // initialized.
       return true;
+    }
+
+    public boolean isEmpty() {
+      return fieldBuilders.isEmpty();
+    }
+
+    public int getFieldCount() {
+      return fieldBuilders.size();
     }
   }
 

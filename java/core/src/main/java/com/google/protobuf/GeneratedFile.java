@@ -31,4 +31,8 @@ public abstract class GeneratedFile {
       // ignore malformed field if it's not what we expect.
     }
   }
+
+  protected static ExtensionRegistry internalGetBuiltinExtensionRegistry() {
+    return BuiltinExtensionRegistry.getInstance();
+  }
 }

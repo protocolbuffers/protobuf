@@ -287,6 +287,16 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     return unknownFields;
   }
 
+  @Override
+  public final boolean hasUnknownFields() {
+    return !unknownFields.isEmpty();
+  }
+
+  @Override
+  public final int getUnknownFieldCount() {
+    return unknownFields.getFieldCount();
+  }
+
   // TODO: This should go away when Schema classes cannot modify immutable
   // GeneratedMessage objects anymore.
   void setUnknownFields(UnknownFieldSet unknownFields) {
@@ -818,6 +828,24 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         return (UnknownFieldSet) unknownFieldsOrBuilder;
       } else {
         return ((UnknownFieldSet.Builder) unknownFieldsOrBuilder).buildPartial();
+      }
+    }
+
+    @Override
+    public final boolean hasUnknownFields() {
+      if (unknownFieldsOrBuilder instanceof UnknownFieldSet) {
+        return !((UnknownFieldSet) unknownFieldsOrBuilder).isEmpty();
+      } else {
+        return !((UnknownFieldSet.Builder) unknownFieldsOrBuilder).isEmpty();
+      }
+    }
+
+    @Override
+    public final int getUnknownFieldCount() {
+      if (unknownFieldsOrBuilder instanceof UnknownFieldSet) {
+        return ((UnknownFieldSet) unknownFieldsOrBuilder).getFieldCount();
+      } else {
+        return ((UnknownFieldSet.Builder) unknownFieldsOrBuilder).getFieldCount();
       }
     }
 
