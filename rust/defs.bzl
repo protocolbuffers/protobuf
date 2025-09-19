@@ -1,6 +1,7 @@
 """This file implements rust_proto_library."""
 
 load("@rules_rust//rust:defs.bzl", "rust_common")
+load("@rules_rust//rust:rust_common.bzl", "CrateInfo", "DepInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load(
@@ -157,6 +158,7 @@ def _make_rust_proto_library(is_upb):
         toolchains = [
             "@rules_rust//rust:toolchain_type",
         ],
+        provides = [ProtoCrateNamesInfo, CrateInfo, DepInfo, CcInfo],
     )
 
 rust_upb_proto_library = _make_rust_proto_library(is_upb = True)
