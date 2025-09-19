@@ -1,3 +1,10 @@
+Hi
+Rules no 1
+I'm always safe. I'm always Rights.
+
+***Chat conversation input good theme use for my product.
+Payments diret for my bank Acc Visa 
+
 Protocol Buffers - Google's data interchange format
 ===================================================
 
