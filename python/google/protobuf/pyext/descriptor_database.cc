@@ -94,17 +94,18 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
 // Find a file by file name.
 bool PyDescriptorDatabase::FindFileByName(StringViewArg filename,
                                           FileDescriptorProto* output) {
-  ScopedPyObjectPtr py_descriptor(PyObject_CallMethod(
-      py_database_, "FindFileByName", "s#", filename.c_str(), filename.size()));
+  ScopedPyObjectPtr py_descriptor(
+      PyObject_CallMethod(py_database_, "FindFileByName", "s#",
+                          std::string(filename).c_str(), filename.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 
 // Find the file that declares the given fully-qualified symbol name.
 bool PyDescriptorDatabase::FindFileContainingSymbol(
     StringViewArg symbol_name, FileDescriptorProto* output) {
-  ScopedPyObjectPtr py_descriptor(
-      PyObject_CallMethod(py_database_, "FindFileContainingSymbol", "s#",
-                          symbol_name.c_str(), symbol_name.size()));
+  ScopedPyObjectPtr py_descriptor(PyObject_CallMethod(
+      py_database_, "FindFileContainingSymbol", "s#",
+      std::string(symbol_name).c_str(), symbol_name.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 
@@ -121,9 +122,9 @@ bool PyDescriptorDatabase::FindFileContainingExtension(
     PyErr_Clear();
     return false;
   }
-  ScopedPyObjectPtr py_descriptor(
-      PyObject_CallFunction(py_method.get(), "s#i", containing_type.c_str(),
-                            containing_type.size(), field_number));
+  ScopedPyObjectPtr py_descriptor(PyObject_CallFunction(
+      py_method.get(), "s#i", std::string(containing_type).c_str(),
+      containing_type.size(), field_number));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 
@@ -140,9 +141,9 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
     PyErr_Clear();
     return false;
   }
-  ScopedPyObjectPtr py_list(
-      PyObject_CallFunction(py_method.get(), "s#", containing_type.c_str(),
-                            containing_type.size()));
+  ScopedPyObjectPtr py_list(PyObject_CallFunction(
+      py_method.get(), "s#", std::string(containing_type).c_str(),
+      containing_type.size()));
   if (py_list == nullptr) {
     PyErr_Print();
     return false;
