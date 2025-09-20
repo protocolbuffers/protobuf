@@ -337,12 +337,12 @@ bool IsNull(const void* ptr) {
 
 template <>
 bool IsNull<WireFormatLite::TYPE_STRING>(const void* ptr) {
-  return static_cast<const ArenaStringPtr*>(ptr)->Get().size() == 0;
+  return static_cast<const ArenaStringPtr*>(ptr)->Get().empty();
 }
 
 template <>
 bool IsNull<WireFormatLite::TYPE_BYTES>(const void* ptr) {
-  return static_cast<const ArenaStringPtr*>(ptr)->Get().size() == 0;
+  return static_cast<const ArenaStringPtr*>(ptr)->Get().empty();
 }
 
 template <>
