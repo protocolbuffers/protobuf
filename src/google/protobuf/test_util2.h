@@ -48,7 +48,7 @@ class BoundedArrayInputStream : public io::ZeroCopyInputStream {
  public:
   BoundedArrayInputStream(const void* data, int size)
       : stream_(data, size), bound_(size) {}
-  ~BoundedArrayInputStream() override {}
+  ~BoundedArrayInputStream() override = default;
 
   bool Next(const void** data, int* size) override {
     ABSL_CHECK_LT(stream_.ByteCount(), bound_);
