@@ -659,6 +659,7 @@ cc_library(
         "has_bits.h",
         "implicit_weak_message.h",
         "inlined_string_field.h",
+        "internal_metadata_locator.h",
         "map.h",
         "map_field_lite.h",
         "map_type_handler.h",
@@ -882,6 +883,36 @@ cc_test(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "internal_metadata_locator_test_proto",
+    srcs = ["internal_metadata_locator_test.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "internal_metadata_locator_test_cc_proto",
+    deps = [":internal_metadata_locator_test_proto"],
+)
+
+cc_test(
+    name = "internal_metadata_locator_test",
+    size = "small",
+    srcs = [
+        "internal_metadata_locator_test.cc",
+    ],
+    deps = [
+        ":arena",
+        ":internal_metadata_locator_test_cc_proto",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util2",
+        "//src/google/protobuf/io",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
