@@ -806,7 +806,7 @@ DynamicMessageFactory::~DynamicMessageFactory() {
 const Message* PROTOBUF_NONNULL
 DynamicMessageFactory::GetPrototype(const Descriptor* PROTOBUF_NONNULL type) {
   ABSL_CHECK(type != nullptr);
-  absl::MutexLock lock(&prototypes_mutex_);
+  absl::MutexLock lock(prototypes_mutex_);
   return GetPrototypeNoLock(type);
 }
 
