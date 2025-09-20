@@ -15,6 +15,7 @@ cc_library(
     deps = [
         ":interop_test_cc_proto",
         "//rust/cpp_kernel:cpp_api",
+        "//src/google/protobuf",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
     ],

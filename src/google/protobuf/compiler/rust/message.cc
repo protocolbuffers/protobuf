@@ -81,12 +81,13 @@ void MessageDebug(Context& ctx, const Descriptor& msg) {
 void CppMessageExterns(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
 
-  ctx.Emit(
-      {{"new_thunk", ThunkName(ctx, msg, "new")},
-       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
-      R"rs(
+  ctx.Emit({{"new_thunk", ThunkName(ctx, msg, "new")},
+            {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
+            {"get_descriptor_thunk", ThunkName(ctx, msg, "get_descriptor")}},
+           R"rs(
       fn $new_thunk$() -> $pbr$::RawMessage;
       fn $default_instance_thunk$() -> $pbr$::RawMessage;
+      fn $get_descriptor_thunk$() -> *const std::ffi::c_void;
     )rs");
 }
 
@@ -806,7 +807,8 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   ctx.printer().PrintRaw("\n");
   if (ctx.is_cpp()) {
 
-    ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+    ctx.Emit({{"Msg", RsSafeName(msg.name())},
+              {"get_descriptor_thunk", ThunkName(ctx, msg, "get_descriptor")}},
              R"rs(
       impl<'a> $Msg$Mut<'a> {
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
@@ -842,6 +844,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         fn __unstable_leak_raw_message(self) -> *mut $std$::ffi::c_void {
           let s = $std$::mem::ManuallyDrop::new(self);
           s.raw_msg().as_ptr() as *mut _
+        }
+
+        fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {
+          unsafe { $get_descriptor_thunk$() }
         }
       }
 
@@ -880,17 +886,19 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
   ctx.Emit(R"(extern "C" {
   )");
 
-  ctx.Emit(
-      {{"QualifiedMsg", cpp::QualifiedClassName(&msg)},
-       {"new_thunk", ThunkName(ctx, msg, "new")},
-       {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")}},
-      R"cc(
-        void* $new_thunk$() { return new $QualifiedMsg$(); }
+  ctx.Emit({{"QualifiedMsg", cpp::QualifiedClassName(&msg)},
+            {"new_thunk", ThunkName(ctx, msg, "new")},
+            {"default_instance_thunk", ThunkName(ctx, msg, "default_instance")},
+            {"get_descriptor_thunk", ThunkName(ctx, msg, "get_descriptor")}},
+           R"cc(
+             void* $new_thunk$() { return new $QualifiedMsg$(); }
 
-        const google::protobuf::MessageLite* $default_instance_thunk$() {
-          return &$QualifiedMsg$::default_instance();
-        }
-      )cc");
+             const google::protobuf::MessageLite* $default_instance_thunk$() {
+               return &$QualifiedMsg$::default_instance();
+             }
+
+             const void* $get_descriptor_thunk$() { return $QualifiedMsg$::GetDescriptor(); }
+           )cc");
 
   for (int i = 0; i < msg.field_count(); ++i) {
     GenerateAccessorThunkCc(ctx, *msg.field(i));
