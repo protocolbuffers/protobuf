@@ -13,9 +13,11 @@
 
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -197,6 +199,11 @@ struct WeakRepeatedPtrField {
   void MergeFrom(const WeakRepeatedPtrField& other) {
     if (other.empty()) return;
     base().template MergeFrom<MessageLite>(other.base(), base().GetArena());
+  }
+  void MergeFromWithArena(internal::InternalVisibility, Arena* arena,
+                          const WeakRepeatedPtrField& other) {
+    if (other.empty()) return;
+    base().template MergeFrom<MessageLite>(other.base(), arena);
   }
   void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
     base().InternalSwap(&other->base());

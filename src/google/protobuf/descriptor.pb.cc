@@ -2526,6 +2526,7 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -2533,7 +2534,8 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _this->_internal_mutable_file()->MergeFrom(
+    _this->_internal_mutable_file()->MergeFromWithArena(
+        ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_file());
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -3224,22 +3226,28 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_dependency()->MergeFrom(from._internal_dependency());
+      _this->_internal_mutable_dependency()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
+          from._internal_dependency());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_message_type()->MergeFrom(
+      _this->_internal_mutable_message_type()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_message_type());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_enum_type()->MergeFrom(
+      _this->_internal_mutable_enum_type()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_enum_type());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000008U)) {
-      _this->_internal_mutable_service()->MergeFrom(
+      _this->_internal_mutable_service()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_service());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-      _this->_internal_mutable_extension()->MergeFrom(
+      _this->_internal_mutable_extension()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_extension());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000020U)) {
@@ -3249,7 +3257,9 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
       _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000080U)) {
-      _this->_internal_mutable_option_dependency()->MergeFrom(from._internal_option_dependency());
+      _this->_internal_mutable_option_dependency()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
+          from._internal_option_dependency());
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
@@ -4562,35 +4572,44 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_field()->MergeFrom(
+      _this->_internal_mutable_field()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_field());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_nested_type()->MergeFrom(
+      _this->_internal_mutable_nested_type()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_nested_type());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_enum_type()->MergeFrom(
+      _this->_internal_mutable_enum_type()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_enum_type());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000008U)) {
-      _this->_internal_mutable_extension_range()->MergeFrom(
+      _this->_internal_mutable_extension_range()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_extension_range());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-      _this->_internal_mutable_extension()->MergeFrom(
+      _this->_internal_mutable_extension()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_extension());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000020U)) {
-      _this->_internal_mutable_oneof_decl()->MergeFrom(
+      _this->_internal_mutable_oneof_decl()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_oneof_decl());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000040U)) {
-      _this->_internal_mutable_reserved_range()->MergeFrom(
+      _this->_internal_mutable_reserved_range()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_reserved_range());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000080U)) {
-      _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
+      _this->_internal_mutable_reserved_name()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
+          from._internal_reserved_name());
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
@@ -5402,11 +5421,13 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_declaration()->MergeFrom(
+      _this->_internal_mutable_declaration()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_declaration());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
@@ -7024,15 +7045,19 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_value()->MergeFrom(
+      _this->_internal_mutable_value()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_value());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_reserved_range()->MergeFrom(
+      _this->_internal_mutable_reserved_range()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_reserved_range());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_reserved_name()->MergeFrom(from._internal_reserved_name());
+      _this->_internal_mutable_reserved_name()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
+          from._internal_reserved_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       _this->_internal_set_name(from._internal_name());
@@ -7751,7 +7776,8 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_method()->MergeFrom(
+      _this->_internal_mutable_method()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_method());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -8982,7 +9008,8 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       _this->_impl_.cc_enable_arenas_ = from._impl_.cc_enable_arenas_;
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00100000U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
   }
@@ -9443,7 +9470,8 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000040U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
   }
@@ -10683,11 +10711,13 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_edition_defaults()->MergeFrom(
+      _this->_internal_mutable_edition_defaults()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_edition_defaults());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
@@ -11089,7 +11119,8 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -11512,7 +11543,8 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000010U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
   }
@@ -11934,7 +11966,8 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -12330,7 +12363,8 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -12747,7 +12781,8 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->MergeFrom(
+      _this->_internal_mutable_uninterpreted_option()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -13492,6 +13527,7 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -13500,7 +13536,8 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_name()->MergeFrom(
+      _this->_internal_mutable_name()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -14791,6 +14828,7 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSetDefaults)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -14799,7 +14837,8 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_defaults()->MergeFrom(
+      _this->_internal_mutable_defaults()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_defaults());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -15209,6 +15248,7 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -15223,7 +15263,9 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
       _this->_internal_mutable_span()->MergeFrom(from._internal_span());
     }
     if (CheckHasBitForRepeated(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_leading_detached_comments()->MergeFrom(from._internal_leading_detached_comments());
+      _this->_internal_mutable_leading_detached_comments()->MergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena,
+          from._internal_leading_detached_comments());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       _this->_internal_set_leading_comments(from._internal_leading_comments());
@@ -15520,6 +15562,7 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -15527,7 +15570,8 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _this->_internal_mutable_location()->MergeFrom(
+    _this->_internal_mutable_location()->MergeFromWithArena(
+        ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_location());
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
@@ -16215,6 +16259,7 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -16222,7 +16267,8 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBitForRepeated(cached_has_bits, 0x00000001U)) {
-    _this->_internal_mutable_annotation()->MergeFrom(
+    _this->_internal_mutable_annotation()->MergeFromWithArena(
+        ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_annotation());
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
