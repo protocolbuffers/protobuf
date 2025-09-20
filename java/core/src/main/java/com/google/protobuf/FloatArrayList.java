@@ -54,6 +54,16 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     this.size = size;
   }
 
+  /**
+   * Constructs a new mutable {@code FloatArrayList} containing the same elements as {@code other}.
+   */
+  FloatArrayList(FloatArrayList other, boolean isMutable) {
+    this(
+        other.size == 0 ? EMPTY_ARRAY : Arrays.copyOf(other.array, other.size),
+        other.size,
+        isMutable);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();
