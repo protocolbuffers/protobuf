@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/code_generator_lite.h"
 
+#include <atomic>
 #include <string>
 #include <utility>
 #include <vector>
@@ -60,12 +61,12 @@ bool IsKnownFeatureProto(absl::string_view filename) {
 
 namespace internal {
 
-bool is_oss_was_read = false;
+std::atomic<bool> is_oss_was_read(false);
 
 bool is_oss = true;
 
 bool IsOss() {
-  is_oss_was_read = true;
+  is_oss_was_read.store(true, std::memory_order_relaxed);
   return is_oss;
 }
 
