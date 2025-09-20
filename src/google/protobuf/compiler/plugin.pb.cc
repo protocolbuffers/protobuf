@@ -354,6 +354,8 @@ Version::~Version() {
 }
 inline void Version::SharedDtor(MessageLite& self) {
   Version& this_ = static_cast<Version&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.suffix_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -714,6 +716,9 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 }
 inline void CodeGeneratorRequest::SharedDtor(MessageLite& self) {
   CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.file_to_generate_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.parameter_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -1158,6 +1163,10 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
 }
 inline void CodeGeneratorResponse_File::SharedDtor(MessageLite& self) {
   CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.insertion_point_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.content_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -1523,6 +1532,8 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
 }
 inline void CodeGeneratorResponse::SharedDtor(MessageLite& self) {
   CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.error_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }

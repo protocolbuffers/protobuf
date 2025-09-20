@@ -332,6 +332,7 @@ JavaFeatures::~JavaFeatures() {
 }
 inline void JavaFeatures::SharedDtor(MessageLite& self) {
   JavaFeatures& this_ = static_cast<JavaFeatures&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }

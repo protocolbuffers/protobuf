@@ -2328,6 +2328,7 @@ FileDescriptorSet::~FileDescriptorSet() {
 }
 inline void FileDescriptorSet::SharedDtor(MessageLite& self) {
   FileDescriptorSet& this_ = static_cast<FileDescriptorSet&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -2664,6 +2665,14 @@ FileDescriptorProto::~FileDescriptorProto() {
 }
 inline void FileDescriptorProto::SharedDtor(MessageLite& self) {
   FileDescriptorProto& this_ = static_cast<FileDescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.dependency_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.public_dependency_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.weak_dependency_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.option_dependency_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.package_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.syntax_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -3415,6 +3424,7 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
 }
 inline void DescriptorProto_ExtensionRange::SharedDtor(MessageLite& self) {
   DescriptorProto_ExtensionRange& this_ = static_cast<DescriptorProto_ExtensionRange&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -3738,6 +3748,7 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
 }
 inline void DescriptorProto_ReservedRange::SharedDtor(MessageLite& self) {
   DescriptorProto_ReservedRange& this_ = static_cast<DescriptorProto_ReservedRange&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -4053,6 +4064,9 @@ DescriptorProto::~DescriptorProto() {
 }
 inline void DescriptorProto::SharedDtor(MessageLite& self) {
   DescriptorProto& this_ = static_cast<DescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.reserved_name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -4741,6 +4755,9 @@ ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
 }
 inline void ExtensionRangeOptions_Declaration::SharedDtor(MessageLite& self) {
   ExtensionRangeOptions_Declaration& this_ = static_cast<ExtensionRangeOptions_Declaration&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.full_name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.type_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -5110,6 +5127,7 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
 }
 inline void ExtensionRangeOptions::SharedDtor(MessageLite& self) {
   ExtensionRangeOptions& this_ = static_cast<ExtensionRangeOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -5552,6 +5570,12 @@ FieldDescriptorProto::~FieldDescriptorProto() {
 }
 inline void FieldDescriptorProto::SharedDtor(MessageLite& self) {
   FieldDescriptorProto& this_ = static_cast<FieldDescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.extendee_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.type_name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.default_value_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.json_name_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -6088,6 +6112,8 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 }
 inline void OneofDescriptorProto::SharedDtor(MessageLite& self) {
   OneofDescriptorProto& this_ = static_cast<OneofDescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -6387,6 +6413,7 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
 }
 inline void EnumDescriptorProto_EnumReservedRange::SharedDtor(MessageLite& self) {
   EnumDescriptorProto_EnumReservedRange& this_ = static_cast<EnumDescriptorProto_EnumReservedRange&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -6692,6 +6719,9 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 }
 inline void EnumDescriptorProto::SharedDtor(MessageLite& self) {
   EnumDescriptorProto& this_ = static_cast<EnumDescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.reserved_name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -7162,6 +7192,8 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 }
 inline void EnumValueDescriptorProto::SharedDtor(MessageLite& self) {
   EnumValueDescriptorProto& this_ = static_cast<EnumValueDescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -7504,6 +7536,8 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 }
 inline void ServiceDescriptorProto::SharedDtor(MessageLite& self) {
   ServiceDescriptorProto& this_ = static_cast<ServiceDescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -7882,6 +7916,10 @@ MethodDescriptorProto::~MethodDescriptorProto() {
 }
 inline void MethodDescriptorProto::SharedDtor(MessageLite& self) {
   MethodDescriptorProto& this_ = static_cast<MethodDescriptorProto&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.input_type_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.output_type_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -8324,6 +8362,17 @@ FileOptions::~FileOptions() {
 }
 inline void FileOptions::SharedDtor(MessageLite& self) {
   FileOptions& this_ = static_cast<FileOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.java_package_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.java_outer_classname_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.go_package_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.objc_class_prefix_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.csharp_namespace_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.swift_prefix_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.php_class_prefix_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.php_namespace_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.php_metadata_namespace_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.ruby_package_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -9121,6 +9170,7 @@ MessageOptions::~MessageOptions() {
 }
 inline void MessageOptions::SharedDtor(MessageLite& self) {
   MessageOptions& this_ = static_cast<MessageOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -9552,6 +9602,8 @@ FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
 }
 inline void FieldOptions_EditionDefault::SharedDtor(MessageLite& self) {
   FieldOptions_EditionDefault& this_ = static_cast<FieldOptions_EditionDefault&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.value_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -9852,6 +9904,8 @@ FieldOptions_FeatureSupport::~FieldOptions_FeatureSupport() {
 }
 inline void FieldOptions_FeatureSupport::SharedDtor(MessageLite& self) {
   FieldOptions_FeatureSupport& this_ = static_cast<FieldOptions_FeatureSupport&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.deprecation_warning_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -10219,6 +10273,8 @@ FieldOptions::~FieldOptions() {
 }
 inline void FieldOptions::SharedDtor(MessageLite& self) {
   FieldOptions& this_ = static_cast<FieldOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.targets_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -10852,6 +10908,7 @@ OneofOptions::~OneofOptions() {
 }
 inline void OneofOptions::SharedDtor(MessageLite& self) {
   OneofOptions& this_ = static_cast<OneofOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -11219,6 +11276,7 @@ EnumOptions::~EnumOptions() {
 }
 inline void EnumOptions::SharedDtor(MessageLite& self) {
   EnumOptions& this_ = static_cast<EnumOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -11642,6 +11700,7 @@ EnumValueOptions::~EnumValueOptions() {
 }
 inline void EnumValueOptions::SharedDtor(MessageLite& self) {
   EnumValueOptions& this_ = static_cast<EnumValueOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -12077,6 +12136,7 @@ ServiceOptions::~ServiceOptions() {
 }
 inline void ServiceOptions::SharedDtor(MessageLite& self) {
   ServiceOptions& this_ = static_cast<ServiceOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -12468,6 +12528,7 @@ MethodOptions::~MethodOptions() {
 }
 inline void MethodOptions::SharedDtor(MessageLite& self) {
   MethodOptions& this_ = static_cast<MethodOptions&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -12873,6 +12934,8 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
 }
 inline void UninterpretedOption_NamePart::SharedDtor(MessageLite& self) {
   UninterpretedOption_NamePart& this_ = static_cast<UninterpretedOption_NamePart&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.name_part_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -13181,6 +13244,10 @@ UninterpretedOption::~UninterpretedOption() {
 }
 inline void UninterpretedOption::SharedDtor(MessageLite& self) {
   UninterpretedOption& this_ = static_cast<UninterpretedOption&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.identifier_value_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.string_value_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.aggregate_value_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -13743,6 +13810,7 @@ FeatureSet::~FeatureSet() {
 }
 inline void FeatureSet::SharedDtor(MessageLite& self) {
   FeatureSet& this_ = static_cast<FeatureSet&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -14205,6 +14273,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditi
 }
 inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor(MessageLite& self) {
   FeatureSetDefaults_FeatureSetEditionDefault& this_ = static_cast<FeatureSetDefaults_FeatureSetEditionDefault&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -14562,6 +14631,7 @@ FeatureSetDefaults::~FeatureSetDefaults() {
 }
 inline void FeatureSetDefaults::SharedDtor(MessageLite& self) {
   FeatureSetDefaults& this_ = static_cast<FeatureSetDefaults&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -14915,6 +14985,12 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
 }
 inline void SourceCodeInfo_Location::SharedDtor(MessageLite& self) {
   SourceCodeInfo_Location& this_ = static_cast<SourceCodeInfo_Location&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.path_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.span_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.leading_detached_comments_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.leading_comments_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.trailing_comments_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -15322,6 +15398,7 @@ SourceCodeInfo::~SourceCodeInfo() {
 }
 inline void SourceCodeInfo::SharedDtor(MessageLite& self) {
   SourceCodeInfo& this_ = static_cast<SourceCodeInfo&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -15639,6 +15716,9 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
 }
 inline void GeneratedCodeInfo_Annotation::SharedDtor(MessageLite& self) {
   GeneratedCodeInfo_Annotation& this_ = static_cast<GeneratedCodeInfo_Annotation&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.path_);
+  ::_pbi::PrefetchToLocalCacheNta(&this_._impl_.source_file_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -16025,6 +16105,7 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
 }
 inline void GeneratedCodeInfo::SharedDtor(MessageLite& self) {
   GeneratedCodeInfo& this_ = static_cast<GeneratedCodeInfo&>(self);
+  ::_pbi::PrefetchToLocalCacheNta(&this_);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
