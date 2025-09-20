@@ -551,18 +551,18 @@ absl::string_view hook_called;
 template <>
 void* Arena::DefaultConstruct<DispatcherTestProto>(Arena*) {
   hook_called = "default";
-  return nullptr;
+  return new DispatcherTestProto(absl::in_place);
 }
 template <>
 void* Arena::CopyConstruct<DispatcherTestProto>(Arena*, const void*) {
   hook_called = "copy";
-  return nullptr;
+  return new DispatcherTestProto(absl::in_place);
 }
 template <>
 DispatcherTestProto* Arena::CreateArenaCompatible<DispatcherTestProto, int>(
     Arena*, int&&) {
   hook_called = "fallback";
-  return nullptr;
+  return new DispatcherTestProto(absl::in_place);
 }
 
 TEST(ArenaTest, CreateArenaConstructable) {
@@ -602,26 +602,26 @@ TEST(ArenaTest, CreateRepeatedPtrField) {
 
 TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr);
+  Arena::Destroy(Arena::Create<DispatcherTestProto>(nullptr));
   EXPECT_EQ(hook_called, "default");
 
   DispatcherTestProto ref(absl::in_place);
   const DispatcherTestProto& cref = ref;
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr);
+  Arena::Destroy(Arena::Create<DispatcherTestProto>(nullptr));
   EXPECT_EQ(hook_called, "default");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, ref);
+  Arena::Destroy(Arena::Create<DispatcherTestProto>(nullptr, ref));
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, cref);
+  Arena::Destroy(Arena::Create<DispatcherTestProto>(nullptr, cref));
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, 1);
+  Arena::Destroy(Arena::Create<DispatcherTestProto>(nullptr, 1));
   EXPECT_EQ(hook_called, "fallback");
 }
 
