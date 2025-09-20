@@ -58,6 +58,9 @@ struct PrivateAccess {
   }
 };
 
+template <typename T>
+struct AssociatedUpbTypes;
+
 }  // namespace hpb::internal
 
 #endif  // GOOGLE_PROTOBUF_HPB_INTERNAL_INTERNAL_H__
