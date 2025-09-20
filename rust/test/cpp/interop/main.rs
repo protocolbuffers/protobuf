@@ -40,6 +40,8 @@ extern "C" {
     fn GetBytesExtension(msg: *const c_void) -> PtrAndLen;
 
     fn GetConstStaticInteropTestMessage() -> *const c_void;
+
+    fn IsExpectedDescriptor(provided: *const c_void) -> bool;
 }
 
 #[gtest]
@@ -154,4 +156,11 @@ fn view_of_const_static() {
     };
     assert_eq!(view.i64(), 0);
     assert_eq!(view.default_int32(), 41);
+}
+
+#[gtest]
+fn descriptor_interop() {
+    let descriptor = InteropTestMessage::__unstable_get_descriptor();
+    let result = unsafe { IsExpectedDescriptor(descriptor) };
+    assert!(result);
 }
