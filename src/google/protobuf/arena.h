@@ -22,6 +22,7 @@
 
 #include "absl/base/macros.h"
 #include "absl/meta/type_traits.h"
+#include "google/protobuf/internal_visibility.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
 #include <exception>
@@ -447,9 +448,21 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                                          Args&&... args) {
       if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
         using ArenaRepT = typename internal::RepeatedPtrFieldArenaRep<T>::Type;
-        auto* arena_repr =
-            new (ptr) ArenaRepT(arena, static_cast<Args&&>(args)...);
-        return arena_repr;
+        // TODO - ClangTidy gives warnings for calling the
+        // deprecated `RepeatedPtrField(Arena*)` constructor here, but this is
+        // the correct way to call it as it will allow us to silently switch to
+        // a different constructor once arena pointers are removed from
+        // RepeatedPtrFields. While this constructor exists, we will call the
+        // `InternalVisibility` override to silence the warning.
+        if constexpr (std::is_same_v<ArenaRepT,
+                                     internal::RepeatedPtrFieldBase>) {
+          // RepeatedPtrFieldBase is sometimes constructed internally, and it
+          // doesn't have `InternalVisibility` constructors.
+          return new (ptr) ArenaRepT(arena, static_cast<Args&&>(args)...);
+        } else {
+          return new (ptr) ArenaRepT(internal::InternalVisibility(), arena,
+                                     static_cast<Args&&>(args)...);
+        }
       } else {
         return new (ptr) T(arena, static_cast<Args&&>(args)...);
       }
