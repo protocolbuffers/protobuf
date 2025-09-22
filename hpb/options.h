@@ -43,6 +43,17 @@ inline ParseOptions ParseOptionsWithEmptyRegistry() {
   };
   return options;
 }
+
+// A custom registry is provided here as a convenience for extant users.
+// Prefer the generated registry.
+inline ParseOptions ParseOptionsWithProvidedRegistry(
+    const ExtensionRegistry& registry) {
+  ParseOptions options{
+      .alias_string = false,
+      .extension_registry = registry,
+  };
+  return options;
+}
 #endif
 
 }  // namespace hpb
