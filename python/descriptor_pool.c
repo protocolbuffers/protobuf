@@ -27,26 +27,29 @@ typedef struct {
   upb_DefPool* symtab;
   // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
+  PyUpb_ModuleInterpreterState* interp_state;
 } PyUpb_DescriptorPool;
 
-PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  return s->default_pool;
+PyObject* PyUpb_DescriptorPool_GetDefaultPool(PyUpb_ModuleState* state) {
+  return state->default_pool;
 }
 
-const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(void) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  if (!s->c_descriptor_symtab) {
-    s->c_descriptor_symtab = upb_DefPool_New();
+const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(
+    PyUpb_ModuleState* state) {
+  if (!state->c_descriptor_symtab) {
+    state->c_descriptor_symtab = upb_DefPool_New();
   }
-  return google_protobuf_FileDescriptorProto_getmsgdef(s->c_descriptor_symtab);
+  return google_protobuf_FileDescriptorProto_getmsgdef(
+      state->c_descriptor_symtab);
 }
 
 static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
-    PyTypeObject* type, PyObject* db, PyUpb_WeakMap* obj_cache) {
+    PyUpb_ModuleState* state, PyTypeObject* type, PyObject* db,
+    PyUpb_WeakMap* obj_cache) {
   PyUpb_DescriptorPool* pool = (void*)PyType_GenericAlloc(type, 0);
   pool->symtab = upb_DefPool_New();
   pool->db = db;
+  pool->interp_state = PyUpb_ModuleInterpreterState_Acquire(state);
   Py_XINCREF(pool->db);
   PyUpb_WeakMap_Add(obj_cache, pool->symtab, &pool->ob_base);
   return &pool->ob_base;
@@ -54,8 +57,9 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
 
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
                                                PyObject* db) {
-  return PyUpb_DescriptorPool_DoCreateWithCache(type, db,
-                                                PyUpb_ObjCache_Instance());
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(db));
+  return PyUpb_DescriptorPool_DoCreateWithCache(state, type, db,
+                                                PyUpb_ObjCache_Instance(state));
 }
 
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
@@ -73,8 +77,9 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
   return 0;
 }
 
-PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
-  PyObject* pool = PyUpb_ObjCache_Get(symtab);
+PyObject* PyUpb_DescriptorPool_Get(PyUpb_ModuleState* state,
+                                   const upb_DefPool* symtab) {
+  PyObject* pool = PyUpb_ObjCache_Get(state, symtab);
   assert(pool);
   return pool;
 }
@@ -86,7 +91,8 @@ static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
   upb_DefPool_Free(self->symtab);
-  PyUpb_ObjCache_Delete(self->symtab);
+  PyUpb_ObjCache_Delete(self->interp_state, self->symtab);
+  PyUpb_ModuleInterpreterState_Release(self->interp_state);
   PyUpb_Dealloc(self);
 }
 
@@ -209,7 +215,8 @@ bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) { return true; }
 static bool PyUpb_DescriptorPool_LoadDependentFiles(
     PyUpb_DescriptorPool* self, google_protobuf_FileDescriptorProto* proto) {
   size_t n;
-  const upb_StringView* deps = google_protobuf_FileDescriptorProto_dependency(proto, &n);
+  const upb_StringView* deps =
+      google_protobuf_FileDescriptorProto_dependency(proto, &n);
   for (size_t i = 0; i < n; i++) {
     const upb_FileDef* dep = upb_DefPool_FindFileByNameWithSize(
         self->symtab, deps[i].data, deps[i].size);
@@ -232,6 +239,8 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   if (!arena) PYUPB_RETURN_OOM;
   PyObject* result = NULL;
 
+  assert(PyUpb_ModuleState_GetFromType(Py_TYPE(_self)));
+
   char* buf;
   Py_ssize_t size;
   if (PyBytes_AsStringAndSize(serialized_pb, &buf, &size) < 0) {
@@ -245,6 +254,8 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
     goto done;
   }
 
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
   upb_StringView name = google_protobuf_FileDescriptorProto_name(proto);
   const upb_FileDef* file =
       upb_DefPool_FindFileByNameWithSize(self->symtab, name.data, name.size);
@@ -252,16 +263,17 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   if (file) {
     // If the existing file is equal to the new file, then silently ignore the
     // duplicate add.
-    google_protobuf_FileDescriptorProto* existing = upb_FileDef_ToProto(file, arena);
+    google_protobuf_FileDescriptorProto* existing =
+        upb_FileDef_ToProto(file, arena);
     if (!existing) {
       PyErr_SetNone(PyExc_MemoryError);
       goto done;
     }
-    const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
+    const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef(state);
     const int options = kUpb_CompareOption_IncludeUnknownFields;
     if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
                                  options)) {
-      result = PyUpb_FileDescriptor_Get(file);
+      result = PyUpb_FileDescriptor_Get(state, file);
       goto done;
     }
   }
@@ -282,7 +294,7 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
     goto done;
   }
 
-  result = PyUpb_FileDescriptor_Get(filedef);
+  result = PyUpb_FileDescriptor_Get(state, filedef);
 
 done:
   upb_Arena_Free(arena);
@@ -407,7 +419,8 @@ static PyObject* PyUpb_DescriptorPool_FindFileByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find file %.200s", name);
   }
 
-  return PyUpb_FileDescriptor_Get(file);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(self));
+  return PyUpb_FileDescriptor_Get(state, file);
 }
 
 /*
@@ -433,7 +446,9 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find extension %.200s", name);
   }
 
-  return PyUpb_FieldDescriptor_Get(field);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_FieldDescriptor_Get(state, field);
 }
 
 /*
@@ -458,7 +473,9 @@ static PyObject* PyUpb_DescriptorPool_FindMessageTypeByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
   }
 
-  return PyUpb_Descriptor_Get(m);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_Descriptor_Get(state, m);
 }
 
 // Splits a dotted symbol like foo.bar.baz on the last dot.  Returns the portion
@@ -505,7 +522,9 @@ static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find message %.200s", name);
   }
 
-  return PyUpb_FieldDescriptor_Get(f);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_FieldDescriptor_Get(state, f);
 }
 
 /*
@@ -530,7 +549,9 @@ static PyObject* PyUpb_DescriptorPool_FindEnumTypeByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find enum %.200s", name);
   }
 
-  return PyUpb_EnumDescriptor_Get(e);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_EnumDescriptor_Get(state, e);
 }
 
 /*
@@ -559,7 +580,8 @@ static PyObject* PyUpb_DescriptorPool_FindOneofByName(PyObject* _self,
     }
     if (parent) {
       const upb_OneofDef* o = upb_MessageDef_FindOneofByName(parent, child);
-      return PyUpb_OneofDescriptor_Get(o);
+      PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+      return PyUpb_OneofDescriptor_Get(state, o);
     }
   }
 
@@ -582,7 +604,9 @@ static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find service %.200s", name);
   }
 
-  return PyUpb_ServiceDescriptor_Get(s);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_ServiceDescriptor_Get(state, s);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
@@ -605,7 +629,10 @@ static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
   if (!parent) goto err;
   const upb_MethodDef* m = upb_ServiceDef_FindMethodByName(parent, child);
   if (!m) goto err;
-  return PyUpb_MethodDescriptor_Get(m);
+
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_MethodDescriptor_Get(state, m);
 
 err:
   return PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
@@ -628,7 +655,9 @@ static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %.200s", name);
   }
 
-  return PyUpb_FileDescriptor_Get(f);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_FileDescriptor_Get(state, f);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindExtensionByNumber(PyObject* _self,
@@ -653,7 +682,9 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByNumber(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find Extension %d", number);
   }
 
-  return PyUpb_FieldDescriptor_Get(f);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
+  return PyUpb_FieldDescriptor_Get(state, f);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
@@ -663,12 +694,15 @@ static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
   if (self->db) {
     PyUpb_DescriptorPool_TryLoadAllExtensions(self, m);
   }
+
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+
   size_t n;
   const upb_FieldDef** ext = upb_DefPool_GetAllExtensions(self->symtab, m, &n);
   PyObject* ret = PyList_New(n);
   if (!ret) goto done;
   for (size_t i = 0; i < n; i++) {
-    PyObject* field = PyUpb_FieldDescriptor_Get(ext[i]);
+    PyObject* field = PyUpb_FieldDescriptor_Get(state, ext[i]);
     if (!field) {
       Py_DECREF(ret);
       ret = NULL;
@@ -744,7 +778,9 @@ bool PyUpb_InitDescriptorPool(PyObject* m) {
   if (!descriptor_pool_type) return false;
 
   state->default_pool = PyUpb_DescriptorPool_DoCreateWithCache(
-      descriptor_pool_type, NULL, state->obj_cache);
+      state, descriptor_pool_type, NULL, state->obj_cache);
+
+  assert(state->default_pool);
   return state->default_pool &&
          PyModule_AddObject(m, "default_pool", state->default_pool) == 0;
 }

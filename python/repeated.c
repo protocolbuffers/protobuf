@@ -32,6 +32,7 @@ typedef struct {
     PyObject* parent;  // stub: owning pointer to parent message.
     upb_Array* arr;    // reified: the data for this array.
   } ptr;
+  PyUpb_ModuleInterpreterState* interp_state;
 } PyUpb_RepeatedContainer;
 
 static bool PyUpb_RepeatedContainer_IsStub(PyUpb_RepeatedContainer* self) {
@@ -72,7 +73,8 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
     PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f,
                                     (upb_MessageValue){.array_val = arr});
   }
-  PyUpb_ObjCache_Add(arr, &self->ob_base);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(self));
+  PyUpb_ObjCache_Add(state, arr, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.arr = arr;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
@@ -91,20 +93,22 @@ upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   Py_DECREF(self->arena);
+  PyUpb_ModuleInterpreterState* interp_state = self->interp_state;
   if (PyUpb_RepeatedContainer_IsStub(self)) {
     PyUpb_Message_CacheDelete(self->ptr.parent,
                               PyUpb_RepeatedContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
   } else {
-    PyUpb_ObjCache_Delete(self->ptr.arr);
+    PyUpb_ObjCache_Delete(interp_state, self->ptr.arr);
   }
   Py_DECREF(PyUpb_RepeatedContainer_GetFieldDescriptor(self));
   PyUpb_Dealloc(self);
+  PyUpb_ModuleInterpreterState_Release(interp_state);
 }
 
-static PyTypeObject* PyUpb_RepeatedContainer_GetClass(const upb_FieldDef* f) {
+static PyTypeObject* PyUpb_RepeatedContainer_GetClass(
+    const upb_FieldDef* f, PyUpb_ModuleState* state) {
   assert(upb_FieldDef_IsRepeated(f) && !upb_FieldDef_IsMap(f));
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   return upb_FieldDef_IsSubMessage(f) ? state->repeated_composite_container_type
                                       : state->repeated_scalar_container_type;
 }
@@ -115,36 +119,40 @@ static Py_ssize_t PyUpb_RepeatedContainer_Length(PyObject* self) {
   return arr ? upb_Array_Size(arr) : 0;
 }
 
-PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
+PyObject* PyUpb_RepeatedContainer_NewStub(PyUpb_ModuleState* state,
+                                          PyObject* parent,
                                           const upb_FieldDef* f,
                                           PyObject* arena) {
   // We only create stubs when the parent is reified, by convention.  However
   // this is not an invariant: the parent could become reified at any time.
   assert(PyUpb_Message_GetIfReified(parent) == NULL);
-  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f, state);
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
   repeated->arena = arena;
-  repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f) | 1;
+  repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(state, f) | 1;
   repeated->ptr.parent = parent;
+  repeated->interp_state = PyUpb_ModuleInterpreterState_Acquire(state);
   Py_INCREF(arena);
   Py_INCREF(parent);
   return &repeated->ob_base;
 }
 
-PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
+PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(PyUpb_ModuleState* state,
+                                                     upb_Array* arr,
                                                      const upb_FieldDef* f,
                                                      PyObject* arena) {
-  PyObject* ret = PyUpb_ObjCache_Get(arr);
+  PyObject* ret = PyUpb_ObjCache_Get(state, arr);
   if (ret) return ret;
 
-  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f, state);
   PyUpb_RepeatedContainer* repeated = (void*)PyType_GenericAlloc(cls, 0);
   repeated->arena = arena;
-  repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
+  repeated->field = (uintptr_t)PyUpb_FieldDescriptor_Get(state, f);
   repeated->ptr.arr = arr;
+  repeated->interp_state = PyUpb_ModuleInterpreterState_Acquire(state);
   ret = &repeated->ob_base;
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(arr, ret);
+  PyUpb_ObjCache_Add(state, arr, ret);
   return ret;
 }
 
@@ -157,11 +165,14 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
       (void*)PyType_GenericAlloc(Py_TYPE(_self), 0);
   if (clone == NULL) return NULL;
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
-  clone->arena = PyUpb_Arena_New();
-  clone->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  clone->arena = PyUpb_Arena_New(state);
+  clone->field = (uintptr_t)PyUpb_FieldDescriptor_Get(state, f);
   clone->ptr.arr =
       upb_Array_New(PyUpb_Arena_Get(clone->arena), upb_FieldDef_CType(f));
-  PyUpb_ObjCache_Add(clone->ptr.arr, (PyObject*)clone);
+  clone->interp_state =
+      PyUpb_ModuleInterpreterState_DuplicateHandle(self->interp_state);
+  PyUpb_ObjCache_Add(state, clone->ptr.arr, (PyObject*)clone);
   PyObject* result = PyUpb_RepeatedContainer_MergeFrom((PyObject*)clone, _self);
   if (!result) {
     Py_DECREF(clone);
@@ -233,7 +244,8 @@ static PyObject* PyUpb_RepeatedContainer_Item(PyObject* _self,
     return NULL;
   }
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
-  return PyUpb_UpbToPy(upb_Array_Get(arr, index), f, self->arena);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return PyUpb_UpbToPy(state, upb_Array_Get(arr, index), f, self->arena);
 }
 
 PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
@@ -244,8 +256,9 @@ PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   size_t n = upb_Array_Size(arr);
   PyObject* list = PyList_New(n);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
   for (size_t i = 0; i < n; i++) {
-    PyObject* val = PyUpb_UpbToPy(upb_Array_Get(arr, i), f, self->arena);
+    PyObject* val = PyUpb_UpbToPy(state, upb_Array_Get(arr, i), f, self->arena);
     if (!val) {
       Py_DECREF(list);
       return NULL;
@@ -291,13 +304,14 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
   Py_ssize_t idx, count, step;
   if (!PyUpb_IndexToRange(key, size, &idx, &count, &step)) return NULL;
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
   if (step == 0) {
-    return PyUpb_UpbToPy(upb_Array_Get(arr, idx), f, self->arena);
+    return PyUpb_UpbToPy(state, upb_Array_Get(arr, idx), f, self->arena);
   } else {
     PyObject* list = PyList_New(count);
     for (Py_ssize_t i = 0; i < count; i++, idx += step) {
       upb_MessageValue msgval = upb_Array_Get(self->ptr.arr, idx);
-      PyObject* item = PyUpb_UpbToPy(msgval, f, self->arena);
+      PyObject* item = PyUpb_UpbToPy(state, msgval, f, self->arena);
       if (!item) {
         Py_DECREF(list);
         return NULL;
@@ -563,7 +577,8 @@ static PyObject* PyUpb_RepeatedCompositeContainer_AppendNew(PyObject* _self) {
   upb_Message* msg = upb_Message_New(layout, arena);
   upb_MessageValue msgval = {.msg_val = msg};
   upb_Array_Append(arr, msgval, arena);
-  return PyUpb_Message_Get(msg, m, self->arena);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return PyUpb_Message_Get(state, msg, m, self->arena);
 }
 
 PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* _self, PyObject* args,
@@ -616,7 +631,8 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
     const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
     upb_Message* msg = upb_Message_New(layout, arena);
-    PyObject* py_msg = PyUpb_Message_Get(msg, m, self->arena);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    PyObject* py_msg = PyUpb_Message_Get(state, msg, m, self->arena);
     PyObject* ret = PyUpb_Message_MergeFrom(py_msg, value);
     Py_DECREF(py_msg);
     if (!ret) return NULL;

@@ -17,8 +17,8 @@
 // will take a reference on `arena`; the caller must ensure that `val` belongs
 // to `arena`. If the conversion cannot be performed, returns NULL and sets a
 // Python error.
-PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
-                        PyObject* arena);
+PyObject* PyUpb_UpbToPy(PyUpb_ModuleState* state, upb_MessageValue val,
+                        const upb_FieldDef* f, PyObject* arena);
 
 // Converts `obj` to a upb_MessageValue `*val` according to the type information
 // in `f`. If `arena` is provided, any string data will be copied into `arena`,

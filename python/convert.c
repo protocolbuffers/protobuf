@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "python/convert.h"
+
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/message/compare.h"
@@ -17,8 +18,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
-                        PyObject* arena) {
+PyObject* PyUpb_UpbToPy(PyUpb_ModuleState* state, upb_MessageValue val,
+                        const upb_FieldDef* f, PyObject* arena) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Enum:
     case kUpb_CType_Int32:
@@ -51,7 +52,7 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
       return ret;
     }
     case kUpb_CType_Message:
-      return PyUpb_Message_Get((upb_Message*)val.msg_val,
+      return PyUpb_Message_Get(state, (upb_Message*)val.msg_val,
                                upb_FieldDef_MessageSubDef(f), arena);
     default:
       PyErr_Format(PyExc_SystemError,
