@@ -364,7 +364,6 @@ class PROTOBUF_EXPORT UntypedMapBase {
     std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
     std::swap(type_info_, other->type_info_);
     std::swap(table_, other->table_);
-    std::swap(arena_, other->arena_);
   }
 
   void UntypedMergeFrom(const UntypedMapBase& other);
