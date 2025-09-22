@@ -314,8 +314,6 @@ TEST(CppGeneratedCode, SetAliasExtensionOnTwoParents) {
                 ->ext_name());
 }
 
-#ifndef NDEBUG
-
 TEST(CppGeneratedCode, SetAliasExtensionOnDifferentArenaShouldCrash) {
   hpb::Arena arena1;
   hpb::Arena arena2;
@@ -327,8 +325,6 @@ TEST(CppGeneratedCode, SetAliasExtensionOnDifferentArenaShouldCrash) {
                                         extension1),
                "");
 }
-
-#endif  // NDEBUG
 
 TEST(CppGeneratedCode, GetExtension) {
   TestModel model;

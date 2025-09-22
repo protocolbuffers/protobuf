@@ -692,7 +692,6 @@ TEST(CppGeneratedCode, SetAliasFieldsOutofOrder) {
   ASSERT_EQ(parent1.child()->peeps(), 12);
 }
 
-#ifndef NDEBUG
 TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);
@@ -700,7 +699,6 @@ TEST(CppGeneratedCode, SetAliasFailsForDifferentArena) {
   auto parent = hpb::CreateMessage<Parent>(different_arena);
   EXPECT_DEATH(parent.set_alias_child(child), "hpb::interop::upb::GetArena");
 }
-#endif
 
 TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaFused) {
   hpb::Arena arena;
@@ -739,7 +737,6 @@ TEST(CppGeneratedCode, SetAliasRepeated) {
             hpb::interop::upb::GetMessage(parent1.children(0)));
 }
 
-#ifndef NDEBUG
 TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
   hpb::Arena arena;
   auto child = hpb::CreateMessage<Child>(arena);
@@ -747,7 +744,6 @@ TEST(CppGeneratedCode, SetAliasRepeatedFailsForDifferentArena) {
   auto parent = hpb::CreateMessage<ParentWithRepeated>(different_arena);
   EXPECT_DEATH(parent.add_alias_children(child), "hpb::interop::upb::GetArena");
 }
-#endif
 
 TEST(CppGeneratedCode, SetAliasMap) {
   hpb::Arena arena;
