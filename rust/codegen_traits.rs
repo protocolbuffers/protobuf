@@ -174,6 +174,10 @@ pub(crate) mod interop {
         ///     passed here (must not be read, written, or deleted)
         #[cfg(cpp_kernel)]
         unsafe fn __unstable_take_ownership_of_raw_message(raw_message: *mut c_void) -> Self;
+
+        /// Returns pointer to the underlying C++ message descriptor.
+        #[cfg(cpp_kernel)]
+        fn __unstable_get_descriptor() -> *const c_void;
     }
 
     /// Traits related to message view interop.
