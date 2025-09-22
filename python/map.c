@@ -8,6 +8,7 @@
 #include "python/map.h"
 
 #include "python/convert.h"
+#include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/message/map.h"

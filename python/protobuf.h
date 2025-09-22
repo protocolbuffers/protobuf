@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "python/descriptor.h"
 #include "python/python_api.h"
 #include "upb/hash/int_table.h"
 #include "upb/reflection/def.h"
@@ -35,6 +34,19 @@ typedef struct PyUpb_WeakMap PyUpb_WeakMap;
 // variables. This makes this extension compatible with sub-interpreters.
 
 typedef struct {
+
+typedef enum {
+  kPyUpb_Descriptor = 0,
+  kPyUpb_EnumDescriptor = 1,
+  kPyUpb_EnumValueDescriptor = 2,
+  kPyUpb_FieldDescriptor = 3,
+  kPyUpb_FileDescriptor = 4,
+  kPyUpb_MethodDescriptor = 5,
+  kPyUpb_OneofDescriptor = 6,
+  kPyUpb_ServiceDescriptor = 7,
+  kPyUpb_Descriptor_Count = 8,
+} PyUpb_DescriptorType;
+
   // From descriptor.c
   PyTypeObject* descriptor_types[kPyUpb_Descriptor_Count];
 

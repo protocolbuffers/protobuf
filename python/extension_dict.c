@@ -7,6 +7,7 @@
 
 #include "python/extension_dict.h"
 
+#include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/reflection/def.h"

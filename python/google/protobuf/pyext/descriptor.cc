@@ -30,6 +30,7 @@
 #include "absl/synchronization/mutex.h"
 #endif
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/coded_stream.h"
