@@ -1236,3 +1236,30 @@ where
         }
     }
 }
+
+// # Safety
+// - The field at `index` must be a message field of type `T`.
+pub unsafe fn message_set_sub_message<
+    'msg,
+    P: Message + AssociatedMiniTable,
+    T: Message + UpbGetMessagePtrMut + UpbGetArena,
+>(
+    parent: MessageMutInner<'msg, P>,
+    index: u32,
+    val: impl IntoProxied<T>,
+) {
+    // The message and arena are dropped after the setter. The
+    // memory remains allocated as we fuse the arena with the
+    // parent message's arena.
+    let mut child = val.into_proxied(Private);
+    parent.arena.fuse(child.get_arena(Private));
+
+    let child_ptr = child.get_ptr_mut(Private);
+    unsafe {
+        // SAFETY:
+        // - `parent.ptr` is valid as it comes from a `MessageMutInner`.
+        // - The caller guarantees that `index` refers to a valid message field of type `T`.
+        // - The child's arena has been fused into the parent's arena above.
+        parent.ptr.set_base_field_message_at_index(index, child_ptr);
+    }
+}

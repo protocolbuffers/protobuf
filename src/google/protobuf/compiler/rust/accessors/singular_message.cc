@@ -117,18 +117,11 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (accessor_case == AccessorCase::VIEW) return;
              if (ctx.is_upb()) {
                ctx.Emit(R"rs(
-                  // The message and arena are dropped after the setter. The
-                  // memory remains allocated as we fuse the arena with the
-                  // parent message's arena.
-                  let mut child = val.into_proxied($pbi$::Private);
-                  self.inner
-                    .arena()
-                    .fuse($pbr$::UpbGetArena::get_arena(&mut child, $pbi$::Private));
-
-                  let child_ptr = $pbr$::UpbGetMessagePtrMut::get_ptr_mut(&mut child, $pbi$::Private);
                   unsafe {
-                    self.inner.ptr_mut().set_base_field_message_at_index(
-                      $upb_mt_field_index$, child_ptr
+                    $pbr$::message_set_sub_message(
+                      $pb$::AsMut::as_mut(self).inner,
+                      $upb_mt_field_index$,
+                      val
                     );
                   }
                 )rs");
