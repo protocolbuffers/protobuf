@@ -64,18 +64,14 @@ namespace internal {
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 
-}  // namespace internal
+class MapFieldBase;
 
-namespace internal {
 template <typename It>
 class RepeatedPtrIterator;
 template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
 template <typename T>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
-}  // namespace internal
-
-namespace internal {
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -976,49 +972,6 @@ class GenericTypeHandler<std::string> {
 };
 
 
-template <typename T>
-struct IsRepeatedPtrFieldType {
-  static constexpr bool value = false;
-};
-
-template <>
-struct IsRepeatedPtrFieldType<RepeatedPtrFieldBase> {
-  static constexpr bool value = true;
-};
-
-template <typename Element>
-struct IsRepeatedPtrFieldType<RepeatedPtrField<Element>> {
-  static constexpr bool value = true;
-};
-
-// This class maps RepeatedPtrField(Base)? types to the types that we will use
-// to represent them when allocated on an arena. This is necessary because
-// `RepeatedPtrField`s do not own an arena pointer, but can be allocated
-// directly on an arena. In this case, we will use a wrapper class that holds
-// both the arena pointer and the repeated field, and points the repeated field
-// to the arena pointer.
-//
-// Additionally, split repeated pointer fields will use this representation when
-// allocated, regardless of whether they are on an arena or not.
-template <typename T>
-struct RepeatedPtrFieldArenaRep {};
-
-template <>
-struct RepeatedPtrFieldArenaRep<RepeatedPtrFieldBase> {
-  // TODO - With removed arena pointers, we will need a class that
-  // holds both the arena pointer and the repeated field, and points the
-  // repeated to the arena pointer.
-  using Type = RepeatedPtrFieldBase;
-};
-
-template <typename Element>
-struct RepeatedPtrFieldArenaRep<RepeatedPtrField<Element>> {
-  // TODO - With removed arena pointers, we will need a class that
-  // holds both the arena pointer and the repeated field, and points the
-  // repeated to the arena pointer.
-  using Type = RepeatedPtrField<Element>;
-};
-
 }  // namespace internal
 
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
@@ -1344,6 +1297,30 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     internal::RepeatedPtrFieldBase::InternalSwap(other);
   }
 
+  // For internal use only.
+  //
+  // Like `Add()`, but uses the given arena instead of calling `GetArena()`. It
+  // is the responsibility of the caller to ensure that this arena is the same
+  // as the arena returned from `GetArena()`.
+  pointer InternalAddWithArena(internal::InternalVisibility,
+                               Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
+  // For internal use only.
+  //
+  // Like `Add(Element&&)`, but uses the given arena instead of calling
+  // `GetArena()`. It is the responsibility of the caller to ensure that this
+  // arena is the same as the arena returned from `GetArena()`.
+  void InternalAddWithArena(internal::InternalVisibility, Arena* arena,
+                            Element&& value);
+
+  // For internal use only.
+  //
+  // Like `MergeFrom(const RepeatedPtrField& other)`, but uses the given arena
+  // instead of calling `GetArena()`. It is the responsibility of the caller to
+  // ensure that this arena is the same as the arena returned from `GetArena()`.
+  void InternalMergeFromWithArena(internal::InternalVisibility, Arena* arena,
+                                  const RepeatedPtrField& other);
+
   using RepeatedPtrFieldBase::InternalGetArenaOffset;
 
  private:
@@ -1363,6 +1340,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   template <typename T>
   friend struct WeakRepeatedPtrField;
+
+  // The MapFieldBase implementation needs to be able to static_cast down to
+  // `RepeatedPtrFieldBase`.
+  friend internal::MapFieldBase;
 
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
@@ -1497,8 +1478,20 @@ PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::Add()
 }
 
 template <typename Element>
+PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::InternalAddWithArena(
+    internal::InternalVisibility, Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return RepeatedPtrFieldBase::Add<TypeHandler>(arena);
+}
+
+template <typename Element>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Element&& value) {
   RepeatedPtrFieldBase::Add<TypeHandler>(GetArena(), std::move(value));
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::InternalAddWithArena(
+    internal::InternalVisibility, Arena* arena, Element&& value) {
+  RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
 }
 
 template <typename Element>
@@ -1601,6 +1594,13 @@ inline void RepeatedPtrField<Element>::MergeFrom(
     const RepeatedPtrField& other) {
   if (other.empty()) return;
   RepeatedPtrFieldBase::MergeFrom<Element>(other, GetArena());
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::InternalMergeFromWithArena(
+    internal::InternalVisibility, Arena* arena, const RepeatedPtrField& other) {
+  if (other.empty()) return;
+  RepeatedPtrFieldBase::MergeFrom<Element>(other, arena);
 }
 
 template <typename Element>
