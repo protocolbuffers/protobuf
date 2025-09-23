@@ -493,7 +493,12 @@ TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
   TestUtil::ExpectAllFieldsSet(moved->Get(0));
 
   // The only extra allocation with moves is sizeof(RepeatedPtrField).
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  EXPECT_EQ(usage_by_move,
+            sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>));
+#else
   EXPECT_EQ(usage_by_move, sizeof(internal::RepeatedPtrFieldBase));
+#endif
   EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
@@ -535,14 +540,21 @@ class DispatcherTestProto : public Message {
   explicit constexpr DispatcherTestProto(absl::in_place_t)
       : Message(static_cast<internal::ClassData*>(nullptr)) {}
   explicit DispatcherTestProto(Arena*) : Message(nullptr, nullptr) {
-    ABSL_LOG(FATAL);
+    ABSL_LOG(FATAL) << "This constructor is defined so the code builds, but "
+                       "should never be called.";
+  }
+  DispatcherTestProto(const DispatcherTestProto&) : Message(nullptr, nullptr) {
+    ABSL_LOG(FATAL) << "This constructor is defined so the code builds, but "
+                       "should never be called.";
   }
   DispatcherTestProto(Arena*, const DispatcherTestProto&)
       : Message(nullptr, nullptr) {
-    ABSL_LOG(FATAL);
+    ABSL_LOG(FATAL) << "This constructor is defined so the code builds, but "
+                       "should never be called.";
   }
   const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
-    ABSL_LOG(FATAL);
+    ABSL_LOG(FATAL) << "This method is defined so the code builds, but should "
+                       "never be called.";
   }
 };
 DispatcherTestProto dispatcher_test_proto_instance(absl::in_place);
