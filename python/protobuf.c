@@ -288,12 +288,6 @@ static bool PyUpb_InitArena(PyObject* m) {
 // Utilities
 // -----------------------------------------------------------------------------
 
-PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec) {
-  PyObject* type = PyType_FromSpec(spec);
-  return type && PyModule_AddObject(m, name, type) == 0 ? (PyTypeObject*)type
-                                                        : NULL;
-}
-
 static const char* PyUpb_GetClassName(PyType_Spec* spec) {
   // spec->name contains a fully-qualified name, like:
   //   google.protobuf.pyext._message.FooBar

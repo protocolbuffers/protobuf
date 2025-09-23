@@ -175,8 +175,6 @@ upb_Arena* PyUpb_Arena_Get(PyObject* arena);
 // Utilities
 // -----------------------------------------------------------------------------
 
-PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec);
-
 // Creates a Python type from `spec` and adds it to the given module `m`.
 PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec);
 
