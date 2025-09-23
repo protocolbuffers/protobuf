@@ -432,6 +432,11 @@ void WriteMapAccessorDefinitions(const google::protobuf::Descriptor* desc,
         R"cc(
           bool $class_name$::set_alias_$field_name$($const_key$ key,
                                                     $const_val_ptr$ value) {
+#ifndef NDEBUG
+            ABSL_CHECK(
+                upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(value)) ||
+                upb_Arena_HasRef(arena_, hpb::interop::upb::GetArena(value)));
+#endif
             $optional_conversion_code$return
                 $upb_msg_name$_$upb_field_name$_set(
                     msg_, $converted_key_name$,
@@ -453,6 +458,12 @@ void WriteMapAccessorDefinitions(const google::protobuf::Descriptor* desc,
         R"cc(
           bool $class_name$::set_alias_$field_name$($const_key$ key,
                                                     $mut_val_ptr$ value) {
+#ifndef NDEBUG
+            ABSL_CHECK(
+
+                upb_Arena_IsFused(arena_, hpb::interop::upb::GetArena(value)) ||
+                upb_Arena_HasRef(arena_, hpb::interop::upb::GetArena(value)));
+#endif
             $optional_conversion_code$return
                 $upb_msg_name$_$upb_field_name$_set(
                     msg_, $converted_key_name$,

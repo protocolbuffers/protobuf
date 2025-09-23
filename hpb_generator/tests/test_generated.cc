@@ -768,6 +768,19 @@ TEST(CppGeneratedCode, SetAliasMap) {
             hpb::interop::upb::GetMessage(c2.value()));
 }
 
+#ifndef NDEBUG
+TEST(CppGeneratedCode, SetAliasMapFailsDifferentArena) {
+  hpb::Arena arena1;
+  hpb::Arena arena2;
+  auto parent1 = hpb::CreateMessage<ParentWithMap>(arena1);
+
+  auto child = hpb::CreateMessage<Child>(arena2);
+  constexpr int key = 1;
+  EXPECT_DEATH(parent1.set_alias_child_map(key, child),
+               "hpb::interop::upb::GetArena");
+}
+#endif
+
 TEST(CppGeneratedCode, SetAliasSucceedsForDifferentArenaRefs) {
   hpb::Arena arena;
   auto parent1 = hpb::CreateMessage<Parent>(arena);
