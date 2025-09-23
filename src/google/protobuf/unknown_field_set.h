@@ -441,6 +441,7 @@ struct InternalMetadata::Container<UnknownFieldSet>
     : public InternalMetadata::ContainerBase {
   UnknownFieldSet unknown_fields;
 
+  Container() = default;
   explicit Container(Arena* input_arena)
       : unknown_fields(InternalVisibility{}, input_arena) {}
 
