@@ -302,7 +302,9 @@ inline void FieldMask::clear_paths() {
 inline ::std::string* PROTOBUF_NONNULL FieldMask::add_paths()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_paths()->Add();
+  ::std::string* _s =
+      _internal_mutable_paths()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return _s;
@@ -326,9 +328,10 @@ inline void FieldMask::set_paths(int index, Arg_&& value, Args_... args) {
 template <typename Arg_, typename... Args_>
 inline void FieldMask::add_paths(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_paths(),
-                               ::std::forward<Arg_>(value),
-                               args... );
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_paths(), ::std::forward<Arg_>(value),
+      args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }

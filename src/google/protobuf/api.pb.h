@@ -1020,7 +1020,9 @@ inline const ::google::protobuf::Method& Api::methods(int index) const
 inline ::google::protobuf::Method* PROTOBUF_NONNULL Api::add_methods()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Method* _add = _internal_mutable_methods()->Add();
+  ::google::protobuf::Method* _add =
+      _internal_mutable_methods()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Api.methods)
   return _add;
@@ -1068,7 +1070,9 @@ inline const ::google::protobuf::Option& Api::options(int index) const
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Api::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
+  ::google::protobuf::Option* _add =
+      _internal_mutable_options()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.Api.options)
   return _add;
@@ -1280,7 +1284,9 @@ inline const ::google::protobuf::Mixin& Api::mixins(int index) const
 inline ::google::protobuf::Mixin* PROTOBUF_NONNULL Api::add_mixins()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Mixin* _add = _internal_mutable_mixins()->Add();
+  ::google::protobuf::Mixin* _add =
+      _internal_mutable_mixins()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add:google.protobuf.Api.mixins)
   return _add;
@@ -1667,7 +1673,9 @@ inline const ::google::protobuf::Option& Method::options(int index) const
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Method::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
+  ::google::protobuf::Option* _add =
+      _internal_mutable_options()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Method.options)
   return _add;

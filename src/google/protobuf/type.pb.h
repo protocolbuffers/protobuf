@@ -1748,7 +1748,9 @@ inline const ::google::protobuf::Field& Type::fields(int index) const
 inline ::google::protobuf::Field* PROTOBUF_NONNULL Type::add_fields()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Field* _add = _internal_mutable_fields()->Add();
+  ::google::protobuf::Field* _add =
+      _internal_mutable_fields()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.fields)
   return _add;
@@ -1785,7 +1787,9 @@ inline void Type::clear_oneofs() {
 inline ::std::string* PROTOBUF_NONNULL Type::add_oneofs()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::std::string* _s = _internal_mutable_oneofs()->Add();
+  ::std::string* _s =
+      _internal_mutable_oneofs()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.Type.oneofs)
   return _s;
@@ -1809,9 +1813,10 @@ inline void Type::set_oneofs(int index, Arg_&& value, Args_... args) {
 template <typename Arg_, typename... Args_>
 inline void Type::add_oneofs(Arg_&& value, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::internal::AddToRepeatedPtrField(*_internal_mutable_oneofs(),
-                               ::std::forward<Arg_>(value),
-                               args... );
+  ::google::protobuf::internal::AddToRepeatedPtrField(
+      ::google::protobuf::MessageLite::internal_visibility(), GetArena(),
+      *_internal_mutable_oneofs(), ::std::forward<Arg_>(value),
+      args... );
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
@@ -1871,7 +1876,9 @@ inline const ::google::protobuf::Option& Type::options(int index) const
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Type::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
+  ::google::protobuf::Option* _add =
+      _internal_mutable_options()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.options)
   return _add;
@@ -2367,7 +2374,9 @@ inline const ::google::protobuf::Option& Field::options(int index) const
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Field::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
+  ::google::protobuf::Option* _add =
+      _internal_mutable_options()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Field.options)
   return _add;
@@ -2620,7 +2629,9 @@ inline const ::google::protobuf::EnumValue& Enum::enumvalue(int index) const
 inline ::google::protobuf::EnumValue* PROTOBUF_NONNULL Enum::add_enumvalue()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::EnumValue* _add = _internal_mutable_enumvalue()->Add();
+  ::google::protobuf::EnumValue* _add =
+      _internal_mutable_enumvalue()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.enumvalue)
   return _add;
@@ -2674,7 +2685,9 @@ inline const ::google::protobuf::Option& Enum::options(int index) const
 inline ::google::protobuf::Option* PROTOBUF_NONNULL Enum::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
+  ::google::protobuf::Option* _add =
+      _internal_mutable_options()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_add:google.protobuf.Enum.options)
   return _add;
@@ -3005,7 +3018,9 @@ inline const ::google::protobuf::Option& EnumValue::options(int index) const
 inline ::google::protobuf::Option* PROTOBUF_NONNULL EnumValue::add_options()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Option* _add = _internal_mutable_options()->Add();
+  ::google::protobuf::Option* _add =
+      _internal_mutable_options()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValue.options)
   return _add;

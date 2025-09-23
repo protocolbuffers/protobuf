@@ -1301,7 +1301,9 @@ inline const ::google::protobuf::Value& ListValue::values(int index) const
 inline ::google::protobuf::Value* PROTOBUF_NONNULL ListValue::add_values()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::Value* _add = _internal_mutable_values()->Add();
+  ::google::protobuf::Value* _add =
+      _internal_mutable_values()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
   SetHasBitForRepeated(_impl_._has_bits_[0], 0x00000001U);
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
   return _add;
