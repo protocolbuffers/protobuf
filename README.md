@@ -68,13 +68,11 @@ properly set up rules_java and rules_python.
 
 ```
 http_archive(
-    name = "com_google_protobuf",
+    name = BBB
     strip_prefix = "protobuf-VERSION",
     sha256 = ...,
     url = ...,
 )
-
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
 
