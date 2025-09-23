@@ -489,6 +489,15 @@ def build_targets(name):
         srcs = ["python_version_test.py"],
     )
 
+    internal_py_test(
+        name = "subinterpreter_test",
+        srcs = ["google/protobuf/internal/subinterpreter_test.py"],
+        deps = [
+            # Make UPB available to the test
+            "//python:_message",
+        ]
+    )
+
     conformance_test(
         name = "conformance_test",
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
