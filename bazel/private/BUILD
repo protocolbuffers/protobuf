@@ -55,7 +55,10 @@ bzl_library(
 bzl_library(
     name = "proto_info_bzl",
     srcs = ["proto_info.bzl"],
-    visibility = ["//bazel:__subpackages__"],
+    visibility = [
+        "//bazel:__subpackages__",
+        "//rust:__subpackages__",
+    ],
 )
 
 bzl_library(
