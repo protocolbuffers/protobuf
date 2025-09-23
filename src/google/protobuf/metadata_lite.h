@@ -150,7 +150,7 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct ContainerBase {
-    Arena* arena;
+    Arena* arena = nullptr;
   };
 
   template <typename T>

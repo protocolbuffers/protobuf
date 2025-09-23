@@ -389,7 +389,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     // callers responsibility to have these calls properly ordered.
     if (auto* p = maybe_payload()) {
       // If we don't have a payload, it is already assumed `STATE_MODIFIED_MAP`.
-      p->state.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
+      p->set_state_relaxed(STATE_MODIFIED_MAP);
     }
   }
 
@@ -429,18 +429,39 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     CLEAN = 2,                    // data in map and repeated field are same
   };
 
-  struct ReflectionPayload {
-    explicit ReflectionPayload(Arena* arena) : repeated_field(arena) {}
-    RepeatedPtrField<Message> repeated_field;
+  class ReflectionPayload {
+   public:
+    explicit ReflectionPayload(Arena* arena) : repeated_field_(arena) {}
 
-    absl::Mutex mutex;  // The thread to synchronize map and repeated
-                        // field needs to get lock first;
-    std::atomic<State> state{STATE_MODIFIED_MAP};
+    RepeatedPtrField<Message>& repeated_field() { return repeated_field_; }
+
+    absl::Mutex& mutex() { return mutex_; }
+
+    State load_state_relaxed() const {
+      return state_.load(std::memory_order_relaxed);
+    }
+    State load_state_acquire() const {
+      return state_.load(std::memory_order_acquire);
+    }
+    void set_state_relaxed(State state) {
+      state_.store(state, std::memory_order_relaxed);
+    }
+    void set_state_release(State state) {
+      state_.store(state, std::memory_order_release);
+    }
+
+    void Swap(ReflectionPayload& other);
+
+   private:
+    RepeatedPtrField<Message> repeated_field_;
+    absl::Mutex mutex_;  // The thread to synchronize map and repeated
+                         // field needs to get lock first;
+    std::atomic<State> state_{STATE_MODIFIED_MAP};
   };
 
   Arena* arena() const {
     auto p = payload_.load(std::memory_order_acquire);
-    if (IsPayload(p)) return ToPayload(p)->repeated_field.GetArena();
+    if (IsPayload(p)) return ToPayload(p)->repeated_field().GetArena();
     return ToArena(p);
   }
 
@@ -458,7 +479,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   State state() const {
     auto* p = maybe_payload();
-    return p != nullptr ? p->state.load(std::memory_order_acquire)
+    return p != nullptr ? p->load_state_acquire()
                         // The default
                         : STATE_MODIFIED_MAP;
   }

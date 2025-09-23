@@ -468,15 +468,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       }
     }
 
-    static PROTOBUF_ALWAYS_INLINE T* PROTOBUF_NONNULL New() {
-      // Repeated pointer fields no longer have an arena constructor, so
-      // specialize calling their default constructor.
-      if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
-        return new T();
-      } else {
-        return new T(nullptr);
-      }
-    }
+    static PROTOBUF_ALWAYS_INLINE T* PROTOBUF_NONNULL New() { return new T(); }
 
     friend class Arena;
     friend class TestUtil::ReflectionTester;
