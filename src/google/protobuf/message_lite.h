@@ -1501,6 +1501,7 @@ T& DynamicCastMessage(MessageLite& from) {
 template <typename T>
 const T* DownCastMessage(const MessageLite* from) {
   internal::StrongReferenceToType<T>();
+  // std::cerr << "from is " << from->DebugString();
   ABSL_DCHECK(DynamicCastMessage<T>(from) == from)
       << "Cannot downcast " << from->GetTypeName() << " to "
       << T::default_instance().GetTypeName();
