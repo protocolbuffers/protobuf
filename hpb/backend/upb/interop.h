@@ -16,6 +16,7 @@
 #include "hpb/internal/internal.h"
 #include "hpb/ptr.h"
 #include "upb/base/string_view.h"
+#include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
@@ -85,9 +86,24 @@ upb_Arena* UnwrapArena(T&& arena) {
  * TODO: b/361596328 - revisit GetArena for CHandles
  * TODO: b/362743843 - consider passing in MiniTable to ensure match
  */
+// REMARK: This overload will be deleted soon. Prefer the overloads that take in
+// the CMessageType or MiniTable.
 template <typename T>
 typename T::CProxy MakeCHandle(const upb_Message* msg, upb_Arena* arena) {
   return internal::PrivateAccess::CProxy<T>(msg, arena);
+}
+
+/* Creates a Handle from a const upb message.
+ *
+ * The supplied arena must outlive the hpb handle.
+ * All messages reachable from from the upb message must
+ * outlive the hpb handle.
+ */
+template <typename T>
+typename T::CProxy MakeCHandle(
+    const typename internal::AssociatedUpbTypes<T>::CMessageType* msg,
+    upb_Arena* arena) {
+  return internal::PrivateAccess::CProxy<T>(UPB_UPCAST(msg), arena);
 }
 
 /**
@@ -97,9 +113,24 @@ typename T::CProxy MakeCHandle(const upb_Message* msg, upb_Arena* arena) {
  * All messages reachable from from the upb message must
  * outlive the hpb handle.
  */
+// REMARK: This overload will be deleted soon. Prefer the overloads that take in
+// the CMessageType or MiniTable.
 template <typename T>
 typename T::Proxy MakeHandle(upb_Message* msg, upb_Arena* arena) {
   return typename T::Proxy(msg, arena);
+}
+
+/* Creates a Handle from a mutable upb message.
+ *
+ * The supplied arena must outlive the hpb handle.
+ * All messages reachable from from the upb message must
+ * outlive the hpb handle.
+ */
+template <typename T>
+typename T::Proxy MakeHandle(
+    typename internal::AssociatedUpbTypes<T>::CMessageType* msg,
+    upb_Arena* arena) {
+  return internal::PrivateAccess::Proxy<T>(UPB_UPCAST(msg), arena);
 }
 
 /**
