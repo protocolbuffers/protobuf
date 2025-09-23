@@ -336,18 +336,6 @@ std::string ClassNameResolver::GetJavaClassFullName(
   return result;
 }
 
-std::string ClassNameResolver::GetExtensionIdentifierName(
-    const FieldDescriptor* descriptor, bool immutable) {
-  return GetExtensionIdentifierName(descriptor, immutable, false);
-}
-
-std::string ClassNameResolver::GetExtensionIdentifierName(
-    const FieldDescriptor* descriptor, bool immutable, bool kotlin) {
-  return absl::StrCat(
-      GetClassName(descriptor->containing_type(), immutable, kotlin), ".",
-      descriptor->name());
-}
-
 std::string ClassNameResolver::GetKotlinFactoryName(
     const Descriptor* descriptor) {
   std::string name = ToCamelCase(descriptor->name(), /* lower_first = */ true);
