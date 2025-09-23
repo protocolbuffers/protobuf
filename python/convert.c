@@ -63,9 +63,9 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
 
 // TODO: raise error in 2026 Q1 release
 static void WarnBool(const upb_FieldDef* f) {
-  static int bool_warning_count = 100;
+  static volatile int bool_warning_count = 100;
   if (bool_warning_count > 0) {
-    --bool_warning_count;
+    bool_warning_count -= 1;
     PyErr_WarnFormat(PyExc_DeprecationWarning, 3,
                      "Field %s: Expected an int, got a boolean. This "
                      "will be rejected in 7.34.0, please fix it before that",
