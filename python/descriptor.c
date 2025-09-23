@@ -1055,9 +1055,9 @@ static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
 }
 
 static void WarnDeprecatedLabel(void) {
-  static int deprecated_label_count = 100;
+  static volatile int deprecated_label_count = 100;
   if (deprecated_label_count > 0) {
-    --deprecated_label_count;
+    deprecated_label_count -= 1;
     PyErr_WarnEx(
         PyExc_DeprecationWarning,
         "label() is deprecated. Use is_required() or is_repeated() instead.",
