@@ -740,6 +740,8 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
 
+  bool RequiresArena(GeneratorFunction function) const override;
+
  private:
   const Options* opts_;
   bool has_required_;
@@ -831,7 +833,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      $Submsg$* _add = _internal_mutable_$name_internal$()->Add();
+      $Submsg$* _add =
+          _internal_mutable_$name_internal$()->InternalAddWithArena(
+              $pb$::MessageLite::internal_visibility(), GetArena());
       $set_hasbit$;
       $annotate_add_mutable$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
@@ -908,7 +912,8 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
   // `if (!from.empty()) { body(); }` for both split and non-split cases.
   auto body = [&] {
     p->Emit(R"cc(
-      _this->_internal_mutable$_weak$_$name$()->MergeFrom(
+      _this->_internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
+          $pb$::MessageLite::internal_visibility(), arena,
           from._internal$_weak$_$name$());
     )cc");
   };
@@ -940,7 +945,9 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
       if (!from._internal$_weak$_$name$().empty()) {
-        _internal_mutable$_weak$_$name$()->MergeFrom(from._internal$_weak$_$name$());
+        _internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
+            $pb$::MessageLite::internal_visibility(), arena,
+            from._internal$_weak$_$name$());
       }
     )cc");
   }
@@ -1047,6 +1054,15 @@ void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
 }
 
 bool RepeatedMessage::NeedsIsInitialized() const { return has_required_; }
+
+bool RepeatedMessage::RequiresArena(GeneratorFunction func) const {
+  switch (func) {
+    case GeneratorFunction::kMergeFrom:
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarMessageGenerator(

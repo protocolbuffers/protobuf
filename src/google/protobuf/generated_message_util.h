@@ -38,6 +38,7 @@
 #include "google/protobuf/any.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/implicit_weak_message.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
@@ -369,14 +370,18 @@ inline void AssignToString(std::string& dest, absl::string_view value,
 // This overload set is used to implement `add_xxx()` methods for repeated
 // string fields in generated code.
 template <typename Arg, typename... Args>
-void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest,
+void AddToRepeatedPtrField(InternalVisibility visibility, google::protobuf::Arena* arena,
+                           google::protobuf::RepeatedPtrField<std::string>& dest,
                            Arg&& value, Args... args) {
-  AssignToString(*dest.Add(), std::forward<Arg>(value), args...);
+  AssignToString(*dest.InternalAddWithArena(visibility, arena),
+                 std::forward<Arg>(value), args...);
 }
-inline void AddToRepeatedPtrField(google::protobuf::RepeatedPtrField<std::string>& dest,
+inline void AddToRepeatedPtrField(InternalVisibility visibility,
+                                  google::protobuf::Arena* arena,
+                                  google::protobuf::RepeatedPtrField<std::string>& dest,
                                   std::string&& value,
                                   BytesTag /*tag*/ = BytesTag{}) {
-  dest.Add(std::move(value));
+  dest.InternalAddWithArena(visibility, arena, std::move(value));
 }
 
 constexpr std::optional<uintptr_t> EncodePlacementArenaOffsets(
