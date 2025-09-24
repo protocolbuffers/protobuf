@@ -1,0 +1,9 @@
+{
+  "url": "https://www.nuget.org/api/v2/package/python/3.10.0",
+  "archive_type": "zip",
+  "integrity": "sha256-RHTIPCViXZPncukm+V9M05igq7tSeTYl+jDzmvPSzAA=",
+  "strip_prefix": "tools",
+  "overlay": {
+    "BUILD.bazel": "sha256-nVhKt3siq42kTrYhNDJExCLDfb5WoYxKLVpXXQzb4c8="
+  }
+}
