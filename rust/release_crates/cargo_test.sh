@@ -55,4 +55,4 @@ export RUSTFLAGS="-Dmismatched-lifetime-syntaxes"
 
 cd $WORKSPACE_ROOT
 CARGO_HOME=$CARGO_HOME cargo test
-CARGO_HOME=$CARGO_HOME cargo publish --dry-run --workspace -Z package-workspace
+CARGO_HOME=$CARGO_HOME cargo publish --dry-run --workspace
