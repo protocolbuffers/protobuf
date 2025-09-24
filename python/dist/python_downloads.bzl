@@ -5,7 +5,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 limited_api_build_file = """
 cc_library(
     name = "python_headers",
-    hdrs = glob(["**/Include/**/*.h"]),
+    hdrs = glob(["**/Include/**/*.h"], allow_empty=True),
     strip_include_prefix = "Python-{}/Include",
     visibility = ["//visibility:public"],
 )
@@ -36,7 +36,7 @@ def python_source_archive(name, sha256):
 nuget_build_file = """
 cc_import(
     name = "python_full_api",
-    hdrs = glob(["**/*.h"]),
+    hdrs = glob(["**/*.h"], allow_empty=True),
     shared_library = "python{0}.dll",
     interface_library = "libs/python{0}.lib",
     visibility = ["@com_google_protobuf//python:__pkg__"],
@@ -44,7 +44,7 @@ cc_import(
 
 cc_import(
     name = "python_limited_api",
-    hdrs = glob(["**/*.h"]),
+    hdrs = glob(["**/*.h"], allow_empty=True),
     shared_library = "python{1}.dll",
     interface_library = "libs/python{1}.lib",
     visibility = ["@com_google_protobuf//python:__pkg__"],
