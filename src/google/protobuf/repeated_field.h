@@ -909,7 +909,15 @@ inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
   const int old_size = size(is_soo);
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
-  int new_size = old_size + static_cast<int>(std::distance(begin, end));
+  // Check for signed overflow.
+  const size_t distance = std::distance(begin, end);
+  ABSL_CHECK_LE(distance, static_cast<size_t>(std::numeric_limits<int>::max()))
+      << "Input too large";
+  // Check again for signed overflow.
+  const int delta = static_cast<int>(distance);
+  ABSL_CHECK_LE(old_size, std::numeric_limits<int>::max() - delta)
+      << "Input too large";
+  const int new_size = old_size + delta;
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
     Grow(is_soo, old_size, new_size);
     is_soo = false;
