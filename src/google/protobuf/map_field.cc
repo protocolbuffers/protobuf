@@ -332,8 +332,8 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
   end.iter_ = UntypedMapBase::EndIterator();
 
   for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
-    Message* new_entry = prototype->New(arena());
-    rep.AddAllocated(new_entry);
+    Message* new_entry =
+        rep.AddFromPrototype<GenericTypeHandler<Message>>(arena(), prototype);
     const MapKey& map_key = it.GetKey();
     switch (key_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
