@@ -53,7 +53,7 @@ jobs:
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.6.1-aarch64-f0d1e209ed9369f69d93ce418990ecff3aa08d6f
 
-    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }} ${{ matrix.nobzlmod && "No Bzlmod" || ""}}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }} ${{ matrix.nobzlmod && 'No Bzlmod' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -68,7 +68,7 @@ jobs:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.6.1-{0}-12e21b8dda91028bc14212a3ab582c7c4d149fac', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && "--noenable_bzlmod" || "" }} --test_env=KOKORO_PYTHON_VERSION
+          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
 
 
   macos:
