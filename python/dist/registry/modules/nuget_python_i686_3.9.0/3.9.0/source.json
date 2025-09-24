@@ -4,6 +4,6 @@
   "integrity": "sha256-Ipq+y+SdwI/lcJ4LMecO37O4jyMzXr/CkExE+UD9WbY=",
   "strip_prefix": "tools",
   "overlay": {
-    "BUILD.bazel": "sha256-a/539u5aEAznwF9sZ3H6zhIQz7BdALAeQGC2EWDwM9U="
+    "BUILD.bazel": "sha256-27Z7u954QBHsA2CMWXXXBbUfphvM7j90xi4WJ1xF0NY="
   }
 }

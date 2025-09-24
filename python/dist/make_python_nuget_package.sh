@@ -30,7 +30,7 @@ BUILD=overlay/BUILD.bazel
 cat <<EOF >$BUILD
 cc_import(
     name = "python_full_api",
-    hdrs = glob(["**/*.h"]),
+    hdrs = glob(["**/*.h"], allow_empty=True),
     shared_library = "python${FULL_API}.dll",
     interface_library = "libs/python${FULL_API}.lib",
     visibility = ["//visibility:public"],
@@ -39,7 +39,7 @@ cc_import(
 
 cc_import(
     name = "python_limited_api",
-    hdrs = glob(["**/*.h"]),
+    hdrs = glob(["**/*.h"], allow_empty=True),
     shared_library = "python${LIMITED_API}.dll",
     interface_library = "libs/python${LIMITED_API}.lib",
     visibility = ["//visibility:public"],

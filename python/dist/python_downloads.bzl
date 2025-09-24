@@ -36,7 +36,7 @@ def python_source_archive(name, sha256):
 nuget_build_file = """
 cc_import(
     name = "python_full_api",
-    hdrs = glob(["**/*.h"], allow_empty=True),
+    hdrs = glob(["**/*.h"]),
     shared_library = "python{0}.dll",
     interface_library = "libs/python{0}.lib",
     visibility = ["@com_google_protobuf//python:__pkg__"],
@@ -44,7 +44,7 @@ cc_import(
 
 cc_import(
     name = "python_limited_api",
-    hdrs = glob(["**/*.h"], allow_empty=True),
+    hdrs = glob(["**/*.h"]),
     shared_library = "python{1}.dll",
     interface_library = "libs/python{1}.lib",
     visibility = ["@com_google_protobuf//python:__pkg__"],
