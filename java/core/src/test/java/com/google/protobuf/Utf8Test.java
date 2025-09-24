@@ -142,8 +142,9 @@ public class Utf8Test {
     } catch (Throwable t) {
       // Expected
       assertThat(t).isInstanceOf(clazz);
-      // byte[] + safeProcessor will not exit early. We can't match the message since we don't
-      // know which char/index due to random input.
+      assertThat(t)
+          .hasMessageThat()
+          .isEqualTo("Not enough space in output buffer to encode UTF-8 string");
     }
 
     try {
@@ -151,9 +152,9 @@ public class Utf8Test {
       assertWithMessage("Expected " + clazz.getSimpleName()).fail();
     } catch (Throwable t) {
       assertThat(t).isInstanceOf(clazz);
-      // byte[] + unsafeProcessor will exit early, so we have can match the message.
-      String pattern = "Failed writing (.) at index " + length;
-      assertThat(t).hasMessageThat().matches(pattern);
+      assertThat(t)
+          .hasMessageThat()
+          .isEqualTo("Not enough space in output buffer to encode UTF-8 string");
     }
 
     try {
@@ -162,8 +163,9 @@ public class Utf8Test {
     } catch (Throwable t) {
       // Expected
       assertThat(t).isInstanceOf(clazz);
-      // ByteBuffer + safeProcessor will not exit early. We can't match the message since we don't
-      // know which char/index due to random input.
+      assertThat(t)
+          .hasMessageThat()
+          .isEqualTo("Not enough space in output buffer to encode UTF-8 string");
     }
 
     try {
@@ -172,8 +174,9 @@ public class Utf8Test {
     } catch (Throwable t) {
       // Expected
       assertThat(t).isInstanceOf(clazz);
-      // ByteBuffer + safeProcessor will not exit early. We can't match the message since we don't
-      // know which char/index due to random input.
+      assertThat(t)
+          .hasMessageThat()
+          .isEqualTo("Not enough space in output buffer to encode UTF-8 string");
     }
 
     try {
@@ -182,13 +185,9 @@ public class Utf8Test {
     } catch (Throwable t) {
       // Expected
       assertThat(t).isInstanceOf(clazz);
-      // Direct ByteBuffer + unsafeProcessor will exit early if it's not on Android, so we can
-      // match the message. On Android, a direct ByteBuffer will have hasArray() being true and
-      // it will take a different code path and produces a different message.
-      if (!Android.isOnAndroidDevice()) {
-        String pattern = "Failed writing (.) at index " + length;
-        assertThat(t).hasMessageThat().matches(pattern);
-      }
+      assertThat(t)
+          .hasMessageThat()
+          .isEqualTo("Not enough space in output buffer to encode UTF-8 string");
     }
   }
 
