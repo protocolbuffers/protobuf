@@ -86,18 +86,12 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
-      - name: Setup Python
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
-        with:
-          python-version: 3.12
-          cache: pip
-          cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v4
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test //upb/... //upb_generator/... //python/...
+          bazel: test //upb/... //upb_generator/... //python/... --noenable_bzlmod
           version: 7.6.1
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
