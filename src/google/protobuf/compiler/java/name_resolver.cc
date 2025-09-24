@@ -183,7 +183,6 @@ std::string ClassNameResolver::GetFileImmutableClassName(
   return class_name;
 }
 
-
 std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
                                                 bool immutable) {
   return GetFileClassName(file, immutable, false);

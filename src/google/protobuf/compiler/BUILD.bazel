@@ -135,6 +135,7 @@ cc_library(
     strip_include_prefix = "/src",
     visibility = ["//visibility:public"],
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf:port",
         "@abseil-cpp//absl/strings",
     ],
