@@ -146,6 +146,35 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
 ]
 use_repo(pip, "protobuf_pip_deps")
 
+
+local_runtime_repo = use_repo_rule(
+    "@rules_python//python/local_toolchains:repos.bzl",
+    "local_runtime_repo",
+)
+
+local_runtime_toolchains_repo = use_repo_rule(
+    "@rules_python//python/local_toolchains:repos.bzl",
+    "local_runtime_toolchains_repo",
+)
+
+local_runtime_repo(
+    name = "local_python3",
+    dev_dependency = True,
+    interpreter_path = "python3",
+    on_failure = "fail",
+)
+
+local_runtime_toolchains_repo(
+    name = "local_toolchains",
+    dev_dependency = True,
+    runtimes = ["local_python3"],
+)
+
+register_toolchains(
+    "@local_toolchains//:all",
+    dev_dependency = True,
+)
+
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
 rust.toolchain(
     edition = "2021",
