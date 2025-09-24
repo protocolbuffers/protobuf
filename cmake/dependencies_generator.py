@@ -46,6 +46,9 @@ class ExtensionFunctions(object):
   def bundle_fetch(self, *args, **kwargs):
     pass
 
+  def find(self, *args, **kwargs):
+    pass
+
 
 def empty_func(*args, **kwargs):
   pass

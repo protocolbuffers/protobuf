@@ -29,8 +29,6 @@ jobs:
       matrix:
         type: [ Pure, C++]
         version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        # TODO: Enable bzlmod once python headers are supported for python dist.
-        bzlmod: [--noenable_bzlmod]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -38,9 +36,12 @@ jobs:
           - type: C++
             targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
+            # Test using WORKSPACE with our oldest support Python version.
           - version: "3.9"
+            nobzlmod: true
+            # Our 3.9 image has non-hermetic issues and can't be rebuilt.  Use the old version.
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.6.1-3.9-12e21b8dda91028bc14212a3ab582c7c4d149fac
           - version: "3.10"
-            continuous-only: true
           - version: "3.11"
             continuous-only: true
           - version: "3.12"
@@ -51,10 +52,9 @@ jobs:
             targets: //python/... //python:aarch64_test
             # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
-            bzlmod: --noenable_bzlmod
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.6.1-aarch64-f0d1e209ed9369f69d93ce418990ecff3aa08d6f
 
-    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.type }} ${{ matrix.version }} ${{ matrix.nobzlmod && 'No Bzlmod' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -66,10 +66,10 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.6.1-{0}-12e21b8dda91028bc14212a3ab582c7c4d149fac', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.6.1-{0}-e1c2fe666ffa9b941b126541a26340d0ea787cea', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.bzlmod }} --test_env=KOKORO_PYTHON_VERSION
+          bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
 
 
   macos:
@@ -78,8 +78,6 @@ jobs:
       matrix:
         type: [ Pure, C++]
         version: [ "3.12", "3.13" ]
-        # TODO: Enable bzlmod once python headers are supported for python dist.
-        bzlmod: [--noenable_bzlmod]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -121,6 +119,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_macos/${{ matrix.type }}_${{ matrix.version }}
           bazel: >-
-            test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.bzlmod }}
+            test ${{ matrix.targets }} ${{ matrix.flags }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
             --macos_minimum_os=11.0
