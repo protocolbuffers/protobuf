@@ -64,18 +64,14 @@ namespace internal {
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
 
-}  // namespace internal
+class MapFieldBase;
 
-namespace internal {
 template <typename It>
 class RepeatedPtrIterator;
 template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
 template <typename T>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
-}  // namespace internal
-
-namespace internal {
 
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
@@ -1387,6 +1383,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   template <typename T>
   friend struct WeakRepeatedPtrField;
+
+  // The MapFieldBase implementation needs to be able to static_cast down to
+  // `RepeatedPtrFieldBase`.
+  friend internal::MapFieldBase;
 
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
