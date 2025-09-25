@@ -3,8 +3,8 @@
 
 package legacy_gencode_test.proto3;
 
-public final class Proto3GencodeTest {
-  private Proto3GencodeTest() {}
+public final class Proto3GencodeTestProto {
+  private Proto3GencodeTestProto() {}
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistryLite registry) {
   }
@@ -44,11 +44,11 @@ public final class Proto3GencodeTest {
      * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
      * @return The y.
      */
-    legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage getY();
+    legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage getY();
     /**
      * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
      */
-    legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessageOrBuilder getYOrBuilder();
+    legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessageOrBuilder getYOrBuilder();
   }
   /**
    * Protobuf type {@code legacy_gencode_test.proto3.TestMessage}
@@ -104,11 +104,11 @@ public final class Proto3GencodeTest {
               break;
             }
             case 26: {
-              legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder subBuilder = null;
+              legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder subBuilder = null;
               if (y_ != null) {
                 subBuilder = y_.toBuilder();
               }
-              y_ = input.readMessage(legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.parser(), extensionRegistry);
+              y_ = input.readMessage(legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(y_);
                 y_ = subBuilder.buildPartial();
@@ -137,15 +137,15 @@ public final class Proto3GencodeTest {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_TestMessage_descriptor;
+      return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_TestMessage_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_TestMessage_fieldAccessorTable
+      return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_TestMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage.Builder.class);
+              legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage.Builder.class);
     }
 
     private int bitField0_;
@@ -196,7 +196,7 @@ public final class Proto3GencodeTest {
     }
 
     public static final int Y_FIELD_NUMBER = 3;
-    private legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage y_;
+    private legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage y_;
     /**
      * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
      * @return Whether the y field is set.
@@ -210,14 +210,14 @@ public final class Proto3GencodeTest {
      * @return The y.
      */
     @java.lang.Override
-    public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage getY() {
-      return y_ == null ? legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.getDefaultInstance() : y_;
+    public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage getY() {
+      return y_ == null ? legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.getDefaultInstance() : y_;
     }
     /**
      * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
      */
     @java.lang.Override
-    public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessageOrBuilder getYOrBuilder() {
+    public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessageOrBuilder getYOrBuilder() {
       return getY();
     }
 
@@ -267,10 +267,10 @@ public final class Proto3GencodeTest {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage)) {
+      if (!(obj instanceof legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage)) {
         return super.equals(obj);
       }
-      legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage other = (legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage) obj;
+      legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage other = (legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage) obj;
 
       if (hasX() != other.hasX()) return false;
       if (hasX()) {
@@ -306,69 +306,69 @@ public final class Proto3GencodeTest {
       return hash;
     }
 
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(byte[] data)
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(java.io.InputStream input)
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseDelimitedFrom(java.io.InputStream input)
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseDelimitedFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -381,7 +381,7 @@ public final class Proto3GencodeTest {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage prototype) {
+    public static Builder newBuilder(legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -402,21 +402,21 @@ public final class Proto3GencodeTest {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:legacy_gencode_test.proto3.TestMessage)
-        legacy_gencode_test.proto3.Proto3GencodeTest.TestMessageOrBuilder {
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_TestMessage_descriptor;
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_TestMessage_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_TestMessage_fieldAccessorTable
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_TestMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage.Builder.class);
+                legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage.Builder.class);
       }
 
-      // Construct using legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage.newBuilder()
+      // Construct using legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -448,17 +448,17 @@ public final class Proto3GencodeTest {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_TestMessage_descriptor;
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_TestMessage_descriptor;
       }
 
       @java.lang.Override
-      public legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage getDefaultInstanceForType() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage.getDefaultInstance();
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage getDefaultInstanceForType() {
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage.getDefaultInstance();
       }
 
       @java.lang.Override
-      public legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage build() {
-        legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage result = buildPartial();
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage build() {
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -466,8 +466,8 @@ public final class Proto3GencodeTest {
       }
 
       @java.lang.Override
-      public legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage buildPartial() {
-        legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage result = new legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage(this);
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage buildPartial() {
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage result = new legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -518,16 +518,16 @@ public final class Proto3GencodeTest {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage) {
-          return mergeFrom((legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage)other);
+        if (other instanceof legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage) {
+          return mergeFrom((legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage other) {
-        if (other == legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage other) {
+        if (other == legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage.getDefaultInstance()) return this;
         if (other.hasX()) {
           bitField0_ |= 0x00000001;
           x_ = other.x_;
@@ -551,11 +551,11 @@ public final class Proto3GencodeTest {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage parsedMessage = null;
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage) e.getUnfinishedMessage();
+          parsedMessage = (legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -649,9 +649,9 @@ public final class Proto3GencodeTest {
         return this;
       }
 
-      private legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage y_;
+      private legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage y_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessageOrBuilder> yBuilder_;
+          legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessageOrBuilder> yBuilder_;
       /**
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        * @return Whether the y field is set.
@@ -663,9 +663,9 @@ public final class Proto3GencodeTest {
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        * @return The y.
        */
-      public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage getY() {
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage getY() {
         if (yBuilder_ == null) {
-          return y_ == null ? legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.getDefaultInstance() : y_;
+          return y_ == null ? legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.getDefaultInstance() : y_;
         } else {
           return yBuilder_.getMessage();
         }
@@ -673,7 +673,7 @@ public final class Proto3GencodeTest {
       /**
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        */
-      public Builder setY(legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage value) {
+      public Builder setY(legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage value) {
         if (yBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -690,7 +690,7 @@ public final class Proto3GencodeTest {
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        */
       public Builder setY(
-          legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder builderForValue) {
+          legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder builderForValue) {
         if (yBuilder_ == null) {
           y_ = builderForValue.build();
           onChanged();
@@ -703,11 +703,11 @@ public final class Proto3GencodeTest {
       /**
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        */
-      public Builder mergeY(legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage value) {
+      public Builder mergeY(legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage value) {
         if (yBuilder_ == null) {
           if (y_ != null) {
             y_ =
-              legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.newBuilder(y_).mergeFrom(value).buildPartial();
+              legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.newBuilder(y_).mergeFrom(value).buildPartial();
           } else {
             y_ = value;
           }
@@ -735,7 +735,7 @@ public final class Proto3GencodeTest {
       /**
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        */
-      public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder getYBuilder() {
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder getYBuilder() {
         
         onChanged();
         return getYFieldBuilder().getBuilder();
@@ -743,23 +743,23 @@ public final class Proto3GencodeTest {
       /**
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        */
-      public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessageOrBuilder getYOrBuilder() {
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessageOrBuilder getYOrBuilder() {
         if (yBuilder_ != null) {
           return yBuilder_.getMessageOrBuilder();
         } else {
           return y_ == null ?
-              legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.getDefaultInstance() : y_;
+              legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.getDefaultInstance() : y_;
         }
       }
       /**
        * <code>.legacy_gencode_test.proto3.NestedTestMessage y = 3;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessageOrBuilder> 
+          legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessageOrBuilder> 
           getYFieldBuilder() {
         if (yBuilder_ == null) {
           yBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessageOrBuilder>(
+              legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessageOrBuilder>(
                   getY(),
                   getParentForChildren(),
                   isClean());
@@ -784,12 +784,12 @@ public final class Proto3GencodeTest {
     }
 
     // @@protoc_insertion_point(class_scope:legacy_gencode_test.proto3.TestMessage)
-    private static final legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage DEFAULT_INSTANCE;
+    private static final legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage();
+      DEFAULT_INSTANCE = new legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage();
     }
 
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage getDefaultInstance() {
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -814,7 +814,7 @@ public final class Proto3GencodeTest {
     }
 
     @java.lang.Override
-    public legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage getDefaultInstanceForType() {
+    public legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -933,15 +933,15 @@ public final class Proto3GencodeTest {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_NestedTestMessage_descriptor;
+      return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_NestedTestMessage_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_NestedTestMessage_fieldAccessorTable
+      return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_NestedTestMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder.class);
+              legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder.class);
     }
 
     public static final int Z_FIELD_NUMBER = 1;
@@ -1027,10 +1027,10 @@ public final class Proto3GencodeTest {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage)) {
+      if (!(obj instanceof legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage)) {
         return super.equals(obj);
       }
-      legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage other = (legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage) obj;
+      legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage other = (legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage) obj;
 
       if (!getZList()
           .equals(other.getZList())) return false;
@@ -1054,69 +1054,69 @@ public final class Proto3GencodeTest {
       return hash;
     }
 
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(byte[] data)
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(java.io.InputStream input)
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseDelimitedFrom(java.io.InputStream input)
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseDelimitedFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parseFrom(
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1129,7 +1129,7 @@ public final class Proto3GencodeTest {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage prototype) {
+    public static Builder newBuilder(legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -1150,21 +1150,21 @@ public final class Proto3GencodeTest {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:legacy_gencode_test.proto3.NestedTestMessage)
-        legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessageOrBuilder {
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_NestedTestMessage_descriptor;
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_NestedTestMessage_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_NestedTestMessage_fieldAccessorTable
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_NestedTestMessage_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.Builder.class);
+                legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.class, legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.Builder.class);
       }
 
-      // Construct using legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.newBuilder()
+      // Construct using legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1190,17 +1190,17 @@ public final class Proto3GencodeTest {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.internal_static_legacy_gencode_test_proto3_NestedTestMessage_descriptor;
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.internal_static_legacy_gencode_test_proto3_NestedTestMessage_descriptor;
       }
 
       @java.lang.Override
-      public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage getDefaultInstanceForType() {
-        return legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.getDefaultInstance();
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage getDefaultInstanceForType() {
+        return legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.getDefaultInstance();
       }
 
       @java.lang.Override
-      public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage build() {
-        legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage result = buildPartial();
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage build() {
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1208,8 +1208,8 @@ public final class Proto3GencodeTest {
       }
 
       @java.lang.Override
-      public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage buildPartial() {
-        legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage result = new legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage(this);
+      public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage buildPartial() {
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage result = new legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
           z_.makeImmutable();
@@ -1254,16 +1254,16 @@ public final class Proto3GencodeTest {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage) {
-          return mergeFrom((legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage)other);
+        if (other instanceof legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage) {
+          return mergeFrom((legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage other) {
-        if (other == legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage.getDefaultInstance()) return this;
+      public Builder mergeFrom(legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage other) {
+        if (other == legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage.getDefaultInstance()) return this;
         if (!other.z_.isEmpty()) {
           if (z_.isEmpty()) {
             z_ = other.z_;
@@ -1289,11 +1289,11 @@ public final class Proto3GencodeTest {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage parsedMessage = null;
+        legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage) e.getUnfinishedMessage();
+          parsedMessage = (legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1399,12 +1399,12 @@ public final class Proto3GencodeTest {
     }
 
     // @@protoc_insertion_point(class_scope:legacy_gencode_test.proto3.NestedTestMessage)
-    private static final legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage DEFAULT_INSTANCE;
+    private static final legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage();
+      DEFAULT_INSTANCE = new legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage();
     }
 
-    public static legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage getDefaultInstance() {
+    public static legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1429,7 +1429,7 @@ public final class Proto3GencodeTest {
     }
 
     @java.lang.Override
-    public legacy_gencode_test.proto3.Proto3GencodeTest.NestedTestMessage getDefaultInstanceForType() {
+    public legacy_gencode_test.proto3.Proto3GencodeTestProto.NestedTestMessage getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1458,7 +1458,8 @@ public final class Proto3GencodeTest {
       "ode_test.proto3\"]\n\013TestMessage\022\016\n\001x\030\002 \001(" +
       "\tH\000\210\001\001\0228\n\001y\030\003 \001(\0132-.legacy_gencode_test." +
       "proto3.NestedTestMessageB\004\n\002_x\"\036\n\021Nested" +
-      "TestMessage\022\t\n\001z\030\001 \003(\005b\006proto3"
+      "TestMessage\022\t\n\001z\030\001 \003(\005B\030B\026Proto3GencodeT" +
+      "estProtob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

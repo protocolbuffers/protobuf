@@ -22,8 +22,6 @@ $PROTOC proto3_gencode_test.proto --java_out=v$VER
 
 cp CHECKED_IN_GENCODE_BUILD.bazel.template v$VER/BUILD.bazel
 
-# Add the new version at the end of the version list for tests.
-sed -i "stale_gencode_smoke_test(\"$VER\")" BUILD.bazel
-
-
+# Append the new version at the end of the version list for tests.
+echo -e "stale_gencode_smoke_test(\"$VER\")\n" >> BUILD.bazel
 
