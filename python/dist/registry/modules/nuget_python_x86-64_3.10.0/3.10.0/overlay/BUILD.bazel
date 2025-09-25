@@ -1,17 +1,28 @@
 cc_import(
-    name = "python_full_api",
-    hdrs = glob(["**/*.h"], allow_empty=True),
+    name = "python_full_api_lib",
     shared_library = "python310.dll",
     interface_library = "libs/python310.lib",
+)
+
+cc_library(
+    name = "python_full_api",
+    hdrs = glob(["**/*.h"], allow_empty=True),
+    strip_include_prefix = "include",
+    deps = [":python_full_api_lib"],
     visibility = ["//visibility:public"],
-    includes = ["include"],
 )
 
 cc_import(
-    name = "python_limited_api",
-    hdrs = glob(["**/*.h"], allow_empty=True),
+    name = "python_limited_api_lib",
     shared_library = "python3.dll",
     interface_library = "libs/python3.lib",
-    visibility = ["//visibility:public"],
-    includes = ["include"],
 )
+
+cc_library(
+    name = "python_limited_api",
+    hdrs = glob(["**/*.h"], allow_empty=True),
+    strip_include_prefix = "include",
+    deps = [":python_limited_api_lib"],
+    visibility = ["//visibility:public"],
+)
+

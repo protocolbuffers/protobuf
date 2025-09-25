@@ -29,22 +29,33 @@ mkdir -p overlay
 BUILD=overlay/BUILD.bazel
 cat <<EOF >$BUILD
 cc_import(
-    name = "python_full_api",
-    hdrs = glob(["**/*.h"], allow_empty=True),
+    name = "python_full_api_lib",
     shared_library = "python${FULL_API}.dll",
     interface_library = "libs/python${FULL_API}.lib",
+)
+
+cc_library(
+    name = "python_full_api",
+    hdrs = glob(["**/*.h"], allow_empty=True),
+    strip_include_prefix = "include",
+    deps = [":python_full_api_lib"],
     visibility = ["//visibility:public"],
-    includes = ["include"],
 )
 
 cc_import(
-    name = "python_limited_api",
-    hdrs = glob(["**/*.h"], allow_empty=True),
+    name = "python_limited_api_lib",
     shared_library = "python${LIMITED_API}.dll",
     interface_library = "libs/python${LIMITED_API}.lib",
-    visibility = ["//visibility:public"],
-    includes = ["include"],
 )
+
+cc_library(
+    name = "python_limited_api",
+    hdrs = glob(["**/*.h"], allow_empty=True),
+    strip_include_prefix = "include",
+    deps = [":python_limited_api_lib"],
+    visibility = ["//visibility:public"],
+)
+
 EOF
 BUILD_SHA=$(sha256sum $BUILD | cut -d ' ' -f 1 | xxd -r -p | base64)
 

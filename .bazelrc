@@ -41,4 +41,4 @@ common --enable_platform_specific_config
 build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl
 
 # Use a custom registry for release dependencies
-common --registry=file://%workspace%/python/dist/registry --registry=https://bcr.bazel.build
+common --registry=file:///%workspace%/python/dist/registry --registry=https://bcr.bazel.build
