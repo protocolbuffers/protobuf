@@ -1346,15 +1346,15 @@ TEST(RepeatedField, CheckedGetOrAbortTest) {
   RepeatedField<int> field;
 
   // Empty container tests.
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1), "index: -1, size: 0");
+  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1), "Index -1 out of bounds 0");
   EXPECT_DEATH(CheckedMutableOrAbort(&field, field.size()),
-               "index: 0, size: 0");
+               "Index 0 out of bounds 0");
 
   // Non-empty container tests
   field.Add(5);
   field.Add(4);
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, 2), "index: 2, size: 2");
-  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1), "index: -1, size: 2");
+  EXPECT_DEATH(CheckedMutableOrAbort(&field, 2), "Index 2 out of bounds 2");
+  EXPECT_DEATH(CheckedMutableOrAbort(&field, -1), "Index -1 out of bounds 2");
 }
 
 }  // namespace
