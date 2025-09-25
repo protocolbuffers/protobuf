@@ -1,0 +1,6 @@
+# Generated with ./python/dist/make_python_source_archive.sh 3.9.0
+module(
+    name = "python-3.9.0",
+    version = "3.9.0",
+    compatibility_level = 1,
+)

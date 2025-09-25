@@ -39,3 +39,6 @@ common --enable_platform_specific_config
 
 # Use clang-cl by default on Windows (see https://github.com/protocolbuffers/protobuf/issues/20085).
 build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl
+
+# Use a custom registry for release dependencies
+common --registry=file:///%workspace%/python/dist/registry --registry=https://bcr.bazel.build

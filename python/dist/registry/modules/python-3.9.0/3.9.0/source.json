@@ -1,0 +1,8 @@
+{
+  "url": "https://www.python.org/ftp/python/3.9.0/Python-3.9.0.tgz",
+  "integrity": "sha256-33lrLcjvCF7a4ll6QcHApjYl69kkh62u8v7SK1Z4c+g=",
+  "overlay": {
+    "BUILD.bazel": "sha256-ES2XIsBEl5W2hBaq3quLtCpAO+cvgwsBO+6FKnyueEU=",
+    "Python-3.9.0/Include/pyconfig.h": "sha256-LrErZoFv9pCsMo+8xtv+F2xKbN5gy0lzAbf0H+oqKQE="
+  }
+}

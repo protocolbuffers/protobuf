@@ -1,0 +1,6 @@
+cc_library(
+    name = "python_headers",
+    hdrs = glob(["**/Include/**/*.h"]),
+    strip_include_prefix = "Python-3.9.0/Include",
+    visibility = ["//visibility:public"],
+)
