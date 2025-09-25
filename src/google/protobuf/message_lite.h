@@ -1219,8 +1219,10 @@ template <typename T>
 PROTOBUF_NDEBUG_INLINE const ClassData* GetClassData(const T& msg) {
   static_assert(std::is_base_of_v<MessageLite, T>);
   if constexpr (std::is_same_v<T, MessageLite> || std::is_same_v<Message, T>) {
+    PROTOBUF_DEBUG_COUNTER("GetClassData.Virtual").Inc();
     return msg.GetClassData();
   } else {
+    PROTOBUF_DEBUG_COUNTER("GetClassData.Constexpr").Inc();
     return MessageTraits<T>::class_data();
   }
 }
