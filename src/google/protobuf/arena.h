@@ -81,11 +81,39 @@ class TcParser;              // defined in generated_message_tctable_impl.h
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
+// This struct maps field types to the types that we will use to represent them
+// when allocated on an arena. This is necessary because fields no longer own an
+// arena pointer, but can be allocated directly on an arena. In this case, we
+// will use a wrapper class that holds both the arena pointer and the field, and
+// points the field to the arena pointer.
+//
+// Additionally, split pointer fields will use this representation when
+// allocated, regardless of whether they are on an arena or not.
+//
+// For example:
+// ```
+// template <>
+// struct FieldArenaRep<Message> {
+//   using Type = ArenaMessage;
+//   static Message* Get(ArenaMessage* arena_rep) {
+//     return &arena_rep->message();
+//   }
+// };
+// ```
 template <typename T>
-struct IsRepeatedPtrFieldType;  // defined in repeated_ptr_field.h
+struct FieldArenaRep {
+  // The type of the field when allocated on an arena. By default, this is just
+  // `T`, but can be specialized to use a wrapper class that holds both the
+  // arena pointer and the field.
+  using Type = T;
 
-template <typename T>
-struct RepeatedPtrFieldArenaRep;  // defined in repeated_ptr_field.h
+  // Returns a pointer to the field from the arena representation. By default,
+  // this is just a no-op, but can be specialized to extract the field from the
+  // wrapper class.
+  static T* PROTOBUF_NONNULL Get(Type* PROTOBUF_NONNULL arena_rep) {
+    return arena_rep;
+  }
+};
 
 template <typename T>
 void arena_delete_object(void* PROTOBUF_NONNULL object) {
@@ -232,12 +260,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
           return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
         }
       }
-      if constexpr (internal::IsRepeatedPtrFieldType<Type>::value) {
-        return CreateRepeatedPtrFieldWithArena<Type>(
-            arena, std::forward<Args>(args)...);
-      } else {
-        return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
-      }
+      return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
     } else {
       if (ABSL_PREDICT_FALSE(arena == nullptr)) {
         return new T(std::forward<Args>(args)...);
@@ -442,36 +465,53 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                                              sizeof(char)>
         is_arena_constructable;
 
+    // Note that by this point, for types which have a different arena
+    // representation, `T` is that representation and is expected to have an
+    // arena-enabled constructor.
+    //
+    // For types with a different arena representation, if the arena pointer is
+    // null, the object is allocated directly with `new` as its original type,
+    // since wrapping the type in the arena representation would be wasteful.
+    template <typename... Args>
+    static T* PROTOBUF_NONNULL ConstructOnArena(void* PROTOBUF_NONNULL ptr,
+                                                Arena& arena, Args&&... args) {
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+      // TODO - ClangTidy gives warnings for calling the deprecated
+      // `RepeatedPtrField(Arena*)` constructor here, but this is the correct
+      // way to call it as it will allow us to silently switch to a different
+      // constructor once arena pointers are removed from RepeatedPtrFields.
+      // While this constructor exists, we will call the `InternalVisibility`
+      // override to silence the warning.
+      //
+      // Note: RepeatedPtrFieldBase is sometimes constructed internally, and it
+      // doesn't have `InternalVisibility` constructors.
+      if constexpr (std::is_base_of_v<internal::RepeatedPtrFieldBase, T> &&
+                    !std::is_same_v<T, internal::RepeatedPtrFieldBase>) {
+        return new (ptr) T(internal::InternalVisibility(), &arena,
+                           static_cast<Args&&>(args)...);
+      } else {
+#endif
+        return new (ptr) T(&arena, static_cast<Args&&>(args)...);
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+      }
+#endif
+    }
+
     template <typename... Args>
     static T* PROTOBUF_NONNULL Construct(void* PROTOBUF_NONNULL ptr,
                                          Arena* PROTOBUF_NULLABLE arena,
                                          Args&&... args) {
-      if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
-        using ArenaRepT = typename internal::RepeatedPtrFieldArenaRep<T>::Type;
-        // TODO - ClangTidy gives warnings for calling the
-        // deprecated `RepeatedPtrField(Arena*)` constructor here, but this is
-        // the correct way to call it as it will allow us to silently switch to
-        // a different constructor once arena pointers are removed from
-        // RepeatedPtrFields. While this constructor exists, we will call the
-        // `InternalVisibility` override to silence the warning.
-        if constexpr (std::is_same_v<ArenaRepT,
-                                     internal::RepeatedPtrFieldBase>) {
-          // RepeatedPtrFieldBase is sometimes constructed internally, and it
-          // doesn't have `InternalVisibility` constructors.
-          return new (ptr) ArenaRepT(arena, static_cast<Args&&>(args)...);
-        } else {
-          return new (ptr) ArenaRepT(internal::InternalVisibility(), arena,
-                                     static_cast<Args&&>(args)...);
-        }
+      if (ABSL_PREDICT_FALSE(arena == nullptr)) {
+        return new (ptr) T(static_cast<Args&&>(args)...);
       } else {
-        return new (ptr) T(arena, static_cast<Args&&>(args)...);
+        return ConstructOnArena(ptr, *arena, static_cast<Args&&>(args)...);
       }
     }
 
     static PROTOBUF_ALWAYS_INLINE T* PROTOBUF_NONNULL New() {
       // Repeated pointer fields no longer have an arena constructor, so
       // specialize calling their default constructor.
-      if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
+      if constexpr (std::is_base_of_v<internal::RepeatedPtrFieldBase, T>) {
         return new T();
       } else {
         return new T(nullptr);
@@ -551,28 +591,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
-      return new T(nullptr, static_cast<Args&&>(args)...);
-    } else {
-      return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
-    }
-  }
-
-  template <typename T, typename... Args>
-  PROTOBUF_NDEBUG_INLINE static T* PROTOBUF_NONNULL
-  CreateRepeatedPtrFieldWithArena(Arena* PROTOBUF_NULLABLE arena,
-                                  Args&&... args) {
-    static_assert(is_arena_constructable<T>::value,
-                  "Can only construct types that are ArenaConstructable");
-    static_assert(internal::IsRepeatedPtrFieldType<T>::value,
-                  "Can only construct repeated pointer fields with "
-                  "CreateRepeatedPtrFieldWithArena");
-    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T(static_cast<Args&&>(args)...);
     } else {
-      using ArenaRepT = typename internal::RepeatedPtrFieldArenaRep<T>::Type;
-      auto* arena_repr =
-          arena->DoCreateMessage<ArenaRepT>(static_cast<Args&&>(args)...);
-      return arena_repr;
+      return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
     }
   }
 
@@ -625,9 +646,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreateMessage(Args&&... args) {
-    return InternalHelper<T>::Construct(
-        AllocateInternal<T, is_destructor_skippable<T>::value>(), this,
-        std::forward<Args>(args)...);
+    using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+    auto* arena_repr = InternalHelper<ArenaRepT>::ConstructOnArena(
+        AllocateInternal<ArenaRepT,
+                         is_destructor_skippable<ArenaRepT>::value>(),
+        *this, std::forward<Args>(args)...);
+    return internal::FieldArenaRep<T>::Get(arena_repr);
   }
 
   // CreateInArenaStorage is used to implement map field. Without it,
