@@ -451,28 +451,34 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
         is_arena_constructable;
 
     template <typename... Args>
+    static T* PROTOBUF_NONNULL ConstructOnArena(void* PROTOBUF_NONNULL ptr,
+                                                Arena& arena, Args&&... args) {
+      // TODO - ClangTidy gives warnings for calling the deprecated
+      // `RepeatedPtrField(Arena*)` constructor here, but this is the correct
+      // way to call it as it will allow us to silently switch to a different
+      // constructor once arena pointers are removed from RepeatedPtrFields.
+      // While this constructor exists, we will call the `InternalVisibility`
+      // override to silence the warning.
+      //
+      // Note: RepeatedPtrFieldBase is sometimes constructed internally, and it
+      // doesn't have `InternalVisibility` constructors.
+      if constexpr (std::is_base_of_v<internal::RepeatedPtrFieldBase, T> &&
+                    !std::is_same_v<T, internal::RepeatedPtrFieldBase>) {
+        return new (ptr) T(internal::InternalVisibility(), &arena,
+                           static_cast<Args&&>(args)...);
+      } else {
+        return new (ptr) T(&arena, static_cast<Args&&>(args)...);
+      }
+    }
+
+    template <typename... Args>
     static T* PROTOBUF_NONNULL Construct(void* PROTOBUF_NONNULL ptr,
                                          Arena* PROTOBUF_NULLABLE arena,
                                          Args&&... args) {
-      if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
-        using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
-        // TODO - ClangTidy gives warnings for calling the
-        // deprecated `RepeatedPtrField(Arena*)` constructor here, but this is
-        // the correct way to call it as it will allow us to silently switch to
-        // a different constructor once arena pointers are removed from
-        // RepeatedPtrFields. While this constructor exists, we will call the
-        // `InternalVisibility` override to silence the warning.
-        if constexpr (std::is_same_v<ArenaRepT,
-                                     internal::RepeatedPtrFieldBase>) {
-          // RepeatedPtrFieldBase is sometimes constructed internally, and it
-          // doesn't have `InternalVisibility` constructors.
-          return new (ptr) ArenaRepT(arena, static_cast<Args&&>(args)...);
-        } else {
-          return new (ptr) ArenaRepT(internal::InternalVisibility(), arena,
-                                     static_cast<Args&&>(args)...);
-        }
+      if (ABSL_PREDICT_FALSE(arena == nullptr)) {
+        return new (ptr) T(static_cast<Args&&>(args)...);
       } else {
-        return new (ptr) T(arena, static_cast<Args&&>(args)...);
+        return ConstructOnArena(ptr, *arena, static_cast<Args&&>(args)...);
       }
     }
 
@@ -633,8 +639,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreateMessage(Args&&... args) {
-    return InternalHelper<T>::Construct(
-        AllocateInternal<T, is_destructor_skippable<T>::value>(), this,
+    return InternalHelper<T>::ConstructOnArena(
+        AllocateInternal<T, is_destructor_skippable<T>::value>(), *this,
         std::forward<Args>(args)...);
   }
 
