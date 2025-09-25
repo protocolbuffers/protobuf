@@ -411,19 +411,7 @@ std::string ClassNameResolver::GetKotlinExtensionsClassNameEscaped(
 
 std::string ClassNameResolver::GetFileJavaPackage(const FileDescriptor* file,
                                                   bool immutable) {
-  std::string result;
-
-  if (file->options().has_java_package()) {
-    result = file->options().java_package();
-  } else {
-    result = google::protobuf::internal::IsOss() ? "" : "com.google.protos";
-    if (!file->package().empty()) {
-      if (!result.empty()) result += '.';
-      absl::StrAppend(&result, file->package());
-    }
-  }
-
-  return result;
+  return FileJavaPackage(file);
 }
 }  // namespace java
 }  // namespace compiler

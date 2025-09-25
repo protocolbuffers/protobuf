@@ -17,6 +17,7 @@
 
 #include <string>
 
+#include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.h"
@@ -69,8 +70,14 @@ PROTOC_EXPORT std::string ClassName(const ServiceDescriptor* descriptor);
 //
 // Returns:
 //   Java package name.
-PROTOC_EXPORT std::string FileJavaPackage(const FileDescriptor* descriptor,
-                                          Options options = {});
+PROTOC_EXPORT std::string FileJavaPackage(const FileDescriptor* file);
+
+// Obsolete overload -- options have no effect.
+ABSL_DEPRECATE_AND_INLINE()
+inline std::string FileJavaPackage(const FileDescriptor* file,
+                                   Options options) {
+  return FileJavaPackage(file);
+}
 
 // Requires:
 //   descriptor != NULL

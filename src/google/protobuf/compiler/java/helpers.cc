@@ -944,7 +944,6 @@ inline bool NestInFileClass(const Descriptor& descriptor) {
   return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
 }
 
-
 // Returns whether the type should be nested in the file class for the given
 // descriptor, depending on different Protobuf Java API versions.
 template <typename Descriptor>
