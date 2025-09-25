@@ -9,14 +9,16 @@
 #define GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__
 
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 
 #ifdef SWIG
@@ -151,6 +153,16 @@ struct WeakRepeatedPtrField {
       : WeakRepeatedPtrField(nullptr, rhs) {}
 
   // Arena enabled constructors: for internal use only.
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  constexpr WeakRepeatedPtrField(internal::InternalVisibility,
+                                 internal::InternalMetadataOffset offset)
+      : WeakRepeatedPtrField(offset) {}
+  WeakRepeatedPtrField(internal::InternalVisibility,
+                       internal::InternalMetadataOffset offset,
+                       const WeakRepeatedPtrField& rhs)
+      : WeakRepeatedPtrField(offset, rhs) {}
+
+#else
   WeakRepeatedPtrField(internal::InternalVisibility, Arena* arena)
       : WeakRepeatedPtrField(arena) {}
   WeakRepeatedPtrField(internal::InternalVisibility, Arena* arena,
@@ -159,6 +171,7 @@ struct WeakRepeatedPtrField {
 
   // TODO: make this constructor private
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
+#endif
 
   ~WeakRepeatedPtrField() {
     if (weak.NeedsDestroy()) {
@@ -224,11 +237,58 @@ struct WeakRepeatedPtrField {
   }
 
  private:
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  constexpr explicit WeakRepeatedPtrField(
+      internal::InternalMetadataOffset offset)
+      : weak(offset) {}
+  WeakRepeatedPtrField(internal::InternalMetadataOffset offset,
+                       const WeakRepeatedPtrField& rhs)
+      : WeakRepeatedPtrField(offset) {
+    MergeFrom(rhs);
+  }
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   WeakRepeatedPtrField(Arena* arena, const WeakRepeatedPtrField& rhs)
       : WeakRepeatedPtrField(arena) {
     MergeFrom(rhs);
   }
+#endif
 };
+
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+namespace internal {
+
+template <typename T>
+class WeakRepeatedPtrFieldWithArena {
+ public:
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  static const internal::InternalMetadataOffset kInternalMetadataOffset;
+
+  explicit WeakRepeatedPtrFieldWithArena(Arena* arena)
+      : _internal_metadata_(arena), field_(kInternalMetadataOffset) {}
+
+  const WeakRepeatedPtrField<T>& field() const { return field_; }
+  WeakRepeatedPtrField<T>& field() { return field_; }
+
+  void Clear() { field_.Clear(); }
+
+ private:
+  // Clang thinks this field is unused, but field_ accesses it indirectly
+  // through internal_metadata_offset_.
+  [[maybe_unused]] InternalMetadata _internal_metadata_;
+  WeakRepeatedPtrField<T> field_;
+};
+
+template <typename T>
+constexpr internal::InternalMetadataOffset
+    WeakRepeatedPtrFieldWithArena<T>::kInternalMetadataOffset =
+        internal::InternalMetadataOffset::Build<
+            WeakRepeatedPtrFieldWithArena<T>,
+            offsetof(WeakRepeatedPtrFieldWithArena<T>, field_)>();
+
+}  // namespace internal
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
 }  // namespace protobuf
 }  // namespace google

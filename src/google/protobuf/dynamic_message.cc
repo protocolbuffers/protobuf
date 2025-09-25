@@ -62,6 +62,7 @@
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
+#include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message_lite.h"
@@ -349,6 +350,7 @@ class DynamicMessage final : public Message {
   // implementation.
   template <typename T>
   uint32_t FieldOffset(int i) const;
+  internal::InternalMetadataOffset FieldInternalMetadataOffset(int i) const;
   template <typename T = void>
   T* MutableRaw(int i);
   template <typename T = void>
@@ -449,6 +451,12 @@ inline uint32_t DynamicMessage::FieldOffset(int i) const {
     mask = ~(uint32_t{alignof(T)} - 1);
   }
   return type_info_->offsets[i] & mask;
+}
+inline internal::InternalMetadataOffset
+DynamicMessage::FieldInternalMetadataOffset(int i) const {
+  size_t field_offset = FieldOffset<void>(i);
+  return internal::InternalMetadataOffset::BuildFromDynamicOffset<
+      DynamicMessage>(field_offset);
 }
 template <typename T>
 inline T* DynamicMessage::MutableRaw(int i) {
@@ -571,7 +579,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->InitDefault();
             } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+              new (field_ptr)
+                  RepeatedPtrField<std::string>(FieldInternalMetadataOffset(i));
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
               new (field_ptr) RepeatedPtrField<std::string>(arena);
+#endif
             }
             break;
         }
@@ -599,7 +612,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                     : nullptr,
                 arena);
           } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+            new (field_ptr)
+                RepeatedPtrField<Message>(FieldInternalMetadataOffset(i));
+#else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
             new (field_ptr) RepeatedPtrField<Message>(arena);
+#endif
           }
         }
         break;
