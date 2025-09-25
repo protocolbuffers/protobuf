@@ -8,7 +8,6 @@
 #include "hpb/internal/message_lock.h"
 
 #include <atomic>
-#include <mutex>
 #include <string>
 #include <thread>
 
@@ -23,7 +22,7 @@
 #include "hpb/arena.h"
 #include "hpb/extension.h"
 #include "hpb/hpb.h"
-#include "upb/mem/arena.hpp"
+#include "hpb/options.h"
 
 #ifndef ASSERT_OK
 #define ASSERT_OK(x) ASSERT_TRUE(x.ok())
@@ -68,11 +67,12 @@ void unlock_func(const void* msg)
   return &unlock_func;
 }
 
-void TestConcurrentExtensionAccess(::hpb::ExtensionRegistry registry) {
+void TestConcurrentExtensionAccess(const ::hpb::ExtensionRegistry& registry) {
   ::hpb::internal::upb_extension_locker_global.store(&lock_func,
                                                      std::memory_order_release);
   const std::string payload = GenerateTestData();
-  TestModel parsed_model = ::hpb::Parse<TestModel>(payload, registry).value();
+  hpb::ParseOptions options{.extension_registry = registry};
+  TestModel parsed_model = ::hpb::Parse<TestModel>(payload, options).value();
   const auto test_main = [&] { EXPECT_EQ("str", parsed_model.str1()); };
   const auto test_theme = [&] {
     ASSERT_TRUE(::hpb::HasExtension(&parsed_model, theme));
