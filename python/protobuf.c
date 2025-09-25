@@ -65,6 +65,15 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // -----------------------------------------------------------------------------
 
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
+#if defined(Py_GIL_DISABLED) || defined(Py_DEBUG)
+  // This is a work-around for a CPython bug in _get_module_index_from_def().
+  // If the EXTENSIONS.hashtable has already been set to null then
+  // PyState_FindModule() will crash.  I'm not sure it's possible to trigger
+  // this bug for the GIL-enabled build.
+  if (Py_IsFinalizing()) {
+    return NULL;
+  }
+#endif
   PyObject* module = PyState_FindModule(&module_def);
   return module ? PyModule_GetState(module) : NULL;
 }
