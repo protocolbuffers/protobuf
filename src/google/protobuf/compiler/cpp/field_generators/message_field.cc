@@ -335,13 +335,15 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
           if (_this->$field_$ == nullptr) {
             _this->$field_$ = from.$field_$->New(arena);
           }
-          _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
+          _this->$field_$->MergeFromWithClassData(
+              *from.$field_$, google::protobuf::internal::GetClassData(*_this->$field_$));
         )cc");
   } else if (should_split()) {
     p->Emit(
         R"cc(
-          _this->_internal_mutable_$name$()->$Submsg$::MergeFrom(
-              from._internal_$name$());
+          _this->_internal_mutable_$name$()->$Submsg$::MergeFromWithClassData(
+              *from._internal_$name$(),
+              google::protobuf::internal::GetClassData(*_this->$field_$));
         )cc");
   } else {
     // Important: we set `hasbits` after we copied the field. There are cases
@@ -354,7 +356,8 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
       if (_this->$field_$ == nullptr) {
         _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
       } else {
-        _this->$field_$->MergeFrom(*from.$field_$);
+        _this->$field_$->MergeFromWithClassData(
+            *from.$field_$, google::protobuf::internal::GetClassData(*_this->$field_$));
       }
     )cc");
   }
@@ -691,17 +694,24 @@ void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
 bool OneofMessage::NeedsIsInitialized() const { return has_required_; }
 
 void OneofMessage::GenerateMergingCode(io::Printer* p) const {
-  p->Emit({{"merge",
-            use_base_class() && !HasDescriptorMethods(field_->file(), options_)
-                ? "CheckTypeAndMergeFrom"
-                : "MergeFrom"}},
-          R"cc(
-            if (oneof_needs_init) {
-              _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
-            } else {
-              _this->$field_$->$merge$(*from.$field_$);
-            }
-          )cc");
+  if (use_base_class() && !HasDescriptorMethods(field_->file(), options_)) {
+    p->Emit(R"cc(
+      if (oneof_needs_init) {
+        _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+      } else {
+        _this->$field_$->CheckTypeAndMergeFrom(*_this->$field_$);
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      if (oneof_needs_init) {
+        _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
+      } else {
+        _this->$field_$->MergeFromWithClassData(
+            *from.$field_$, google::protobuf::internal::GetClassData(*_this->$field_$));
+      }
+    )cc");
+  }
 }
 
 bool OneofMessage::RequiresArena(GeneratorFunction func) const {
