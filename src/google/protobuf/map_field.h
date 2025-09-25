@@ -30,6 +30,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unknown_field_set.h"
 
 
@@ -431,9 +432,15 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
 
   class ReflectionPayload {
    public:
-    explicit ReflectionPayload(Arena* arena) : repeated_field_(arena) {}
+    explicit ReflectionPayload(Arena* arena)
+        : repeated_field_(Arena::Create<RepeatedPtrField<Message>>(arena)) {}
+    ~ReflectionPayload() {
+      if (repeated_field_->GetArena() == nullptr) {
+        delete repeated_field_;
+      }
+    }
 
-    RepeatedPtrField<Message>& repeated_field() { return repeated_field_; }
+    RepeatedPtrField<Message>& repeated_field() { return *repeated_field_; }
 
     absl::Mutex& mutex() { return mutex_; }
 
@@ -453,7 +460,7 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
     void Swap(ReflectionPayload& other);
 
    private:
-    RepeatedPtrField<Message> repeated_field_;
+    RepeatedPtrField<Message>* repeated_field_;
     absl::Mutex mutex_;  // The thread to synchronize map and repeated
                          // field needs to get lock first;
     std::atomic<State> state_{STATE_MODIFIED_MAP};

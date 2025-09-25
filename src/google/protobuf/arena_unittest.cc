@@ -493,7 +493,12 @@ TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
   TestUtil::ExpectAllFieldsSet(moved->Get(0));
 
   // The only extra allocation with moves is sizeof(RepeatedPtrField).
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  EXPECT_EQ(usage_by_move,
+            sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>));
+#else
   EXPECT_EQ(usage_by_move, sizeof(internal::RepeatedPtrFieldBase));
+#endif
   EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
