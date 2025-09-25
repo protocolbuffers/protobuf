@@ -271,6 +271,14 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_TAILCALL false
 #endif
 
+// On windows, you need to hint to the compiler that you want to do empty base
+// class optimization with multiple inheritance.
+#ifdef _MSC_VER
+#define PROTOBUF_DECLSPEC_EMPTY_BASES __declspec(empty_bases)
+#else
+#define PROTOBUF_DECLSPEC_EMPTY_BASES
+#endif
+
 #ifdef PROTOBUF_CC
 #error PROTOBUF_CC was previously defined
 #endif
