@@ -9,7 +9,7 @@ package smoke;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import legacy_gencode_test.proto3.Proto3GencodeTest.TestMessage;
+import legacy_gencode_test.proto3.Proto3GencodeTestProto.TestMessage;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.util.JsonFormat;
