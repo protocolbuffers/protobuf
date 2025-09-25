@@ -116,16 +116,11 @@ void Map::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                   pub fn set_$raw_field_name$(
                       &mut self,
                       src: impl $pb$::IntoProxied<$pb$::Map<$Key$, $Value$>>) {
-                    let mut val = src.into_proxied($pbi$::Private);
-                    let val_as_mut = val.as_mut();
-                    let mut inner = val_as_mut.inner($pbi$::Private);
-
-                    self.inner.arena().fuse(inner.arena());
                     unsafe {
-                        <Self as $pbr$::UpbGetMessagePtrMut>::get_ptr_mut(self, $pbi$::Private)
-                            .set_map_at_index(
-                                $upb_mt_field_index$,
-                                inner.as_raw());
+                      $pbr$::message_set_map_field(
+                        $pb$::AsMut::as_mut(self).inner,
+                        $upb_mt_field_index$,
+                        src);
                     }
                   }
                 )rs");

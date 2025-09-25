@@ -220,7 +220,7 @@ impl<T: AssociatedMiniTable> MessagePtr<T> {
 
     /// # Safety
     /// - `self` must be legally dereferenceable.
-    /// - The field at `index` must be a repeated field.
+    /// - The field at `index` must be a map field.
     /// - Caller must ensure that `value` outlives `self` (typically by being on the same arena).
     pub unsafe fn set_map_at_index(self, index: u32, value: sys_map::RawMap) {
         let f = unsafe { sys_mt::upb_MiniTable_GetFieldByIndex(T::mini_table(), index) };
