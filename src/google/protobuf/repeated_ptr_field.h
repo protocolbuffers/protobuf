@@ -987,20 +987,8 @@ struct IsRepeatedPtrFieldType<RepeatedPtrField<Element>> {
   static constexpr bool value = true;
 };
 
-// This class maps RepeatedPtrField(Base)? types to the types that we will use
-// to represent them when allocated on an arena. This is necessary because
-// `RepeatedPtrField`s do not own an arena pointer, but can be allocated
-// directly on an arena. In this case, we will use a wrapper class that holds
-// both the arena pointer and the repeated field, and points the repeated field
-// to the arena pointer.
-//
-// Additionally, split repeated pointer fields will use this representation when
-// allocated, regardless of whether they are on an arena or not.
-template <typename T>
-struct RepeatedPtrFieldArenaRep {};
-
 template <>
-struct RepeatedPtrFieldArenaRep<RepeatedPtrFieldBase> {
+struct FieldArenaRep<RepeatedPtrFieldBase> {
   // TODO - With removed arena pointers, we will need a class that
   // holds both the arena pointer and the repeated field, and points the
   // repeated to the arena pointer.
@@ -1008,7 +996,7 @@ struct RepeatedPtrFieldArenaRep<RepeatedPtrFieldBase> {
 };
 
 template <typename Element>
-struct RepeatedPtrFieldArenaRep<RepeatedPtrField<Element>> {
+struct FieldArenaRep<RepeatedPtrField<Element>> {
   // TODO - With removed arena pointers, we will need a class that
   // holds both the arena pointer and the repeated field, and points the
   // repeated to the arena pointer.
