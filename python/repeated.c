@@ -142,7 +142,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
                                                      const upb_FieldDef* f,
                                                      PyObject* arena) {
   PyUpb_ObjCache_Lock();
-  PyObject* ret = PyUpb_ObjCache_Get(arr);
+  PyObject* ret = PyUpb_ObjCache_GetLockHeld(arr);
   if (ret) goto out;
 
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);

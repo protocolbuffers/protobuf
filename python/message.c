@@ -865,7 +865,7 @@ static void PyUpb_Message_Dealloc(PyObject* _self) {
 PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
                             PyObject* arena) {
   PyUpb_ObjCache_Lock();
-  PyObject* ret = PyUpb_ObjCache_Get(u_msg);
+  PyObject* ret = PyUpb_ObjCache_GetLockHeld(u_msg);
   if (ret) goto out;
 
   PyObject* cls = PyUpb_Descriptor_GetClass(m);
@@ -2119,7 +2119,7 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
 
   const upb_MessageDef* m = PyUpb_Descriptor_GetDef(py_descriptor);
   PyUpb_ObjCache_Lock();
-  PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
+  PyObject* ret = PyUpb_ObjCache_GetLockHeld(upb_MessageDef_MiniTable(m));
   if (ret) {
     PyUpb_ObjCache_Unlock();
     return ret;

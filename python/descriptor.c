@@ -254,7 +254,7 @@ PyObject* PyUpb_Descriptor_Get(const upb_MessageDef* m) {
 }
 
 static PyObject* PyUpb_Descriptor_GetClassLockHeld(const upb_MessageDef* m) {
-  PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
+  PyObject* ret = PyUpb_ObjCache_GetLockHeld(upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
   // On demand create the clss if not exist. However, if users repeatedly

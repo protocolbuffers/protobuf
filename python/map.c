@@ -354,7 +354,7 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
                                                 const upb_FieldDef* f,
                                                 PyObject* arena) {
   PyUpb_ObjCache_Lock();
-  PyUpb_MapContainer* ret = (void*)PyUpb_ObjCache_Get(map);
+  PyUpb_MapContainer* ret = (void*)PyUpb_ObjCache_GetLockHeld(map);
   if (ret) goto out;
 
   PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
