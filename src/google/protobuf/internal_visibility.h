@@ -16,6 +16,7 @@ class MessageLite;
 
 namespace internal {
 
+class ExtensionSet;
 class InternalVisibilityForTesting;
 class InternalMetadata;
 
@@ -30,6 +31,7 @@ class InternalVisibility {
   friend class ::google::protobuf::Arena;
   friend class ::google::protobuf::Message;
   friend class ::google::protobuf::MessageLite;
+  friend class ::google::protobuf::internal::ExtensionSet;
   friend class ::google::protobuf::internal::InternalMetadata;
 
   friend class InternalVisibilityForTesting;
