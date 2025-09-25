@@ -180,7 +180,19 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
   return map;
 }
 
-void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) { upb_Arena_Free(map->arena); }
+void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) {
+#ifdef Py_GIL_DISABLED
+  // for the free-threaded build, the map is not weak and we need to decref all map entries
+  intptr_t iter = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+  while (upb_inttable_next(&map->table, &key, &val, &iter)) {
+    PyObject* obj = upb_value_getptr(val);
+    Py_DECREF(obj);
+  }
+#endif
+  upb_Arena_Free(map->arena);
+}
 
 // To give better entropy in the table key, we shift away low bits that are
 // always zero.
@@ -193,11 +205,28 @@ uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
 }
 
 void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
+#ifdef Py_GIL_DISABLED
+  // For the free-threaded build, this is a strong referenced mapping, despite
+  // the API name.  That avoids quite a bit of complexity (like the need to
+  // use PyUnstable_TryIncRef().
+  Py_INCREF(py_obj);
+#endif
   upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
                       upb_value_ptr(py_obj), map->arena);
 }
 
+static void weakmap_maybe_decref(PyUpb_WeakMap* map, const void* key) {
+#ifdef Py_GIL_DISABLED
+  upb_value val;
+  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
+    PyObject* obj = upb_value_getptr(val);
+    Py_DECREF(obj);
+  }
+#endif
+}
+
 void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
+  weakmap_maybe_decref(map, key);
   upb_value val;
   bool removed =
       upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
@@ -206,6 +235,7 @@ void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
 }
 
 void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key) {
+  weakmap_maybe_decref(map, key);
   upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
 }
 
