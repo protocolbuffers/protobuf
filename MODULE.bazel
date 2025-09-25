@@ -303,3 +303,10 @@ archive_override(
     strip_prefix = "protobuf-29.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
 )
+
+# Python headers for release
+bazel_dep(name = "python-3.9.0", version="3.9.0", dev_dependency=True)
+bazel_dep(name = "nuget_python_i686_3.9.0", version="3.9.0", dev_dependency=True)
+bazel_dep(name = "nuget_python_i686_3.10.0", version="3.10.0", dev_dependency=True)
+bazel_dep(name = "nuget_python_x86-64_3.9.0", version="3.9.0", dev_dependency=True)
+bazel_dep(name = "nuget_python_x86-64_3.10.0", version="3.10.0", dev_dependency=True)

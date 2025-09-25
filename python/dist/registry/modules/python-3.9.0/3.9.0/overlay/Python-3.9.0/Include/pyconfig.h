@@ -1,0 +1,1 @@
+#define SIZEOF_WCHAR_T 4

@@ -1,0 +1,6 @@
+# Generated with ./python/dist/make_python_nuget_package.sh x86-64 3.9.0
+module(
+    name = "nuget_python_x86-64_3.9.0",
+    version = "3.9.0",
+    compatibility_level = 1,
+)

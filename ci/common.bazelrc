@@ -83,3 +83,6 @@ build --verbose_failures
 build --features=layering_check
 
 build --enable_platform_specific_config
+
+# Use a custom registry for release dependencies
+common --registry=file:///%workspace%/python/dist/registry --registry=https://bcr.bazel.build
