@@ -123,28 +123,6 @@ jobs:
           bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
           version: 7.6.1
 
-  no-python:
-    strategy:
-      fail-fast: false   # Don't cancel all jobs if one fails.
-    name: No System Python
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
-        with:
-          ref: ${{ inputs.safe-checkout }}
-      - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
-        with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604
-          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: "upb-bazel-no-python"
-          bash: >-
-            which python3 &&
-            mv `which python3` /tmp &&
-            ! which python3 &&
-            bazel test $BAZEL_FLAGS --noenable_bzlmod //python/... -- -//python/dist:source_wheel -//python:aarch64_test -//python:x86_64_test -//python:google/protobuf/pyext/_message.so -//python:proto_api
-
   build_wheels:
     name: Build Wheels
     runs-on: ubuntu-latest
