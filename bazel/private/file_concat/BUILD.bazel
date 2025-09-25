@@ -3,5 +3,5 @@ cc_binary(
     srcs = [
         "main.cc",
     ],
-    visibility = ["//visibility:public"],
+    visibility = ["//bazel:__subpackages__"],
 )

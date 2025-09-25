@@ -57,7 +57,7 @@ Sequence of `ProtoInfo`s to collect `FileDescriptorSet`s from.
 """.strip(),
         ),
         "_file_concat": attr.label(
-            default = "//tools/file_concat",
+            default = "//bazel/private/file_concat:file_concat",
             executable = True,
             cfg = "exec",
         ),
