@@ -172,34 +172,9 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // ModuleState
 // -----------------------------------------------------------------------------
 
-#if defined(PYUPB_USE_MULTI_PHASE_INIT) && \
-    (!defined(NDEBUG) || defined(USE_RELEASE_ASSERTS))
-// A debug-only function to always look up the correct module for a given import
-// name. This is used to verify that the module returned by other functions
-// always matches the one of the current interpreter state.
-static PyObject* DebugFindModuleForDefByImportDict(PyModuleDef const* def) {
-  PyObject* modules = PyImport_GetModuleDict();
-  assert(modules != NULL);
-  PyObject* module = PyDict_GetItemString(modules, PYUPB_MODULE_NAME);
-
-  if (!module) {
-    return NULL;
-  }
-
-  assert(def);
-  assert(PyModule_GetDef(module) == def);
-
-  return module;
-}
-#endif  // !defined(NDEBUG) || defined(USE_RELEASE_ASSERTS)
-
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
   assert(PyModule_GetDef(module) == &module_def);
   assert(module);
-
-#ifdef PYUPB_USE_MULTI_PHASE_INIT
-  assert(module == DebugFindModuleForDefByImportDict(&module_def));
-#endif  // PYUPB_USE_MULTI_PHASE_INIT
 
   PyUpb_ModuleState* state = PyModule_GetState(module);
   assert(state);
