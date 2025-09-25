@@ -2115,26 +2115,34 @@ static PyObject* PyUpb_MessageMeta_CreateType(PyObject* m) {
   return type;
 }
 
+#define PYUPB_RELEASE_CHECK(expr)                                      \
+  do {                                                                 \
+    if (!(expr)) {                                                     \
+      fprintf(stderr, "Check failed: %s (%s:%d)\n", (#expr), __FILE__, \
+              __LINE__);                                               \
+      fflush(stderr);                                                  \
+      abort();                                                         \
+    }                                                                  \
+  } while (false)
+
 bool PyUpb_InitMessage(PyObject* m) {
-#ifndef NDEBUG
+  // Expect the bits to be same for every interpreter since
+  // PyUpb_GetMessageMeta requires type_basicsize to access the native data.
+  // We could move PyUpb_CPythonBits into a per interpreter state,
+  // but we expect that the pointers and size are the same for every
+  // interpreter which we check here.
   {
-    // Expect the bits to be same for every interpreter since
-    // PyUpb_GetMessageMeta requires type_basicsize to access the native data.
-    // We could move PyUpb_CPythonBits into a per interpreter state,
-    // but we expect that the pointers and size are the same for every
-    // interpreter which we assert here.
     PyUpb_CPythonBits bits;
     PyUpb_CPythonBits_Init(&bits);
 
-    assert(bits.type_new == cpython_bits.type_new);
-    assert(bits.type_dealloc == cpython_bits.type_dealloc);
-    assert(bits.type_getattro == cpython_bits.type_getattro);
-    assert(bits.type_setattro == cpython_bits.type_setattro);
-    assert(bits.type_traverse == cpython_bits.type_traverse);
-    assert(bits.type_clear == cpython_bits.type_clear);
-    assert(bits.type_basicsize == cpython_bits.type_basicsize);
+    PYUPB_RELEASE_CHECK(bits.type_new == cpython_bits.type_new);
+    PYUPB_RELEASE_CHECK(bits.type_dealloc == cpython_bits.type_dealloc);
+    PYUPB_RELEASE_CHECK(bits.type_getattro == cpython_bits.type_getattro);
+    PYUPB_RELEASE_CHECK(bits.type_setattro == cpython_bits.type_setattro);
+    PYUPB_RELEASE_CHECK(bits.type_traverse == cpython_bits.type_traverse);
+    PYUPB_RELEASE_CHECK(bits.type_clear == cpython_bits.type_clear);
+    PYUPB_RELEASE_CHECK(bits.type_basicsize == cpython_bits.type_basicsize);
   }
-#endif
 
   PyObject* message_meta_type = PyUpb_MessageMeta_CreateType(m);
 
