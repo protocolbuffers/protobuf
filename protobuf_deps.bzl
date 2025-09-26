@@ -204,23 +204,27 @@ def protobuf_deps():
 
     # Python Downloads
     python_source_archive(
-        name = "python-3.9.0",
+        version = "3.9.0",
         sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
     )
     python_nuget_package(
-        name = "nuget_python_i686_3.9.0",
+        version = "3.9.0",
+        cpu = "i686",
         sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
     )
     python_nuget_package(
-        name = "nuget_python_x86-64_3.9.0",
+        version = "3.9.0",
+        cpu = "x86-64",
         sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
     )
     python_nuget_package(
-        name = "nuget_python_i686_3.10.0",
+        version = "3.10.0",
+        cpu = "i686",
         sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
     )
     python_nuget_package(
-        name = "nuget_python_x86-64_3.10.0",
+        version = "3.10.0",
+        cpu = "x86-64",
         sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
     )
     native.register_toolchains("//bazel/private/toolchains:all")

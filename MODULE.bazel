@@ -303,3 +303,38 @@ archive_override(
     strip_prefix = "protobuf-29.0",
     urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
 )
+
+# Python headers for release
+python_headers = use_extension("//python/dist:python_downloads.bzl", "python_headers", dev_dependency = True)
+python_headers.source_archive(
+    sha256 = "df796b2dc8ef085edae2597a41c1c0a63625ebd92487adaef2fed22b567873e8",
+    version = "3.9.0",
+)
+python_headers.nuget_package(
+    cpu = "i686",
+    sha256 = "229abecbe49dc08fe5709e0b31e70edfb3b88f23335ebfc2904c44f940fd59b6",
+    version = "3.9.0",
+)
+python_headers.nuget_package(
+    cpu = "x86-64",
+    sha256 = "6af58a733e7dfbfcdd50d55788134393d6ffe7ab8270effbf724bdb786558832",
+    version = "3.9.0",
+)
+python_headers.nuget_package(
+    cpu = "i686",
+    sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
+    version = "3.10.0",
+)
+python_headers.nuget_package(
+    cpu = "x86-64",
+    sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
+    version = "3.10.0",
+)
+use_repo(
+    python_headers,
+    "nuget_python_i686_3.10.0",
+    "nuget_python_i686_3.9.0",
+    "nuget_python_x86-64_3.10.0",
+    "nuget_python_x86-64_3.9.0",
+    "python-3.9.0",
+)
