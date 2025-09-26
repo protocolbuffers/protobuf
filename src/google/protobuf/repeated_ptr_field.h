@@ -972,37 +972,6 @@ class GenericTypeHandler<std::string> {
 };
 
 
-template <typename T>
-struct IsRepeatedPtrFieldType {
-  static constexpr bool value = false;
-};
-
-template <>
-struct IsRepeatedPtrFieldType<RepeatedPtrFieldBase> {
-  static constexpr bool value = true;
-};
-
-template <typename Element>
-struct IsRepeatedPtrFieldType<RepeatedPtrField<Element>> {
-  static constexpr bool value = true;
-};
-
-template <>
-struct FieldArenaRep<RepeatedPtrFieldBase> {
-  // TODO - With removed arena pointers, we will need a class that
-  // holds both the arena pointer and the repeated field, and points the
-  // repeated to the arena pointer.
-  using Type = RepeatedPtrFieldBase;
-};
-
-template <typename Element>
-struct FieldArenaRep<RepeatedPtrField<Element>> {
-  // TODO - With removed arena pointers, we will need a class that
-  // holds both the arena pointer and the repeated field, and points the
-  // repeated to the arena pointer.
-  using Type = RepeatedPtrField<Element>;
-};
-
 }  // namespace internal
 
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
