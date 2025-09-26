@@ -1,6 +1,7 @@
 use std::path::Path;
 
-include!(concat!(env!("OUT_DIR"), "/protobuf_generated/google/protobuf/generated.rs"));
+mod generated;
+pub use generated::*;
 
 pub fn get_dependency(crate_name: &str) -> Vec<protobuf_codegen::Dependency> {
     vec![protobuf_codegen::Dependency {
