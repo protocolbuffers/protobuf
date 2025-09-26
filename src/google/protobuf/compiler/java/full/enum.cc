@@ -63,16 +63,8 @@ void EnumNonLiteGenerator::Generate(io::Printer* printer) {
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
 
   if (CheckLargeEnum(descriptor_)) {
-    std::vector<
-        std::pair<const EnumValueDescriptor*, const EnumValueDescriptor*>>
-        alias_pairs;
-    alias_pairs.reserve(aliases_.size());
-    for (const Alias& alias : aliases_) {
-      alias_pairs.emplace_back(alias.value, alias.canonical_value);
-    }
-
-    GenerateLarge(printer, descriptor_, canonical_values_, alias_pairs,
-                  immutable_api_, context_, name_resolver_);
+    GenerateLarge(printer, descriptor_, immutable_api_, context_,
+                  name_resolver_);
     return;
   }
 
