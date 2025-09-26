@@ -390,10 +390,6 @@ constexpr auto Struct::InternalNewImpl_() {
           decltype(Struct::_impl_.fields_)::
               InternalGetArenaOffset(
                   ::google::protobuf::Message::internal_visibility()),
-      PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_) +
-          decltype(Struct::_impl_.fields_)::
-              InternalGetArenaOffsetAlt(
-                  ::google::protobuf::Message::internal_visibility()),
   });
   if (arena_bits.has_value()) {
     return ::google::protobuf::internal::MessageCreator::CopyInit(
