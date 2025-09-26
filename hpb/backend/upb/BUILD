@@ -48,6 +48,7 @@ cc_library(
         "//upb/mem",
         "//upb/message",
         "//upb/mini_table",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
     ],
 )

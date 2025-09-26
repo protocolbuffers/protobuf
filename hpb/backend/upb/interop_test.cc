@@ -52,5 +52,27 @@ TEST(CppGeneratedCode, CanCreateProxyWithoutCasting) {
   upb_Arena_Free(arena);
 }
 
+TEST(CppGeneratedCode, CanCreateCProxyWithMiniTable) {
+  upb_Arena* arena = upb_Arena_New();
+  hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
+  auto minitable = hpb_0unittest__TestModel_msg_init_ptr;
+  hpb_unittest::protos::TestModel::CProxy const_handle =
+      hpb::interop::upb::MakeCHandle<TestModel>((upb_Message*)msg, minitable,
+                                                arena);
+  EXPECT_EQ(const_handle.value(), 0);
+  upb_Arena_Free(arena);
+}
+
+TEST(CppGeneratedCode, CanCreateProxyWithMiniTable) {
+  upb_Arena* arena = upb_Arena_New();
+  hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
+  auto minitable = hpb_0unittest__TestModel_msg_init_ptr;
+  hpb_unittest::protos::TestModel::Proxy handle =
+      hpb::interop::upb::MakeHandle<TestModel>((upb_Message*)msg, minitable,
+                                               arena);
+  EXPECT_EQ(handle.value(), 0);
+  upb_Arena_Free(arena);
+}
+
 }  // namespace
 }  // namespace hpb::testing
