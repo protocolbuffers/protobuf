@@ -57,7 +57,8 @@ using LargeMsg = proto2_unittest::TestAllTypes;
 
 namespace {
 enum WithArena : bool { kNoArena = false, kArena = true };
-enum AddMode { kIntoNew, kIntoCleared };
+enum AddMode { kIntoNew = 0, kIntoCleared = 1 };
+enum RefMode { kConcrete = 0, kAbstract = 1 };
 }  // namespace
 
 TEST(RepeatedPtrOverPtrsIteratorTest, Traits) {
