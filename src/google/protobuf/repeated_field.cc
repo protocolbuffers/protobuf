@@ -35,7 +35,7 @@ void LogIndexOutOfBounds(int index, int size) {
 }
 
 void LogIndexOutOfBoundsAndAbort(int index, int size) {
-  ABSL_LOG(FATAL) << "index: " << index << ", size: " << size;
+  ABSL_LOG(FATAL) << "Index " << index << " out of bounds " << size;
 }
 }  // namespace internal
 
