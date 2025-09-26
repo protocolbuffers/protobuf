@@ -1,0 +1,7 @@
+cc_binary(
+    name = "file_concat",
+    srcs = [
+        "main.cc",
+    ],
+    visibility = ["//bazel:__subpackages__"],
+)
