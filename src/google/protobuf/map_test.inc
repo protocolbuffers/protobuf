@@ -244,7 +244,9 @@ namespace {
 TEST_F(MapImplTest, OperatorBracketRValue) {
   Arena arena;
   for (Arena* arena_to_use : {&arena, static_cast<Arena*>(nullptr)}) {
-    Map<std::string, int> map(arena_to_use);
+    auto* map_container =
+        Arena::Create<Map<std::string, int32_t>>(arena_to_use);
+    auto& map = *map_container;
     {
       std::string key(10000, 'a');
       const char* const data = key.data();
@@ -259,6 +261,10 @@ TEST_F(MapImplTest, OperatorBracketRValue) {
       map[std::move(key)] = 0;
       EXPECT_NE(data, key.data());  // NOLINT
       EXPECT_EQ(data, map.find(std::string(10000, 'b'))->first.data());
+    }
+
+    if (arena_to_use == nullptr) {
+      delete map_container;
     }
   }
 }
@@ -1032,8 +1038,10 @@ TEST_F(MapImplTest, SwapBasic) {
 
 TEST_F(MapImplTest, SwapArena) {
   Arena arena1, arena2;
-  Map<int32_t, int32_t> m1(&arena1);
-  Map<int32_t, int32_t> m2(&arena2);
+  auto* m1_container = Arena::Create<Map<int32_t, int32_t>>(&arena1);
+  auto* m2_container = Arena::Create<Map<int32_t, int32_t>>(&arena2);
+  auto& m1 = *m1_container;
+  auto& m2 = *m2_container;
   map_[9398] = 41999;
   m1[9398] = 41999;
   m1[8070] = 42056;

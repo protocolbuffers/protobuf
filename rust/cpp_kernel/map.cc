@@ -188,7 +188,6 @@ google::protobuf::internal::UntypedMapBase* proto2_rust_map_new(
     google::protobuf::rust::MapValue key_prototype,
     google::protobuf::rust::MapValue value_prototype) {
   return new google::protobuf::internal::UntypedMapBase(
-      /* arena = */ nullptr,
       google::protobuf::internal::UntypedMapBase::GetTypeInfoDynamic(
           key_prototype.tag, value_prototype.tag,
           value_prototype.tag == google::protobuf::rust::MapValueTag::kMessage

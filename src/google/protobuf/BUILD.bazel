@@ -653,6 +653,7 @@ cc_library(
         "explicitly_constructed.h",
         "extension_set.h",
         "extension_set_inl.h",
+        "field_with_arena.h",
         "generated_enum_util.h",
         "generated_message_tctable_decl.h",
         "generated_message_tctable_impl.h",
@@ -660,6 +661,7 @@ cc_library(
         "has_bits.h",
         "implicit_weak_message.h",
         "inlined_string_field.h",
+        "internal_metadata_locator.h",
         "map.h",
         "map_field_lite.h",
         "map_type_handler.h",
@@ -704,6 +706,7 @@ cc_library(
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:dynamic_annotations",
+        "@abseil-cpp//absl/base:no_destructor",
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_set",
@@ -805,6 +808,7 @@ cc_library(
         "@abseil-cpp//absl/base:config",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:dynamic_annotations",
+        "@abseil-cpp//absl/base:no_destructor",
         "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:fixed_array",
@@ -883,6 +887,36 @@ cc_test(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+proto_library(
+    name = "internal_metadata_locator_test_proto",
+    srcs = ["internal_metadata_locator_test.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "internal_metadata_locator_test_cc_proto",
+    deps = [":internal_metadata_locator_test_proto"],
+)
+
+cc_test(
+    name = "internal_metadata_locator_test",
+    size = "small",
+    srcs = [
+        "internal_metadata_locator_test.cc",
+    ],
+    deps = [
+        ":arena",
+        ":internal_metadata_locator_test_cc_proto",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util2",
+        "//src/google/protobuf/io",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

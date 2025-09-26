@@ -17,6 +17,7 @@
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
@@ -33,12 +34,29 @@ std::atomic<MapFieldBaseForParse::SyncFunc>
 
 NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+
+struct UntypedMapBaseWithArena {
+  UntypedMapBaseWithArena(Arena* arena, UntypedMapBase::TypeInfo type_info)
+      : _internal_metadata_(arena),
+        field(InternalMetadataOffset::Build<UntypedMapBaseWithArena,
+                                            offsetof(UntypedMapBaseWithArena,
+                                                     field)>(),
+              type_info) {}
+
+  InternalMetadata _internal_metadata_;
+  UntypedMapBase field;
+};
+
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+
 void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
   if (other.empty()) return;
 
   // Do the merging in steps to avoid Key*Value number of instantiations and
   // reduce code duplication per instantation.
   NodeBase* nodes = nullptr;
+  Arena* arena = this->arena();
 
   // First, allocate all the nodes without types.
   for (size_t i = 0; i < other.num_elements_; ++i) {
@@ -63,9 +81,9 @@ void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
       out_node = out_node->next;
       auto& in = *other.GetValue<Value>(it.node_);
       if constexpr (std::is_same_v<MessageLite, Value>) {
-        class_data->PlacementNew(out, arena())->CheckTypeAndMergeFrom(in);
+        class_data->PlacementNew(out, arena)->CheckTypeAndMergeFrom(in);
       } else {
-        Arena::CreateInArenaStorage(out, this->arena_, in);
+        Arena::CreateInArenaStorage(out, arena, in);
       }
     }
   });
@@ -78,8 +96,8 @@ void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
       nodes = nodes->next;
       const Key& in = *other.GetKey<Key>(it.node_);
       Key* out = GetKey<Key>(node);
-      if (!internal::InitializeMapKey(out, in, this->arena_)) {
-        Arena::CreateInArenaStorage(out, this->arena_, in);
+      if (!internal::InitializeMapKey(out, in, arena)) {
+        Arena::CreateInArenaStorage(out, arena, in);
       }
 
       static_cast<KeyMapBase<Key>*>(this)->InsertOrReplaceNode(
@@ -92,7 +110,13 @@ void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
   if (arena() == other.arena()) {
     InternalSwap(&other);
   } else {
-    UntypedMapBase tmp(arena_, type_info_);
+    Arena* arena = this->arena();
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+    UntypedMapBaseWithArena tmp_container(arena, type_info_);
+    UntypedMapBase& tmp = tmp_container.field;
+#else
+    UntypedMapBase tmp(arena, type_info_);
+#endif
     InternalSwap(&tmp);
 
     ABSL_DCHECK(empty());
@@ -101,7 +125,7 @@ void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
     other.ClearTable(true);
     other.UntypedMergeFrom(tmp);
 
-    if (arena_ == nullptr) tmp.ClearTable(false);
+    if (arena == nullptr) tmp.ClearTable(false);
   }
 }
 
@@ -117,11 +141,16 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
 void UntypedMapBase::ClearTableImpl(bool reset) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
-  if (arena_ == nullptr) {
+  if (arena() == nullptr) {
     const auto loop = [this](auto destroy_node) {
       NodeBase** table = table_;
-      for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
-           b < end; ++b) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+      map_index_t index_of_first_non_null = 0;
+#else
+      map_index_t index_of_first_non_null = index_of_first_non_null_;
+#endif
+      for (map_index_t b = index_of_first_non_null, end = num_buckets_; b < end;
+           ++b) {
         for (NodeBase* node = table[b]; node != nullptr;) {
           NodeBase* next = node->next;
           absl::PrefetchToLocalCacheNta(next);
@@ -163,7 +192,9 @@ void UntypedMapBase::ClearTableImpl(bool reset) {
   if (reset) {
     std::fill(table_, table_ + num_buckets_, nullptr);
     num_elements_ = 0;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
     index_of_first_non_null_ = num_buckets_;
+#endif
   } else {
     DeleteTable(table_, num_buckets_);
   }
