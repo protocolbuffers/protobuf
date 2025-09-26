@@ -81,10 +81,7 @@ class TcParser;              // defined in generated_message_tctable_impl.h
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
-template <typename T>
-struct IsRepeatedPtrFieldType;  // defined in repeated_ptr_field.h
-
-// This class maps field types to the types that we will use to represent them
+// This struct maps field types to the types that we will use to represent them
 // when allocated on an arena. This is necessary because fields no longer own an
 // arena pointer, but can be allocated directly on an arena. In this case, we
 // will use a wrapper class that holds both the arena pointer and the field, and
@@ -92,8 +89,31 @@ struct IsRepeatedPtrFieldType;  // defined in repeated_ptr_field.h
 //
 // Additionally, split pointer fields will use this representation when
 // allocated, regardless of whether they are on an arena or not.
+//
+// For example:
+// ```
+// template <>
+// struct FieldArenaRep<Message> {
+//   using Type = ArenaMessage;
+//   static Message* Get(ArenaMessage* arena_rep) {
+//     return &arena_rep->message();
+//   }
+// };
+// ```
 template <typename T>
-struct FieldArenaRep {};
+struct FieldArenaRep {
+  // The type of the field when allocated on an arena. By default, this is just
+  // `T`, but can be specialized to use a wrapper class that holds both the
+  // arena pointer and the field.
+  using Type = T;
+
+  // Returns a pointer to the field from the arena representation. By default,
+  // this is just a no-op, but can be specialized to extract the field from the
+  // wrapper class.
+  static T* PROTOBUF_NONNULL Get(Type* PROTOBUF_NONNULL arena_rep) {
+    return arena_rep;
+  }
+};
 
 template <typename T>
 void arena_delete_object(void* PROTOBUF_NONNULL object) {
@@ -240,12 +260,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
           return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
         }
       }
-      if constexpr (internal::IsRepeatedPtrFieldType<Type>::value) {
-        return CreateRepeatedPtrFieldWithArena<Type>(
-            arena, std::forward<Args>(args)...);
-      } else {
-        return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
-      }
+      return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
     } else {
       if (ABSL_PREDICT_FALSE(arena == nullptr)) {
         return new T(std::forward<Args>(args)...);
@@ -485,7 +500,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     static PROTOBUF_ALWAYS_INLINE T* PROTOBUF_NONNULL New() {
       // Repeated pointer fields no longer have an arena constructor, so
       // specialize calling their default constructor.
-      if constexpr (internal::IsRepeatedPtrFieldType<T>::value) {
+      if constexpr (std::is_base_of_v<internal::RepeatedPtrFieldBase, T>) {
         return new T();
       } else {
         return new T(nullptr);
@@ -566,22 +581,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                   "Can only construct types that are ArenaConstructable");
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
       return new T(nullptr, static_cast<Args&&>(args)...);
-    } else {
-      return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
-    }
-  }
-
-  template <typename T, typename... Args>
-  PROTOBUF_NDEBUG_INLINE static T* PROTOBUF_NONNULL
-  CreateRepeatedPtrFieldWithArena(Arena* PROTOBUF_NULLABLE arena,
-                                  Args&&... args) {
-    static_assert(is_arena_constructable<T>::value,
-                  "Can only construct types that are ArenaConstructable");
-    static_assert(internal::IsRepeatedPtrFieldType<T>::value,
-                  "Can only construct repeated pointer fields with "
-                  "CreateRepeatedPtrFieldWithArena");
-    if (ABSL_PREDICT_FALSE(arena == nullptr)) {
-      return new T(static_cast<Args&&>(args)...);
     } else {
       using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
       auto* arena_repr =
