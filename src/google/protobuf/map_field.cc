@@ -30,10 +30,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-MapFieldBase::~MapFieldBase() {
-  ABSL_DCHECK_EQ(arena(), nullptr);
-  delete maybe_payload();
-}
+MapFieldBase::~MapFieldBase() { delete maybe_payload(); }
 
 void MapFieldBase::MergeFrom(const MapFieldBase& other) {
   MutableMap()->UntypedMergeFrom(other.GetMap());
@@ -46,6 +43,14 @@ void MapFieldBase::Swap(MapFieldBase* other) {
   }
   MapFieldBase::SwapPayload(*this, *other);
   GetMapRaw().UntypedSwap(other->GetMapRaw());
+}
+
+const Message* MapFieldBase::GetPrototype() const {
+  const void* p = prototype_or_payload_.load(std::memory_order_acquire);
+  if (IsPayload(p)) {
+    return ToPayload(p)->prototype();
+  }
+  return reinterpret_cast<const Message*>(p);
 }
 
 template <typename Map, typename F>
@@ -200,7 +205,7 @@ static void SwapRelaxed(std::atomic<T>& a, std::atomic<T>& b) {
 }
 
 MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
-  auto p = payload_.load(std::memory_order_acquire);
+  const void* p = prototype_or_payload_.load(std::memory_order_acquire);
   if (!IsPayload(p)) {
     // Inject the sync callback.
     sync_map_with_repeated.store(
@@ -211,17 +216,19 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
         },
         std::memory_order_relaxed);
 
-    auto* arena = ToArena(p);
-    auto* payload = Arena::Create<ReflectionPayload>(arena, arena);
+    const Message* prototype = static_cast<const Message*>(p);
+    auto* payload =
+        Arena::Create<ReflectionPayload>(arena(), arena(), prototype);
 
     auto new_p = ToTaggedPtr(payload);
-    if (payload_.compare_exchange_strong(p, new_p, std::memory_order_acq_rel)) {
+    if (prototype_or_payload_.compare_exchange_strong(
+            p, new_p, std::memory_order_acq_rel)) {
       // We were able to store it.
       p = new_p;
     } else {
       // Someone beat us to it. Throw away the one we made. `p` already contains
       // the one we want.
-      if (arena == nullptr) delete payload;
+      if (arena() == nullptr) delete payload;
     }
   }
   return *ToPayload(p);
@@ -229,7 +236,7 @@ MapFieldBase::ReflectionPayload& MapFieldBase::PayloadSlow() const {
 
 void MapFieldBase::SwapPayload(MapFieldBase& lhs, MapFieldBase& rhs) {
   if (lhs.arena() == rhs.arena()) {
-    SwapRelaxed(lhs.payload_, rhs.payload_);
+    SwapRelaxed(lhs.prototype_or_payload_, rhs.prototype_or_payload_);
     return;
   }
   auto* p1 = lhs.maybe_payload();

@@ -4017,11 +4017,6 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
       // MapField contains an internal vtable pointer we need to copy.
       op.needs_memcpy = true;
       print_arena_offset();
-      // Non-lite maps currently have more than one arena pointer in them. Print
-      // both.
-      if (HasDescriptorMethods(descriptor_->file(), options_)) {
-        print_arena_offset("Alt");
-      }
     } else if (field->is_repeated()) {
       op.needs_arena_seeding = true;
       print_arena_offset();
