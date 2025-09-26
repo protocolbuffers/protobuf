@@ -91,7 +91,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test //upb/... //upb_generator/... //python/... --noenable_bzlmod
+          bazel: test //upb/... //upb_generator/... //python/...
           version: 7.6.1
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 

@@ -124,7 +124,7 @@ selects.config_setting_group(
 
 sh_binary(
     name = "interpreter",
-    srcs = ["interpreter"],
+    srcs = ["{wrapper}"],
     visibility = ["//visibility:public"],
 )
 
@@ -175,17 +175,21 @@ def _populate_package(ctx, path, python3, python_version):
         if int(python_version[idx]) < int(v):
             supported = False
             break
+
     if "win" in ctx.os.name:
-        # buildifier: disable=print
-        print("WARNING: python is not supported on Windows")
-        supported = False
+        wrapper = "interpreter.bat"
+        ctx.file("interpreter.bat", "{} %*".format(python3))
+        ctx.symlink("interpreter.bat", "interpreter")
+    else:
+        wrapper = "interpreter"
+        ctx.file("interpreter", "#!/bin/sh\nexec {} \"$@\"".format(python3))
 
     build_file = _build_file.format(
         interpreter = python3,
+        wrapper = wrapper,
         support = "Supported" if supported else "Unsupported",
     )
 
-    ctx.file("interpreter", "#!/bin/sh\nexec {} \"$@\"".format(python3))
     ctx.file("BUILD.bazel", build_file)
     ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = '{}{}'".format(python_version[0], python_version[1]))
     ctx.file("register.bzl", _register.format(ctx.attr.name))
@@ -208,9 +212,11 @@ def _populate_empty_package(ctx):
         "BUILD.bazel",
         _build_file.format(
             interpreter = "",
+            wrapper = "interpreter",
             support = "None",
         ),
     )
+    ctx.file("interpreter", "#!/bin/sh")
     ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = 'None'")
     ctx.file("register.bzl", _mock_register)
     ctx.file("pip.bzl", _mock_pip)
