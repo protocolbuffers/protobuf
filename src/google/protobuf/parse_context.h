@@ -533,6 +533,14 @@ using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
 using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
 
+struct WireFormatLazyFieldSink;
+
+using LazyEagerVerifyV2FnType = const char* (*)(const char* ptr,
+                                                ParseContext* ctx,
+                                                WireFormatLazyFieldSink& sink);
+using LazyEagerVerifyV2FnRef =
+    std::remove_pointer<LazyEagerVerifyV2FnType>::type&;
+
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
 // stores the end group tag, in case a parser ended on a endgroup, to verify

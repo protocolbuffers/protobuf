@@ -1354,6 +1354,22 @@ bool IsV2EnabledForMessage(const Descriptor* descriptor,
   return false;
 }
 
+// Returns true if a message (descriptor) directly has required fields. Later
+// CLs will expand to cover transitively required fields.
+bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options,
+                    MessageSCCAnalyzer* scc_analyzer) {
+#ifndef PROTOBUF_INTERNAL_V2_EXPERIMENT
+  return false;
+#else   // PROTOBUF_INTERNAL_V2_EXPERIMENT
+  if (!ShouldVerify(descriptor, options, scc_analyzer)) return false;
+
+  // Note that only verification needs to transitively check if required fields
+  // exist because otherwise the verification will be done schemaless. Parser
+  // doesn't need it because it's always done with schema.
+  return scc_analyzer->HasRequiredFields(descriptor);
+#endif  // !PROTOBUF_INTERNAL_V2_EXPERIMENT
+}
+
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
 bool IsV2CodegenEnabled(const Options& options) {
   return !options.lite_implicit_weak_fields &&

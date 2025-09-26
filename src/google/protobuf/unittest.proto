@@ -802,6 +802,11 @@ message TestRequiredMessage {
   ];
 }
 
+message TestRequiredLazyMessage {
+  TestRequired child = 1 [lazy = true];
+  TestRequiredLazyMessage recurse = 2 [lazy = true];
+}
+
 message TestNestedRequiredForeign {
   TestNestedRequiredForeign child = 1;
   TestRequiredForeign payload = 2;
@@ -933,6 +938,14 @@ message TestLazyMessage {
   TestAllTypes sub_message = 1 [
     lazy = true
   ];
+}
+
+message TestLazyRequiredEnum {
+  TestRequiredOpenEnum optional_required_open_enum = 1 [lazy = true];
+  TestRequiredEnum optional_required_enum = 2 [lazy = true];
+  TestRequiredEnumNoMask optional_required_enum_no_mask = 3 [lazy = true];
+  TestRequiredEnumMulti optional_required_enum_multi = 4 [lazy = true];
+  TestRequiredNoMaskMulti optional_required_no_mask = 5 [lazy = true];
 }
 
 message TestLazyMessageRepeated {
