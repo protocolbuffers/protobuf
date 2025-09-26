@@ -91,7 +91,8 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
-          bazel: test //upb/... //upb_generator/... //python/... --noenable_bzlmod
+          # TODO: Enable python tests here once rules_python supports Windows better.
+          bazel: test //upb/... //upb_generator/...
           version: 7.6.1
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
