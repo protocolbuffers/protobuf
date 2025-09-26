@@ -11,6 +11,7 @@
 #include "google/protobuf/reflection_ops.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "absl/base/optimization.h"
@@ -20,6 +21,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/map_field.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
@@ -432,13 +434,14 @@ void GenericSwap(Message* lhs, Message* rhs) {
 
   // Improve efficiency by placing the temporary on an arena so that messages
   // are copied twice rather than three times.
-  Message* tmp = rhs->New(arena);
-  tmp->CheckTypeAndMergeFrom(*lhs);
+  const ClassData* class_data = GetClassData(*lhs);
+  Message* tmp = static_cast<Message*>(class_data->New(arena));
+  tmp->MergeFromWithClassData(*lhs, class_data);
   lhs->Clear();
-  lhs->CheckTypeAndMergeFrom(*rhs);
+  lhs->MergeFromWithClassData(*rhs, class_data);
   if (internal::DebugHardenForceCopyInSwap()) {
     rhs->Clear();
-    rhs->CheckTypeAndMergeFrom(*tmp);
+    rhs->MergeFromWithClassData(*tmp, class_data);
     if (arena == nullptr) delete tmp;
   } else {
     rhs->GetReflection()->Swap(tmp, rhs);
