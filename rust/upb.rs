@@ -1350,3 +1350,14 @@ pub unsafe fn message_set_map_field<
         parent.ptr.set_map_at_index(index, inner.as_raw());
     }
 }
+
+pub mod __unstable {
+    // Stores a serialized FileDescriptorProto, along with references to its dependencies.
+    pub struct DescriptorInfo {
+        // The serialized FileDescriptorProto.
+        pub descriptor: &'static [u8],
+        // A reference to the DescriptorInfo associated with each .proto file that the current one
+        // imports.
+        pub deps: &'static [&'static DescriptorInfo],
+    }
+}
