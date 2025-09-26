@@ -28,6 +28,7 @@ proto_library(
     name = "addressbook_proto",
     srcs = ["addressbook.proto"],
     deps = ["@com_google_protobuf//:timestamp_proto"],
+    strip_import_prefix = "/examples",
 )
 
 # The cc_proto_library rule generates C++ code for a proto_library rule. It
