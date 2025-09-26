@@ -98,6 +98,11 @@ void Message::MergeFrom(const Message& from) {
   }
 }
 
+void Message::MergeFromWithClassData(const Message& from,
+                                     const internal::ClassData* class_data) {
+  class_data->full().merge_to_from(*this, from);
+}
+
 void Message::CopyFrom(const Message& from) {
   if (&from == this) return;
 

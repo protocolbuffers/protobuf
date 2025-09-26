@@ -3537,7 +3537,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           //~ Force alignment
           $pb$::Arena* $nullable$ arena, const $classname$& from)
           : $classname$(arena) {
-        MergeFrom(from);
+        MergeFromWithClassData(MessageTraits<$classname$>::class_data(), from);
       }
     )cc");
   } else if (CanUseTrivialCopy()) {

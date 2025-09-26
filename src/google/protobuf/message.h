@@ -290,6 +290,8 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // The given message must be of the same type as this message (i.e. the
   // exact same class).
   void MergeFrom(const Message& from);
+  void MergeFromWithClassData(const Message& from,
+                              const internal::ClassData* class_data);
 
   // Verifies that IsInitialized() returns true.  ABSL_CHECK-fails otherwise,
   // with a nice error message.
