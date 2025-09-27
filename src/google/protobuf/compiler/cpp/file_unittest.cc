@@ -151,6 +151,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestNestedMessageHasBits.NestedMessage",
       "TestNestedGroupExtensionOuter.Layer1OptionalGroup",
       "TestMergeException",
+      "TestLazyRequiredEnum",
       "TestIsInitialized.SubMessage",
       "TestGroup",
       "TestForeignNested",
