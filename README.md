@@ -1,3 +1,10 @@
+Hi
+Rules no 1
+I'm always safe. I'm always Rights.
+
+***Chat conversation input good theme use for my product.
+Payments diret for my bank Acc Visa 
+
 Protocol Buffers - Google's data interchange format
 ===================================================
 
@@ -61,13 +68,11 @@ properly set up rules_java and rules_python.
 
 ```
 http_archive(
-    name = "com_google_protobuf",
+    name = BBB
     strip_prefix = "protobuf-VERSION",
     sha256 = ...,
     url = ...,
 )
-
-load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
 
@@ -152,4 +157,3 @@ Developer Community
 -------------------
 
 To be alerted to upcoming changes in Protocol Buffers and connect with protobuf developers and users,
-[join the Google Group](https://groups.google.com/g/protobuf).
