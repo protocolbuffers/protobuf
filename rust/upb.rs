@@ -1263,3 +1263,12 @@ pub unsafe fn message_set_sub_message<
         parent.ptr.set_base_field_message_at_index(index, child_ptr);
     }
 }
+
+// Stores a serialized FileDescriptorProto, along with references to its dependencies.
+pub struct DescriptorInfo {
+    // The serialized FileDescriptorProto.
+    pub descriptor: &'static [u8],
+    // A reference to the DescriptorInfo associated with each .proto file that the current one
+    // imports.
+    pub deps: &'static [&'static DescriptorInfo],
+}

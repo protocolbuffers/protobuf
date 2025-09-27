@@ -18,6 +18,7 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
@@ -195,6 +196,31 @@ bool RustGenerator::Generate(const FileDescriptor* file,
            R"rs(
     const _: () = $pbi$::assert_compatible_gencode_version("$expected_runtime_version$");
   )rs");
+
+  if (ctx.is_upb()) {
+    FileDescriptorProto descriptor_proto;
+    file->CopyTo(&descriptor_proto);
+    ctx.Emit({{"name", DescriptorInfoName(*file)},
+              {"serialized_descriptor",
+               absl::CHexEscape(descriptor_proto.SerializeAsString())},
+              {"deps",
+               [&] {
+                 for (int i = 0; i < file->dependency_count(); ++i) {
+                   const FileDescriptor& dep = *file->dependency(i);
+                   ctx.Emit({{"crate", GetCrateName(ctx, dep)},
+                             {"dep_name", DescriptorInfoName(dep)}},
+                            "&$crate$::$dep_name$,\n");
+                 }
+               }}},
+             R"rs(
+      pub static $name$: $pbr$::DescriptorInfo = $pbr$::DescriptorInfo {
+        descriptor: b"$serialized_descriptor$",
+        deps: &[
+          $deps$
+        ],
+      };
+    )rs");
+  }
 
   std::vector<const FileDescriptor*> file_contexts(
       files_in_current_crate.begin(), files_in_current_crate.end());
