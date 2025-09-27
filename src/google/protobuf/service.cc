@@ -14,9 +14,9 @@
 namespace google {
 namespace protobuf {
 
-Service::~Service() {}
-RpcChannel::~RpcChannel() {}
-RpcController::~RpcController() {}
+Service::~Service() = default;
+RpcChannel::~RpcChannel() = default;
+RpcController::~RpcController() = default;
 
 }  // namespace protobuf
 }  // namespace google
