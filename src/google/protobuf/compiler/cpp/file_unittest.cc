@@ -175,6 +175,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestVerifyInt32BigFieldNumber",
       "TestVerifyInt32",
       "TestRequiredMessage",
+      "TestRequiredLazyMessage",
       "TestParsingMerge.RepeatedGroup",
       "TestParsingMerge.RepeatedFieldsGenerator.Group2",
       "TestParsingMerge.RepeatedFieldsGenerator.Group1",

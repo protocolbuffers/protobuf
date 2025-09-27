@@ -36,7 +36,6 @@ message TestConflictingSymbolNames {
   // Use common namespaces to make sure we are properly qualifying
   message std {}
 
-
   int32 input = 1;
   int32 output = 2;
   string length = 3;

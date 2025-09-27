@@ -1371,6 +1371,15 @@ bool ShouldGenerateV2Code(const Descriptor* descriptor,
          !HasSimpleBaseClass(descriptor, options);
 }
 
+// Returns true if a message (descriptor) directly has required fields. Later
+// CLs will expand to cover transitively required fields.
+bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options,
+                    MessageSCCAnalyzer* scc_analyzer) {
+  if (!ShouldVerify(descriptor, options, scc_analyzer)) return false;
+
+  return HasRequiredFields(descriptor);
+}
+
 bool IsEligibleForV2Batching(const FieldDescriptor* field) {
   // Non-message fields whose numbers fit into 2B should be considered for
   // batching although the actual batching depends on the current batching, the
