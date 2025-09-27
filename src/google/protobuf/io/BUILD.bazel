@@ -113,7 +113,6 @@ cc_library(
         "@abseil-cpp//absl/functional:function_ref",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
-        "@abseil-cpp//absl/meta:type_traits",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/types:span",
