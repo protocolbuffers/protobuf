@@ -961,8 +961,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
       map_field_key_comparator_;
   MapEntryKeyComparator map_entry_key_comparator_;
   std::vector<std::unique_ptr<IgnoreCriteria>> ignore_criteria_;
-  // Reused multiple times in RetrieveFields to avoid extra allocations
-  std::vector<const FieldDescriptor*> tmp_message_fields_;
 
   absl::flat_hash_set<const FieldDescriptor*> ignored_fields_;
 
