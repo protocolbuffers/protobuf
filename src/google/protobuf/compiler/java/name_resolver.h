@@ -85,12 +85,6 @@ class PROTOC_EXPORT ClassNameResolver {
     return GetClassName(descriptor, true);
   }
 
-  // Gets the fully qualified name of an extension identifier.
-  std::string GetExtensionIdentifierName(const FieldDescriptor* descriptor,
-                                         bool immutable);
-  std::string GetExtensionIdentifierName(const FieldDescriptor* descriptor,
-                                         bool immutable, bool kotlin);
-
   // Gets the fully qualified name for generated classes in Java convention.
   // Nested classes will be separated using '$' instead of '.'
   // For example:
@@ -123,9 +117,6 @@ class PROTOC_EXPORT ClassNameResolver {
   std::string GetJavaClassFullName(absl::string_view name_without_package,
                                    const Descriptor& descriptor, bool immutable,
                                    bool kotlin);
-
-  template <typename Descriptor>
-  std::string GetJavaClassPackage(const Descriptor& descriptor, bool immutable);
 };
 
 }  // namespace java
