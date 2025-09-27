@@ -1377,7 +1377,10 @@ bool ShouldVerifyV2(const Descriptor* descriptor, const Options& options,
                     MessageSCCAnalyzer* scc_analyzer) {
   if (!ShouldVerify(descriptor, options, scc_analyzer)) return false;
 
-  return HasRequiredFields(descriptor);
+  // Note that only verification needs to transitively check if required fields
+  // exist because otherwise the verification will be done schemaless. Parser
+  // doesn't need it because it's always done with schema.
+  return scc_analyzer->HasRequiredFields(descriptor);
 }
 
 bool IsEligibleForV2Batching(const FieldDescriptor* field) {
