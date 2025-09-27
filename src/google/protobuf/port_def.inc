@@ -161,6 +161,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: cknittel@, mkruskal@
 #define PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY 1
 
+// Removes the public RepeatedPtrField(Arena*) constructor.
+// Owner: cknittel@, mkruskal@
+#define PROTOBUF_FUTURE_REMOVE_REPEATED_PTR_FIELD_ARENA_CONSTRUCTOR 1
+
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
