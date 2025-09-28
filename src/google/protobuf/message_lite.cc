@@ -86,16 +86,6 @@ void MessageLite::CheckTypeAndMergeFrom(const MessageLite& other) {
   data->merge_to_from(*this, other);
 }
 
-void MessageLite::MergeFromWithClassData(const MessageLite& other,
-                                         const internal::ClassData* data) {
-  ABSL_DCHECK(data != nullptr);
-  ABSL_DCHECK(GetClassData() == data && other.GetClassData() == data)
-      << "Invalid call to " << __func__ << ": this=" << GetTypeName()
-      << " other=" << other.GetTypeName()
-      << " data=" << data->prototype->GetTypeName();
-  data->merge_to_from(*this, other);
-}
-
 MessageLite* MessageLite::New(Arena* arena) const {
   auto* data = GetClassData();
   // The `instance->New()` expression requires using the actual instance

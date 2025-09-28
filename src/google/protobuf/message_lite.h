@@ -932,6 +932,21 @@ class PROTOBUF_EXPORT MessageLite {
         CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
   }
 
+  // `CheckTypeAndMergeFrom()` and should be preferred by friended internal
+  // callers that have the right `ClassData` handy.
+  // REQUIRES: Both `this` and `other` are the exact same class as represented
+  // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
+  // in release builds (probably a crash).
+  PROTOBUF_ALWAYS_INLINE void MergeFromWithClassData(
+      const MessageLite& other, const internal::ClassData* data) {
+    ABSL_DCHECK(data != nullptr);
+    ABSL_DCHECK(GetClassData() == data && other.GetClassData() == data)
+        << "Invalid call to " << __func__ << ": this=" << GetTypeName()
+        << " other=" << other.GetTypeName()
+        << " data=" << data->prototype->GetTypeName();
+    data->merge_to_from(*this, other);
+  }
+
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
     ABSL_DCHECK(data != nullptr);
@@ -1123,15 +1138,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   void LogInitializationErrorMessage() const;
 
-  // Merges the contents of `other` into `this`. This is faster than
-  // `CheckTypeAndMergeFrom()` and should be preferred by friended internal
-  // callers that have the right `ClassData` handy.
-  // REQUIRES: Both `this` and `other` are the exact same class as represented
-  // by `data`. If there is a mismatch, CHECK-fails in debug builds or causes UB
-  // in release builds (probably a crash).
-  void MergeFromWithClassData(const MessageLite& other,
-                              const internal::ClassData* data);
-
+ private:
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
 
   // Runs the destructor for this instance.
