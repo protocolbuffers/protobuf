@@ -115,6 +115,15 @@ struct FieldArenaRep {
   }
 };
 
+// Returns true if `T` uses arena offsets instead of holding a copy of the arena
+// pointer. This can be deduced if the field's arena representation is not the
+// same as the field itself.
+template <typename T>
+constexpr bool FieldHasArenaOffset() {
+  using ArenaRepT = typename FieldArenaRep<T>::Type;
+  return !std::is_same_v<T, ArenaRepT>;
+}
+
 template <typename T>
 void arena_delete_object(void* PROTOBUF_NONNULL object) {
   delete reinterpret_cast<T*>(object);
@@ -498,9 +507,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     }
 
     static PROTOBUF_ALWAYS_INLINE T* PROTOBUF_NONNULL New() {
-      // Repeated pointer fields no longer have an arena constructor, so
-      // specialize calling their default constructor.
-      if constexpr (std::is_base_of_v<internal::RepeatedPtrFieldBase, T>) {
+      // Fields which use arena offsets don't have constructors that take an
+      // arena pointer. Since the arena is nullptr, it is safe to default
+      // construct the object.
+      if constexpr (internal::FieldHasArenaOffset<T>()) {
         return new T();
       } else {
         return new T(nullptr);
@@ -580,7 +590,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     static_assert(is_arena_constructable<T>::value,
                   "Can only construct types that are ArenaConstructable");
     if (ABSL_PREDICT_FALSE(arena == nullptr)) {
-      return new T(nullptr, static_cast<Args&&>(args)...);
+      if constexpr (internal::FieldHasArenaOffset<T>()) {
+        return new T(static_cast<Args&&>(args)...);
+      } else {
+        return new T(nullptr, static_cast<Args&&>(args)...);
+      }
     } else {
       using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
       auto* arena_repr =
