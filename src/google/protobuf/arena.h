@@ -596,10 +596,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
         return new T(nullptr, static_cast<Args&&>(args)...);
       }
     } else {
-      using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
-      auto* arena_repr =
-          arena->DoCreateMessage<ArenaRepT>(static_cast<Args&&>(args)...);
-      return arena_repr;
+      return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
     }
   }
 
@@ -652,9 +649,14 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreateMessage(Args&&... args) {
-    return InternalHelper<T>::ConstructOnArena(
-        AllocateInternal<T, is_destructor_skippable<T>::value>(), *this,
-        std::forward<Args>(args)...);
+    using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+    auto* arena_repr = InternalHelper<ArenaRepT>::ConstructOnArena(
+        AllocateInternal<ArenaRepT,
+                         is_destructor_skippable<ArenaRepT>::value>(),
+        *this, std::forward<Args>(args)...);
+    // Note that we can't static_cast arena_repr to T* here, since T might be a
+    // member of ArenaRepT.
+    return internal::FieldArenaRep<T>::Get(arena_repr);
   }
 
   // CreateInArenaStorage is used to implement map field. Without it,
