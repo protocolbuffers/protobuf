@@ -2487,6 +2487,7 @@ filegroup(
             "*unittest.cc",
         ],
         exclude = [
+            "expected_test.cc",
             "lazily_build_dependencies_test.cc",
             "lite_unittest.cc",
             "lite_arena_unittest.cc",
