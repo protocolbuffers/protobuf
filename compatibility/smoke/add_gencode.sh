@@ -7,10 +7,14 @@ if [ "$#" -ne 1 ]; then
 fi
 
 VER="$1"
+TMP_DIR="/tmp/protoc-$VER/"
+
+# Cleanup the tmp dir on either clean or dirty exit
+trap "rm -r \"$TMP_DIR\"" EXIT
 
 cd /tmp/
 wget -O protoc-$VER.zip "https://github.com/protocolbuffers/protobuf/releases/download/v$VER/protoc-$VER-linux-x86_64.zip"
-unzip protoc-$VER.zip -d protoc-$VER/
+unzip protoc-$VER.zip -d "protoc-$VER/"
 cd -
 
 PROTOC="/tmp/protoc-$VER/bin/protoc"
