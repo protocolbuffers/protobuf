@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -384,6 +385,19 @@ public final class Timestamps {
     } else {
       return fromMillis(date.getTime());
     }
+  }
+
+  public static Timestamp fromInstant(Instant instant) {
+    Timestamp timestamp = Timestamp.newBuilder()
+            .setSeconds(instant.getEpochSecond())
+            .setNanos(instant.getNano())
+            .build();
+    checkValid(timestamp);
+    return timestamp;
+  }
+
+  public static Instant toInstant(Timestamp timestamp) {
+    return Instant.ofEpochSecond(timestamp.getSeconds(), timestamp.getNanos());
   }
 
   /**

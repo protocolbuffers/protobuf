@@ -15,6 +15,10 @@ import com.google.common.collect.Lists;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
 import java.text.ParseException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -510,6 +514,68 @@ public class TimestampsTest {
     Date date = new java.sql.Timestamp(-2000);
     Timestamp timestamp = Timestamps.fromDate(date);
     assertThat(Timestamps.toString(timestamp)).isEqualTo("1969-12-31T23:59:58Z");
+  }
+
+  @Test
+  public void testFromInstant() {
+    Instant instant = Instant.ofEpochMilli(1111);
+    Timestamp timestamp = Timestamps.fromInstant(instant);
+    assertThat(Timestamps.toString(timestamp)).isEqualTo("1970-01-01T00:00:01.111Z");
+  }
+
+  @Test
+  public void testFromInstant_after9999CE() {
+    LocalDateTime localDateTime = LocalDateTime.of(20000, Month.OCTOBER, 20, 5, 4, 3);
+    Instant instant = localDateTime.toInstant(ZoneOffset.UTC);
+    try {
+        Timestamps.fromInstant(instant);
+        fail("should have thrown IllegalArgumentException");
+    } catch (IllegalArgumentException expected) {
+        assertThat(expected).hasMessageThat().startsWith("Timestamp is not valid.");
+    }
+  }
+
+  @Test
+  public void testFromInstant_beforeYear1() {
+    LocalDateTime localDateTime = LocalDateTime.of(-32, Month.OCTOBER, 20, 5, 4, 3);
+    Instant instant = localDateTime.toInstant(ZoneOffset.UTC);
+    try {
+        Timestamps.fromInstant(instant);
+        fail("should have thrown IllegalArgumentException"); // copied from Date test
+    } catch (IllegalArgumentException expected) {
+        assertThat(expected).hasMessageThat().startsWith("Timestamp is not valid.");
+    }
+  }
+
+  @Test
+  public void testFromInstant_after2262CE() {
+    LocalDateTime localDateTime = LocalDateTime.of(2299, Month.OCTOBER, 20, 5, 4, 3);
+    Instant instant = localDateTime.toInstant(ZoneOffset.UTC);
+    Timestamp timestamp = Timestamps.fromInstant(instant);
+    assertThat(Timestamps.toString(timestamp)).isEqualTo("2299-10-20T05:04:03Z");
+  }
+
+  @Test
+  public void testFromInstantSubMillisecondPrecision() {
+    Instant instant = Instant.ofEpochSecond(1, 111234567);
+    Timestamp timestamp = Timestamps.fromInstant(instant);
+    assertThat(Timestamps.toString(timestamp)).isEqualTo("1970-01-01T00:00:01.111234567Z");
+  }
+
+  @Test
+  public void testFromInstant_beforeEpoch() {
+    Instant instant = Instant.ofEpochMilli(-1111);
+    Timestamp timestamp = Timestamps.fromInstant(instant);
+    assertThat(Timestamps.toString(timestamp)).isEqualTo("1969-12-31T23:59:58.889Z");
+  }
+
+  @Test
+  public void testToInstant() {
+    Timestamp timestamp = Timestamp.newBuilder()
+            .setSeconds(1)
+            .setNanos(111234567)
+            .build();
+    assertThat(Timestamps.toString(timestamp)).isEqualTo("1970-01-01T00:00:01.111234567Z");
   }
 
   @Test
