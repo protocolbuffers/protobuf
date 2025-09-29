@@ -1,0 +1,4 @@
+load("@rules_java//java:defs.bzl", "java_test")
+load("//compatibility/smoke:stale_gencode_smoke_test.bzl", "stale_gencode_smoke_test")
+
+stale_gencode_smoke_test("3.19.0")
