@@ -11,7 +11,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package proto2_unittest;
 
 import "google/protobuf/unittest.proto";
 

@@ -37,10 +37,7 @@ module BasicTest
       msg = TestMessage.new
       msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
 
-      # https://github.com/jruby/jruby/issues/6818 was fixed in JRuby 9.3.0.0
-      if cruby_or_jruby_9_3_or_higher?
-        GC.start(full_mark: true, immediate_sweep: true)
-      end
+      GC.start(full_mark: true, immediate_sweep: true)
       TestMessage.encode(msg)
     end
 
@@ -499,6 +496,16 @@ module BasicTest
       assert_equal expected_result, m.to_h
     end
 
+    def test_to_hash
+      m = TestMessage.new(
+        :optional_bool => true,
+        :optional_double => -10.100001,
+        :optional_string => 'foo',
+        :repeated_string => ['bar1', 'bar2'],
+        :repeated_msg => [TestMessage2.new(:foo => 100)]
+      )
+      assert_equal m.to_hash, m.to_h
+    end
 
     def test_json_maps
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
@@ -557,6 +564,13 @@ module BasicTest
 
       file_descriptor = TestEnum.descriptor.file_descriptor
       refute_nil file_descriptor
+      assert_equal "basic_test.proto", file_descriptor.name
+    end
+
+    def test_lookup_filename
+      file_descriptor = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.proto'
+      refute_nil file_descriptor
+      assert_kind_of Google::Protobuf::FileDescriptor, file_descriptor
       assert_equal "basic_test.proto", file_descriptor.name
     end
 
@@ -656,11 +670,23 @@ module BasicTest
       assert file_descriptor.options.deprecated
     end
 
+    def test_file_descriptor_to_proto
+      file_descriptor = TestMessage.descriptor.file_descriptor
+
+      assert_instance_of Google::Protobuf::FileDescriptorProto, file_descriptor.to_proto
+    end
+
     def test_field_descriptor_options
       field_descriptor = TestDeprecatedMessage.descriptor.lookup("foo")
 
       assert_instance_of Google::Protobuf::FieldOptions, field_descriptor.options
       assert field_descriptor.options.deprecated
+    end
+
+    def test_field_descriptor_to_proto
+      field_descriptor = TestDeprecatedMessage.descriptor.lookup("foo")
+
+      assert_instance_of Google::Protobuf::FieldDescriptorProto, field_descriptor.to_proto
     end
 
     def test_descriptor_options
@@ -670,11 +696,23 @@ module BasicTest
       assert descriptor.options.deprecated
     end
 
+    def test_descriptor_to_proto
+      descriptor = TestDeprecatedMessage.descriptor
+
+      assert_instance_of Google::Protobuf::DescriptorProto, descriptor.to_proto
+    end
+
     def test_enum_descriptor_options
       enum_descriptor = TestDeprecatedEnum.descriptor
 
       assert_instance_of Google::Protobuf::EnumOptions, enum_descriptor.options
       assert enum_descriptor.options.deprecated
+    end
+
+    def test_enum_descriptor_to_proto
+      enum_descriptor = TestDeprecatedEnum.descriptor
+
+      assert_instance_of Google::Protobuf::EnumDescriptorProto, enum_descriptor.to_proto
     end
 
     def test_oneof_descriptor_options
@@ -685,6 +723,13 @@ module BasicTest
       test_top_level_option = Google::Protobuf::DescriptorPool.generated_pool.lookup 'basic_test.test_top_level_option'
       assert_instance_of Google::Protobuf::FieldDescriptor, test_top_level_option
       assert_equal "Custom option value", test_top_level_option.get(oneof_descriptor.options)
+    end
+
+    def test_oneof_descriptor_to_proto
+      descriptor = TestDeprecatedMessage.descriptor
+      oneof_descriptor = descriptor.lookup_oneof("test_deprecated_message_oneof")
+
+      assert_instance_of Google::Protobuf::OneofDescriptorProto, oneof_descriptor.to_proto
     end
 
     def test_nested_extension

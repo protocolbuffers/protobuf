@@ -1,12 +1,17 @@
-#include "rust/cpp_kernel/map.h"
+#include "google/protobuf/map.h"
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/map.h"
+#include "absl/functional/overload.h"
+#include "absl/log/absl_log.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/strings.h"
 
@@ -14,6 +19,23 @@ namespace google {
 namespace protobuf {
 namespace rust {
 namespace {
+
+using MapValueTag = internal::UntypedMapBase::TypeKind;
+
+// LINT.IfChange(map_ffi)
+struct MapValue {
+  MapValueTag tag;
+  union {
+    bool b;
+    uint32_t u32;
+    uint64_t u64;
+    float f32;
+    double f64;
+    std::string* s;
+    google::protobuf::MessageLite* message;
+  };
+};
+// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/cpp.rs:map_ffi)
 
 template <typename T>
 struct FromViewType {
@@ -29,102 +51,125 @@ template <typename Key>
 using KeyMap = internal::KeyMapBase<
     internal::KeyForBase<typename FromViewType<Key>::type>>;
 
-template <typename Key>
-void DestroyMapNode(internal::UntypedMapBase* m, internal::NodeBase* node,
-                    internal::MapNodeSizeInfoT size_info) {
-  if constexpr (std::is_same<Key, PtrAndLen>::value) {
-    static_cast<std::string*>(node->GetVoidKey())->~basic_string();
+template <typename T>
+T AsViewType(T t) {
+  return t;
+}
+
+absl::string_view AsViewType(PtrAndLen key) { return key.AsStringView(); }
+
+constexpr bool kHasFullRuntime = true;
+
+void InitializeMessageValue(void* raw_ptr,
+                            std::unique_ptr<MessageLite> prototype) {
+  MessageLite* new_msg =
+      internal::RustMapHelper::PlacementNew(prototype.get(), raw_ptr);
+  // If we are working with a full (non-lite) proto, we reflectively swap the
+  // value into place. Otherwise, we have to perform a copy.
+  if constexpr (kHasFullRuntime) {
+    auto* full_msg = DynamicCastMessage<Message>(new_msg);
+    if (full_msg != nullptr) {
+      full_msg->GetReflection()->Swap(
+          full_msg, DynamicCastMessage<Message>(prototype.get()));
+    } else {
+      new_msg->CheckTypeAndMergeFrom(*prototype);
+    }
+  } else {
+    new_msg->CheckTypeAndMergeFrom(*prototype);
   }
-  internal::RustMapHelper::DestroyMessage(
-      static_cast<MessageLite*>(node->GetVoidValue(size_info)));
-  internal::RustMapHelper::DeallocNode(m, node, size_info);
 }
 
 template <typename Key>
-bool Insert(internal::UntypedMapBase* m, internal::MapNodeSizeInfoT size_info,
-            Key key, MessageLite* value,
-            void (*placement_new)(void*, MessageLite*)) {
-  internal::NodeBase* node = internal::RustMapHelper::AllocNode(m, size_info);
+bool Insert(internal::UntypedMapBase* m, Key key, MapValue value) {
+  internal::NodeBase* node = internal::RustMapHelper::AllocNode(m);
   if constexpr (std::is_same<Key, PtrAndLen>::value) {
-    new (node->GetVoidKey()) std::string(key.ptr, key.len);
+    key.PlacementNewString(node->GetVoidKey());
   } else {
     *static_cast<Key*>(node->GetVoidKey()) = key;
   }
-  void* value_ptr = node->GetVoidValue(size_info);
-  placement_new(value_ptr, value);
-  node = internal::RustMapHelper::InsertOrReplaceNode(
+
+  m->VisitValue(node, absl::Overload{
+                          [&](bool* v) { *v = value.b; },
+                          [&](uint32_t* v) { *v = value.u32; },
+                          [&](uint64_t* v) { *v = value.u64; },
+                          [&](float* v) { *v = value.f32; },
+                          [&](double* v) { *v = value.f64; },
+                          [&](std::string* str) {
+                            new (str) std::string(std::move(*value.s));
+                            delete value.s;
+                          },
+                          [&](MessageLite* msg) {
+                            InitializeMessageValue(
+                                msg, absl::WrapUnique(value.message));
+                          },
+                      });
+
+  return internal::RustMapHelper::InsertOrReplaceNode(
       static_cast<KeyMap<Key>*>(m), node);
-  if (node == nullptr) {
-    return true;
-  }
-  DestroyMapNode<Key>(m, node, size_info);
-  return false;
 }
 
-template <typename Map, typename Key,
-          typename = typename std::enable_if<
-              !std::is_same<Key, google::protobuf::rust::PtrAndLen>::value>::type>
-internal::RustMapHelper::NodeAndBucket FindHelper(Map* m, Key key) {
-  return internal::RustMapHelper::FindHelper(
-      m, static_cast<internal::KeyForBase<Key>>(key));
-}
-
-template <typename Map>
-internal::RustMapHelper::NodeAndBucket FindHelper(Map* m,
-                                                  google::protobuf::rust::PtrAndLen key) {
-  return internal::RustMapHelper::FindHelper(
-      m, absl::string_view(key.ptr, key.len));
+void PopulateMapValue(const internal::UntypedMapBase& map,
+                      internal::NodeBase* node, MapValue& output) {
+  map.VisitValue(node, absl::Overload{
+                           [&](const bool* v) {
+                             output.tag = MapValueTag::kBool;
+                             output.b = *v;
+                           },
+                           [&](const uint32_t* v) {
+                             output.tag = MapValueTag::kU32;
+                             output.u32 = *v;
+                           },
+                           [&](const uint64_t* v) {
+                             output.tag = MapValueTag::kU64;
+                             output.u64 = *v;
+                           },
+                           [&](const float* v) {
+                             output.tag = MapValueTag::kFloat;
+                             output.f32 = *v;
+                           },
+                           [&](const double* v) {
+                             output.tag = MapValueTag::kDouble;
+                             output.f64 = *v;
+                           },
+                           [&](std::string* str) {
+                             output.tag = MapValueTag::kString;
+                             output.s = str;
+                           },
+                           [&](MessageLite* msg) {
+                             output.tag = MapValueTag::kMessage;
+                             output.message = msg;
+                           },
+                       });
 }
 
 template <typename Key>
-bool Get(internal::UntypedMapBase* m, internal::MapNodeSizeInfoT size_info,
-         Key key, MessageLite** value) {
+bool Get(internal::UntypedMapBase* m, Key key, MapValue* value) {
   auto* map_base = static_cast<KeyMap<Key>*>(m);
-  internal::RustMapHelper::NodeAndBucket result = FindHelper(map_base, key);
+  auto result = internal::RustMapHelper::FindHelper(map_base, AsViewType(key));
   if (result.node == nullptr) {
     return false;
   }
-  *value = static_cast<MessageLite*>(result.node->GetVoidValue(size_info));
+  PopulateMapValue(*m, result.node, *value);
   return true;
 }
 
 template <typename Key>
-bool Remove(internal::UntypedMapBase* m, internal::MapNodeSizeInfoT size_info,
-            Key key) {
+bool Remove(internal::UntypedMapBase* m, Key key) {
   auto* map_base = static_cast<KeyMap<Key>*>(m);
-  internal::RustMapHelper::NodeAndBucket result = FindHelper(map_base, key);
-  if (result.node == nullptr) {
-    return false;
-  }
-  internal::RustMapHelper::EraseNoDestroy(map_base, result.bucket, result.node);
-  DestroyMapNode<Key>(m, result.node, size_info);
-  return true;
+  return internal::RustMapHelper::EraseImpl(map_base, AsViewType(key));
 }
 
 template <typename Key>
-void IterGet(const internal::UntypedMapIterator* iter,
-             internal::MapNodeSizeInfoT size_info, Key* key,
-             MessageLite** value) {
+void IterGet(const internal::UntypedMapIterator* iter, Key* key,
+             MapValue* value) {
   internal::NodeBase* node = iter->node_;
   if constexpr (std::is_same<Key, PtrAndLen>::value) {
-    const std::string* s = static_cast<const std::string*>(node->GetVoidKey());
+    const std::string* s = iter->m_->GetKey<std::string>(node);
     *key = PtrAndLen{s->data(), s->size()};
   } else {
-    *key = *static_cast<const Key*>(node->GetVoidKey());
+    *key = *iter->m_->GetKey<Key>(node);
   }
-  *value = static_cast<MessageLite*>(node->GetVoidValue(size_info));
-}
-
-void ClearMap(internal::UntypedMapBase* m, internal::MapNodeSizeInfoT size_info,
-              bool key_is_string, bool reset_table) {
-  if (internal::RustMapHelper::IsGlobalEmptyTable(m)) return;
-  uint8_t bits = internal::RustMapHelper::kValueIsProto;
-  if (key_is_string) {
-    bits |= internal::RustMapHelper::kKeyIsString;
-  }
-  internal::RustMapHelper::ClearTable(
-      m, internal::RustMapHelper::ClearInput{size_info, bits, reset_table,
-                                             /* destroy_node = */ nullptr});
+  PopulateMapValue(*iter->m_, node, *value);
 }
 
 }  // namespace
@@ -139,22 +184,16 @@ void proto2_rust_thunk_UntypedMapIterator_increment(
   iter->PlusPlus();
 }
 
-google::protobuf::internal::UntypedMapBase* proto2_rust_map_new() {
-  return new google::protobuf::internal::UntypedMapBase(/* arena = */ nullptr);
-}
-
-void proto2_rust_map_free(google::protobuf::internal::UntypedMapBase* m,
-                          bool key_is_string,
-                          google::protobuf::internal::MapNodeSizeInfoT size_info) {
-  google::protobuf::rust::ClearMap(m, size_info, key_is_string,
-                         /* reset_table = */ false);
-  delete m;
-}
-
-void proto2_rust_map_clear(google::protobuf::internal::UntypedMapBase* m,
-                           bool key_is_string,
-                           google::protobuf::internal::MapNodeSizeInfoT size_info) {
-  google::protobuf::rust::ClearMap(m, size_info, key_is_string, /* reset_table = */ true);
+google::protobuf::internal::UntypedMapBase* proto2_rust_map_new(
+    google::protobuf::rust::MapValue key_prototype,
+    google::protobuf::rust::MapValue value_prototype) {
+  return new google::protobuf::internal::UntypedMapBase(
+      /* arena = */ nullptr,
+      google::protobuf::internal::UntypedMapBase::GetTypeInfoDynamic(
+          key_prototype.tag, value_prototype.tag,
+          value_prototype.tag == google::protobuf::rust::MapValueTag::kMessage
+              ? value_prototype.message
+              : nullptr));
 }
 
 size_t proto2_rust_map_size(google::protobuf::internal::UntypedMapBase* m) {
@@ -166,33 +205,37 @@ google::protobuf::internal::UntypedMapIterator proto2_rust_map_iter(
   return m->begin();
 }
 
-#define DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(cpp_type, suffix)              \
-  bool proto2_rust_map_insert_##suffix(                                   \
-      google::protobuf::internal::UntypedMapBase* m,                                \
-      google::protobuf::internal::MapNodeSizeInfoT size_info, cpp_type key,         \
-      google::protobuf::MessageLite* value,                                         \
-      void (*placement_new)(void*, google::protobuf::MessageLite*)) {               \
-    return google::protobuf::rust::Insert(m, size_info, key, value, placement_new); \
-  }                                                                       \
-                                                                          \
-  bool proto2_rust_map_get_##suffix(                                      \
-      google::protobuf::internal::UntypedMapBase* m,                                \
-      google::protobuf::internal::MapNodeSizeInfoT size_info, cpp_type key,         \
-      google::protobuf::MessageLite** value) {                                      \
-    return google::protobuf::rust::Get(m, size_info, key, value);                   \
-  }                                                                       \
-                                                                          \
-  bool proto2_rust_map_remove_##suffix(                                   \
-      google::protobuf::internal::UntypedMapBase* m,                                \
-      google::protobuf::internal::MapNodeSizeInfoT size_info, cpp_type key) {       \
-    return google::protobuf::rust::Remove(m, size_info, key);                       \
-  }                                                                       \
-                                                                          \
-  void proto2_rust_map_iter_get_##suffix(                                 \
-      const google::protobuf::internal::UntypedMapIterator* iter,                   \
-      google::protobuf::internal::MapNodeSizeInfoT size_info, cpp_type* key,        \
-      google::protobuf::MessageLite** value) {                                      \
-    return google::protobuf::rust::IterGet(iter, size_info, key, value);            \
+void proto2_rust_map_free(google::protobuf::internal::UntypedMapBase* m) {
+  m->ClearTable(false);
+  delete m;
+}
+
+void proto2_rust_map_clear(google::protobuf::internal::UntypedMapBase* m) {
+  m->ClearTable(true);
+}
+
+#define DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(cpp_type, suffix)                \
+  bool proto2_rust_map_insert_##suffix(google::protobuf::internal::UntypedMapBase* m, \
+                                       cpp_type key,                        \
+                                       google::protobuf::rust::MapValue value) {      \
+    return google::protobuf::rust::Insert(m, key, value);                             \
+  }                                                                         \
+                                                                            \
+  bool proto2_rust_map_get_##suffix(google::protobuf::internal::UntypedMapBase* m,    \
+                                    cpp_type key,                           \
+                                    google::protobuf::rust::MapValue* value) {        \
+    return google::protobuf::rust::Get(m, key, value);                                \
+  }                                                                         \
+                                                                            \
+  bool proto2_rust_map_remove_##suffix(google::protobuf::internal::UntypedMapBase* m, \
+                                       cpp_type key) {                      \
+    return google::protobuf::rust::Remove(m, key);                                    \
+  }                                                                         \
+                                                                            \
+  void proto2_rust_map_iter_get_##suffix(                                   \
+      const google::protobuf::internal::UntypedMapIterator* iter, cpp_type* key,      \
+      google::protobuf::rust::MapValue* value) {                                      \
+    return google::protobuf::rust::IterGet(iter, key, value);                         \
   }
 
 DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(int32_t, i32)
@@ -201,28 +244,5 @@ DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(int64_t, i64)
 DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(uint64_t, u64)
 DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(bool, bool)
 DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(google::protobuf::rust::PtrAndLen, ProtoString)
-
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int32_t, i32, int32_t,
-                                                   int32_t, value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(uint32_t, u32, uint32_t,
-                                                   uint32_t, value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(float, f32, float, float,
-                                                   value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(double, f64, double, double,
-                                                   value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(bool, bool, bool, bool,
-                                                   value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(uint64_t, u64, uint64_t,
-                                                   uint64_t, value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(int64_t, i64, int64_t,
-                                                   int64_t, value, cpp_value);
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-    std::string, ProtoBytes, google::protobuf::rust::PtrAndLen, std::string*,
-    std::move(*value),
-    (google::protobuf::rust::PtrAndLen{cpp_value.data(), cpp_value.size()}));
-__PB_RUST_EXPOSE_SCALAR_MAP_METHODS_FOR_VALUE_TYPE(
-    std::string, ProtoString, google::protobuf::rust::PtrAndLen, std::string*,
-    std::move(*value),
-    (google::protobuf::rust::PtrAndLen{cpp_value.data(), cpp_value.size()}));
 
 }  // extern "C"

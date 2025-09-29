@@ -25,6 +25,7 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/cpp/generator.h"
+#include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
@@ -51,8 +52,8 @@ std::string FindWithDefault(
 
 class MockErrorCollector : public MultiFileErrorCollector {
  public:
-  MockErrorCollector() {}
-  ~MockErrorCollector() override {}
+  MockErrorCollector() = default;
+  ~MockErrorCollector() override = default;
 
   std::string text_;
 
@@ -97,7 +98,7 @@ class MockGeneratorContext : public GeneratorContext {
 
   io::ZeroCopyOutputStream* Open(const std::string& filename) override {
     auto& map_slot = files_[filename];
-    map_slot.reset(new std::string);
+    map_slot = std::make_unique<std::string>();
     return new io::StringOutputStream(map_slot.get());
   }
 
@@ -121,12 +122,6 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
   // of the data to compare to.
   absl::flat_hash_map<absl::string_view, std::string> vpath_map;
   absl::flat_hash_map<absl::string_view, std::string> rpath_map;
-  rpath_map["google/protobuf/test_messages_proto2"] =
-      "net/proto2/z_generated_example/test_messages_proto2";
-  rpath_map["google/protobuf/test_messages_proto3"] =
-      "net/proto2/z_generated_example/test_messages_proto3";
-  rpath_map["net/proto2/internal/proto2_weak"] =
-      "net/proto2/z_generated_example/proto2_weak";
 
   DiskSourceTree source_tree;
   source_tree.MapPath("", TestUtil::TestSourceDir());
@@ -167,10 +162,11 @@ TEST(BootstrapTest, OptionNotExist) {
   GeneratorContext* generator_context = nullptr;
   std::string parameter = "aaa";
   std::string error;
-  ASSERT_FALSE(generator.Generate(
-      pool.FindFileByName("google/protobuf/descriptor.proto"), parameter,
-      generator_context, &error));
-  EXPECT_EQ(error, absl::StrCat("Unknown generator option: ", parameter));
+
+  const FileDescriptor* file = FileDescriptorProto::descriptor()->file();
+  ASSERT_FALSE(generator.Generate(file, parameter, generator_context, &error));
+  EXPECT_THAT(error, testing::EndsWith(absl::StrCat(
+                         "Unknown generator option: ", parameter)));
 }
 
 }  // namespace

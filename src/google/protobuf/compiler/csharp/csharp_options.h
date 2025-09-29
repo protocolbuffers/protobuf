@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_OPTIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_OPTIONS_H__
 
 #include <string>
 
@@ -57,4 +57,4 @@ struct Options {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_OPTIONS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_OPTIONS_H__

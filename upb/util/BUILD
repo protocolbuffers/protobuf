@@ -1,3 +1,6 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
@@ -17,9 +20,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf:descriptor_upb_c_proto",
-        "//upb:base",
-        "//upb:port",
-        "//upb:reflection",
+        "//upb/base",
+        "//upb/port",
+        "//upb/reflection",
         "//upb/reflection:internal",
     ],
 )
@@ -47,15 +50,16 @@ cc_library(
     name = "def_to_proto_test_lib",
     testonly = 1,
     hdrs = ["def_to_proto_test.h"],
+    visibility = ["//upb:__pkg__"],
     deps = [
         ":def_to_proto",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf/util:differencer",
-        "//upb:base",
-        "//upb:mem",
+        "//upb/base",
+        "//upb/mem",
         "//upb/reflection:internal",
-        "@com_google_googletest//:gtest",
+        "@googletest//:gtest",
     ],
 )
 
@@ -69,17 +73,17 @@ cc_test(
         ":def_to_proto_test_lib",
         ":def_to_proto_test_upb_proto",
         ":def_to_proto_test_upb_proto_reflection",
-        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_reflection_proto",
         "//src/google/protobuf/util:differencer",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:reflection",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/reflection",
         "//upb/test:parse_text_proto",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -91,11 +95,11 @@ cc_library(
     hdrs = ["required_fields.h"],
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:port",
-        "//upb:reflection",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/port",
+        "//upb/reflection",
     ],
 )
 
@@ -139,14 +143,14 @@ cc_test(
         ":required_fields",
         ":required_fields_test_upb_proto",
         ":required_fields_test_upb_proto_reflection",
-        "//upb:base",
-        "//upb:json",
-        "//upb:mem",
-        "//upb:reflection",
+        "//upb/base",
+        "//upb/json",
+        "//upb/mem",
+        "//upb/reflection",
         "//upb/reflection:internal",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -168,16 +172,6 @@ filegroup(
             "**/*test.cc",
         ],
         exclude = ["def_to_proto_fuzz_test.cc"],
-    ),
-    visibility = ["//upb:__pkg__"],
-)
-
-filegroup(
-    name = "test_util",
-    srcs = glob(
-        [
-            "**/*test.h",
-        ],
     ),
     visibility = ["//upb:__pkg__"],
 )

@@ -24,6 +24,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
 #include "google/protobuf/port_def.inc"
@@ -130,7 +131,7 @@ struct TcFieldData {
 struct TcParseTableBase;
 
 // TailCallParseFunc is the function pointer type used in the tailcall table.
-typedef PROTOBUF_CC const char* (*TailCallParseFunc)(PROTOBUF_TC_PARAM_DECL);
+using TailCallParseFunc = PROTOBUF_CC const char* (*)(PROTOBUF_TC_PARAM_DECL);
 
 namespace field_layout {
 struct Offset {
@@ -152,100 +153,93 @@ struct FieldAuxEnumData {};
 // byte.
 class MapTypeCard {
  public:
-  enum CppType { kBool, k32, k64, kString, kMessage };
   MapTypeCard() = default;
-  constexpr MapTypeCard(WireFormatLite::WireType wiretype, CppType cpp_type,
-                        bool is_zigzag_utf8, bool is_signed)
-      : data_(static_cast<uint8_t>((static_cast<uint8_t>(wiretype) << 0) |
-                                   (static_cast<uint8_t>(cpp_type) << 3) |
-                                   (static_cast<uint8_t>(is_zigzag_utf8) << 6) |
-                                   (static_cast<uint8_t>(is_signed) << 7))) {}
+  constexpr MapTypeCard(int number, WireFormatLite::WireType wiretype,
+                        bool is_signed, bool is_zigzag, bool is_utf8)
+      : tag_(static_cast<uint8_t>(WireFormatLite::MakeTag(number, wiretype))),
+        is_signed_(is_signed),
+        is_zigzag_(is_zigzag),
+        is_utf8_(is_utf8) {}
+
+  uint8_t tag() const { return tag_; }
 
   WireFormatLite::WireType wiretype() const {
-    return static_cast<WireFormatLite::WireType>((data_ >> 0) & 0x7);
+    return static_cast<WireFormatLite::WireType>(tag_ & 7);
   }
 
-  CppType cpp_type() const { return static_cast<CppType>((data_ >> 3) & 0x7); }
-
-  bool is_signed() const {
-    ABSL_DCHECK(cpp_type() == CppType::k32 || cpp_type() == CppType::k64);
-    return static_cast<bool>(data_ >> 7);
-  }
+  bool is_signed() const { return is_signed_; }
 
   bool is_zigzag() const {
     ABSL_DCHECK(wiretype() == WireFormatLite::WIRETYPE_VARINT);
-    ABSL_DCHECK(cpp_type() == CppType::k32 || cpp_type() == CppType::k64);
-    return is_zigzag_utf8();
+    return is_zigzag_;
   }
   bool is_utf8() const {
     ABSL_DCHECK(wiretype() == WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-    ABSL_DCHECK(cpp_type() == CppType::kString);
-    return is_zigzag_utf8();
+    return is_utf8_;
   }
 
  private:
-  bool is_zigzag_utf8() const { return static_cast<bool>((data_ >> 6) & 0x1); }
-  uint8_t data_;
+  uint8_t tag_;
+  uint8_t is_signed_ : 1;
+  uint8_t is_zigzag_ : 1;
+  uint8_t is_utf8_ : 1;
 };
-static_assert(sizeof(MapTypeCard) == sizeof(uint8_t), "");
 
 // Make the map entry type card for a specified field type.
-constexpr MapTypeCard MakeMapTypeCard(WireFormatLite::FieldType type) {
+constexpr MapTypeCard MakeMapTypeCard(int number,
+                                      WireFormatLite::FieldType type) {
   switch (type) {
     case WireFormatLite::TYPE_FLOAT:
-      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, true};
+      return {number, WireFormatLite::WIRETYPE_FIXED32, true, false, false};
     case WireFormatLite::TYPE_FIXED32:
-      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED32, false, false, false};
     case WireFormatLite::TYPE_SFIXED32:
-      return {WireFormatLite::WIRETYPE_FIXED32, MapTypeCard::k32, false, true};
+      return {number, WireFormatLite::WIRETYPE_FIXED32, true, false, false};
 
     case WireFormatLite::TYPE_DOUBLE:
-      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, true};
+      return {number, WireFormatLite::WIRETYPE_FIXED64, true, false, false};
     case WireFormatLite::TYPE_FIXED64:
-      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED64, false, false, false};
     case WireFormatLite::TYPE_SFIXED64:
-      return {WireFormatLite::WIRETYPE_FIXED64, MapTypeCard::k64, false, true};
+      return {number, WireFormatLite::WIRETYPE_FIXED64, true, false, false};
 
     case WireFormatLite::TYPE_BOOL:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::kBool, false,
-              false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, false, false, false};
 
     case WireFormatLite::TYPE_ENUM:
       // Enum validation is handled via `value_is_validated_enum` below.
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, true};
+      return {number, WireFormatLite::WIRETYPE_VARINT, true, false, false};
     case WireFormatLite::TYPE_INT32:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, true};
+      return {number, WireFormatLite::WIRETYPE_VARINT, true, false, false};
     case WireFormatLite::TYPE_UINT32:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, false, false, false};
 
     case WireFormatLite::TYPE_INT64:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false, true};
+      return {number, WireFormatLite::WIRETYPE_VARINT, true, false, false};
     case WireFormatLite::TYPE_UINT64:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, false, false, false};
 
     case WireFormatLite::TYPE_SINT32:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k32, true, true};
+      return {number, WireFormatLite::WIRETYPE_VARINT, true, true, false};
     case WireFormatLite::TYPE_SINT64:
-      return {WireFormatLite::WIRETYPE_VARINT, MapTypeCard::k64, true, true};
+      return {number, WireFormatLite::WIRETYPE_VARINT, true, true, false};
 
     case WireFormatLite::TYPE_STRING:
-      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
-              true, false};
+      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, false, false,
+              true};
     case WireFormatLite::TYPE_BYTES:
-      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kString,
-              false, false};
+      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, false, false,
+              false};
 
     case WireFormatLite::TYPE_MESSAGE:
-      return {WireFormatLite::WIRETYPE_LENGTH_DELIMITED, MapTypeCard::kMessage,
-              false, false};
+      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, false, false,
+              false};
 
     case WireFormatLite::TYPE_GROUP:
     default:
       Unreachable();
   }
 }
-
-enum class MapNodeSizeInfoT : uint32_t;
 
 // Aux entry for map fields.
 struct MapAuxInfo {
@@ -259,12 +253,8 @@ struct MapAuxInfo {
   uint8_t use_lite : 1;
   // If true UTF8 errors cause the parsing to fail.
   uint8_t fail_on_utf8_failure : 1;
-  // If true UTF8 errors are logged, but they are accepted.
-  uint8_t log_debug_utf8_failure : 1;
   // If true the next aux contains the enum validator.
   uint8_t value_is_validated_enum : 1;
-  // Size information derived from the actual node type.
-  MapNodeSizeInfoT node_size_info;
 };
 static_assert(sizeof(MapAuxInfo) <= 8, "");
 
@@ -287,7 +277,7 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t num_aux_entries;
   uint32_t aux_offset;
 
-  const MessageLite::ClassData* class_data;
+  const ClassData* class_data;
   using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
                                           ParseContext* ctx);
   PostLoopHandler post_loop_handler;
@@ -312,7 +302,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint32_t field_entries_offset,
                              uint16_t num_field_entries,
                              uint16_t num_aux_entries, uint32_t aux_offset,
-                             const MessageLite::ClassData* class_data,
+                             const ClassData* class_data,
                              PostLoopHandler post_loop_handler,
                              TailCallParseFunc fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
@@ -382,6 +372,40 @@ struct alignas(uint64_t) TcParseTableBase {
     return reinterpret_cast<FastFieldEntry*>(this + 1) + idx;
   }
 
+  static uint32_t RecodeTagForFastParsing(uint32_t tag) {
+    ABSL_DCHECK_LE(tag, 0x3FFFu);
+    // Construct the varint-coded tag. If it is more than 7 bits, we need to
+    // shift the high bits and add a continue bit.
+    uint32_t hibits = tag & 0xFFFFFF80;
+    if (hibits != 0) {
+      // hi = tag & ~0x7F
+      // lo = tag & 0x7F
+      // This shifts hi to the left by 1 to the next byte and sets the
+      // continuation bit.
+      tag = tag + hibits + 0x80;
+    }
+    return tag;
+  }
+
+  static constexpr size_t kMaxFastFields = 32;
+  static uint32_t TagToIdx(uint32_t tag, uint32_t fast_table_size) {
+    // The fast table size must be a power of two.
+    ABSL_DCHECK_EQ((fast_table_size & (fast_table_size - 1)), uint32_t{0});
+
+    // The field index is determined by the low bits of the field number, where
+    // the table size determines the width of the mask. The largest table
+    // supported is 32 entries. The parse loop uses these bits directly, so that
+    // the dispatch does not require arithmetic:
+    //        byte 0   byte 1
+    //   tag: 1nnnnttt 0nnnnnnn
+    //        ^^^^^
+    //         idx (table_size_log2=5)
+    // This means that any field number that does not fit in the lower 4 bits
+    // will always have the top bit of its table index asserted.
+    uint32_t idx_mask = fast_table_size - 1;
+    return (tag >> 3) & idx_mask;
+  }
+
   // Returns a begin iterator (pointer) to the start of the field lookup table.
   const uint16_t* field_lookup_begin() const {
     return reinterpret_cast<const uint16_t*>(reinterpret_cast<uintptr_t>(this) +
@@ -421,8 +445,8 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(FieldAuxEnumData, const uint32_t* enum_data)
         : enum_data(enum_data) {}
     constexpr FieldAux(field_layout::Offset off) : offset(off.off) {}
-    constexpr FieldAux(int16_t range_start, uint16_t range_length)
-        : enum_range{range_start, range_length} {}
+    constexpr FieldAux(int32_t range_first, int32_t range_last)
+        : enum_range{range_first, range_last} {}
     constexpr FieldAux(const MessageLite* msg) : message_default_p(msg) {}
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
         : message_default_p(msg) {}
@@ -431,8 +455,8 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(LazyEagerVerifyFnType verify_func)
         : verify_func(verify_func) {}
     struct {
-      int16_t start;    // minimum enum number (if it fits)
-      uint16_t length;  // length of range (i.e., max = start + length - 1)
+      int32_t first;  // the first label in the range (inclusive)
+      int32_t last;   // the last label in the range (inclusize)
     } enum_range;
     uint32_t offset;
     const void* message_default_p;
@@ -551,8 +575,7 @@ PROTOBUF_CC const char* StubParseImpl(PROTOBUF_TC_PARAM_DECL) {
 }
 
 template <typename T,
-          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*),
-          typename ClassData>
+          PROTOBUF_CC const char* (*func)(T*, const char*, ParseContext*)>
 constexpr TcParseTable<0> CreateStubTcParseTable(
     const ClassData* class_data,
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {

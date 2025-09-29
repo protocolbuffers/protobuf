@@ -8,12 +8,13 @@
 package com.google.protobuf.util;
 
 import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
-import protobuf_unittest.UnittestProto.NestedTestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllTypes;
+import com.google.protobuf.util.FieldMaskUtil.TrimOptions;
+import proto2_unittest.UnittestProto.NestedTestAllTypes;
+import proto2_unittest.UnittestProto.TestAllTypes;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -90,66 +91,63 @@ public class FieldMaskUtilTest {
   @Test
   public void testFromString() throws Exception {
     FieldMask mask = FieldMaskUtil.fromString("");
-    assertThat(mask.getPathsCount()).isEqualTo(0);
+    assertThat(mask).isEqualTo(FieldMask.getDefaultInstance());
+
     mask = FieldMaskUtil.fromString("foo");
-    assertThat(mask.getPathsCount()).isEqualTo(1);
-    assertThat(mask.getPaths(0)).isEqualTo("foo");
+    assertThat(mask).isEqualTo(FieldMask.newBuilder().addPaths("foo").build());
+
     mask = FieldMaskUtil.fromString("foo,bar.baz");
-    assertThat(mask.getPathsCount()).isEqualTo(2);
-    assertThat(mask.getPaths(0)).isEqualTo("foo");
-    assertThat(mask.getPaths(1)).isEqualTo("bar.baz");
+    assertThat(mask).isEqualTo(FieldMask.newBuilder().addPaths("foo").addPaths("bar.baz").build());
 
     // Empty field paths are ignore.
     mask = FieldMaskUtil.fromString(",foo,,bar,");
-    assertThat(mask.getPathsCount()).isEqualTo(2);
-    assertThat(mask.getPaths(0)).isEqualTo("foo");
-    assertThat(mask.getPaths(1)).isEqualTo("bar");
+    assertThat(mask).isEqualTo(FieldMask.newBuilder().addPaths("foo").addPaths("bar").build());
 
-    // Check whether the field paths are valid if a class parameter is provided.
-    mask = FieldMaskUtil.fromString(NestedTestAllTypes.class, ",payload");
+    // The field paths are valid if a class parameter is provided.
+    mask = FieldMaskUtil.fromString(NestedTestAllTypes.class, ",payload,child");
+    assertThat(mask)
+        .isEqualTo(FieldMask.newBuilder().addPaths("payload").addPaths("child").build());
 
-    try {
-      mask = FieldMaskUtil.fromString(NestedTestAllTypes.class, "payload,nonexist");
-      assertWithMessage("Exception is expected.").fail();
-    } catch (IllegalArgumentException e) {
-      // Expected.
-    }
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> FieldMaskUtil.fromString(NestedTestAllTypes.class, "payload,nonexist"));
   }
 
   @Test
   public void testFromFieldNumbers() throws Exception {
     FieldMask mask = FieldMaskUtil.fromFieldNumbers(TestAllTypes.class);
-    assertThat(mask.getPathsCount()).isEqualTo(0);
+    assertThat(mask).isEqualTo(FieldMask.getDefaultInstance());
+
     mask =
         FieldMaskUtil.fromFieldNumbers(
             TestAllTypes.class, TestAllTypes.OPTIONAL_INT32_FIELD_NUMBER);
-    assertThat(mask.getPathsCount()).isEqualTo(1);
-    assertThat(mask.getPaths(0)).isEqualTo("optional_int32");
+    assertThat(mask).isEqualTo(FieldMask.newBuilder().addPaths("optional_int32").build());
+
     mask =
         FieldMaskUtil.fromFieldNumbers(
             TestAllTypes.class,
             TestAllTypes.OPTIONAL_INT32_FIELD_NUMBER,
             TestAllTypes.OPTIONAL_INT64_FIELD_NUMBER);
-    assertThat(mask.getPathsCount()).isEqualTo(2);
-    assertThat(mask.getPaths(0)).isEqualTo("optional_int32");
-    assertThat(mask.getPaths(1)).isEqualTo("optional_int64");
+    assertThat(mask)
+        .isEqualTo(
+            FieldMask.newBuilder().addPaths("optional_int32").addPaths("optional_int64").build());
 
-    try {
-      int invalidFieldNumber = 1000;
-      mask = FieldMaskUtil.fromFieldNumbers(TestAllTypes.class, invalidFieldNumber);
-      assertWithMessage("Exception is expected.").fail();
-    } catch (IllegalArgumentException expected) {
-    }
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> FieldMaskUtil.fromFieldNumbers(TestAllTypes.class, 1000 /* invalid field number */));
   }
 
   @Test
   public void testToJsonString() throws Exception {
     FieldMask mask = FieldMask.getDefaultInstance();
     assertThat(FieldMaskUtil.toJsonString(mask)).isEmpty();
+
     mask = FieldMask.newBuilder().addPaths("foo").build();
     assertThat(FieldMaskUtil.toJsonString(mask)).isEqualTo("foo");
+
     mask = FieldMask.newBuilder().addPaths("foo.bar_baz").addPaths("").build();
     assertThat(FieldMaskUtil.toJsonString(mask)).isEqualTo("foo.barBaz");
+
     mask = FieldMask.newBuilder().addPaths("foo").addPaths("bar_baz").build();
     assertThat(FieldMaskUtil.toJsonString(mask)).isEqualTo("foo,barBaz");
   }
@@ -157,17 +155,16 @@ public class FieldMaskUtilTest {
   @Test
   public void testFromJsonString() throws Exception {
     FieldMask mask = FieldMaskUtil.fromJsonString("");
-    assertThat(mask.getPathsCount()).isEqualTo(0);
+    assertThat(mask).isEqualTo(FieldMask.getDefaultInstance());
+
     mask = FieldMaskUtil.fromJsonString("foo");
-    assertThat(mask.getPathsCount()).isEqualTo(1);
-    assertThat(mask.getPaths(0)).isEqualTo("foo");
+    assertThat(mask).isEqualTo(FieldMask.newBuilder().addPaths("foo").build());
+
     mask = FieldMaskUtil.fromJsonString("foo.barBaz");
-    assertThat(mask.getPathsCount()).isEqualTo(1);
-    assertThat(mask.getPaths(0)).isEqualTo("foo.bar_baz");
+    assertThat(mask).isEqualTo(FieldMask.newBuilder().addPaths("foo.bar_baz").build());
+
     mask = FieldMaskUtil.fromJsonString("foo,barBaz");
-    assertThat(mask.getPathsCount()).isEqualTo(2);
-    assertThat(mask.getPaths(0)).isEqualTo("foo");
-    assertThat(mask.getPaths(1)).isEqualTo("bar_baz");
+    assertThat(mask).isEqualTo(FieldMask.newBuilder().addPaths("foo").addPaths("bar_baz").build());
   }
 
   @Test
@@ -209,7 +206,9 @@ public class FieldMaskUtilTest {
     // {@link FieldMaskTreeTest#testAddFieldPath} to cover all scenarios.
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz");
     FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar");
+
     FieldMask result = FieldMaskUtil.union(mask1, mask2);
+
     assertThat(FieldMaskUtil.toString(result)).isEqualTo("bar,foo");
   }
 
@@ -219,27 +218,33 @@ public class FieldMaskUtilTest {
     FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar.quz");
     FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");
     FieldMask mask4 = FieldMaskUtil.fromString("bar");
+
     FieldMask result = FieldMaskUtil.union(mask1, mask2, mask3, mask4);
+
     assertThat(FieldMaskUtil.toString(result)).isEqualTo("bar,foo");
   }
 
   @Test
-  public void testSubstract() throws Exception {
+  public void testSubtract() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testRemoveFieldPath} to cover all scenarios.
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz");
     FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar");
+
     FieldMask result = FieldMaskUtil.subtract(mask1, mask2);
+
     assertThat(FieldMaskUtil.toString(result)).isEqualTo("foo");
   }
 
   @Test
-  public void testSubstract_usingVarArgs() throws Exception {
+  public void testSubtract_usingVarArgs() throws Exception {
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz.bar");
     FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar.baz.quz");
     FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");
     FieldMask mask4 = FieldMaskUtil.fromString("foo,bar.baz");
+
     FieldMask result = FieldMaskUtil.subtract(mask1, mask2, mask3, mask4);
+
     assertThat(FieldMaskUtil.toString(result)).isEmpty();
   }
 
@@ -249,7 +254,9 @@ public class FieldMaskUtilTest {
     // {@link FieldMaskTreeTest#testIntersectFieldPath} to cover all scenarios.
     FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz");
     FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar");
+
     FieldMask result = FieldMaskUtil.intersection(mask1, mask2);
+
     assertThat(FieldMaskUtil.toString(result)).isEqualTo("bar.baz,bar.quz,foo.bar");
   }
 
@@ -262,7 +269,9 @@ public class FieldMaskUtilTest {
             .setPayload(TestAllTypes.newBuilder().setOptionalInt32(1234))
             .build();
     NestedTestAllTypes.Builder builder = NestedTestAllTypes.newBuilder();
+
     FieldMaskUtil.merge(FieldMaskUtil.fromString("payload"), source, builder);
+
     assertThat(builder.getPayload().getOptionalInt32()).isEqualTo(1234);
   }
 
@@ -278,9 +287,82 @@ public class FieldMaskUtilTest {
             .build();
     FieldMask mask =
         FieldMaskUtil.fromStringList(
-            ImmutableList.of("payload.optional_int32", "payload.optional_string"));
+            ImmutableList.of(
+                "payload.optional_int32",
+                "payload.optional_string",
+                "payload.optional_int64", // Primitive field not set in source.
+                "child", // Message field not set in source.
+                "child.optional_int32" // Primitive field in an unset message field in source.
+                ));
 
     NestedTestAllTypes actual = FieldMaskUtil.trim(mask, source);
+
+    assertThat(actual)
+        .isEqualTo(
+            NestedTestAllTypes.newBuilder()
+                .setPayload(
+                    TestAllTypes.newBuilder()
+                        .setOptionalInt32(1234)
+                        .setOptionalInt64(0) // Default value set for primitive field.
+                        .setOptionalString("1234"))
+                .build());
+  }
+
+  @Test
+  public void testTrimWithTrimOptions_default() throws Exception {
+    NestedTestAllTypes source =
+        NestedTestAllTypes.newBuilder()
+            .setPayload(
+                TestAllTypes.newBuilder()
+                    .setOptionalInt32(1234)
+                    .setOptionalString("1234")
+                    .setOptionalBool(true))
+            .build();
+    FieldMask mask =
+        FieldMaskUtil.fromStringList(
+            ImmutableList.of(
+                "payload.optional_int32",
+                "payload.optional_string",
+                "payload.optional_int64", // Primitive field not set in source.
+                "child", // Message field not set in source.
+                "child.optional_int32" // Primitive field in an unset message field in source.
+                ));
+
+    NestedTestAllTypes actual = FieldMaskUtil.trim(mask, source, new TrimOptions());
+
+    assertThat(actual)
+        .isEqualTo(
+            NestedTestAllTypes.newBuilder()
+                .setPayload(
+                    TestAllTypes.newBuilder()
+                        .setOptionalInt32(1234)
+                        .setOptionalInt64(0) // Default value set for primitive field.
+                        .setOptionalString("1234"))
+                .build());
+  }
+
+  @Test
+  public void testTrimWithTrimOptions_retainPrimitiveFieldUnsetState() throws Exception {
+    NestedTestAllTypes source =
+        NestedTestAllTypes.newBuilder()
+            .setPayload(
+                TestAllTypes.newBuilder()
+                    .setOptionalInt32(1234)
+                    .setOptionalString("1234")
+                    .setOptionalBool(true))
+            .build();
+    FieldMask mask =
+        FieldMaskUtil.fromStringList(
+            ImmutableList.of(
+                "payload.optional_int32",
+                "payload.optional_string",
+                "payload.optional_int64", // Primitive field not set in source.
+                "child", // Message field not set in source.
+                "child.optional_int32" // Primitive field in an unset message field in source.
+                ));
+
+    NestedTestAllTypes actual =
+        FieldMaskUtil.trim(mask, source, new TrimOptions().setRetainPrimitiveFieldUnsetState(true));
 
     assertThat(actual)
         .isEqualTo(

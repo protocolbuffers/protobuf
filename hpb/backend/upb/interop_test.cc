@@ -5,11 +5,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/hpb/backend/upb/interop.h"
+#include "hpb/backend/upb/interop.h"
 
 #include <gtest/gtest.h>
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.h"
-#include "google/protobuf/compiler/hpb/tests/test_model.upb.proto.h"
+#include "hpb_generator/tests/test_model.hpb.h"
+#include "hpb_generator/tests/test_model.upb.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 
@@ -30,6 +30,26 @@ TEST(CppGeneratedCode, InteropMoveMessage) {
   // Now that we have moved ownership, free original arena.
   upb_Arena_Free(source_arena);
   EXPECT_EQ(model.int_value_with_default(), 123);
+}
+
+TEST(CppGeneratedCode, CanCreateCProxyWithoutCasting) {
+  upb_Arena* arena = upb_Arena_New();
+  hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
+
+  hpb_unittest::protos::TestModel::CProxy const_handle =
+      hpb::interop::upb::MakeCHandle<TestModel>(msg, arena);
+  EXPECT_EQ(const_handle.value(), 0);
+  upb_Arena_Free(arena);
+}
+
+TEST(CppGeneratedCode, CanCreateProxyWithoutCasting) {
+  upb_Arena* arena = upb_Arena_New();
+  hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
+
+  hpb_unittest::protos::TestModel::Proxy handle =
+      hpb::interop::upb::MakeHandle<TestModel>(msg, arena);
+  EXPECT_EQ(handle.value(), 0);
+  upb_Arena_Free(arena);
 }
 
 }  // namespace

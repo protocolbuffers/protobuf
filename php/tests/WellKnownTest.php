@@ -270,29 +270,63 @@ class WellKnownTest extends TestBase {
 
         $m = new Value();
 
-        $this->assertNull($m->getStructValue());
+        # null_value
+        $this->assertFalse($m->hasNullValue());
 
         $m->setNullValue(NullValue::NULL_VALUE);
-        $this->assertSame(NullValue::NULL_VALUE, $m->getNullValue());
+
+        $this->assertTrue($m->hasNullValue());
         $this->assertSame("null_value", $m->getKind());
+        $this->assertSame(NullValue::NULL_VALUE, $m->getNullValue());
+
+        # number_value
+        $this->assertFalse($m->hasNumberValue());
 
         $m->setNumberValue(1.0);
+
+        $this->assertTrue($m->hasNumberValue());
         $this->assertSame(1.0, $m->getNumberValue());
         $this->assertSame("number_value", $m->getKind());
 
+        # string_value
+        $this->assertFalse($m->hasStringValue());
+
         $m->setStringValue("a");
+
+        $this->assertTrue($m->hasStringValue());
+
         $this->assertSame("a", $m->getStringValue());
         $this->assertSame("string_value", $m->getKind());
 
+        # bool_value
+        $this->assertFalse($m->hasBoolValue());
+
         $m->setBoolValue(true);
+
+        $this->assertTrue($m->hasBoolValue());
+
         $this->assertSame(true, $m->getBoolValue());
         $this->assertSame("bool_value", $m->getKind());
 
+
+        # struct_value
+        $this->assertNull($m->getStructValue());
+        $this->assertFalse($m->hasStructValue());
+
         $m->setStructValue(new Struct());
+
+        $this->assertTrue($m->hasStructValue());
+
         $this->assertFalse(is_null($m->getStructValue()));
         $this->assertSame("struct_value", $m->getKind());
 
+        # list_value
+        $this->assertFalse($m->hasListValue());
+
         $m->setListValue(new ListValue());
+
+        $this->assertTrue($m->hasListValue());
+
         $this->assertFalse(is_null($m->getListValue()));
         $this->assertSame("list_value", $m->getKind());
 
@@ -414,6 +448,46 @@ class WellKnownTest extends TestBase {
             ['\Google\Protobuf\Field\Kind'],
             ['\Google\Protobuf\NullValue'],
             ['\Google\Protobuf\Syntax'],
+        ];
+    }
+
+    /**
+     * @dataProvider optionalFieldsDataProvider
+     */
+    public function testReflectionProperty($property, $default)
+    {
+        $testMessage = new TestMessage();
+
+        $functionName = implode('', array_map('ucwords', explode('_', $property)));
+
+        $reflectionProperty = new \ReflectionProperty($testMessage, $property);
+
+        self::assertFalse(call_user_func([$testMessage, 'has'.$functionName]));
+        self::assertEquals($default, call_user_func([$testMessage, 'get'.$functionName]));
+        self::assertNull($reflectionProperty->getValue($testMessage));
+    }
+
+    public function optionalFieldsDataProvider()
+    {
+        return [
+            ['true_optional_int32', 0],
+            ['true_optional_int64', 0],
+            ['true_optional_uint32', 0],
+            ['true_optional_uint64', 0],
+            ['true_optional_sint32', 0],
+            ['true_optional_sint64', 0],
+            ['true_optional_fixed32', 0],
+            ['true_optional_fixed64', 0],
+            ['true_optional_sfixed32', 0],
+            ['true_optional_sfixed64', 0],
+            ['true_optional_float', 0.0],
+            ['true_optional_double', 0.0],
+            ['true_optional_bool', false],
+            ['true_optional_string', ''],
+            ['true_optional_bytes', ''],
+            ['true_optional_enum', null],
+            ['true_optional_message', null],
+            ['true_optional_included_message', null],
         ];
     }
 }

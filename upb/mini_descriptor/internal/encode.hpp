@@ -8,8 +8,10 @@
 #ifndef UPB_MINI_TABLE_ENCODE_INTERNAL_HPP_
 #define UPB_MINI_TABLE_ENCODE_INTERNAL_HPP_
 
+#include <cstdint>
 #include <string>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/internal/log2.h"
 #include "upb/mini_descriptor/internal/encode.h"
 
@@ -97,7 +99,7 @@ class MtDataEncoder {
       if (!end) return false;
       // C++ does not guarantee that string has doubling growth behavior, but
       // we need it to avoid O(n^2).
-      str_.reserve(upb_Log2CeilingSize(str_.size() + (end - buf_)));
+      str_.reserve(upb_RoundUpToPowerOfTwo(str_.size() + (end - buf_)));
       str_.append(buf_, end - buf_);
       return true;
     }

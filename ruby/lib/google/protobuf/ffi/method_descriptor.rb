@@ -7,7 +7,7 @@
 
 module Google
   module Protobuf
-    class MethodDescriptor 
+    class MethodDescriptor
       attr :method_def, :descriptor_pool
 
       include Google::Protobuf::Internal::Convert
@@ -81,6 +81,15 @@ module Google
         @server_streaming ||= Google::Protobuf::FFI.method_server_streaming(self)
       end
 
+      def to_proto
+        @to_proto ||= begin
+          size_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
+          temporary_arena = Google::Protobuf::FFI.create_arena
+          buffer = Google::Protobuf::FFI.method_to_proto(self, size_ptr, temporary_arena)
+          Google::Protobuf::MethodDescriptorProto.decode(buffer.read_string_length(size_ptr.read(:size_t)).force_encoding("ASCII-8BIT").freeze)
+        end
+      end
+
       private
 
       def initialize(method_def, descriptor_pool)
@@ -108,6 +117,7 @@ module Google
       attach_function :method_output_type,                :upb_MethodDef_OutputType,              [MethodDescriptor], Descriptor
       attach_function :method_client_streaming,           :upb_MethodDef_ClientStreaming,         [MethodDescriptor], :bool
       attach_function :method_server_streaming,           :upb_MethodDef_ServerStreaming,         [MethodDescriptor], :bool
+      attach_function :method_to_proto,                   :MethodDescriptor_serialized_to_proto,  [MethodDescriptor, :pointer, Internal::Arena], :pointer
     end
   end
 end

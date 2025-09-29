@@ -6,11 +6,17 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 //! Prelude for the Protobuf Rust API.
-//! This module contains only non-struct items that are needed for extremely
-//! common usages of the generated types from application code. Any struct
-//! or less common items should be imported normally.
+//!
+//! This module contains only the proto! macro and traits which define very
+//! common fns that on messages (fns that would be methods on a base class in
+//! other languages).
+//!
+//! All traits here have `Proto` prefixed on them, as the intent of this prelude
+//! is to make the methods callable on message instances: if the traits are
+//! named for generic reasons, they should be explicitly imported from the
+//! `protobuf::` crate instead.
 
 pub use crate::{
-    proto, AsMut, AsView, Clear, ClearAndParse, IntoMut, IntoView, MergeFrom, Message, MessageMut,
-    MessageView, Parse, Serialize,
+    proto, AsMut as _, AsView as _, Clear as _, ClearAndParse as _, CopyFrom as _, IntoMut as _,
+    IntoView as _, MergeFrom as _, Parse as _, Serialize as _, TakeFrom as _,
 };

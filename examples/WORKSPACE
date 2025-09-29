@@ -9,7 +9,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # before they get merged. You'll want to use the following instead:
 #
 # http_archive(
-#     name = "protobuf",
+#     name = "com_google_protobuf",
 #     sha256 = "c29d8b4b79389463c546f98b15aa4391d4ed7ec459340c47bffe15db63eb9126",
 #     strip_prefix = "protobuf-3.21.3",
 #     urls = ["https://github.com/protocolbuffers/protobuf/archive/v3.21.3.tar.gz"],
@@ -21,8 +21,8 @@ local_repository(
 )
 
 local_repository(
-    name = "protobuf",
-    path = "..",
+    name = "com_google_protobuf-examples-with-hyphen",
+    path = "examples_with_hyphen",
 )
 
 # Similar to com_google_protobuf but for Java lite. If you are building
@@ -33,15 +33,37 @@ local_repository(
     path = "..",
 )
 
-# Needed because protobuf_deps brings rules_python 0.26.0 which is broken:
-# https://github.com/bazelbuild/rules_python/issues/1543
-http_archive(
-    name = "rules_python",
-    sha256 = "5868e73107a8e85d8f323806e60cad7283f34b32163ea6ff1020cf27abef6036",
-    strip_prefix = "rules_python-0.25.0",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.25.0/rules_python-0.25.0.tar.gz",
-)
-
-load("@protobuf//:protobuf_deps.bzl", "protobuf_deps")
+load("@com_google_protobuf//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 
 protobuf_deps()
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+
+rules_java_dependencies()
+
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+
+rules_java_toolchains()
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+
+rules_jvm_external_setup()
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+maven_install(
+    name = "maven",
+    artifacts = PROTOBUF_MAVEN_ARTIFACTS,
+    repositories = [
+        "https://repo1.maven.org/maven2",
+        "https://repo.maven.apache.org/maven2",
+    ],
+)

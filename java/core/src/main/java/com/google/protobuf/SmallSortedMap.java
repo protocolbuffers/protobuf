@@ -417,7 +417,8 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(
+            Object o) {
       if (o == this) {
         return true;
       }
@@ -439,7 +440,9 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
 
     /** equals() that handles null values. */
-    private boolean equals(Object o1, Object o2) {
+    private boolean equals(
+            Object o1,
+        Object o2) {
       return o1 == null ? o2 == null : o1.equals(o2);
     }
   }
@@ -609,7 +612,8 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }

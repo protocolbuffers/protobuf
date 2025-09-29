@@ -7,7 +7,6 @@
 
 #include "upb/mini_table/message.h"
 
-#include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,35 +14,6 @@
 
 // Must be last.
 #include "upb/port/def.inc"
-
-const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
-    const upb_MiniTable* m, uint32_t number) {
-  const size_t i = ((size_t)number) - 1;  // 0 wraps to SIZE_MAX
-
-  // Ideal case: index into dense fields
-  if (i < m->UPB_PRIVATE(dense_below)) {
-    UPB_ASSERT(m->UPB_PRIVATE(fields)[i].UPB_PRIVATE(number) == number);
-    return &m->UPB_PRIVATE(fields)[i];
-  }
-
-  // Slow case: binary search
-  int lo = m->UPB_PRIVATE(dense_below);
-  int hi = m->UPB_PRIVATE(field_count) - 1;
-  while (lo <= hi) {
-    int mid = (lo + hi) / 2;
-    uint32_t num = m->UPB_PRIVATE(fields)[mid].UPB_PRIVATE(number);
-    if (num < number) {
-      lo = mid + 1;
-      continue;
-    }
-    if (num > number) {
-      hi = mid - 1;
-      continue;
-    }
-    return &m->UPB_PRIVATE(fields)[mid];
-  }
-  return NULL;
-}
 
 const upb_MiniTableField* upb_MiniTable_GetOneof(const upb_MiniTable* m,
                                                  const upb_MiniTableField* f) {

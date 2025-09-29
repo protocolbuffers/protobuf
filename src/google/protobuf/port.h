@@ -18,16 +18,26 @@
 #include <cstddef>
 #include <cstdint>
 #include <new>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
 
+#if defined(__ARM_FEATURE_CRC32)
+#include <arm_acle.h>
+#endif
 
+#include "absl/base/optimization.h"
+
+
+#include "absl/base/attributes.h"
 #include "absl/base/config.h"
-#include "absl/base/prefetch.h"
 #include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
+
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+#include <sanitizer/asan_interface.h>
+#endif
 
 // must be last
 #include "google/protobuf/port_def.inc"
@@ -40,8 +50,12 @@ class MessageLite;
 
 namespace internal {
 
+PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
+
+struct MessageTraitsImpl;
+
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
+PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 #if defined(__GNUC__)
   asm("" : : "r"(var));
 #else
@@ -55,15 +69,16 @@ inline PROTOBUF_ALWAYS_INLINE void StrongPointer(T* var) {
 // Optimized implementation for clang where we can generate a relocation without
 // adding runtime instructions.
 template <typename T, T ptr>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   // This injects a relocation in the code path without having to run code, but
   // we can only do it with a newer clang.
   asm(".reloc ., BFD_RELOC_NONE, %p0" ::"Ws"(ptr));
 }
 
-template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  static constexpr auto ptr = T::template GetStrongPointerForType<T>();
+template <typename T, typename TraitsImpl = MessageTraitsImpl>
+PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  static constexpr auto ptr =
+      decltype(TraitsImpl::template value<T>)::StrongPointer();
   // This is identical to the implementation of StrongPointer() above, but it
   // has to be explicitly inlined here or else Clang 19 will raise an error in
   // some configurations.
@@ -73,13 +88,14 @@ inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
 // Portable fallback. It usually generates a single LEA instruction or
 // equivalent.
 template <typename T, T ptr>
-inline PROTOBUF_ALWAYS_INLINE void StrongPointer() {
+PROTOBUF_ALWAYS_INLINE void StrongPointer() {
   StrongPointer(ptr);
 }
 
-template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  return StrongPointer(T::template GetStrongPointerForType<T>());
+template <typename T, typename TraitsImpl = MessageTraitsImpl>
+PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
+  return StrongPointer(
+      decltype(TraitsImpl::template value<T>)::StrongPointer());
 }
 #endif  // .reloc
 
@@ -170,14 +186,9 @@ template <typename To, typename From>
 void AssertDownCast(From* from) {
   static_assert(std::is_base_of<From, To>::value, "illegal DownCast");
 
-#if defined(__cpp_concepts)
   // Check that this function is not used to downcast message types.
   // For those we should use {Down,Dynamic}CastTo{Message,Generated}.
-  static_assert(!requires {
-    std::derived_from<std::remove_pointer_t<To>,
-                      typename std::remove_pointer_t<To>::MessageLite>;
-  });
-#endif
+  static_assert(!std::is_base_of_v<MessageLite, To>);
 
 #if PROTOBUF_RTTI
   // RTTI: debug mode only!
@@ -199,11 +210,11 @@ inline ToRef DownCast(From& f) {
 
 // Looks up the name of `T` via RTTI, if RTTI is available.
 template <typename T>
-inline absl::optional<absl::string_view> RttiTypeName() {
+inline std::optional<absl::string_view> RttiTypeName() {
 #if PROTOBUF_RTTI
   return typeid(T).name();
 #else
-  return absl::nullopt;
+  return std::nullopt;
 #endif
 }
 
@@ -244,6 +255,45 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
+inline constexpr bool EnableStableExperiments() {
+#if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+  return true;
+#else
+  return false;
+#endif
+}
+
+inline constexpr bool EnableExperimentalMicroString() {
+#if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
+  return true;
+#endif
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceInlineStringInProtoc() {
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceEagerlyVerifiedLazyInProtoc() {
+  return EnableStableExperiments();
+}
+
+inline constexpr bool ForceSplitFieldsInProtoc() {
+#if defined(PROTOBUF_FORCE_SPLIT)
+  return true;
+#else
+  return false;
+#endif
+}
+
+// Returns true if hasbits for repeated fields are enabled (b/391445226). This
+// flag-gates the rollout of the feature, and if disabled will disable the
+// feature. This will be removed once the feature is fully rolled out and
+// verified.
+inline constexpr bool EnableExperimentalHintHasBitsForRepeatedFields() {
+  return true;
+}
+
 // Returns true if debug hardening for clearing oneof message on arenas is
 // enabled.
 inline constexpr bool DebugHardenClearOneofMessageOnArena() {
@@ -254,9 +304,18 @@ inline constexpr bool DebugHardenClearOneofMessageOnArena() {
 #endif
 }
 
+constexpr bool HasAnySanitizer() {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
 constexpr bool PerformDebugChecks() {
-#if defined(NDEBUG) && !defined(PROTOBUF_ASAN) && !defined(PROTOBUF_MSAN) && \
-    !defined(PROTOBUF_TSAN)
+  if (HasAnySanitizer()) return true;
+#if defined(NDEBUG)
   return false;
 #else
   return true;
@@ -281,6 +340,34 @@ constexpr bool DebugHardenForceCopyInMove() {
   return false;
 }
 
+constexpr bool DebugHardenForceAllocationOnConstruction() {
+  return false;
+}
+
+constexpr bool DebugHardenFuzzMessageSpaceUsedLong() {
+  return false;
+}
+
+inline constexpr bool DebugHardenCheckHasBitConsistency() {
+#if !defined(NDEBUG) || defined(ABSL_HAVE_ADDRESS_SANITIZER) || \
+    defined(ABSL_HAVE_MEMORY_SANITIZER) || defined(ABSL_HAVE_THREAD_SANITIZER)
+  return true;
+#endif
+  return false;
+}
+
+// Reads n bytes from p, if PerformDebugChecks() is true. This allows ASAN to
+// detect if a range of memory is not valid when we expect it to be. The
+// volatile keyword is necessary here to prevent the compiler from optimizing
+// away the memory reads below.
+inline void AssertBytesAreReadable(const volatile char* p, int n) {
+  if (PerformDebugChecks()) {
+    for (int i = 0; i < n; ++i) {
+      p[i];
+    }
+  }
+}
+
 // Returns true if pointers are 8B aligned, leaving least significant 3 bits
 // available.
 inline constexpr bool PtrIsAtLeast8BAligned() { return alignof(void*) >= 8; }
@@ -290,35 +377,233 @@ inline constexpr bool IsLazyParsingSupported() {
   return PtrIsAtLeast8BAligned();
 }
 
+#if defined(ABSL_IS_LITTLE_ENDIAN)
+constexpr bool IsLittleEndian() { return true; }
+#elif defined(ABSL_IS_BIG_ENDIAN)
+constexpr bool IsLittleEndian() { return false; }
+#else
+#error "Only little-endian and big-endian are supported"
+#endif
+constexpr bool IsBigEndian() { return !IsLittleEndian(); }
+
+//----------------------- Cache-prefetching utilities --------------------------
+
+struct PrefetchOpts {
+  // WARNING: The numeric values of `Locality` and `MemOp` are significant
+  // because they are directly consumed by `__builtin_prefetch()`:
+  // see https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html.
+
+  // Indicates the cache locality to prefetch into.
+  enum Locality : int {
+    // Prefetch data into non-temporal cache structure and into a location close
+    // to the processor, minimizing cache pollution.
+    kNta = 0,
+    // Prefetch data into L3 cache, or an implementation-specific choice.
+    kLow = 1,
+    // Prefetch data into L3 and L2 cache.
+    kMedium = 2,
+    // Prefetch data into all levels of cache.
+    kHigh = 3,
+  };
+  // Indicates the intended memory access type to optimize prefetching for.
+  enum MemOp : int { kRead = 0, kWrite = 1 };
+  // Specifies the unit of `Amount` below.
+  enum Unit : int { kBytes, kLines, kObjects };
+
+  // The amount to prefetch, or the distance to prefetch from.
+  struct Amount {
+#ifdef ABSL_REQUIRE_EXPLICIT_INIT
+    const size_t num ABSL_REQUIRE_EXPLICIT_INIT;
+    const Unit unit ABSL_REQUIRE_EXPLICIT_INIT;
+#else
+    const size_t num = 1;
+    const Unit unit = kLines;
+#endif
+
+    // Scales this amount to bytes. If `unit` is `kObjects`, `T` must be a valid
+    // pointed-to type. If it is not, an invalid zero amount is returned.
+    template <typename T>
+    constexpr Amount ToBytes() const {
+      switch (unit) {
+        case kBytes:
+          return *this;
+        case kLines:
+          return {num * ABSL_CACHELINE_SIZE, kBytes};
+        case kObjects:
+          if constexpr (!std::is_same_v<T, void>) {
+            return {num * sizeof(T), kBytes};
+          } else {
+            // Can't use `assert()` or `__builtin_trap()` here because they're
+            // not constexpr. Just return an invalid amount instead.
+            return {0, kBytes};
+          }
+      }
+    }
+
+    // Scales this amount to whole cache lines, rounding up. If `unit` is
+    // `kObjects`, `T` must be a valid pointed-to type. If it is not, an invalid
+    // zero amount is returned.
+    template <typename T>
+    constexpr Amount ToLines() const {
+      switch (unit) {
+        case kBytes:
+          return {
+              (num + ABSL_CACHELINE_SIZE - 1) / ABSL_CACHELINE_SIZE,
+              kLines,
+          };
+        case kLines:
+          return *this;
+        case kObjects:
+          if constexpr (!std::is_same_v<T, void>) {
+            return {
+                (num * sizeof(T) + ABSL_CACHELINE_SIZE - 1) /
+                    ABSL_CACHELINE_SIZE,
+                kLines,
+            };
+          } else {
+            // Can't use `assert()` or `__builtin_trap()` here because they're
+            // not constexpr. Just return an invalid amount instead.
+            return {0, kBytes};
+          }
+      }
+    }
+  };
+
+#ifdef ABSL_REQUIRE_EXPLICIT_INIT
+  const Amount num ABSL_REQUIRE_EXPLICIT_INIT;
+#else
+  const Amount num = {1, kLines};
+#endif
+  const Amount from = {0, kBytes};
+  const Locality locality = kHigh;
+  const MemOp mem_op = kRead;
+};
+
+// NOTE: Enable prefetching with Clang only: various problems with other
+// compilers, especially old ones.
+#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
+namespace detail {
+
+// Prefetches a single cache line. To form the address to prefetch, the base
+// `ptr` is first offset by `kOpts.from.num` bytes and furthermore by `line`
+// cache lines (note that `line` overrides `kOpts.num.num`).
+template <const PrefetchOpts& kOpts>
+PROTOBUF_ALWAYS_INLINE void PrefetchLine(const void* ptr, size_t line) {
+  static_assert(kOpts.from.unit == PrefetchOpts::kBytes);
+  const ptrdiff_t offset = kOpts.from.num + (line * ABSL_CACHELINE_SIZE);
+  // Pointer + offset overflows don't matter for prefetching, because the
+  // prefetch instruction is just a no-op for invalid addresses (although
+  // potentially incurring the cost of a TLB page-walk if there's no valid
+  // mapping for the page - but that should be rare in practice). Still, to
+  // formally avoid UB, we perform the arithmetic in uintptr_t space.
+  const void* prefetch_ptr =
+      reinterpret_cast<const void*>(reinterpret_cast<uintptr_t>(ptr) + offset);
+  __builtin_prefetch(prefetch_ptr, kOpts.mem_op, kOpts.locality);
+}
+
+}  // namespace detail
+
+// Prefetches a sequence of `kOpts.num.ToLines()` cache lines to the levels of
+// cache specified by `kOpts.locality`, starting at `ptr` base pointer
+// furthermore offset by `kOpts.from.ToBytes()` bytes, and optimized for
+// `kOpts.mem_op` type of expected memory access.
+//
+// The `kOpts` template parameter must be a compile-time constant, which means
+// either `inline constexpr` in the global scope or `static constexpr` in a
+// function or class.
+//
+// When `kOpts.num.unit` or `kOpts.from.unit` is `kObjects`, the `T` template
+// parameter must be explicitly specified and `sizeof(T)` must be valid and
+// non-zero (i.e. T must be a non-void, complete type): it is used to scale
+// `kOpts.num.num` and `kOpts.from.num` to bytes and lines, respectively.
+//
+// The `U` template parameter doesn't need to be explicitly specified: it is
+// deduced from `ptr` and, if non-void and `T` is also non-void, checked for
+// compatibility with `T` to prevent accidental mismatches between the actual
+// pointed-to and declared prefetched types.
+//
+// WARNING: Do not default `T` to `U` or vice versa: that may hide subtle errors
+// at call sites, e.g. when `ptr` points at the base class of the actual object.
+//
+// TODO: Simplify definition/usages after C++20 per the bug.
+template <const PrefetchOpts& kOpts, typename T = void, typename U>
+PROTOBUF_ALWAYS_INLINE void Prefetch(const U* ptr) {
+  // TODO: Add a check: prefetched amount <= some reasonable limit.
+  if constexpr (kOpts.num.unit == PrefetchOpts::kObjects ||
+                kOpts.from.unit == PrefetchOpts::kObjects) {
+    static_assert(sizeof(T) > 0, "Need explicit, non-void, complete T");
+  }
+  if constexpr (!std::is_void_v<T> && !std::is_void_v<U>) {
+    // Prevent accidental mistakes, but only when it's matters.
+    static_assert(std::is_convertible_v<T*, U*>, "Type mismatch");
+  }
+  static constexpr PrefetchOpts kScaledOpts = {
+      kOpts.num.ToLines<T>(),
+      kOpts.from.ToBytes<T>(),
+      kOpts.locality,
+      kOpts.mem_op,
+  };
+  // Unroll the loop iterations by blocks of 16 in optimized builds.
+#pragma unroll 16
+  for (size_t line = 0; line < kScaledOpts.num.num; ++line) {
+    detail::PrefetchLine<kScaledOpts>(ptr, line);
+  }
+}
+
+// Legacy prefetch functions.
+// TODO: Replace calls to these functions and remove them per the
+// bug.
+
 // Prefetch 5 64-byte cache line starting from 7 cache-lines ahead.
 // Constants are somewhat arbitrary and pretty aggressive, but were
 // chosen to give a better benchmark results. E.g. this is ~20%
 // faster, single cache line prefetch is ~12% faster, increasing
 // decreasing distance makes results 2-4% worse. Important note,
 // prefetch doesn't require a valid address, so it is ok to prefetch
-// past the end of message/valid memory, however we are doing this
-// inside inline asm block, since computing the invalid pointer
-// is a potential UB. Only insert prefetch once per function,
-inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 448);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 512);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 576);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 640);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 704);
+// past the end of message/valid memory. Only insert prefetch once per function.
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {
+  static constexpr PrefetchOpts kOpts = {
+      /*num=*/{5, PrefetchOpts::kLines},
+      /*from=*/{7, PrefetchOpts::kLines},
+      /*locality=*/PrefetchOpts::kHigh,
+  };
+  Prefetch<kOpts>(ptr);
 }
 
 // Prefetch 5 64-byte cache lines starting from 1 cache-line ahead.
-inline PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 64);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 128);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 256);
-  PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 320);
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {
+  static constexpr PrefetchOpts kOpts = {
+      /*num=*/{5, PrefetchOpts::kLines},
+      /*from=*/{1, PrefetchOpts::kLines},
+      /*locality=*/PrefetchOpts::kHigh,
+  };
+  Prefetch<kOpts>(ptr);
 }
 
+// This trampoline allows calling from codegen without needing a #include to
+// absl. It simplifies IWYU and deps.
+inline void PrefetchToLocalCache(const void* ptr) {
+  static constexpr PrefetchOpts kOpts = {
+      /*num=*/{1, PrefetchOpts::kLines},
+      /*from=*/{0, PrefetchOpts::kLines},
+      /*locality=*/PrefetchOpts::kHigh,
+  };
+  Prefetch<kOpts>(ptr);
+}
+
+#else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
+template <const PrefetchOpts& kOpts, typename T, typename U>
+PROTOBUF_ALWAYS_INLINE void Prefetch(const void*) {}
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {}
+PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {}
+inline void PrefetchToLocalCache(const void* ptr) {}
+
+#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+
 #if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
-[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE inline void
-Unreachable() {
+[[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();
 }
 #elif ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
@@ -332,13 +617,47 @@ Unreachable() {
 }
 #endif
 
-#ifdef PROTOBUF_TSAN
+constexpr bool HasMemoryPoisoning() {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  return true;
+#else
+  return false;
+#endif
+}
+
+// Poison memory region when supported by sanitizer config.
+inline void PoisonMemoryRegion([[maybe_unused]] const void* p,
+                               [[maybe_unused]] size_t n) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ASAN_POISON_MEMORY_REGION(p, n);
+#else
+  // Nothing
+#endif
+}
+
+inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
+                                 [[maybe_unused]] size_t n) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  ASAN_UNPOISON_MEMORY_REGION(p, n);
+#else
+  // Nothing
+#endif
+}
+
+inline bool IsMemoryPoisoned([[maybe_unused]] const void* p) {
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER)
+  return __asan_address_is_poisoned(p);
+#else
+  return false;
+#endif
+}
+
+#if defined(ABSL_HAVE_THREAD_SANITIZER)
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
-  char protobuf_tsan_dummy =
-      *reinterpret_cast<const char*>(&impl->_tsan_detect_race);
+PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
+  char protobuf_tsan_dummy = impl->_tsan_detect_race;
   asm volatile("" : "+r"(protobuf_tsan_dummy));
 }
 
@@ -346,19 +665,18 @@ inline PROTOBUF_ALWAYS_INLINE void TSanRead(const T* impl) {
 // member is not important. We can unconditionally write to it without affecting
 // correctness of the rest of the class.
 template <typename T>
-inline PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
-  *reinterpret_cast<char*>(&impl->_tsan_detect_race) = 0;
+PROTOBUF_ALWAYS_INLINE void TSanWrite(T* impl) {
+  impl->_tsan_detect_race = 0;
 }
 #else
-inline PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
-inline PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
+PROTOBUF_ALWAYS_INLINE void TSanRead(const void*) {}
+PROTOBUF_ALWAYS_INLINE void TSanWrite(const void*) {}
 #endif
 
-// This trampoline allows calling from codegen without needing a #include to
-// absl. It simplifies IWYU and deps.
-inline void PrefetchToLocalCache(const void* ptr) {
-  absl::PrefetchToLocalCache(ptr);
-}
+// Like C++20's std::type_identity_t, usually used to alter type deduction in
+// templates.
+template <typename T>
+using type_identity_t = std::enable_if_t<true, T>;
 
 template <typename T>
 constexpr T* Launder(T* p) {
@@ -371,21 +689,22 @@ constexpr T* Launder(T* p) {
 #endif
 }
 
-#if ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
-constexpr bool EnableCustomNew() { return true; }
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+template <typename T>
+constexpr bool EnableCustomNewFor() {
+  return true;
+}
+#elif ABSL_HAVE_BUILTIN(__is_bitwise_cloneable)
 template <typename T>
 constexpr bool EnableCustomNewFor() {
   return __is_bitwise_cloneable(T);
 }
 #else
-constexpr bool EnableCustomNew() { return false; }
 template <typename T>
 constexpr bool EnableCustomNewFor() {
   return false;
 }
 #endif
-
-constexpr bool IsOss() { return true; }
 
 // Counter library for debugging internal protobuf logic.
 // It allows instrumenting code that has different options (eg fast vs slow
@@ -421,6 +740,86 @@ class NoopDebugCounter {
   explicit constexpr NoopDebugCounter() = default;
   constexpr void Inc() {}
 };
+
+// Default empty string object. Don't use this directly. Instead, call
+// GetEmptyString() to get the reference. This empty string is aligned with a
+// minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
+
+// Take advantage of C++20 constexpr support in std::string.
+class alignas(8) GlobalEmptyStringConstexpr {
+ public:
+  const std::string& get() const { return value_; }
+  // Nothing to init, or destroy.
+  std::string* Init() const { return nullptr; }
+
+  // Disable the optimization for MSVC.
+  // There are some builds where the default constructed string can't be used as
+  // `constinit` even though the constructor is `constexpr` and can be used
+  // during constant evaluation.
+#if !defined(_MSC_VER)
+  template <typename T = std::string, bool = (T(), true)>
+  static constexpr std::true_type HasConstexprDefaultConstructor(int) {
+    return {};
+  }
+#endif
+  static constexpr std::false_type HasConstexprDefaultConstructor(char) {
+    return {};
+  }
+
+ private:
+  std::string value_;
+};
+
+class alignas(8) GlobalEmptyStringDynamicInit {
+ public:
+  const std::string& get() const {
+    return *reinterpret_cast<const std::string*>(internal::Launder(buffer_));
+  }
+  std::string* Init() {
+    return ::new (static_cast<void*>(buffer_)) std::string();
+  }
+
+ private:
+  alignas(std::string) char buffer_[sizeof(std::string)];
+};
+
+using GlobalEmptyString = std::conditional_t<
+    GlobalEmptyStringConstexpr::HasConstexprDefaultConstructor(0),
+    const GlobalEmptyStringConstexpr, GlobalEmptyStringDynamicInit>;
+
+PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
+
+enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
+
+PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
+#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
+  return BoundsCheckMode::kAbort;
+#elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
+  return BoundsCheckMode::kReturnDefault;
+#else
+  return BoundsCheckMode::kNoEnforcement;
+#endif
+}
+
+
+#if defined(__x86_64__) && defined(__SSE4_2__)
+
+constexpr bool HasCrc32() { return true; }
+inline uint32_t Crc32(uint32_t crc, uint64_t v) {
+  return __builtin_ia32_crc32di(crc, v);
+}
+
+#elif defined(__ARM_FEATURE_CRC32)
+
+constexpr bool HasCrc32() { return true; }
+inline uint32_t Crc32(uint32_t crc, uint64_t v) { return __crc32cd(crc, v); }
+
+#else
+
+constexpr bool HasCrc32() { return false; }
+inline uint32_t Crc32(uint32_t, uint64_t) { return 0; }
+
+#endif
 
 }  // namespace internal
 }  // namespace protobuf

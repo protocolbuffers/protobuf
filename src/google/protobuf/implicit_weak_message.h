@@ -13,9 +13,11 @@
 
 #include "google/protobuf/arena.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -47,13 +49,10 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
 
   // TODO: make this constructor private
   explicit ImplicitWeakMessage(Arena* arena)
-      : MessageLite(arena, class_data_.base()), data_(new std::string) {}
+      : MessageLite(arena, class_data_.base()),
+        data_(Arena::Create<std::string>(arena)) {}
 
-  ~ImplicitWeakMessage() PROTOBUF_FINAL {
-    // data_ will be null in the default instance, but we can safely call delete
-    // here because the default instance will never be destroyed.
-    delete data_;
-  }
+  ~ImplicitWeakMessage() PROTOBUF_FINAL { delete data_; }
 
   static const ImplicitWeakMessage& default_instance();
 
@@ -76,7 +75,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage final : public MessageLite {
                             target);
   }
 
-  typedef void InternalArenaConstructable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
 
   static PROTOBUF_CC const char* ParseImpl(ImplicitWeakMessage* msg,
                                            const char* ptr, ParseContext* ctx);
@@ -198,7 +198,12 @@ struct WeakRepeatedPtrField {
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
     if (other.empty()) return;
-    base().template MergeFrom<MessageLite>(other.base());
+    base().template MergeFrom<MessageLite>(other.base(), base().GetArena());
+  }
+  void InternalMergeFromWithArena(internal::InternalVisibility, Arena* arena,
+                                  const WeakRepeatedPtrField& other) {
+    if (other.empty()) return;
+    base().template MergeFrom<MessageLite>(other.base(), arena);
   }
   void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
     base().InternalSwap(&other->base());

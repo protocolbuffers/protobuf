@@ -18,11 +18,6 @@
 typedef BOOL (*GPBEnumValidationFunc)(int32_t);
 
 /**
- * Fetches an EnumDescriptor.
- * */
-typedef GPBEnumDescriptor *(*GPBEnumDescriptorFunc)(void);
-
-/**
  * Magic value used at runtime to indicate an enum value that wasn't know at
  * compile time.
  * */
@@ -102,15 +97,6 @@ typedef NS_ENUM(uint8_t, GPBDataType) {
   GPBDataTypeEnum,
 };
 
-enum {
-  /**
-   * A count of the number of types in GPBDataType. Separated out from the
-   * GPBDataType enum to avoid warnings regarding not handling GPBDataType_Count
-   * in switch statements.
-   **/
-  GPBDataType_Count = GPBDataTypeEnum + 1
-};
-
 /** An extension range. */
 typedef struct GPBExtensionRange {
   /** Inclusive. */
@@ -118,10 +104,3 @@ typedef struct GPBExtensionRange {
   /** Exclusive. */
   uint32_t end;
 } GPBExtensionRange;
-
-/**
- A type to represent an Objective C class.
- This is actually an `objc_class` but the runtime headers will not allow us to
- reference `objc_class`, so we have defined our own.
-*/
-typedef struct GPBObjcClass_t GPBObjcClass_t;

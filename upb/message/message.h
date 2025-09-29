@@ -13,10 +13,15 @@
 #define UPB_MESSAGE_MESSAGE_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
+#include "upb/message/array.h"
+#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -31,14 +36,74 @@ extern "C" {
 // Creates a new message with the given mini_table on the given arena.
 UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m, upb_Arena* arena);
 
-// Returns a reference to the message's unknown data.
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
+//
+// Unknown data may be stored non-contiguously. Each segment stores a block of
+// unknown fields. To iterate over segments:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_StringView data;
+//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
+//     // Use data
+//   }
+// Iterates in the order unknown fields were parsed.
 
-// Removes partial unknown data from message.
-void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
+#define kUpb_Message_UnknownBegin 0
+#define kUpb_Message_ExtensionBegin 0
+
+UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
+                                        upb_StringView* data, uintptr_t* iter);
+
+UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
+
+// Removes a segment of unknown data from the message, advancing to the next
+// segment.  Returns false if the removed segment was at the end of the last
+// chunk.
+//
+// This must be done while iterating:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_StringView data;
+//   // Iterate chunks
+//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
+//     // Iterate within a chunk, deleting ranges
+//     while (ShouldDeleteSubSegment(&data)) {
+//       // Data now points to the region to be deleted
+//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
+//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
+//       }
+//     }
+//   }
+//
+// The range given in `data` must be contained inside the most recently
+// returned region.
+typedef enum upb_Message_DeleteUnknownStatus {
+  kUpb_DeleteUnknown_DeletedLast,
+  kUpb_DeleteUnknown_IterUpdated,
+  kUpb_DeleteUnknown_AllocFail,
+} upb_Message_DeleteUnknownStatus;
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
+                                                          upb_StringView* data,
+                                                          uintptr_t* iter,
+                                                          upb_Arena* arena);
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+// Iterates extensions in wire order
+UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
+                                          const upb_MiniTableExtension** out_e,
+                                          upb_MessageValue* out_v,
+                                          uintptr_t* iter);
+
+// Iterates extensions in reverse wire order
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
+    const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter);
 
 // Mark a message and all of its descendents as frozen/immutable.
 UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);

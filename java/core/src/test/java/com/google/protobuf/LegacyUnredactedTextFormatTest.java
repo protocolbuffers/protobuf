@@ -2,7 +2,8 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestProto;
+import proto2_unittest.UnittestProto;
+import java.util.Arrays;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -128,5 +129,144 @@ public final class LegacyUnredactedTextFormatTest {
                 + " 15: 12379813812177893520"
                 + " 15: 0xabcd1234"
                 + " 15: 0xabcdef1234567890");
+  }
+
+  @Test
+  public void legacyUnredactedToString_returnsTextFormat() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            LegacyUnredactedTextFormat.legacyUnredactedToString(
+                message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "[optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
+  }
+
+  @Test
+  public void legacyUnredactedToString_returnsTextFormatForNonNullObject() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(
+                message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "[optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
+  }
+
+  @Test
+  public void legacyUnredactedToString_returnsEmptyStringForNullObject() {
+    UnittestProto.RedactedFields message = null;
+    assertThat(LegacyUnredactedTextFormat.legacyUnredactedStringValueOf(message))
+        .isEqualTo(String.valueOf(message));
+  }
+
+  @Test
+  public void legacyUnredactedToStringArray_returnsTextFormat() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            LegacyUnredactedTextFormat.legacyUnredactedToStringArray(
+                new Message[] {message, message}))
+        .isEqualTo(
+            new String[] {
+              "repeated_redacted_message {\n"
+                  + "  optional_redacted_nested_string: \"123\"\n"
+                  + "}\n"
+                  + "repeated_redacted_message {\n"
+                  + "  optional_unredacted_nested_string: \"456\"\n"
+                  + "}\n",
+              "repeated_redacted_message {\n"
+                  + "  optional_redacted_nested_string: \"123\"\n"
+                  + "}\n"
+                  + "repeated_redacted_message {\n"
+                  + "  optional_unredacted_nested_string: \"456\"\n"
+                  + "}\n"
+            });
+  }
+
+  @Test
+  public void legacyUnredactedToStringList_returnsTextFormat() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            LegacyUnredactedTextFormat.legacyUnredactedToStringList(
+                Arrays.asList(message, message)))
+        .containsExactly(
+            new String[] {
+              "repeated_redacted_message {\n"
+                  + "  optional_redacted_nested_string: \"123\"\n"
+                  + "}\n"
+                  + "repeated_redacted_message {\n"
+                  + "  optional_unredacted_nested_string: \"456\"\n"
+                  + "}\n",
+              "repeated_redacted_message {\n"
+                  + "  optional_redacted_nested_string: \"123\"\n"
+                  + "}\n"
+                  + "repeated_redacted_message {\n"
+                  + "  optional_unredacted_nested_string: \"456\"\n"
+                  + "}\n"
+            });
+  }
+
+  @Test
+  public void legacyUnredactedStringFormat_returnsFormattedStringInTextFormat() {
+    UnittestProto.RedactedFields message =
+        UnittestProto.RedactedFields.newBuilder()
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalRedactedNestedString("123")
+                    .build())
+            .addRepeatedRedactedMessage(
+                UnittestProto.TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("456")
+                    .build())
+            .build();
+    assertThat(
+            LegacyUnredactedTextFormat.legacyUnredactedStringFormat("The proto is %s",
+                message.getRepeatedRedactedMessageList()))
+        .isEqualTo(
+            "The proto is [optional_redacted_nested_string: \"123\"\n"
+                + ", optional_unredacted_nested_string: \"456\"\n"
+                + "]");
   }
 }

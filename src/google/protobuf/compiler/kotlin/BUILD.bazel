@@ -1,7 +1,22 @@
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "generator_headers",
+    hdrs = ["generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 cc_library(
     name = "kotlin",
     srcs = ["generator.cc"],
     hdrs = ["generator.h"],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -15,14 +30,23 @@ cc_library(
         "//src/google/protobuf/compiler/java",
         "//src/google/protobuf/compiler/java:helpers",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
 cc_library(
     name = "kotlin_internal",
-    srcs = ["file.cc"],
-    hdrs = ["file.h"],
+    srcs = [
+        "field.cc",
+        "file.cc",
+        "message.cc",
+    ],
+    hdrs = [
+        "field.h",
+        "file.h",
+        "message.h",
+    ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//pkg:__pkg__",
@@ -34,11 +58,19 @@ cc_library(
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler/java",
+        "//src/google/protobuf/compiler/java:context",
+        "//src/google/protobuf/compiler/java:field_common",
+        "//src/google/protobuf/compiler/java:generator_common",
         "//src/google/protobuf/compiler/java:helpers",
-        "//src/google/protobuf/compiler/java/full",
-        "//src/google/protobuf/compiler/java/lite",
+        "//src/google/protobuf/compiler/java:internal_helpers",
+        "//src/google/protobuf/compiler/java/full:fg",
+        "//src/google/protobuf/compiler/java/full:mfg",
+        "//src/google/protobuf/compiler/java/lite:field_generators",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
     ],
 )

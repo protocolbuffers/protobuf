@@ -8,15 +8,16 @@
 #include "google/protobuf/generated_message_bases.h"
 
 #include <cstddef>
+#include <cstdint>
 
+#include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 // Must be last:
 #include "google/protobuf/port_def.inc"
@@ -47,11 +48,12 @@ size_t ZeroFieldsBase::ByteSizeLong(const MessageLite& base) {
   return msg.MaybeComputeUnknownFieldsSize(0, &msg._impl_._cached_size_);
 }
 
+
 ::uint8_t* ZeroFieldsBase::_InternalSerialize(const MessageLite& msg,
                                               ::uint8_t* target,
                                               io::EpsCopyOutputStream* stream) {
   auto& this_ = static_cast<const ZeroFieldsBase&>(msg);
-  if (PROTOBUF_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
+  if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target = internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         this_._internal_metadata_.unknown_fields<UnknownFieldSet>(
             UnknownFieldSet::default_instance),

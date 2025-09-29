@@ -45,6 +45,20 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
   return (a.size == b.size) && (!a.size || !memcmp(a.data, b.data, a.size));
 }
 
+// Compares StringViews following strcmp rules.
+// Please note this comparison is neither unicode nor locale aware.
+UPB_INLINE int upb_StringView_Compare(upb_StringView a, upb_StringView b) {
+  int result = memcmp(a.data, b.data, UPB_MIN(a.size, b.size));
+  if (result != 0) return result;
+  if (a.size < b.size) {
+    return -1;
+  } else if (a.size > b.size) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
 // LINT.ThenChange(
 //  GoogleInternalName1,
 //  //depot/google3/third_party/upb/bits/golang/accessor.go:map_go_string,

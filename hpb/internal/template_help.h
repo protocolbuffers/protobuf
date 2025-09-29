@@ -5,12 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_HPB_TEMPLATE_HELP_H__
-#define GOOGLE_PROTOBUF_HPB_TEMPLATE_HELP_H__
+#ifndef GOOGLE_PROTOBUF_HPB_INTERNAL_TEMPLATE_HELP_H__
+#define GOOGLE_PROTOBUF_HPB_INTERNAL_TEMPLATE_HELP_H__
 
 #include <type_traits>
 
-#include "google/protobuf/hpb/ptr.h"
+#include "hpb/ptr.h"
 
 namespace hpb {
 namespace internal {
@@ -33,12 +33,34 @@ using RemovePtrT = typename RemovePtr<T>::type;
 
 template <typename T, typename U = RemovePtrT<T>,
           typename = std::enable_if_t<!std::is_const_v<U>>>
+using PtrOrRawMutable = T;
+
+template <typename T, typename U = RemovePtrT<T>>
 using PtrOrRaw = T;
 
+template <typename T, typename = void>
+inline constexpr bool IsHpbClass = false;
+
 template <typename T>
-using EnableIfHpbClass = std::enable_if_t<
-    std::is_base_of<typename T::Access, T>::value &&
-    std::is_base_of<typename T::Access, typename T::ExtendableType>::value>;
+inline constexpr bool
+    IsHpbClass<T, std::enable_if_t<std::is_base_of_v<typename T::Access, T>>> =
+        true;
+
+template <typename T>
+using EnableIfHpbClass = std::enable_if_t<IsHpbClass<T>>;
+
+template <typename T, typename = void>
+inline constexpr bool IsHpbClassThatHasExtensions = false;
+
+template <typename T>
+inline constexpr bool IsHpbClassThatHasExtensions<
+    T, std::enable_if_t<std::is_base_of_v<typename T::Access, T> &&
+                        std::is_base_of_v<typename T::ExtendableType, T>>> =
+    true;
+
+template <typename T>
+using EnableIfHpbClassThatHasExtensions =
+    std::enable_if_t<IsHpbClassThatHasExtensions<T>>;
 
 template <typename T>
 using EnableIfMutableProto = std::enable_if_t<!std::is_const<T>::value>;
@@ -50,4 +72,4 @@ using add_const_if_T_is_const =
 }  // namespace internal
 }  // namespace hpb
 
-#endif  // GOOGLE_PROTOBUF_HPB_TEMPLATE_HELP_H__
+#endif  // GOOGLE_PROTOBUF_HPB_INTERNAL_TEMPLATE_HELP_H__

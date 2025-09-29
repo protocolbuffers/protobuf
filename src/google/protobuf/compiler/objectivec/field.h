@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -70,8 +70,8 @@ class FieldGenerator {
   virtual void SetExtraRuntimeHasBitsBase(int index_base);
   void SetOneofIndexBase(int index_base);
 
-  std::string variable(const char* key) const {
-    return variables_.find(key)->second;
+  std::string variable(absl::string_view key) const {
+    return variables_.Value(key);
   }
 
   bool needs_textformat_name_support() const {
@@ -89,7 +89,7 @@ class FieldGenerator {
 
   const FieldDescriptor* descriptor_;
   const GenerationOptions& generation_options_;
-  absl::flat_hash_map<absl::string_view, std::string> variables_;
+  SubstitutionMap variables_;
 };
 
 class SingleFieldGenerator : public FieldGenerator {

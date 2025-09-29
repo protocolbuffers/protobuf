@@ -27,7 +27,7 @@ import "google/protobuf/descriptor.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-package protobuf_unittest;
+package proto2_unittest;
 
 // Some simple test custom options of various types.
 
@@ -260,7 +260,7 @@ extend ComplexOptionType2 {
 }
 
 extend google.protobuf.MessageOptions {
-  optional protobuf_unittest.ComplexOptionType1 complex_opt1 = 7646756;
+  optional proto2_unittest.ComplexOptionType1 complex_opt1 = 7646756;
   optional ComplexOptionType2 complex_opt2 = 7636949;
   optional ComplexOptionType3 complex_opt3 = 7636463;
   optional group ComplexOpt6 = 7595468 {
@@ -270,19 +270,19 @@ extend google.protobuf.MessageOptions {
 
 // Note that we try various different ways of naming the same extension.
 message VariousComplexOptions {
-  option (.protobuf_unittest.complex_opt1).foo = 42;
-  option (protobuf_unittest.complex_opt1).(.protobuf_unittest.mooo) = 324;
-  option (.protobuf_unittest.complex_opt1).(protobuf_unittest.corge).moo = 876;
-  option (protobuf_unittest.complex_opt1).foo4 = 99;
-  option (protobuf_unittest.complex_opt1).foo4 = 88;
+  option (.proto2_unittest.complex_opt1).foo = 42;
+  option (proto2_unittest.complex_opt1).(.proto2_unittest.mooo) = 324;
+  option (.proto2_unittest.complex_opt1).(proto2_unittest.corge).moo = 876;
+  option (proto2_unittest.complex_opt1).foo4 = 99;
+  option (proto2_unittest.complex_opt1).foo4 = 88;
   option (complex_opt2).baz = 987;
   option (complex_opt2).(grault) = 654;
   option (complex_opt2).bar.foo = 743;
   option (complex_opt2).bar.(mooo) = 1999;
-  option (complex_opt2).bar.(protobuf_unittest.corge).moo = 2008;
+  option (complex_opt2).bar.(proto2_unittest.corge).moo = 2008;
   option (complex_opt2).(garply).foo = 741;
-  option (complex_opt2).(garply).(.protobuf_unittest.mooo) = 1998;
-  option (complex_opt2).(protobuf_unittest.garply).(corge).moo = 2121;
+  option (complex_opt2).(garply).(.proto2_unittest.mooo) = 1998;
+  option (complex_opt2).(proto2_unittest.garply).(corge).moo = 2121;
   option (ComplexOptionType2.ComplexOptionType4.complex_opt4).waldo = 1971;
   option (complex_opt2).fred.waldo = 321;
   option (complex_opt2).barney = {
@@ -291,7 +291,7 @@ message VariousComplexOptions {
   option (complex_opt2).barney = {
     waldo: 212
   };
-  option (protobuf_unittest.complex_opt3).moo = 9;
+  option (proto2_unittest.complex_opt3).moo = 9;
   option (complex_opt3).complexoptiontype5.plugh = 22;
   option (complexopt6).xyzzy = 24;
 }
@@ -370,18 +370,18 @@ option (fileopt) = {
   // Include a google.protobuf.FileOptions and recursively extend it with
   // another fileopt.
   file {
-    [protobuf_unittest.fileopt] { s: 'FileExtensionAnnotation' }
+    [proto2_unittest.fileopt] { s: 'FileExtensionAnnotation' }
   }
 
   // A message set inside an option value
   mset {
-    [protobuf_unittest.AggregateMessageSetElement.message_set_extension] {
+    [proto2_unittest.AggregateMessageSetElement.message_set_extension] {
       s: 'EmbeddedMessageSetElement'
     }
   }
 
   any {
-    [type.googleapis.com/protobuf_unittest.AggregateMessageSetElement] {
+    [type.googleapis.com/proto2_unittest.AggregateMessageSetElement] {
       s: 'EmbeddedMessageSetElement'
     }
   }

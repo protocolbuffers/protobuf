@@ -7,16 +7,15 @@
 
 #include "google/protobuf/compiler/cpp/tracker.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -36,11 +35,11 @@ constexpr absl::string_view kTypeTraits = "_proto_TypeTraits";
 
 struct Call {
   Call(absl::string_view var, absl::string_view call) : var(var), call(call) {}
-  Call(absl::optional<int> field_index, absl::string_view var,
+  Call(std::optional<int> field_index, absl::string_view var,
        absl::string_view call)
       : var(var), call(call), field_index(field_index) {}
 
-  Call This(absl::optional<absl::string_view> thiz) && {
+  Call This(std::optional<absl::string_view> thiz) && {
     this->thiz = thiz;
     return std::move(*this);
   }
@@ -58,15 +57,16 @@ struct Call {
 
   absl::string_view var;
   absl::string_view call;
-  absl::optional<int> field_index;
-  absl::optional<absl::string_view> thiz = "this";
+  std::optional<int> field_index;
+  std::optional<absl::string_view> thiz = "this";
   std::vector<std::string> args;
   bool suppressed = false;
 };
 
-std::vector<Sub> GenerateTrackerCalls(
-    const Options& opts, const Descriptor* message,
-    absl::optional<std::string> alt_annotation, absl::Span<const Call> calls) {
+std::vector<Sub> GenerateTrackerCalls(const Options& opts,
+                                      const Descriptor* message,
+                                      std::optional<std::string> alt_annotation,
+                                      absl::Span<const Call> calls) {
   bool enable_tracking = HasTracker(message, opts);
   const auto& forbidden =
       opts.field_listener_options.forbidden_field_listener_events;
@@ -102,6 +102,11 @@ std::vector<Sub> GenerateTrackerCalls(
       // Emit(), we need to include a newline here so that the line that follows
       // the annotation is on its own line.
       call_str.push_back('\n');
+      if (enable_tracking) {
+        call_str =
+            absl::StrCat("if (::", ProtobufNamespace(opts),
+                         "::internal::cpp::IsTrackingEnabled()) ", call_str);
+      }
     }
 
     subs.push_back(
@@ -148,7 +153,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
   };
 
   return GenerateTrackerCalls(
-      opts, message, absl::nullopt,
+      opts, message, std::nullopt,
       {
           Call("serialize", "OnSerialize").This("&this_"),
           Call("deserialize", "OnDeserialize").This("_this"),
@@ -156,7 +161,7 @@ std::vector<Sub> MakeTrackerCalls(const Descriptor* message,
           // need to annotate all reflective calls on our own, however, as this
           // is a cause for side effects, i.e. reading values dynamically, we
           // want the users know that dynamic access can happen.
-          Call("reflection", "OnGetMetadata").This(absl::nullopt),
+          Call("reflection", "OnGetMetadata").This(std::nullopt),
           Call("bytesize", "OnByteSize").This("&this_"),
           Call("mergefrom", "OnMergeFrom").This("_this").Arg("&from"),
           Call("unknown_fields", "OnUnknownFields"),
@@ -216,10 +221,9 @@ Getters RepeatedFieldGetters(const FieldDescriptor* field,
 
 Getters StringFieldGetters(const FieldDescriptor* field, const Options& opts) {
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string = field->options().ctype() == FieldOptions::STRING;
 
   Getters getters;
-  if (is_std_string && !field->default_value_string().empty()) {
+  if (IsArenaStringPtr(field, opts) && !field->default_value_string().empty()) {
     getters.base =
         absl::Substitute("$0.IsDefault() ? &$1.get() : $0.UnsafeGetPointer()",
                          member, MakeDefaultFieldName(field));
@@ -236,11 +240,12 @@ Getters StringOneofGetters(const FieldDescriptor* field,
   ABSL_CHECK(oneof != nullptr);
 
   std::string member = FieldMemberName(field, ShouldSplit(field, opts));
-  bool is_std_string = field->options().ctype() == FieldOptions::STRING;
 
   std::string field_ptr = member;
-  if (is_std_string) {
+  if (IsArenaStringPtr(field, opts)) {
     field_ptr = absl::Substitute("$0.UnsafeGetPointer()", member);
+  } else if (IsMicroString(field, opts)) {
+    field_ptr = absl::Substitute("&$0", member);
   }
 
   std::string has =
@@ -248,13 +253,13 @@ Getters StringOneofGetters(const FieldDescriptor* field,
                        UnderscoresToCamelCase(field->name(), true));
 
   std::string default_field = MakeDefaultFieldName(field);
-  if (is_std_string) {
+  if (IsArenaStringPtr(field, opts)) {
     absl::StrAppend(&default_field, ".get()");
   }
 
   Getters getters;
-  if (field->default_value_string().empty() ||
-      field->options().ctype() == FieldOptions::STRING_PIECE) {
+  if (field->default_value_string().empty() || IsMicroString(field, opts)
+  ) {
     getters.base = absl::Substitute("$0 ? $1 : nullptr", has, field_ptr);
   } else {
     getters.base =

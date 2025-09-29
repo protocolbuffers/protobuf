@@ -504,10 +504,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
   // Add a custom ignore criteria that is evaluated in addition to the
   // ignored fields added with IgnoreField.
-  // Takes ownership of ignore_criteria.
+#ifndef PROTOBUF_FUTURE_REMOVE_ADD_IGNORE_CRITERIA
+  ABSL_DEPRECATE_AND_INLINE()
   void AddIgnoreCriteria(IgnoreCriteria* ignore_criteria) {
     AddIgnoreCriteria(absl::WrapUnique(ignore_criteria));
   }
+#endif  // !PROTOBUF_FUTURE_REMOVE_ADD_IGNORE_CRITERIA
+
   void AddIgnoreCriteria(std::unique_ptr<IgnoreCriteria> ignore_criteria);
 
   // Indicates that any field with the given descriptor should be
@@ -739,7 +742,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
     bool report_modified_aggregates_;
     const Message* message1_;
     const Message* message2_;
-    MessageDifferencer::UnpackAnyField unpack_any_field_;
   };
 
  private:
@@ -933,6 +935,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
                                const Reflection& reflection1,
                                const FieldDescriptor* field2) const;
 
+  // We move this code out of line to reduce stack cost of the caller.
+  // The map lookups and string copies are costly in stack space.
+  PROTOBUF_NOINLINE void ForceCompareField(const FieldDescriptor* field);
+
   Reporter* reporter_;
   DefaultFieldComparator default_field_comparator_;
   MessageFieldComparison message_field_comparison_;
@@ -955,8 +961,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
       map_field_key_comparator_;
   MapEntryKeyComparator map_entry_key_comparator_;
   std::vector<std::unique_ptr<IgnoreCriteria>> ignore_criteria_;
-  // Reused multiple times in RetrieveFields to avoid extra allocations
-  std::vector<const FieldDescriptor*> tmp_message_fields_;
 
   absl::flat_hash_set<const FieldDescriptor*> ignored_fields_;
 

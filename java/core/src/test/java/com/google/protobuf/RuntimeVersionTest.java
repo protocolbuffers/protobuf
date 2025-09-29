@@ -126,7 +126,7 @@ public final class RuntimeVersionTest {
   }
 
   @Test
-  public void versionValidation_differentVesionSuffixDisallowed() {
+  public void versionValidation_differentVersionSuffixDisallowed() {
     String gencodeSuffix = "-test";
     RuntimeVersion.ProtobufRuntimeVersionException thrown =
         assertThrows(
@@ -144,23 +144,6 @@ public final class RuntimeVersionTest {
         .contains(
             "Detected mismatched Protobuf Gencode/Runtime version suffixes when loading"
                 + " testing.Foo");
-  }
-
-  @Test
-  public void versionValidation_warnOlderGencodeVersion() {
-    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
-    Logger logger = Logger.getLogger(RuntimeVersion.class.getName());
-    logger.addHandler(logHandler);
-    RuntimeVersion.validateProtobufGencodeVersion(
-        RuntimeVersion.DOMAIN,
-        RuntimeVersion.MAJOR,
-        RuntimeVersion.MINOR - 1,
-        RuntimeVersion.PATCH,
-        RuntimeVersion.SUFFIX,
-        "dummy");
-    assertThat(logHandler.getStoredLogRecords()).hasSize(1);
-    assertThat(logHandler.getStoredLogRecords().get(0).getMessage())
-        .contains("Please avoid checked-in Protobuf gencode that can be obsolete.");
   }
 
   @Test

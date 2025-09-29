@@ -232,7 +232,9 @@ public final class DynamicMessage extends AbstractMessage {
   @Override
   public int getSerializedSize() {
     int size = memoizedSize;
-    if (size != -1) return size;
+    if (size != -1) {
+      return size;
+    }
 
     if (type.getOptions().getMessageSetWireFormat()) {
       size = fields.getMessageSetSerializedSize();
@@ -513,7 +515,9 @@ public final class DynamicMessage extends AbstractMessage {
         }
         oneofCases[index] = field;
       } else if (!field.hasPresence()) {
-        if (!field.isRepeated() && value.equals(field.getDefaultValue())) {
+        if (field.isRepeated()
+            ? ((List<?>) value).isEmpty()
+            : value.equals(field.getDefaultValue())) {
           // Setting a field without presence to its default value is equivalent to clearing the
           // field.
           fields.clearField(field);

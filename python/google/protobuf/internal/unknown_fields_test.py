@@ -13,6 +13,9 @@ __author__ = 'bohdank@google.com (Bohdan Koval)'
 import sys
 import unittest
 
+from google.protobuf import descriptor
+from google.protobuf import text_format
+from google.protobuf import unknown_fields
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
 from google.protobuf.internal import message_set_extensions_pb2
@@ -21,8 +24,7 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import wire_format
-from google.protobuf import descriptor
-from google.protobuf import unknown_fields
+
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -142,6 +144,17 @@ class UnknownFieldsTest(unittest.TestCase):
         b'',
         msg.map_int32_all_types[1].optional_nested_message.SerializeToString())
 
+  def testUnknownFieldsInExtension(self):
+    msg = message_set_extensions_pb2.TestMessageSet()
+    ext3 = message_set_extensions_pb2.message_set_extension3
+    sub_message = unittest_pb2.TestAllTypes()
+    sub_message.optional_string = 'discard'
+    msg.Extensions[ext3].ParseFromString(sub_message.SerializeToString())
+    msg.DiscardUnknownFields()
+    self.assertNotIn(
+        'discard', text_format.MessageToString(msg, print_unknown_fields=True)
+    )
+
 
 @testing_refleaks.TestCase
 class UnknownFieldsAccessorsTest(unittest.TestCase):
@@ -170,7 +183,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
           continue
         if expected_type == wire_format.WIRETYPE_LENGTH_DELIMITED:
           self.assertIn(type(unknown_field.data), (str, bytes))
-        if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+        if field_descriptor.is_repeated:
           self.assertIn(unknown_field.data, expected_value)
         else:
           self.assertEqual(expected_value, unknown_field.data)
@@ -212,7 +225,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
                            unknown_field_set,
                            (17, 0, 117))
 
-    self.assertEqual(98, len(unknown_field_set))
+    self.assertEqual(99, len(unknown_field_set))
 
   def testCopyFrom(self):
     message = unittest_pb2.TestEmptyMessage()
@@ -250,7 +263,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.empty_message.Clear()
     # All cleared, even unknown fields.
     self.assertEqual(self.empty_message.SerializeToString(), b'')
-    self.assertEqual(len(unknown_field_set), 98)
+    self.assertEqual(len(unknown_field_set), 99)
 
   @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4),
                    'tracemalloc requires python 3.4+')
@@ -309,7 +322,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   def testUnknownExtensions(self):
     message = unittest_pb2.TestEmptyMessageWithExtensions()
     message.ParseFromString(self.all_fields_data)
-    self.assertEqual(len(unknown_fields.UnknownFieldSet(message)), 98)
+    self.assertEqual(len(unknown_fields.UnknownFieldSet(message)), 99)
     self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 
@@ -349,11 +362,11 @@ class UnknownEnumValuesTest(unittest.TestCase):
     for field in unknown_field_set:
       if field.field_number == field_descriptor.number:
         count += 1
-        if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+        if field_descriptor.is_repeated:
           self.assertIn(field.data, expected_value)
         else:
           self.assertEqual(expected_value, field.data)
-    if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if field_descriptor.is_repeated:
       self.assertEqual(count, len(expected_value))
     else:
       self.assertEqual(count, 1)

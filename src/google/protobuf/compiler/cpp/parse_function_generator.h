@@ -14,6 +14,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
@@ -25,17 +26,37 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
+// Returns the fields of the descriptor ordered by increasing tag number.
+std::vector<const FieldDescriptor*> GetOrderedFields(
+    const Descriptor* descriptor);
+
 // ParseFunctionGenerator generates the _InternalParse function for a message
 // (and any associated supporting members).
 class ParseFunctionGenerator {
  public:
+  // When presence probability is not present, we're not sure how likely "field"
+  // is present. Assign a 50% probability to avoid pessimizing it.
+  static constexpr float kUnknownPresenceProbability = 0.5f;
+
   ParseFunctionGenerator(
       const Descriptor* descriptor, int max_has_bit_index,
-      const std::vector<int>& has_bit_indices,
-      const std::vector<int>& inlined_string_indices, const Options& options,
+      absl::Span<const int> has_bit_indices,
+      absl::Span<const int> inlined_string_indices, const Options& options,
       MessageSCCAnalyzer* scc_analyzer,
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       int index_in_file_messages);
+
+  static std::vector<internal::TailCallTableInfo::FieldOptions>
+  BuildFieldOptions(const Descriptor* descriptor,
+                    absl::Span<const FieldDescriptor* const> ordered_fields,
+                    const Options& options, MessageSCCAnalyzer* scc_analyzer,
+                    absl::Span<const int> has_bit_indices,
+                    absl::Span<const int> inlined_string_indices);
+
+  static internal::TailCallTableInfo BuildTcTableInfoFromDescriptor(
+      const Descriptor* descriptor, const Options& options,
+      absl::Span<const internal::TailCallTableInfo::FieldOptions>
+          field_options);
 
   // Emits class-level data member declarations to `printer`:
   void GenerateDataDecls(io::Printer* printer);
@@ -44,12 +65,14 @@ class ParseFunctionGenerator {
   void GenerateDataDefinitions(io::Printer* printer);
 
  private:
+  friend class TailCallTableInfoTest;
+
   class GeneratedOptionProvider;
 
   // Generates the tail-call table definition.
   void GenerateTailCallTable(io::Printer* printer);
-  void GenerateFastFieldEntries(Formatter& format);
-  void GenerateFieldEntries(Formatter& format);
+  void GenerateFastFieldEntries(io::Printer* printer);
+  void GenerateFieldEntries(io::Printer* p);
   void GenerateFieldNames(Formatter& format);
 
   const Descriptor* descriptor_;

@@ -15,18 +15,22 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -94,9 +98,6 @@ class FieldGeneratorBase {
 
   // Returns true if the field API uses bytes (void) instead of chars.
   bool is_bytes() const { return is_bytes_; }
-
-  // Returns the public API string type for string fields.
-  FieldOptions::CType string_type() const { return string_type_; }
 
   // Returns true if this field is part of a oneof field.
   bool is_oneof() const { return is_oneof_; }
@@ -202,6 +203,9 @@ class FieldGeneratorBase {
   MessageSCCAnalyzer* scc_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
 
+  pb::CppFeatures::StringType GetDeclaredStringType() const;
+
+
  private:
   bool should_split_ = false;
   bool is_trivial_ = false;
@@ -217,7 +221,6 @@ class FieldGeneratorBase {
   bool is_lazy_ = false;
   bool is_weak_ = false;
   bool is_oneof_ = false;
-  FieldOptions::CType string_type_ = FieldOptions::STRING;
   bool has_default_constexpr_constructor_ = false;
 };
 
@@ -255,6 +258,8 @@ class FieldGenerator {
   // Properties: see FieldGeneratorBase for documentation
   bool should_split() const { return impl_->should_split(); }
   bool is_trivial() const { return impl_->is_trivial(); }
+  // Returns true if the field has trivial copy construction.
+  bool has_trivial_copy() const { return is_trivial(); }
   bool has_trivial_value() const { return impl_->has_trivial_value(); }
   bool has_trivial_zero_default() const {
     return impl_->has_trivial_zero_default();
@@ -269,7 +274,6 @@ class FieldGenerator {
   bool is_foreign() const { return impl_->is_foreign(); }
   bool is_string() const { return impl_->is_string(); }
   bool is_bytes() const { return impl_->is_bytes(); }
-  FieldOptions::CType string_type() const { return impl_->string_type(); }
   bool is_oneof() const { return impl_->is_oneof(); }
   bool is_inlined() const { return impl_->is_inlined(); }
   bool has_default_constexpr_constructor() const {
@@ -477,6 +481,7 @@ class FieldGenerator {
     impl_->GenerateByteSize(p);
   }
 
+
   // Generates lines to call IsInitialized() for eligible message fields. Non
   // message fields won't need to override this function.
   void GenerateIsInitialized(io::Printer* p) const {
@@ -498,8 +503,8 @@ class FieldGenerator {
   friend class FieldGeneratorTable;
   FieldGenerator(const FieldDescriptor* field, const Options& options,
                  MessageSCCAnalyzer* scc_analyzer,
-                 absl::optional<uint32_t> hasbit_index,
-                 absl::optional<uint32_t> inlined_string_index);
+                 std::optional<uint32_t> hasbit_index,
+                 std::optional<uint32_t> inlined_string_index);
 
   std::unique_ptr<FieldGeneratorBase> impl_;
   std::vector<io::Printer::Sub> field_vars_;
@@ -540,5 +545,7 @@ std::vector<io::Printer::Sub> FieldVars(const FieldDescriptor* field,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__

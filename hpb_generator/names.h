@@ -5,47 +5,47 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_COMPILER_HBP_GEN_NAMES_H_
-#define PROTOBUF_COMPILER_HBP_GEN_NAMES_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_NAMES_H__
+#define GOOGLE_PROTOBUF_COMPILER_HPB_NAMES_H__
 
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/compiler/hpb/output.h"
+#include "hpb_generator/context.h"
 
-namespace google::protobuf::hpb_generator {
-
-namespace protobuf = ::proto2;
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 inline constexpr absl::string_view kNoPackageNamePrefix = "hpb_";
 
-std::string ClassName(const protobuf::Descriptor* descriptor);
-std::string QualifiedClassName(const protobuf::Descriptor* descriptor);
-std::string QualifiedInternalClassName(const protobuf::Descriptor* descriptor);
+std::string ClassName(const google::protobuf::Descriptor* descriptor);
+std::string QualifiedClassName(const google::protobuf::Descriptor* descriptor);
+std::string QualifiedInternalClassName(const google::protobuf::Descriptor* descriptor);
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file);
-std::string ForwardingHeaderFilename(const google::protobuf::FileDescriptor* file);
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file);
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file);
 
-void WriteStartNamespace(const protobuf::FileDescriptor* file, Output& output);
-void WriteEndNamespace(const protobuf::FileDescriptor* file, Output& output);
+void WriteStartNamespace(const google::protobuf::FileDescriptor* file, Context& ctx);
+void WriteEndNamespace(const google::protobuf::FileDescriptor* file, Context& ctx);
 
-std::string CppConstType(const protobuf::FieldDescriptor* field);
-std::string CppTypeParameterName(const protobuf::FieldDescriptor* field);
+std::string CppConstType(const google::protobuf::FieldDescriptor* field);
+std::string CppTypeParameterName(const google::protobuf::FieldDescriptor* field);
 
-std::string MessageBaseType(const protobuf::FieldDescriptor* field,
+std::string MessageBaseType(const google::protobuf::FieldDescriptor* field,
                             bool is_const);
 // Generate hpb::Ptr<const Model> to be used in accessors as public
 // signatures.
-std::string MessagePtrConstType(const protobuf::FieldDescriptor* field,
+std::string MessagePtrConstType(const google::protobuf::FieldDescriptor* field,
                                 bool is_const);
-std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
+std::string MessageCProxyType(const google::protobuf::FieldDescriptor* field,
                               bool is_const);
-std::string MessageProxyType(const protobuf::FieldDescriptor* field,
+std::string MessageProxyType(const google::protobuf::FieldDescriptor* field,
                              bool is_const);
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
-#endif  // PROTOBUF_COMPILER_HBP_GEN_NAMES_H_
+#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_NAMES_H__

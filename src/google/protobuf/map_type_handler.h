@@ -135,7 +135,7 @@ MAP_HANDLER(BOOL)
 template <typename Type>
 inline size_t MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::ByteSize(
     const MapEntryAccessorType& value) {
-  return WireFormatLite::MessageSizeNoVirtual(value);
+  return WireFormatLite::MessageSize(value);
 }
 
 #define GOOGLE_PROTOBUF_BYTE_SIZE(FieldType, DeclaredType)                     \

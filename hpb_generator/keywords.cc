@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/keywords.h"
+#include "hpb_generator/keywords.h"
 
 #include <new>
 #include <string>
@@ -14,7 +14,9 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 static const absl::string_view kKeywordList[] = {
     //
@@ -130,5 +132,6 @@ std::string ResolveKeywordConflict(absl::string_view name) {
   return std::string(name);
 }
 
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

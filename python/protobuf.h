@@ -8,11 +8,13 @@
 #ifndef PYUPB_PROTOBUF_H__
 #define PYUPB_PROTOBUF_H__
 
+#include <assert.h>
 #include <stdbool.h>
 
 #include "python/descriptor.h"
 #include "python/python_api.h"
 #include "upb/hash/int_table.h"
+#include "upb/reflection/def.h"
 
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"
 #define PYUPB_PROTOBUF_INTERNAL_PACKAGE "google.protobuf.internal"
@@ -183,8 +185,7 @@ PyObject* PyUpb_Forbidden_New(PyObject* cls, PyObject* args, PyObject* kwds);
 
 // Our standard dealloc func. It follows the guidance defined in:
 //   https://docs.python.org/3/c-api/typeobj.html#c.PyTypeObject.tp_dealloc
-// However it tests Py_TPFLAGS_HEAPTYPE dynamically so that a single dealloc
-// function can work for any type.
+// It requires that the type is a heap type, which all of our types are.
 static inline void PyUpb_Dealloc(void* self) {
   PyTypeObject* tp = Py_TYPE(self);
   assert(PyType_GetFlags(tp) & Py_TPFLAGS_HEAPTYPE);

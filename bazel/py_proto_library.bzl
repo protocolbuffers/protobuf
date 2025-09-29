@@ -17,6 +17,13 @@ _PyProtoInfo = provider(
             (depset[File]) Files from the transitive closure implicit proto
             dependencies""",
         "transitive_sources": """(depset[File]) The Python sources.""",
+        "direct_pyi_files": """
+            (depset[File]) Type definition files (usually `.pyi` files)
+            for the Python modules provided by this target.""",
+        "transitive_pyi_files": """
+            (depset[File]) The transitive set of type definition files
+            (usually `.pyi` files) for the Python modules for this target
+            and its transitive dependencies.""",
     },
 )
 
@@ -44,8 +51,9 @@ def _py_proto_aspect_impl(target, ctx):
 
     # Check Proto file names
     for proto in target[ProtoInfo].direct_sources:
-        if proto.is_source and "-" in proto.dirname:
-            fail("Cannot generate Python code for a .proto whose path contains '-' ({}).".format(
+        import_path = proto_common.get_import_path(proto)
+        if proto.is_source and "-" in import_path:
+            fail("Cannot generate Python code for a .proto whose python import path contains '-' ({}).".format(
                 proto.path,
             ))
 
@@ -60,6 +68,7 @@ def _py_proto_aspect_impl(target, ctx):
     api_deps = [proto_lang_toolchain_info.runtime]
 
     generated_sources = []
+    generated_stubs = []
     proto_info = target[ProtoInfo]
     proto_root = proto_info.proto_source_root
     if proto_info.direct_sources:
@@ -71,19 +80,37 @@ def _py_proto_aspect_impl(target, ctx):
             name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
         )
 
+        # Generate pyi files
+        generated_stubs = proto_common.declare_generated_files(
+            actions = ctx.actions,
+            proto_info = proto_info,
+            extension = "_pb2.pyi",
+            name_mapper = lambda name: name.replace("-", "_").replace(".", "/"),
+        )
+
         # Handles multiple repository and virtual import cases
         if proto_root.startswith(ctx.bin_dir.path):
             proto_root = proto_root[len(ctx.bin_dir.path) + 1:]
 
         plugin_output = ctx.bin_dir.path + "/" + proto_root
-        proto_root = ctx.workspace_name + "/" + proto_root
+
+        # Import path within the runfiles tree
+        if proto_root.startswith("external/"):
+            proto_root = proto_root[len("external") + 1:]
+        else:
+            proto_root = ctx.workspace_name + "/" + proto_root
+
+        additional_args = ctx.actions.args()
+        if generated_stubs:
+            additional_args.add(plugin_output, format = "--pyi_out=%s")
 
         proto_common.compile(
             actions = ctx.actions,
             proto_info = proto_info,
             proto_lang_toolchain_info = proto_lang_toolchain_info,
-            generated_files = generated_sources,
+            generated_files = generated_sources + generated_stubs,
             plugin_output = plugin_output,
+            additional_args = additional_args,
         )
 
     # Generated sources == Python sources
@@ -97,6 +124,13 @@ def _py_proto_aspect_impl(target, ctx):
     transitive_sources = depset(
         direct = python_sources,
         transitive = [dep.transitive_sources for dep in deps],
+    )
+    direct_pyi_files = depset(
+        direct = generated_stubs,
+    )
+    transitive_pyi_files = depset(
+        direct = generated_stubs,
+        transitive = [dep.transitive_pyi_files for dep in deps],
     )
 
     return [
@@ -113,6 +147,8 @@ def _py_proto_aspect_impl(target, ctx):
             ),
             runfiles_from_proto_deps = runfiles_from_proto_deps,
             transitive_sources = transitive_sources,
+            direct_pyi_files = direct_pyi_files,
+            transitive_pyi_files = transitive_pyi_files,
         ),
     ]
 
@@ -144,6 +180,13 @@ def _py_proto_library_rule(ctx):
     default_outputs = depset(
         transitive = [info.transitive_sources for info in pyproto_infos],
     )
+    direct_pyi_files = []
+    for info in pyproto_infos:
+        direct_pyi_files.extend(info.direct_pyi_files.to_list())
+    transitive_pyi_files = depset(
+        direct = direct_pyi_files,
+        transitive = [info.transitive_pyi_files for info in pyproto_infos],
+    )
 
     return [
         DefaultInfo(
@@ -160,6 +203,8 @@ def _py_proto_library_rule(ctx):
         PyInfo(
             transitive_sources = default_outputs,
             imports = depset(transitive = [info.imports for info in pyproto_infos]),
+            direct_pyi_files = depset(direct = direct_pyi_files),
+            transitive_pyi_files = transitive_pyi_files,
             # Proto always produces 2- and 3- compatible source files
             has_py2_only_sources = False,
             has_py3_only_sources = False,

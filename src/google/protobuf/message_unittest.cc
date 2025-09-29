@@ -10,15 +10,23 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <string>
+#include <tuple>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/hash/hash_testing.h"
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/explicitly_constructed.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
@@ -29,13 +37,12 @@
 
 #define MESSAGE_TEST_NAME MessageTest
 #define MESSAGE_FACTORY_TEST_NAME MessageFactoryTest
-#define UNITTEST_PACKAGE_NAME "protobuf_unittest"
-#define UNITTEST ::protobuf_unittest
-#define UNITTEST_IMPORT ::protobuf_unittest_import
+#define UNITTEST_PACKAGE_NAME "proto2_unittest"
+#define UNITTEST ::proto2_unittest
+#define UNITTEST_IMPORT ::proto2_unittest_import
 
 // Must include after the above macros.
 // clang-format off
-#include "google/protobuf/test_util.inc"
 #include "google/protobuf/message_unittest.inc"
 #include "google/protobuf/message_unittest_legacy_apis.inc"
 // clang-format on

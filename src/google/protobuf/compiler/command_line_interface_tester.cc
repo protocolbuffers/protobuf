@@ -80,10 +80,23 @@ void CommandLineInterfaceTester::RunProtocWithArgs(
 
   return_code_ = cli_.Run(static_cast<int>(args.size()), argv.data());
 
-  error_text_ = GetCapturedTestStderr();
+  captured_stderr_ = GetCapturedTestStderr();
 #if !defined(__CYGWIN__)
   captured_stdout_ = GetCapturedTestStdout();
 #endif
+}
+
+void CommandLineInterfaceTester::RunProtocAndExpectDeath(
+    absl::string_view command, const std::string& death_message_regex) {
+  std::vector<std::string> args =
+      absl::StrSplit(command, ' ', absl::SkipEmpty());
+  std::vector<const char*> argv(args.size());
+  for (size_t i = 0; i < args.size(); i++) {
+    args[i] = absl::StrReplaceAll(args[i], {{"$tmpdir", temp_directory_}});
+    argv[i] = args[i].c_str();
+  }
+  EXPECT_DEATH(cli_.Run(static_cast<int>(args.size()), argv.data()),
+               death_message_regex);
 }
 
 // -------------------------------------------------------------------
@@ -116,33 +129,40 @@ void CommandLineInterfaceTester::CreateTempDir(absl::string_view name) {
 
 void CommandLineInterfaceTester::ExpectNoErrors() {
   EXPECT_EQ(0, return_code_);
-  EXPECT_EQ("", error_text_);
+
+  // Note: since warnings and errors are both simply printed to stderr, we
+  // can't holistically distinguish them here; in practice we don't have
+  // multiline warnings so just counting any line with 'warning:' in it
+  // is sufficient to separate warnings and errors in practice.
+  for (const auto& line :
+       absl::StrSplit(captured_stderr_, '\n', absl::SkipEmpty())) {
+    EXPECT_THAT(line, HasSubstr("warning:"));
+  }
 }
 
 void CommandLineInterfaceTester::ExpectErrorText(
     absl::string_view expected_text) {
   EXPECT_NE(0, return_code_);
-  EXPECT_EQ(absl::StrReplaceAll(expected_text, {{"$tmpdir", temp_directory_}}),
-            error_text_);
+  EXPECT_EQ(captured_stderr_,
+            absl::StrReplaceAll(expected_text, {{"$tmpdir", temp_directory_}}));
 }
-
 void CommandLineInterfaceTester::ExpectErrorSubstring(
     absl::string_view expected_substring) {
   EXPECT_NE(0, return_code_);
-  EXPECT_THAT(error_text_, HasSubstr(expected_substring));
+  EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
 void CommandLineInterfaceTester::ExpectWarningSubstring(
     absl::string_view expected_substring) {
   EXPECT_EQ(0, return_code_);
-  EXPECT_THAT(error_text_, HasSubstr(expected_substring));
+  EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
 }
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 bool CommandLineInterfaceTester::HasAlternateErrorSubstring(
     const std::string& expected_substring) {
   EXPECT_NE(0, return_code_);
-  return error_text_.find(expected_substring) != std::string::npos;
+  return captured_stderr_.find(expected_substring) != std::string::npos;
 }
 #endif  // _WIN32 && !__CYGWIN__
 
@@ -162,17 +182,31 @@ void CommandLineInterfaceTester::
     ExpectCapturedStderrSubstringWithZeroReturnCode(
         absl::string_view expected_substring) {
   EXPECT_EQ(0, return_code_);
-  EXPECT_THAT(error_text_, HasSubstr(expected_substring));
+  EXPECT_THAT(captured_stderr_, HasSubstr(expected_substring));
+}
+
+std::string CommandLineInterfaceTester::FileContents(
+    absl::string_view filename) const {
+  std::string path = absl::StrCat(temp_directory_, "/", filename);
+  std::string file_contents;
+  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
+  return file_contents;
 }
 
 void CommandLineInterfaceTester::ExpectFileContent(absl::string_view filename,
                                                    absl::string_view content) {
-  std::string path = absl::StrCat(temp_directory_, "/", filename);
-  std::string file_contents;
-  ABSL_CHECK_OK(File::GetContents(path, &file_contents, true));
-
   EXPECT_EQ(absl::StrReplaceAll(content, {{"$tmpdir", temp_directory_}}),
-            file_contents);
+            FileContents(filename));
+}
+
+void CommandLineInterfaceTester::ExpectFileContentContainsSubstring(
+    absl::string_view filename, absl::string_view content_substring) {
+  EXPECT_THAT(FileContents(filename), HasSubstr(content_substring));
+}
+
+void CommandLineInterfaceTester::ExpectFileContentNotContainsSubstring(
+    absl::string_view filename, absl::string_view content_substring) {
+  EXPECT_THAT(FileContents(filename), Not(HasSubstr(content_substring)));
 }
 
 }  // namespace compiler

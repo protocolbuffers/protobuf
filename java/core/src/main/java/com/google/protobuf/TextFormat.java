@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -39,7 +38,11 @@ public final class TextFormat {
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
 
-  private static final String DEBUG_STRING_SILENT_MARKER = "\t ";
+  private static final String DEBUG_STRING_SILENT_MARKER = " \t ";
+  private static final String ENABLE_INSERT_SILENT_MARKER_ENV_NAME =
+      "SILENT_MARKER_INSERTION_ENABLED";
+  private static final boolean ENABLE_INSERT_SILENT_MARKER =
+    System.getenv().getOrDefault(ENABLE_INSERT_SILENT_MARKER_ENV_NAME, "false").equals("true");
 
   private static final String REDACTED_MARKER = "[REDACTED]";
 
@@ -119,26 +122,54 @@ public final class TextFormat {
     return Printer.DEFAULT_DEBUG_FORMAT;
   }
 
+  /** Printer instance which escapes non-ASCII characters and prints in the debug format. */
+  public static Printer defaultFormatPrinter() {
+    return Printer.DEFAULT_FORMAT;
+  }
+
   /** Helper class for converting protobufs to text. */
   public static final class Printer {
 
     // Printer instance which escapes non-ASCII characters and prints in the text format.
     private static final Printer DEFAULT_TEXT_FORMAT =
         new Printer(
-            true,
+            /* escapeNonAscii= */ true,
+            /* useShortRepeatedPrimitives= */ false,
             TypeRegistry.getEmptyTypeRegistry(),
             ExtensionRegistryLite.getEmptyRegistry(),
-            false,
-            false);
+            /* enablingSafeDebugFormat= */ false,
+            /* singleLine= */ false);
 
     // Printer instance which escapes non-ASCII characters and prints in the debug format.
     private static final Printer DEFAULT_DEBUG_FORMAT =
         new Printer(
-            true,
+            /* escapeNonAscii= */ true,
+            /* useShortRepeatedPrimitives= */ false,
             TypeRegistry.getEmptyTypeRegistry(),
             ExtensionRegistryLite.getEmptyRegistry(),
-            true,
-            false);
+            /* enablingSafeDebugFormat= */ true,
+            /* singleLine= */ false);
+
+    // Printer instance which escapes non-ASCII characters and inserts a silent marker.
+    private static final Printer DEFAULT_FORMAT =
+        new Printer(
+                /* escapeNonAscii= */ true,
+                /* useShortRepeatedPrimitives= */ false,
+                TypeRegistry.getEmptyTypeRegistry(),
+                ExtensionRegistryLite.getEmptyRegistry(),
+                /* enablingSafeDebugFormat= */ false,
+                /* singleLine= */ false)
+            .setInsertSilentMarker(ENABLE_INSERT_SILENT_MARKER);
+
+    static Printer getOutputModePrinter() {
+      if (ProtobufToStringOutput.isDefaultFormat()) {
+        return defaultFormatPrinter();
+      } else if (ProtobufToStringOutput.shouldOutputDebugFormat()) {
+        return debugFormatPrinter();
+      } else {
+        return printer();
+      }
+    }
 
     /**
      * A list of the public APIs that output human-readable text from a message. A higher-level API
@@ -146,22 +177,33 @@ public final class TextFormat {
      * DEBUG_MULTILINE.compareTo(PRINTER_PRINT_TO_STRING) > 0. The inverse is not necessarily true.
      */
     static enum FieldReporterLevel {
-      NO_REPORT,
-      PRINT,
-      PRINTER_PRINT_TO_STRING,
-      TEXTFORMAT_PRINT_TO_STRING,
-      PRINT_UNICODE,
-      SHORT_DEBUG_STRING,
-      LEGACY_MULTILINE,
-      LEGACY_SINGLE_LINE,
-      DEBUG_MULTILINE,
-      DEBUG_SINGLE_LINE,
-      ABSTRACT_TO_STRING,
-      ABSTRACT_MUTABLE_TO_STRING
+      REPORT_ALL(0),
+      TEXT_GENERATOR(1),
+      PRINT(2),
+      PRINTER_PRINT_TO_STRING(3),
+      TEXTFORMAT_PRINT_TO_STRING(4),
+      PRINT_UNICODE(5),
+      SHORT_DEBUG_STRING(6),
+      LEGACY_MULTILINE(7),
+      LEGACY_SINGLE_LINE(8),
+      DEBUG_MULTILINE(9),
+      DEBUG_SINGLE_LINE(10),
+      ABSTRACT_TO_STRING(11),
+      ABSTRACT_BUILDER_TO_STRING(12),
+      ABSTRACT_MUTABLE_TO_STRING(13),
+      REPORT_NONE(14);
+      private final int index;
+
+      FieldReporterLevel(int index) {
+        this.index = index;
+      }
     }
 
     /** Whether to escape non ASCII characters with backslash and octal. */
     private final boolean escapeNonAscii;
+
+    /** Whether to print repeated primitive fields using short square bracket notation. */
+    private final boolean useShortRepeatedPrimitives;
 
     private final TypeRegistry typeRegistry;
     private final ExtensionRegistryLite extensionRegistry;
@@ -174,27 +216,38 @@ public final class TextFormat {
 
     private final boolean singleLine;
 
-    // Any API level higher than this level will be reported. This is set to
-    // ABSTRACT_MUTABLE_TO_STRING by default to prevent reporting for now.
+    private boolean insertSilentMarker;
+
+    @CanIgnoreReturnValue
+    private Printer setInsertSilentMarker(boolean insertSilentMarker) {
+      this.insertSilentMarker = insertSilentMarker;
+      return this;
+    }
+
+    // Any API level equal to or greater than this level will be reported. This is set to
+    // REPORT_NONE by default to prevent reporting for now.
     private static final ThreadLocal<FieldReporterLevel> sensitiveFieldReportingLevel =
         new ThreadLocal<FieldReporterLevel>() {
           @Override
           protected FieldReporterLevel initialValue() {
-            return FieldReporterLevel.ABSTRACT_MUTABLE_TO_STRING;
+            return FieldReporterLevel.ABSTRACT_TO_STRING;
           }
         };
 
     private Printer(
         boolean escapeNonAscii,
+        boolean useShortRepeatedPrimitives,
         TypeRegistry typeRegistry,
         ExtensionRegistryLite extensionRegistry,
         boolean enablingSafeDebugFormat,
         boolean singleLine) {
       this.escapeNonAscii = escapeNonAscii;
+      this.useShortRepeatedPrimitives = useShortRepeatedPrimitives;
       this.typeRegistry = typeRegistry;
       this.extensionRegistry = extensionRegistry;
       this.enablingSafeDebugFormat = enablingSafeDebugFormat;
       this.singleLine = singleLine;
+      this.insertSilentMarker = false;
     }
 
     /**
@@ -208,7 +261,12 @@ public final class TextFormat {
      */
     public Printer escapingNonAscii(boolean escapeNonAscii) {
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -222,7 +280,12 @@ public final class TextFormat {
         throw new IllegalArgumentException("Only one typeRegistry is allowed.");
       }
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -236,7 +299,12 @@ public final class TextFormat {
         throw new IllegalArgumentException("Only one extensionRegistry is allowed.");
       }
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -250,7 +318,30 @@ public final class TextFormat {
      */
     Printer enablingSafeDebugFormat(boolean enablingSafeDebugFormat) {
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
+    }
+
+    /**
+     * Return a new Printer instance that outputs primitive repeated fields in short notation
+     *
+     * @param useShortRepeatedPrimitives If true, repeated fields with a primitive type are printed
+     *     using the short hand notation with comma-delimited field values in square brackets.
+     * @return a new Printer that clones all other configurations from the current {@link Printer},
+     *     with the useShortRepeatedPrimitives mode set to the given parameter.
+     */
+    public Printer usingShortRepeatedPrimitives(boolean useShortRepeatedPrimitives) {
+      return new Printer(
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     /**
@@ -262,7 +353,12 @@ public final class TextFormat {
      */
     public Printer emittingSingleLine(boolean singleLine) {
       return new Printer(
-          escapeNonAscii, typeRegistry, extensionRegistry, enablingSafeDebugFormat, singleLine);
+          escapeNonAscii,
+          useShortRepeatedPrimitives,
+          typeRegistry,
+          extensionRegistry,
+          enablingSafeDebugFormat,
+          singleLine);
     }
 
     void setSensitiveFieldReportingLevel(FieldReporterLevel level) {
@@ -280,7 +376,13 @@ public final class TextFormat {
 
     void print(final MessageOrBuilder message, final Appendable output, FieldReporterLevel level)
         throws IOException {
-      TextGenerator generator = setSingleLineOutput(output, this.singleLine, level);
+      TextGenerator generator =
+          setSingleLineOutput(
+              output,
+              this.singleLine,
+              message.getDescriptorForType(),
+              level,
+              this.insertSilentMarker);
       print(message, generator);
     }
 
@@ -350,7 +452,9 @@ public final class TextFormat {
       }
       generator.print("[");
       generator.print(typeUrl);
-      generator.print("] {");
+      generator.print("]");
+      generator.maybePrintSilentMarker();
+      generator.print("{");
       generator.eol();
       generator.indent();
       print(contentBuilder, generator);
@@ -392,9 +496,12 @@ public final class TextFormat {
           printSingleField(field, adapter.getEntry(), generator);
         }
       } else if (field.isRepeated()) {
-        // Repeated field.  Print each element.
-        for (Object element : (List<?>) value) {
-          printSingleField(field, element, generator);
+        if (useShortRepeatedPrimitives && field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
+          printShortRepeatedField(field, value, generator);
+        } else {
+          for (Object element : (List<?>) value) {
+            printSingleField(field, element, generator);
+          }
         }
       } else {
         printSingleField(field, value, generator);
@@ -402,68 +509,57 @@ public final class TextFormat {
     }
 
     /** An adapter class that can take a {@link MapEntry} and returns its key and entry. */
-    private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
+    static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
       private Object entry;
-
-      @SuppressWarnings({"rawtypes"})
-      private MapEntry mapEntry;
-
-      private final FieldDescriptor.JavaType fieldType;
+      private Message messageEntry;
+      private final FieldDescriptor keyField;
 
       MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
-        if (entry instanceof MapEntry) {
-          this.mapEntry = (MapEntry) entry;
+        if (entry instanceof Message) {
+          this.messageEntry = (Message) entry;
         } else {
           this.entry = entry;
         }
-        this.fieldType = extractFieldType(fieldDescriptor);
-      }
-
-      private static FieldDescriptor.JavaType extractFieldType(FieldDescriptor fieldDescriptor) {
-        return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
+        this.keyField = fieldDescriptor.getMessageType().findFieldByName("key");
       }
 
       Object getKey() {
-        if (mapEntry != null) {
-          return mapEntry.getKey();
+        if (messageEntry != null && keyField != null) {
+          return messageEntry.getField(keyField);
         }
         return null;
       }
 
       Object getEntry() {
-        if (mapEntry != null) {
-          return mapEntry;
+        if (messageEntry != null) {
+          return messageEntry;
         }
         return entry;
       }
 
       @Override
       public int compareTo(MapEntryAdapter b) {
-        if (getKey() == null || b.getKey() == null) {
-          logger.info("Invalid key for map field.");
+        Object aKey = getKey();
+        Object bKey = b.getKey();
+        if (aKey == null && bKey == null) {
+          return 0;
+        } else if (aKey == null) {
           return -1;
-        }
-        switch (fieldType) {
-          case BOOLEAN:
-            return ((Boolean) getKey()).compareTo((Boolean) b.getKey());
-          case LONG:
-            return ((Long) getKey()).compareTo((Long) b.getKey());
-          case INT:
-            return ((Integer) getKey()).compareTo((Integer) b.getKey());
-          case STRING:
-            String aString = (String) getKey();
-            String bString = (String) b.getKey();
-            if (aString == null && bString == null) {
+        } else if (bKey == null) {
+          return 1;
+        } else {
+          switch (keyField.getJavaType()) {
+            case BOOLEAN:
+              return ((Boolean) aKey).compareTo((Boolean) bKey);
+            case LONG:
+              return ((Long) aKey).compareTo((Long) bKey);
+            case INT:
+              return ((Integer) aKey).compareTo((Integer) bKey);
+            case STRING:
+              return ((String) aKey).compareTo((String) bKey);
+            default:
               return 0;
-            } else if (aString == null && bString != null) {
-              return -1;
-            } else if (aString != null && bString == null) {
-              return 1;
-            } else {
-              return aString.compareTo(bString);
-            }
-          default:
-            return 0;
+          }
         }
       }
     }
@@ -563,55 +659,14 @@ public final class TextFormat {
       }
     }
 
-    private boolean shouldRedactOptionValue(EnumValueDescriptor optionValue) {
-      if (optionValue.getOptions().hasDebugRedact()) {
-        return optionValue.getOptions().getDebugRedact();
-      }
-      return false;
-    }
-
     // The criteria for redacting a field is as follows: 1) The enablingSafeDebugFormat printer
-    // option
-    // must be on. 2) The field must be marked by a debug_redact=true option, or is marked by an
-    // option with an enum value that is marked by a debug_redact=true option.
-    @SuppressWarnings("unchecked") // List<EnumValueDescriptor> guaranteed by protobuf runtime.
+    // option must be on. 2) The field must be considered "sensitive". A sensitive field can be
+    // marked as sensitive via two methods: a) via a direct debug_redact=true annotation on the
+    // field, b) via an enum field marked with debug_redact=true that is within the proto's
+    // FieldOptions, either directly or indirectly via a message option.
     private boolean shouldRedact(final FieldDescriptor field, TextGenerator generator) {
-      // Skip checking if it's sensitive and potentially reporting it if we don't care about either.
-      if (!shouldReport(generator.fieldReporterLevel) && !enablingSafeDebugFormat) {
-        return false;
-      }
-      boolean isSensitive = false;
-      if (field.getOptions().hasDebugRedact() && field.getOptions().getDebugRedact()) {
-        isSensitive = true;
-      } else {
-        // Iterate through every option; if it's an enum, we check each enum value for debug_redact.
-        for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
-            field.getOptions().getAllFields().entrySet()) {
-          Descriptors.FieldDescriptor option = entry.getKey();
-          if (option.getType() != Descriptors.FieldDescriptor.Type.ENUM) {
-            continue;
-          }
-          if (option.isRepeated()) {
-            for (EnumValueDescriptor value : (List<EnumValueDescriptor>) entry.getValue()) {
-              if (shouldRedactOptionValue(value)) {
-                isSensitive = true;
-                break;
-              }
-            }
-          } else {
-            EnumValueDescriptor optionValue = (EnumValueDescriptor) entry.getValue();
-            if (shouldRedactOptionValue(optionValue)) {
-              isSensitive = true;
-              break;
-            }
-          }
-        }
-      }
-      return isSensitive && enablingSafeDebugFormat;
-    }
-
-    private boolean shouldReport(FieldReporterLevel level) {
-      return sensitiveFieldReportingLevel.get().compareTo(level) < 0;
+      FieldDescriptor.RedactionState state = field.getRedactionState();
+      return enablingSafeDebugFormat && state.redact;
     }
 
     /** Like {@code print()}, but writes directly to a {@code String} and returns it. */
@@ -650,8 +705,7 @@ public final class TextFormat {
      * Generates a human readable form of this message, useful for debugging and other purposes,
      * with no newline characters.
      *
-     * @deprecated Use {@code
-     *     this.printer().emittingSingleLine(true).printToString(MessageOrBuilder)}
+     * @deprecated Use {@code this.emittingSingleLine(true).printToString(MessageOrBuilder)}
      */
     @Deprecated
     public String shortDebugString(final MessageOrBuilder message) {
@@ -743,6 +797,22 @@ public final class TextFormat {
       printUnknownFields(message.getUnknownFields(), generator, this.enablingSafeDebugFormat);
     }
 
+    private void printShortRepeatedField(
+        final FieldDescriptor field, final Object value, final TextGenerator generator)
+        throws IOException {
+      generator.print(field.getName());
+      generator.print(": ");
+      generator.print("[");
+      String separator = "";
+      for (Object element : (List<?>) value) {
+        generator.print(separator);
+        printFieldValue(field, element, generator);
+        separator = ", ";
+      }
+      generator.print("]");
+      generator.eol();
+    }
+
     private void printSingleField(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
@@ -769,11 +839,13 @@ public final class TextFormat {
       }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        generator.print(" {");
+        generator.maybePrintSilentMarker();
+        generator.print("{");
         generator.eol();
         generator.indent();
       } else {
-        generator.print(": ");
+        generator.print(":");
+        generator.maybePrintSilentMarker();
       }
 
       printFieldValue(field, value, generator);
@@ -808,7 +880,8 @@ public final class TextFormat {
             redact);
         for (final UnknownFieldSet value : field.getGroupList()) {
           generator.print(entry.getKey().toString());
-          generator.print(" {");
+          generator.maybePrintSilentMarker();
+          generator.print("{");
           generator.eol();
           generator.indent();
           printUnknownFields(value, generator, redact);
@@ -828,11 +901,83 @@ public final class TextFormat {
         throws IOException {
       for (final Object value : values) {
         generator.print(String.valueOf(number));
-        generator.print(": ");
+        generator.print(":");
+        generator.maybePrintSilentMarker();
         printUnknownFieldValue(wireType, value, generator, redact);
         generator.eol();
       }
     }
+  }
+
+  /**
+   * Outputs a textual representation of the Protocol Message supplied into the parameter output.
+   * (This representation is the new version of the classic "ProtocolPrinter" output from the
+   * original Protocol Buffer system)
+   *
+   * @deprecated Use {@code printer().print(MessageOrBuilder, Appendable)}
+   */
+  @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().print(message, output)",
+      imports = "com.google.protobuf.TextFormat")
+  public static void print(final MessageOrBuilder message, final Appendable output)
+      throws IOException {
+    printer().print(message, output);
+  }
+
+  /**
+   * Same as {@code print()}, except that non-ASCII characters are not escaped.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).print(MessageOrBuilder, Appendable)}
+   */
+  @Deprecated
+  public static void printUnicode(final MessageOrBuilder message, final Appendable output)
+      throws IOException {
+    printer()
+        .escapingNonAscii(false)
+        .print(message, output, Printer.FieldReporterLevel.PRINT_UNICODE);
+  }
+
+  /**
+   * Like {@code print()}, but writes directly to a {@code String} and returns it.
+   *
+   * @deprecated Use {@code message.toString()}
+   */
+  @Deprecated
+  public static String printToString(final MessageOrBuilder message) {
+    return printer().printToString(message, Printer.FieldReporterLevel.TEXTFORMAT_PRINT_TO_STRING);
+  }
+
+  /**
+   * Same as {@code printToString()}, except that non-ASCII characters in string type fields are not
+   * escaped in backslash+octals.
+   *
+   * @deprecated Use {@code printer().escapingNonAscii(false).printToString(MessageOrBuilder)}
+   */
+  @Deprecated
+  public static String printToUnicodeString(final MessageOrBuilder message) {
+    return printer()
+        .escapingNonAscii(false)
+        .printToString(message, Printer.FieldReporterLevel.PRINT_UNICODE);
+  }
+
+  /**
+   * Outputs a textual representation of the value of given field value.
+   *
+   * @deprecated Use {@code printer().printFieldValue(FieldDescriptor, Object, Appendable)}
+   * @param field the descriptor of the field
+   * @param value the value of the field
+   * @param output the output to which to append the formatted value
+   * @throws ClassCastException if the value is not appropriate for the given field descriptor
+   * @throws IOException if there is an exception writing to the output
+   */
+  @Deprecated
+  @InlineMe(
+      replacement = "TextFormat.printer().printFieldValue(field, value, output)",
+      imports = "com.google.protobuf.TextFormat")
+  public static void printFieldValue(
+      final FieldDescriptor field, final Object value, final Appendable output) throws IOException {
+    printer().printFieldValue(field, value, output);
   }
 
   /** Convert an unsigned 32-bit integer to a string. */
@@ -856,12 +1001,18 @@ public final class TextFormat {
   }
 
   private static TextGenerator setSingleLineOutput(Appendable output, boolean singleLine) {
-    return new TextGenerator(output, singleLine, Printer.FieldReporterLevel.NO_REPORT);
+    return new TextGenerator(
+        output, singleLine, null, Printer.FieldReporterLevel.TEXT_GENERATOR, false);
   }
 
   private static TextGenerator setSingleLineOutput(
-      Appendable output, boolean singleLine, Printer.FieldReporterLevel fieldReporterLevel) {
-    return new TextGenerator(output, singleLine, fieldReporterLevel);
+      Appendable output,
+      boolean singleLine,
+      Descriptor rootMessageType,
+      Printer.FieldReporterLevel fieldReporterLevel,
+      boolean shouldEmitSilentMarker) {
+    return new TextGenerator(
+        output, singleLine, rootMessageType, fieldReporterLevel, shouldEmitSilentMarker);
   }
 
   /** An inner class for writing text to the output stream. */
@@ -869,6 +1020,7 @@ public final class TextFormat {
     private final Appendable output;
     private final StringBuilder indent = new StringBuilder();
     private final boolean singleLineMode;
+    private boolean shouldEmitSilentMarker;
     // While technically we are "at the start of a line" at the very beginning of the output, all
     // we would do in response to this is emit the (zero length) indentation, so it has no effect.
     // Setting it false here does however suppress an unwanted leading space in single-line mode.
@@ -876,14 +1028,21 @@ public final class TextFormat {
     // Indicate which Protobuf public stringification API (e.g AbstractMessage.toString()) is
     // called.
     private final Printer.FieldReporterLevel fieldReporterLevel;
+    // The root message type being printed. Null if the root message type is not known (e.g.
+    // printing a field).
+    private final Descriptor rootMessageType;
 
     private TextGenerator(
         final Appendable output,
         boolean singleLineMode,
-        Printer.FieldReporterLevel fieldReporterLevel) {
+        Descriptor rootMessageType,
+        Printer.FieldReporterLevel fieldReporterLevel,
+        boolean shouldEmitSilentMarker) {
       this.output = output;
       this.singleLineMode = singleLineMode;
+      this.rootMessageType = rootMessageType;
       this.fieldReporterLevel = fieldReporterLevel;
+      this.shouldEmitSilentMarker = shouldEmitSilentMarker;
     }
 
     /**
@@ -927,6 +1086,15 @@ public final class TextFormat {
       }
       atStartOfLine = true;
     }
+
+    void maybePrintSilentMarker() throws IOException {
+      if (shouldEmitSilentMarker) {
+        output.append(DEBUG_STRING_SILENT_MARKER);
+        shouldEmitSilentMarker = false;
+      } else {
+        output.append(" ");
+      }
+    }
   }
 
   // =================================================================
@@ -951,14 +1119,9 @@ public final class TextFormat {
    *       Scanner} provides no way to inspect the contents of delimiters, making it impossible to
    *       keep track of line and column numbers.
    * </ul>
-   *
-   * <p>Luckily, Java's regular expression support does manage to be useful to us. (Barely: We need
-   * {@code Matcher.usePattern()}, which is new in Java 1.5.) So, we can use that, at least.
-   * Unfortunately, this implies that we need to have the entire input in one contiguous string.
    */
   private static final class Tokenizer {
     private final CharSequence text;
-    private final Matcher matcher;
     private String currentToken;
 
     // The character index within this.text at which the current token begins.
@@ -967,28 +1130,12 @@ public final class TextFormat {
     // The line and column numbers of the current token.
     private int line = 0;
     private int column = 0;
+    private int lineInfoTrackingPos = 0;
 
     // The line and column numbers of the previous token (allows throwing
     // errors *after* consuming).
     private int previousLine = 0;
     private int previousColumn = 0;
-
-    // We use possessive quantifiers (*+ and ++) because otherwise the Java
-    // regex matcher has stack overflows on large inputs.
-    private static final Pattern WHITESPACE = Pattern.compile("(\\s|(#.*$))++", Pattern.MULTILINE);
-    private static final Pattern TOKEN =
-        Pattern.compile(
-            "[a-zA-Z_][0-9a-zA-Z_+-]*+|" // an identifier
-                + "[.]?[0-9+-][0-9a-zA-Z_.+-]*+|" // a number
-                + "\"([^\"\n\\\\]|\\\\.)*+(\"|\\\\?$)|" // a double-quoted string
-                + "\'([^\'\n\\\\]|\\\\.)*+(\'|\\\\?$)", // a single-quoted string
-            Pattern.MULTILINE);
-
-    private static final Pattern DOUBLE_INFINITY =
-        Pattern.compile("-?inf(inity)?", Pattern.CASE_INSENSITIVE);
-    private static final Pattern FLOAT_INFINITY =
-        Pattern.compile("-?inf(inity)?f?", Pattern.CASE_INSENSITIVE);
-    private static final Pattern FLOAT_NAN = Pattern.compile("nanf?", Pattern.CASE_INSENSITIVE);
 
     /**
      * {@link containsSilentMarkerAfterCurrentToken} indicates if there is a silent marker after the
@@ -1002,7 +1149,6 @@ public final class TextFormat {
     /** Construct a tokenizer that parses tokens from the given text. */
     private Tokenizer(final CharSequence text) {
       this.text = text;
-      this.matcher = WHITESPACE.matcher(text);
       skipWhitespace();
       nextToken();
     }
@@ -1042,41 +1188,156 @@ public final class TextFormat {
       previousColumn = column;
 
       // Advance the line counter to the current position.
-      while (pos < matcher.regionStart()) {
-        if (text.charAt(pos) == '\n') {
+      while (lineInfoTrackingPos < pos) {
+        if (text.charAt(lineInfoTrackingPos) == '\n') {
           ++line;
           column = 0;
         } else {
           ++column;
         }
-        ++pos;
+        ++lineInfoTrackingPos;
       }
 
       // Match the next token.
-      if (matcher.regionStart() == matcher.regionEnd()) {
-        // EOF
-        currentToken = "";
+      if (pos == text.length()) {
+        currentToken = ""; // EOF
       } else {
-        matcher.usePattern(TOKEN);
-        if (matcher.lookingAt()) {
-          currentToken = matcher.group();
-          matcher.region(matcher.end(), matcher.regionEnd());
-        } else {
-          // Take one character.
-          currentToken = String.valueOf(text.charAt(pos));
-          matcher.region(pos + 1, matcher.regionEnd());
+        currentToken = nextTokenInternal();
+        skipWhitespace();
+      }
+    }
+
+    private String nextTokenInternal() {
+      final int textLength = this.text.length();
+      final int startPos = this.pos;
+      final char startChar = this.text.charAt(startPos);
+
+      int endPos = pos;
+      if (isAlphaUnder(startChar)) { // Identifier
+        while (++endPos != textLength) {
+          char c = this.text.charAt(endPos);
+          if (!(isAlphaUnder(c) || isDigitPlusMinus(c))) {
+            break;
+          }
+        }
+      } else if (isDigitPlusMinus(startChar) || startChar == '.') { // Number
+        if (startChar == '.') { // Optional leading dot
+          if (++endPos == textLength) {
+            return nextTokenSingleChar();
+          }
+
+          if (!isDigitPlusMinus(this.text.charAt(endPos))) { // Mandatory first digit
+            return nextTokenSingleChar();
+          }
         }
 
-        skipWhitespace();
+        while (++endPos != textLength) {
+          char c = this.text.charAt(endPos);
+          if (!(isDigitPlusMinus(c) || isAlphaUnder(c) || c == '.')) {
+            break;
+          }
+        }
+      } else if (startChar == '"' || startChar == '\'') { // String
+        while (++endPos != textLength) {
+          char c = this.text.charAt(endPos);
+          if (c == startChar) {
+            ++endPos;
+            break; // Quote terminates
+          } else if (c == '\n') {
+            break; // Newline terminates (error during parsing) (not consumed)
+          } else if (c == '\\') {
+            if (++endPos == textLength) {
+              break; // Escape into end-of-text terminates (error during parsing)
+            } else if (this.text.charAt(endPos) == '\n') {
+              break; // Escape into newline terminates (error during parsing) (not consumed)
+            } else {
+              // Otherwise the escaped char is legal and consumed
+            }
+          } else {
+            // Otherwise the char is a legal and consumed
+          }
+        }
+      } else {
+        return nextTokenSingleChar(); // Unrecognized start character
+      }
+
+      this.pos = endPos;
+      return this.text.subSequence(startPos, endPos).toString();
+    }
+
+    private static boolean isAlphaUnder(char c) {
+      // Defining this char-class with numeric comparisons is much faster than using a regex.
+      return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '_';
+    }
+
+    private static boolean isDigitPlusMinus(char c) {
+      // Defining this char-class with numeric comparisons is much faster than using a regex.
+      return ('0' <= c && c <= '9') || c == '+' || c == '-';
+    }
+
+    private static boolean isWhitespace(char c) {
+      // Defining this char-class with numeric comparisons is much faster than using a regex.
+      return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t';
+    }
+
+    /**
+     * Produce a token for the single char at the current position.
+     *
+     * <p>We hardcode the expected single-char tokens to avoid allocating a unique string every
+     * time, which is a GC risk. String-literals are always loaded from the class constant pool.
+     *
+     * <p>This method must not be called if the current position is after the end-of-text.
+     */
+    private String nextTokenSingleChar() {
+      final char c = this.text.charAt(this.pos++);
+      switch (c) {
+        case ':':
+          return ":";
+        case ',':
+          return ",";
+        case '[':
+          return "[";
+        case ']':
+          return "]";
+        case '{':
+          return "{";
+        case '}':
+          return "}";
+        case '<':
+          return "<";
+        case '>':
+          return ">";
+        default:
+          // If we don't recognize the char, create a string and let the parser report any errors
+          return String.valueOf(c);
       }
     }
 
     /** Skip over any whitespace so that the matcher region starts at the next token. */
     private void skipWhitespace() {
-      matcher.usePattern(WHITESPACE);
-      if (matcher.lookingAt()) {
-        matcher.region(matcher.end(), matcher.regionEnd());
+      final int textLength = this.text.length();
+      final int startPos = this.pos;
+
+      int endPos = this.pos - 1;
+      while (++endPos != textLength) {
+        char c = this.text.charAt(endPos);
+        if (c == '#') {
+          while (++endPos != textLength) {
+            if (this.text.charAt(endPos) == '\n') {
+              break; // Consume the newline as whitespace.
+            }
+          }
+          if (endPos == textLength) {
+            break;
+          }
+        } else if (isWhitespace(c)) {
+          // OK
+        } else {
+          break;
+        }
       }
+
+      this.pos = endPos;
     }
 
     /**
@@ -1108,8 +1369,7 @@ public final class TextFormat {
         return false;
       }
 
-      final char c = currentToken.charAt(0);
-      return ('0' <= c && c <= '9') || c == '-' || c == '+';
+      return isDigitPlusMinus(currentToken.charAt(0));
     }
 
     /** Returns {@code true} if the current token's text is equal to that specified. */
@@ -1124,11 +1384,7 @@ public final class TextFormat {
     String consumeIdentifier() throws ParseException {
       for (int i = 0; i < currentToken.length(); i++) {
         final char c = currentToken.charAt(i);
-        if (('a' <= c && c <= 'z')
-            || ('A' <= c && c <= 'Z')
-            || ('0' <= c && c <= '9')
-            || (c == '_')
-            || (c == '.')) {
+        if (isAlphaUnder(c) || ('0' <= c && c <= '9') || (c == '.')) {
           // OK
         } else {
           throw parseException("Expected identifier. Found '" + currentToken + "'");
@@ -1242,15 +1498,22 @@ public final class TextFormat {
     public double consumeDouble() throws ParseException {
       // We need to parse infinity and nan separately because
       // Double.parseDouble() does not accept "inf", "infinity", or "nan".
-      if (DOUBLE_INFINITY.matcher(currentToken).matches()) {
-        final boolean negative = currentToken.startsWith("-");
-        nextToken();
-        return negative ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+      switch (currentToken.toLowerCase(Locale.ROOT)) {
+        case "-inf":
+        case "-infinity":
+          nextToken();
+          return Double.NEGATIVE_INFINITY;
+        case "inf":
+        case "infinity":
+          nextToken();
+          return Double.POSITIVE_INFINITY;
+        case "nan":
+          nextToken();
+          return Double.NaN;
+        default:
+          // fall through
       }
-      if (currentToken.equalsIgnoreCase("nan")) {
-        nextToken();
-        return Double.NaN;
-      }
+
       try {
         final double result = Double.parseDouble(currentToken);
         nextToken();
@@ -1280,15 +1543,27 @@ public final class TextFormat {
     public float consumeFloat() throws ParseException {
       // We need to parse infinity and nan separately because
       // Float.parseFloat() does not accept "inf", "infinity", or "nan".
-      if (FLOAT_INFINITY.matcher(currentToken).matches()) {
-        final boolean negative = currentToken.startsWith("-");
-        nextToken();
-        return negative ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY;
+      switch (currentToken.toLowerCase(Locale.ROOT)) {
+        case "-inf":
+        case "-inff":
+        case "-infinity":
+        case "-infinityf":
+          nextToken();
+          return Float.NEGATIVE_INFINITY;
+        case "inf":
+        case "inff":
+        case "infinity":
+        case "infinityf":
+          nextToken();
+          return Float.POSITIVE_INFINITY;
+        case "nan":
+        case "nanf":
+          nextToken();
+          return Float.NaN;
+        default:
+          // fall through
       }
-      if (FLOAT_NAN.matcher(currentToken).matches()) {
-        nextToken();
-        return Float.NaN;
-      }
+
       try {
         final float result = Float.parseFloat(currentToken);
         nextToken();
@@ -2051,7 +2326,6 @@ public final class TextFormat {
         }
       }
       tokenizer.consume("]");
-
       return name;
     }
 

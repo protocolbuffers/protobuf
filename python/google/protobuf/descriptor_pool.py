@@ -75,7 +75,8 @@ def _IsMessageSetExtension(field):
           field.containing_type.has_options and
           field.containing_type.GetOptions().message_set_wire_format and
           field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-          field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL)
+          not field.is_required and
+          not field.is_repeated)
 
 _edition_defaults_lock = threading.Lock()
 
@@ -85,9 +86,9 @@ class DescriptorPool(object):
 
   if _USE_C_DESCRIPTORS:
 
-   def __new__(cls, descriptor_db=None):
-     # pylint: disable=protected-access
-     return descriptor._message.DescriptorPool(descriptor_db)
+     def __new__(cls, descriptor_db=None):
+       # pylint: disable=protected-access
+       return descriptor._message.DescriptorPool(descriptor_db)
 
   def __init__(
       self, descriptor_db=None, use_deprecated_legacy_json_field_conflicts=False
@@ -580,11 +581,21 @@ class DescriptorPool(object):
     if self._descriptor_db and hasattr(
         self._descriptor_db, 'FindAllExtensionNumbers'):
       full_name = message_descriptor.full_name
-      all_numbers = self._descriptor_db.FindAllExtensionNumbers(full_name)
-      for number in all_numbers:
-        if number in self._extensions_by_number[message_descriptor]:
-          continue
-        self._TryLoadExtensionFromDB(message_descriptor, number)
+      try:
+        all_numbers = self._descriptor_db.FindAllExtensionNumbers(full_name)
+      except:
+        pass
+      else:
+        if isinstance(all_numbers, list):
+          for number in all_numbers:
+            if number in self._extensions_by_number[message_descriptor]:
+              continue
+            self._TryLoadExtensionFromDB(message_descriptor, number)
+        else:
+          warnings.warn(
+              'FindAllExtensionNumbers() on fall back DB must return a list,'
+              ' not {0}'.format(type(all_numbers))
+          )
 
     return list(self._extensions_by_number[message_descriptor].values())
 
@@ -603,8 +614,13 @@ class DescriptorPool(object):
       return
 
     full_name = message_descriptor.full_name
-    file_proto = self._descriptor_db.FindFileContainingExtension(
-        full_name, number)
+    file_proto = None
+    try:
+      file_proto = self._descriptor_db.FindFileContainingExtension(
+          full_name, number
+      )
+    except:
+      return
 
     if file_proto is None:
       return
@@ -667,7 +683,6 @@ class DescriptorPool(object):
 
     if not isinstance(defaults, descriptor_pb2.FeatureSetDefaults):
       raise TypeError('SetFeatureSetDefaults called with invalid type')
-
 
     if defaults.minimum_edition > defaults.maximum_edition:
       raise ValueError(

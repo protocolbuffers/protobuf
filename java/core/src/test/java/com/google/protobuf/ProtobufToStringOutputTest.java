@@ -2,8 +2,8 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import protobuf_unittest.UnittestProto.RedactedFields;
-import protobuf_unittest.UnittestProto.TestNestedMessageRedaction;
+import proto2_unittest.UnittestProto.RedactedFields;
+import proto2_unittest.UnittestProto.TestNestedMessageRedaction;
 import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,24 +12,28 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class ProtobufToStringOutputTest extends DebugFormatTest {
+  private static final String SILENT_MARKER = "";
+
+  RedactedFields.Builder messageBuilder;
   RedactedFields message;
 
   @Before
   public void setupTest() {
-    message =
+    messageBuilder =
         RedactedFields.newBuilder()
             .setOptionalUnredactedString("foo")
             .setOptionalRedactedString("bar")
             .setOptionalRedactedMessage(
-                TestNestedMessageRedaction.newBuilder().setOptionalUnredactedNestedString("foobar"))
-            .build();
+                TestNestedMessageRedaction.newBuilder()
+                    .setOptionalUnredactedNestedString("foobar"));
+    message = messageBuilder.build();
   }
 
   @Test
   public void toStringFormat_defaultFormat() {
     assertThat(message.toString())
         .matches(
-            "optional_redacted_string: \"bar\"\n"
+            "optional_redacted_string: " + SILENT_MARKER + "\"bar\"\n"
                 + "optional_unredacted_string: \"foo\"\n"
                 + "optional_redacted_message \\{\n"
                 + "  optional_unredacted_nested_string: \"foobar\"\n"
@@ -98,6 +102,46 @@ public final class ProtobufToStringOutputTest extends DebugFormatTest {
                       + "  optional_unredacted_nested_string: \"foobar\"\n"
                       + "\\}\n"
                       + "\\]");
+        });
+  }
+
+  @Test
+  public void builderToStringFormat_defaultFormat() {
+    assertThat(messageBuilder.toString())
+        .matches(
+            "optional_redacted_string: " + SILENT_MARKER + "\"bar\"\n"
+                + "optional_unredacted_string: \"foo\"\n"
+                + "optional_redacted_message \\{\n"
+                + "  optional_unredacted_nested_string: \"foobar\"\n"
+                + "\\}\n");
+  }
+
+  @Test
+  public void builderToStringFormat_testDebugFormat() {
+    ProtobufToStringOutput.callWithDebugFormat(
+        () ->
+            assertThat(messageBuilder.toString())
+                .matches(
+                    String.format(
+                        "%soptional_redacted_string: %s\n"
+                            + "optional_unredacted_string: \"foo\"\n"
+                            + "optional_redacted_message \\{\n"
+                            + "  %s\n"
+                            + "\\}\n",
+                        UNSTABLE_PREFIX_MULTILINE, REDACTED_REGEX, REDACTED_REGEX)));
+  }
+
+  @Test
+  public void builderToStringFormat_testTextFormat() {
+    ProtobufToStringOutput.callWithTextFormat(
+        () -> {
+          assertThat(messageBuilder.toString())
+              .matches(
+                  "optional_redacted_string: \"bar\"\n"
+                      + "optional_unredacted_string: \"foo\"\n"
+                      + "optional_redacted_message \\{\n"
+                      + "  optional_unredacted_nested_string: \"foobar\"\n"
+                      + "\\}\n");
         });
   }
 }

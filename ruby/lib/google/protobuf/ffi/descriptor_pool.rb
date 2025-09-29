@@ -17,6 +17,7 @@ module Google
       attach_function :lookup_extension,      :upb_DefPool_FindExtensionByName,[:DefPool, :string], FieldDescriptor
       attach_function :lookup_msg,            :upb_DefPool_FindMessageByName,  [:DefPool, :string], Descriptor
       attach_function :lookup_service,        :upb_DefPool_FindServiceByName,  [:DefPool, :string], ServiceDescriptor
+      attach_function :lookup_file,           :upb_DefPool_FindFileByName,     [:DefPool, :string], FileDescriptor
 
         # FileDescriptorProto
       attach_function :parse,                 :FileDescriptorProto_parse,      [:binary_string, :size_t, Internal::Arena], :FileDescriptorProto
@@ -56,7 +57,8 @@ module Google
         Google::Protobuf::FFI.lookup_msg(@descriptor_pool, name) ||
           Google::Protobuf::FFI.lookup_enum(@descriptor_pool, name) ||
           Google::Protobuf::FFI.lookup_extension(@descriptor_pool, name) ||
-          Google::Protobuf::FFI.lookup_service(@descriptor_pool, name)
+          Google::Protobuf::FFI.lookup_service(@descriptor_pool, name) ||
+          Google::Protobuf::FFI.lookup_file(@descriptor_pool, name)
       end
 
       def self.generated_pool

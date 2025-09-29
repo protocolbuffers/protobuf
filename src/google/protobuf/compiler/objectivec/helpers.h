@@ -10,9 +10,13 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 
+#include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/objectivec/options.h"
@@ -155,6 +159,53 @@ std::string GetOptionalDeprecatedAttribute(
 // category within the runtime to add helpers.
 bool HasWKTWithObjCCategory(const FileDescriptor* file);
 bool IsWKTWithObjCCategory(const Descriptor* descriptor);
+
+// A map of `io::Printer::Sub`s, where entries can be overwritten.
+//
+// This exists because `io::Printer::WithVars` only accepts a flat list of
+// substitutions, and will break if there are any duplicated entries. At the
+// same time, a lot of code in this generator depends on modifying, overwriting,
+// and looking up variables in the list of substitutions.
+class SubstitutionMap {
+ public:
+  SubstitutionMap() = default;
+  SubstitutionMap(const SubstitutionMap&) = delete;
+  SubstitutionMap& operator=(const SubstitutionMap&) = delete;
+
+  auto Install(io::Printer* printer) const { return printer->WithVars(subs_); }
+
+  std::string Value(absl::string_view key) const {
+    if (auto it = subs_map_.find(key); it != subs_map_.end()) {
+      return std::string(subs_.at(it->second).value());
+    }
+    ABSL_LOG(FATAL) << " Unknown variable: " << key;
+  }
+
+  // Sets or replaces a variable in the map.
+  // All arguments are forwarded to `io::Printer::Sub`.
+  template <typename... Args>
+  void Set(std::string key, Args&&... args);
+  // Same as above, but takes a `io::Printer::Sub` directly.
+  //
+  // This is necessary to use advanced features of `io::Printer::Sub` like
+  // annotations.
+  void Set(io::Printer::Sub&& sub);
+
+ private:
+  std::vector<io::Printer::Sub> subs_;
+  absl::flat_hash_map<std::string, size_t> subs_map_;
+};
+
+template <typename... Args>
+void SubstitutionMap::Set(std::string key, Args&&... args) {
+  if (auto [it, inserted] = subs_map_.try_emplace(key, subs_.size());
+      !inserted) {
+    subs_[it->second] =
+        io::Printer::Sub(std::move(key), std::forward<Args>(args)...);
+  } else {
+    subs_.emplace_back(std::move(key), std::forward<Args>(args)...);
+  }
+}
 
 }  // namespace objectivec
 }  // namespace compiler

@@ -33,7 +33,7 @@ except NameError:
 # This is used to gate several fields/features that only exist
 # for the protobuf_unittest version of the message.
 def IsProto2(message):
-  return message.DESCRIPTOR.full_name == 'protobuf_unittest.TestAllTypes'
+  return message.DESCRIPTOR.full_name == 'proto2_unittest.TestAllTypes'
 
 
 def SetAllNonLazyFields(message):
@@ -67,8 +67,12 @@ def SetAllNonLazyFields(message):
     message.optionalgroup.a = 117
   message.optional_nested_message.bb = 118
   message.optional_foreign_message.c = 119
-  message.optional_import_message.d = 120
-  message.optional_public_import_message.e = 126
+  if hasattr(message, 'optional_import_message'):
+    message.optional_import_message.d = 120
+  if hasattr(message, 'optional_public_import_message'):
+    message.optional_public_import_message.e = 126
+  if hasattr(message, 'optional_proto2_message'):
+    SetAllFields(message.optional_proto2_message)
 
   message.optional_nested_enum = unittest_pb2.TestAllTypes.BAZ
   message.optional_foreign_enum = unittest_pb2.FOREIGN_BAZ
@@ -77,6 +81,8 @@ def SetAllNonLazyFields(message):
 
   message.optional_string_piece = u'124'
   message.optional_cord = u'125'
+  if hasattr(message, 'optional_bytes_cord'):
+    message.optional_bytes_cord = b'optional bytes cord'
 
   #
   # Repeated fields.
@@ -102,7 +108,8 @@ def SetAllNonLazyFields(message):
     message.repeatedgroup.add().a = 217
   message.repeated_nested_message.add().bb = 218
   message.repeated_foreign_message.add().c = 219
-  message.repeated_import_message.add().d = 220
+  if hasattr(message, 'repeated_import_message'):
+    message.repeated_import_message.add().d = 220
   message.repeated_lazy_message.add().bb = 227
 
   message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAR)
@@ -149,7 +156,8 @@ def SetAllNonLazyFields(message):
     message.repeatedgroup.add().a = 317
   message.repeated_nested_message.add().bb = 318
   message.repeated_foreign_message.add().c = 319
-  message.repeated_import_message.add().d = 320
+  if hasattr(message, 'repeated_import_message'):
+    message.repeated_import_message.add().d = 320
   message.repeated_lazy_message.add().bb = 327
 
   message.repeated_nested_enum.append(unittest_pb2.TestAllTypes.BAR)
@@ -192,13 +200,15 @@ def SetAllNonLazyFields(message):
   message.oneof_uint32 = 601
   message.oneof_nested_message.bb = 602
   message.oneof_string = '603'
-  message.oneof_bytes = b'604'
+  if hasattr(message, 'oneof_bytes'):
+    message.oneof_bytes = b'604'
 
 
 def SetAllFields(message):
   SetAllNonLazyFields(message)
   message.optional_lazy_message.bb = 127
-  message.optional_unverified_lazy_message.bb = 128
+  if hasattr(message, 'optional_unverified_lazy_message'):
+    message.optional_unverified_lazy_message.bb = 128
 
 
 def SetAllExtensions(message):
@@ -247,6 +257,7 @@ def SetAllExtensions(message):
 
   extensions[pb2.optional_string_piece_extension] = u'124'
   extensions[pb2.optional_cord_extension] = u'125'
+  extensions[pb2.optional_bytes_cord_extension] = b'optional bytes cord'
 
   #
   # Repeated fields.
@@ -423,6 +434,7 @@ def ExpectAllFieldsSet(test_case, message):
 
   test_case.assertTrue(message.HasField('optional_string_piece'))
   test_case.assertTrue(message.HasField('optional_cord'))
+  test_case.assertTrue(message.HasField('optional_bytes_cord'))
 
   test_case.assertEqual(101, message.optional_int32)
   test_case.assertEqual(102, message.optional_int64)

@@ -5,6 +5,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 package(default_applicable_licenses = ["//:license"])
 
 # Note: this library should not depend on upb reflection or C++ proto
@@ -16,7 +18,29 @@ cc_library(
     hdrs = ["names.h"],
     visibility = ["//upb_generator:__subpackages__"],
     deps = [
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:string_view",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_library(
+    name = "cpp_to_upb_def",
+    srcs = ["cpp_to_upb_def.cc"],
+    hdrs = ["cpp_to_upb_def.h"],
+    visibility = [
+        "//hpb_generator:__subpackages__",
+        "//net/proto2/interop:__subpackages__",
+        "//src/google/protobuf/compiler/interop:__subpackages__",
+        "//third_party/kotlin/protobuf/generator/native:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/reflection",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
     ],
 )

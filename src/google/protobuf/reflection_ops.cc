@@ -13,13 +13,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/map_field.h"
-#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -190,15 +191,16 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
       for (const FieldDescriptor* field = begin; field != end; ++field) {
         if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
           const Descriptor* message_type = field->message_type();
-          if (PROTOBUF_PREDICT_FALSE(message_type->options().map_entry())) {
+          if (ABSL_PREDICT_FALSE(message_type->options().map_entry())) {
             if (message_type->field(1)->cpp_type() ==
                 FieldDescriptor::CPPTYPE_MESSAGE) {
               const MapFieldBase* map_field =
                   reflection->GetMapData(message, field);
               if (map_field->IsMapValid()) {
-                MapIterator it(const_cast<Message*>(&message), field);
-                MapIterator end_map(const_cast<Message*>(&message), field);
-                for (map_field->MapBegin(&it), map_field->MapEnd(&end_map);
+                ConstMapIterator it(&message, field);
+                ConstMapIterator end_map(&message, field);
+                for (map_field->ConstMapBegin(&it),
+                     map_field->ConstMapEnd(&end_map);
                      it != end_map; ++it) {
                   if (!it.GetValueRef().GetMessageValue().IsInitialized()) {
                     return false;
@@ -277,9 +279,9 @@ bool ReflectionOps::IsInitialized(const Message& message) {
           const MapFieldBase* map_field =
               reflection->GetMapData(message, field);
           if (map_field->IsMapValid()) {
-            MapIterator iter(const_cast<Message*>(&message), field);
-            MapIterator end(const_cast<Message*>(&message), field);
-            for (map_field->MapBegin(&iter), map_field->MapEnd(&end);
+            ConstMapIterator iter(&message, field);
+            ConstMapIterator end(&message, field);
+            for (map_field->ConstMapBegin(&iter), map_field->ConstMapEnd(&end);
                  iter != end; ++iter) {
               if (!iter.GetValueRef().GetMessageValue().IsInitialized()) {
                 return false;
@@ -320,7 +322,9 @@ static bool IsMapValueMessageTyped(const FieldDescriptor* map_field) {
 void ReflectionOps::DiscardUnknownFields(Message* message) {
   const Reflection* reflection = GetReflectionOrDie(*message);
 
-  reflection->MutableUnknownFields(message)->Clear();
+  if (reflection->GetUnknownFields(*message).field_count() != 0) {
+    reflection->MutableUnknownFields(message)->Clear();
+  }
 
   // Walk through the fields of this message and DiscardUnknownFields on any
   // messages present.
@@ -361,16 +365,12 @@ static std::string SubMessagePrefix(const std::string& prefix,
                                     const FieldDescriptor* field, int index) {
   std::string result(prefix);
   if (field->is_extension()) {
-    result.append("(");
-    result.append(field->full_name());
-    result.append(")");
+    absl::StrAppend(&result, "(", field->full_name(), ")");
   } else {
-    result.append(field->name());
+    absl::StrAppend(&result, field->name());
   }
   if (index != -1) {
-    result.append("[");
-    result.append(absl::StrCat(index));
-    result.append("]");
+    absl::StrAppend(&result, "[", index, "]");
   }
   result.append(".");
   return result;

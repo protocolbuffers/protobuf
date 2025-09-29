@@ -27,6 +27,8 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 ExtensionGenerator::ExtensionGenerator(
     absl::string_view root_or_message_class_name,
     const FieldDescriptor* descriptor,
@@ -50,7 +52,7 @@ ExtensionGenerator::ExtensionGenerator(
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) const {
   printer->Emit(
-      {{"method_name", method_name_},
+      {Sub("method_name", method_name_).AnnotatedAs(descriptor_),
        {"comments",
         [&] { EmitCommentsString(printer, generation_options_, descriptor_); }},
        {"storage_attribute",
@@ -73,9 +75,6 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   std::vector<std::string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
   if (descriptor_->is_packed()) options.push_back("GPBExtensionPacked");
-  if (descriptor_->containing_type()->options().message_set_wire_format()) {
-    options.push_back("GPBExtensionSetWireFormat");
-  }
 
   printer->Emit(
       {{"default",

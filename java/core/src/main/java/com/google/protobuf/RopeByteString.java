@@ -477,7 +477,8 @@ final class RopeByteString extends ByteString {
   // equals() and hashCode()
 
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(
+          Object other) {
     if (other == this) {
       return true;
     }

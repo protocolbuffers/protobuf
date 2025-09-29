@@ -8,7 +8,13 @@
 #ifndef UPB_HASH_STR_TABLE_H_
 #define UPB_HASH_STR_TABLE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "upb/base/string_view.h"
 #include "upb/hash/common.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port/def.inc"

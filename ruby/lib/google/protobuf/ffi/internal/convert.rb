@@ -36,11 +36,7 @@ module Google
             value = value.to_s if value.is_a?(Symbol)
             if value.encoding == Encoding::UTF_8
               unless value.valid_encoding?
-                # TODO:
-                # For now we only warn for this case.  We will remove the
-                # warning and throw an exception below in the 30.x release
-                warn "String is invalid UTF-8. This will be an error in a future version."
-                # raise Encoding::InvalidByteSequenceError.new "String is invalid UTF-8"
+                raise Encoding::InvalidByteSequenceError.new "String is invalid UTF-8"
               end
               string_value = value
             else

@@ -43,7 +43,7 @@ namespace objectivec {
 namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.
-const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 30007;
+const int32_t GOOGLE_PROTOBUF_OBJC_VERSION = 40311;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
@@ -303,7 +303,8 @@ FileGenerator::FileGenerator(Edition edition, const FileDescriptor* file,
   }
 }
 
-void FileGenerator::GenerateHeader(io::Printer* p) const {
+void FileGenerator::GenerateHeader(io::Printer* p,
+                                   absl::string_view info_path) const {
   GenerateFile(p, GeneratedFileType::kHeader, [&] {
     absl::btree_set<std::string> fwd_decls;
     for (const auto& generator : message_generators_) {
@@ -320,6 +321,18 @@ void FileGenerator::GenerateHeader(io::Printer* p) const {
     }
 
     p->Emit("NS_ASSUME_NONNULL_BEGIN\n\n");
+
+    if (!info_path.empty()) {
+      p->Emit({{"info_path", info_path},
+               {"guard", generation_options_.annotation_guard_name},
+               {"pragma", generation_options_.annotation_pragma_name}},
+              R"objc(
+                #ifdef $guard$
+                #pragma $pragma$ "$info_path$"
+                #endif  // $guard$
+              )objc");
+      p->Emit("\n");
+    }
 
     for (const auto& generator : enum_generators_) {
       generator->GenerateHeader(p);
@@ -459,7 +472,7 @@ void FileGenerator::GenerateSourceForEnums(io::Printer* p) const {
   });
 }
 
-void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+void FileGenerator::GenerateSourceForMessage(size_t idx, io::Printer* p) const {
   ABSL_CHECK(!is_bundled_proto_)
       << "Bundled protos aren't expected to use multi source generation.";
   const auto& generator = message_generators_[idx];
@@ -594,6 +607,9 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
        // then honor the directives within the generators sources.
        "clangfmt", "clang-format"},
       {"root_class_name", root_class_name_},
+      {"google_protobuf_runtime_support",
+       absl::StrCat("GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_",
+                    GOOGLE_PROTOBUF_OBJC_VERSION)},
   });
 
   p->Emit(
@@ -727,7 +743,7 @@ void FileGenerator::EmitRootExtensionRegistryImplementation(
                    for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {
                      GPBExtensionDescriptor *extension =
                          [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]
-                                                                        usesClassRefs:YES];
+                                                                       runtimeSupport:&$google_protobuf_runtime_support$];
                      [registry addExtension:extension];
                      [self globallyRegisterExtension:extension];
                      [extension release];
@@ -760,7 +776,6 @@ void FileGenerator::EmitRootExtensionRegistryImplementation(
           // about thread safety and initialization of registry.
           static GPBExtensionRegistry* registry = nil;
           if (!registry) {
-            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
             registry = [[GPBExtensionRegistry alloc] init];
             $register_local_extensions$;
             $register_imports$
@@ -806,13 +821,11 @@ void FileGenerator::EmitFileDescription(io::Printer* p) const {
            {"prefix_value",
             objc_prefix.empty() && !file_->options().has_objc_class_prefix()
                 ? "NULL"
-                : absl::StrCat("\"", objc_prefix, "\"")},
-           {"syntax", syntax}},
+                : absl::StrCat("\"", objc_prefix, "\"")}},
           R"objc(
-            static GPBFileDescription $file_description_name$ = {
+            static GPBFilePackageAndPrefix $file_description_name$ = {
               .package = $package_value$,
-              .prefix = $prefix_value$,
-              .syntax = $syntax$
+              .prefix = $prefix_value$
             };
           )objc");
   p->Emit("\n");

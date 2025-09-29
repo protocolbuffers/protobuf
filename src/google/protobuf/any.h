@@ -12,7 +12,6 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
-#include "absl/strings/cord.h"
 #include "google/protobuf/message_lite.h"
 
 // Must be included last.
@@ -46,15 +45,13 @@ absl::string_view GetAnyMessageName() {
 #define VALUE_TYPE std::string
 
 // Helper functions that only require 'lite' messages to work.
-PROTOBUF_EXPORT bool InternalPackFromLite(const MessageLite& message,
-                                          absl::string_view type_url_prefix,
-                                          absl::string_view type_name,
-                                          URL_TYPE* dst_url,
-                                          VALUE_TYPE* dst_value);
-PROTOBUF_EXPORT bool InternalUnpackToLite(absl::string_view type_name,
-                                          absl::string_view type_url,
-                                          const VALUE_TYPE& value,
-                                          MessageLite* dst_message);
+PROTOBUF_EXPORT bool InternalPackFromLite(
+    const MessageLite& message, absl::string_view type_url_prefix,
+    absl::string_view type_name, URL_TYPE* PROTOBUF_NONNULL dst_url,
+    VALUE_TYPE* PROTOBUF_NONNULL dst_value);
+PROTOBUF_EXPORT bool InternalUnpackToLite(
+    absl::string_view type_name, absl::string_view type_url,
+    const VALUE_TYPE& value, MessageLite* PROTOBUF_NONNULL dst_message);
 PROTOBUF_EXPORT bool InternalIsLite(absl::string_view type_name,
                                     absl::string_view type_url);
 
@@ -62,13 +59,14 @@ PROTOBUF_EXPORT bool InternalIsLite(absl::string_view type_name,
 // The resulted type URL will be "type.googleapis.com/<message_full_name>".
 // Returns false if serializing the message failed.
 template <typename T>
-bool InternalPackFrom(const T& message, URL_TYPE* dst_url,
-                      VALUE_TYPE* dst_value) {
+bool InternalPackFrom(const T& message, URL_TYPE* PROTOBUF_NONNULL dst_url,
+                      VALUE_TYPE* PROTOBUF_NONNULL dst_value) {
   return InternalPackFromLite(message, kTypeGoogleApisComPrefix,
                               GetAnyMessageName<T>(), dst_url, dst_value);
 }
-PROTOBUF_EXPORT bool InternalPackFrom(const Message& message, URL_TYPE* dst_url,
-                                      VALUE_TYPE* dst_value);
+PROTOBUF_EXPORT bool InternalPackFrom(const Message& message,
+                                      URL_TYPE* PROTOBUF_NONNULL dst_url,
+                                      VALUE_TYPE* PROTOBUF_NONNULL dst_value);
 
 // Packs a message using the given type URL prefix. The type URL will be
 // constructed by concatenating the message type's full name to the prefix
@@ -79,13 +77,15 @@ PROTOBUF_EXPORT bool InternalPackFrom(const Message& message, URL_TYPE* dst_url,
 // Returns false if serializing the message failed.
 template <typename T>
 bool InternalPackFrom(const T& message, absl::string_view type_url_prefix,
-                      URL_TYPE* dst_url, VALUE_TYPE* dst_value) {
+                      URL_TYPE* PROTOBUF_NONNULL dst_url,
+                      VALUE_TYPE* PROTOBUF_NONNULL dst_value) {
   return InternalPackFromLite(message, type_url_prefix, GetAnyMessageName<T>(),
                               dst_url, dst_value);
 }
 PROTOBUF_EXPORT bool InternalPackFrom(const Message& message,
                                       absl::string_view type_url_prefix,
-                                      URL_TYPE* dst_url, VALUE_TYPE* dst_value);
+                                      URL_TYPE* PROTOBUF_NONNULL dst_url,
+                                      VALUE_TYPE* PROTOBUF_NONNULL dst_value);
 
 // Unpacks the payload into the given message. Returns false if the message's
 // type doesn't match the type specified in the type URL (i.e., the full
@@ -93,12 +93,12 @@ PROTOBUF_EXPORT bool InternalPackFrom(const Message& message,
 // full name) or parsing the payload has failed.
 template <typename T>
 bool InternalUnpackTo(absl::string_view type_url, const VALUE_TYPE& value,
-                      T* message) {
+                      T* PROTOBUF_NONNULL message) {
   return InternalUnpackToLite(GetAnyMessageName<T>(), type_url, value, message);
 }
 PROTOBUF_EXPORT bool InternalUnpackTo(absl::string_view type_url,
                                       const VALUE_TYPE& value,
-                                      Message* message);
+                                      Message* PROTOBUF_NONNULL message);
 
 // Checks whether the type specified in the type URL matches the given type.
 // A type is considered matching if its full name matches the full name after
@@ -118,21 +118,24 @@ bool InternalIs(absl::string_view type_url) {
 //
 // NOTE: this function is available publicly as a static method on the
 // generated message type: google::protobuf::Any::ParseAnyTypeUrl()
-bool ParseAnyTypeUrl(absl::string_view type_url, std::string* full_type_name);
+bool ParseAnyTypeUrl(absl::string_view type_url,
+                     std::string* PROTOBUF_NONNULL full_type_name);
 
 // Get the proto type name and prefix from Any::type_url value. For example,
 // passing "type.googleapis.com/rpc.QueryOrigin" will return
 // "type.googleapis.com/" in *url_prefix and "rpc.QueryOrigin" in
 // *full_type_name. Returns false if the type_url does not have a "/" in the
 // type url separating the full type name.
-bool ParseAnyTypeUrl(absl::string_view type_url, std::string* url_prefix,
-                     std::string* full_type_name);
+bool ParseAnyTypeUrl(absl::string_view type_url,
+                     std::string* PROTOBUF_NULLABLE url_prefix,
+                     std::string* PROTOBUF_NONNULL full_type_name);
 
 // See if message is of type google.protobuf.Any, if so, return the descriptors
 // for "type_url" and "value" fields.
-bool GetAnyFieldDescriptors(const Message& message,
-                            const FieldDescriptor** type_url_field,
-                            const FieldDescriptor** value_field);
+bool GetAnyFieldDescriptors(
+    const Message& message,
+    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL type_url_field,
+    const FieldDescriptor* PROTOBUF_NULLABLE* PROTOBUF_NONNULL value_field);
 
 }  // namespace internal
 }  // namespace protobuf

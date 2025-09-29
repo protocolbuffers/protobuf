@@ -142,8 +142,10 @@ message TestAllTypesProto2 {
   map<fixed64, fixed64> map_fixed64_fixed64 = 63;
   map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 64;
   map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 65;
+  map<int32, bool> map_int32_bool = 104;
   map<int32, float> map_int32_float = 66;
   map<int32, double> map_int32_double = 67;
+  map<int32, NestedMessage> map_int32_nested_message = 103;
   map<bool, bool> map_bool_bool = 68;
   map<string, string> map_string_string = 69;
   map<string, bytes> map_string_bytes = 70;
@@ -219,6 +221,8 @@ message TestAllTypesProto2 {
   // Reserved for unknown fields test.
   reserved 1000 to 9999;
 
+  optional MessageSetCorrect message_set_correct = 500;
+
   // message_set test case.
   message MessageSetCorrect {
     option message_set_wire_format = true;
@@ -239,6 +243,19 @@ message TestAllTypesProto2 {
     }
     optional int32 i = 9;
   }
+
+  message ExtensionWithOneof {
+    oneof oneof_field {
+      int32 a = 1;
+      int32 b = 2;
+    }
+    extend MessageSetCorrect {
+      optional ExtensionWithOneof extension_with_oneof = 123456789;
+    }
+  }
+
+  reserved "reserved_field";
+  reserved 999999;
 }
 
 message ForeignMessageProto2 {
@@ -383,5 +400,20 @@ message TestAllRequiredTypesProto2 {
       optional MessageSetCorrectExtension2 message_set_extension = 4135312;
     }
     required int32 i = 9;
+  }
+}
+
+message TestLargeOneof {
+  message A1 {}
+  message A2 {}
+  message A3 {}
+  message A4 {}
+  message A5 {}
+  oneof large_oneof {
+    A1 a1 = 1;
+    A2 a2 = 2;
+    A3 a3 = 3;
+    A4 a4 = 4;
+    A5 a5 = 5;
   }
 }

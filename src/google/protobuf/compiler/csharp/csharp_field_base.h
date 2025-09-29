@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_FIELD_BASE_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_FIELD_BASE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_FIELD_BASE_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_FIELD_BASE_H__
 
 #include <string>
 
@@ -30,7 +30,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   FieldGeneratorBase(const FieldDescriptor* descriptor,
                      int presenceIndex,
                      const Options* options);
-  ~FieldGeneratorBase();
+  ~FieldGeneratorBase() override;
 
   FieldGeneratorBase(const FieldGeneratorBase&) = delete;
   FieldGeneratorBase& operator=(const FieldGeneratorBase&) = delete;
@@ -90,5 +90,4 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_FIELD_BASE_H__
-
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_FIELD_BASE_H__

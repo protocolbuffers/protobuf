@@ -25,6 +25,7 @@
 #include "google/protobuf/compiler/code_generator_lite.h"  // IWYU pragma: export
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/internal_feature_helper.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -39,7 +40,6 @@ class FileDescriptor;
 class GeneratedCodeInfo;
 
 namespace compiler {
-class AccessInfoMap;
 
 class Version;
 
@@ -142,6 +142,20 @@ class PROTOC_EXPORT CodeGenerator {
     return ::google::protobuf::internal::InternalFeatureHelper::GetFeatures(desc);
   }
 
+  // Returns the resolved FeatureSet for the language extension. It is
+  // guaranteed that the result is fully aware of the language feature set
+  // defaults, either the defaults set to the descriptor pool, or, if not set,
+  // the defaults embedded in the language FeatureSet extension.
+  template <typename DescriptorT, typename TypeTraitsT, uint8_t field_type,
+            bool is_packed>
+  static auto GetResolvedSourceFeatureExtension(
+      const DescriptorT& desc,
+      const google::protobuf::internal::ExtensionIdentifier<
+          FeatureSet, TypeTraitsT, field_type, is_packed>& extension) {
+    return ::google::protobuf::internal::InternalFeatureHelper::
+        GetResolvedFeatureExtension(desc, extension);
+  }
+
   // Retrieves the unresolved source features for a given descriptor.  These
   // should be used to validate the original .proto file.  These represent the
   // original proto files from generated code, but should be stripped of
@@ -162,14 +176,25 @@ class PROTOC_EXPORT CodeGenerator {
   }
 };
 
+// The minimum edition supported by protoc.
+constexpr auto ProtocMinimumEdition() { return Edition::EDITION_PROTO2; }
+// The maximum edition supported by protoc.
+constexpr auto ProtocMaximumEdition() {
+  return Edition::EDITION_2024;
+}
+
+// The maximum edition known to protoc, which may or may not be officially
+// supported yet.  During development of a new edition, this will typically be
+// set to that.
+constexpr auto MaximumKnownEdition() { return Edition::EDITION_2024; }
+
 // CodeGenerators generate one or more files in a given directory.  This
 // abstract interface represents the directory to which the CodeGenerator is
 // to write and other information about the context in which the Generator
 // runs.
 class PROTOC_EXPORT GeneratorContext {
  public:
-  GeneratorContext() {
-  }
+  GeneratorContext() = default;
   GeneratorContext(const GeneratorContext&) = delete;
   GeneratorContext& operator=(const GeneratorContext&) = delete;
   virtual ~GeneratorContext();
@@ -215,7 +240,6 @@ class PROTOC_EXPORT GeneratorContext {
   // Retrieves the version number of the protocol compiler associated with
   // this GeneratorContext.
   virtual void GetCompilerVersion(Version* version) const;
-
 };
 
 // The type GeneratorContext was once called OutputDirectory. This typedef

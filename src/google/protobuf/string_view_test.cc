@@ -19,7 +19,7 @@ namespace google {
 namespace protobuf {
 namespace {
 
-using ::protobuf_unittest::TestStringView;
+using ::proto2_unittest::TestStringView;
 using ::testing::ElementsAre;
 using ::testing::StrEq;
 
@@ -109,7 +109,7 @@ TEST(StringViewFieldTest, SingularSetAndGetByReflection) {
   const FieldDescriptor* field =
       message.GetDescriptor()->FindFieldByName("singular_string");
 
-  reflection->SetString(&message, field, std::string{STRING_PAYLOAD});
+  reflection->SetString(&message, field, STRING_PAYLOAD);
 
   EXPECT_THAT(reflection->GetString(message, field), StrEq(STRING_PAYLOAD));
   Reflection::ScratchSpace scratch;
@@ -265,9 +265,9 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
       message.GetDescriptor()->FindFieldByName("repeated_string");
 
   // AddString().
-  reflection->AddString(&message, field, std::string{"000"});
-  reflection->AddString(&message, field, std::string{"111"});
-  reflection->AddString(&message, field, std::string{"222"});
+  reflection->AddString(&message, field, "000");
+  reflection->AddString(&message, field, "111");
+  reflection->AddString(&message, field, "222");
   {
     const auto& rep_str =
         reflection->GetRepeatedFieldRef<std::string>(message, field);
@@ -276,9 +276,9 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
   }
 
   // SetRepeatedString().
-  reflection->SetRepeatedString(&message, field, 0, std::string{"000000"});
-  reflection->SetRepeatedString(&message, field, 1, std::string{"111111"});
-  reflection->SetRepeatedString(&message, field, 2, std::string{"222222"});
+  reflection->SetRepeatedString(&message, field, 0, "000000");
+  reflection->SetRepeatedString(&message, field, 1, "111111");
+  reflection->SetRepeatedString(&message, field, 2, "222222");
   {
     const auto& rep_str =
         reflection->GetRepeatedFieldRef<std::string>(message, field);
@@ -309,6 +309,13 @@ TEST(StringViewFieldTest, RepeatedSetAndGetByReflection) {
               StrEq("111111111111"));
   EXPECT_THAT(reflection->GetRepeatedStringView(message, field, 2, scratch),
               StrEq("222222222222"));
+}
+
+TEST(StringViewFieldTest, MergeAndClearEmptyImplicitPresence) {
+  TestStringView message, other;
+  other.set_implicit_presence("");
+  message.MergeFrom(other);
+  message.Clear();
 }
 
 }  // namespace

@@ -11,11 +11,16 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThrows;
-import protobuf_unittest.UnittestProto.BoolMessage;
-import protobuf_unittest.UnittestProto.Int32Message;
-import protobuf_unittest.UnittestProto.Int64Message;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestRecursiveMessage;
+
+import com.google.common.primitives.Bytes;
+import map_test.MapTestProto.MapContainer;
+import proto2_unittest.UnittestProto.BoolMessage;
+import proto2_unittest.UnittestProto.Int32Message;
+import proto2_unittest.UnittestProto.Int64Message;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestRecursiveMessage;
+import com.google.testing.junit.testparameterinjector.TestParameter;
+import com.google.testing.junit.testparameterinjector.TestParameterInjector;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -25,15 +30,21 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /** Unit test for {@link CodedInputStream}. */
-@RunWith(JUnit4.class)
+@RunWith(TestParameterInjector.class)
 public class CodedInputStreamTest {
 
   private static final int DEFAULT_BLOCK_SIZE = 4096;
+
+  private static final int GROUP_TAP = WireFormat.makeTag(3, WireFormat.WIRETYPE_START_GROUP);
+
+  private static final byte[] NESTING_SGROUP = generateSGroupTags();
+
+  private static final byte[] NESTING_SGROUP_WITH_INITIAL_BYTES = generateSGroupTagsForMapField();
 
   private enum InputType {
     ARRAY {
@@ -115,6 +126,17 @@ public class CodedInputStreamTest {
       bytes[i] = (byte) bytesAsInts[i];
     }
     return bytes;
+  }
+
+  private static byte[] generateSGroupTags() {
+    byte[] bytes = new byte[100000];
+    Arrays.fill(bytes, (byte) GROUP_TAP);
+    return bytes;
+  }
+
+  private static byte[] generateSGroupTagsForMapField() {
+    byte[] initialBytes = {18, 1, 75, 26, (byte) 198, (byte) 154, 12};
+    return Bytes.concat(initialBytes, NESTING_SGROUP);
   }
 
   /**
@@ -657,7 +679,7 @@ public class CodedInputStreamTest {
     }
   }
 
-  /*
+  /**
    * @return A serialized big message.
    */
   private static byte[] getBigSerializedMessage() {
@@ -738,6 +760,143 @@ public class CodedInputStreamTest {
         // success.
       }
     }
+  }
+
+  @Test
+  public void testMaliciousRecursion_unknownFields() throws Exception {
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestRecursiveMessage.parseFrom(NESTING_SGROUP));
+
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testMaliciousRecursion_skippingUnknownField() throws Exception {
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                DiscardUnknownFieldsParser.wrap(TestRecursiveMessage.parser())
+                    .parseFrom(NESTING_SGROUP));
+
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testMaliciousSGroupTagsWithMapField_fromInputStream() throws Exception {
+    Throwable parseFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                MapContainer.parseFrom(
+                    new ByteArrayInputStream(NESTING_SGROUP_WITH_INITIAL_BYTES)));
+    Throwable mergeFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () ->
+                MapContainer.newBuilder()
+                    .mergeFrom(new ByteArrayInputStream(NESTING_SGROUP_WITH_INITIAL_BYTES)));
+
+    assertThat(parseFromThrown)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+    assertThat(mergeFromThrown)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testMaliciousSGroupTags_inputStream_skipMessage() throws Exception {
+    ByteArrayInputStream inputSteam = new ByteArrayInputStream(NESTING_SGROUP);
+    CodedInputStream input = CodedInputStream.newInstance(inputSteam);
+    CodedOutputStream output = CodedOutputStream.newInstance(new byte[NESTING_SGROUP.length]);
+
+    Throwable thrown = assertThrows(InvalidProtocolBufferException.class, input::skipMessage);
+    Throwable thrown2 =
+        assertThrows(InvalidProtocolBufferException.class, () -> input.skipMessage(output));
+
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+    assertThat(thrown2)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testMaliciousSGroupTagsWithMapField_fromByteArray() throws Exception {
+    Throwable parseFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> MapContainer.parseFrom(NESTING_SGROUP_WITH_INITIAL_BYTES));
+    Throwable mergeFromThrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> MapContainer.newBuilder().mergeFrom(NESTING_SGROUP_WITH_INITIAL_BYTES));
+
+    assertThat(parseFromThrown)
+        .hasMessageThat()
+        .contains("the input ended unexpectedly in the middle of a field");
+    assertThat(mergeFromThrown)
+        .hasMessageThat()
+        .contains("the input ended unexpectedly in the middle of a field");
+  }
+
+  @Test
+  public void testMaliciousSGroupTags_arrayDecoder_skipMessage() throws Exception {
+    CodedInputStream input = CodedInputStream.newInstance(NESTING_SGROUP);
+    CodedOutputStream output = CodedOutputStream.newInstance(new byte[NESTING_SGROUP.length]);
+
+    Throwable thrown = assertThrows(InvalidProtocolBufferException.class, input::skipMessage);
+    Throwable thrown2 =
+        assertThrows(InvalidProtocolBufferException.class, () -> input.skipMessage(output));
+
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+    assertThat(thrown2)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testMaliciousSGroupTagsWithMapField_fromByteBuffer() throws Exception {
+    Throwable thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> MapContainer.parseFrom(ByteBuffer.wrap(NESTING_SGROUP_WITH_INITIAL_BYTES)));
+
+    assertThat(thrown)
+        .hasMessageThat()
+        .contains("the input ended unexpectedly in the middle of a field");
+  }
+
+  @Test
+  public void testMaliciousSGroupTags_byteBuffer_skipMessage() throws Exception {
+    CodedInputStream input = InputType.NIO_DIRECT.newDecoder(NESTING_SGROUP);
+    CodedOutputStream output = CodedOutputStream.newInstance(new byte[NESTING_SGROUP.length]);
+
+    Throwable thrown = assertThrows(InvalidProtocolBufferException.class, input::skipMessage);
+    Throwable thrown2 =
+        assertThrows(InvalidProtocolBufferException.class, () -> input.skipMessage(output));
+
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+    assertThat(thrown2)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
+  }
+
+  @Test
+  public void testMaliciousSGroupTags_iterableByteBuffer() throws Exception {
+    CodedInputStream input = InputType.ITER_DIRECT.newDecoder(NESTING_SGROUP);
+    CodedOutputStream output = CodedOutputStream.newInstance(new byte[NESTING_SGROUP.length]);
+
+    Throwable thrown = assertThrows(InvalidProtocolBufferException.class, input::skipMessage);
+    Throwable thrown2 =
+        assertThrows(InvalidProtocolBufferException.class, () -> input.skipMessage(output));
+
+    assertThat(thrown).hasMessageThat().contains("Protocol message had too many levels of nesting");
+    assertThat(thrown2)
+        .hasMessageThat()
+        .contains("Protocol message had too many levels of nesting");
   }
 
   private void checkSizeLimitExceeded(InvalidProtocolBufferException e) {
@@ -1248,6 +1407,41 @@ public class CodedInputStreamTest {
   }
 
   @Test
+  public void testByteBufferInputStreamReadBytesWithAliasConcurrently() {
+    int size = 127;
+    assertThat(CodedOutputStream.computeInt32SizeNoTag(size)).isEqualTo(1);
+    ByteBuffer input = ByteBuffer.allocateDirect(1 + size);
+    input.put(0, (byte) size);
+
+    Supplier<ByteString> embeddedBytes =
+        () -> {
+          try {
+            final CodedInputStream inputStream = CodedInputStream.newInstance(input, true);
+            inputStream.enableAliasing(true);
+            return inputStream.readBytes();
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        };
+
+    assertThat(embeddedBytes.get().size()).isEqualTo(size);
+
+    // Concurrent reader should have no impact.
+    int iterations = 100000;
+    new Thread(
+            () -> {
+              for (int i = 0; i < iterations; i++) {
+                ByteString unused = embeddedBytes.get();
+              }
+            })
+        .start();
+
+    for (int i = 0; i < iterations; i++) {
+      assertThat(embeddedBytes.get().size()).isEqualTo(size);
+    }
+  }
+
+  @Test
   public void testIterableByteBufferInputStreamReadBytesWithAlias() throws Exception {
     ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
     CodedOutputStream output = CodedOutputStream.newInstance(byteArrayStream);
@@ -1328,6 +1522,38 @@ public class CodedInputStreamTest {
         // Expected
       }
     }
+  }
+
+  @Test
+  public void testSkipInvalidEndGroup(@TestParameter InputType inputType) throws Exception {
+    byte[] data = new byte[] {(byte) WireFormat.makeTag(1, WireFormat.WIRETYPE_END_GROUP)};
+
+    CodedInputStream input = CodedInputStream.newInstance(data);
+    assertThrows(InvalidProtocolBufferException.class, () -> input.skipField(input.readTag()));
+
+    CodedInputStream input2 = CodedInputStream.newInstance(data);
+    CodedOutputStream output = CodedOutputStream.newInstance(new byte[1]);
+    assertThrows(
+        InvalidProtocolBufferException.class, () -> input2.skipField(input2.readTag(), output));
+  }
+
+  @Test
+  public void testSkipInvalidEndGroup_nested(@TestParameter InputType inputType) throws Exception {
+    ByteString.Output output = ByteString.newOutput();
+    CodedOutputStream codedOutput = CodedOutputStream.newInstance(output);
+    codedOutput.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+    codedOutput.writeTag(2, WireFormat.WIRETYPE_END_GROUP);
+    codedOutput.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+    codedOutput.flush();
+    byte[] data = output.toByteString().toByteArray();
+
+    CodedInputStream input = CodedInputStream.newInstance(data);
+    assertThrows(InvalidProtocolBufferException.class, () -> input.skipField(input.readTag()));
+
+    CodedInputStream input2 = CodedInputStream.newInstance(data);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> input2.skipField(input2.readTag(), codedOutput));
   }
 
   @Test

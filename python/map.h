@@ -10,6 +10,7 @@
 
 #include <stdbool.h>
 
+#include "python/protobuf.h"
 #include "python/python_api.h"
 #include "upb/reflection/def.h"
 
@@ -28,7 +29,8 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
 
 // Reifies a map stub to point to the concrete data in `map`.
 // If `map` is NULL, an appropriate empty map will be constructed.
-void PyUpb_MapContainer_Reify(PyObject* self, upb_Map* map);
+upb_Map* PyUpb_MapContainer_Reify(PyObject* self, upb_Map* map,
+                                  PyUpb_WeakMap* subobj_map, intptr_t iter);
 
 // Reifies this map object if it is not already reified.
 upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* self);

@@ -16,9 +16,10 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <new>
 #include <string>
 
+#include "absl/base/optimization.h"
+#include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/message_lite.h"
@@ -33,55 +34,69 @@ namespace protobuf {
 
 namespace internal {
 
-void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
+MessageLite* CloneSlow(Arena* arena, const MessageLite& value) {
+  auto* msg = value.New(arena);
+  msg->CheckTypeAndMergeFrom(value);
+  return msg;
+}
+std::string* CloneSlow(Arena* arena, const std::string& value) {
+  return Arena::Create<std::string>(arena, value);
+}
+
+void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   ABSL_DCHECK(extend_amount > 0);
-  constexpr size_t ptr_size = sizeof(rep()->elements[0]);
-  int capacity = Capacity();
-  int new_capacity = capacity + extend_amount;
-  Arena* arena = GetArena();
-  new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
-      capacity, new_capacity);
-  ABSL_CHECK_LE(
-      static_cast<int64_t>(new_capacity),
-      static_cast<int64_t>(
-          (std::numeric_limits<size_t>::max() - kRepHeaderSize) / ptr_size))
-      << "Requested size is too large to fit into size_t.";
-  size_t bytes = kRepHeaderSize + ptr_size * new_capacity;
-  Rep* new_rep;
-  if (arena == nullptr) {
-    internal::SizedPtr res = internal::AllocateAtLeast(bytes);
-    new_capacity = static_cast<int>((res.n - kRepHeaderSize) / ptr_size);
-    new_rep = reinterpret_cast<Rep*>(res.p);
-  } else {
-    new_rep = reinterpret_cast<Rep*>(Arena::CreateArray<char>(arena, bytes));
+  ABSL_DCHECK_EQ(arena, GetArena());
+  constexpr size_t kPtrSize = sizeof(rep()->elements[0]);
+  constexpr size_t kMaxSize = std::numeric_limits<size_t>::max();
+  constexpr size_t kMaxCapacity = (kMaxSize - kRepHeaderSize) / kPtrSize;
+  const int old_capacity = Capacity();
+  Rep* new_rep = nullptr;
+
+  int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
+      old_capacity, old_capacity + extend_amount);
+  {
+    ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
+        << "New capacity is too large to fit into internal representation";
+    const size_t new_size = kRepHeaderSize + kPtrSize * new_capacity;
+    if (arena == nullptr) {
+      const internal::SizedPtr alloc = internal::AllocateAtLeast(new_size);
+      new_capacity = static_cast<int>((alloc.n - kRepHeaderSize) / kPtrSize);
+      new_rep = reinterpret_cast<Rep*>(alloc.p);
+    } else {
+      auto* alloc = Arena::CreateArray<char>(arena, new_size);
+      new_rep = reinterpret_cast<Rep*>(alloc);
+    }
   }
 
   if (using_sso()) {
+    new_rep->capacity = new_capacity;
     new_rep->allocated_size = tagged_rep_or_elem_ != nullptr ? 1 : 0;
     new_rep->elements[0] = tagged_rep_or_elem_;
   } else {
     Rep* old_rep = rep();
-    memcpy(new_rep, old_rep,
-           old_rep->allocated_size * ptr_size + kRepHeaderSize);
-
-    size_t old_size = capacity * ptr_size + kRepHeaderSize;
+    new_rep->capacity = new_capacity;
+    new_rep->allocated_size = old_rep->allocated_size;
+    memcpy(new_rep->elements, old_rep->elements,
+           new_rep->allocated_size * kPtrSize);
+    size_t old_total_size = old_capacity * kPtrSize + kRepHeaderSize;
     if (arena == nullptr) {
-      internal::SizedDelete(old_rep, old_size);
+      internal::SizedDelete(old_rep, old_total_size);
     } else {
-      arena->ReturnArrayMemory(old_rep, old_size);
+      arena->ReturnArrayMemory(old_rep, old_total_size);
     }
   }
 
   tagged_rep_or_elem_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
-  capacity_proxy_ = new_capacity - kSSOCapacity;
+
   return &new_rep->elements[current_size_];
 }
 
-void RepeatedPtrFieldBase::Reserve(int capacity) {
+void RepeatedPtrFieldBase::Reserve(int capacity, Arena* arena) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   int delta = capacity - Capacity();
   if (delta > 0) {
-    InternalExtend(delta);
+    InternalExtend(delta, arena);
   }
 }
 
@@ -91,14 +106,6 @@ void RepeatedPtrFieldBase::DestroyProtos() {
   // TODO:  Eliminate this store when invoked from the destructor,
   // since it is dead.
   tagged_rep_or_elem_ = nullptr;
-}
-
-void* RepeatedPtrFieldBase::AddMessageLite(ElementFactory factory) {
-  return AddInternal(factory);
-}
-
-void* RepeatedPtrFieldBase::AddString() {
-  return AddInternal([](Arena* arena) { return NewStringElement(arena); });
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -116,11 +123,6 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   ExchangeCurrentSize(current_size_ - num);
 }
 
-MessageLite* RepeatedPtrFieldBase::AddMessage(const MessageLite* prototype) {
-  return static_cast<MessageLite*>(
-      AddInternal([prototype](Arena* a) { return prototype->New(a); }));
-}
-
 void InternalOutOfLineDeleteMessageLite(MessageLite* message) {
   delete message;
 }
@@ -131,18 +133,19 @@ memswap<ArenaOffsetHelper<RepeatedPtrFieldBase>::value>(
 
 template <>
 void RepeatedPtrFieldBase::MergeFrom<std::string>(
-    const RepeatedPtrFieldBase& from) {
+    const RepeatedPtrFieldBase& from, Arena* arena) {
   Prefetch5LinesFrom1Line(&from);
+  ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size));
+  auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<std::string* const*>(from.elements());
   auto end = src + from.current_size_;
   auto end_assign = src + std::min(ClearedCount(), from.current_size_);
   for (; src < end_assign; ++dst, ++src) {
     (*dst)->assign(**src);
   }
-  if (Arena* const arena = arena_) {
+  if (arena != nullptr) {
     for (; src < end; ++dst, ++src) {
       *dst = Arena::Create<std::string>(arena, **src);
     }
@@ -164,29 +167,37 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
   int count = std::min(ClearedCount(), from.current_size_);
+  const ClassData* class_data = GetClassData(*src[0]);
   for (int i = 0; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
-    ABSL_DCHECK(TypeId::Get(*src[i]) == TypeId::Get(*src[0]))
-        << src[i]->GetTypeName() << " vs " << src[0]->GetTypeName();
-    dst[i]->CheckTypeAndMergeFrom(*src[i]);
+    dst[i]->MergeFromWithClassData(*src[i], class_data);
   }
   return count;
 }
 
 void RepeatedPtrFieldBase::MergeFromConcreteMessage(
-    const RepeatedPtrFieldBase& from, CopyFn copy_fn) {
+    const RepeatedPtrFieldBase& from, Arena* arena, CopyFn copy_fn) {
   Prefetch5LinesFrom1Line(&from);
+  ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
-  void** dst = InternalReserve(new_size);
+  void** dst = InternalReserve(new_size, arena);
   const void* const* src = from.elements();
   auto end = src + from.current_size_;
-  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+  constexpr ptrdiff_t kPrefetchstride = 1;
+  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetArena();
+  if (from.current_size_ >= kPrefetchstride) {
+    auto prefetch_end = end - kPrefetchstride;
+    for (; src < prefetch_end; ++src, ++dst) {
+      auto next = src + kPrefetchstride;
+      absl::PrefetchToLocalCache(*next);
+      *dst = copy_fn(arena, *src);
+    }
+  }
   for (; src < end; ++src, ++dst) {
     *dst = copy_fn(arena, *src);
   }
@@ -198,37 +209,30 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
 
 template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
-    const RepeatedPtrFieldBase& from) {
+    const RepeatedPtrFieldBase& from, Arena* arena) {
   Prefetch5LinesFrom1Line(&from);
+  ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
   ABSL_DCHECK(from.current_size_ > 0);
   int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size));
+  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
   auto end = src + from.current_size_;
-  const MessageLite* prototype = src[0];
-  ABSL_DCHECK(prototype != nullptr);
-  if (PROTOBUF_PREDICT_FALSE(ClearedCount() > 0)) {
+  const ClassData* class_data = GetClassData(*src[0]);
+  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
   }
-  Arena* arena = GetArena();
   for (; src < end; ++src, ++dst) {
     ABSL_DCHECK(*src != nullptr);
-    ABSL_DCHECK(TypeId::Get(**src) == TypeId::Get(*prototype))
-        << (**src).GetTypeName() << " vs " << prototype->GetTypeName();
-    *dst = prototype->New(arena);
-    (*dst)->CheckTypeAndMergeFrom(**src);
+    *dst = class_data->New(arena);
+    (*dst)->MergeFromWithClassData(**src, class_data);
   }
   ExchangeCurrentSize(new_size);
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
-}
-
-void* NewStringElement(Arena* arena) {
-  return Arena::Create<std::string>(arena);
 }
 
 }  // namespace internal

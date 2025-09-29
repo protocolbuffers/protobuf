@@ -9,6 +9,8 @@
 
 #include "google/protobuf/python_protobuf.h"
 
+#include <Python.h>
+
 namespace google {
 namespace protobuf {
 namespace python {

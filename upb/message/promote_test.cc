@@ -20,6 +20,7 @@
 #include <string>
 
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.h"
 #include "upb/base/string_view.h"
@@ -29,7 +30,6 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/copy.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -39,6 +39,7 @@
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
@@ -47,6 +48,16 @@
 #include "upb/wire/encode.h"
 
 namespace {
+
+size_t GetUnknownLength(const upb_Message* msg) {
+  size_t len = 0;
+  upb_StringView data;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  while (upb_Message_NextUnknown(msg, &data, &iter)) {
+    len += data.size;
+  }
+  return len;
+}
 
 TEST(GeneratedCode, FindUnknown) {
   upb_Arena* arena = upb_Arena_New();
@@ -80,6 +91,54 @@ TEST(GeneratedCode, FindUnknown) {
       upb_MiniTableExtension_Number(&upb_test_ModelExtension2_model_ext_ext),
       0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, PromoteFromMultiple) {
+  int options = kUpb_DecodeOption_AliasString;
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
+
+  upb_test_ModelExtension1* extension1 = upb_test_ModelExtension1_new(arena);
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("World"));
+
+  upb_test_ModelExtension1_set_model_ext(msg, extension1, arena);
+
+  size_t serialized_size;
+  char* serialized1 =
+      upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size);
+
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("Everyone"));
+  size_t serialized_size2;
+  char* serialized2 =
+      upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size2);
+  char* concat =
+      (char*)upb_Arena_Malloc(arena, serialized_size + serialized_size2);
+  memcpy(concat, serialized1, serialized_size);
+  memcpy(concat + serialized_size, serialized2, serialized_size2);
+
+  upb_test_ModelWithExtensions* parsed = upb_test_ModelWithExtensions_parse_ex(
+      concat, serialized_size + serialized_size2,
+      upb_ExtensionRegistry_New(arena), options, arena);
+
+  upb_MessageValue value;
+  upb_GetExtension_Status result = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(parsed), &upb_test_ModelExtension1_model_ext_ext, options,
+      arena, &value);
+  ASSERT_EQ(result, kUpb_GetExtension_Ok);
+  upb_test_ModelExtension1* parsed_ex =
+      (upb_test_ModelExtension1*)value.msg_val;
+  upb_StringView field = upb_test_ModelExtension1_str(parsed_ex);
+  EXPECT_EQ(absl::string_view(field.data, field.size), "Everyone");
+
+  upb_FindUnknownRet found = upb_Message_FindUnknown(
+      UPB_UPCAST(parsed),
+      upb_MiniTableExtension_Number(&upb_test_ModelExtension1_model_ext_ext),
+      0);
+  EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 
   upb_Arena_Free(arena);
 }
@@ -182,8 +241,7 @@ TEST(GeneratedCode, Extensions) {
                                                 arena);
 
   // Get unknown extension bytes before promotion.
-  size_t start_len;
-  upb_Message_GetUnknown(UPB_UPCAST(base_msg), &start_len);
+  size_t start_len = GetUnknownLength(UPB_UPCAST(base_msg));
   EXPECT_GT(start_len, 0);
   EXPECT_EQ(0, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
@@ -195,6 +253,7 @@ TEST(GeneratedCode, Extensions) {
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
                                      upb_test_ModelExtension1_str(ext1)));
+  EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -203,6 +262,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(2, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -211,6 +271,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(3, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -219,6 +280,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(4, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -227,6 +289,7 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(5, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
   // Test unknown GetExtension.
   promote_status = upb_Message_GetOrPromoteExtension(
@@ -235,9 +298,9 @@ TEST(GeneratedCode, Extensions) {
   ext2 = (upb_test_ModelExtension2*)value.msg_val;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
+  EXPECT_EQ(6, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
-  size_t end_len;
-  upb_Message_GetUnknown(UPB_UPCAST(base_msg), &end_len);
+  size_t end_len = GetUnknownLength(UPB_UPCAST(base_msg));
   EXPECT_LT(end_len, start_len);
   EXPECT_EQ(6, upb_Message_ExtensionCount(UPB_UPCAST(base_msg)));
 
@@ -578,6 +641,9 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
   upb_test_ModelWithMaps* input_msg = upb_test_ModelWithMaps_new(arena.ptr());
   upb_test_ModelWithMaps_set_id(input_msg, 123);
 
+  upb_test_ModelWithExtensions* submsg0 =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelWithExtensions_set_random_int32(submsg0, 100);
   upb_test_ModelWithExtensions* submsg1 =
       upb_test_ModelWithExtensions_new(arena.ptr());
   upb_test_ModelWithExtensions_set_random_int32(submsg1, 123);
@@ -585,7 +651,8 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
       upb_test_ModelWithExtensions_new(arena.ptr());
   upb_test_ModelWithExtensions_set_random_int32(submsg2, 456);
 
-  // Add 2 map entries.
+  // Add 3 map entries.
+  upb_test_ModelWithMaps_map_im_set(input_msg, 0, submsg0, arena.ptr());
   upb_test_ModelWithMaps_map_im_set(input_msg, 111, submsg1, arena.ptr());
   upb_test_ModelWithMaps_map_im_set(input_msg, 222, submsg2, arena.ptr());
 
@@ -618,8 +685,8 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
 
   upb_Map* map = upb_Message_GetMutableMap(msg, map_field);
 
-  // Map size is 2 even though messages are unlinked.
-  EXPECT_EQ(2, upb_Map_Size(map));
+  // Map size is 3 even though messages are unlinked.
+  EXPECT_EQ(3, upb_Map_Size(map));
 
   // Update mini table and promote unknown to a message.
   upb_MiniTable* entry = const_cast<upb_MiniTable*>(
@@ -634,6 +701,12 @@ TEST(GeneratedCode, PromoteUnknownToMap) {
 
   upb_MessageValue key;
   upb_MessageValue val;
+  key.int32_val = 0;
+  EXPECT_TRUE(upb_Map_Get(map, key, &val));
+  EXPECT_EQ(100, upb_test_ModelWithExtensions_random_int32(
+                     static_cast<const upb_test_ModelWithExtensions*>(
+                         (void*)(val.msg_val))));
+
   key.int32_val = 111;
   EXPECT_TRUE(upb_Map_Get(map, key, &val));
   EXPECT_EQ(123, upb_test_ModelWithExtensions_random_int32(

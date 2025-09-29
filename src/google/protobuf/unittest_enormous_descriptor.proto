@@ -16,7 +16,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package proto2_unittest;
 option java_package = "com.google.protobuf";
 
 // Avoid generating insanely long methods.

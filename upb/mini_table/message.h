@@ -8,6 +8,8 @@
 #ifndef UPB_MINI_TABLE_MESSAGE_H_
 #define UPB_MINI_TABLE_MESSAGE_H_
 
+#include <stdint.h>
+
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
@@ -21,13 +23,15 @@ typedef struct upb_MiniTable upb_MiniTable;
 extern "C" {
 #endif
 
-UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
+UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* m, uint32_t number);
 
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
     const upb_MiniTable* m, uint32_t index);
 
 UPB_API_INLINE int upb_MiniTable_FieldCount(const upb_MiniTable* m);
+
+UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const upb_MiniTable* m);
 
 // DEPRECATED: use upb_MiniTable_SubMessage() instead
 // Returns the MiniTable for a message field, NULL if the field is unlinked.

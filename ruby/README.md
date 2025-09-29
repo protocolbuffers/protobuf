@@ -26,9 +26,8 @@ main `README` file. The version of `protoc` included in the latest release
 supports the `--ruby_out` option to generate Ruby code.
 
 A simple example of using the Ruby extension follows. More extensive
-documentation may be found in the RubyDoc comments (`call-seq` tags) in the
-source, and we plan to release separate, more detailed, documentation at a
-later date.
+documentation may be found on
+[rubydoc.info](https://www.rubydoc.info/gems/google-protobuf).
 
 ```ruby
 require 'google/protobuf'
@@ -51,15 +50,14 @@ puts MyTestMessage.encode_json(mymessage)
 
 Installation from Source (Building Gem)
 ---------------------------------------
- 
 
 Protocol Buffers has a new experimental backend that uses the
 [ffi](https://github.com/ffi/ffi) gem to provide a unified C-based
 implementation across Ruby interpreters based on
-[UPB](https://github.com/protocolbuffers/upb). For now, use of the FFI
-implementation is opt-in. If any of the following are true, the traditional
-platform-native implementations (MRI-ruby based on CRuby, Java based on JRuby)
-are used instead of the new FFI-based implementation: 1. `ffi` and
+[UPB](https://github.com/protocolbuffers/protobuf/tree/main/upb). For now, use
+of the FFI implementation is opt-in. If any of the following are true, the
+traditional platform-native implementations (MRI-ruby based on CRuby, Java based
+on JRuby) are used instead of the new FFI-based implementation: 1. `ffi` and
 `ffi-compiler` gems are not installed 2. `PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION`
 environment variable has a value other than `FFI` (case-insensitive). 3. FFI is
 unable to load the native library at runtime.
@@ -89,6 +87,14 @@ Then build the Gem:
     $ rake
     $ rake clobber_package gem
     $ gem install `ls pkg/google-protobuf-*.gem`
+
+If you intend to debug the protobuf_c Ruby bindings with `gdb`, you can also
+build a version with debug symbols enabled by setting the `PROTOBUF_CONFIG`
+enviroment variable when you build the native extension:
+
+```
+$ PROTOBUF_CONFIG=dbg rake
+```
 
 To run the specs:
 

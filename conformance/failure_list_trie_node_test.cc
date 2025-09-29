@@ -1,13 +1,19 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "failure_list_trie_node.h"
 
-#include <memory>
+#include <optional>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
-#include "absl/types/optional.h"
 
 using ::testing::Eq;
 using ::testing::HasSubstr;
@@ -44,7 +50,7 @@ TEST(FailureListTrieTest, WalkDownMatchWithoutWildcardNoMatch) {
   ASSERT_OK(root_->Insert("Recommended.Proto2.JsonInput.World"));
 
   EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.TextFormatInput"),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST(FailureListTrieTest, WalkDownMatchWithWildcard) {
@@ -60,15 +66,14 @@ TEST(FailureListTrieTest, WalkDownMatchWithWildcardNoMatch) {
   ASSERT_OK(root_->Insert("Recommended.*.ProtobufInput.World"));
 
   EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.JsonInput.World"),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST(FailureListTrieTest, WalkDownMatchTestLessNumberofSectionsNoMatch) {
   auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert("Recommended.*.*.*"));
 
-  EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.JsonInput"),
-            absl::nullopt);
+  EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.JsonInput"), std::nullopt);
 }
 
 TEST(FailureListTrieTest, WalkDownMatchTestMoreNumberOfSectionsNoMatch) {
@@ -76,7 +81,7 @@ TEST(FailureListTrieTest, WalkDownMatchTestMoreNumberOfSectionsNoMatch) {
   ASSERT_OK(root_->Insert("*"));
 
   EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.JsonInput.World"),
-            absl::nullopt);
+            std::nullopt);
 }
 
 TEST(FailureListTrieTest, WalkDownMatchTakeMoreThanOneBranch) {
@@ -120,6 +125,24 @@ TEST(FailureListTrieTest, InsertInvalidWildcardFails) {
   EXPECT_THAT(root_->Insert("This*Is.Not.A.Valid.Wildcard"),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("invalid wildcard")));
+}
+
+TEST(FailureListTrieTest, PrefixMarkedAsTestNameRecognizedWithoutWildcards) {
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
+  ASSERT_OK(root_->Insert("Recommended.Proto2.ProtobufInput.World"));
+
+  ASSERT_OK(root_->Insert("Recommended.Proto2"));
+  EXPECT_THAT(root_->WalkDownMatch("Recommended.Proto2"),
+              Optional(Eq("Recommended.Proto2")));
+}
+
+TEST(FailureListTrieTest, PrefixMarkedAsTestNameRecognizedWithWildcards) {
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
+  ASSERT_OK(root_->Insert("Recommended.*.*.*"));
+
+  ASSERT_OK(root_->Insert("Recommended.*.*"));
+  EXPECT_THAT(root_->WalkDownMatch("Recommended.*.Hello"),
+              Optional(Eq("Recommended.*.*")));
 }
 }  // namespace protobuf
 }  // namespace google

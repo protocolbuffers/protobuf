@@ -64,17 +64,12 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
 absl::StatusOr<FeatureSetDefaults> CodeGenerator::BuildFeatureSetDefaults()
     const {
-  if ((GetSupportedFeatures() & FEATURE_SUPPORTS_EDITIONS) == 0) {
-    // For generators that don't fully support editions yet, provide an
-    // optimistic set of defaults.  Protoc will check this condition later
-    // anyway.
-    return FeatureResolver::CompileDefaults(
-        FeatureSet::descriptor(), GetFeatureExtensions(),
-        PROTOBUF_MINIMUM_EDITION, PROTOBUF_MAXIMUM_EDITION);
-  }
+  // For generators that don't fully support editions yet, provide an
+  // optimistic set of defaults.  Protoc will check this condition later
+  // anyway.
   return FeatureResolver::CompileDefaults(
-      FeatureSet::descriptor(), GetFeatureExtensions(), GetMinimumEdition(),
-      GetMaximumEdition());
+      FeatureSet::descriptor(), GetFeatureExtensions(), ProtocMinimumEdition(),
+      MaximumKnownEdition());
 }
 
 GeneratorContext::~GeneratorContext() = default;
@@ -110,7 +105,8 @@ void GeneratorContext::GetCompilerVersion(Version* version) const {
 
 bool CanSkipEditionCheck(absl::string_view filename) {
   return absl::StartsWith(filename, "google/protobuf/") ||
-         absl::StartsWith(filename, "upb/");
+         absl::StartsWith(filename, "upb/") ||
+         absl::StartsWith(filename, "com/google/protobuf/");
 }
 
 }  // namespace compiler

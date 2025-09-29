@@ -16,16 +16,17 @@ import java.util.List;
 import java.util.RandomAccess;
 
 /**
- * An implementation of {@link LazyStringList} that wraps an ArrayList. Each element is one of
- * String, ByteString, or byte[]. It caches the last one requested which is most likely the one
- * needed next. This minimizes memory usage while satisfying the most common use cases.
+ * An implementation of {@link LazyStringList} that wraps an {@link ArrayList}. Each element is one
+ * of {@link String}, {@link ByteString}, or {@code byte[]}. It caches the last one requested which
+ * is most likely the one needed next. This minimizes memory usage while satisfying the most common
+ * use cases.
  *
- * <p><strong>Note that this implementation is not synchronized.</strong> If multiple threads access
- * an <tt>ArrayList</tt> instance concurrently, and at least one of the threads modifies the list
- * structurally, it <i>must</i> be synchronized externally. (A structural modification is any
- * operation that adds or deletes one or more elements, or explicitly resizes the backing array;
- * merely setting the value of an element is not a structural modification.) This is typically
- * accomplished by synchronizing on some object that naturally encapsulates the list.
+ * <p><b>Note that this implementation is not synchronized.</b> If multiple threads access an {@link
+ * ArrayList} instance concurrently, and at least one of the threads modifies the list structurally,
+ * it <i>must</i> be synchronized externally. (A structural modification is any operation that adds
+ * or deletes one or more elements, or explicitly resizes the backing array; merely setting the
+ * value of an element is not a structural modification.) This is typically accomplished by
+ * synchronizing on some object that naturally encapsulates the list.
  *
  * <p>If the implementation is accessed via concurrent reads, this is thread safe. Conversions are
  * done in a thread safe manner. It's possible that the conversion may happen more than once if two
@@ -48,11 +49,9 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   /**
    * For compatibility with older runtimes.
    *
-   * <p>TODO Remove this in a breaking release.
-   *
-   * @deprecated use {@link emptyList()} instead
+   * @deprecated use {@link #emptyList()} instead
    */
-  @Deprecated public static final LazyStringList EMPTY = EMPTY_LIST;
+  @Deprecated public static final LazyStringList EMPTY = emptyList();
 
   private final List<Object> list;
 
@@ -117,13 +116,6 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   @Override
   public int size() {
     return list.size();
-  }
-
-  @Override
-  public String set(int index, String s) {
-    ensureIsMutable();
-    Object o = list.set(index, s);
-    return asString(o);
   }
 
   @Override
@@ -246,18 +238,25 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   @Override
+  public String set(int index, String s) {
+    ensureIsMutable();
+    Object o = list.set(index, s);
+    return asString(o);
+  }
+
+  @Override
   public void set(int index, ByteString s) {
+    setAndReturn(index, s);
+  }
+
+  @Override
+  public void set(int index, byte[] s) {
     setAndReturn(index, s);
   }
 
   private Object setAndReturn(int index, ByteString s) {
     ensureIsMutable();
     return list.set(index, s);
-  }
-
-  @Override
-  public void set(int index, byte[] s) {
-    setAndReturn(index, s);
   }
 
   private Object setAndReturn(int index, byte[] s) {

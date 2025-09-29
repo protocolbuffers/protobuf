@@ -7,8 +7,8 @@
 
 // Generates C# code for a given .proto file.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_CSHARP_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_GENERATOR_H__
 
 #include <string>
 
@@ -28,7 +28,7 @@ namespace csharp {
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator();
-  ~Generator();
+  ~Generator() override;
   bool Generate(
     const FileDescriptor* file,
     const std::string& parameter,
@@ -36,7 +36,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
     std::string* error) const override;
   uint64_t GetSupportedFeatures() const override;
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override {
+    return Edition::EDITION_2024;
+  }
   using CodeGenerator::GetEdition;
 };
 
@@ -47,4 +49,4 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_CSHARP_GENERATOR_H__

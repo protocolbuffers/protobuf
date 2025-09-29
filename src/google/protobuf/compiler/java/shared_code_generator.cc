@@ -33,11 +33,9 @@ namespace java {
 
 SharedCodeGenerator::SharedCodeGenerator(const FileDescriptor* file,
                                          const Options& options)
-    : name_resolver_(new ClassNameResolver(options)),
-      file_(file),
-      options_(options) {}
+    : name_resolver_(new ClassNameResolver()), file_(file), options_(options) {}
 
-SharedCodeGenerator::~SharedCodeGenerator() {}
+SharedCodeGenerator::~SharedCodeGenerator() = default;
 
 void SharedCodeGenerator::Generate(
     GeneratorContext* context, std::vector<std::string>* file_list,
@@ -66,7 +64,7 @@ void SharedCodeGenerator::Generate(
         "GENCODE\n"
         "// source: $filename$\n",
         "filename", file_->name());
-    if (options_.opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print("// Protobuf Java Version: $protobuf_java_version$\n",
                      "protobuf_java_version", PROTOBUF_JAVA_VERSION_STRING);
     }
@@ -88,7 +86,7 @@ void SharedCodeGenerator::Generate(
         "  /* This variable is to be called by generated code only. It "
         "returns\n"
         "  * an incomplete descriptor for internal use only. */\n"
-        "  public static com.google.protobuf.Descriptors.FileDescriptor\n"
+        "  public static final com.google.protobuf.Descriptors.FileDescriptor\n"
         "      descriptor;\n",
         "classname", classname);
     printer->Annotate("classname", file_->name());
@@ -98,7 +96,7 @@ void SharedCodeGenerator::Generate(
     printer->Indent();
     printer->Indent();
     GenerateDescriptors(printer.get());
-    PrintGencodeVersionValidator(printer.get(), options_.opensource_runtime,
+    PrintGencodeVersionValidator(printer.get(), google::protobuf::internal::IsOss(),
                                  classname);
     printer->Outdent();
     printer->Outdent();
@@ -186,7 +184,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   printer->Print(
       "descriptor = com.google.protobuf.Descriptors.FileDescriptor\n"
       "  .internalBuildGeneratedFileFrom(descriptorData,\n");
-  if (options_.opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(
         "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
 

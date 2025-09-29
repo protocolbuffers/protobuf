@@ -1,3 +1,6 @@
+Recommended.*.JsonInput.FieldNameDuplicate                                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                           # Should have failed to parse, but didn't.
 Recommended.Proto2.JsonInput.FieldNameExtension.Validator
 Recommended.Proto2.JsonInput.BytesFieldBase64Url.JsonOutput
 Recommended.Proto2.JsonInput.BytesFieldBase64Url.ProtobufOutput
@@ -33,3 +36,4 @@ Recommended.Editions_Proto3.ValueRejectInfNumberValue.JsonOutput
 Recommended.Editions_Proto3.ValueRejectNanNumberValue.JsonOutput
 Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
 Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
+

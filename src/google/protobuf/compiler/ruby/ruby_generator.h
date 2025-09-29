@@ -7,9 +7,10 @@
 
 // Generates Ruby code for a given .proto file.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_RUBY_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUBY_RUBY_GENERATOR_H__
 
+#include <cstdint>
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
@@ -33,7 +34,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
            Feature::FEATURE_SUPPORTS_EDITIONS;
   }
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override {
+    return Edition::EDITION_2024;
+  }
 };
 
 }  // namespace ruby
@@ -43,4 +46,4 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
 #include "google/protobuf/port_undef.inc"
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_RUBY_GENERATOR_H__

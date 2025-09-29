@@ -7,6 +7,8 @@
 
 #include "google/protobuf/raw_ptr.h"
 
+#include <algorithm>
+
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 
@@ -17,8 +19,8 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-ABSL_CONST_INIT PROTOBUF_EXPORT
-    ABSL_CACHELINE_ALIGNED const char kZeroBuffer[ABSL_CACHELINE_SIZE] = {};
+ABSL_CONST_INIT PROTOBUF_EXPORT ABSL_CACHELINE_ALIGNED const char
+    kZeroBuffer[std::max(ABSL_CACHELINE_SIZE, 64)] = {};
 
 }  // namespace internal
 }  // namespace protobuf

@@ -5,10 +5,8 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -18,10 +16,21 @@ cc_library(
     visibility = ["//upb:friends"],
     deps = [
         ":interop",
+        "//hpb:arena",
+        "//hpb:extension",
+        "//hpb:options",
         "//hpb:ptr",
+        "//hpb:status",
+        "//hpb/backend:types",
         "//hpb/internal",
+        "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
-        "//upb:mini_table",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/port",
+        "//upb/wire",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -30,30 +39,107 @@ cc_library(
     hdrs = ["interop.h"],
     visibility = [
         "//hpb:__subpackages__",
-        "//src/google/protobuf/compiler:__subpackages__",
+        "//hpb_generator:__subpackages__",
     ],
     deps = [
         "//hpb:ptr",
         "//hpb/internal",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "@com_google_absl//absl/strings:string_view",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_table",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
 cc_test(
     name = "interop_test",
     srcs = ["interop_test.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":interop",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_hpb_proto",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_upb_proto",
-        "//upb:mem",
-        "//upb:message",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "//hpb_generator/tests:test_model_hpb_proto",
+        "//hpb_generator/tests:test_model_upb_proto",
+        "//upb/mem",
+        "//upb/message",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "extension",
+    srcs = ["extension.cc"],
+    hdrs = ["extension.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        ":interop",
+        "//hpb:status",
+        "//hpb/internal:message_lock",
+        "//hpb/internal:template_help",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_table",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_library(
+    name = "repeated_field_iterator",
+    hdrs = ["repeated_field_iterator.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        ":interop",
+        "//hpb",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_iterator_test",
+    srcs = ["repeated_field_iterator_test.cc"],
+    deps = [
+        ":interop",
+        ":repeated_field_iterator",
+        "//hpb:arena",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "repeated_field",
+    hdrs = ["repeated_field.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        ":interop",
+        ":repeated_field_iterator",
+        "//hpb",
+        "//hpb:multibackend",
+        "//hpb/internal:template_help",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:copy",
+    ],
+)
+
+cc_library(
+    name = "error",
+    hdrs = ["error.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//upb/wire",
+        "@abseil-cpp//absl/log:absl_log",
     ],
 )

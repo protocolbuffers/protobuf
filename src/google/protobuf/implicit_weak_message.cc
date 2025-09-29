@@ -62,7 +62,7 @@ const TcParseTable<0> ImplicitWeakMessage::table_ =
     internal::CreateStubTcParseTable<ImplicitWeakMessage, ParseImpl>(
         class_data_.base());
 
-constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
+constexpr ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
     {
         &implicit_weak_message_default_instance.instance,
         &table_.header,
@@ -70,7 +70,8 @@ constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
         nullptr,  // is_initialized (always true)
         MergeImpl,
         internal::MessageCreator(NewImpl<ImplicitWeakMessage>,
-                                 sizeof(ImplicitWeakMessage)),
+                                 sizeof(ImplicitWeakMessage),
+                                 alignof(ImplicitWeakMessage)),
         &DestroyImpl,
         GetClearImpl<ImplicitWeakMessage>(),
         &ByteSizeLongImpl,
@@ -80,7 +81,7 @@ constexpr MessageLite::ClassDataLite<1> ImplicitWeakMessage::class_data_ = {
     },
     ""};
 
-const MessageLite::ClassData* ImplicitWeakMessage::GetClassData() const {
+const ClassData* ImplicitWeakMessage::GetClassData() const {
   return class_data_.base();
 }
 

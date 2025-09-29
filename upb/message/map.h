@@ -13,6 +13,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/map.h"
+#include "upb/message/internal/types.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -38,6 +39,12 @@ UPB_API size_t upb_Map_Size(const upb_Map* map);
 // NULL, in which case the function tests whether the given key is present.
 UPB_API bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
                          upb_MessageValue* val);
+
+// Returns a mutable pointer to the value for the given key. Returns NULL if the
+// key is not present.
+// This function is only legal to call for maps that contain messages.
+UPB_API struct upb_Message* upb_Map_GetMutable(upb_Map* map,
+                                               upb_MessageValue key);
 
 // Removes all entries in the map.
 UPB_API void upb_Map_Clear(upb_Map* map);
@@ -71,7 +78,7 @@ UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
 //   ...
 // }
 
-#define kUpb_Map_Begin ((size_t) - 1)
+#define kUpb_Map_Begin ((size_t)-1)
 
 // Advances to the next entry. Returns false if no more entries are present.
 // Otherwise returns true and populates both *key and *value.

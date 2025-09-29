@@ -29,6 +29,15 @@ struct GenerationOptions {
   // in behavior or go away at any time.
   bool experimental_multi_source_generation = false;
   bool experimental_strip_nonfunctional_codegen = false;
+
+  // The name of the pragma that will be used to indicate the start of the
+  // metadata annotations. Must be set (along with `annotation_guard_name`) for
+  // cross-references to be generated.
+  std::string annotation_pragma_name;
+  // The name of the preprocessor guard that will be used to guard the metadata
+  // annotations. Must be set (along with `annotation_pragma_name`) for
+  // cross-references to be generated.
+  std::string annotation_guard_name;
 };
 
 }  // namespace objectivec

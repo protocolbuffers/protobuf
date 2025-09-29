@@ -11,9 +11,9 @@
 
 #include "google/protobuf/io/printer.h"
 
+#include <optional>
 #include <ostream>
 #include <string>
-#include <tuple>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -23,7 +23,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
@@ -49,7 +48,7 @@ class PrinterTest : public testing::Test {
   }
 
   std::string out_;
-  absl::optional<StringOutputStream> stream_{&out_};
+  std::optional<StringOutputStream> stream_{&out_};
 };
 
 TEST_F(PrinterTest, EmptyPrinter) {
@@ -169,7 +168,7 @@ class FakeAnnotationCollector : public AnnotationCollector {
 
   void AddAnnotation(size_t begin_offset, size_t end_offset,
                      const std::string& file_path, const std::vector<int>& path,
-                     absl::optional<Semantic> semantic) override {
+                     std::optional<Semantic> semantic) override {
     annotations_.emplace_back(
         Record{begin_offset, end_offset, file_path, path, semantic});
   }
@@ -191,7 +190,7 @@ class FakeAnnotationCollector : public AnnotationCollector {
     size_t end = 0;
     std::string file_path;
     std::vector<int> path;
-    absl::optional<Semantic> semantic;
+    std::optional<Semantic> semantic;
 
     friend std::ostream& operator<<(std::ostream& out, const Record& record) {
       return out << "Record{" << record.start << ", " << record.end << ", \""
@@ -208,10 +207,10 @@ class FakeAnnotationCollector : public AnnotationCollector {
 };
 
 template <typename Start, typename End, typename FilePath, typename Path,
-          typename Semantic = absl::optional<AnnotationCollector::Semantic>>
+          typename Semantic = std::optional<AnnotationCollector::Semantic>>
 testing::Matcher<FakeAnnotationCollector::Record> Annotation(
     Start start, End end, FilePath file_path, Path path,
-    Semantic semantic = absl::nullopt) {
+    Semantic semantic = std::nullopt) {
   return AllOf(
       Field("start", &FakeAnnotationCollector::Record::start, start),
       Field("end", &FakeAnnotationCollector::Record::end, end),
@@ -610,7 +609,7 @@ TEST_F(PrinterTest, EmitConsumeAfter) {
             "};\n");
 }
 
-TEST_F(PrinterTest, EmitWithSubstituionListener) {
+TEST_F(PrinterTest, EmitWithSubstitutionListener) {
   std::vector<std::string> seen;
   Printer printer(output());
   const auto emit = [&] {
@@ -713,6 +712,46 @@ TEST_F(PrinterTest, EmitWithIndent) {
             "  };\n");
 }
 
+TEST_F(PrinterTest, EmitWithIndentAndIgnoredCommentOnFirstLine) {
+  {
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      //~ First line comment.
+      class Foo {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "  class Foo {\n"
+            "    int x, y, z;\n"
+            "  };\n");
+}
+
+TEST_F(PrinterTest, EmitWithCPPDirectiveOnFirstLine) {
+  {
+    Printer printer(output());
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+#if NDEBUG
+#pragma foo
+      class Foo {
+        int $f1$, $f2$, $f3$;
+      };
+#endif
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "#if NDEBUG\n"
+            "#pragma foo\n"
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n"
+            "#endif\n");
+}
+
 TEST_F(PrinterTest, EmitWithPreprocessor) {
   {
     Printer printer(output());
@@ -742,9 +781,9 @@ TEST_F(PrinterTest, EmitWithPreprocessor) {
   EXPECT_EQ(written(),
             R"(  int val = (
   #if FOO
-                         0,
+  0,
   #else
-                         1,
+  1,
   #endif
    0);
   #pragma foo

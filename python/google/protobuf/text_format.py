@@ -25,6 +25,7 @@ import encodings.unicode_escape  # pylint: disable=unused-import
 import io
 import math
 import re
+import warnings
 
 from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
@@ -42,6 +43,7 @@ _INTEGER_CHECKERS = (type_checkers.Uint32ValueChecker(),
                      type_checkers.Int64ValueChecker())
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
+_FLOAT_OCTAL_PREFIX = re.compile('-?0[0-9]+')
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
@@ -125,13 +127,13 @@ def MessageToString(
       will be printed at the end of the message and their relative order is
       determined by the extension number. By default, use the field number
       order.
-    float_format (str): If set, use this to specify float field formatting
-      (per the "Format Specification Mini-Language"); otherwise, shortest float
-      that has same value in wire will be printed. Also affect double field
-      if double_format is not set but float_format is set.
-    double_format (str): If set, use this to specify double field formatting
-      (per the "Format Specification Mini-Language"); if it is not set but
-      float_format is set, use float_format. Otherwise, use ``str()``
+    float_format (str): Deprecated. If set, use this to specify float field
+      formatting (per the "Format Specification Mini-Language"); otherwise,
+      shortest float that has same value in wire will be printed. Also affect
+      double field if double_format is not set but float_format is set.
+    double_format (str): Deprecated. If set, use this to specify double field
+      formatting (per the "Format Specification Mini-Language"); if it is not
+      set but float_format is set, use float_format. Otherwise, use ``str()``
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
     indent (int): The initial indent level, in terms of spaces, for pretty
@@ -390,13 +392,13 @@ class _Printer(object):
       use_index_order: If True, print fields of a proto message using the order
         defined in source code instead of the field number. By default, use the
         field number order.
-      float_format: If set, use this to specify float field formatting
-        (per the "Format Specification Mini-Language"); otherwise, shortest
-        float that has same value in wire will be printed. Also affect double
-        field if double_format is not set but float_format is set.
-      double_format: If set, use this to specify double field formatting
-        (per the "Format Specification Mini-Language"); if it is not set but
-        float_format is set, use float_format. Otherwise, str() is used.
+      float_format: Deprecated. If set, use this to specify float field
+        formatting (per the "Format Specification Mini-Language"); otherwise,
+        shortest float that has same value in wire will be printed. Also affect
+        double field if double_format is not set but float_format is set.
+      double_format: Deprecated. If set, use this to specify double field
+        formatting (per the "Format Specification Mini-Language"); if it is not
+        set but float_format is set, use float_format. Otherwise, str() is used.
       use_field_number: If True, print field numbers instead of names.
       descriptor_pool: A DescriptorPool used to resolve Any types.
       message_formatter: A function(message, indent, as_one_line): unicode|None
@@ -415,6 +417,10 @@ class _Printer(object):
     self.use_index_order = use_index_order
     self.float_format = float_format
     if double_format is not None:
+      warnings.warn(
+          'double_format is deprecated for text_format. This will '
+          'turn into error in 7.34.0, please remove it before that.'
+      )
       self.double_format = double_format
     else:
       self.double_format = float_format
@@ -430,7 +436,7 @@ class _Printer(object):
       return False
     packed_message = _BuildMessageFromTypeName(message.TypeName(),
                                                self.descriptor_pool)
-    if packed_message:
+    if packed_message is not None:
       packed_message.MergeFromString(message.value)
       colon = ':' if self.force_colon else ''
       self.out.write('%s[%s]%s ' % (self.indent * ' ', message.type_url, colon))
@@ -476,7 +482,7 @@ class _Printer(object):
           # TODO: refactor and optimize if this becomes an issue.
           entry_submsg = value.GetEntryClass()(key=key, value=value[key])
           self.PrintField(field, entry_submsg)
-      elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+      elif field.is_repeated:
         if (self.use_short_repeated_primitives
             and field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE
             and field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_STRING):
@@ -556,7 +562,8 @@ class _Printer(object):
         out.write('[')
         if (field.containing_type.GetOptions().message_set_wire_format and
             field.type == descriptor.FieldDescriptor.TYPE_MESSAGE and
-            field.label == descriptor.FieldDescriptor.LABEL_OPTIONAL):
+            not field.is_required and
+            not field.is_repeated):
           out.write(field.message_type.full_name)
         else:
           out.write(field.full_name)
@@ -650,6 +657,11 @@ class _Printer(object):
         out.write('false')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
       if self.float_format is not None:
+        warnings.warn(
+            'float_format is deprecated for text_format. This '
+            'will turn into error in 7.34.0, please remove it '
+            'before that.'
+        )
         out.write('{1:{0}}'.format(self.float_format, value))
       else:
         if math.isnan(value):
@@ -997,7 +1009,7 @@ class _Parser(object):
                                  field.full_name)
         merger = self._MergeScalarField
 
-      if (field.label == descriptor.FieldDescriptor.LABEL_REPEATED and
+      if (field.is_repeated and
           tokenizer.TryConsume('[')):
         # Short repeated format, e.g. "foo: [1, 2, 3]"
         if not tokenizer.TryConsume(']'):
@@ -1060,7 +1072,7 @@ class _Parser(object):
       tokenizer.Consume('{')
       end_token = '}'
 
-    if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if field.is_repeated:
       if field.is_extension:
         sub_message = message.Extensions[field].add()
       elif is_map_entry:
@@ -1142,7 +1154,7 @@ class _Parser(object):
     else:
       raise RuntimeError('Unknown field type %d' % field.type)
 
-    if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
+    if field.is_repeated:
       if field.is_extension:
         message.Extensions[field].append(value)
       else:
@@ -1165,7 +1177,9 @@ class _Parser(object):
           else:
             # For field that doesn't represent presence, try best effort to
             # check multiple scalars by compare to default values.
-            duplicate_error = bool(getattr(message, field.name))
+            duplicate_error = not decoder.IsDefaultScalarValue(
+                getattr(message, field.name)
+            )
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(
@@ -1193,7 +1207,7 @@ class _Parser(object):
         ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
       self._DetectSilentMarker(tokenizer, immediate_message_type, field_name)
       if tokenizer.LookingAt('['):
-        self._SkipRepeatedFieldValue(tokenizer)
+        self._SkipRepeatedFieldValue(tokenizer, immediate_message_type)
       else:
         self._SkipFieldValue(tokenizer)
     else:
@@ -1268,18 +1282,22 @@ class _Parser(object):
         not tokenizer.TryConsumeFloat()):
       raise ParseError('Invalid field value: ' + tokenizer.token)
 
-  def _SkipRepeatedFieldValue(self, tokenizer):
+  def _SkipRepeatedFieldValue(self, tokenizer, immediate_message_type):
     """Skips over a repeated field value.
 
     Args:
       tokenizer: A tokenizer to parse the field value.
     """
     tokenizer.Consume('[')
-    if not tokenizer.LookingAt(']'):
-      self._SkipFieldValue(tokenizer)
-      while tokenizer.TryConsume(','):
-        self._SkipFieldValue(tokenizer)
-    tokenizer.Consume(']')
+    if not tokenizer.TryConsume(']'):
+      while True:
+        if tokenizer.LookingAt('<') or tokenizer.LookingAt('{'):
+          self._SkipFieldMessage(tokenizer, immediate_message_type)
+        else:
+          self._SkipFieldValue(tokenizer)
+        if tokenizer.TryConsume(']'):
+          break
+        tokenizer.Consume(',')
 
 
 class Tokenizer(object):
@@ -1789,6 +1807,8 @@ def ParseFloat(text):
   Raises:
     ValueError: If a floating point number couldn't be parsed.
   """
+  if _FLOAT_OCTAL_PREFIX.match(text):
+    raise ValueError('Invalid octal float: %s' % text)
   try:
     # Assume Python compatible syntax.
     return float(text)
@@ -1804,7 +1824,7 @@ def ParseFloat(text):
     else:
       # assume '1.0f' format
       try:
-        return float(text.rstrip('f'))
+        return float(text.rstrip('fF'))
       except ValueError:
         raise ValueError("Couldn't parse float: %s" % text)
 

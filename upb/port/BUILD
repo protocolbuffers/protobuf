@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
@@ -13,6 +14,7 @@ cc_library(
     name = "port",
     hdrs = [
         "atomic.h",
+        "sanitizers.h",
         "vsnprintf_compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,

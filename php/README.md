@@ -14,13 +14,8 @@ generation functionality.
 
 ## Requirements
 
-Using the PHP runtime library requires:
-
--   C extension: PHP 7.x, 8.x
--   [PHP package](http://php.net/downloads.php): PHP 7.4+
-
-For information on how the support levels for PHP versions will change over
-time, see
+For information on supported language versions and how the support levels for
+PHP versions will change over time, see
 [Supported PHP versions](https://cloud.google.com/php/getting-started/supported-php-versions).
 
 ## Installation
@@ -29,12 +24,8 @@ time, see
 
 #### Prerequirements
 
-To install the c extension, the following tools are needed:
-* libtool
-* make
-* gcc
-* pear
-* pecl
+To install the c extension, the following tools are needed: * gcc * libtool *
+make * pear * pecl * phpize
 
 On Ubuntu, you can install them with:
 ```

@@ -32,8 +32,8 @@ class ServiceGenerator {
       const absl::flat_hash_map<absl::string_view, std::string>& vars,
       const Options& options)
       : descriptor_(descriptor), options_(&options), vars_(vars) {
-    vars_["classname"] = descriptor_->name();
-    vars_["full_name"] = descriptor_->full_name();
+    vars_["classname"] = std::string(descriptor_->name());
+    vars_["full_name"] = std::string(descriptor_->full_name());
   }
 
   ServiceGenerator(const ServiceGenerator&) = delete;

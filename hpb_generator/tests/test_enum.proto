@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-syntax = "proto3";
+edition = "2023";
 
 package hpb_unittest;
 
@@ -14,4 +14,15 @@ enum TestEnum {
   DEVICE_KEYBOARD = 1;
   DEVICE_MOUSE = 2;
   DEVICE_MONITOR = 3;
+}
+
+message ContainingMessage {
+  message OtherMessage {
+    enum NestedTestEnum {
+      DEVICE_UNKNOWN = 0;
+      DEVICE_KEYBOARD = 1;
+      DEVICE_MOUSE = 2;
+      DEVICE_MONITOR = 3;
+    }
+  }
 }

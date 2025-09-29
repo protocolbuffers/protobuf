@@ -16,8 +16,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* msg;  // Owning ref to our parent pessage.
+  // clang-format on
 } PyUpb_ExtensionDict;
 
 PyObject* PyUpb_ExtensionDict_New(PyObject* msg) {
@@ -99,6 +101,7 @@ static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
   if (!msg) return 0;
   if (upb_FieldDef_IsRepeated(f)) {
     upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
+    if (!val.array_val) return 0;
     return upb_Array_Size(val.array_val) > 0;
   } else {
     return upb_Message_HasFieldByDef(msg, f);
@@ -168,8 +171,10 @@ static PyType_Spec PyUpb_ExtensionDict_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* msg;
+  // clang-format on
   size_t iter;
 } PyUpb_ExtensionIterator;
 

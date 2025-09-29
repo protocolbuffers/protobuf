@@ -349,6 +349,11 @@ static google_protobuf_EnumDescriptorProto* enumdef_toproto(upb_ToProto_Context*
                 upb_EnumDef_Options(e));
   }
 
+  UPB_DESC(SymbolVisibility) visibility = upb_EnumDef_Visibility(e);
+  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+    google_protobuf_EnumDescriptorProto_set_visibility(proto, visibility);
+  }
+
   return proto;
 }
 
@@ -442,6 +447,11 @@ static google_protobuf_DescriptorProto* msgdef_toproto(upb_ToProto_Context* ctx,
   if (upb_MessageDef_HasOptions(m)) {
     SET_OPTIONS(proto, DescriptorProto, MessageOptions,
                 upb_MessageDef_Options(m));
+  }
+
+  UPB_DESC(SymbolVisibility) visibility = upb_MessageDef_Visibility(m);
+  if (visibility != UPB_DESC(VISIBILITY_UNSET)) {
+    google_protobuf_DescriptorProto_set_visibility(proto, visibility);
   }
 
   return proto;

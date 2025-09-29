@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_FIELD_H__
 
 #include <string>
 
@@ -66,7 +66,6 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
       io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 
@@ -85,11 +84,8 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
       io::Printer* printer, const char* method_prototype,
       const char* regular_case, const char* nested_builder_case,
       const char* trailing_code,
-      absl::optional<io::AnnotationCollector::Semantic> semantic =
-          absl::nullopt) const;
-
- private:
-  void GenerateKotlinOrNull(io::Printer* printer) const;
+      std::optional<io::AnnotationCollector::Semantic> semantic =
+          std::nullopt) const;
 };
 
 class ImmutableMessageOneofFieldGenerator
@@ -143,7 +139,6 @@ class RepeatedImmutableMessageFieldGenerator
       io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 
@@ -155,8 +150,8 @@ class RepeatedImmutableMessageFieldGenerator
       io::Printer* printer, const char* method_prototype,
       const char* regular_case, const char* nested_builder_case,
       const char* trailing_code,
-      absl::optional<io::AnnotationCollector::Semantic> semantic =
-          absl::nullopt) const override;
+      std::optional<io::AnnotationCollector::Semantic> semantic =
+          std::nullopt) const override;
 };
 
 }  // namespace java
@@ -164,4 +159,4 @@ class RepeatedImmutableMessageFieldGenerator
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_FIELD_H__

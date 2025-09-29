@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
@@ -24,7 +25,6 @@
 #include "google/protobuf/pyext/repeated_composite_container.h"
 #include "google/protobuf/pyext/repeated_scalar_container.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "absl/strings/string_view.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -66,8 +66,10 @@ static Py_ssize_t len(ExtensionDict* self) {
 }
 
 struct ExtensionIterator {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   Py_ssize_t index;
+  // clang-format on
   std::vector<const FieldDescriptor*> fields;
 
   // Owned reference, to keep the FieldDescriptors alive.
@@ -116,7 +118,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return nullptr;
   }
 
-  if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
+  if (!descriptor->is_repeated() &&
       descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
     return cmessage::InternalGetScalar(self->parent->message, descriptor);
   }
@@ -128,11 +130,11 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return iterator->second->AsPyObject();
   }
 
-  if (descriptor->label() != FieldDescriptor::LABEL_REPEATED &&
+  if (!descriptor->is_repeated() &&
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // TODO: consider building the class on the fly!
-    ContainerBase* sub_message = cmessage::InternalGetSubMessage(
-        self->parent, descriptor);
+    ContainerBase* sub_message =
+        cmessage::InternalGetSubMessage(self->parent, descriptor);
     if (sub_message == nullptr) {
       return nullptr;
     }
@@ -140,7 +142,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
     return sub_message->AsPyObject();
   }
 
-  if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
+  if (descriptor->is_repeated()) {
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // On the fly message class creation is needed to support the following
       // situation:
@@ -156,7 +158,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
           cmessage::GetFactoryForMessage(self->parent),
           descriptor->message_type());
       ScopedPyObjectPtr message_class_handler(
-        reinterpret_cast<PyObject*>(message_class));
+          reinterpret_cast<PyObject*>(message_class));
       if (message_class == nullptr) {
         return nullptr;
       }
@@ -168,8 +170,8 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       (*self->parent->composite_fields)[descriptor] = py_container;
       return py_container->AsPyObject();
     } else {
-      ContainerBase* py_container = repeated_scalar_container::NewContainer(
-          self->parent, descriptor);
+      ContainerBase* py_container =
+          repeated_scalar_container::NewContainer(self->parent, descriptor);
       if (py_container == nullptr) {
         return nullptr;
       }
@@ -196,7 +198,8 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
 
   if (descriptor->label() != FieldDescriptor::LABEL_OPTIONAL ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    PyErr_SetString(PyExc_TypeError, "Extension is repeated and/or composite "
+    PyErr_SetString(PyExc_TypeError,
+                    "Extension is repeated and/or composite "
                     "type");
     return -1;
   }
@@ -205,6 +208,21 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return -1;
   }
   return 0;
+}
+
+static const FieldDescriptor* FindMessageSetExtension(
+    const Descriptor* message_descriptor) {
+  for (int i = 0; i < message_descriptor->extension_count(); i++) {
+    const FieldDescriptor* extension = message_descriptor->extension(i);
+    if (extension->is_extension() &&
+        extension->containing_type()->options().message_set_wire_format() &&
+        extension->type() == FieldDescriptor::TYPE_MESSAGE &&
+        extension->label() == FieldDescriptor::LABEL_OPTIONAL &&
+        extension->message_type() == message_descriptor) {
+      return extension;
+    }
+  }
+  return nullptr;
 }
 
 PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
@@ -221,14 +239,8 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
     // Is is the name of a message set extension?
     const Descriptor* message_descriptor =
         pool->pool->FindMessageTypeByName(absl::string_view(name, name_size));
-    if (message_descriptor && message_descriptor->extension_count() > 0) {
-      const FieldDescriptor* extension = message_descriptor->extension(0);
-      if (extension->is_extension() &&
-          extension->containing_type()->options().message_set_wire_format() &&
-          extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-          extension->label() == FieldDescriptor::LABEL_OPTIONAL) {
-        message_extension = extension;
-      }
+    if (message_descriptor) {
+      message_extension = FindMessageSetExtension(message_descriptor);
     }
   }
   if (message_extension == nullptr) {
@@ -283,7 +295,7 @@ static int Contains(PyObject* _self, PyObject* key) {
   return 0;
 }
 
-ExtensionDict* NewExtensionDict(CMessage *parent) {
+ExtensionDict* NewExtensionDict(CMessage* parent) {
   ExtensionDict* self = reinterpret_cast<ExtensionDict*>(
       PyType_GenericAlloc(&ExtensionDict_Type, 0));
   if (self == nullptr) {
@@ -329,12 +341,12 @@ static PySequenceMethods SeqMethods = {
 };
 
 static PyMappingMethods MpMethods = {
-  (lenfunc)len,                /* mp_length */
-  (binaryfunc)subscript,       /* mp_subscript */
-  (objobjargproc)ass_subscript,/* mp_ass_subscript */
+    (lenfunc)len,                 /* mp_length */
+    (binaryfunc)subscript,        /* mp_subscript */
+    (objobjargproc)ass_subscript, /* mp_ass_subscript */
 };
 
-#define EDMETHOD(name, args, doc) { #name, (PyCFunction)name, args, doc }
+#define EDMETHOD(name, args, doc) {#name, (PyCFunction)name, args, doc}
 static PyMethodDef Methods[] = {
     EDMETHOD(_FindExtensionByName, METH_O, "Finds an extension by name."),
     EDMETHOD(_FindExtensionByNumber, METH_O,

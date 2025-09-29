@@ -428,30 +428,6 @@
   XCTAssertEqual(varint, (uint64_t)Message3_Enum_Extra3);
   [ufs release];
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
-  GPBUnknownFieldSet *unknownFields = msg.unknownFields;
-
-  XCTAssertEqual([unknownFields countOfFields], 3U);
-  XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_OptionalEnum]);
-  XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_RepeatedEnumArray]);
-  XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_OneofEnum]);
-
-  GPBUnknownField *field = [unknownFields getField:Message2_FieldNumber_OptionalEnum];
-  XCTAssertEqual(field.varintList.count, 1U);
-  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)Message3_Enum_Extra3);
-
-  field = [unknownFields getField:Message2_FieldNumber_RepeatedEnumArray];
-  XCTAssertEqual(field.varintList.count, 1U);
-  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)Message3_Enum_Extra3);
-
-  field = [unknownFields getField:Message2_FieldNumber_OneofEnum];
-  XCTAssertEqual(field.varintList.count, 1U);
-  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)Message3_Enum_Extra3);
-
-#pragma clang diagnostic pop
-
   [msg release];
   [orig release];
 }
@@ -1415,10 +1391,6 @@
   GPBUnknownFields *ufs = [[GPBUnknownFields alloc] initFromMessage:msg1];
   XCTAssertEqual(ufs.count, 1U);
   [ufs release];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  XCTAssertEqual(msg1.unknownFields.countOfFields, 1U);
-#pragma clang diagnostic pop
 
   data = [msg1 data];
   TestEnumMapPlusExtra *msg2 = [TestEnumMapPlusExtra parseFromData:data error:NULL];
@@ -1433,10 +1405,6 @@
   ufs = [[GPBUnknownFields alloc] initFromMessage:msg2];
   XCTAssertTrue(ufs.empty);
   [ufs release];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  XCTAssertEqual(msg2.unknownFields.countOfFields, 0U);
-#pragma clang diagnostic pop
 
   XCTAssertEqualObjects(orig, msg2);
 

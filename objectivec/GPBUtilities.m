@@ -18,7 +18,6 @@
 #import "GPBMessage.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField.h"
-#import "GPBUnknownFieldSet.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFields.h"
 #import "GPBUtilities.h"
@@ -178,7 +177,7 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
 }
 
 // -- About Version Checks --
-// There's actually 3 places these checks all come into play:
+// There's actually a few places these checks all come into play:
 // 1. When the generated source is compile into .o files, the header check
 //    happens. This is checking the protoc used matches the library being used
 //    when making the .o.
@@ -186,10 +185,20 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
 //    the header check comes into play again. But this time it is checking that
 //    the current library headers being used still support/match the ones for
 //    the generated code.
-// 3. At runtime the final check here (GPBCheckRuntimeVersionsInternal), is
+// 3. The generated code references an exported
+//    GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_*, thus ensuring at
+//    link/runtime that a matching version of the runtime is still being used.
+// 4. At runtime the final check here (GPBCheckRuntimeVersionsInternal), is
 //    called from the generated code passing in values captured when the
 //    generated code's .o was made. This checks that at runtime the generated
 //    code and runtime library match.
+
+const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310 = 40310;
+const int32_t GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40311 = 40311;
+
+#if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
+#error "Time to remove this and GPB_DEBUG_CHECK_RUNTIME_VERSIONS()"
+#else
 
 void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
   // NOTE: This is passing the value captured in the compiled code to check
@@ -211,36 +220,9 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
                        @" supports back to %d!",
                        objcRuntimeVersion, GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION];
   }
-#if defined(DEBUG) && DEBUG
-  if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_VERSION) {
-    // This is a version we haven't generated for yet.
-    NSLog(@"WARNING: Code from generated Objective-C proto from an older version of the library is "
-          @"being used. Please regenerate with the current version as the code will stop working "
-          @"in a future release.");
-  }
-#endif
 }
 
-void GPBRuntimeMatchFailure(void) {
-  [NSException raise:NSInternalInconsistencyException
-              format:@"Proto generation source appears to have been from a"
-                     @" version newer that this runtime (%d).",
-                     GOOGLE_PROTOBUF_OBJC_VERSION];
-}
-
-// This api is no longer used for version checks. 30001 is the last version
-// using this old versioning model. When that support is removed, this function
-// can be removed (along with the declaration in GPBUtilities_PackagePrivate.h).
-void GPBCheckRuntimeVersionInternal(int32_t version) {
-  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION <= 30001,
-                           time_to_remove_this_old_version_shim);
-  if (version != GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
-    [NSException raise:NSInternalInconsistencyException
-                format:@"Linked to ProtocolBuffer runtime version %d,"
-                       @" but code compiled with version %d!",
-                       GOOGLE_PROTOBUF_OBJC_GEN_VERSION, version];
-  }
-}
+#endif  // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 30007
 
 BOOL GPBMessageHasFieldNumberSet(GPBMessage *self, uint32_t fieldNumber) {
   GPBDescriptor *descriptor = [self descriptor];
@@ -300,7 +282,7 @@ BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber) {
     return hasIvar;
   } else {
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
-    uint32_t byteIndex = idx / 32;
+    uint32_t byteIndex = (uint32_t)idx / 32;
     uint32_t bitMask = (1U << (idx % 32));
     BOOL hasIvar = (self->messageStorage_->_has_storage_[byteIndex] & bitMask) ? YES : NO;
     return hasIvar;
@@ -321,7 +303,7 @@ void GPBSetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber, BOOL val
   } else {
     NSCAssert(idx != GPBNoHasBit, @"Invalid has bit.");
     uint32_t *has_storage = self->messageStorage_->_has_storage_;
-    uint32_t byte = idx / 32;
+    uint32_t byte = (uint32_t)idx / 32;
     uint32_t bitMask = (1U << (idx % 32));
     if (value) {
       has_storage[byte] |= bitMask;
@@ -669,8 +651,7 @@ int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field) {
   int32_t result = GPBGetMessageInt32Field(self, field);
   // If this is presevering unknown enums, make sure the value is valid before
   // returning it.
-
-  if (!GPBFieldIsClosedEnum(field) && ![field isValidEnumValue:result]) {
+  if (!field.enumDescriptor.isClosed && ![field isValidEnumValue:result]) {
     result = kGPBUnrecognizedEnumeratorValue;
   }
   return result;
@@ -1894,7 +1875,7 @@ static void AppendTextFormatForMessageExtensionRange(GPBMessage *message, NSArra
 
         FIELD_CASE(Int32, int32_t, intValue, @"%d")
         FIELD_CASE(SInt32, int32_t, intValue, @"%d")
-        FIELD_CASE(SFixed32, int32_t, unsignedIntValue, @"%d")
+        FIELD_CASE(SFixed32, int32_t, intValue, @"%d")
         FIELD_CASE(UInt32, uint32_t, unsignedIntValue, @"%u")
         FIELD_CASE(Fixed32, uint32_t, unsignedIntValue, @"%u")
         FIELD_CASE(Int64, int64_t, longLongValue, @"%lld")
@@ -2004,13 +1985,6 @@ static void AppendTextFormatForUnknownFields(GPBUnknownFields *ufs, NSMutableStr
           [toStr appendFormat:@"%@}\n", lineIndent];
         }
       } break;
-      case GPBUnknownFieldTypeLegacy:
-#if defined(DEBUG) && DEBUG
-        NSCAssert(
-            NO,
-            @"Internal error: Shouldn't have gotten a legacy field type in the unknown fields.");
-#endif
-        break;
     }
   }
   [subIndent release];
@@ -2054,45 +2028,6 @@ NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *lineIndent) {
   NSMutableString *buildString = [NSMutableString string];
   AppendTextFormatForMessage(message, buildString, lineIndent);
   return buildString;
-}
-
-NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet, NSString *lineIndent) {
-  if (unknownSet == nil) return @"";
-  if (lineIndent == nil) lineIndent = @"";
-
-  NSMutableString *result = [NSMutableString string];
-  for (GPBUnknownField *field in [unknownSet sortedFields]) {
-    int32_t fieldNumber = [field number];
-
-#define PRINT_LOOP(PROPNAME, CTYPE, FORMAT)                                                    \
-  [field.PROPNAME                                                                              \
-      enumerateValuesWithBlock:^(CTYPE value, __unused NSUInteger idx, __unused BOOL * stop) { \
-        [result appendFormat:@"%@%d: " FORMAT "\n", lineIndent, fieldNumber, value];           \
-      }];
-
-    PRINT_LOOP(varintList, uint64_t, "%llu");
-    PRINT_LOOP(fixed32List, uint32_t, "0x%X");
-    PRINT_LOOP(fixed64List, uint64_t, "0x%llX");
-
-#undef PRINT_LOOP
-
-    // NOTE: C++ version of TextFormat tries to parse this as a message
-    // and print that if it succeeds.
-    for (NSData *data in field.lengthDelimitedList) {
-      [result appendFormat:@"%@%d: ", lineIndent, fieldNumber];
-      AppendBufferAsString(data, result);
-      [result appendString:@"\n"];
-    }
-
-    for (GPBUnknownFieldSet *subUnknownSet in field.groupList) {
-      [result appendFormat:@"%@%d: {\n", lineIndent, fieldNumber];
-      NSString *subIndent = [lineIndent stringByAppendingString:@"  "];
-      NSString *subUnknownSetStr = GPBTextFormatForUnknownFieldSet(subUnknownSet, subIndent);
-      [result appendString:subUnknownSetStr];
-      [result appendFormat:@"%@}\n", lineIndent];
-    }
-  }
-  return result;
 }
 
 // Helpers to decode a varint. Not using GPBCodedInputStream version because
@@ -2206,12 +2141,12 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key, NSStri
   const uint8_t kOpAllUpper = 0b01100000;
   const uint8_t kSegmentLenMask = 0b00011111;
 
-  NSInteger i = 0;
+  NSUInteger i = 0;
   for (; *scan != 0; ++scan) {
     if (*scan & kAddUnderscore) {
       [result appendString:@"_"];
     }
-    int segmentLen = *scan & kSegmentLenMask;
+    NSUInteger segmentLen = *scan & kSegmentLenMask;
     uint8_t decodeOp = *scan & kOpMask;
 
     // Do op specific handling of the first character.
@@ -2229,7 +2164,7 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key, NSStri
     // else op == kOpAsIs || op == kOpAllUpper
 
     // Now pull over the rest of the length for this segment.
-    for (int x = 0; x < segmentLen; ++x) {
+    for (NSUInteger x = 0; x < segmentLen; ++x) {
       unichar c = [inputStr characterAtIndex:(i + x)];
       if (decodeOp == kOpAllUpper) {
         [result appendFormat:@"%c", toupper((char)c)];

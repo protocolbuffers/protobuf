@@ -89,6 +89,8 @@ public class LazyFieldLite {
    */
   private volatile ByteString memoizedBytes;
 
+  private volatile boolean corrupted;
+
   /** Constructs a LazyFieldLite with bytes that will be parsed lazily. */
   public LazyFieldLite(ExtensionRegistryLite extensionRegistry, ByteString bytes) {
     checkArguments(extensionRegistry, bytes);
@@ -110,7 +112,8 @@ public class LazyFieldLite {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(
+          Object o) {
     if (this == o) {
       return true;
     }
@@ -151,7 +154,7 @@ public class LazyFieldLite {
    */
   public boolean containsDefaultInstance() {
     return memoizedBytes == ByteString.EMPTY
-        || value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY);
+        || (value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY));
   }
 
   /**
@@ -363,6 +366,32 @@ public class LazyFieldLite {
     }
   }
 
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded message stored in lazy
+   * field.
+   */
+  public int computeSizeNoTag() {
+    return CodedOutputStream.computeLengthDelimitedFieldSize(getSerializedSize());
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode an embedded message in lazy field,
+   * including tag.
+   */
+  public int computeSize(final int fieldNumber) {
+    return CodedOutputStream.computeTagSize(fieldNumber) + computeSizeNoTag();
+  }
+
+  /**
+   * Compute the number of bytes that would be needed to encode a lazily parsed MessageSet extension
+   * field to the stream. For historical reasons, the wire format differs from normal fields.
+   */
+  public int computeMessageSetExtensionSize(final int fieldNumber) {
+    return CodedOutputStream.computeTagSize(WireFormat.MESSAGE_SET_ITEM) * 2
+        + CodedOutputStream.computeUInt32Size(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber)
+        + computeSize(WireFormat.MESSAGE_SET_MESSAGE);
+  }
+
   /** Writes this lazy field into a {@link Writer}. */
   void writeTo(Writer writer, int fieldNumber) throws IOException {
     if (memoizedBytes != null) {
@@ -399,6 +428,7 @@ public class LazyFieldLite {
       } catch (InvalidProtocolBufferException e) {
         // Nothing is logged and no exceptions are thrown. Clients will be unaware that this proto
         // was invalid.
+        this.corrupted = true;
         this.value = defaultInstance;
         this.memoizedBytes = ByteString.EMPTY;
       }
@@ -412,5 +442,10 @@ public class LazyFieldLite {
     if (bytes == null) {
       throw new NullPointerException("found null ByteString");
     }
+  }
+
+  /** Returns whether the lazy field was corrupted and replaced with an empty message. */
+  boolean isCorrupted() {
+    return corrupted;
   }
 }

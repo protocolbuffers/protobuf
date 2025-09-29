@@ -7,6 +7,8 @@ require 'test/unit'
 require 'objspace'
 require 'test_import_pb'
 
+return if defined?(JRUBY_VERSION) || Google::Protobuf::IMPLEMENTATION != :NATIVE
+
 $is_64bit = Google::Protobuf::Internal::SIZEOF_LONG == 8
 
 class MemoryTest < Test::Unit::TestCase

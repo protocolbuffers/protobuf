@@ -56,6 +56,22 @@ def GetMessageClassesForFiles(files, pool):
   This will find and resolve dependencies, failing if the descriptor
   pool cannot satisfy them.
 
+  This will not return the classes for nested types within those classes, for
+  those, use GetMessageClass() on the nested types within their containing
+  messages.
+
+  For example, for the message:
+
+  message NestedTypeMessage {
+    message NestedType {
+      string data = 1;
+    }
+    NestedType nested = 1;
+  }
+
+  NestedTypeMessage will be in the result, but not
+  NestedTypeMessage.NestedType.
+
   Args:
     files: The file names to extract messages from.
     pool: The descriptor pool to find the files including the dependent files.
@@ -141,69 +157,6 @@ class MessageFactory(object):
   def __init__(self, pool=None):
     """Initializes a new factory."""
     self.pool = pool or descriptor_pool.DescriptorPool()
-
-  def GetPrototype(self, descriptor):
-    """Obtains a proto2 message class based on the passed in descriptor.
-
-    Passing a descriptor with a fully qualified name matching a previous
-    invocation will cause the same class to be returned.
-
-    Args:
-      descriptor: The descriptor to build from.
-
-    Returns:
-      A class describing the passed in descriptor.
-    """
-    warnings.warn(
-        'MessageFactory class is deprecated. Please use '
-        'GetMessageClass() instead of MessageFactory.GetPrototype. '
-        'MessageFactory class will be removed after 2024.',
-        stacklevel=2,
-    )
-    return GetMessageClass(descriptor)
-
-  def CreatePrototype(self, descriptor):
-    """Builds a proto2 message class based on the passed in descriptor.
-
-    Don't call this function directly, it always creates a new class. Call
-    GetMessageClass() instead.
-
-    Args:
-      descriptor: The descriptor to build from.
-
-    Returns:
-      A class describing the passed in descriptor.
-    """
-    warnings.warn(
-        'Directly call CreatePrototype is wrong. Please use '
-        'GetMessageClass() method instead. Directly use '
-        'CreatePrototype will raise error after July 2023.',
-        stacklevel=2,
-    )
-    return _InternalCreateMessageClass(descriptor)
-
-  def GetMessages(self, files):
-    """Gets all the messages from a specified file.
-
-    This will find and resolve dependencies, failing if the descriptor
-    pool cannot satisfy them.
-
-    Args:
-      files: The file names to extract messages from.
-
-    Returns:
-      A dictionary mapping proto names to the message classes. This will include
-      any dependent messages as well as any messages defined in the same file as
-      a specified message.
-    """
-    warnings.warn(
-        'MessageFactory class is deprecated. Please use '
-        'GetMessageClassesForFiles() instead of '
-        'MessageFactory.GetMessages(). MessageFactory class '
-        'will be removed after 2024.',
-        stacklevel=2,
-    )
-    return GetMessageClassesForFiles(files, self.pool)
 
 
 def GetMessages(file_protos, pool=None):

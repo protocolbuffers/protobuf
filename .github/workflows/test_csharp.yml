@@ -19,19 +19,19 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
 
       # TODO Run this with Bazel once codegen is handled properly.
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:6.4.0-3.1.415-6.0.100-08714ed7a713068c8418003a2d95f423d4b1eac9
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:8.0.1-3.1.415-6.0.100-b77fdae6d4771789dfc66a56bf8d806354e8011a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: /bin/bash
           command: >-
-            -c "
+            -cex "
             cd csharp &&
             dotnet restore src/Google.Protobuf.sln &&
             dotnet build -c Release src/Google.Protobuf.sln &&
@@ -41,19 +41,19 @@ jobs:
         run: sudo rm -rf _build .repository-cache
 
       - name: Run conformance tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v3
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:6.4.0-3.1.415-6.0.100-08714ed7a713068c8418003a2d95f423d4b1eac9
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:8.0.1-3.1.415-6.0.100-b77fdae6d4771789dfc66a56bf8d806354e8011a
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: csharp_linux
           bazel: test //csharp:conformance_test --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=/home/bazel
 
   windows:
     name: Windows
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -62,18 +62,10 @@ jobs:
         with:
           dotnet-version: '6.0.x'
 
-      # Workaround for incompatibility between gcloud and windows-2019 runners.
-      - name: Install Python
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
-        with:
-          python-version: '3.9'
-      - name: Use custom python for gcloud
-        run: echo "CLOUDSDK_PYTHON=${Python3_ROOT_DIR}\\python3" >> $GITHUB_ENV
-        shell: bash
-
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v3
+        uses: protocolbuffers/protobuf-ci/bash@v4
         with:
+          bazel-version: 8.0.1
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
             dotnet build csharp/src/Google.Protobuf.sln
@@ -84,14 +76,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v3
+        uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Build protobuf C# tests under x86_64 docker image
         # Tests are built "dotnet publish" because we want all the dependencies to the copied to the destination directory
         # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@v4
         with:
           image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -108,7 +100,7 @@ jobs:
         #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
         #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
         #   we just run map the user's home to a throwaway temporary directory
-        uses: protocolbuffers/protobuf-ci/docker@v3
+        uses: protocolbuffers/protobuf-ci/docker@v4
         with:
           image: mcr.microsoft.com/dotnet/sdk:6.0.100-bullseye-slim-arm64v8
           skip-staleness-check: true

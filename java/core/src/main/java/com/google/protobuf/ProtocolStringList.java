@@ -15,6 +15,9 @@ import java.util.List;
  * either ByteStrings or Strings (see {@link LazyStringArrayList}) depending on how the value was
  * initialized or last read, and it is often more efficient to deal with lists of ByteStrings when
  * handling protos that have been deserialized from bytes.
+ *
+ * <p><b>Note:</b> most users will not need to use this interface directly. If you don't call {@link
+ * #asByteStringList()}, simply use {@code List<String>} instead.
  */
 public interface ProtocolStringList extends List<String> {
 

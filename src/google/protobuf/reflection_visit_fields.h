@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/descriptor.h"
@@ -13,6 +14,7 @@
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/reflection.h"
@@ -49,8 +51,6 @@ inline FieldMask operator|(FieldMask lhs, FieldMask rhs) {
                                 static_cast<uint32_t>(rhs));
 }
 
-#ifdef __cpp_if_constexpr
-
 template <typename MessageT, typename CallbackFn>
 void VisitFields(MessageT& message, CallbackFn&& func,
                  FieldMask mask = FieldMask::kAll);
@@ -85,7 +85,7 @@ class ReflectionVisit final {
 };
 
 inline bool ShouldVisit(FieldMask mask, FieldDescriptor::CppType cpptype) {
-  if (PROTOBUF_PREDICT_TRUE(mask == FieldMask::kAll)) return true;
+  if (ABSL_PREDICT_TRUE(mask == FieldMask::kAll)) return true;
   return (static_cast<uint32_t>(mask) & (1 << cpptype)) != 0;
 }
 
@@ -112,15 +112,15 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
     if (field->is_repeated()) {
       switch (field->type()) {
-#define PROTOBUF_HANDLE_REPEATED_CASE(TYPE, CPPTYPE, NAME)                  \
-  case FieldDescriptor::TYPE_##TYPE: {                                      \
-    ABSL_DCHECK(!field->is_map());                                          \
-    const auto& rep =                                                       \
-        reflection->GetRawNonOneof<RepeatedField<CPPTYPE>>(message, field); \
-    if (rep.size() == 0) continue;                                          \
-    func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{              \
-        reflection, message, field, rep});                                  \
-    break;                                                                  \
+#define PROTOBUF_HANDLE_REPEATED_CASE(TYPE, CPPTYPE, NAME)          \
+  case FieldDescriptor::TYPE_##TYPE: {                              \
+    ABSL_DCHECK(!field->is_map());                                  \
+    const auto& rep =                                               \
+        reflection->GetRaw<RepeatedField<CPPTYPE>>(message, field); \
+    if (rep.size() == 0) continue;                                  \
+    func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{      \
+        reflection, message, field, rep});                          \
+    break;                                                          \
   }
 
         PROTOBUF_HANDLE_REPEATED_CASE(DOUBLE, double, Double);
@@ -140,17 +140,16 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
 #define PROTOBUF_HANDLE_REPEATED_PTR_CASE(TYPE, CPPTYPE, NAME)                 \
   case FieldDescriptor::TYPE_##TYPE: {                                         \
-    if (PROTOBUF_PREDICT_TRUE(!field->is_map())) {                             \
+    if (ABSL_PREDICT_TRUE(!field->is_map())) {                                 \
       /* Handle repeated fields. */                                            \
-      const auto& rep = reflection->GetRawNonOneof<RepeatedPtrField<CPPTYPE>>( \
-          message, field);                                                     \
+      const auto& rep =                                                        \
+          reflection->GetRaw<RepeatedPtrField<CPPTYPE>>(message, field);       \
       if (rep.size() == 0) continue;                                           \
       func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{               \
           reflection, message, field, rep});                                   \
     } else {                                                                   \
       /* Handle map fields. */                                                 \
-      const auto& map =                                                        \
-          reflection->GetRawNonOneof<MapFieldBase>(message, field);            \
+      const auto& map = reflection->GetRaw<MapFieldBase>(message, field);      \
       if (map.size() == 0) continue; /* NOLINT */                              \
       const Descriptor* desc = field->message_type();                          \
       func(internal::MapDynamicFieldInfo<MessageT>{reflection, message, field, \
@@ -165,18 +164,19 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING:
-#define PROTOBUF_IMPL_STRING_CASE(CPPTYPE, NAME)                               \
-  {                                                                            \
-    const auto& rep =                                                          \
-        reflection->GetRawNonOneof<RepeatedPtrField<CPPTYPE>>(message, field); \
-    if (rep.size() == 0) continue;                                             \
-    func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{                 \
-        reflection, message, field, rep});                                     \
+#define PROTOBUF_IMPL_STRING_CASE(CPPTYPE, NAME)                       \
+  {                                                                    \
+    const auto& rep =                                                  \
+        reflection->GetRaw<RepeatedPtrField<CPPTYPE>>(message, field); \
+    if (rep.size() == 0) continue;                                     \
+    func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{         \
+        reflection, message, field, rep});                             \
   }
 
-          switch (cpp::EffectiveStringCType(field)) {
-            default:
-            case FieldOptions::STRING:
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+            case FieldDescriptor::CppStringType::kView:
+            case FieldDescriptor::CppStringType::kString:
               PROTOBUF_IMPL_STRING_CASE(std::string, String);
               break;
           }
@@ -227,13 +227,16 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
 
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
-            func(CordDynamicFieldInfo<MessageT, true>{reflection, message,
-                                                      field});
-          } else {
-            func(StringDynamicFieldInfo<MessageT, true>{reflection, message,
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              func(CordDynamicFieldInfo<MessageT, true>{reflection, message,
                                                         field});
+              break;
+            case FieldDescriptor::CppStringType::kString:
+            case FieldDescriptor::CppStringType::kView:
+              func(StringDynamicFieldInfo<MessageT, true>{reflection, message,
+                                                          field});
+              break;
           }
           break;
         }
@@ -244,12 +247,13 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
       }
     } else {
       auto index = has_bits_indices[i];
-      bool check_hasbits = has_bits && index != static_cast<uint32_t>(-1);
-      if (PROTOBUF_PREDICT_TRUE(check_hasbits)) {
+      bool check_hasbits =
+          has_bits && index != static_cast<uint32_t>(kNoHasbit);
+      if (ABSL_PREDICT_TRUE(check_hasbits)) {
         if ((has_bits[index / 32] & (1u << (index % 32))) == 0) continue;
       } else {
         // Skip if it has default values.
-        if (!reflection->HasFieldSingular(message, field)) continue;
+        if (!reflection->HasFieldWithHasbits(message, field)) continue;
       }
       switch (field->type()) {
 #define PROTOBUF_HANDLE_CASE(TYPE, NAME)                                     \
@@ -279,13 +283,16 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
           break;
         case FieldDescriptor::TYPE_BYTES:
         case FieldDescriptor::TYPE_STRING: {
-          auto ctype = cpp::EffectiveStringCType(field);
-          if (ctype == FieldOptions::CORD) {
-            func(CordDynamicFieldInfo<MessageT, false>{reflection, message,
-                                                       field});
-          } else {
-            func(StringDynamicFieldInfo<MessageT, false>{reflection, message,
+          switch (field->cpp_string_type()) {
+            case FieldDescriptor::CppStringType::kCord:
+              func(CordDynamicFieldInfo<MessageT, false>{reflection, message,
                                                          field});
+              break;
+            case FieldDescriptor::CppStringType::kString:
+            case FieldDescriptor::CppStringType::kView:
+              func(StringDynamicFieldInfo<MessageT, false>{reflection, message,
+                                                           field});
+              break;
           }
           break;
         }
@@ -494,8 +501,6 @@ template <typename CallbackFn>
 void VisitMutableMessageFields(Message& message, CallbackFn&& func) {
   ReflectionVisit::VisitMessageFields(message, std::forward<CallbackFn>(func));
 }
-
-#endif  // __cpp_if_constexpr
 
 }  // namespace internal
 }  // namespace protobuf

@@ -24,6 +24,11 @@ namespace google {
 namespace protobuf {
 namespace json {
 struct ParseOptions {
+  // Whether some legacy non-spec behaviors are accepted for bug
+  // compatibility reasons. Setting allow_legacy_nonconformant_behavior=false is
+  // recommended for new code and is expected to eventually become the default.
+  bool allow_legacy_nonconformant_behavior = true;
+
   // Whether to ignore unknown JSON fields during parsing
   bool ignore_unknown_fields = false;
 
@@ -36,6 +41,11 @@ struct ParseOptions {
 };
 
 struct PrintOptions {
+  // Whether some legacy non-spec behaviors are accepted for bug
+  // compatibility reasons. Setting allow_legacy_nonconformant_behavior=false is
+  // recommended for new code and is expected to eventually become the default.
+  bool allow_legacy_nonconformant_behavior = true;
+
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace = false;
@@ -67,6 +77,21 @@ PROTOBUF_EXPORT absl::Status MessageToJsonString(const Message& message,
 inline absl::Status MessageToJsonString(const Message& message,
                                         std::string* output) {
   return MessageToJsonString(message, output, PrintOptions());
+}
+
+// Converts from protobuf message to JSON and appends it to |json_output|. This
+// is a simple wrapper of BinaryToJsonStream(). It will use the DescriptorPool
+// of the passed-in message to resolve Any types.
+//
+// Please note that non-OK statuses are not a stable output of this API and
+// subject to change without notice.
+PROTOBUF_EXPORT absl::Status MessageToJsonStream(
+    const Message& message, io::ZeroCopyOutputStream* json_output,
+    const PrintOptions& options);
+
+inline absl::Status MessageToJsonStream(const Message& message,
+                                        io::ZeroCopyOutputStream* json_output) {
+  return MessageToJsonStream(message, json_output, PrintOptions());
 }
 
 // Converts from JSON string to protobuf message. This works equivalently to

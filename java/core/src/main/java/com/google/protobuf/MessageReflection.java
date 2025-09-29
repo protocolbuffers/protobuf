@@ -1195,8 +1195,7 @@ class MessageReflection {
       } else {
         while (input.getBytesUntilLimit() > 0) {
           final Object value =
-              WireFormat.readPrimitiveField(
-                  input, field.getLiteType(), target.getUtf8Validation(field));
+              input.readPrimitiveField(field.getLiteType(), target.getUtf8Validation(field));
           target.addRepeatedField(field, value);
         }
       }
@@ -1231,9 +1230,7 @@ class MessageReflection {
           }
           break;
         default:
-          value =
-              WireFormat.readPrimitiveField(
-                  input, field.getLiteType(), target.getUtf8Validation(field));
+          value = input.readPrimitiveField(field.getLiteType(), target.getUtf8Validation(field));
           break;
       }
 
@@ -1334,6 +1331,8 @@ class MessageReflection {
         // We haven't seen a type ID yet or we want parse message lazily.
         rawBytes = input.readBytes();
 
+      } else if (tag == WireFormat.MESSAGE_SET_ITEM_END_TAG) {
+        break;
       } else { // Unknown tag. Skip it.
         if (!input.skipField(tag)) {
           break; // End of group

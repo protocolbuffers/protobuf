@@ -10,8 +10,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_STRING_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_STRING_FIELD_H__
 
 #include <string>
 
@@ -64,7 +64,6 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
       io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 
@@ -129,7 +128,6 @@ class RepeatedImmutableStringFieldGenerator
       io::Printer* printer) const override;
   void GenerateEqualsCode(io::Printer* printer) const override;
   void GenerateHashCode(io::Printer* printer) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 };
@@ -139,4 +137,4 @@ class RepeatedImmutableStringFieldGenerator
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_STRING_FIELD_H__

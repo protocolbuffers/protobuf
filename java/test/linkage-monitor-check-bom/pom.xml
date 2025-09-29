@@ -14,7 +14,7 @@
   </description>
   <properties>
     <!--
-      This verison is ok to kept old. Linkage Monitor overrides this
+      This version is ok to kept old. Linkage Monitor overrides this
       version when checking linakage errors
     -->
     <protobuf.version>3.23.2</protobuf.version>

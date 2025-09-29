@@ -1,5 +1,11 @@
 build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
+# TODO: ErrorProne's SelfAssertions are violated in protobuf's test
+build --javacopt=-Xep:SelfAssertion:WARN
+
+# This flag works around some issues with Rust linking.
+build --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
@@ -22,13 +28,14 @@ build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
-
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/protocolbuffers/protobuf/issues/14313
-common --noenable_bzlmod
+# Abseil passes nullptr to memcmp with 0 size
+build:ubsan --copt=-fno-sanitize=nonnull-attribute
 
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
 
-common --repo_env=BAZEL_NO_APPLE_CPP_TOOLCHAIN=1
+common --enable_platform_specific_config
+
+# Use clang-cl by default on Windows (see https://github.com/protocolbuffers/protobuf/issues/20085).
+build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl

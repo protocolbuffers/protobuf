@@ -28,9 +28,7 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     : FieldGeneratorBase(descriptor, presenceIndex, options) {
 }
 
-RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {
-
-}
+RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() = default;
 
 void RepeatedEnumFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(

@@ -5,8 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use bad_names_rust_proto::*;
 use googletest::prelude::*;
+use protobuf::proto;
 
 #[gtest]
 fn test_reserved_keyword_in_accessors() {
@@ -19,6 +25,14 @@ fn test_reserved_keyword_in_accessors() {
 fn test_reserved_keyword_in_messages() {
     let _ = r#enum::new();
     let _ = Ref::new().r#const();
+}
+
+#[gtest]
+fn test_reserved_keyword_with_proto_macro() {
+    let _ = proto!(Self__mangled_because_ident_isnt_a_legal_raw_identifier {
+        r#true: false,
+        r#match: [0i32],
+    });
 }
 
 #[gtest]

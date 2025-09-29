@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_H__
 
 #include <memory>
 #include <string>
@@ -55,9 +55,6 @@ class ImmutableMessageGenerator : public MessageGenerator {
 
   // Returns an estimate of the number of bytes the printed code will compile to
   int GenerateStaticVariableInitializers(io::Printer* printer) override;
-  void GenerateKotlinDsl(io::Printer* printer) const override;
-  void GenerateKotlinMembers(io::Printer* printer) const override;
-  void GenerateTopLevelKotlinMembers(io::Printer* printer) const override;
 
  private:
   void GenerateFieldAccessorTable(io::Printer* printer, int* bytecode_estimate);
@@ -75,9 +72,6 @@ class ImmutableMessageGenerator : public MessageGenerator {
   void GenerateEqualsAndHashCode(io::Printer* printer);
   void GenerateParser(io::Printer* printer);
   void GenerateParsingConstructor(io::Printer* printer);
-  void GenerateMutableCopy(io::Printer* printer);
-  void GenerateKotlinExtensions(io::Printer* printer) const;
-  void GenerateKotlinOrNull(io::Printer* printer) const;
   void GenerateAnyMethods(io::Printer* printer);
 
   Context* context_;
@@ -90,4 +84,4 @@ class ImmutableMessageGenerator : public MessageGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_MESSAGE_H__

@@ -21,7 +21,6 @@ PROTOBUF_C_SOURCES = [
     "shared_convert.h",
     "shared_message.c",
     "shared_message.h",
-    "wrap_memcpy.c",
 ]
 
 # We copy everything into a copy/ subdirectory so that we can use the
@@ -49,12 +48,12 @@ cc_library(
     ],
     linkstatic = True,
     target_compatible_with = select({
-        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
+        "@ruby//engine:jruby": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     deps = [
         "//third_party/utf8_range",
-        "@rules_ruby//ruby/runtime:headers",
+        "@ruby//:headers",
     ],
     alwayslink = True,
 )
@@ -118,7 +117,7 @@ apple_binary(
         "-undefined,dynamic_lookup",
         "-multiply_defined,suppress",
     ],
-    minimum_os_version = "10.11",
+    minimum_os_version = "11.0",
     platform_type = "macos",
     tags = ["manual"],
     deps = [
@@ -133,7 +132,7 @@ apple_binary(
         "-undefined,dynamic_lookup",
         "-multiply_defined,suppress",
     ],
-    minimum_os_version = "10.11",
+    minimum_os_version = "11.0",
     platform_type = "macos",
     tags = ["manual"],
     deps = [

@@ -13,12 +13,14 @@
 #include <ostream>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
 #include "absl/status/status.h"
+#include "absl/status/status_matchers.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -26,7 +28,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -39,6 +40,9 @@ namespace google {
 namespace protobuf {
 namespace json_internal {
 namespace {
+
+using ::absl_testing::IsOkAndHolds;
+using ::absl_testing::StatusIs;
 using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Field;
@@ -47,27 +51,6 @@ using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::VariantWith;
-
-// TODO: Use the gtest versions once that's available in OSS.
-MATCHER_P(IsOkAndHolds, inner,
-          absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
-  if (!arg.ok()) {
-    *result_listener << arg.status();
-    return false;
-  }
-  return testing::ExplainMatchResult(inner, *arg, result_listener);
-}
-
-// absl::Status GetStatus(const absl::Status& s) { return s; }
-template <typename T>
-absl::Status GetStatus(const absl::StatusOr<T>& s) {
-  return s.status();
-}
-
-MATCHER_P(StatusIs, status,
-          absl::StrCat(".status() is ", testing::PrintToString(status))) {
-  return GetStatus(arg).code() == status;
-}
 
 #define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk))
 #define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
@@ -139,15 +122,15 @@ struct Value {
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Value& v) {
-    if (absl::holds_alternative<Null>(v.value)) {
+    if (std::holds_alternative<Null>(v.value)) {
       os << "null";
-    } else if (const auto* x = absl::get_if<bool>(&v.value)) {
+    } else if (const auto* x = std::get_if<bool>(&v.value)) {
       os << "bool:" << (*x ? "true" : "false");
-    } else if (const auto* x = absl::get_if<double>(&v.value)) {
+    } else if (const auto* x = std::get_if<double>(&v.value)) {
       os << "num:" << *x;
-    } else if (const auto* x = absl::get_if<std::string>(&v.value)) {
+    } else if (const auto* x = std::get_if<std::string>(&v.value)) {
       os << "str:" << absl::CHexEscape(*x);
-    } else if (const auto* x = absl::get_if<Array>(&v.value)) {
+    } else if (const auto* x = std::get_if<Array>(&v.value)) {
       os << "arr:[";
       bool first = true;
       for (const auto& val : *x) {
@@ -157,7 +140,7 @@ struct Value {
         os << val;
       }
       os << "]";
-    } else if (const auto* x = absl::get_if<Object>(&v.value)) {
+    } else if (const auto* x = std::get_if<Object>(&v.value)) {
       os << "obj:[";
       bool first = true;
       for (const auto& kv : *x) {
@@ -175,7 +158,7 @@ struct Value {
   struct Null {};
   using Array = std::vector<Value>;
   using Object = std::vector<std::pair<std::string, Value>>;
-  absl::variant<Null, bool, double, std::string, Array, Object> value;
+  std::variant<Null, bool, double, std::string, Array, Object> value;
 };
 
 template <typename T, typename M>
@@ -231,7 +214,7 @@ void BadInner(absl::string_view json, ParseOptions opts = {}) {
 void DoLegacy(absl::string_view json, std::function<void(const Value&)> test) {
   Do(json, [&](io::ZeroCopyInputStream* stream) {
     ParseOptions options;
-    options.allow_legacy_syntax = true;
+    options.allow_legacy_nonconformant_behavior = true;
     auto value = Value::Parse(stream, options);
     ASSERT_OK(value);
     test(*value);
@@ -242,7 +225,7 @@ void DoLegacy(absl::string_view json, std::function<void(const Value&)> test) {
 // Like Bad, but ensures json fails to parse in both modes.
 void Bad(absl::string_view json) {
   ParseOptions options;
-  options.allow_legacy_syntax = true;
+  options.allow_legacy_nonconformant_behavior = true;
   BadInner(json, options);
   BadInner(json);
 }
@@ -693,7 +676,7 @@ TEST(LexerTest, ArrayRecursion) {
     Value* v = &*value;
     for (int i = 0; i < ParseOptions::kDefaultDepth - 1; ++i) {
       ASSERT_THAT(*v, ValueIs<Value::Array>(SizeIs(1)));
-      v = &absl::get<Value::Array>(v->value)[0];
+      v = &std::get<Value::Array>(v->value)[0];
     }
     ASSERT_THAT(*v, ValueIs<Value::Array>(IsEmpty()));
   }
@@ -722,7 +705,7 @@ TEST(LexerTest, ObjectRecursion) {
     Value* v = &*value;
     for (int i = 0; i < ParseOptions::kDefaultDepth - 1; ++i) {
       ASSERT_THAT(*v, ValueIs<Value::Object>(ElementsAre(Pair("k", _))));
-      v = &absl::get<Value::Object>(v->value)[0].second;
+      v = &std::get<Value::Object>(v->value)[0].second;
     }
     ASSERT_THAT(*v, ValueIs<Value::Object>(IsEmpty()));
   }
@@ -733,6 +716,31 @@ TEST(LexerTest, ObjectRecursion) {
                 StatusIs(absl::StatusCode::kInvalidArgument));
   }
 }
+
+TEST(LexerTest, ErrorLineHasStablePrefix) {
+  absl::string_view json_with_missing_comma = R"json({
+    "foo": 0
+    "bar": null
+  })json";
+
+  io::ArrayInputStream stream(json_with_missing_comma.data(),
+                              json_with_missing_comma.size());
+  JsonLexer lex(&stream, {});
+  EXPECT_THAT(lex.SkipValue(), StatusIs(absl::StatusCode::kInvalidArgument,
+                                        HasSubstr("invalid JSON")));
+}
+
+TEST(LexerTest, ErrorOffset) {
+  absl::string_view invalid_json =
+      R"({"foo": 123,
+      "bar": "\u0000" null})";
+
+  io::ArrayInputStream stream(invalid_json.data(), invalid_json.size());
+  JsonLexer lex(&stream, {});
+  EXPECT_THAT(lex.SkipValue(),
+              StatusIs(absl::StatusCode::kInvalidArgument, HasSubstr("2:23")));
+}
+
 }  // namespace
 }  // namespace json_internal
 }  // namespace protobuf

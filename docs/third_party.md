@@ -22,6 +22,7 @@ These are projects we know about implementing Protocol Buffers for other program
 *   C: https://github.com/eerimoq/pbtools
 *   C++: https://github.com/protocolbuffers/protobuf (Google-official
     implementation)
+*   C++: https://github.com/tonda-kriz/simple-protobuf
 *   C++: https://EmbeddedProto.com
 *   C++: https://github.com/yksten/struct2x
 *   C/C++: http://spbc.sf.net/
@@ -122,6 +123,7 @@ These are projects we know about implementing Protocol Buffers for other program
 *   Solidity: https://github.com/celer-network/pb3-gen-sol
 *   Swift: https://github.com/alexeyxo/protobuf-swift
 *   Swift: https://github.com/apple/swift-protobuf/
+*   Typescript: https://github.com/improbable-eng/ts-protoc-gen
 *   Typescript: https://github.com/thesayyn/protoc-gen-ts
 *   Typescript: https://github.com/pbkit/pbkit
 *   Vala: https://launchpad.net/protobuf-vala
@@ -256,3 +258,5 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
     `clojurescript`
 *   [gRPC Federation - generates a gRPC server by writing a custom option in
     Protocol Buffers](https://github.com/mercari/grpc-federation)
+*   [Proto Boiler - A plugin to generate boilerplate code from .proto files
+    using templates](https://github.com/in4lio/protoboiler)

@@ -8,6 +8,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_SCC_H__
 #define GOOGLE_PROTOBUF_COMPILER_SCC_H__
 
+#include <algorithm>
 #include <memory>
 
 #include "absl/container/flat_hash_map.h"
@@ -34,6 +35,11 @@ struct SCC {
 
   // All messages must necessarily be in the same file.
   const FileDescriptor* GetFile() const { return descriptors[0]->file(); }
+
+  bool Contains(const Descriptor& message) const {
+    return std::find(descriptors.begin(), descriptors.end(), &message) !=
+           descriptors.end();
+  }
 };
 
 // This class is used for analyzing the SCC for each message, to ensure linear
@@ -45,6 +51,8 @@ class PROTOC_EXPORT SCCAnalyzer {
   explicit SCCAnalyzer() : index_(0) {}
   SCCAnalyzer(const SCCAnalyzer&) = delete;
   SCCAnalyzer& operator=(const SCCAnalyzer&) = delete;
+  SCCAnalyzer(SCCAnalyzer&&) = default;
+  SCCAnalyzer& operator=(SCCAnalyzer&&) = default;
 
   const SCC* GetSCC(const Descriptor* descriptor) {
     auto it = cache_.find(descriptor);

@@ -5,20 +5,40 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_CPPOPTS",
-)
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 
 package(default_applicable_licenses = ["//:license"])
 
 cc_library(
+    name = "os_macros",
+    textual_hdrs = [
+        "os_macros_undef.inc",
+        "os_macros_restore.inc",
+    ],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//src/google/protobuf:os_macros",
+    ],
+)
+
+cc_library(
     name = "template_help",
     hdrs = ["template_help.h"],
-    copts = UPB_DEFAULT_CPPOPTS,
     visibility = ["//hpb:__subpackages__"],
     deps = [
         "//hpb:ptr",
+    ],
+)
+
+cc_test(
+    name = "template_help_test",
+    srcs = ["template_help_test.cc"],
+    deps = [
+        ":template_help",
+        "//hpb_generator/tests:test_model_hpb_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -29,8 +49,8 @@ cc_library(
         "//hpb:__subpackages__",
     ],
     deps = [
-        "//upb:mem",
-        "//upb:message",
+        "//upb/mem",
+        "//upb/message",
     ],
 )
 
@@ -40,19 +60,19 @@ cc_library(
     hdrs = [
         "message_lock.h",
     ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//upb:friends"],
+    visibility = [
+        "//hpb:__subpackages__",
+    ],
     deps = [
-        "//upb:mem",
-        "//upb:message",
-        "//upb:message_copy",
-        "//upb:message_promote",
-        "//upb:mini_table",
-        "//upb:wire",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/status:statusor",
-        "@com_google_absl//absl/synchronization",
+        "//hpb:status",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/message:copy",
+        "//upb/message:promote",
+        "//upb/mini_table",
+        "//upb/wire",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -60,13 +80,18 @@ cc_test(
     name = "message_lock_test",
     srcs = ["message_lock_test.cc"],
     deps = [
+        ":message_lock",
         "//hpb",
-        "//hpb/internal:message_lock",
-        "//src/google/protobuf/compiler/hpb/tests:test_model_hpb_proto",
-        "//upb:mem",
-        "@com_google_absl//absl/hash",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "//hpb:arena",
+        "//hpb:extension",
+        "//hpb_generator/tests:test_model_hpb_proto",
+        "//upb/mem",
+        "//upb/mini_table",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/hash",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/synchronization",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )

@@ -1,13 +1,20 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_FAILURE_LIST_TRIE_NODE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_FAILURE_LIST_TRIE_NODE_H__
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 
 namespace google {
 namespace protobuf {
@@ -35,7 +42,8 @@ namespace protobuf {
 class FailureListTrieNode {
  public:
   FailureListTrieNode() : data_("") {}
-  explicit FailureListTrieNode(absl::string_view data) : data_(data) {}
+  explicit FailureListTrieNode(absl::string_view data)
+      : data_(data), is_test_name_(false) {}
 
   // Will attempt to insert a test name into the trie returning
   // absl::StatusCode::kAlreadyExists if the test name already exists or
@@ -44,12 +52,13 @@ class FailureListTrieNode {
   absl::Status Insert(absl::string_view test_name);
 
   // Returns what it matched to if it matched anything, otherwise returns
-  // absl::nullopt
-  absl::optional<std::string> WalkDownMatch(absl::string_view test_name);
+  // std::nullopt
+  std::optional<std::string> WalkDownMatch(absl::string_view test_name);
 
  private:
-  absl::string_view data_;
+  std::string data_;
   std::vector<std::unique_ptr<FailureListTrieNode>> children_;
+  bool is_test_name_;
   void InsertImpl(absl::string_view test_name);
 };
 }  // namespace protobuf

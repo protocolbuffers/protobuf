@@ -18,8 +18,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* arena;
+  // clang-format on
   // The field descriptor (upb_FieldDef*).
   // The low bit indicates whether the container is reified (see ptr below).
   //   - low bit set: repeated field is a stub (empty map, no underlying data).
@@ -88,7 +90,8 @@ PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
   return &map->ob_base;
 }
 
-void PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map) {
+upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
+                                  PyUpb_WeakMap* subobj_map, intptr_t iter) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   if (!map) {
     const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
@@ -99,11 +102,19 @@ void PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map) {
     map = upb_Map_New(arena, upb_FieldDef_CType(key_f),
                       upb_FieldDef_CType(val_f));
   }
+  if (subobj_map) {
+    PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
+  } else {
+    const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
+    upb_MessageValue msgval = {.map_val = map};
+    PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval);
+  }
   PyUpb_ObjCache_Add(map, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.map = map;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
   assert(!PyUpb_MapContainer_IsStub(self));
+  return map;
 }
 
 void PyUpb_MapContainer_Invalidate(PyObject* obj) {
@@ -117,17 +128,7 @@ upb_Map* PyUpb_MapContainer_EnsureReified(PyObject* _self) {
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   if (map) return map;  // Already writable.
 
-  const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
-  upb_Arena* arena = PyUpb_Arena_Get(self->arena);
-  const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
-  const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
-  const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
-  map =
-      upb_Map_New(arena, upb_FieldDef_CType(key_f), upb_FieldDef_CType(val_f));
-  upb_MessageValue msgval = {.map_val = map};
-  PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval);
-  PyUpb_MapContainer_Reify((PyObject*)self, map);
-  return map;
+  return PyUpb_MapContainer_Reify((PyObject*)self, NULL, NULL, 0);
 }
 
 static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
@@ -215,6 +216,48 @@ static PyObject* PyUpb_MapContainer_Clear(PyObject* _self, PyObject* key) {
   upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
   upb_Map_Clear(map);
   Py_RETURN_NONE;
+}
+
+static PyObject* PyUpb_ScalarMapContainer_Setdefault(PyObject* _self,
+                                                     PyObject* args) {
+  PyObject* key;
+  PyObject* default_value = Py_None;
+
+  if (!PyArg_UnpackTuple(args, "setdefault", 1, 2, &key, &default_value)) {
+    return NULL;
+  }
+
+  if (default_value == Py_None) {
+    PyErr_Format(PyExc_ValueError,
+                 "The value for scalar map setdefault must be set.");
+    return NULL;
+  }
+
+  PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
+  upb_Map* map = PyUpb_MapContainer_EnsureReified(_self);
+  const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
+  const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
+  const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
+  const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
+  upb_MessageValue u_key, u_val;
+  if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return NULL;
+  if (upb_Map_Get(map, u_key, &u_val)) {
+    return PyUpb_UpbToPy(u_val, val_f, self->arena);
+  }
+
+  upb_Arena* arena = PyUpb_Arena_Get(self->arena);
+  if (!PyUpb_PyToUpb(default_value, val_f, &u_val, arena)) return NULL;
+  if (!PyUpb_MapContainer_Set(self, map, u_key, u_val, arena)) return NULL;
+
+  Py_INCREF(default_value);
+  return default_value;
+}
+
+static PyObject* PyUpb_MessageMapContainer_Setdefault(PyObject* self,
+                                                      PyObject* args) {
+  PyErr_Format(PyExc_NotImplementedError,
+               "Set message map value directly is not supported.");
+  return NULL;
 }
 
 static PyObject* PyUpb_MapContainer_Get(PyObject* _self, PyObject* args,
@@ -331,6 +374,9 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
 static PyMethodDef PyUpb_ScalarMapContainer_Methods[] = {
     {"clear", PyUpb_MapContainer_Clear, METH_NOARGS,
      "Removes all elements from the map."},
+    {"setdefault", (PyCFunction)PyUpb_ScalarMapContainer_Setdefault,
+     METH_VARARGS,
+     "If the key does not exist, insert the key, with the specified value"},
     {"get", (PyCFunction)PyUpb_MapContainer_Get, METH_VARARGS | METH_KEYWORDS,
      "Gets the value for the given key if present, or otherwise a default"},
     {"GetEntryClass", PyUpb_MapContainer_GetEntryClass, METH_NOARGS,
@@ -373,6 +419,8 @@ static PyType_Spec PyUpb_ScalarMapContainer_Spec = {
 static PyMethodDef PyUpb_MessageMapContainer_Methods[] = {
     {"clear", PyUpb_MapContainer_Clear, METH_NOARGS,
      "Removes all elements from the map."},
+    {"setdefault", (PyCFunction)PyUpb_MessageMapContainer_Setdefault,
+     METH_VARARGS, "setdefault is disallowed in MessageMap."},
     {"get", (PyCFunction)PyUpb_MapContainer_Get, METH_VARARGS | METH_KEYWORDS,
      "Gets the value for the given key if present, or otherwise a default"},
     {"get_or_create", PyUpb_MapContainer_Subscript, METH_O,
@@ -410,8 +458,10 @@ static PyType_Spec PyUpb_MessageMapContainer_Spec = {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyUpb_MapContainer* map;  // We own a reference.
+  // clang-format on
   size_t iter;
   int version;
 } PyUpb_MapIterator;
@@ -480,8 +530,8 @@ bool PyUpb_Map_Init(PyObject* m) {
   PyObject* base = GetMutableMappingBase();
   if (!base) return false;
 
-  const char* methods[] = {"keys", "items",   "values", "__eq__",     "__ne__",
-                           "pop",  "popitem", "update", "setdefault", NULL};
+  const char* methods[] = {"keys", "items",   "values", "__eq__", "__ne__",
+                           "pop",  "popitem", "update", NULL};
 
   state->message_map_container_type = PyUpb_AddClassWithRegister(
       m, &PyUpb_MessageMapContainer_Spec, base, methods);

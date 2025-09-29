@@ -14,33 +14,33 @@ import static org.junit.Assert.assertThrows;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.test.UnittestImport;
-import protobuf_unittest.EnumWithNoOuter;
-import protobuf_unittest.MessageWithNoOuter;
-import protobuf_unittest.MultipleFilesTestProto;
-import protobuf_unittest.NestedExtension.MyNestedExtension;
-import protobuf_unittest.NonNestedExtension;
-import protobuf_unittest.NonNestedExtension.MessageToBeExtended;
-import protobuf_unittest.NonNestedExtension.MyNonNestedExtension;
-import protobuf_unittest.OuterClassNameTest2OuterClass;
-import protobuf_unittest.OuterClassNameTest3OuterClass;
-import protobuf_unittest.OuterClassNameTestOuterClass;
-import protobuf_unittest.ServiceWithNoOuter;
-import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
-import protobuf_unittest.UnittestOptimizeFor.TestOptionalOptimizedForSize;
-import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
-import protobuf_unittest.UnittestProto;
-import protobuf_unittest.UnittestProto.ForeignEnum;
-import protobuf_unittest.UnittestProto.ForeignMessage;
-import protobuf_unittest.UnittestProto.ForeignMessageOrBuilder;
-import protobuf_unittest.UnittestProto.NestedTestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllExtensions;
-import protobuf_unittest.UnittestProto.TestAllTypes;
-import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
-import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
-import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
-import protobuf_unittest.UnittestProto.TestOneof2;
-import protobuf_unittest.UnittestProto.TestPackedTypes;
-import protobuf_unittest.UnittestProto.TestUnpackedTypes;
+import proto2_unittest.EnumWithNoOuter;
+import proto2_unittest.MessageWithNoOuter;
+import proto2_unittest.MultipleFilesTestProto;
+import proto2_unittest.NestedExtension.MyNestedExtension;
+import proto2_unittest.NonNestedExtension;
+import proto2_unittest.NonNestedExtension.MessageToBeExtended;
+import proto2_unittest.NonNestedExtension.MyNonNestedExtension;
+import proto2_unittest.OuterClassNameTest2OuterClass;
+import proto2_unittest.OuterClassNameTest3OuterClass;
+import proto2_unittest.OuterClassNameTestOuterClass;
+import proto2_unittest.ServiceWithNoOuter;
+import proto2_unittest.UnittestOptimizeFor.TestOptimizedForSize;
+import proto2_unittest.UnittestOptimizeFor.TestOptionalOptimizedForSize;
+import proto2_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
+import proto2_unittest.UnittestProto;
+import proto2_unittest.UnittestProto.ForeignEnum;
+import proto2_unittest.UnittestProto.ForeignMessage;
+import proto2_unittest.UnittestProto.ForeignMessageOrBuilder;
+import proto2_unittest.UnittestProto.NestedTestAllTypes;
+import proto2_unittest.UnittestProto.TestAllExtensions;
+import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestAllTypes.NestedMessage;
+import proto2_unittest.UnittestProto.TestAllTypesOrBuilder;
+import proto2_unittest.UnittestProto.TestExtremeDefaultValues;
+import proto2_unittest.UnittestProto.TestOneof2;
+import proto2_unittest.UnittestProto.TestPackedTypes;
+import proto2_unittest.UnittestProto.TestUnpackedTypes;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -52,6 +52,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -632,6 +635,16 @@ public class GeneratedMessageTest {
 
     TestAllTypes message = builder.build();
     TestUtil.assertRepeatedFieldsModified(message);
+  }
+
+  @Test
+  public void testReflectionRepeatedSettersWithEmptyList() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    reflectionTester.setRepeatedFieldsToEmptyListViaReflection(builder);
+
+    TestAllTypes message = builder.build();
+    TestUtil.assertClear(message);
+    assertThat(message).isEqualTo(TestAllTypes.getDefaultInstance());
   }
 
   @Test
@@ -1972,5 +1985,105 @@ public class GeneratedMessageTest {
     assertThrows(UnsupportedOperationException.class, list::clear);
     builder.clearField(repeatedMsgField);
     assertThat(list).hasSize(1);
+  }
+
+  private TestUtil.TestLogHandler setupLogger() {
+    TestUtil.TestLogHandler logHandler = new TestUtil.TestLogHandler();
+    Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
+    logger.addHandler(logHandler);
+    logHandler.setLevel(Level.ALL);
+    return logHandler;
+  }
+
+  static class TestMessageBaseForPre22WarningsTests extends GeneratedMessage {
+    @Override
+    protected FieldAccessorTable internalGetFieldAccessorTable() {
+      return null;
+    }
+
+    @Override
+    protected Message.Builder newBuilderForType(BuilderParent parent) {
+      return null;
+    }
+
+    @Override
+    public Message.Builder newBuilderForType() {
+      return null;
+    }
+
+    @Override
+    public Message.Builder toBuilder() {
+      return null;
+    }
+
+    @Override
+    public Message getDefaultInstanceForType() {
+      return null;
+    }
+  }
+
+  @Test
+  public void generatedMessage_makeExtensionsImmutableShouldLog() {
+    TestUtil.TestLogHandler logHandler = setupLogger();
+    GeneratedMessage.loggedPre22TypeNames.clear();
+
+    class TestMessage1 extends TestMessageBaseForPre22WarningsTests {}
+    class TestMessage2 extends TestMessageBaseForPre22WarningsTests {}
+
+    TestMessage1 msg = new TestMessage1();
+    TestMessage2 msg2 = new TestMessage2();
+
+    msg.makeExtensionsImmutable();
+    List<LogRecord> logs = logHandler.getStoredLogRecords();
+    assertThat(logs).hasSize(1);
+    String message = logs.get(0).getMessage();
+    // The generated type
+    assertThat(message)
+        .contains(
+            "Vulnerable protobuf generated type in use: "
+                + "com.google.protobuf.GeneratedMessageTest$1TestMessage1");
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    assertThat(message).contains(GeneratedMessage.PRE22_GENCODE_SILENCE_PROPERTY);
+
+    // Subsequent calls for the same type do not log again.
+    msg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(1);
+
+    // A call on a second type does log for that type.
+    msg2.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(2);
+    // And not again (only once per type).
+    msg2.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(2);
+  }
+
+  @Test
+  public void extendableMessage_makeExtensionsImmutableShouldThrowWhenOptedIn() {
+    System.setProperty("com.google.protobuf.error_on_unsafe_pre22_gencode", "true");
+    GeneratedMessage.loggedPre22TypeNames.clear();
+
+    class TestMessage3 extends TestMessageBaseForPre22WarningsTests {}
+    TestMessage3 msg = new TestMessage3();
+    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+
+    // When opting into throwing, it should throw every time, not just the first time.
+    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+
+    System.clearProperty("com.google.protobuf.error_on_unsafe_pre22_gencode");
+  }
+
+  @Test
+  public void extendableMessage_makeExtensionsImmutableShouldBeSilentWhenOptedIn() {
+    System.setProperty("com.google.protobuf.use_unsafe_pre22_gencode", "true");
+    TestUtil.TestLogHandler logHandler = setupLogger();
+    GeneratedMessage.loggedPre22TypeNames.clear();
+
+    class TestMessage4 extends TestMessageBaseForPre22WarningsTests {}
+    TestMessage4 msg = new TestMessage4();
+    msg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).isEmpty();
+
+    System.clearProperty("com.google.protobuf.use_unsafe_pre22_gencode");
   }
 }

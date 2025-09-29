@@ -131,12 +131,6 @@ def Type():
   return _implementation_type
 
 
-# See comment on 'Type' above.
-# TODO: Remove the API, it returns a constant. b/228102101
-def Version():
-  return 2
-
-
 # For internal use only
 def IsPythonDefaultSerializationDeterministic():
   return _python_deterministic_proto_serialization

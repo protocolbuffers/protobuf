@@ -24,6 +24,13 @@ import java.util.Map;
  * A partial implementation of the {@link Message} interface which implements as many methods of
  * that interface as possible in terms of other methods.
  *
+ * <p>Users should generally ignore this class and use the Message interface instead.
+ *
+ * <p>This class is intended to only be extended by protoc created gencode. It is not intended or
+ * supported to extend this class, and any protected methods may be removed without it being
+ * considered a breaking change as long as all supported gencode does not depend on the changed
+ * methods.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public abstract class AbstractMessage
@@ -84,11 +91,8 @@ public abstract class AbstractMessage
 
   @Override
   public final String toString() {
-    TextFormat.Printer printer =
-        ProtobufToStringOutput.shouldOutputDebugFormat()
-            ? TextFormat.debugFormatPrinter()
-            : TextFormat.printer();
-    return printer.printToString(this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_TO_STRING);
+    return TextFormat.Printer.getOutputModePrinter()
+        .printToString(this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_TO_STRING);
   }
 
   @Override
@@ -119,6 +123,17 @@ public abstract class AbstractMessage
     return memoizedSize;
   }
 
+  /*
+   * This method will only ever return true if `this` and `other` have the same descriptor instance
+   * for their type (including a gencode message compared to a `DynamicMessage` constructed using
+   * the same descriptor instance).
+   *
+   * For reasons of backward compatibility, a comparison
+   * involving `DynamicMessage` that is constructed using semantically the same descriptor which
+   * was loaded separately (such that the reference identity of the descriptors does not match) will
+   * always return false even if there is otherwise no skew between the descriptors and the contents
+   * of the instances.
+   */
   @Override
   public boolean equals(final Object other) {
     if (other == this) {
@@ -441,7 +456,8 @@ public abstract class AbstractMessage
 
     @Override
     public String toString() {
-      return TextFormat.printer().printToString(this);
+      return TextFormat.Printer.getOutputModePrinter()
+          .printToString(this, TextFormat.Printer.FieldReporterLevel.ABSTRACT_BUILDER_TO_STRING);
     }
 
     /** Construct an UninitializedMessageException reporting missing fields in the given message. */

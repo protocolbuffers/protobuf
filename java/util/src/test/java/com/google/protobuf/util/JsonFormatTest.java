@@ -84,8 +84,8 @@ public class JsonFormatTest {
   private void setAllFields(TestAllTypes.Builder builder) {
     builder.setOptionalInt32(1234);
     builder.setOptionalInt64(1234567890123456789L);
-    builder.setOptionalUint32(5678);
-    builder.setOptionalUint64(2345678901234567890L);
+    builder.setOptionalUint32(-1);
+    builder.setOptionalUint64(-1L);
     builder.setOptionalSint32(9012);
     builder.setOptionalSint64(3456789012345678901L);
     builder.setOptionalFixed32(3456);
@@ -190,8 +190,8 @@ public class JsonFormatTest {
             "{\n"
                 + "  \"optionalInt32\": 1234,\n"
                 + "  \"optionalInt64\": \"1234567890123456789\",\n"
-                + "  \"optionalUint32\": 5678,\n"
-                + "  \"optionalUint64\": \"2345678901234567890\",\n"
+                + "  \"optionalUint32\": 4294967295,\n"
+                + "  \"optionalUint64\": \"18446744073709551615\",\n"
                 + "  \"optionalSint32\": 9012,\n"
                 + "  \"optionalSint64\": \"3456789012345678901\",\n"
                 + "  \"optionalFixed32\": 3456,\n"
@@ -1611,8 +1611,8 @@ public class JsonFormatTest {
             "{"
                 + "\"optionalInt32\":1234,"
                 + "\"optionalInt64\":\"1234567890123456789\","
-                + "\"optionalUint32\":5678,"
-                + "\"optionalUint64\":\"2345678901234567890\","
+                + "\"optionalUint32\":4294967295,"
+                + "\"optionalUint64\":\"18446744073709551615\","
                 + "\"optionalSint32\":9012,"
                 + "\"optionalSint64\":\"3456789012345678901\","
                 + "\"optionalFixed32\":3456,"

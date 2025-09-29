@@ -40,16 +40,17 @@ MapFieldGenerator::MapFieldGenerator(
       FieldGenerator::Make(value_descriptor, generation_options));
 
   // Pull over some variables_ from the value.
-  variables_["field_type"] = value_field_generator_->variable("field_type");
-  variables_["default"] = value_field_generator_->variable("default");
-  variables_["default_name"] = value_field_generator_->variable("default_name");
+  variables_.Set("field_type", value_field_generator_->variable("field_type"));
+  variables_.Set("default", value_field_generator_->variable("default"));
+  variables_.Set("default_name",
+                 value_field_generator_->variable("default_name"));
 
   // Build custom field flags.
   std::vector<std::string> field_flags;
   field_flags.push_back(
       absl::StrCat("GPBFieldMapKey", GetCapitalizedType(key_descriptor)));
   // Pull over the current text format custom name values that was calculated.
-  if (absl::StrContains(variables_["fieldflags"],
+  if (absl::StrContains(variable("fieldflags"),
                         "GPBFieldTextFormatNameCustom")) {
     field_flags.push_back("GPBFieldTextFormatNameCustom");
   }
@@ -59,19 +60,13 @@ MapFieldGenerator::MapFieldGenerator(
   if (absl::StrContains(value_field_flags, "GPBFieldHasDefaultValue")) {
     field_flags.push_back("GPBFieldHasDefaultValue");
   }
-  if (absl::StrContains(value_field_flags, "GPBFieldHasEnumDescriptor")) {
-    field_flags.push_back("GPBFieldHasEnumDescriptor");
-    if (absl::StrContains(value_field_flags, "GPBFieldClosedEnum")) {
-      field_flags.push_back("GPBFieldClosedEnum");
-    }
-  }
 
-  variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
+  variables_.Set("fieldflags", BuildFlagsString(FLAGTYPE_FIELD, field_flags));
 
-  variables_["dataTypeSpecific_name"] =
-      value_field_generator_->variable("dataTypeSpecific_name");
-  variables_["dataTypeSpecific_value"] =
-      value_field_generator_->variable("dataTypeSpecific_value");
+  variables_.Set("dataTypeSpecific_name",
+                 value_field_generator_->variable("dataTypeSpecific_name"));
+  variables_.Set("dataTypeSpecific_value",
+                 value_field_generator_->variable("dataTypeSpecific_value"));
 }
 
 void MapFieldGenerator::EmitArrayComment(io::Printer* printer) const {

@@ -36,7 +36,7 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
     const UPB_DESC(EnumDescriptorProto_EnumReservedRange) * const* protos,
     const upb_EnumDef* e) {
   upb_EnumReservedRange* r =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_EnumReservedRange) * n);
+      UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_EnumReservedRange, n);
 
   for (int i = 0; i < n; i++) {
     const int32_t start =

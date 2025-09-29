@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//lua:lua_proto_library.bzl",
     "lua_proto_library",
@@ -27,14 +28,14 @@ cc_library(
     hdrs = [
         "upb.h",
     ],
-    copts = UPB_DEFAULT_COPTS,
+    copts = UPB_DEFAULT_COPTS + ["-Wno-tautological-constant-out-of-range-compare"],
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:json",
-        "//upb:message",
-        "//upb:port",
-        "//upb:reflection",
-        "//upb:text",
+        "//upb/json",
+        "//upb/message",
+        "//upb/port",
+        "//upb/reflection",
+        "//upb/text",
         "@lua//:liblua",
     ],
 )
@@ -48,7 +49,7 @@ cc_binary(
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -69,8 +70,6 @@ cc_test(
         ":test_proto_lua",
         "//:descriptor_proto",
         "//conformance:conformance_proto",
-        "//third_party/lunit:console.lua",
-        "//third_party/lunit:lunit.lua",
     ],
     linkstatic = 1,
     deps = [

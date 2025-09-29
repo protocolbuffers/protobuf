@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//conformance:defs.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
@@ -17,6 +17,12 @@ exports_files(
 alias(
     name = "lite",
     actual = "//java/core:lite",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "lite_nowkt",
+    actual = "//java/core:lite_runtime_only",
     visibility = ["//visibility:public"],
 )
 
@@ -76,8 +82,8 @@ junit_tests(
         "//java/core:java_test_protos_java_proto_lite",
         "//java/core:lite_test_protos_java_proto_lite",
         "//java/core:test_util_lite",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 

@@ -5,25 +5,27 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef PROTOBUF_COMPILER_HBP_GEN_MESSAGES_H_
-#define PROTOBUF_COMPILER_HBP_GEN_MESSAGES_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_HPB_GEN_MESSAGES_H__
+#define GOOGLE_PROTOBUF_COMPILER_HPB_GEN_MESSAGES_H__
 
+#include <vector>
+
+#include "hpb_generator/context.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/compiler/hpb/output.h"
 
-namespace google::protobuf::hpb_generator {
-namespace protobuf = ::proto2;
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
 void WriteMessageClassDeclarations(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    const std::vector<const protobuf::EnumDescriptor*>& file_enums,
-    Output& output);
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts,
+    const std::vector<const google::protobuf::EnumDescriptor*>& file_enums, Context& ctx);
 void WriteMessageImplementation(
-    const protobuf::Descriptor* descriptor,
-    const std::vector<const protobuf::FieldDescriptor*>& file_exts,
-    Output& output);
+    const google::protobuf::Descriptor* descriptor,
+    const std::vector<const google::protobuf::FieldDescriptor*>& file_exts, Context& ctx);
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google
 
-#endif  // PROTOBUF_COMPILER_HBP_GEN_MESSAGES_H_
+#endif  // GOOGLE_PROTOBUF_COMPILER_HPB_GEN_MESSAGES_H__

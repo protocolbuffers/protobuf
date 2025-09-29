@@ -7,14 +7,12 @@
 
 syntax = "proto3";
 
-option cc_enable_arenas = true;
-
 import "google/protobuf/unittest.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-// In map_test_util.h we do "using namespace unittest = protobuf_unittest".
-package protobuf_unittest;
+// In map_test_util.h we do "using namespace unittest = proto2_unittest".
+package proto2_unittest;
 
 // Tests maps.
 message TestMap {
@@ -37,6 +35,9 @@ message TestMap {
   map<int32, ForeignMessage> map_int32_foreign_message = 17;
   map<string, ForeignMessage> map_string_foreign_message = 18;
   map<int32, TestAllTypes> map_int32_all_types = 19;
+  // Caveat emptor: be careful adding new fields here.
+  // The TestMap proto is used to generate additional tests and couples tightly
+  // with map_test_util.h, which in turn couples tightly with TestMapLite.
 }
 
 message TestMapWithMessages {

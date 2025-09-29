@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/compiler/java/field_common.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/port.h"
@@ -36,8 +37,6 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-struct FieldGeneratorInfo;
-struct OneofGeneratorInfo;
 // A context object holds the information that is shared among all code
 // generators.
 class Context {

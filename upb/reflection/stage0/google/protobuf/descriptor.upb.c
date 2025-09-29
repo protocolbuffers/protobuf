@@ -10,7 +10,7 @@ static upb_Arena* upb_BootstrapArena() {
 
 const upb_MiniTable* google__protobuf__FileDescriptorSet_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$G";
+  static const char* mini_descriptor = "$PG";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -21,7 +21,7 @@ const upb_MiniTable* google__protobuf__FileDescriptorSet_msg_init() {
 
 const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$11EGGGG33<<1a4";
+  static const char* mini_descriptor = "$11EGGGG33<<1a4E";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -38,7 +38,7 @@ const upb_MiniTable* google__protobuf__FileDescriptorProto_msg_init() {
 
 const upb_MiniTable* google__protobuf__DescriptorProto_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$1GGGGG3GGE";
+  static const char* mini_descriptor = "$1GGGGG3GGE4";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -51,6 +51,7 @@ const upb_MiniTable* google__protobuf__DescriptorProto_msg_init() {
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 8), google__protobuf__OneofDescriptorProto_msg_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 7), google__protobuf__MessageOptions_msg_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 9), google__protobuf__DescriptorProto__ReservedRange_msg_init());
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 11), google__protobuf__SymbolVisibility_enum_init());
   return mini_table;
 }
 
@@ -125,7 +126,7 @@ const upb_MiniTable* google__protobuf__OneofDescriptorProto_msg_init() {
 
 const upb_MiniTable* google__protobuf__EnumDescriptorProto_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$1G3GE";
+  static const char* mini_descriptor = "$1G3GE4";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -133,6 +134,7 @@ const upb_MiniTable* google__protobuf__EnumDescriptorProto_msg_init() {
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 2), google__protobuf__EnumValueDescriptorProto_msg_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 3), google__protobuf__EnumOptions_msg_init());
   upb_MiniTable_SetSubMessage(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 4), google__protobuf__EnumDescriptorProto__EnumReservedRange_msg_init());
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 6), google__protobuf__SymbolVisibility_enum_init());
   return mini_table;
 }
 
@@ -332,7 +334,7 @@ const upb_MiniTable* google__protobuf__UninterpretedOption__NamePart_msg_init() 
 
 const upb_MiniTable* google__protobuf__FeatureSet_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$P444444";
+  static const char* mini_descriptor = "$P44444444";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -343,6 +345,18 @@ const upb_MiniTable* google__protobuf__FeatureSet_msg_init() {
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 4), google__protobuf__FeatureSet__Utf8Validation_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 5), google__protobuf__FeatureSet__MessageEncoding_enum_init());
   upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 6), google__protobuf__FeatureSet__JsonFormat_enum_init());
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 7), google__protobuf__FeatureSet__EnforceNamingStyle_enum_init());
+  upb_MiniTable_SetSubEnum(mini_table, (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table, 8), google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init());
+  return mini_table;
+}
+
+const upb_MiniTable* google__protobuf__FeatureSet__VisibilityFeature_msg_init() {
+  static upb_MiniTable* mini_table = NULL;
+  static const char* mini_descriptor = "$";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
+                          upb_BootstrapArena(), NULL);
   return mini_table;
 }
 
@@ -374,7 +388,7 @@ const upb_MiniTable* google__protobuf__FeatureSetDefaults__FeatureSetEditionDefa
 
 const upb_MiniTable* google__protobuf__SourceCodeInfo_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$G";
+  static const char* mini_descriptor = "$PG";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -385,7 +399,7 @@ const upb_MiniTable* google__protobuf__SourceCodeInfo_msg_init() {
 
 const upb_MiniTable* google__protobuf__SourceCodeInfo__Location_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$<M<M11aE";
+  static const char* mini_descriptor = "$N<<11aE";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -406,7 +420,7 @@ const upb_MiniTable* google__protobuf__GeneratedCodeInfo_msg_init() {
 
 const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init() {
   static upb_MiniTable* mini_table = NULL;
-  static const char* mini_descriptor = "$<M1((4";
+  static const char* mini_descriptor = "$N<1((4";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
@@ -428,6 +442,16 @@ const upb_MiniTableEnum* google__protobuf__Edition_enum_init() {
 const upb_MiniTableEnum* google__protobuf__ExtensionRangeOptions__VerificationState_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!$";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google__protobuf__FeatureSet__EnforceNamingStyle_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
@@ -488,6 +512,16 @@ const upb_MiniTableEnum* google__protobuf__FeatureSet__RepeatedFieldEncoding_enu
 const upb_MiniTableEnum* google__protobuf__FeatureSet__Utf8Validation_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!/";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google__protobuf__FeatureSet__VisibilityFeature__DefaultSymbolVisibility_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!A";
   if (mini_table) return mini_table;
   mini_table =
       upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
@@ -576,6 +610,16 @@ const upb_MiniTableEnum* google__protobuf__GeneratedCodeInfo__Annotation__Semant
 }
 
 const upb_MiniTableEnum* google__protobuf__MethodOptions__IdempotencyLevel_enum_init() {
+  static const upb_MiniTableEnum* mini_table = NULL;
+  static const char* mini_descriptor = "!)";
+  if (mini_table) return mini_table;
+  mini_table =
+      upb_MiniTableEnum_Build(mini_descriptor, strlen(mini_descriptor),
+                              upb_BootstrapArena(), NULL);
+  return mini_table;
+}
+
+const upb_MiniTableEnum* google__protobuf__SymbolVisibility_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
   static const char* mini_descriptor = "!)";
   if (mini_table) return mini_table;

@@ -10,16 +10,16 @@
 #include <sys/types.h>
 
 #include <atomic>
-#include <cfloat>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
-#include <iostream>
-#include <limits>
-#include <ostream>
+#include <optional>
 #include <string>
 #include <utility>
 
 #include "absl/algorithm/container.h"
+#include "absl/base/attributes.h"
+#include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/status/status.h"
@@ -29,6 +29,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
 #include "utf8_validity.h"
 #include "google/protobuf/stubs/status_macros.h"
 
@@ -190,7 +191,7 @@ absl::StatusOr<uint16_t> JsonLexer::ParseU16HexCodepoint() {
 
 absl::Status JsonLexer::SkipToToken() {
   while (true) {
-    RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
+    RETURN_IF_ERROR(stream_.BufferAtLeastOne());
     switch (stream_.PeekChar()) {
       case '\n':
         RETURN_IF_ERROR(Advance(1));
@@ -380,19 +381,61 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
   // This is a non-standard extension accepted by the ESF parser that we will
   // need to accept for backwards-compat.
   bool is_single_quote = stream_.PeekChar() == '\'';
-  if (!options_.allow_legacy_syntax && is_single_quote) {
+  if (!options_.allow_legacy_nonconformant_behavior && is_single_quote) {
     return Invalid("expected '\"'");
   }
 
   JsonLocation loc = json_loc_;
   RETURN_IF_ERROR(Expect(is_single_quote ? "'" : "\""));
 
-  // on_heap is empty if we do not need to heap-allocate the string.
-  std::string on_heap;
   LocationWith<Mark> mark = BeginMark();
-  while (true) {
-    RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
 
+  // Fast path for strings with no escapes and which are likely-ascii.
+  if (!is_single_quote) {
+    while (true) {
+      RETURN_IF_ERROR(stream_.BufferAtLeastOne());
+      uint8_t c = static_cast<uint8_t>(stream_.PeekChar());
+      // Bail out to the slow path on control characters and escape characters
+      // without advancing the cursor.
+      if (c < 0x20 || c == '\\') {
+        break;
+      }
+      RETURN_IF_ERROR(Advance(1));
+      if (c == '"') {
+        // NOTE: the 1 below clips off the " from the end of the string.
+        MaybeOwnedString result = mark.value.UpToUnread(1);
+        if (utf8_range::IsStructurallyValid(result)) {
+          return LocationWith<MaybeOwnedString>{std::move(result), loc};
+        }
+        return Invalid("Invalid UTF-8 string");
+      }
+    }
+  }
+
+  // When switching to the slow path, move what we've scanned into a std::string
+  // and discard the mark; the slow path needs to build up a string explicitly
+  // to handle escapes which have a different in-memory representation than
+  // wire-representation.
+  std::string on_heap = std::move(mark.value.UpToUnread(0).ToString());
+
+  // This discard is optimization relevant. The Mark holds a BufferingGuard,
+  // so when the fast path above is iterating, if the string its building up is
+  // split across two chunks the underlying stream will begin buffering which
+  // will copy the characters it into a contiguous chunk. ParseUtf8Slow will
+  // build up its own std::string as it goes instead, since it needs to in the
+  // case of escapes. In the case where buffering only started due to the
+  // loop above, this Discard avoids continuing buffering during the slow loop
+  // which would effectively maintain two separate std::strings as the lexing
+  // continues until ParseUtf8Slow ends.
+  std::move(mark).value.Discard();
+
+  return ParseUtf8Slow(is_single_quote, std::move(on_heap), loc);
+}
+
+absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8Slow(
+    bool is_single_quote, std::string on_heap, JsonLocation loc) {
+  while (true) {
+    RETURN_IF_ERROR(stream_.BufferAtLeastOne());
     char c = stream_.PeekChar();
     RETURN_IF_ERROR(Advance(1));
     switch (c) {
@@ -401,40 +444,27 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         if (c != (is_single_quote ? '\'' : '"')) {
           goto normal_character;
         }
-
-        // NOTE: the 1 below clips off the " from the end of the string.
-        MaybeOwnedString result = on_heap.empty()
-                                      ? mark.value.UpToUnread(1)
-                                      : MaybeOwnedString{std::move(on_heap)};
+        MaybeOwnedString result = MaybeOwnedString{std::move(on_heap)};
         if (utf8_range::IsStructurallyValid(result)) {
           return LocationWith<MaybeOwnedString>{std::move(result), loc};
         }
         return Invalid("Invalid UTF-8 string");
       }
       case '\\': {
-        if (on_heap.empty()) {
-          // The 1 skips over the `\`.
-          on_heap = std::string(mark.value.UpToUnread(1).AsView());
-          // Clang-tidy incorrectly notes this as being moved-from multiple
-          // times, but it can only occur in one loop iteration. The mark is
-          // destroyed only if we need to handle an escape when on_heap is
-          // empty. Because this branch unconditionally pushes to on_heap, this
-          // condition can never be reached in any iteration that follows it.
-          // Thus, at most one move ever actually occurs.
-          std::move(mark).value.Discard();
-        }
-        RETURN_IF_ERROR(stream_.BufferAtLeast(1).status());
+        RETURN_IF_ERROR(stream_.BufferAtLeastOne());
 
         char c = stream_.PeekChar();
         RETURN_IF_ERROR(Advance(1));
-        if (c == 'u' || (c == 'U' && options_.allow_legacy_syntax)) {
+        if (c == 'u' ||
+            (c == 'U' && options_.allow_legacy_nonconformant_behavior)) {
           // Ensure there is actual space to scribble the UTF-8 onto.
           on_heap.resize(on_heap.size() + 4);
           auto written = ParseUnicodeEscape(&on_heap[on_heap.size() - 4]);
           RETURN_IF_ERROR(written.status());
           on_heap.resize(on_heap.size() - 4 + *written);
         } else {
-          char escape = ParseSimpleEscape(c, options_.allow_legacy_syntax);
+          char escape = ParseSimpleEscape(
+              c, options_.allow_legacy_nonconformant_behavior);
           if (escape == 0) {
             return Invalid(absl::StrFormat("invalid escape char: '%c'", c));
           }
@@ -448,46 +478,12 @@ absl::StatusOr<LocationWith<MaybeOwnedString>> JsonLexer::ParseUtf8() {
         // If people have newlines in their strings, that's their problem; it
         // is too difficult to support correctly in our location tracking, and
         // is out of spec, so users will get slightly wrong locations in errors.
-        if ((uc < 0x20 || uc == 0xff) && !options_.allow_legacy_syntax) {
+        if ((uc < 0x20 || uc == 0xff) &&
+            !options_.allow_legacy_nonconformant_behavior) {
           return Invalid(absl::StrFormat(
               "invalid control character 0x%02x in string", uc));
         }
-
-        // Process this UTF-8 code point. We do not need to fully validate it
-        // at this stage; we just need to interpret it enough to know how many
-        // bytes to read. UTF-8 is a varint encoding satisfying one of the
-        // following (big-endian) patterns:
-        //
-        // 0b0xxxxxxx
-        // 0b110xxxxx'10xxxxxx
-        // 0b1110xxxx'10xxxxxx'10xxxxxx
-        // 0b11110xxx'10xxxxxx'10xxxxxx'10xxxxxx
-        size_t lookahead = 0;
-        switch (absl::countl_one(uc)) {
-          case 0:
-            break;
-          case 2:
-            lookahead = 1;
-            break;
-          case 3:
-            lookahead = 2;
-            break;
-          case 4:
-            lookahead = 3;
-            break;
-          default:
-            return Invalid("invalid UTF-8 in string");
-        }
-
-        if (!on_heap.empty()) {
-          on_heap.push_back(c);
-        }
-        auto lookahead_bytes = stream_.Take(lookahead);
-        RETURN_IF_ERROR(lookahead_bytes.status());
-        if (!on_heap.empty()) {
-          absl::string_view view = lookahead_bytes->AsView();
-          on_heap.append(view.data(), view.size());
-        }
+        on_heap.push_back(c);
         break;
       }
     }

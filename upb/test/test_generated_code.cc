@@ -505,15 +505,16 @@ static void check_string_map_empty(
       0,
       protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_size(
           msg));
+
+  upb_StringView key;
+  upb_StringView val;
   EXPECT_FALSE(
       protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
-          msg, &iter));
+          msg, &key, &val, &iter));
 }
 
 static void check_string_map_one_entry(
     protobuf_test_messages_proto3_TestAllTypesProto3* msg) {
-  const protobuf_test_messages_proto3_TestAllTypesProto3_MapStringStringEntry*
-      const_ent;
   size_t iter;
   upb_StringView str;
 
@@ -532,23 +533,15 @@ static void check_string_map_one_entry(
 
   /* Test that iteration reveals a single k/v pair in the map. */
   iter = kUpb_Map_Begin;
-  const_ent =
+  upb_StringView key;
+  upb_StringView val;
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
+      msg, &key, &val, &iter);
+  EXPECT_TRUE(upb_StringView_IsEqual(test_str_view, key));
+  EXPECT_TRUE(upb_StringView_IsEqual(test_str_view2, val));
+  EXPECT_FALSE(
       protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
-          msg, &iter);
-  ASSERT_NE(nullptr, const_ent);
-  EXPECT_TRUE(upb_StringView_IsEqual(
-      test_str_view,
-      protobuf_test_messages_proto3_TestAllTypesProto3_MapStringStringEntry_key(
-          const_ent)));
-  EXPECT_TRUE(upb_StringView_IsEqual(
-      test_str_view2,
-      protobuf_test_messages_proto3_TestAllTypesProto3_MapStringStringEntry_value(
-          const_ent)));
-
-  const_ent =
-      protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
-          msg, &iter);
-  EXPECT_EQ(nullptr, const_ent);
+          msg, &key, &val, &iter));
 }
 
 TEST(GeneratedCode, StringDoubleMap) {
@@ -580,8 +573,6 @@ TEST(GeneratedCode, StringMap) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
-  const protobuf_test_messages_proto3_TestAllTypesProto3_MapStringStringEntry*
-      const_ent;
   size_t iter, count;
 
   check_string_map_empty(msg);
@@ -615,18 +606,11 @@ TEST(GeneratedCode, StringMap) {
   /* Test iteration */
   iter = kUpb_Map_Begin;
   count = 0;
-
+  upb_StringView key;
+  upb_StringView val;
   while (
-      (const_ent =
-           protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
-               msg, &iter)) != nullptr) {
-    upb_StringView key =
-        protobuf_test_messages_proto3_TestAllTypesProto3_MapStringStringEntry_key(
-            const_ent);
-    upb_StringView val =
-        protobuf_test_messages_proto3_TestAllTypesProto3_MapStringStringEntry_value(
-            const_ent);
-
+      protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
+          msg, &key, &val, &iter)) {
     count++;
     if (upb_StringView_IsEqual(key, test_str_view)) {
       EXPECT_TRUE(upb_StringView_IsEqual(val, test_str_view2));
@@ -652,16 +636,18 @@ static void check_int32_map_empty(
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_size(
              msg));
+
+  int32_t key;
+  int32_t val;
   EXPECT_FALSE(
       protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_next(
-          msg, &iter));
+          msg, &key, &val, &iter));
 }
 
 static void check_int32_map_one_entry(
     protobuf_test_messages_proto3_TestAllTypesProto3* msg) {
-  const protobuf_test_messages_proto3_TestAllTypesProto3_MapInt32Int32Entry*
-      const_ent;
   size_t iter;
+  int32_t key;
   int32_t val;
 
   EXPECT_EQ(
@@ -678,31 +664,20 @@ static void check_int32_map_one_entry(
 
   /* Test that iteration reveals a single k/v pair in the map. */
   iter = kUpb_Map_Begin;
-  const_ent =
+  EXPECT_TRUE(
       protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_next(
-          msg, &iter);
-  ASSERT_NE(nullptr, const_ent);
-  EXPECT_EQ(
-      test_int32,
-      protobuf_test_messages_proto3_TestAllTypesProto3_MapInt32Int32Entry_key(
-          const_ent));
-  EXPECT_EQ(
-      test_int32_2,
-      protobuf_test_messages_proto3_TestAllTypesProto3_MapInt32Int32Entry_value(
-          const_ent));
-
-  const_ent =
+          msg, &key, &val, &iter));
+  EXPECT_EQ(test_int32, key);
+  EXPECT_EQ(test_int32_2, val);
+  EXPECT_FALSE(
       protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_next(
-          msg, &iter);
-  EXPECT_EQ(nullptr, const_ent);
+          msg, &key, &val, &iter));
 }
 
 TEST(GeneratedCode, Int32Map) {
   upb_Arena* arena = upb_Arena_New();
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
-  const protobuf_test_messages_proto3_TestAllTypesProto3_MapInt32Int32Entry*
-      const_ent;
   size_t iter, count;
 
   check_int32_map_empty(msg);
@@ -751,18 +726,10 @@ TEST(GeneratedCode, Int32Map) {
   /* Test iteration */
   iter = kUpb_Map_Begin;
   count = 0;
-
-  while (
-      (const_ent =
-           protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_next(
-               msg, &iter)) != nullptr) {
-    int32_t key =
-        protobuf_test_messages_proto3_TestAllTypesProto3_MapInt32Int32Entry_key(
-            const_ent);
-    int32_t val =
-        protobuf_test_messages_proto3_TestAllTypesProto3_MapInt32Int32Entry_value(
-            const_ent);
-
+  int32_t key;
+  int32_t val;
+  while (protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_next(
+      msg, &key, &val, &iter)) {
     count++;
     if (key == test_int32) {
       EXPECT_EQ(val, test_int32_2);

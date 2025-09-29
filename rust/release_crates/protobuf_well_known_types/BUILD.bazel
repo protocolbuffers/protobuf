@@ -1,0 +1,65 @@
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
+load("//rust/release_crates:substitute_rust_release_version.bzl", "substitute_rust_release_version")
+
+pkg_filegroup(
+    name = "protobuf_well_known_types_crate",
+    srcs = [
+        ":crate_root_files",
+        ":well_known_types",
+        ":well_known_types_gencode",
+        "//rust/release_crates:license",
+    ],
+    prefix = "protobuf_well_known_types",
+    visibility = ["//rust:__subpackages__"],
+)
+
+pkg_files(
+    name = "crate_root_files",
+    srcs = [":srcs"],
+    strip_prefix = strip_prefix.from_root("rust/release_crates/protobuf_well_known_types"),
+)
+
+substitute_rust_release_version(
+    src = "Cargo-template.toml",
+    out = "Cargo.toml",
+)
+
+filegroup(
+    name = "srcs",
+    srcs = ["Cargo.toml"] + glob(["**/*"]),
+    visibility = ["//rust:__subpackages__"],
+)
+
+pkg_files(
+    name = "well_known_types",
+    srcs = ["//src/google/protobuf:well_known_type_protos"],
+    prefix = "proto/google/protobuf",
+)
+
+genrule(
+    name = "gen_well_known_types",
+    srcs = [
+        "//src/google/protobuf:well_known_type_protos",
+    ],
+    outs = [
+        "google/protobuf/any.u.pb.rs",
+        "google/protobuf/api.u.pb.rs",
+        "google/protobuf/duration.u.pb.rs",
+        "google/protobuf/empty.u.pb.rs",
+        "google/protobuf/field_mask.u.pb.rs",
+        "google/protobuf/generated.rs",
+        "google/protobuf/source_context.u.pb.rs",
+        "google/protobuf/struct.u.pb.rs",
+        "google/protobuf/timestamp.u.pb.rs",
+        "google/protobuf/type.u.pb.rs",
+        "google/protobuf/wrappers.u.pb.rs",
+    ],
+    cmd = "echo $(SRCS) | sed 's?^src/??' | xargs $(location //:protoc) -I src --rust_out=$(@D) --rust_opt=experimental-codegen=enabled,kernel=upb",
+    tools = ["//:protoc"],
+)
+
+pkg_files(
+    name = "well_known_types_gencode",
+    srcs = [":gen_well_known_types"],
+    prefix = "src",
+)

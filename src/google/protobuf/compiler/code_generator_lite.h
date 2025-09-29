@@ -8,11 +8,15 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CODE_GENERATOR_LITE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CODE_GENERATOR_LITE_H__
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/internal_feature_helper.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -36,7 +40,35 @@ PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 // Returns true if the proto path corresponds to a known feature file.
 PROTOC_EXPORT bool IsKnownFeatureProto(absl::string_view filename);
 
+namespace generator_internal {
+
+// For code generators and their helper APIs only: provides access to resolved
+// features for the given extension.
+template <typename DescriptorT, typename ExtType, uint8_t field_type,
+          bool is_packed>
+auto GetResolvedFeatureExtension(
+    const DescriptorT& descriptor,
+    const google::protobuf::internal::ExtensionIdentifier<
+        FeatureSet, internal::MessageTypeTraits<ExtType>, field_type,
+        is_packed>& extension) {
+  return ::google::protobuf::internal::InternalFeatureHelper::GetResolvedFeatureExtension(
+      descriptor, extension);
+}
+
+}  // namespace generator_internal
+
 }  // namespace compiler
+
+namespace internal {
+
+PROTOC_EXPORT bool IsOss();
+
+#ifndef PROTO2_OPENSOURCE
+void SetIsOss(bool new_is_oss);
+#endif
+
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 

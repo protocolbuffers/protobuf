@@ -221,7 +221,7 @@ std::string DefaultForField(const FieldDescriptor* field) {
 
 std::string DeprecatedConditionalForField(const FieldDescriptor* field) {
   if (field->is_repeated()) {
-    return absl::StrCat("$this->", field->name(), "->count() !== 0");
+    return absl::StrCat("count($this->", field->name(), ") !== 0");
   }
   if (field->real_containing_oneof() != nullptr) {
     return absl::StrCat("$this->hasOneof(", field->number(), ")");
@@ -319,16 +319,12 @@ std::string IntToString(int32_t value) {
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
-  switch (field->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      return "optional";
-    case FieldDescriptor::LABEL_REQUIRED:
-      return "required";
-    case FieldDescriptor::LABEL_REPEATED:
-      return "repeated";
-    default:
-      assert(false);
-      return "";
+  if (field->is_required()) {
+    return "required";
+  } else if (field->is_repeated()) {
+    return "repeated";
+  } else {
+    return "optional";
   }
 }
 
@@ -378,10 +374,9 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
     // accommodate for edge case with multiple types.
     size_t start_pos = type.find('|');
     if (start_pos != std::string::npos) {
-      type.replace(start_pos, 1, ">|array<");
+      type.replace(start_pos, 1, "[]|");
     }
-    type = absl::StrCat("array<", type,
-                        ">|\\Google\\Protobuf\\Internal\\RepeatedField");
+    absl::StrAppend(&type, "[]");
   }
   return type;
 }
@@ -398,9 +393,7 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
   if (field->is_map()) {
     return "\\Google\\Protobuf\\Internal\\MapField";
   }
-  if (field->is_repeated()) {
-    return "\\Google\\Protobuf\\Internal\\RepeatedField";
-  }
+  std::string type;
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_UINT32:
@@ -408,29 +401,46 @@ std::string PhpGetterTypeName(const FieldDescriptor* field,
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_SFIXED32:
     case FieldDescriptor::TYPE_ENUM:
-      return "int";
+      type = "int";
+      break;
     case FieldDescriptor::TYPE_INT64:
     case FieldDescriptor::TYPE_UINT64:
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED64:
-      return "int|string";
+      type = "int|string";
+      break;
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT:
-      return "float";
+      type = "float";
+      break;
     case FieldDescriptor::TYPE_BOOL:
-      return "bool";
+      type = "bool";
+      break;
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
-      return "string";
+      type = "string";
+      break;
     case FieldDescriptor::TYPE_MESSAGE:
-      return absl::StrCat("\\", FullClassName(field->message_type(), options));
+      type = absl::StrCat("\\", FullClassName(field->message_type(), options));
+      break;
     case FieldDescriptor::TYPE_GROUP:
-      return "null";
+      type = "null";
+      break;
     default:
       assert(false);
-      return "";
+      type = "";
+      break;
   }
+  if (field->is_repeated()) {
+    // accommodate for edge case with multiple types.
+    size_t start_pos = type.find('|');
+    if (start_pos != std::string::npos) {
+      type.replace(start_pos, 1, ">|RepeatedField<");
+    }
+    type = absl::StrCat("RepeatedField<", type, ">");
+  }
+  return type;
 }
 
 std::string PhpGetterTypeName(const FieldDescriptor* field,
@@ -541,7 +551,7 @@ std::string BinaryToPhpString(const std::string& src) {
 
 bool GenerateField(const FieldDescriptor* field, io::Printer* printer,
                    const Options& options, std::string* error) {
-  if (field->is_required()) {
+  if (!options.is_descriptor && field->is_required()) {
     *error = absl::StrCat("Can't generate PHP code for required field ",
                           field->full_name(), ".\n");
     return false;
@@ -739,7 +749,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
 
   if (field->options().deprecated() &&
       (field->is_map() || field->is_repeated())) {
-    printer->Print("if ($arr->count() !== 0) {\n    ^deprecation_trigger^}\n",
+    printer->Print("if (count($arr) !== 0) {\n    ^deprecation_trigger^}\n",
                    "deprecation_trigger", deprecation_trigger);
   }
 
@@ -1083,15 +1093,15 @@ void GenerateUseDeclaration(const Options& options, io::Printer* printer) {
   if (!options.is_descriptor) {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
-        "use Google\\Protobuf\\Internal\\RepeatedField;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
+        "use Google\\Protobuf\\RepeatedField;\n\n");
   } else {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\GPBWire;\n"
-        "use Google\\Protobuf\\Internal\\RepeatedField;\n"
         "use Google\\Protobuf\\Internal\\InputStream;\n"
-        "use Google\\Protobuf\\Internal\\GPBUtil;\n\n");
+        "use Google\\Protobuf\\Internal\\GPBUtil;\n"
+        "use Google\\Protobuf\\RepeatedField;\n\n");
   }
 }
 
@@ -1155,7 +1165,7 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
 bool GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
                       GeneratorContext* generator_context, std::string* error) {
-  if (en->is_closed()) {
+  if (!options.is_descriptor && en->is_closed()) {
     *error = absl::StrCat("Can't generate PHP code for closed enum ",
                           en->full_name(),
                           ".  Please use either proto3 or editions without "
@@ -1757,6 +1767,8 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
 
   for (int i = 0; i < message->field_count(); i++) {
     auto field = message->field(i);
+    auto camel_name = UnderscoresToCamelCase(field->name(), true);
+
     printer->Print(
         "static PHP_METHOD($c_name$, get$camel_name$) {\n"
         "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
@@ -1780,8 +1792,19 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
         "  RETURN_COPY(getThis());\n"
         "}\n"
         "\n",
-        "c_name", c_name, "name", field->name(), "camel_name",
-        UnderscoresToCamelCase(field->name(), true));
+        "c_name", c_name, "name", field->name(), "camel_name", camel_name);
+
+    if (field->has_presence()) {
+      printer->Print(
+          "static PHP_METHOD($c_name$, has$camel_name$) {\n"
+          "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+          "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+          "      intern->desc->msgdef, \"$name$\");\n"
+          "  RETVAL_BOOL(upb_Message_HasFieldByDef(intern->msg, f));\n"
+          "}\n"
+          "\n",
+          "c_name", c_name, "name", field->name(), "camel_name", camel_name);
+    }
   }
 
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
@@ -1825,12 +1848,20 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
 
   for (int i = 0; i < message->field_count(); i++) {
     auto field = message->field(i);
+    auto camel_name = UnderscoresToCamelCase(field->name(), true);
+
     printer->Print(
         "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n"
         "  PHP_ME($c_name$, set$camel_name$, arginfo_setter, "
         "ZEND_ACC_PUBLIC)\n",
-        "c_name", c_name, "camel_name",
-        UnderscoresToCamelCase(field->name(), true));
+        "c_name", c_name, "camel_name", camel_name);
+
+    if (field->has_presence()) {
+      printer->Print(
+          "  PHP_ME($c_name$, has$camel_name$, arginfo_void, "
+          "ZEND_ACC_PUBLIC)\n",
+          "c_name", c_name, "camel_name", camel_name);
+    }
   }
 
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
@@ -2049,13 +2080,13 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             std::string* error) const {
   Options options;
 
-  for (const auto& option : absl::StrSplit(parameter, ",", absl::SkipEmpty())) {
+  for (const auto& option : absl::StrSplit(parameter, ',', absl::SkipEmpty())) {
     const std::vector<std::string> option_pair =
-        absl::StrSplit(option, "=", absl::SkipEmpty());
+        absl::StrSplit(option, '=', absl::SkipEmpty());
     if (absl::StartsWith(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
       for (const auto& prefix :
-           absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
+           absl::StrSplit(option_pair[1], '#', absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
         ABSL_LOG(INFO) << prefix;
       }

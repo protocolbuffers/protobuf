@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-edition = "2023";
+edition = "2024";
 
 // Treat all fields as implicit present by default (proto3 behavior).
 option features.field_presence = IMPLICIT;
@@ -14,7 +14,7 @@ option features.field_presence = IMPLICIT;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-// In map_test_util.h we do "using namespace unittest = protobuf_unittest".
+// In map_test_util.h we do "using namespace unittest = proto2_unittest".
 package proto3_unittest;
 
 message TestProto3BytesMap {
@@ -23,5 +23,7 @@ message TestProto3BytesMap {
 }
 
 message TestI32StrMap {
+  option features.enforce_naming_style = STYLE_LEGACY;
+
   map<int32, string> m_32_str = 1;
 }

@@ -17,17 +17,17 @@ namespace {
 // This test only checks whether well-known types are included in protobuf
 // runtime library. The test passes if it compiles.
 TEST(WellKnownTypesTest, AllKnownTypesAreIncluded) {
-  protobuf_unittest::TestWellKnownTypes message;
-  EXPECT_EQ(0, message.any_field().ByteSize());
-  EXPECT_EQ(0, message.api_field().ByteSize());
-  EXPECT_EQ(0, message.duration_field().ByteSize());
-  EXPECT_EQ(0, message.empty_field().ByteSize());
-  EXPECT_EQ(0, message.field_mask_field().ByteSize());
-  EXPECT_EQ(0, message.source_context_field().ByteSize());
-  EXPECT_EQ(0, message.struct_field().ByteSize());
-  EXPECT_EQ(0, message.timestamp_field().ByteSize());
-  EXPECT_EQ(0, message.type_field().ByteSize());
-  EXPECT_EQ(0, message.int32_field().ByteSize());
+  proto2_unittest::TestWellKnownTypes message;
+  EXPECT_EQ(0, message.any_field().ByteSizeLong());
+  EXPECT_EQ(0, message.api_field().ByteSizeLong());
+  EXPECT_EQ(0, message.duration_field().ByteSizeLong());
+  EXPECT_EQ(0, message.empty_field().ByteSizeLong());
+  EXPECT_EQ(0, message.field_mask_field().ByteSizeLong());
+  EXPECT_EQ(0, message.source_context_field().ByteSizeLong());
+  EXPECT_EQ(0, message.struct_field().ByteSizeLong());
+  EXPECT_EQ(0, message.timestamp_field().ByteSizeLong());
+  EXPECT_EQ(0, message.type_field().ByteSizeLong());
+  EXPECT_EQ(0, message.int32_field().ByteSizeLong());
 }
 
 }  // namespace

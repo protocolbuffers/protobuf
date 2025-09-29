@@ -7,6 +7,7 @@
 
 #include "upb_generator/minitable/generator.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <map>
 #include <string>
@@ -15,21 +16,23 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/memory/memory.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "upb/mini_table/enum.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.hpp"
+#include "upb/wire/decode_fast/select.h"
 #include "upb_generator/common.h"
 #include "upb_generator/common/names.h"
 #include "upb_generator/file_layout.h"
-#include "upb_generator/minitable/fasttable.h"
 #include "upb_generator/minitable/names.h"
 #include "upb_generator/minitable/names_internal.h"
-#include "upb_generator/plugin.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -166,15 +169,9 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("};\n\n");
   }
 
-  std::vector<TableEntry> table;
-  uint8_t table_mask = ~0;
-
-  table = FastDecodeTable(message, pools);
-
-  if (table.size() > 1) {
-    UPB_ASSERT((table.size() & (table.size() - 1)) == 0);
-    table_mask = (table.size() - 1) << 3;
-  }
+  upb_DecodeFast_TableEntry table_entries[32];
+  int table_size = upb_DecodeFast_BuildTable(mt_64, table_entries);
+  uint8_t table_mask = upb_DecodeFast_GetTableMask(table_size);
 
   std::string msgext = "kUpb_ExtMode_NonExtendable";
 
@@ -197,11 +194,13 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   output("#ifdef UPB_TRACING_ENABLED\n");
   output("  \"$0\",\n", message.full_name());
   output("#endif\n");
-  if (!table.empty()) {
+  if (table_size > 0) {
     output("  UPB_FASTTABLE_INIT({\n");
-    for (const auto& ent : table) {
-      output("    {0x$1, &$0},\n", ent.first,
-             absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
+    for (int i = 0; i < table_size; i++) {
+      output("    {0x$1, &$0},\n",
+             upb_DecodeFast_GetFunctionName(table_entries[i].function_idx),
+             absl::StrCat(
+                 absl::Hex(table_entries[i].function_data, absl::kZeroPad16)));
     }
     output("  })\n");
   }
@@ -427,14 +426,14 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 std::string MultipleSourceFilename(upb::FileDefPtr file,
                                    absl::string_view full_name, int* i) {
   *i += 1;
-  return absl::StrCat(StripExtension(file.name()), ".upb_weak_minitables/",
-                      *i, ".upb.c");
+  return absl::StrCat(StripExtension(file.name()), ".upb_weak_minitables/", *i,
+                      ".upb.c");
 }
 
-void WriteMiniTableMultipleSources(const DefPoolPair& pools,
-                                   upb::FileDefPtr file,
-                                   const MiniTableOptions& options,
-                                   Plugin* plugin) {
+void WriteMiniTableMultipleSources(
+    const DefPoolPair& pools, upb::FileDefPtr file,
+    const MiniTableOptions& options,
+    google::protobuf::compiler::GeneratorContext* context) {
   std::vector<upb::MessageDefPtr> messages = SortedMessages(file);
   std::vector<upb::FieldDefPtr> extensions = SortedExtensions(file);
   std::vector<upb::EnumDefPtr> enums = SortedEnums(file, kClosedEnums);
@@ -444,22 +443,25 @@ void WriteMiniTableMultipleSources(const DefPoolPair& pools,
     Output output;
     WriteMiniTableSourceIncludes(file, options, output);
     WriteMessage(message, pools, options, output);
-    plugin->AddOutputFile(MultipleSourceFilename(file, message.full_name(), &i),
-                          output.output());
+    auto stream = absl::WrapUnique(
+        context->Open(MultipleSourceFilename(file, message.full_name(), &i)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(output.output())));
   }
   for (const auto e : enums) {
     Output output;
     WriteMiniTableSourceIncludes(file, options, output);
     WriteEnum(e, output);
-    plugin->AddOutputFile(MultipleSourceFilename(file, e.full_name(), &i),
-                          output.output());
+    auto stream = absl::WrapUnique(
+        context->Open(MultipleSourceFilename(file, e.full_name(), &i)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(output.output())));
   }
   for (const auto ext : extensions) {
     Output output;
     WriteMiniTableSourceIncludes(file, options, output);
     WriteExtension(pools, ext, output);
-    plugin->AddOutputFile(MultipleSourceFilename(file, ext.full_name(), &i),
-                          output.output());
+    auto stream = absl::WrapUnique(
+        context->Open(MultipleSourceFilename(file, ext.full_name(), &i)));
+    ABSL_CHECK(stream->WriteCord(absl::Cord(output.output())));
   }
 }
 

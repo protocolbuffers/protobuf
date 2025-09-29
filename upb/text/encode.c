@@ -15,8 +15,11 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/common.h"
+#include "upb/hash/int_table.h"
 #include "upb/lex/round_trip.h"
 #include "upb/message/array.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/map_sorter.h"
 #include "upb/message/map.h"
@@ -144,6 +147,19 @@ static void _upb_TextEncode_Map(txtenc* e, const upb_Map* map,
   } else {
     if (upb_Map_Size(map) == 0) return;
 
+    if (!map->UPB_PRIVATE(is_strtable)) {
+      // For inttable, first encode the array part, then sort the table entries.
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      while ((size_t)++iter < map->t.inttable.array_size) {
+        upb_value value = map->t.inttable.array[iter];
+        if (upb_inttable_arrhas(&map->t.inttable, iter)) {
+          upb_MessageValue key, val;
+          memcpy(&key, &iter, sizeof(iter));
+          _upb_map_fromvalue(value, &val, map->val_size);
+          _upb_TextEncode_MapEntry(e, key, val, f);
+        }
+      }
+    }
     const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
     const upb_FieldDef* key_f = upb_MessageDef_Field(entry, 0);
     _upb_sortedmap sorted;
@@ -176,19 +192,7 @@ static void _upb_TextEncode_Msg(txtenc* e, const upb_Message* msg,
     }
   }
 
-  if ((e->options & UPB_TXTENC_SKIPUNKNOWN) == 0) {
-    size_t size;
-    const char* ptr = upb_Message_GetUnknown(msg, &size);
-    if (size != 0) {
-      char* start = e->ptr;
-      upb_EpsCopyInputStream stream;
-      upb_EpsCopyInputStream_Init(&stream, &ptr, size, true);
-      if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, ptr, &stream, -1)) {
-        /* Unknown failed to parse, back up and don't print it at all. */
-        e->ptr = start;
-      }
-    }
-  }
+  UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(e, msg);
 }
 
 size_t upb_TextEncode(const upb_Message* msg, const upb_MessageDef* m,

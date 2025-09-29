@@ -1,4 +1,7 @@
-#include <iostream>
+#include <cstddef>
+#include <cstdint>
+#include <fstream>
+#include <sstream>
 #include <string>
 
 #ifdef _WIN32
@@ -12,38 +15,152 @@
 #include "absl/flags/parse.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 
 #if defined(_WIN32)
 #include "google/protobuf/io/io_win32.h"
 
-// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
-// them like we do below.
+// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and
+// import them like we do below.
 using google::protobuf::io::win32::setmode;
 #endif
 
 ABSL_FLAG(std::string, encoding, "octal",
           "The encoding to use for the output.");
+ABSL_FLAG(std::string, defaults_path, "defaults_path",
+          "The path to the compile_edition_defaults file to embed.");
+ABSL_FLAG(std::string, template_path, "template_path",
+          "The template to use for generating the output file.");
+ABSL_FLAG(std::string, output_path, "output_path",
+          "The path to the the output file.");
+ABSL_FLAG(
+    std::string, placeholder, "placeholder",
+    "The placeholder to replace with a serialized string in the template.");
 
-int main(int argc, char *argv[]) {
-  absl::ParseCommandLine(argc, argv);
-#ifdef _WIN32
-  setmode(STDIN_FILENO, _O_BINARY);
-  setmode(STDOUT_FILENO, _O_BINARY);
-#endif
-  google::protobuf::FeatureSetDefaults defaults;
-  if (!defaults.ParseFromFileDescriptor(STDIN_FILENO)) {
-    std::cerr << argv[0] << ": unable to parse edition defaults." << std::endl;
+int defaults_escape(const std::string& defaults_path,
+                    const std::string& encoding, std::string& out_content) {
+  std::ifstream defaults_file(defaults_path);
+  if (!defaults_file.is_open()) {
+    ABSL_LOG(ERROR) << "Could not open defaults file " << defaults_path;
     return 1;
   }
-  std::string output;
-  defaults.SerializeToString(&output);
-  std::string encoding = absl::GetFlag(FLAGS_encoding);
+
+  google::protobuf::FeatureSetDefaults defaults;
+  if (!defaults.ParseFromIstream(&defaults_file)) {
+    ABSL_LOG(ERROR) << "Unable to parse edition defaults " << defaults_path;
+    defaults_file.close();
+    return 1;
+  }
+
+  defaults_file.close();
+
+  std::string content = {};
+  defaults.SerializeToString(&content);
   if (encoding == "base64") {
-    std::cout << absl::Base64Escape(output);
+    content = absl::Base64Escape(content);
   } else if (encoding == "octal") {
-    std::cout << absl::CEscape(output);
+    content = absl::CEscape(content);
+  } else if (encoding == "decimal_array") {
+    std::string encoded;
+    bool first = true;
+    for (uint8_t c : content) {
+      if (first) {
+        first = false;
+        absl::StrAppend(&encoded, c);
+      } else {
+        absl::StrAppend(&encoded, ", ", c);
+      }
+    }
+    content = encoded;
+  } else if (encoding == "hex_array") {
+    std::string encoded = {};
+    size_t count = 0;
+    for (uint8_t c : content) {
+      absl::string_view prefix =
+          (count % 12 != 0) ? ", 0x" : (count == 0 ? "  0x" : ",\n  0x");
+      absl::StrAppend(&encoded, prefix, absl::Hex(c, absl::kZeroPad2));
+      ++count;
+    }
+    content = encoded;
   } else {
     ABSL_LOG(FATAL) << "Unknown encoding: " << encoding;
+    return 1;
   }
+
+  out_content = content;
+  return 0;
+}
+
+int read_to_string(const std::string& path, std::string& out_content) {
+  std::ifstream input_file(path);
+  if (!input_file.is_open()) {
+    ABSL_LOG(ERROR) << "Could not open file " << path;
+    return 1;
+  }
+
+  std::ostringstream buffer;
+  buffer << input_file.rdbuf();
+  out_content = buffer.str();
+  input_file.close();
+
+  return 0;
+}
+
+int replace_placeholder(std::string& out_content,
+                        const std::string& placeholder,
+                        const std::string& replacement) {
+  size_t pos = 0;
+
+  while ((pos = out_content.find(placeholder, pos)) != std::string::npos) {
+    out_content.replace(pos, placeholder.length(), replacement);
+    pos += replacement.length();
+  }
+
+  return 0;
+}
+
+int write(const std::string& path, const std::string& content) {
+  std::ofstream output_file(path);
+  if (!output_file.is_open()) {
+    ABSL_LOG(ERROR) << "Could not write to file " << path;
+    return 1;
+  }
+
+  output_file << content;
+  output_file.close();
+
+  return 0;
+}
+
+int main(int argc, char* argv[]) {
+  absl::ParseCommandLine(argc, argv);
+#ifdef _WIN32
+  setmode(STDOUT_FILENO, _O_BINARY);
+#endif
+  std::string encoding = absl::GetFlag(FLAGS_encoding);
+  std::string defaults_path = absl::GetFlag(FLAGS_defaults_path);
+  std::string template_path = absl::GetFlag(FLAGS_template_path);
+  std::string output_path = absl::GetFlag(FLAGS_output_path);
+  std::string placeholder = absl::GetFlag(FLAGS_placeholder);
+
+  std::string replacement = {};
+  if (defaults_escape(defaults_path, encoding, replacement)) {
+    return 1;
+  }
+
+  std::string content = {};
+  if (read_to_string(template_path, content)) {
+    return 1;
+  }
+
+  if (replace_placeholder(content, placeholder, replacement)) {
+    return 1;
+  }
+
+  if (write(output_path, content)) {
+    return 1;
+  }
+
   return 0;
 }

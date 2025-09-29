@@ -12,14 +12,23 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <limits>
+#include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
 #include "absl/strings/internal/resize_uninitialized.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -226,7 +235,7 @@ bool CopyingInputStreamAdaptor::Next(const void** data, int* size) {
 }
 
 void CopyingInputStreamAdaptor::BackUp(int count) {
-  ABSL_CHECK(backup_bytes_ == 0 && buffer_.get() != NULL)
+  ABSL_CHECK(backup_bytes_ == 0 && buffer_ != nullptr)
       << " BackUp() can only be called after Next().";
   ABSL_CHECK_LE(count, buffer_used_)
       << " Can't back up over more bytes than were returned by the last call"
@@ -264,7 +273,7 @@ int64_t CopyingInputStreamAdaptor::ByteCount() const {
 }
 
 void CopyingInputStreamAdaptor::AllocateBufferIfNeeded() {
-  if (buffer_.get() == NULL) {
+  if (buffer_ == nullptr) {
     buffer_.reset(new uint8_t[buffer_size_]);
   }
 }
@@ -347,7 +356,7 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
     if (size <= out_size) {
       std::memcpy(out, data, size);
       BackUp(out_size - size);
-      return true;
+      break;
     }
 
     std::memcpy(out, data, out_size);
@@ -386,7 +395,7 @@ bool CopyingOutputStreamAdaptor::WriteBuffer() {
 }
 
 void CopyingOutputStreamAdaptor::AllocateBufferIfNeeded() {
-  if (buffer_ == NULL) {
+  if (buffer_ == nullptr) {
     buffer_.reset(new uint8_t[buffer_size_]);
   }
 }
@@ -617,7 +626,7 @@ bool CordOutputStream::Next(void** data, int* size) {
     case State::kFull:
       assert(buffer_.length() > 0);
       cord_.Append(std::move(buffer_));
-      ABSL_FALLTHROUGH_INTENDED;
+      [[fallthrough]];
     case State::kEmpty:
       assert(buffer_.length() == 0);
       buffer_ = absl::CordBuffer::CreateWithDefaultLimit(desired_size);

@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 """Descriptors essentially contain exactly the information found in a .proto
+
 file, in types that make this information accessible in Python.
 """
 
@@ -50,6 +51,7 @@ if _USE_C_DESCRIPTORS:
       if isinstance(obj, cls._C_DESCRIPTOR_CLASS):
         return True
       return False
+
 else:
   # The standard metaclass; nothing changes.
   DescriptorMetaclass = abc.ABCMeta
@@ -73,15 +75,18 @@ class _Lock(object):
 _lock = threading.Lock()
 
 
-def _Deprecated(name):
+def _Deprecated(
+    name,
+    alternative='get/find descriptors from generated code or query the descriptor_pool',
+):
   if _Deprecated.count > 0:
     _Deprecated.count -= 1
     warnings.warn(
-        'Call to deprecated create function %s(). Note: Create unlinked '
-        'descriptors is going to go away. Please use get/find descriptors from '
-        'generated code or query the descriptor_pool.'
-        % name,
-        category=DeprecationWarning, stacklevel=3)
+        'Call to deprecated %s, use %s instead.' % (name, alternative),
+        category=DeprecationWarning,
+        stacklevel=3,
+    )
+
 
 # These must match the values in descriptor.proto, but we can't use them
 # directly because we sometimes need to reference them in feature helpers
@@ -101,7 +106,6 @@ _internal_create_key = object()
 
 
 class DescriptorBase(metaclass=DescriptorMetaclass):
-
   """Descriptors base class.
 
   This class is the base of all descriptor classes. It provides common options
@@ -123,18 +127,22 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
 
   def __init__(self, file, options, serialized_options, options_class_name):
     """Initialize the descriptor given its options message and the name of the
+
     class of the options message. The name of the class is required in case
     the options message is None and has to be created.
     """
     self._features = None
     self.file = file
-    self._options = options
-    self._loaded_options = None
+    self._original_options = options
+    # These two fields are duplicated as a compatibility shim for old gencode
+    # that resets them.  In 26.x (cl/580304039) we renamed _options to,
+    # _loaded_options breaking backwards compatibility.
+    self._options = self._loaded_options = None
     self._options_class_name = options_class_name
     self._serialized_options = serialized_options
 
     # Does this descriptor have non-default options?
-    self.has_options = (self._options is not None) or (
+    self.has_options = (self._original_options is not None) or (
         self._serialized_options is not None
     )
 
@@ -186,7 +194,8 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
 
   def _LazyLoadOptions(self):
     """Lazily initializes descriptor options towards the end of the build."""
-    if self._loaded_options:
+    if self._options and self._loaded_options == self._options:
+      # If neither has been reset by gencode, use the cache.
       return
 
     # pylint: disable=g-import-not-at-top
@@ -206,12 +215,12 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
             descriptor_pb2.Edition.Value(edition), options_class()
         )
       with _lock:
-        self._loaded_options = options_class()
+        self._options = self._loaded_options = options_class()
         if not self._features:
           self._features = features
     else:
       if not self._serialized_options:
-        options = self._options
+        options = self._original_options
       else:
         options = _ParseOptions(options_class(), self._serialized_options)
 
@@ -220,13 +229,13 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
             descriptor_pb2.Edition.Value(edition), options
         )
       with _lock:
-        self._loaded_options = options
+        self._options = self._loaded_options = options
         if not self._features:
           self._features = features
         if options.HasField('features'):
           options.ClearField('features')
           if not options.SerializeToString():
-            self._loaded_options = options_class()
+            self._options = self._loaded_options = options_class()
             self.has_options = False
 
   def GetOptions(self):
@@ -235,17 +244,27 @@ class DescriptorBase(metaclass=DescriptorMetaclass):
     Returns:
       The options set on this descriptor.
     """
-    if not self._loaded_options:
+    # If either has been reset by gencode, reload options.
+    if not self._options or not self._loaded_options:
       self._LazyLoadOptions()
-    return self._loaded_options
+    return self._options
 
 
 class _NestedDescriptorBase(DescriptorBase):
   """Common class for descriptors that can be nested."""
 
-  def __init__(self, options, options_class_name, name, full_name,
-               file, containing_type, serialized_start=None,
-               serialized_end=None, serialized_options=None):
+  def __init__(
+      self,
+      options,
+      options_class_name,
+      name,
+      full_name,
+      file,
+      containing_type,
+      serialized_start=None,
+      serialized_end=None,
+      serialized_options=None,
+  ):
     """Constructor.
 
     Args:
@@ -286,59 +305,60 @@ class _NestedDescriptorBase(DescriptorBase):
       Error: If self couldn't be serialized, due to to few constructor
         arguments.
     """
-    if (self.file is not None and
-        self._serialized_start is not None and
-        self._serialized_end is not None):
-      proto.ParseFromString(self.file.serialized_pb[
-          self._serialized_start:self._serialized_end])
+    if (
+        self.file is not None
+        and self._serialized_start is not None
+        and self._serialized_end is not None
+    ):
+      proto.ParseFromString(
+          self.file.serialized_pb[self._serialized_start : self._serialized_end]
+      )
     else:
       raise Error('Descriptor does not contain serialization.')
 
 
 class Descriptor(_NestedDescriptorBase):
-
   """Descriptor for a protocol message type.
 
   Attributes:
       name (str): Name of this protocol message type.
-      full_name (str): Fully-qualified name of this protocol message type,
-          which will include protocol "package" name and the name of any
-          enclosing types.
+      full_name (str): Fully-qualified name of this protocol message type, which
+        will include protocol "package" name and the name of any enclosing
+        types.
       containing_type (Descriptor): Reference to the descriptor of the type
-          containing us, or None if this is top-level.
-      fields (list[FieldDescriptor]): Field descriptors for all fields in
-          this type.
+        containing us, or None if this is top-level.
+      fields (list[FieldDescriptor]): Field descriptors for all fields in this
+        type.
       fields_by_number (dict(int, FieldDescriptor)): Same
-          :class:`FieldDescriptor` objects as in :attr:`fields`, but indexed
-          by "number" attribute in each FieldDescriptor.
-      fields_by_name (dict(str, FieldDescriptor)): Same
-          :class:`FieldDescriptor` objects as in :attr:`fields`, but indexed by
-          "name" attribute in each :class:`FieldDescriptor`.
-      nested_types (list[Descriptor]): Descriptor references
-          for all protocol message types nested within this one.
-      nested_types_by_name (dict(str, Descriptor)): Same Descriptor
-          objects as in :attr:`nested_types`, but indexed by "name" attribute
-          in each Descriptor.
-      enum_types (list[EnumDescriptor]): :class:`EnumDescriptor` references
-          for all enums contained within this type.
+        :class:`FieldDescriptor` objects as in :attr:`fields`, but indexed by
+        "number" attribute in each FieldDescriptor.
+      fields_by_name (dict(str, FieldDescriptor)): Same :class:`FieldDescriptor`
+        objects as in :attr:`fields`, but indexed by "name" attribute in each
+        :class:`FieldDescriptor`.
+      nested_types (list[Descriptor]): Descriptor references for all protocol
+        message types nested within this one.
+      nested_types_by_name (dict(str, Descriptor)): Same Descriptor objects as
+        in :attr:`nested_types`, but indexed by "name" attribute in each
+        Descriptor.
+      enum_types (list[EnumDescriptor]): :class:`EnumDescriptor` references for
+        all enums contained within this type.
       enum_types_by_name (dict(str, EnumDescriptor)): Same
-          :class:`EnumDescriptor` objects as in :attr:`enum_types`, but
-          indexed by "name" attribute in each EnumDescriptor.
-      enum_values_by_name (dict(str, EnumValueDescriptor)): Dict mapping
-          from enum value name to :class:`EnumValueDescriptor` for that value.
-      extensions (list[FieldDescriptor]): All extensions defined directly
-          within this message type (NOT within a nested type).
+        :class:`EnumDescriptor` objects as in :attr:`enum_types`, but indexed by
+        "name" attribute in each EnumDescriptor.
+      enum_values_by_name (dict(str, EnumValueDescriptor)): Dict mapping from
+        enum value name to :class:`EnumValueDescriptor` for that value.
+      extensions (list[FieldDescriptor]): All extensions defined directly within
+        this message type (NOT within a nested type).
       extensions_by_name (dict(str, FieldDescriptor)): Same FieldDescriptor
-          objects as :attr:`extensions`, but indexed by "name" attribute of each
-          FieldDescriptor.
+        objects as :attr:`extensions`, but indexed by "name" attribute of each
+        FieldDescriptor.
       is_extendable (bool):  Does this type define any extension ranges?
       oneofs (list[OneofDescriptor]): The list of descriptors for oneof fields
-          in this message.
+        in this message.
       oneofs_by_name (dict(str, OneofDescriptor)): Same objects as in
-          :attr:`oneofs`, but indexed by "name" attribute.
+        :attr:`oneofs`, but indexed by "name" attribute.
       file (FileDescriptor): Reference to file descriptor.
       is_map_entry: If the message type is a map entry.
-
   """
 
   if _USE_C_DESCRIPTORS:
@@ -364,32 +384,57 @@ class Descriptor(_NestedDescriptorBase):
         serialized_end=None,
         syntax=None,
         is_map_entry=False,
-        create_key=None):
+        create_key=None,
+    ):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
   # NOTE: The file argument redefining a builtin is nothing we can
   # fix right now since we don't know how many clients already rely on the
   # name of the argument.
-  def __init__(self, name, full_name, filename, containing_type, fields,
-               nested_types, enum_types, extensions, options=None,
-               serialized_options=None,
-               is_extendable=True, extension_ranges=None, oneofs=None,
-               file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-               syntax=None, is_map_entry=False, create_key=None):
+  def __init__(
+      self,
+      name,
+      full_name,
+      filename,
+      containing_type,
+      fields,
+      nested_types,
+      enum_types,
+      extensions,
+      options=None,
+      serialized_options=None,
+      is_extendable=True,
+      extension_ranges=None,
+      oneofs=None,
+      file=None,
+      serialized_start=None,
+      serialized_end=None,  # pylint: disable=redefined-builtin
+      syntax=None,
+      is_map_entry=False,
+      create_key=None,
+  ):
     """Arguments to __init__() are as described in the description
+
     of Descriptor fields above.
 
     Note that filename is an obsolete argument, that is not used anymore.
     Please use file.name to access this as an attribute.
     """
     if create_key is not _internal_create_key:
-      _Deprecated('Descriptor')
+      _Deprecated('create function Descriptor()')
 
     super(Descriptor, self).__init__(
-        options, 'MessageOptions', name, full_name, file,
-        containing_type, serialized_start=serialized_start,
-        serialized_end=serialized_end, serialized_options=serialized_options)
+        options,
+        'MessageOptions',
+        name,
+        full_name,
+        file,
+        containing_type,
+        serialized_start=serialized_start,
+        serialized_end=serialized_end,
+        serialized_options=serialized_options,
+    )
 
     # We have fields in addition to fields_by_name and fields_by_number,
     # so that:
@@ -414,7 +459,8 @@ class Descriptor(_NestedDescriptorBase):
       enum_type.containing_type = self
     self.enum_types_by_name = dict((t.name, t) for t in enum_types)
     self.enum_values_by_name = dict(
-        (v.name, v) for t in enum_types for v in t.values)
+        (v.name, v) for t in enum_types for v in t.values
+    )
 
     self.extensions = extensions
     for extension in self.extensions:
@@ -436,11 +482,13 @@ class Descriptor(_NestedDescriptorBase):
   @property
   def fields_by_camelcase_name(self):
     """Same FieldDescriptor objects as in :attr:`fields`, but indexed by
+
     :attr:`FieldDescriptor.camelcase_name`.
     """
     if self._fields_by_camelcase_name is None:
       self._fields_by_camelcase_name = dict(
-          (f.camelcase_name, f) for f in self.fields)
+          (f.camelcase_name, f) for f in self.fields
+      )
     return self._fields_by_camelcase_name
 
   def EnumValueName(self, enum, value):
@@ -483,53 +531,42 @@ class Descriptor(_NestedDescriptorBase):
 # stronger invariants here in general will reduce the number
 # of runtime checks we must do in reflection.py...
 class FieldDescriptor(DescriptorBase):
-
   """Descriptor for a single field in a .proto file.
 
   Attributes:
     name (str): Name of this field, exactly as it appears in .proto.
     full_name (str): Name of this field, including containing scope.  This is
       particularly relevant for extensions.
-    index (int): Dense, 0-indexed index giving the order that this
-      field textually appears within its message in the .proto file.
+    index (int): Dense, 0-indexed index giving the order that this field
+      textually appears within its message in the .proto file.
     number (int): Tag number declared for this field in the .proto file.
-
     type (int): (One of the TYPE_* constants below) Declared type.
     cpp_type (int): (One of the CPPTYPE_* constants below) C++ type used to
       represent this field.
-
-    label (int): (One of the LABEL_* constants below) Tells whether this
-      field is optional, required, or repeated.
+    label (int): (One of the LABEL_* constants below) Tells whether this field
+      is optional, required, or repeated.
     has_default_value (bool): True if this field has a default value defined,
       otherwise false.
-    default_value (Varies): Default value of this field.  Only
-      meaningful for non-repeated scalar fields.  Repeated fields
-      should always set this to [], and non-repeated composite
-      fields should always set this to None.
-
-    containing_type (Descriptor): Descriptor of the protocol message
-      type that contains this field.  Set by the Descriptor constructor
-      if we're passed into one.
-      Somewhat confusingly, for extension fields, this is the
-      descriptor of the EXTENDED message, not the descriptor
-      of the message containing this field.  (See is_extension and
-      extension_scope below).
-    message_type (Descriptor): If a composite field, a descriptor
-      of the message type contained in this field.  Otherwise, this is None.
-    enum_type (EnumDescriptor): If this field contains an enum, a
-      descriptor of that enum.  Otherwise, this is None.
-
+    default_value (Varies): Default value of this field.  Only meaningful for
+      non-repeated scalar fields.  Repeated fields should always set this to [],
+      and non-repeated composite fields should always set this to None.
+    containing_type (Descriptor): Descriptor of the protocol message type that
+      contains this field.  Set by the Descriptor constructor if we're passed
+      into one. Somewhat confusingly, for extension fields, this is the
+      descriptor of the EXTENDED message, not the descriptor of the message
+      containing this field.  (See is_extension and extension_scope below).
+    message_type (Descriptor): If a composite field, a descriptor of the message
+      type contained in this field.  Otherwise, this is None.
+    enum_type (EnumDescriptor): If this field contains an enum, a descriptor of
+      that enum.  Otherwise, this is None.
     is_extension: True iff this describes an extension field.
-    extension_scope (Descriptor): Only meaningful if is_extension is True.
-      Gives the message that immediately contains this extension field.
-      Will be None iff we're a top-level (file-level) extension field.
-
+    extension_scope (Descriptor): Only meaningful if is_extension is True. Gives
+      the message that immediately contains this extension field. Will be None
+      iff we're a top-level (file-level) extension field.
     options (descriptor_pb2.FieldOptions): Protocol message field options or
       None to use default field options.
-
     containing_oneof (OneofDescriptor): If the field is a member of a oneof
       union, contains its descriptor. Otherwise, None.
-
     file (FileDescriptor): Reference to file descriptor.
   """
 
@@ -537,41 +574,41 @@ class FieldDescriptor(DescriptorBase):
   # descriptor.h.
   #
   # TODO: Find a way to eliminate this repetition.
-  TYPE_DOUBLE         = 1
-  TYPE_FLOAT          = 2
-  TYPE_INT64          = 3
-  TYPE_UINT64         = 4
-  TYPE_INT32          = 5
-  TYPE_FIXED64        = 6
-  TYPE_FIXED32        = 7
-  TYPE_BOOL           = 8
-  TYPE_STRING         = 9
-  TYPE_GROUP          = 10
-  TYPE_MESSAGE        = 11
-  TYPE_BYTES          = 12
-  TYPE_UINT32         = 13
-  TYPE_ENUM           = 14
-  TYPE_SFIXED32       = 15
-  TYPE_SFIXED64       = 16
-  TYPE_SINT32         = 17
-  TYPE_SINT64         = 18
-  MAX_TYPE            = 18
+  TYPE_DOUBLE = 1
+  TYPE_FLOAT = 2
+  TYPE_INT64 = 3
+  TYPE_UINT64 = 4
+  TYPE_INT32 = 5
+  TYPE_FIXED64 = 6
+  TYPE_FIXED32 = 7
+  TYPE_BOOL = 8
+  TYPE_STRING = 9
+  TYPE_GROUP = 10
+  TYPE_MESSAGE = 11
+  TYPE_BYTES = 12
+  TYPE_UINT32 = 13
+  TYPE_ENUM = 14
+  TYPE_SFIXED32 = 15
+  TYPE_SFIXED64 = 16
+  TYPE_SINT32 = 17
+  TYPE_SINT64 = 18
+  MAX_TYPE = 18
 
   # Must be consistent with C++ FieldDescriptor::CppType enum in
   # descriptor.h.
   #
   # TODO: Find a way to eliminate this repetition.
-  CPPTYPE_INT32       = 1
-  CPPTYPE_INT64       = 2
-  CPPTYPE_UINT32      = 3
-  CPPTYPE_UINT64      = 4
-  CPPTYPE_DOUBLE      = 5
-  CPPTYPE_FLOAT       = 6
-  CPPTYPE_BOOL        = 7
-  CPPTYPE_ENUM        = 8
-  CPPTYPE_STRING      = 9
-  CPPTYPE_MESSAGE     = 10
-  MAX_CPPTYPE         = 10
+  CPPTYPE_INT32 = 1
+  CPPTYPE_INT64 = 2
+  CPPTYPE_UINT32 = 3
+  CPPTYPE_UINT64 = 4
+  CPPTYPE_DOUBLE = 5
+  CPPTYPE_FLOAT = 6
+  CPPTYPE_BOOL = 7
+  CPPTYPE_ENUM = 8
+  CPPTYPE_STRING = 9
+  CPPTYPE_MESSAGE = 10
+  MAX_CPPTYPE = 10
 
   _PYTHON_TO_CPP_PROTO_TYPE_MAP = {
       TYPE_DOUBLE: CPPTYPE_DOUBLE,
@@ -591,17 +628,17 @@ class FieldDescriptor(DescriptorBase):
       TYPE_STRING: CPPTYPE_STRING,
       TYPE_BOOL: CPPTYPE_BOOL,
       TYPE_MESSAGE: CPPTYPE_MESSAGE,
-      TYPE_GROUP: CPPTYPE_MESSAGE
-      }
+      TYPE_GROUP: CPPTYPE_MESSAGE,
+  }
 
   # Must be consistent with C++ FieldDescriptor::Label enum in
   # descriptor.h.
   #
   # TODO: Find a way to eliminate this repetition.
-  LABEL_OPTIONAL      = 1
-  LABEL_REQUIRED      = 2
-  LABEL_REPEATED      = 3
-  MAX_LABEL           = 3
+  LABEL_OPTIONAL = 1
+  LABEL_REQUIRED = 2
+  LABEL_REPEATED = 3
+  MAX_LABEL = 3
 
   # Must be consistent with C++ constants kMaxNumber, kFirstReservedNumber,
   # and kLastReservedNumber in descriptor.h
@@ -612,25 +649,60 @@ class FieldDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.FieldDescriptor
 
-    def __new__(cls, name, full_name, index, number, type, cpp_type, label,
-                default_value, message_type, enum_type, containing_type,
-                is_extension, extension_scope, options=None,
-                serialized_options=None,
-                has_default_value=True, containing_oneof=None, json_name=None,
-                file=None, create_key=None):  # pylint: disable=redefined-builtin
+    def __new__(
+        cls,
+        name,
+        full_name,
+        index,
+        number,
+        type,
+        cpp_type,
+        label,
+        default_value,
+        message_type,
+        enum_type,
+        containing_type,
+        is_extension,
+        extension_scope,
+        options=None,
+        serialized_options=None,
+        has_default_value=True,
+        containing_oneof=None,
+        json_name=None,
+        file=None,
+        create_key=None,
+    ):  # pylint: disable=redefined-builtin
       _message.Message._CheckCalledFromGeneratedFile()
       if is_extension:
         return _message.default_pool.FindExtensionByName(full_name)
       else:
         return _message.default_pool.FindFieldByName(full_name)
 
-  def __init__(self, name, full_name, index, number, type, cpp_type, label,
-               default_value, message_type, enum_type, containing_type,
-               is_extension, extension_scope, options=None,
-               serialized_options=None,
-               has_default_value=True, containing_oneof=None, json_name=None,
-               file=None, create_key=None):  # pylint: disable=redefined-builtin
+  def __init__(
+      self,
+      name,
+      full_name,
+      index,
+      number,
+      type,
+      cpp_type,
+      label,
+      default_value,
+      message_type,
+      enum_type,
+      containing_type,
+      is_extension,
+      extension_scope,
+      options=None,
+      serialized_options=None,
+      has_default_value=True,
+      containing_oneof=None,
+      json_name=None,
+      file=None,
+      create_key=None,
+  ):  # pylint: disable=redefined-builtin
     """The arguments are as described in the description of FieldDescriptor
+
     attributes above.
 
     Note that containing_type may be None, and may be set later if necessary
@@ -638,7 +710,7 @@ class FieldDescriptor(DescriptorBase):
     Likewise for extension_scope.
     """
     if create_key is not _internal_create_key:
-      _Deprecated('FieldDescriptor')
+      _Deprecated('create function FieldDescriptor()')
 
     super(FieldDescriptor, self).__init__(
         file, options, serialized_options, 'FieldOptions'
@@ -721,12 +793,27 @@ class FieldDescriptor(DescriptorBase):
 
   @property
   def label(self):
+    _Deprecated('label property', 'is_required or is_repeated properties')
+
     if (
         self._GetFeatures().field_presence
         == _FEATURESET_FIELD_PRESENCE_LEGACY_REQUIRED
     ):
       return FieldDescriptor.LABEL_REQUIRED
     return self._label
+
+  @property
+  def is_required(self):
+    """Returns if the field is required."""
+    return (
+        self._GetFeatures().field_presence
+        == _FEATURESET_FIELD_PRESENCE_LEGACY_REQUIRED
+    )
+
+  @property
+  def is_repeated(self):
+    """Returns if the field is repeated."""
+    return self._label == FieldDescriptor.LABEL_REPEATED
 
   @property
   def camelcase_name(self):
@@ -746,7 +833,7 @@ class FieldDescriptor(DescriptorBase):
     Raises:
       RuntimeError: singular field that is not linked with message nor file.
     """
-    if self.label == FieldDescriptor.LABEL_REPEATED:
+    if self.is_repeated:
       return False
     if (
         self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE
@@ -763,13 +850,15 @@ class FieldDescriptor(DescriptorBase):
   @property
   def is_packed(self):
     """Returns if the field is packed."""
-    if self.label != FieldDescriptor.LABEL_REPEATED:
+    if not self.is_repeated:
       return False
     field_type = self.type
-    if (field_type == FieldDescriptor.TYPE_STRING or
-        field_type == FieldDescriptor.TYPE_GROUP or
-        field_type == FieldDescriptor.TYPE_MESSAGE or
-        field_type == FieldDescriptor.TYPE_BYTES):
+    if (
+        field_type == FieldDescriptor.TYPE_STRING
+        or field_type == FieldDescriptor.TYPE_GROUP
+        or field_type == FieldDescriptor.TYPE_MESSAGE
+        or field_type == FieldDescriptor.TYPE_BYTES
+    ):
       return False
 
     return (
@@ -787,6 +876,7 @@ class FieldDescriptor(DescriptorBase):
 
     Args:
       proto_type: the Python proto type (descriptor.FieldDescriptor.TYPE_*)
+
     Returns:
       int: descriptor.FieldDescriptor.CPPTYPE_*, the C++ type.
     Raises:
@@ -799,55 +889,78 @@ class FieldDescriptor(DescriptorBase):
 
 
 class EnumDescriptor(_NestedDescriptorBase):
-
   """Descriptor for an enum defined in a .proto file.
 
   Attributes:
     name (str): Name of the enum type.
-    full_name (str): Full name of the type, including package name
-      and any enclosing type(s).
-
-    values (list[EnumValueDescriptor]): List of the values
-      in this enum.
-    values_by_name (dict(str, EnumValueDescriptor)): Same as :attr:`values`,
-      but indexed by the "name" field of each EnumValueDescriptor.
+    full_name (str): Full name of the type, including package name and any
+      enclosing type(s).
+    values (list[EnumValueDescriptor]): List of the values in this enum.
+    values_by_name (dict(str, EnumValueDescriptor)): Same as :attr:`values`, but
+      indexed by the "name" field of each EnumValueDescriptor.
     values_by_number (dict(int, EnumValueDescriptor)): Same as :attr:`values`,
       but indexed by the "number" field of each EnumValueDescriptor.
-    containing_type (Descriptor): Descriptor of the immediate containing
-      type of this enum, or None if this is an enum defined at the
-      top level in a .proto file.  Set by Descriptor's constructor
-      if we're passed into one.
+    containing_type (Descriptor): Descriptor of the immediate containing type of
+      this enum, or None if this is an enum defined at the top level in a .proto
+      file.  Set by Descriptor's constructor if we're passed into one.
     file (FileDescriptor): Reference to file descriptor.
-    options (descriptor_pb2.EnumOptions): Enum options message or
-      None to use default enum options.
+    options (descriptor_pb2.EnumOptions): Enum options message or None to use
+      default enum options.
   """
 
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.EnumDescriptor
 
-    def __new__(cls, name, full_name, filename, values,
-                containing_type=None, options=None,
-                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-                serialized_start=None, serialized_end=None, create_key=None):
+    def __new__(
+        cls,
+        name,
+        full_name,
+        filename,
+        values,
+        containing_type=None,
+        options=None,
+        serialized_options=None,
+        file=None,  # pylint: disable=redefined-builtin
+        serialized_start=None,
+        serialized_end=None,
+        create_key=None,
+    ):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindEnumTypeByName(full_name)
 
-  def __init__(self, name, full_name, filename, values,
-               containing_type=None, options=None,
-               serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-               serialized_start=None, serialized_end=None, create_key=None):
+  def __init__(
+      self,
+      name,
+      full_name,
+      filename,
+      values,
+      containing_type=None,
+      options=None,
+      serialized_options=None,
+      file=None,  # pylint: disable=redefined-builtin
+      serialized_start=None,
+      serialized_end=None,
+      create_key=None,
+  ):
     """Arguments are as described in the attribute description above.
 
     Note that filename is an obsolete argument, that is not used anymore.
     Please use file.name to access this as an attribute.
     """
     if create_key is not _internal_create_key:
-      _Deprecated('EnumDescriptor')
+      _Deprecated('create function EnumDescriptor()')
 
     super(EnumDescriptor, self).__init__(
-        options, 'EnumOptions', name, full_name, file,
-        containing_type, serialized_start=serialized_start,
-        serialized_end=serialized_end, serialized_options=serialized_options)
+        options,
+        'EnumOptions',
+        name,
+        full_name,
+        file,
+        containing_type,
+        serialized_start=serialized_start,
+        serialized_end=serialized_end,
+        serialized_options=serialized_options,
+    )
 
     self.values = values
     for value in self.values:
@@ -896,17 +1009,15 @@ class EnumDescriptor(_NestedDescriptorBase):
 
 
 class EnumValueDescriptor(DescriptorBase):
-
   """Descriptor for a single value within an enum.
 
   Attributes:
     name (str): Name of this value.
-    index (int): Dense, 0-indexed index giving the order that this
-      value appears textually within its enum in the .proto file.
+    index (int): Dense, 0-indexed index giving the order that this value appears
+      textually within its enum in the .proto file.
     number (int): Actual number assigned to this enum value.
-    type (EnumDescriptor): :class:`EnumDescriptor` to which this value
-      belongs.  Set by :class:`EnumDescriptor`'s constructor if we're
-      passed into one.
+    type (EnumDescriptor): :class:`EnumDescriptor` to which this value belongs.
+      Set by :class:`EnumDescriptor`'s constructor if we're passed into one.
     options (descriptor_pb2.EnumValueOptions): Enum value options message or
       None to use default enum value options options.
   """
@@ -914,9 +1025,16 @@ class EnumValueDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.EnumValueDescriptor
 
-    def __new__(cls, name, index, number,
-                type=None,  # pylint: disable=redefined-builtin
-                options=None, serialized_options=None, create_key=None):
+    def __new__(
+        cls,
+        name,
+        index,
+        number,
+        type=None,  # pylint: disable=redefined-builtin
+        options=None,
+        serialized_options=None,
+        create_key=None,
+    ):
       _message.Message._CheckCalledFromGeneratedFile()
       # There is no way we can build a complete EnumValueDescriptor with the
       # given parameters (the name of the Enum is not known, for example).
@@ -924,12 +1042,19 @@ class EnumValueDescriptor(DescriptorBase):
       # constructor, which will ignore it, so returning None is good enough.
       return None
 
-  def __init__(self, name, index, number,
-               type=None,  # pylint: disable=redefined-builtin
-               options=None, serialized_options=None, create_key=None):
+  def __init__(
+      self,
+      name,
+      index,
+      number,
+      type=None,  # pylint: disable=redefined-builtin
+      options=None,
+      serialized_options=None,
+      create_key=None,
+  ):
     """Arguments are as described in the attribute description above."""
     if create_key is not _internal_create_key:
-      _Deprecated('EnumValueDescriptor')
+      _Deprecated('create function EnumValueDescriptor()')
 
     super(EnumValueDescriptor, self).__init__(
         type.file if type else None,
@@ -953,30 +1078,46 @@ class OneofDescriptor(DescriptorBase):
   Attributes:
     name (str): Name of the oneof field.
     full_name (str): Full name of the oneof field, including package name.
-    index (int): 0-based index giving the order of the oneof field inside
-      its containing type.
+    index (int): 0-based index giving the order of the oneof field inside its
+      containing type.
     containing_type (Descriptor): :class:`Descriptor` of the protocol message
       type that contains this field.  Set by the :class:`Descriptor` constructor
       if we're passed into one.
-    fields (list[FieldDescriptor]): The list of field descriptors this
-      oneof can contain.
+    fields (list[FieldDescriptor]): The list of field descriptors this oneof can
+      contain.
   """
 
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.OneofDescriptor
 
     def __new__(
-        cls, name, full_name, index, containing_type, fields, options=None,
-        serialized_options=None, create_key=None):
+        cls,
+        name,
+        full_name,
+        index,
+        containing_type,
+        fields,
+        options=None,
+        serialized_options=None,
+        create_key=None,
+    ):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindOneofByName(full_name)
 
   def __init__(
-      self, name, full_name, index, containing_type, fields, options=None,
-      serialized_options=None, create_key=None):
+      self,
+      name,
+      full_name,
+      index,
+      containing_type,
+      fields,
+      options=None,
+      serialized_options=None,
+      create_key=None,
+  ):
     """Arguments are as described in the attribute description above."""
     if create_key is not _internal_create_key:
-      _Deprecated('OneofDescriptor')
+      _Deprecated('create function OneofDescriptor()')
 
     super(OneofDescriptor, self).__init__(
         containing_type.file if containing_type else None,
@@ -996,21 +1137,19 @@ class OneofDescriptor(DescriptorBase):
 
 
 class ServiceDescriptor(_NestedDescriptorBase):
-
   """Descriptor for a service.
 
   Attributes:
     name (str): Name of the service.
     full_name (str): Full name of the service, including package name.
-    index (int): 0-indexed index giving the order that this services
-      definition appears within the .proto file.
-    methods (list[MethodDescriptor]): List of methods provided by this
-      service.
+    index (int): 0-indexed index giving the order that this services definition
+      appears within the .proto file.
+    methods (list[MethodDescriptor]): List of methods provided by this service.
     methods_by_name (dict(str, MethodDescriptor)): Same
       :class:`MethodDescriptor` objects as in :attr:`methods_by_name`, but
       indexed by "name" attribute in each :class:`MethodDescriptor`.
-    options (descriptor_pb2.ServiceOptions): Service options message or
-      None to use default service options.
+    options (descriptor_pb2.ServiceOptions): Service options message or None to
+      use default service options.
     file (FileDescriptor): Reference to file info.
   """
 
@@ -1028,20 +1167,38 @@ class ServiceDescriptor(_NestedDescriptorBase):
         file=None,  # pylint: disable=redefined-builtin
         serialized_start=None,
         serialized_end=None,
-        create_key=None):
+        create_key=None,
+    ):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindServiceByName(full_name)
 
-  def __init__(self, name, full_name, index, methods, options=None,
-               serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-               serialized_start=None, serialized_end=None, create_key=None):
+  def __init__(
+      self,
+      name,
+      full_name,
+      index,
+      methods,
+      options=None,
+      serialized_options=None,
+      file=None,  # pylint: disable=redefined-builtin
+      serialized_start=None,
+      serialized_end=None,
+      create_key=None,
+  ):
     if create_key is not _internal_create_key:
-      _Deprecated('ServiceDescriptor')
+      _Deprecated('create function ServiceDescriptor()')
 
     super(ServiceDescriptor, self).__init__(
-        options, 'ServiceOptions', name, full_name, file,
-        None, serialized_start=serialized_start,
-        serialized_end=serialized_end, serialized_options=serialized_options)
+        options,
+        'ServiceOptions',
+        name,
+        full_name,
+        file,
+        None,
+        serialized_start=serialized_start,
+        serialized_end=serialized_end,
+        serialized_options=serialized_options,
+    )
     self.index = index
     self.methods = methods
     self.methods_by_name = dict((m.name, m) for m in methods)
@@ -1079,7 +1236,6 @@ class ServiceDescriptor(_NestedDescriptorBase):
 
 
 class MethodDescriptor(DescriptorBase):
-
   """Descriptor for a method in a service.
 
   Attributes:
@@ -1101,40 +1257,45 @@ class MethodDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.MethodDescriptor
 
-    def __new__(cls,
-                name,
-                full_name,
-                index,
-                containing_service,
-                input_type,
-                output_type,
-                client_streaming=False,
-                server_streaming=False,
-                options=None,
-                serialized_options=None,
-                create_key=None):
+    def __new__(
+        cls,
+        name,
+        full_name,
+        index,
+        containing_service,
+        input_type,
+        output_type,
+        client_streaming=False,
+        server_streaming=False,
+        options=None,
+        serialized_options=None,
+        create_key=None,
+    ):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindMethodByName(full_name)
 
-  def __init__(self,
-               name,
-               full_name,
-               index,
-               containing_service,
-               input_type,
-               output_type,
-               client_streaming=False,
-               server_streaming=False,
-               options=None,
-               serialized_options=None,
-               create_key=None):
+  def __init__(
+      self,
+      name,
+      full_name,
+      index,
+      containing_service,
+      input_type,
+      output_type,
+      client_streaming=False,
+      server_streaming=False,
+      options=None,
+      serialized_options=None,
+      create_key=None,
+  ):
     """The arguments are as described in the description of MethodDescriptor
+
     attributes above.
 
     Note that containing_service may be None, and may be set later if necessary.
     """
     if create_key is not _internal_create_key:
-      _Deprecated('MethodDescriptor')
+      _Deprecated('create function MethodDescriptor()')
 
     super(MethodDescriptor, self).__init__(
         containing_service.file if containing_service else None,
@@ -1167,6 +1328,7 @@ class MethodDescriptor(DescriptorBase):
     """
     if self.containing_service is not None:
       from google.protobuf import descriptor_pb2
+
       service_proto = descriptor_pb2.ServiceDescriptorProto()
       self.containing_service.CopyToProto(service_proto)
       proto.CopyFrom(service_proto.method[self.index])
@@ -1245,7 +1407,7 @@ class FileDescriptor(DescriptorBase):
   ):
     """Constructor."""
     if create_key is not _internal_create_key:
-      _Deprecated('FileDescriptor')
+      _Deprecated('create function FileDescriptor()')
 
     super(FileDescriptor, self).__init__(
         self, options, serialized_options, 'FileOptions'
@@ -1260,6 +1422,7 @@ class FileDescriptor(DescriptorBase):
 
     if pool is None:
       from google.protobuf import descriptor_pool
+
       pool = descriptor_pool.Default()
     self.pool = pool
     self.message_types_by_name = {}
@@ -1270,8 +1433,8 @@ class FileDescriptor(DescriptorBase):
     self.enum_types_by_name = {}
     self.extensions_by_name = {}
     self.services_by_name = {}
-    self.dependencies = (dependencies or [])
-    self.public_dependencies = (public_dependencies or [])
+    self.dependencies = dependencies or []
+    self.public_dependencies = public_dependencies or []
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.
@@ -1415,7 +1578,8 @@ def MakeDescriptor(
         create_key=_internal_create_key,
     )
   full_message_name = [desc_proto.name]
-  if package: full_message_name.insert(0, package)
+  if package:
+    full_message_name.insert(0, package)
 
   # Create Descriptors for enum types
   enum_types = {}
@@ -1466,8 +1630,9 @@ def MakeDescriptor(
       json_name = None
     if field_proto.HasField('type_name'):
       type_name = field_proto.type_name
-      full_type_name = '.'.join(full_message_name +
-                                [type_name[type_name.rfind('.')+1:]])
+      full_type_name = '.'.join(
+          full_message_name + [type_name[type_name.rfind('.') + 1 :]]
+      )
       if full_type_name in nested_types:
         nested_desc = nested_types[full_type_name]
       elif full_type_name in enum_types:

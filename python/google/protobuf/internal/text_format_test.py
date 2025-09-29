@@ -26,7 +26,7 @@ from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
-from google.protobuf.internal import _parameterized
+from absl.testing import parameterized
 from google.protobuf import any_test_pb2
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
@@ -75,7 +75,7 @@ class TextFormatBase(unittest.TestCase):
     return text
 
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMessageToStringTests(TextFormatBase):
 
   def testPrintExotic(self, message_module):
@@ -493,7 +493,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
         '  type: TYPE_STRING\n'
         '  options {\n'
         '    ctype: CORD\n'
-        '    [protobuf_unittest.field_opt1]: 8765432109\n'
+        '    [proto2_unittest.field_opt1]: 8765432109\n'
         '  }\n'
         '}\n'
         'field {\n'
@@ -508,10 +508,10 @@ class TextFormatMessageToStringTests(TextFormatBase):
         '  number: 3\n'
         '  label: LABEL_REPEATED\n'
         '  type: TYPE_MESSAGE\n'
-        '  type_name: ".protobuf_unittest.TestMessageWithCustomOptions.'
+        '  type_name: ".proto2_unittest.TestMessageWithCustomOptions.'
         'MapFieldEntry"\n'
         '  options {\n'
-        '    [protobuf_unittest.field_opt1]: 12345\n'
+        '    [proto2_unittest.field_opt1]: 12345\n'
         '  }\n'
         '}\n'
         'nested_type {\n'
@@ -542,21 +542,21 @@ class TextFormatMessageToStringTests(TextFormatBase):
         '    name: "ANENUM_VAL2"\n'
         '    number: 2\n'
         '    options {\n'
-        '      [protobuf_unittest.enum_value_opt1]: 123\n'
+        '      [proto2_unittest.enum_value_opt1]: 123\n'
         '    }\n'
         '  }\n'
         '  options {\n'
-        '    [protobuf_unittest.enum_opt1]: -789\n'
+        '    [proto2_unittest.enum_opt1]: -789\n'
         '  }\n'
         '}\n'
         'options {\n'
         '  message_set_wire_format: false\n'
-        '  [protobuf_unittest.message_opt1]: -56\n'
+        '  [proto2_unittest.message_opt1]: -56\n'
         '}\n'
         'oneof_decl {\n'
         '  name: "AnOneof"\n'
         '  options {\n'
-        '    [protobuf_unittest.oneof_opt1]: -99\n'
+        '    [proto2_unittest.oneof_opt1]: -99\n'
         '  }\n'
         '}\n')
     self.assertEqual(expected_text,
@@ -609,8 +609,16 @@ class TextFormatMessageToStringTests(TextFormatBase):
                                                  print_unknown_fields=True,
                                                  as_one_line=True))
 
+  def testBytestDoubleQuotes(self, message_module):
+    msg = message_module.TestAllTypes(optional_bytes=b'"')
+    self.assertEqual(str(msg), 'optional_bytes: "\\""\n')
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+  def testBytesSingleQuote(self, message_module):
+    msg = message_module.TestAllTypes(optional_bytes=b"'")
+    self.assertEqual(str(msg), 'optional_bytes: "\\\'"\n')
+
+
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMessageToTextBytesTests(TextFormatBase):
 
   def testMessageToBytes(self, message_module):
@@ -676,7 +684,7 @@ class TextFormatMessageToTextBytesTests(TextFormatBase):
          parsed_message.repeated_string[0]))
 
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatParserTests(TextFormatBase):
 
   def testParseAllFields(self, message_module):
@@ -833,6 +841,16 @@ class TextFormatParserTests(TextFormatBase):
     self.assertEqual(message.optional_nested_message.bb, 45)
     self.assertEqual(message.optional_int32, 123)
 
+  def testParseUnknownRepeatedMessage(self, message_module):
+    message = message_module.TestAllTypes()
+    text = (
+        'unknown_repeated: [{}]\n'
+        'unknown_repeated2: [<>, {}]\n'
+        'optional_nested_message { bb: 45 }'
+    )
+    text_format.Parse(text, message, allow_unknown_field=True)
+    self.assertEqual(message.optional_nested_message.bb, 45)
+
   def testParseBadEnumValue(self, message_module):
     message = message_module.TestAllTypes()
     text = 'optional_nested_enum: BARR'
@@ -979,6 +997,20 @@ class TextFormatParserTests(TextFormatBase):
          r'have multiple "optional_int32" fields.'), text_format.Parse, text,
         message)
 
+  def testParseDuplicateNegativeZero(self, message_module):
+    message = message_module.TestAllTypes()
+    text = 'optional_double: -0.0 optional_double: 3'
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        (
+            r'1:40 : Message type "\w+.TestAllTypes" should not '
+            r'have multiple "optional_double" fields.'
+        ),
+        text_format.Parse,
+        text,
+        message,
+    )
+
   def testParseExistingScalarInMessage(self, message_module):
     message = message_module.TestAllTypes(optional_int32=42)
     text = 'optional_int32: 67'
@@ -988,7 +1020,7 @@ class TextFormatParserTests(TextFormatBase):
                            text_format.Parse, text, message)
 
 
-@_parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
+@parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
 
   def testMergeDuplicateScalarsInText(self, message_module):
@@ -1126,33 +1158,33 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '  oo: 0\n'
         '  bb: 1\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+        '[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
         '  my_string: "ext_str2"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+        '[proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
         '  my_string: "ext_str1"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+        '[proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
         '.test_ext_orderings3] {\n'
         '  my_string: "ext_str3"\n'
         '}\n'
-        '[protobuf_unittest.my_extension_string]: "ext_str0"\n')
+        '[proto2_unittest.my_extension_string]: "ext_str0"\n')
     # By default, print in field number order.
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_format.MessageToString(message)),
         'my_int: 101\n'
         'my_string: "str"\n'
-        '[protobuf_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
+        '[proto2_unittest.TestExtensionOrderings2.test_ext_orderings2] {\n'
         '  my_string: "ext_str2"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
+        '[proto2_unittest.TestExtensionOrderings1.test_ext_orderings1] {\n'
         '  my_string: "ext_str1"\n'
         '}\n'
-        '[protobuf_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
+        '[proto2_unittest.TestExtensionOrderings2.TestExtensionOrderings3'
         '.test_ext_orderings3] {\n'
         '  my_string: "ext_str3"\n'
         '}\n'
-        '[protobuf_unittest.my_extension_string]: "ext_str0"\n'
+        '[proto2_unittest.my_extension_string]: "ext_str0"\n'
         'my_float: 111\n'
         'optional_nested_message {\n'
         '  bb: 1\n'
@@ -1178,6 +1210,73 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
     message = unittest_pb2.TestAllTypes()
     test_util.SetAllFields(message)
     self.assertEqual(message, parsed_message)
+
+  def testPrintMapEmptyKeys(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[0] = 123
+    message.map_int64_int64[0] = 2**33
+    message.map_uint32_uint32[0] = 123
+    message.map_uint64_uint64[0] = 2**33
+    message.map_string_string[''] = 'world'
+    message.map_int32_foreign_message[0].c = 111
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  value: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  value: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  value: "world"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  value {\n'
+        '    c: 111\n'
+        '  }\n'
+        '}\n',
+    )
+
+  def testPrintMapEmptyValues(self):
+    message = map_unittest_pb2.TestMap()
+
+    message.map_int32_int32[-123] = 0
+    message.map_int64_int64[-(2**33)] = 0
+    message.map_uint32_uint32[123] = 0
+    message.map_uint64_uint64[2**33] = 0
+    message.map_string_string['hello'] = ''
+    message.map_int32_foreign_message[111].c = 0
+    self.CompareToGoldenText(
+        text_format.MessageToString(message),
+        'map_int32_int32 {\n'
+        '  key: -123\n'
+        '}\n'
+        'map_int64_int64 {\n'
+        '  key: -8589934592\n'
+        '}\n'
+        'map_uint32_uint32 {\n'
+        '  key: 123\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 8589934592\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "hello"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 0\n'
+        '  }\n'
+        '}\n',
+    )
 
   def testPrintMap(self):
     message = map_unittest_pb2.TestMap()
@@ -1327,10 +1426,10 @@ class Proto2Tests(TextFormatBase):
     message.message_set.Extensions[ext2].str = 'foo'
     self.CompareToGoldenText(
         text_format.MessageToString(message), 'message_set {\n'
-        '  [protobuf_unittest.TestMessageSetExtension1] {\n'
+        '  [proto2_unittest.TestMessageSetExtension1] {\n'
         '    i: 23\n'
         '  }\n'
-        '  [protobuf_unittest.TestMessageSetExtension2] {\n'
+        '  [proto2_unittest.TestMessageSetExtension2] {\n'
         '    str: \"foo\"\n'
         '  }\n'
         '}\n')
@@ -1343,6 +1442,23 @@ class Proto2Tests(TextFormatBase):
         '[google.protobuf.internal.TestMessageSetExtension3] {\n'
         '  text: \"bar\"\n'
         '}\n')
+
+  def testMessageSetExtensionNotFirst(self):
+    desc = message_set_extensions_pb2.TestMessageSetExtension1.DESCRIPTOR
+    self.assertEqual('first_extension', desc.extensions[0].name)
+    self.assertEqual('message_set_extension', desc.extensions[1].name)
+    message = message_set_extensions_pb2.TestMessageSet()
+    ext = (
+        message_set_extensions_pb2.TestMessageSetExtension1.message_set_extension
+    )
+    message.Extensions[ext].i = 123
+    expected_str = (
+        '[google.protobuf.internal.TestMessageSetExtension1] {\n  i: 123\n}\n'
+    )
+    self.CompareToGoldenText(text_format.MessageToString(message), expected_str)
+    parsed = message_set_extensions_pb2.TestMessageSet()
+    text_format.Parse(expected_str, parsed)
+    self.CompareToGoldenText(text_format.MessageToString(parsed), expected_str)
 
   def testPrintMessageSetByFieldNumber(self):
     out = text_format.TextWriter(False)
@@ -1371,10 +1487,10 @@ class Proto2Tests(TextFormatBase):
     self.CompareToGoldenText(
         text_format.MessageToString(message, as_one_line=True),
         'message_set {'
-        ' [protobuf_unittest.TestMessageSetExtension1] {'
+        ' [proto2_unittest.TestMessageSetExtension1] {'
         ' i: 23'
         ' }'
-        ' [protobuf_unittest.TestMessageSetExtension2] {'
+        ' [proto2_unittest.TestMessageSetExtension2] {'
         ' str: \"foo\"'
         ' }'
         ' }')
@@ -1388,10 +1504,10 @@ class Proto2Tests(TextFormatBase):
 
     message = unittest_mset_pb2.TestMessageSetContainer()
     text = ('message_set {\n'
-            '  [protobuf_unittest.TestMessageSetExtension1] {\n'
+            '  [proto2_unittest.TestMessageSetExtension1] {\n'
             '    i: 23\n'
             '  }\n'
-            '  [protobuf_unittest.TestMessageSetExtension2] {\n'
+            '  [proto2_unittest.TestMessageSetExtension2] {\n'
             '    str: \"foo\"\n'
             '  }\n'
             '}\n')
@@ -1606,10 +1722,10 @@ class Proto2Tests(TextFormatBase):
     # Parse known extension correctly.
     message = unittest_mset_pb2.TestMessageSetContainer()
     text = ('message_set {\n'
-            '  [protobuf_unittest.TestMessageSetExtension1] {\n'
+            '  [proto2_unittest.TestMessageSetExtension1] {\n'
             '    i: 23\n'
             '  }\n'
-            '  [protobuf_unittest.TestMessageSetExtension2] {\n'
+            '  [proto2_unittest.TestMessageSetExtension2] {\n'
             '    str: \"foo\"\n'
             '  }\n'
             '}\n')
@@ -1626,7 +1742,7 @@ class Proto2Tests(TextFormatBase):
             '    [unknown_extension] {\n'
             '      str: "string"\n'
             '      any_value {\n'
-            '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '        [type.googleapis.com/proto2_unittest.OneString] {\n'
             '          data: "string"\n'
             '        }\n'
             '      }\n'
@@ -1644,7 +1760,7 @@ class Proto2Tests(TextFormatBase):
             '    [unknown_extension] {\n'
             '      str: "string"\n'
             '      any_value {\n'
-            '        [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '        [type.googleapis.com/proto2_unittest.OneString] {\n'
             '          data: "string"\n'
             '        }\n'
             '      }\n'
@@ -1679,7 +1795,7 @@ class Proto2Tests(TextFormatBase):
     message = unittest_pb2.TestAllTypes()
     self.assertRaisesRegex(
         text_format.ParseError,
-        ('1:2 : Message type "protobuf_unittest.TestAllTypes" does not have '
+        ('1:2 : Message type "proto2_unittest.TestAllTypes" does not have '
          'extensions.'), text_format.Parse, text, message)
 
   def testParseNumericUnknownEnum(self):
@@ -1693,32 +1809,32 @@ class Proto2Tests(TextFormatBase):
 
   def testMergeDuplicateExtensionScalars(self):
     message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_int32_extension]: 42 '
-            '[protobuf_unittest.optional_int32_extension]: 67')
+    text = ('[proto2_unittest.optional_int32_extension]: 42 '
+            '[proto2_unittest.optional_int32_extension]: 67')
     text_format.Merge(text, message)
     self.assertEqual(67,
                      message.Extensions[unittest_pb2.optional_int32_extension])
 
   def testParseDuplicateExtensionScalars(self):
     message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_int32_extension]: 42 '
-            '[protobuf_unittest.optional_int32_extension]: 67')
+    text = ('[proto2_unittest.optional_int32_extension]: 42 '
+            '[proto2_unittest.optional_int32_extension]: 67')
     self.assertRaisesRegex(
         text_format.ParseError,
-        ('1:96 : Message type "protobuf_unittest.TestAllExtensions" '
+        ('1:92 : Message type "proto2_unittest.TestAllExtensions" '
          'should not have multiple '
-         '"protobuf_unittest.optional_int32_extension" extensions.'),
+         '"proto2_unittest.optional_int32_extension" extensions.'),
         text_format.Parse, text, message)
 
   def testParseDuplicateExtensionMessages(self):
     message = unittest_pb2.TestAllExtensions()
-    text = ('[protobuf_unittest.optional_nested_message_extension]: {} '
-            '[protobuf_unittest.optional_nested_message_extension]: {}')
+    text = ('[proto2_unittest.optional_nested_message_extension]: {} '
+            '[proto2_unittest.optional_nested_message_extension]: {}')
     self.assertRaisesRegex(
         text_format.ParseError,
-        ('1:114 : Message type "protobuf_unittest.TestAllExtensions" '
+        ('1:110 : Message type "proto2_unittest.TestAllExtensions" '
          'should not have multiple '
-         '"protobuf_unittest.optional_nested_message_extension" extensions.'),
+         '"proto2_unittest.optional_nested_message_extension" extensions.'),
         text_format.Parse, text, message)
 
   def testParseGroupNotClosed(self):
@@ -1794,10 +1910,36 @@ class Proto3Tests(unittest.TestCase):
         text_format.MessageToString(message,
                                     descriptor_pool=descriptor_pool.Default()),
         'any_value {\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] {\n'
         '    data: "string"\n'
         '  }\n'
         '}\n')
+
+  def testPrintStructInAny(self):
+    packed_message = struct_pb2.Struct()
+    packed_message['name'] = 'Jim'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    print(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        )
+    )
+    self.assertEqual(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        ),
+        'any_value {\n'
+        '  [type.googleapis.com/google.protobuf.Struct] {\n'
+        '    fields {\n'
+        '      key: "name"\n'
+        '      value {\n'
+        '        string_value: "Jim"\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n',
+    )
 
   def testTopAnyMessage(self):
     packed_msg = unittest_pb2.OneString()
@@ -1817,12 +1959,12 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(
         text_format.MessageToString(message),
         'repeated_any_value {\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] {\n'
         '    data: "string0"\n'
         '  }\n'
         '}\n'
         'repeated_any_value {\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] {\n'
         '    data: "string1"\n'
         '  }\n'
         '}\n')
@@ -1836,7 +1978,7 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(
         text_format.MessageToString(message, descriptor_pool=empty_pool),
         'any_value {\n'
-        '  type_url: "type.googleapis.com/protobuf_unittest.OneString"\n'
+        '  type_url: "type.googleapis.com/proto2_unittest.OneString"\n'
         '  value: "\\n\\006string"\n'
         '}\n')
 
@@ -1849,7 +1991,7 @@ class Proto3Tests(unittest.TestCase):
         text_format.MessageToString(message,
                                     pointy_brackets=True),
         'any_value <\n'
-        '  [type.googleapis.com/protobuf_unittest.OneString] <\n'
+        '  [type.googleapis.com/proto2_unittest.OneString] <\n'
         '    data: "string"\n'
         '  >\n'
         '>\n')
@@ -1863,7 +2005,7 @@ class Proto3Tests(unittest.TestCase):
         text_format.MessageToString(message,
                                     as_one_line=True),
         'any_value {'
-        ' [type.googleapis.com/protobuf_unittest.OneString]'
+        ' [type.googleapis.com/proto2_unittest.OneString]'
         ' { data: "string" } '
         '}')
 
@@ -1878,7 +2020,7 @@ class Proto3Tests(unittest.TestCase):
                                     pointy_brackets=True,
                                     descriptor_pool=descriptor_pool.Default()),
         'any_value <'
-        ' [type.googleapis.com/protobuf_unittest.OneString]'
+        ' [type.googleapis.com/proto2_unittest.OneString]'
         ' < data: "string" > '
         '>')
 
@@ -1892,7 +2034,7 @@ class Proto3Tests(unittest.TestCase):
     text = text_format.MessageToString(message)
     self.assertEqual(
         text, 'any_value {\n'
-        '  type_url: "protobuf_unittest.OneString"\n'
+        '  type_url: "proto2_unittest.OneString"\n'
         '  value: "\\n\\006string"\n'
         '}\n')
 
@@ -1911,7 +2053,7 @@ class Proto3Tests(unittest.TestCase):
   def testMergeExpandedAny(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n'
             '  }\n'
             '}\n')
@@ -1928,12 +2070,12 @@ class Proto3Tests(unittest.TestCase):
   def testMergeExpandedAnyRepeated(self):
     message = any_test_pb2.TestAny()
     text = ('repeated_any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string0"\n'
             '  }\n'
             '}\n'
             'repeated_any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string1"\n'
             '  }\n'
             '}\n')
@@ -1947,7 +2089,7 @@ class Proto3Tests(unittest.TestCase):
   def testMergeExpandedAnyPointyBrackets(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] <\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] <\n'
             '    data: "string"\n'
             '  >\n'
             '}\n')
@@ -1959,19 +2101,19 @@ class Proto3Tests(unittest.TestCase):
   def testMergeAlternativeUrl(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.otherapi.com/protobuf_unittest.OneString] {\n'
+            '  [type.otherapi.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n'
             '  }\n'
             '}\n')
     text_format.Merge(text, message)
     packed_message = unittest_pb2.OneString()
-    self.assertEqual('type.otherapi.com/protobuf_unittest.OneString',
+    self.assertEqual('type.otherapi.com/proto2_unittest.OneString',
                      message.any_value.type_url)
 
   def testMergeExpandedAnyDescriptorPoolMissingType(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n'
             '  }\n'
             '}\n')
@@ -1980,11 +2122,11 @@ class Proto3Tests(unittest.TestCase):
       text_format.Merge(text, message, descriptor_pool=empty_pool)
     self.assertEqual(
         str(e.exception),
-        'Type protobuf_unittest.OneString not found in descriptor pool')
+        'Type proto2_unittest.OneString not found in descriptor pool')
 
   def testMergeUnexpandedAny(self):
     text = ('any_value {\n'
-            '  type_url: "type.googleapis.com/protobuf_unittest.OneString"\n'
+            '  type_url: "type.googleapis.com/proto2_unittest.OneString"\n'
             '  value: "\\n\\006string"\n'
             '}\n')
     message = any_test_pb2.TestAny()
@@ -1996,7 +2138,7 @@ class Proto3Tests(unittest.TestCase):
   def testMergeMissingAnyEndToken(self):
     message = any_test_pb2.TestAny()
     text = ('any_value {\n'
-            '  [type.googleapis.com/protobuf_unittest.OneString] {\n'
+            '  [type.googleapis.com/proto2_unittest.OneString] {\n'
             '    data: "string"\n')
     with self.assertRaises(text_format.ParseError) as e:
       text_format.Merge(text, message)
@@ -2031,84 +2173,241 @@ class Proto3Tests(unittest.TestCase):
     self.assertEqual(text_format.MessageToString(msg2), text)
 
 
-class TokenizerTest(unittest.TestCase):
+def _CreateConsumeLiteralToken(expected_literal):
+  def _Consume(tokenizer):
+    tokenizer.Consume(expected_literal)
+    return expected_literal
 
-  def testSimpleTokenCases(self):
-    text = ('identifier1:"string1"\n     \n\n'
-            'identifier2 : \n \n123  \n  identifier3 :\'string\'\n'
-            'identifiER_4 : 1.1e+2 ID5:-0.23 ID6:\'aaaa\\\'bbbb\'\n'
-            'ID7 : "aa\\"bb"\n\n\n\n ID8: {A:inf B:-inf C:true D:false}\n'
-            'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
-            'ID12: 2222222222222222222 ID13: 1.23456f ID14: 1.2e+2f '
-            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f '
-            'False_bool: False True_bool: True X:iNf Y:-inF Z:nAN')
+  return (_Consume, expected_literal)
+
+
+class TokenizerTest(parameterized.TestCase):
+
+  @parameterized.named_parameters([
+      dict(
+          testcase_name='_string_double_quotes',
+          text='identifier1:"string1"\n',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier1'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, 'string1'),
+          ],
+      ),
+      dict(
+          testcase_name='_integer',
+          text='identifier2 : \n \n123 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier2'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, 123),
+          ],
+      ),
+      dict(
+          testcase_name='_string_single_quotes',
+          text="\n  identifier3:'string'\n",
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifier3'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, 'string'),
+          ],
+      ),
+      dict(
+          testcase_name='_float_exponent',
+          text='identifiER_4 : 1.1e+2 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'identifiER_4'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.1e2),
+          ],
+      ),
+      dict(
+          testcase_name='_float',
+          text='ID5:-0.23',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID5'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, -0.23),
+          ],
+      ),
+      dict(
+          testcase_name='_escape_single_quote',
+          text="ID6:'aaaa\\'bbbb'\n",
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID6'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, "aaaa'bbbb"),
+          ],
+      ),
+      dict(
+          testcase_name='_escape_double_quote',
+          text='ID7 : "aa\\"bb"\n\n\n\n ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID7'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeString, 'aa"bb'),
+          ],
+      ),
+      dict(
+          testcase_name='_submessage',
+          text='ID8: {A:inf B:-inf C:true D:false}\n',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID8'),
+              _CreateConsumeLiteralToken(':'),
+              _CreateConsumeLiteralToken('{'),
+              (text_format.Tokenizer.ConsumeIdentifier, 'A'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('inf')),
+              (text_format.Tokenizer.ConsumeIdentifier, 'B'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('-inf')),
+              (text_format.Tokenizer.ConsumeIdentifier, 'C'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+              (text_format.Tokenizer.ConsumeIdentifier, 'D'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+              _CreateConsumeLiteralToken('}'),
+          ],
+      ),
+      dict(
+          testcase_name='_large_negative_integer',
+          text='ID10: -111111111111111111 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID10'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, -111111111111111111),
+          ],
+      ),
+      dict(
+          testcase_name='_negative_integer',
+          text='ID11: -22\n',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID11'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, -22),
+          ],
+      ),
+      dict(
+          testcase_name='_large_integer',
+          text='ID12: 2222222222222222222 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID12'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeInteger, 2222222222222222222),
+          ],
+      ),
+      dict(
+          testcase_name='_float_suffix',
+          text='ID13: 1.23456f ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID13'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.23456),
+          ],
+      ),
+      dict(
+          testcase_name='_float_capital_suffix',
+          text='ID13: 1.23456F ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID13'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.23456),
+          ],
+      ),
+      dict(
+          testcase_name='_float_exponent_suffix',
+          text='ID14: 1.2e+2f ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'ID14'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, 1.2e2),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_zero',
+          text='false_bool:  0 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'false_bool'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_t',
+          text='true_BOOL:t ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'true_BOOL'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_one',
+          text='true_bool1:  1 ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'true_bool1'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_f',
+          text='false_BOOL1:f ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'false_BOOL1'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_false',
+          text='False_bool: False ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'False_bool'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, False),
+          ],
+      ),
+      dict(
+          testcase_name='_bool_true',
+          text='True_bool: True ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'True_bool'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeBool, True),
+          ],
+      ),
+      dict(
+          testcase_name='_float_inf',
+          text='X:iNf ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'X'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('inf')),
+          ],
+      ),
+      dict(
+          testcase_name='_float_negative_inf',
+          text='Y:-inF ',
+          expected=[
+              (text_format.Tokenizer.ConsumeIdentifier, 'Y'),
+              _CreateConsumeLiteralToken(':'),
+              (text_format.Tokenizer.ConsumeFloat, float('-inf')),
+          ],
+      ),
+  ])
+  def testSimpleTokenCases(self, text, expected):
+    consume_functions, expected_tokens = zip(*expected)
     tokenizer = text_format.Tokenizer(text.splitlines())
-    methods = [(tokenizer.ConsumeIdentifier, 'identifier1'), ':',
-               (tokenizer.ConsumeString, 'string1'),
-               (tokenizer.ConsumeIdentifier, 'identifier2'), ':',
-               (tokenizer.ConsumeInteger, 123),
-               (tokenizer.ConsumeIdentifier, 'identifier3'), ':',
-               (tokenizer.ConsumeString, 'string'),
-               (tokenizer.ConsumeIdentifier, 'identifiER_4'), ':',
-               (tokenizer.ConsumeFloat, 1.1e+2),
-               (tokenizer.ConsumeIdentifier, 'ID5'), ':',
-               (tokenizer.ConsumeFloat, -0.23),
-               (tokenizer.ConsumeIdentifier, 'ID6'), ':',
-               (tokenizer.ConsumeString, 'aaaa\'bbbb'),
-               (tokenizer.ConsumeIdentifier, 'ID7'), ':',
-               (tokenizer.ConsumeString, 'aa\"bb'),
-               (tokenizer.ConsumeIdentifier, 'ID8'), ':', '{',
-               (tokenizer.ConsumeIdentifier, 'A'), ':',
-               (tokenizer.ConsumeFloat, float('inf')),
-               (tokenizer.ConsumeIdentifier, 'B'), ':',
-               (tokenizer.ConsumeFloat, -float('inf')),
-               (tokenizer.ConsumeIdentifier, 'C'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'D'), ':',
-               (tokenizer.ConsumeBool, False), '}',
-               (tokenizer.ConsumeIdentifier, 'ID9'), ':',
-               (tokenizer.ConsumeInteger, 22),
-               (tokenizer.ConsumeIdentifier, 'ID10'), ':',
-               (tokenizer.ConsumeInteger, -111111111111111111),
-               (tokenizer.ConsumeIdentifier, 'ID11'), ':',
-               (tokenizer.ConsumeInteger, -22),
-               (tokenizer.ConsumeIdentifier, 'ID12'), ':',
-               (tokenizer.ConsumeInteger, 2222222222222222222),
-               (tokenizer.ConsumeIdentifier, 'ID13'), ':',
-               (tokenizer.ConsumeFloat, 1.23456),
-               (tokenizer.ConsumeIdentifier, 'ID14'), ':',
-               (tokenizer.ConsumeFloat, 1.2e+2),
-               (tokenizer.ConsumeIdentifier, 'false_bool'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'true_BOOL'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'true_bool1'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'false_BOOL1'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'False_bool'), ':',
-               (tokenizer.ConsumeBool, False),
-               (tokenizer.ConsumeIdentifier, 'True_bool'), ':',
-               (tokenizer.ConsumeBool, True),
-               (tokenizer.ConsumeIdentifier, 'X'), ':',
-               (tokenizer.ConsumeFloat, float('inf')),
-               (tokenizer.ConsumeIdentifier, 'Y'), ':',
-               (tokenizer.ConsumeFloat, float('-inf')),
-               (tokenizer.ConsumeIdentifier, 'Z'), ':',
-               (tokenizer.ConsumeFloat, float('nan'))]
+    tokens = [consume(tokenizer) for consume in consume_functions]
 
-    i = 0
-    while not tokenizer.AtEnd():
-      m = methods[i]
-      if isinstance(m, str):
-        token = tokenizer.token
-        self.assertEqual(token, m)
-        tokenizer.NextToken()
-      elif isinstance(m[1], float) and math.isnan(m[1]):
-        self.assertTrue(math.isnan(m[0]()))
-      else:
-        self.assertEqual(m[1], m[0]())
-      i += 1
+    self.assertTrue(tokenizer.AtEnd())
+    self.assertEqual(tokens, [token for token in expected_tokens])
+
+  def testConsumeNan(self):
+    tokenizer = text_format.Tokenizer(['nAN'])
+    token = tokenizer.ConsumeFloat()
+    self.assertTrue(math.isnan(token), 'Expected NaN, got %s' % token)
 
   def testConsumeAbstractIntegers(self):
     # This test only tests the failures in the integer parsing methods as well
@@ -2186,6 +2485,17 @@ class TokenizerTest(unittest.TestCase):
     tokenizer.NextToken()
     self.assertEqual(1, tokenizer.ConsumeInteger())
     self.assertTrue(tokenizer.AtEnd())
+
+  @parameterized.parameters('00', '09', '01.123', '-00', '-09', '-01.234')
+  def testConsumeOctalFloats(self, text):
+    """Test rejection of for octal-formatted floats."""
+    tokenizer = text_format.Tokenizer([text])
+
+    self.assertRaisesRegex(
+        text_format.ParseError,
+        'Invalid octal float: %s' % text,
+        tokenizer.ConsumeFloat,
+    )
 
   def testConsumeByteString(self):
     text = '"string1\''
@@ -2304,7 +2614,7 @@ class TokenizerTest(unittest.TestCase):
   def testGroupName(self):
     grp = unittest_pb2.TestGroupExtension()
     grp.Extensions[unittest_pb2.TestNestedExtension.optionalgroup_extension].a = 6
-    self.assertEqual('[protobuf_unittest.TestNestedExtension.optionalgroup_extension] {\n  a: 6\n}\n', str(grp))
+    self.assertEqual('[proto2_unittest.TestNestedExtension.optionalgroup_extension] {\n  a: 6\n}\n', str(grp))
 
     msg = unittest_pb2.TestAllTypes(
         repeatedgroup=[unittest_pb2.TestAllTypes.RepeatedGroup(a=1)])
@@ -2409,7 +2719,7 @@ class TokenizerTest(unittest.TestCase):
       text_format.Parse('NotGroupLikeScope { b:1 }', msg)
 
 # Tests for pretty printer functionality.
-@_parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
+@parameterized.parameters((unittest_pb2), (unittest_proto3_arena_pb2))
 class PrettyPrinterTest(TextFormatBase):
 
   def testPrettyPrintNoMatch(self, message_module):
@@ -2597,7 +2907,7 @@ class OptionalColonMessageToStringTest(unittest.TestCase):
         message,
         force_colon=True)
     expected = ('any_value: {\n'
-                '  [type.googleapis.com/protobuf_unittest.OneString]: {\n'
+                '  [type.googleapis.com/proto2_unittest.OneString]: {\n'
                 '    data: "string"\n'
                 '  }\n'
                 '}\n')

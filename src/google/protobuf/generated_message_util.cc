@@ -42,10 +42,6 @@ void DestroyString(const void* s) {
   static_cast<const std::string*>(s)->~basic_string();
 }
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 ExplicitlyConstructedArenaString
-        fixed_address_empty_string{};  // NOLINT
-
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 
@@ -89,8 +85,9 @@ void InitWeakDefaults() {}
 
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
-  fixed_address_empty_string.DefaultConstruct();
-  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+  if (auto* to_destroy = fixed_address_empty_string.Init()) {
+    OnShutdownDestroyString(to_destroy);
+  }
   InitWeakDefaults();
 
 
@@ -107,17 +104,6 @@ void InitProtobufDefaultsSlow() {
 // there is any object with reflection.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 static std::true_type init_empty_string =
     (InitProtobufDefaultsSlow(), std::true_type{});
-
-size_t StringSpaceUsedExcludingSelfLong(const std::string& str) {
-  const void* start = &str;
-  const void* end = &str + 1;
-  if (start <= str.data() && str.data() < end) {
-    // The string's data is stored inside the string object itself.
-    return 0;
-  } else {
-    return str.capacity();
-  }
-}
 
 template <typename T>
 const T& Get(const void* ptr) {

@@ -39,11 +39,9 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit(R"rs(
                     pub fn $field$($view_self$) -> $pb$::RepeatedView<$view_lifetime$, $RsType$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
-                        $pbr$::upb_Message_GetArray(
-                          self.raw_msg(), f)
+                        self.inner.ptr().get_array_at_index(
+                          $upb_mt_field_index$
+                        )
                       }.map_or_else(
                           $pbr$::empty_array::<$RsType$>,
                           |raw| unsafe {
@@ -74,18 +72,14 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                ctx.Emit({}, R"rs(
                     pub fn $field$_mut(&mut self) -> $pb$::RepeatedMut<'_, $RsType$> {
                       unsafe {
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
-                        let raw_array = $pbr$::upb_Message_GetOrCreateMutableArray(
-                              self.raw_msg(),
-                              f,
-                              self.arena().raw(),
-                            ).unwrap();
+                        let raw_array = self.inner.ptr_mut().get_or_create_mutable_array_at_index(
+                          $upb_mt_field_index$,
+                          self.inner.arena()
+                        ).expect("alloc should not fail");
                         $pb$::RepeatedMut::from_inner(
                           $pbi$::Private,
                           $pbr$::InnerRepeatedMut::new(
-                            raw_array, self.arena(),
+                            raw_array, self.inner.arena(),
                           ),
                         )
                       }
@@ -116,22 +110,15 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (ctx.is_upb()) {
                ctx.Emit(R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
-                      let minitable_field = unsafe {
-                        $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$
-                        )
-                      };
                       let val = src.into_proxied($pbi$::Private);
                       let inner = val.inner($pbi$::Private);
 
-                      self.arena().fuse(inner.arena());
+                      self.inner.arena().fuse(inner.arena());
                       unsafe {
-                          let value_ptr: *const *const std::ffi::c_void =
-                              &(inner.raw().as_ptr() as *const std::ffi::c_void);
-                          $pbr$::upb_Message_SetBaseField(self.raw_msg(),
-                            minitable_field,
-                            value_ptr as *const std::ffi::c_void);
+                          <Self as $pbr$::UpbGetMessagePtrMut>::get_ptr_mut(self, $pbi$::Private)
+                              .set_array_at_index(
+                                  $upb_mt_field_index$,
+                                  inner.raw());
                       }
                     }
                   )rs");
@@ -179,7 +166,7 @@ void RepeatedField::InExternC(Context& ctx,
                     fn $getter_thunk$(
                       raw_msg: $pbr$::RawMessage,
                       size: *const usize,
-                    ) -> Option<$pbr$::RawRepeatedField>;
+                    ) -> $Option$<$pbr$::RawRepeatedField>;
                   )rs");
                } else {
                  ctx.Emit(R"rs(

@@ -28,6 +28,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "google/protobuf/compiler/plugin.h"
 #ifdef major
 #undef major
 #endif
@@ -59,7 +61,6 @@
 #include "absl/log/globals.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -93,6 +94,7 @@
 #endif
 
 #include "google/protobuf/stubs/platform_macros.h"
+#include "google/protobuf/compiler/notices.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -121,19 +123,29 @@ using google::protobuf::io::win32::setmode;
 using google::protobuf::io::win32::write;
 #endif
 
-static const char* kDefaultDirectDependenciesViolationMsg =
+constexpr absl::string_view kDefaultDirectDependenciesViolationMsg =
     "File is imported but not declared in --direct_dependencies: %s";
 
-// Returns true if the text looks like a Windows-style absolute path, starting
-// with a drive letter.  Example:  "C:\foo".  TODO:  Share this with
-// copy in importer.cc?
-static bool IsWindowsAbsolutePath(const std::string& text) {
-#if defined(_WIN32) || defined(__CYGWIN__)
+constexpr absl::string_view kDefaultOptionDependenciesViolationMsg =
+    "File is option imported but not declared in --option_dependencies: %s";
+
+// Returns true if the text begins with a Windows-style absolute path, starting
+// with a drive letter.  Example:  "C:\foo".
+static bool StartsWithWindowsAbsolutePath(absl::string_view text) {
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__) || \
+    defined(__MSYS2__)
   return text.size() >= 3 && text[1] == ':' && absl::ascii_isalpha(text[0]) &&
-         (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
+         (text[2] == '/' || text[2] == '\\');
 #else
   return false;
 #endif
+}
+
+// Returns true if the text looks like a single Windows-style absolute path,
+// starting with a drive letter.  Example:  "C:\foo".  TODO:  Share this
+// with copy in importer.cc?
+static bool IsWindowsAbsolutePath(absl::string_view text) {
+  return StartsWithWindowsAbsolutePath(text) && text.find_last_of(':') == 1;
 }
 
 void SetFdToTextMode(int fd) {
@@ -310,7 +322,7 @@ void CommandLineInterface::GetTransitiveDependencies(
     const FileDescriptor* file,
     absl::flat_hash_set<const FileDescriptor*>* already_seen,
     RepeatedPtrField<FileDescriptorProto>* output,
-    const TransitiveDependencyOptions& options) {
+    const TransitiveDependencyOptions& options) const {
   if (!already_seen->insert(file).second) {
     // Already saw this file.  Skip.
     return;
@@ -320,6 +332,14 @@ void CommandLineInterface::GetTransitiveDependencies(
   for (int i = 0; i < file->dependency_count(); ++i) {
     GetTransitiveDependencies(file->dependency(i), already_seen, output,
                               options);
+  }
+  for (int i = 0; i < file->option_dependency_count(); ++i) {
+    const FileDescriptor* dep =
+        file->pool()->FindFileByName(file->option_dependency_name(i));
+    ABSL_CHECK(dep != nullptr)
+        << "Option dependency " << file->option_dependency_name(i)
+        << " not found in pool.  This should never happen.";
+    GetTransitiveDependencies(dep, already_seen, output, options);
   }
 
   // Add this file.
@@ -394,10 +414,6 @@ class CommandLineInterface::ErrorPrinter
                          std::ostream& out) {
     std::string dfile;
     if (
-#ifndef PROTOBUF_OPENSOURCE
-        // Print full path when running under MSVS
-        format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
-#endif  // !PROTOBUF_OPENSOURCE
         tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
       out << dfile;
     } else {
@@ -955,7 +971,9 @@ const char* const CommandLineInterface::kPathSeparator = ":";
 
 CommandLineInterface::CommandLineInterface()
     : direct_dependencies_violation_msg_(
-          kDefaultDirectDependenciesViolationMsg) {}
+          kDefaultDirectDependenciesViolationMsg),
+      option_dependencies_violation_msg_(
+          kDefaultOptionDependenciesViolationMsg) {}
 
 CommandLineInterface::~CommandLineInterface() = default;
 
@@ -1252,17 +1270,21 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
+  descriptor_pool->EnforceOptionDependencies(true);
+  descriptor_pool->EnforceSymbolVisibility(true);
+  descriptor_pool->EnforceNamingStyle(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {
     return EXIT_FAILURE;
   }
 
-  // Enforce extension declarations only when compiling. We want to skip
-  // this enforcement when protoc is just being invoked to encode or decode
-  // protos.
-  if (mode_ == MODE_COMPILE
-  ) {
-    descriptor_pool->EnforceExtensionDeclarations(true);
+  // Enforce extension declarations only when compiling. We want to skip this
+  // enforcement when protoc is just being invoked to encode or decode
+  // protos. If allowlist is disabled, we will not check for descriptor
+  // extensions declarations, either.
+  if (mode_ == MODE_COMPILE) {
+      descriptor_pool->EnforceExtensionDeclarations(
+          ExtDeclEnforcementLevel::kCustomExtensions);
   }
   if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
                        &parsed_files)) {
@@ -1319,6 +1341,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
 
 
   if (validation_error) {
+    return 1;
+  }
+
+  if (!EnforceProtocEditionsSupport(parsed_files)) {
     return 1;
   }
 
@@ -1496,7 +1522,6 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 
 }  // namespace
 
-
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
     DescriptorDatabase* database) {
   for (const auto& input_file : input_files_) {
@@ -1515,7 +1540,6 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
                 << std::endl;
       return false;
     }
-
   }
   return true;
 }
@@ -1524,10 +1548,6 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
   // Calculate the feature defaults for each built-in generator.  All generators
   // that support editions must agree on the supported edition range.
   std::vector<const FieldDescriptor*> feature_extensions;
-  Edition minimum_edition = PROTOBUF_MINIMUM_EDITION;
-  // Override maximum_edition if experimental_editions is true.
-  Edition maximum_edition =
-      !experimental_editions_ ? PROTOBUF_MAXIMUM_EDITION : Edition::EDITION_MAX;
   for (const auto& output : output_directives_) {
     if (output.generator == nullptr) continue;
     if (!experimental_editions_ &&
@@ -1536,20 +1556,20 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
       // Only validate min/max edition on generators that advertise editions
       // support.  Generators still under development will always use the
       // correct values.
-      if (output.generator->GetMinimumEdition() != minimum_edition) {
+      if (output.generator->GetMinimumEdition() != ProtocMinimumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a minimum edition "
                         << output.generator->GetMinimumEdition()
                         << " which is not the protoc minimum "
-                        << minimum_edition << ".";
+                        << ProtocMinimumEdition() << ".";
         return false;
       }
-      if (output.generator->GetMaximumEdition() != maximum_edition) {
+      if (output.generator->GetMaximumEdition() != ProtocMaximumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a maximum edition "
                         << output.generator->GetMaximumEdition()
                         << " which is not the protoc maximum "
-                        << maximum_edition << ".";
+                        << ProtocMaximumEdition() << ".";
         return false;
       }
     }
@@ -1564,9 +1584,9 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
     }
   }
   absl::StatusOr<FeatureSetDefaults> defaults =
-      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
-                                       feature_extensions, minimum_edition,
-                                       maximum_edition);
+      FeatureResolver::CompileDefaults(
+          FeatureSet::descriptor(), feature_extensions, ProtocMinimumEdition(),
+          MaximumKnownEdition());
   if (!defaults.ok()) {
     ABSL_LOG(ERROR) << defaults.status();
     return false;
@@ -1622,7 +1642,6 @@ bool CommandLineInterface::ParseInputFiles(
       break;
     }
 
-
     // Enforce --direct_dependencies
     if (direct_dependencies_explicitly_set_) {
       bool indirect_imports = false;
@@ -1642,6 +1661,26 @@ bool CommandLineInterface::ParseInputFiles(
         break;
       }
     }
+
+    // Enforce --option_dependencies.
+    if (option_dependencies_explicitly_set_) {
+      bool indirect_option_imports = false;
+      for (int i = 0; i < parsed_file->option_dependency_count(); ++i) {
+        if (option_dependencies_.find(parsed_file->option_dependency_name(i)) ==
+            option_dependencies_.end()) {
+          indirect_option_imports = true;
+          std::cerr << parsed_file->name() << ": "
+                    << absl::StrReplaceAll(
+                           option_dependencies_violation_msg_,
+                           {{"%s", parsed_file->option_dependency_name(i)}})
+                    << std::endl;
+        }
+      }
+      if (indirect_option_imports) {
+        result = false;
+        break;
+      }
+    }
   }
   descriptor_pool->ClearDirectInputFiles();
   return result;
@@ -1654,7 +1693,11 @@ void CommandLineInterface::Clear() {
   proto_path_.clear();
   input_files_.clear();
   direct_dependencies_.clear();
-  direct_dependencies_violation_msg_ = kDefaultDirectDependenciesViolationMsg;
+  direct_dependencies_violation_msg_ =
+      std::string(kDefaultDirectDependenciesViolationMsg);
+  option_dependencies_.clear();
+  option_dependencies_violation_msg_ =
+      std::string(kDefaultOptionDependenciesViolationMsg);
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_in_names_.clear();
@@ -1766,7 +1809,7 @@ bool CommandLineInterface::MakeInputsBeProtoPathRelative(
 bool CommandLineInterface::ExpandArgumentFile(
     const char* file, std::vector<std::string>* arguments) {
 // On windows to force ifstream to handle proper utr-8, we need to convert to
-// proper supported utf8 wstring. If we dont then the file can't be opened.
+// proper supported utf8 wstring. If we don't then the file can't be opened.
 #ifdef _MSC_VER
   // Convert the file name to wide chars.
   int size = MultiByteToWideChar(CP_UTF8, 0, file, strlen(file), nullptr, 0);
@@ -2007,6 +2050,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--retain_options" || *name == "--version" ||
       *name == "--decode_raw" ||
+      *name == "--notices" ||
       *name == "--experimental_editions" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
@@ -2065,12 +2109,17 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #endif  // _WIN32
 
   } else if (name == "-I" || name == "--proto_path") {
+    // If we have something that starts with a Windows absolute path,
+    // then the only path separator that makes sense is the semicolon.
+    const char* separator = StartsWithWindowsAbsolutePath(value)
+                                ? ";"
+                                : CommandLineInterface::kPathSeparator;
+
     // Java's -classpath (and some other languages) delimits path components
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
-    std::vector<std::string> parts = absl::StrSplit(
-        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
-        absl::SkipEmpty());
+    std::vector<std::string> parts =
+        absl::StrSplit(value, absl::ByAnyChar(separator), absl::SkipEmpty());
 
     for (size_t i = 0; i < parts.size(); ++i) {
       std::string virtual_path;
@@ -2130,7 +2179,23 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
   } else if (name == "--direct_dependencies_violation_msg") {
     direct_dependencies_violation_msg_ = value;
+  } else if (name == "--option_dependencies") {
+    if (option_dependencies_explicitly_set_) {
+      std::cerr << name
+                << " may only be passed once. To specify multiple "
+                   "option dependencies, pass them all as a single "
+                   "parameter separated by ':'."
+                << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
 
+    option_dependencies_explicitly_set_ = true;
+    std::vector<std::string> direct =
+        absl::StrSplit(value, ':', absl::SkipEmpty());
+    ABSL_DCHECK(option_dependencies_.empty());
+    option_dependencies_.insert(direct.begin(), direct.end());
+  } else if (name == "--option_dependencies_violation_msg") {
+    option_dependencies_violation_msg_ = value;
   } else if (name == "--descriptor_set_in") {
     if (!descriptor_set_in_names_.empty()) {
       std::cerr << name
@@ -2225,8 +2290,6 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
-
-
   } else if (name == "--experimental_allow_proto3_optional") {
     // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
@@ -2336,6 +2399,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #else
     ::setenv(io::Printer::kProtocCodegenTrace.data(), "yes", 0);
 #endif
+  } else if (name == "--notices") {
+    std::cout << notices_text << std::endl;
+    return PARSE_ARGUMENT_DONE_AND_EXIT;
   } else if (name == "--experimental_editions") {
     // If you're reading this, you're probably wondering what
     // --experimental_editions is for and thinking of turning it on. This is an
@@ -2510,7 +2576,15 @@ Parse PROTO_FILES and generate output based on the options given:
                               are counted as occupied fields numbers.
   --enable_codegen_trace      Enables tracing which parts of protoc are
                               responsible for what codegen output. Not supported
-                              by all backends or on all platforms.)";
+                              by all backends or on all platforms.
+  --direct_dependencies       A colon delimited list of imports that are
+                              allowed to be used in "import"
+                              declarations, when explictily provided.
+  --option_dependencies       A colon delimited list of imports that are
+                              allowed to be used in "import option"
+                              declarations, when explicitly provided.)";
+  std::cout << R"(
+  --notices                   Show notice file and exit.)";
   if (!plugin_prefix_.empty()) {
     std::cout << R"(
   --plugin=EXECUTABLE         Specifies a plugin executable to use.
@@ -2617,6 +2691,33 @@ bool CommandLineInterface::EnforceEditionsSupport(
   return true;
 }
 
+bool CommandLineInterface::EnforceProtocEditionsSupport(
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  if (experimental_editions_) {
+    // The user has explicitly specified the experimental flag.
+    return true;
+  }
+  for (const auto* fd : parsed_files) {
+    Edition edition =
+        ::google::protobuf::internal::InternalFeatureHelper::GetEdition(*fd);
+    if (CanSkipEditionCheck(fd->name())) {
+      // Legacy proto2/proto3 or exempted files don't need any checks.
+      continue;
+    }
+
+    if (edition > ProtocMaximumEdition()) {
+      std::cerr << absl::Substitute(
+                       "$0: is a file using edition $1, which is later than "
+                       "the protoc "
+                       "maximum supported edition $2.",
+                       fd->name(), edition, ProtocMaximumEdition())
+                << std::endl;
+      return false;
+    }
+  }
+  return true;
+}
+
 bool CommandLineInterface::GenerateOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive,
@@ -2644,30 +2745,8 @@ bool CommandLineInterface::GenerateOutput(
     }
   } else {
     // Regular generator.
-    std::string parameters = output_directive.parameter;
-    if (!generator_parameters_[output_directive.name].empty()) {
-      if (!parameters.empty()) {
-        parameters.append(",");
-      }
-      parameters.append(generator_parameters_[output_directive.name]);
-    }
-    if (!EnforceProto3OptionalSupport(
-            output_directive.name,
-            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
-      return false;
-    }
-
-    if (!EnforceEditionsSupport(
-            output_directive.name,
-            output_directive.generator->GetSupportedFeatures(),
-            output_directive.generator->GetMinimumEdition(),
-            output_directive.generator->GetMaximumEdition(), parsed_files)) {
-      return false;
-    }
-
-    if (!output_directive.generator->GenerateAll(parsed_files, parameters,
-                                                 generator_context, &error)) {
-      // Generator returned an error.
+    if (!GenerateBuiltInOutput(parsed_files, output_directive,
+                               generator_context, &error)) {
       std::cerr << output_directive.name << ": " << error << std::endl;
       return false;
     }
@@ -2757,21 +2836,15 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   return true;
 }
 
-bool CommandLineInterface::GeneratePluginOutput(
-    const std::vector<const FileDescriptor*>& parsed_files,
-    const std::string& plugin_name, const std::string& parameter,
-    GeneratorContext* generator_context, std::string* error) {
+CodeGeneratorRequest CommandLineInterface::CreateCodeGeneratorRequest(
+    std::vector<const FileDescriptor*> parsed_files, std::string parameter,
+    bool copy_json_name, bool bootstrap) const {
   CodeGeneratorRequest request;
-  CodeGeneratorResponse response;
-  std::string processed_parameter = parameter;
-
-  bool bootstrap = GetBootstrapParam(processed_parameter);
 
   // Build the request.
-  if (!processed_parameter.empty()) {
-    request.set_parameter(processed_parameter);
+  if (!parameter.empty()) {
+    request.set_parameter(parameter);
   }
-
 
   absl::flat_hash_set<const FileDescriptor*> already_seen;
   for (const FileDescriptor* file : parsed_files) {
@@ -2788,9 +2861,6 @@ bool CommandLineInterface::GeneratePluginOutput(
   const DescriptorPool* pool = parsed_files[0]->pool();
   absl::flat_hash_set<std::string> files_to_generate(input_files_.begin(),
                                                      input_files_.end());
-  static const auto builtin_plugins = new absl::flat_hash_set<std::string>(
-      {"protoc-gen-cpp", "protoc-gen-java", "protoc-gen-mutable_java",
-       "protoc-gen-python"});
   for (FileDescriptorProto& file_proto : *request.mutable_proto_file()) {
     if (files_to_generate.contains(file_proto.name())) {
       const FileDescriptor* file = pool->FindFileByName(file_proto.name());
@@ -2800,8 +2870,7 @@ bool CommandLineInterface::GeneratePluginOutput(
       if (!bootstrap) {
         file->CopySourceCodeInfoTo(&file_proto);
 
-        // The built-in code generators didn't use the json names.
-        if (!builtin_plugins->contains(plugin_name)) {
+        if (copy_json_name) {
           file->CopyJsonNameTo(&file_proto);
         }
       }
@@ -2816,21 +2885,12 @@ bool CommandLineInterface::GeneratePluginOutput(
   version->set_patch(PROTOBUF_VERSION % 1000);
   version->set_suffix(PROTOBUF_VERSION_SUFFIX);
 
-  // Invoke the plugin.
-  Subprocess subprocess;
+  return request;
+}
 
-  if (plugins_.count(plugin_name) > 0) {
-    subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
-  } else {
-    subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
-  }
-
-  std::string communicate_error;
-  if (!subprocess.Communicate(request, &response, &communicate_error)) {
-    *error = absl::Substitute("$0: $1", plugin_name, communicate_error);
-    return false;
-  }
-
+bool CommandLineInterface::GenerateCodeFromResponse(
+    const CodeGeneratorResponse& response, GeneratorContext* generator_context,
+    bool bootstrap, std::string plugin_name, std::string* error) {
   // Write the files.  We do this even if there was a generator error in order
   // to match the behavior of a compiled-in generator.
   std::unique_ptr<io::ZeroCopyOutputStream> current_output;
@@ -2867,6 +2927,46 @@ bool CommandLineInterface::GeneratePluginOutput(
     writer.WriteString(output_file.content());
   }
 
+  return true;
+}
+
+bool CommandLineInterface::GeneratePluginOutput(
+    const std::vector<const FileDescriptor*>& parsed_files,
+    const std::string& plugin_name, const std::string& parameter,
+    GeneratorContext* generator_context, std::string* error) {
+  // TODO Remove these special-cases and send json names to all
+  // plugins.
+  static const auto builtin_plugins = new absl::flat_hash_set<std::string>(
+      {"protoc-gen-cpp", "protoc-gen-java", "protoc-gen-mutable_java",
+       "protoc-gen-python"});
+
+  bool bootstrap = GetBootstrapParam(parameter);
+  CodeGeneratorRequest request = CreateCodeGeneratorRequest(
+      parsed_files, parameter,
+      // The built-in code generators didn't use the json names.
+      /*copy_json_name=*/!builtin_plugins->contains(plugin_name), bootstrap);
+  CodeGeneratorResponse response;
+
+  // Invoke the plugin.
+  Subprocess subprocess;
+
+  if (plugins_.count(plugin_name) > 0) {
+    subprocess.Start(plugins_[plugin_name], Subprocess::EXACT_NAME);
+  } else {
+    subprocess.Start(plugin_name, Subprocess::SEARCH_PATH);
+  }
+
+  std::string communicate_error;
+  if (!subprocess.Communicate(request, &response, &communicate_error)) {
+    *error = absl::Substitute("$0: $1", plugin_name, communicate_error);
+    return false;
+  }
+
+  if (!GenerateCodeFromResponse(response, generator_context, bootstrap,
+                                plugin_name, error)) {
+    return false;
+  }
+
   // Check for errors.
   bool success = true;
   if (!EnforceProto3OptionalSupport(plugin_name, response.supported_features(),
@@ -2886,6 +2986,51 @@ bool CommandLineInterface::GeneratePluginOutput(
   }
 
   return success;
+}
+
+bool CommandLineInterface::GenerateBuiltInOutput(
+    const std::vector<const FileDescriptor*>& parsed_files,
+    const OutputDirective& output_directive,
+    GeneratorContext* generator_context, std::string* error) {
+  std::string parameters = output_directive.parameter;
+  if (!generator_parameters_[output_directive.name].empty()) {
+    if (!parameters.empty()) {
+      parameters.append(",");
+    }
+    parameters.append(generator_parameters_[output_directive.name]);
+  }
+  if (!EnforceProto3OptionalSupport(
+          output_directive.name,
+          output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+    return false;
+  }
+
+  if (!EnforceEditionsSupport(
+          output_directive.name,
+          output_directive.generator->GetSupportedFeatures(),
+          output_directive.generator->GetMinimumEdition(),
+          output_directive.generator->GetMaximumEdition(), parsed_files)) {
+    return false;
+  }
+
+  CodeGeneratorRequest request =
+      CreateCodeGeneratorRequest(parsed_files, parameters);
+  CodeGeneratorResponse response;
+  if (!GenerateCode(request, *output_directive.generator, &response, error)) {
+    return false;
+  }
+  if (response.has_error()) {
+    *error = response.error();
+    return false;
+  }
+
+  if (!GenerateCodeFromResponse(response, generator_context,
+                                /*bootstrap=*/false, output_directive.name,
+                                error)) {
+    return false;
+  }
+
+  return true;
 }
 
 bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
@@ -3037,11 +3182,11 @@ bool CommandLineInterface::WriteEditionDefaults(const DescriptorPool& pool) {
   std::vector<const FieldDescriptor*> extensions;
   pool.FindAllExtensions(feature_set, &extensions);
 
-  Edition minimum = PROTOBUF_MINIMUM_EDITION;
+  Edition minimum = ProtocMinimumEdition();
   if (edition_defaults_minimum_ != EDITION_UNKNOWN) {
     minimum = edition_defaults_minimum_;
   }
-  Edition maximum = PROTOBUF_MAXIMUM_EDITION;
+  Edition maximum = ProtocMaximumEdition();
   if (edition_defaults_maximum_ != EDITION_UNKNOWN) {
     maximum = edition_defaults_maximum_;
   }

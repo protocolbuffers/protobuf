@@ -87,21 +87,25 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedInt32(message, field_descriptor, index, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedInt64(message, field_descriptor, index, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedUInt32(message, field_descriptor, index, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       reflection->SetRepeatedUInt64(message, field_descriptor, index, value);
       break;
     }
@@ -129,6 +133,7 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(arg, value, -1);
+      CheckIntegerWithBool(arg, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->SetRepeatedEnumValue(message, field_descriptor, index,
                                          value);
@@ -312,21 +317,25 @@ PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
       PROTOBUF_CHECK_GET_INT64(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
       PROTOBUF_CHECK_GET_UINT32(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddUInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
       PROTOBUF_CHECK_GET_UINT64(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       reflection->AddUInt64(message, field_descriptor, value);
       break;
     }
@@ -354,6 +363,7 @@ PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       PROTOBUF_CHECK_GET_INT32(item, value, nullptr);
+      CheckIntegerWithBool(item, field_descriptor);
       if (!field_descriptor->legacy_enum_field_treated_as_closed()) {
         reflection->AddEnumValue(message, field_descriptor, value);
       } else {
@@ -599,6 +609,17 @@ static PyObject* Reverse(PyObject* pself) {
   Py_RETURN_NONE;
 }
 
+static PyObject* Clear(PyObject* pself) {
+  RepeatedScalarContainer* self =
+      reinterpret_cast<RepeatedScalarContainer*>(pself);
+  CMessage* cmessage = self->parent;
+  cmessage::AssureWritable(cmessage);
+  Message* message = cmessage->message;
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+  message->GetReflection()->ClearField(message, field_descriptor);
+  Py_RETURN_NONE;
+}
+
 static PyObject* Pop(PyObject* pself, PyObject* args) {
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) {
@@ -693,6 +714,8 @@ static PyMethodDef Methods[] = {
      "Sorts the repeated container."},
     {"reverse", reinterpret_cast<PyCFunction>(Reverse), METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", reinterpret_cast<PyCFunction>(Clear), METH_NOARGS,
+     "Clears the repeated container."},
     {"MergeFrom", static_cast<PyCFunction>(MergeFrom), METH_O,
      "Merges a repeated container into the current container."},
     {nullptr, nullptr}};

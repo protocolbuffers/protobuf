@@ -18,8 +18,10 @@ static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
 
 // Wrapper for a repeated field.
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* arena;
+  // clang-format on
   // The field descriptor (PyObject*).
   // The low bit indicates whether the container is reified (see ptr below).
   //   - low bit set: repeated field is a stub (no underlying data).
@@ -53,19 +55,28 @@ static upb_Array* PyUpb_RepeatedContainer_GetIfReified(
   return PyUpb_RepeatedContainer_IsStub(self) ? NULL : self->ptr.arr;
 }
 
-void PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr) {
+upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
+                                         PyUpb_WeakMap* subobj_map,
+                                         intptr_t iter) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   assert(PyUpb_RepeatedContainer_IsStub(self));
+  const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   if (!arr) {
-    const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
     upb_Arena* arena = PyUpb_Arena_Get(self->arena);
     arr = upb_Array_New(arena, upb_FieldDef_CType(f));
+  }
+  if (subobj_map) {
+    PyUpb_WeakMap_DeleteIter(subobj_map, &iter);
+  } else {
+    PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f,
+                                    (upb_MessageValue){.array_val = arr});
   }
   PyUpb_ObjCache_Add(arr, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.arr = arr;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
   assert(!PyUpb_RepeatedContainer_IsStub(self));
+  return arr;
 }
 
 upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
@@ -73,13 +84,7 @@ upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   if (arr) return arr;  // Already writable.
 
-  const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
-  upb_Arena* arena = PyUpb_Arena_Get(self->arena);
-  arr = upb_Array_New(arena, upb_FieldDef_CType(f));
-  PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f,
-                                  (upb_MessageValue){.array_val = arr});
-  PyUpb_RepeatedContainer_Reify((PyObject*)self, arr);
-  return arr;
+  return PyUpb_RepeatedContainer_Reify((PyObject*)self, NULL, NULL, 0);
 }
 
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
@@ -179,15 +184,32 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   bool submsg = upb_FieldDef_IsSubMessage(f);
   PyObject* e;
 
-  while ((e = PyIter_Next(it))) {
-    PyObject* ret;
-    if (submsg) {
-      ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
-    } else {
-      ret = PyUpb_RepeatedScalarContainer_Append(_self, e);
+  if (submsg) {
+    while ((e = PyIter_Next(it))) {
+      PyObject* ret = PyUpb_RepeatedCompositeContainer_Append(_self, e);
+      Py_XDECREF(ret);
+      Py_DECREF(e);
     }
-    Py_XDECREF(ret);
-    Py_DECREF(e);
+  } else {
+    upb_Arena* arena = PyUpb_Arena_Get(self->arena);
+    Py_ssize_t size = PyObject_Size(value);
+    if (size < 0) {
+      // Some iterables may not have len. Size() will return -1 and
+      // set an error in such cases.
+      PyErr_Clear();
+    } else {
+      upb_Array_Reserve(arr, start_size + size, arena);
+    }
+    while ((e = PyIter_Next(it))) {
+      upb_MessageValue msgval;
+      if (!PyUpb_PyToUpb(e, f, &msgval, arena)) {
+        assert(PyErr_Occurred());
+        Py_DECREF(e);
+        break;
+      }
+      upb_Array_Append(arr, msgval, arena);
+      Py_DECREF(e);
+    }
   }
 
   Py_DECREF(it);
@@ -511,6 +533,15 @@ static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
   Py_RETURN_NONE;
 }
 
+static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* _self) {
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  Py_ssize_t size = PyUpb_RepeatedContainer_Length(_self);
+  if (size > 0) {
+    upb_Array_Delete(self->ptr.arr, 0, size);
+  }
+  Py_RETURN_NONE;
+}
+
 static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
                                                    PyObject* args) {
   return PyUpb_RepeatedContainer_Extend(_self, args);
@@ -619,6 +650,8 @@ static PyMethodDef PyUpb_RepeatedCompositeContainer_Methods[] = {
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
     {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", (PyCFunction)PyUpb_RepeatedContainer_Clear, METH_NOARGS,
+     "Clears repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Adds objects to the repeated container."},
     {NULL, NULL}};
@@ -715,6 +748,8 @@ static PyMethodDef PyUpb_RepeatedScalarContainer_Methods[] = {
      METH_VARARGS | METH_KEYWORDS, "Sorts the repeated container."},
     {"reverse", (PyCFunction)PyUpb_RepeatedContainer_Reverse, METH_NOARGS,
      "Reverses elements order of the repeated container."},
+    {"clear", (PyCFunction)PyUpb_RepeatedContainer_Clear, METH_NOARGS,
+     "Clears repeated container."},
     {"MergeFrom", PyUpb_RepeatedContainer_MergeFrom, METH_O,
      "Merges a repeated container into the current container."},
     {NULL, NULL}};

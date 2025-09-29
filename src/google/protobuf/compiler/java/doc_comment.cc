@@ -157,7 +157,7 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
     for (size_t i = 0; i < lines.size(); i++) {
       // Lines should start with a single space and any extraneous leading
       // spaces should be stripped. For lines starting with a /, the leading
-      // space will prevent putting it right after the leading asterick from
+      // space will prevent putting it right after the leading asterisk from
       // closing the comment.
       std::string line = lines[i];
       line.erase(line.begin(),
@@ -210,7 +210,7 @@ static void WriteDebugString(io::Printer* printer, const FieldDescriptor* field,
                              const Options options, const bool kdoc) {
   std::string field_comment = FirstLineOf(field->DebugString());
   if (options.strip_nonfunctional_codegen) {
-    field_comment = field->name();
+    field_comment = std::string(field->name());
   }
   if (kdoc) {
     printer->Print(" * `$def$`\n", "def", EscapeKdoc(field_comment));
@@ -258,12 +258,6 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
     return;
   }
 
-  // Lite codegen does not annotate set & clear methods with @Deprecated.
-  if (field->file()->options().optimize_for() == FileOptions::LITE_RUNTIME &&
-      (type == SETTER || type == CLEARER)) {
-    return;
-  }
-
   std::string startLine = "0";
   SourceLocation location;
   if (field->GetSourceLocation(&location)) {
@@ -282,11 +276,13 @@ void WriteFieldAccessorDocComment(io::Printer* printer,
                                   const FieldDescriptor* field,
                                   const FieldAccessorType type,
                                   const Options options, const bool builder,
-                                  const bool kdoc) {
+                                  const bool kdoc, const bool is_private) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, options, kdoc);
   WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
+  if (!kdoc && !is_private) {
+    WriteDeprecatedJavadoc(printer, field, type, options);
+  }
   switch (type) {
     case HAZZER:
       printer->Print(" * @return Whether the $name$ field is set.\n", "name",
@@ -342,11 +338,13 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
                                            const FieldAccessorType type,
                                            const Options options,
                                            const bool builder,
-                                           const bool kdoc) {
+                                           const bool is_private) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, field, options, kdoc);
-  WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
+  WriteDocCommentBody(printer, field, options, /* kdoc = */ false);
+  WriteDebugString(printer, field, options, /* kdoc = */ false);
+  if (!is_private) {
+    WriteDeprecatedJavadoc(printer, field, type, options);
+  }
   switch (type) {
     case HAZZER:
       // Should never happen
@@ -408,16 +406,16 @@ void WriteFieldEnumValueAccessorDocComment(io::Printer* printer,
   printer->Print(" */\n");
 }
 
-void WriteFieldStringBytesAccessorDocComment(io::Printer* printer,
-                                             const FieldDescriptor* field,
-                                             const FieldAccessorType type,
-                                             const Options options,
-                                             const bool builder,
-                                             const bool kdoc) {
+void WriteFieldStringBytesAccessorDocComment(
+    io::Printer* printer, const FieldDescriptor* field,
+    const FieldAccessorType type, const Options options, const bool builder,
+    const bool kdoc, const bool is_private) {
   printer->Print("/**\n");
   WriteDocCommentBody(printer, field, options, kdoc);
   WriteDebugString(printer, field, options, kdoc);
-  if (!kdoc) WriteDeprecatedJavadoc(printer, field, type, options);
+  if (!kdoc && !is_private) {
+    WriteDeprecatedJavadoc(printer, field, type, options);
+  }
   switch (type) {
     case HAZZER:
       // Should never happen

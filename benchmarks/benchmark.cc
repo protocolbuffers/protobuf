@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "google/ads/googleads/v16/services/google_ads_service.upbdefs.h"
+#include "google/ads/googleads/v17/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -181,14 +181,14 @@ static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
   for (auto _ : state) {
     upb::DefPool defpool;
     if (Mode == NoLayout) {
-      google_ads_googleads_v16_services_SearchGoogleAdsRequest_getmsgdef(
+      google_ads_googleads_v17_services_SearchGoogleAdsRequest_getmsgdef(
           defpool.ptr());
       bytes_per_iter = _upb_DefPool_BytesLoaded(defpool.ptr());
     } else {
       bytes_per_iter = 0;
       LoadDefInit_BuildLayout(
           defpool.ptr(),
-          &google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit,
+          &google_ads_googleads_v17_services_google_ads_service_proto_upbdefinit,
           &bytes_per_iter);
     }
   }
@@ -200,11 +200,11 @@ BENCHMARK_TEMPLATE(BM_LoadAdsDescriptor_Upb, WithLayout);
 template <LoadDescriptorMode Mode>
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
   extern _upb_DefPool_Init
-      google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit;
+      google_ads_googleads_v17_services_google_ads_service_proto_upbdefinit;
   std::vector<upb_StringView> serialized_files;
   absl::flat_hash_set<const _upb_DefPool_Init*> seen_files;
   CollectFileDescriptors(
-      &google_ads_googleads_v16_services_google_ads_service_proto_upbdefinit,
+      &google_ads_googleads_v17_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
@@ -227,7 +227,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     if (Mode == WithLayout) {
       protobuf::DynamicMessageFactory factory;
       const protobuf::Descriptor* d = pool.FindMessageTypeByName(
-          "google.ads.googleads.v16.services.SearchGoogleAdsResponse");
+          "google.ads.googleads.v17.services.SearchGoogleAdsResponse");
       if (!d) {
         printf("Failed to find descriptor.\n");
         exit(1);
@@ -362,12 +362,18 @@ static upb_benchmark_FileDescriptorProto* UpbParseDescriptor(upb_Arena* arena) {
   return set;
 }
 
+template <ArenaMode AMode>
 static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
   int64_t total = 0;
   upb_Arena* arena = upb_Arena_New();
   upb_benchmark_FileDescriptorProto* set = UpbParseDescriptor(arena);
   for (auto _ : state) {
-    upb_Arena* enc_arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
+    upb_Arena* enc_arena;
+    if (AMode == InitBlock) {
+      enc_arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
+    } else {
+      enc_arena = upb_Arena_New();
+    }
     size_t size;
     char* data =
         upb_benchmark_FileDescriptorProto_serialize(set, enc_arena, &size);
@@ -376,10 +382,12 @@ static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
       exit(1);
     }
     total += size;
+    upb_Arena_Free(enc_arena);
   }
   state.SetBytesProcessed(total);
 }
-BENCHMARK(BM_SerializeDescriptor_Upb);
+BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, UseArena);
+BENCHMARK_TEMPLATE(BM_SerializeDescriptor_Upb, InitBlock);
 
 static absl::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
                                        const upb_MessageDef* md,

@@ -2,6 +2,24 @@
 Internal helpers for building the Python protobuf runtime.
 """
 
+load("@rules_python//python:py_test.bzl", "py_test")
+
+# Adapted from https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_common.bzl#L47
+InternalOsInfo = provider(
+    doc = "Information about the target platform's OS.",
+    fields = ["is_windows"],
+)
+
+# Adapted from https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_common.bzl#L52
+internal_is_windows = rule(
+    implementation = lambda ctx: InternalOsInfo(
+        is_windows = ctx.target_platform_has_constraint(ctx.attr._windows_constraint[platform_common.ConstraintValueInfo]),
+    ),
+    attrs = {
+        "_windows_constraint": attr.label(default = "@platforms//os:windows"),
+    },
+)
+
 def _remove_cross_repo_path(path):
     components = path.split("/")
     if components[0] == "..":
@@ -22,7 +40,9 @@ def _internal_copy_files_impl(ctx):
         dest = ctx.actions.declare_file(short_path[len(strip_prefix):])
         src_dests.append([src, dest])
 
-    if ctx.attr.is_windows:
+    # Windows check adapted from
+    # https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_file_private.bzl#L71C10-L71C54
+    if ctx.attr._exec_is_windows[InternalOsInfo].is_windows:
         bat_file = ctx.actions.declare_file(ctx.label.name + "_copy.bat")
         ctx.actions.write(
             output = bat_file,
@@ -43,6 +63,7 @@ def _internal_copy_files_impl(ctx):
             mnemonic = "InternalCopyFile",
             progress_message = "Copying files",
             use_default_shell_env = True,
+            toolchain = None,
         )
 
     else:
@@ -63,6 +84,7 @@ def _internal_copy_files_impl(ctx):
             mnemonic = "InternalCopyFile",
             progress_message = "Copying files",
             use_default_shell_env = True,
+            toolchain = None,
         )
 
     return [
@@ -79,7 +101,13 @@ This rule implements file copying, including a compatibility mode for Windows.
     attrs = {
         "srcs": attr.label_list(allow_files = True, providers = [DefaultInfo]),
         "strip_prefix": attr.string(),
-        "is_windows": attr.bool(),
+        # Adapted from https://github.com/bazelbuild/bazel-skylib/blob/main/rules/private/copy_file_private.bzl#L91C1-L96C7
+        "_exec_is_windows": attr.label(
+            default = ":is_windows",
+            # The exec transition must match the exec group of the actions, which in
+            # this case is the default exec group.
+            cfg = "exec",
+        ),
     },
 )
 
@@ -109,10 +137,6 @@ def internal_copy_files(name, srcs, strip_prefix, **kwargs):
         name = name,
         srcs = srcs,
         strip_prefix = strip_prefix,
-        is_windows = select({
-            "@bazel_tools//src/conditions:host_windows": True,
-            "//conditions:default": False,
-        }),
         **kwargs
     )
 
@@ -123,9 +147,12 @@ def internal_py_test(deps = [], **kwargs):
       deps: any additional dependencies of the test.
       **kwargs: arguments forwarded to py_test.
     """
-    native.py_test(
+    py_test(
         imports = ["."],
-        deps = deps + ["//python:python_test_lib"],
+        deps = deps + [
+            "//python:python_test_lib",
+            "@com_google_absl_py//absl/testing:parameterized",
+        ],
         target_compatible_with = select({
             "@system_python//:supported": [],
             "//conditions:default": ["@platforms//:incompatible"],

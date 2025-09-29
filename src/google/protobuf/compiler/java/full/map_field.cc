@@ -11,6 +11,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -39,17 +40,6 @@ std::string TypeName(const FieldDescriptor* field,
   } else {
     return std::string(boxed ? BoxedPrimitiveTypeName(GetJavaType(field))
                              : PrimitiveTypeName(GetJavaType(field)));
-  }
-}
-
-std::string KotlinTypeName(const FieldDescriptor* field,
-                           ClassNameResolver* name_resolver) {
-  if (GetJavaType(field) == JAVATYPE_MESSAGE) {
-    return name_resolver->GetImmutableClassName(field->message_type());
-  } else if (GetJavaType(field) == JAVATYPE_ENUM) {
-    return name_resolver->GetImmutableClassName(field->enum_type());
-  } else {
-    return std::string(KotlinTypeName(GetJavaType(field)));
   }
 }
 
@@ -86,15 +76,13 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
   // The code that generates the open-source version appears not to understand
   // #else, so we have an #ifndef instead.
   std::string pass_through_nullness =
-      context_->options().opensource_runtime
+      google::protobuf::internal::IsOss()
           ? "/* nullable */\n"
           : "@com.google.protobuf.Internal.ProtoPassThroughNullness ";
 
   variables_["key_type"] = TypeName(key, name_resolver, false);
   std::string boxed_key_type = TypeName(key, name_resolver, true);
   variables_["boxed_key_type"] = boxed_key_type;
-  variables_["kt_key_type"] = KotlinTypeName(key, name_resolver);
-  variables_["kt_value_type"] = KotlinTypeName(value, name_resolver);
   // Used for calling the serialization function.
   variables_["short_key_type"] =
       boxed_key_type.substr(boxed_key_type.rfind('.') + 1);
@@ -170,12 +158,6 @@ void ImmutableMapFieldGenerator::SetMessageVariables(
   // by the proto compiler
   variables_["deprecation"] =
       descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "";
-  variables_.insert(
-      {"kt_deprecation",
-       descriptor_->options().deprecated()
-           ? absl::StrCat("@kotlin.Deprecated(message = \"Field ",
-                          variables_["name"], " is deprecated\") ")
-           : ""});
   variables_["on_changed"] = "onChanged();";
 
   variables_.insert(
@@ -220,7 +202,7 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
 
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(variables_,
                      "/**\n"
                      " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -280,7 +262,7 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
       printer->Annotate("{", "}", descriptor_);
     }
   } else {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(variables_,
                      "/**\n"
                      " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -414,7 +396,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
 
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           variables_,
           "/**\n"
@@ -458,7 +440,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
     if (SupportUnknownEnumValue(value)) {
-      if (context_->options().opensource_runtime) {
+      if (google::protobuf::internal::IsOss()) {
         printer->Print(
             variables_,
             "/**\n"
@@ -501,7 +483,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
       printer->Annotate("{", "}", descriptor_, Semantic::kSet);
     }
   } else {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           variables_,
           "/**\n"
@@ -566,7 +548,7 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
 
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (GetJavaType(value) == JAVATYPE_ENUM) {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(
           variables_,
           "/**\n"
@@ -680,7 +662,7 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
       printer->Annotate("{", "}", descriptor_);
     }
   } else {
-    if (context_->options().opensource_runtime) {
+    if (google::protobuf::internal::IsOss()) {
       printer->Print(variables_,
                      "/**\n"
                      " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -818,7 +800,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_, Semantic::kSet);
 
-  if (context_->options().opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(
         variables_,
         "/**\n"
@@ -906,7 +888,7 @@ void ImmutableMapFieldGenerator::GenerateMessageMapGetters(
       "internalGet$capitalized_name$().ensureBuilderMap().containsKey(key);\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  if (context_->options().opensource_runtime) {
+  if (google::protobuf::internal::IsOss()) {
     printer->Print(variables_,
                    "/**\n"
                    " * Use {@link #get$capitalized_name$Map()} instead.\n"
@@ -957,95 +939,6 @@ void ImmutableMapFieldGenerator::GenerateMessageMapGetters(
       "  return $name$Converter.build(map.get(key));\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-}
-
-void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
-    io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "/**\n"
-      " * An uninstantiable, behaviorless type to represent the field in\n"
-      " * generics.\n"
-      " */\n"
-      "@kotlin.OptIn"
-      "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "public class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
-      " : com.google.protobuf.kotlin.DslProxy()\n");
-
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "$kt_deprecation$ public val $kt_name$: "
-      "com.google.protobuf.kotlin.DslMap"
-      "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  @kotlin.jvm.JvmSynthetic\n"
-      "  @JvmName(\"get$kt_capitalized_name$Map\")\n"
-      "  get() = com.google.protobuf.kotlin.DslMap(\n"
-      "    $kt_dsl_builder$.${$$kt_property_name$Map$}$\n"
-      "  )\n");
-
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@JvmName(\"put$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
-      "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  .put(key: $kt_key_type$, value: $kt_value_type$) {\n"
-      "     $kt_dsl_builder$.${$put$capitalized_name$$}$(key, value)\n"
-      "   }\n");
-
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"set$kt_capitalized_name$\")\n"
-      "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "public inline operator fun com.google.protobuf.kotlin.DslMap"
-      "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  .set(key: $kt_key_type$, value: $kt_value_type$) {\n"
-      "     put(key, value)\n"
-      "   }\n");
-
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"remove$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
-      "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  .remove(key: $kt_key_type$) {\n"
-      "     $kt_dsl_builder$.${$remove$capitalized_name$$}$(key)\n"
-      "   }\n");
-
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"putAll$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
-      "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  .putAll(map: kotlin.collections.Map<$kt_key_type$, "
-      "$kt_value_type$>) "
-      "{\n"
-      "     $kt_dsl_builder$.${$putAll$capitalized_name$$}$(map)\n"
-      "   }\n");
-
-  WriteFieldDocComment(printer, descriptor_, context_->options(),
-                       /* kdoc */ true);
-  printer->Print(
-      variables_,
-      "@kotlin.jvm.JvmSynthetic\n"
-      "@JvmName(\"clear$kt_capitalized_name$\")\n"
-      "public fun com.google.protobuf.kotlin.DslMap"
-      "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
-      "  .clear() {\n"
-      "     $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
-      "   }\n");
 }
 
 void ImmutableMapFieldGenerator::GenerateFieldBuilderInitializationCode(

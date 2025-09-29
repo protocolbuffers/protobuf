@@ -56,7 +56,9 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
                 std::string* error) const override;
 
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override { return Edition::EDITION_2023; }
+  Edition GetMaximumEdition() const override {
+    return Edition::EDITION_2024;
+  }
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
     return {};
   }
@@ -83,6 +85,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   std::string ModuleLevelName(const DescriptorT& descriptor) const;
   std::string PublicPackage() const;
   std::string InternalPackage() const;
+  std::string ExtraInitTypes(const Descriptor& msg_des) const;
 
   bool opensource_runtime_ = true;
 

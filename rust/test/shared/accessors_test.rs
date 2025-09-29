@@ -7,6 +7,11 @@
 
 //! Tests covering accessors for singular bool, int32, int64, and bytes fields.
 
+#[cfg(not(bzl))]
+mod protos;
+#[cfg(not(bzl))]
+use protos::*;
+
 use googletest::prelude::*;
 use protobuf::prelude::*;
 
@@ -398,7 +403,7 @@ fn test_default_bool_accessors() {
 #[gtest]
 fn test_optional_bytes_accessors() {
     let mut msg = TestAllTypes::new();
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
@@ -411,12 +416,12 @@ fn test_optional_bytes_accessors() {
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b"hello world"[..])));
 
     msg.clear_optional_bytes();
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(false));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Unset(&b""[..])));
 
     msg.set_optional_bytes(b"");
-    assert_that!(*msg.optional_bytes(), empty());
+    assert_that!(*msg.optional_bytes(), is_empty());
     assert_that!(msg.has_optional_bytes(), eq(true));
     assert_that!(msg.optional_bytes_opt(), eq(Optional::Set(&b""[..])));
 }
@@ -484,7 +489,7 @@ fn test_nonempty_default_bytes_accessors() {
     assert_that!(msg.default_bytes_opt(), eq(Optional::Unset(&b"world"[..])));
 
     msg.set_default_bytes(b"");
-    assert_that!(*msg.default_bytes(), empty());
+    assert_that!(*msg.default_bytes(), is_empty());
     assert_that!(msg.default_bytes_opt(), eq(Optional::Set(&b""[..])));
 
     msg.clear_default_bytes();
@@ -733,7 +738,7 @@ fn test_default_foreign_enum_accessors() {
 
 #[gtest]
 fn test_optional_import_enum_accessors() {
-    use unittest_rust_proto::ImportEnum;
+    use unittest_import_rust_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.optional_import_enum_opt(), eq(Optional::Unset(ImportEnum::ImportFoo)));
@@ -750,7 +755,7 @@ fn test_optional_import_enum_accessors() {
 
 #[gtest]
 fn test_default_import_enum_accessors() {
-    use unittest_rust_proto::ImportEnum;
+    use unittest_import_rust_proto::ImportEnum;
 
     let mut msg = TestAllTypes::new();
     assert_that!(msg.default_import_enum(), eq(ImportEnum::ImportBar));
@@ -767,7 +772,7 @@ fn test_default_import_enum_accessors() {
 
 #[gtest]
 fn test_oneof_accessors() {
-    use unittest_rust_proto::test_oneof2::{Foo::*, FooCase, NestedEnum};
+    use unittest_rust_proto::test_oneof2::{FooCase, FooOneof::*, NestedEnum};
     use unittest_rust_proto::TestOneof2;
 
     let mut msg = TestOneof2::new();
@@ -818,7 +823,7 @@ fn test_oneof_accessors() {
 
 #[gtest]
 fn test_msg_oneof_default_accessors() {
-    use unittest_rust_proto::test_oneof2::{Bar::*, BarCase, NestedEnum};
+    use unittest_rust_proto::test_oneof2::{BarCase, BarOneof::*, NestedEnum};
 
     let mut msg = unittest_rust_proto::TestOneof2::new();
     assert_that!(msg.bar(), matches_pattern!(not_set(_)));

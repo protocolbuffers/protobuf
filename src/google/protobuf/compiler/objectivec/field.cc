@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -34,59 +33,58 @@ namespace compiler {
 namespace objectivec {
 
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
 
-void SetCommonFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+void SetCommonFieldVariables(const FieldDescriptor* descriptor,
+                             SubstitutionMap& variables) {
   std::string camel_case_name = FieldName(descriptor);
-  std::string raw_field_name;
-  if (internal::cpp::IsGroupLike(*descriptor)) {
-    raw_field_name = descriptor->message_type()->name();
-  } else {
-    raw_field_name = descriptor->name();
-  }
+  std::string raw_field_name(internal::cpp::IsGroupLike(*descriptor)
+                                 ? descriptor->message_type()->name()
+                                 : descriptor->name());
   // The logic here has to match -[GGPBFieldDescriptor textFormatName].
   const std::string un_camel_case_name(
       UnCamelCaseFieldName(camel_case_name, descriptor));
   const bool needs_custom_name = (raw_field_name != un_camel_case_name);
 
-  const std::string& classname = ClassName(descriptor->containing_type());
-  (*variables)["classname"] = classname;
-  (*variables)["name"] = camel_case_name;
-  const std::string& capitalized_name = FieldNameCapitalized(descriptor);
-  (*variables)["capitalized_name"] = capitalized_name;
-  (*variables)["raw_field_name"] = raw_field_name;
-  (*variables)["field_number_name"] =
-      absl::StrCat(classname, "_FieldNumber_", capitalized_name);
-  (*variables)["field_number"] = absl::StrCat(descriptor->number());
-  (*variables)["property_type"] = FieldObjCType(
-      descriptor, static_cast<FieldObjCTypeOptions>(
-                      kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes |
-                      kFieldObjCTypeOptions_IncludeSpaceBeforeStar));
-  (*variables)["storage_type"] = FieldObjCType(
-      descriptor, static_cast<FieldObjCTypeOptions>(
-                      kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes |
-                      kFieldObjCTypeOptions_OmitLightweightGenerics |
-                      kFieldObjCTypeOptions_IncludeSpaceBeforeStar));
-  (*variables)["field_type"] = GetCapitalizedType(descriptor);
-  (*variables)["deprecated_attribute"] =
-      GetOptionalDeprecatedAttribute(descriptor);
+  const std::string classname = ClassName(descriptor->containing_type());
+  variables.Set(Sub("classname", classname).AnnotatedAs(descriptor));
+  variables.Set(Sub("name", camel_case_name).AnnotatedAs(descriptor));
+
+  const std::string capitalized_name = FieldNameCapitalized(descriptor);
+  variables.Set(
+      Sub("hazzer_name", "has" + capitalized_name).AnnotatedAs(descriptor));
+  variables.Set(
+      Sub("capitalized_name", capitalized_name).AnnotatedAs(descriptor));
+  variables.Set("raw_field_name", raw_field_name);
+  variables.Set(Sub("field_number_name",
+                    absl::StrCat(classname, "_FieldNumber_", capitalized_name))
+                    .AnnotatedAs(descriptor));
+  variables.Set("field_number", absl::StrCat(descriptor->number()));
+  variables.Set(
+      "property_type",
+      FieldObjCType(descriptor,
+                    static_cast<FieldObjCTypeOptions>(
+                        kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes |
+                        kFieldObjCTypeOptions_IncludeSpaceBeforeStar)));
+  variables.Set(
+      "storage_type",
+      FieldObjCType(descriptor,
+                    static_cast<FieldObjCTypeOptions>(
+                        kFieldObjCTypeOptions_IncludeSpaceAfterBasicTypes |
+                        kFieldObjCTypeOptions_OmitLightweightGenerics |
+                        kFieldObjCTypeOptions_IncludeSpaceBeforeStar)));
+  variables.Set("field_type", GetCapitalizedType(descriptor));
+  variables.Set("deprecated_attribute",
+                GetOptionalDeprecatedAttribute(descriptor));
   std::vector<std::string> field_flags;
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
-  if (descriptor->is_optional()) field_flags.push_back("GPBFieldOptional");
   if (descriptor->is_packed()) field_flags.push_back("GPBFieldPacked");
 
   // ObjC custom flags.
   if (descriptor->has_default_value())
     field_flags.push_back("GPBFieldHasDefaultValue");
   if (needs_custom_name) field_flags.push_back("GPBFieldTextFormatNameCustom");
-  if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
-    field_flags.push_back("GPBFieldHasEnumDescriptor");
-    if (descriptor->enum_type()->is_closed()) {
-      field_flags.push_back("GPBFieldClosedEnum");
-    }
-  }
   // It will clear on a zero value if...
   //  - not repeated/map
   //  - doesn't have presence
@@ -96,20 +94,21 @@ void SetCommonFieldVariables(
     field_flags.push_back("GPBFieldClearHasIvarOnZero");
   }
 
-  (*variables)["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
+  variables.Set("fieldflags", BuildFlagsString(FLAGTYPE_FIELD, field_flags));
 
-  (*variables)["default"] = DefaultValue(descriptor);
-  (*variables)["default_name"] = GPBGenericValueFieldName(descriptor);
+  variables.Set("default", DefaultValue(descriptor));
+  variables.Set("default_name", GPBGenericValueFieldName(descriptor));
 
-  (*variables)["dataTypeSpecific_name"] = "clazz";
-  (*variables)["dataTypeSpecific_value"] = "Nil";
+  variables.Set("dataTypeSpecific_name", "clazz");
+  variables.Set("dataTypeSpecific_value", "Nil");
 
-  (*variables)["storage_offset_value"] = absl::StrCat(
-      "(uint32_t)offsetof(", classname, "__storage_, ", camel_case_name, ")");
-  (*variables)["storage_offset_comment"] = "";
+  variables.Set("storage_offset_value",
+                absl::StrCat("(uint32_t)offsetof(", classname, "__storage_, ",
+                             camel_case_name, ")"));
+  variables.Set("storage_offset_comment", "");
 
   // Clear some common things so they can be set just when needed.
-  (*variables)["storage_attribute"] = "";
+  variables.Set("storage_attribute", "");
 }
 
 bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
@@ -192,11 +191,11 @@ FieldGenerator* FieldGenerator::Make(
 FieldGenerator::FieldGenerator(const FieldDescriptor* descriptor,
                                const GenerationOptions& generation_options)
     : descriptor_(descriptor), generation_options_(generation_options) {
-  SetCommonFieldVariables(descriptor, &variables_);
+  SetCommonFieldVariables(descriptor, variables_);
 }
 
 void FieldGenerator::GenerateFieldNumberConstant(io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit("$field_number_name$ = $field_number$,\n");
 }
 
@@ -228,7 +227,7 @@ void FieldGenerator::DetermineNeededFiles(
 void FieldGenerator::GenerateFieldDescription(io::Printer* printer,
                                               bool include_default) const {
   // Printed in the same order as the structure decl.
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit(
       {{"prefix", include_default ? ".core" : ""},
        {"maybe_default",
@@ -252,10 +251,12 @@ void FieldGenerator::GenerateFieldDescription(io::Printer* printer,
 }
 
 void FieldGenerator::SetRuntimeHasBit(int has_index) {
-  variables_["has_index"] = absl::StrCat(has_index);
+  variables_.Set("has_index", has_index);
 }
 
-void FieldGenerator::SetNoHasBit() { variables_["has_index"] = "GPBNoHasBit"; }
+void FieldGenerator::SetNoHasBit() {
+  variables_.Set("has_index", "GPBNoHasBit");
+}
 
 int FieldGenerator::ExtraRuntimeHasBitsNeeded() const { return 0; }
 
@@ -269,7 +270,7 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
   if (oneof != nullptr) {
     int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.
-    variables_["has_index"] = absl::StrCat(-index);
+    variables_.Set("has_index", -index);
   }
 }
 
@@ -286,13 +287,13 @@ SingleFieldGenerator::SingleFieldGenerator(
 
 void SingleFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit("$storage_type$$name$;\n");
 }
 
 void SingleFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit({{"comments",
                   [&] {
                     EmitCommentsString(printer, generation_options_,
@@ -304,7 +305,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
                 )objc");
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
-      @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
+      @property(nonatomic, readwrite) BOOL $hazzer_name$$ deprecated_attribute$;
     )objc");
   }
   printer->Emit("\n");
@@ -312,9 +313,9 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
 
 void SingleFieldGenerator::GeneratePropertyImplementation(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   if (WantsHasProperty()) {
-    printer->Emit("@dynamic has$capitalized_name$, $name$;\n");
+    printer->Emit("@dynamic $hazzer_name$, $name$;\n");
   } else {
     printer->Emit("@dynamic $name$;\n");
   }
@@ -332,15 +333,15 @@ ObjCObjFieldGenerator::ObjCObjFieldGenerator(
     const FieldDescriptor* descriptor,
     const GenerationOptions& generation_options)
     : SingleFieldGenerator(descriptor, generation_options) {
-  variables_["property_storage_attribute"] = "strong";
-  if (IsRetainedName(variables_["name"])) {
-    variables_["storage_attribute"] = " NS_RETURNS_NOT_RETAINED";
+  variables_.Set("property_storage_attribute", "strong");
+  if (IsRetainedName(variable("name"))) {
+    variables_.Set("storage_attribute", " NS_RETURNS_NOT_RETAINED");
   }
 }
 
 void ObjCObjFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit("$storage_type$$name$;\n");
 }
 
@@ -350,7 +351,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   // it uses pointers and deals with Objective-C's rules around storage name
   // conventions (init*, new*, etc.)
 
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit({{"comments",
                   [&] {
                     EmitCommentsString(printer, generation_options_,
@@ -363,10 +364,10 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   if (WantsHasProperty()) {
     printer->Emit(R"objc(
         /** Test to see if @c $name$ has been set. */
-        @property(nonatomic, readwrite) BOOL has$capitalized_name$$ deprecated_attribute$;
+        @property(nonatomic, readwrite) BOOL $hazzer_name$$ deprecated_attribute$;
     )objc");
   }
-  if (IsInitName(variables_.find("name")->second)) {
+  if (IsInitName(variable("name"))) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Emit(R"objc(
@@ -383,13 +384,13 @@ RepeatedFieldGenerator::RepeatedFieldGenerator(
 
 void RepeatedFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit("$storage_type$$name$;\n");
 }
 
 void RepeatedFieldGenerator::GeneratePropertyImplementation(
     io::Printer* printer) const {
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit("@dynamic $name$, $name$_Count;\n");
 }
 
@@ -401,7 +402,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
   // dealing with needing Objective-C's rules around storage name conventions
   // (init*, new*, etc.)
 
-  auto vars = printer->WithVars(variables_);
+  auto vars = variables_.Install(printer);
   printer->Emit(
       {{"comments",
         [&] { EmitCommentsString(printer, generation_options_, descriptor_); }},
@@ -413,7 +414,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
         /** The number of items in @c $name$ without causing the container to be created. */
         @property(nonatomic, readonly) NSUInteger $name$_Count$ deprecated_attribute$;
       )objc");
-  if (IsInitName(variables_.find("name")->second)) {
+  if (IsInitName(variable("name"))) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Emit(R"objc(
@@ -436,7 +437,7 @@ FieldGeneratorMap::FieldGeneratorMap(
     : descriptor_(descriptor),
       field_generators_(static_cast<size_t>(descriptor->field_count())) {
   for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(
+    field_generators_[(size_t)i].reset(
         FieldGenerator::Make(descriptor->field(i), generation_options));
   }
 }
@@ -444,21 +445,21 @@ FieldGeneratorMap::FieldGeneratorMap(
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
   ABSL_CHECK_EQ(field->containing_type(), descriptor_);
-  return *field_generators_[field->index()];
+  return *field_generators_[(size_t)field->index()];
 }
 
 int FieldGeneratorMap::CalculateHasBits() {
   int total_bits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (field_generators_[i]->RuntimeUsesHasBit()) {
-      field_generators_[i]->SetRuntimeHasBit(total_bits);
+    if (field_generators_[(size_t)i]->RuntimeUsesHasBit()) {
+      field_generators_[(size_t)i]->SetRuntimeHasBit(total_bits);
       ++total_bits;
     } else {
-      field_generators_[i]->SetNoHasBit();
+      field_generators_[(size_t)i]->SetNoHasBit();
     }
-    int extra_bits = field_generators_[i]->ExtraRuntimeHasBitsNeeded();
+    int extra_bits = field_generators_[(size_t)i]->ExtraRuntimeHasBitsNeeded();
     if (extra_bits) {
-      field_generators_[i]->SetExtraRuntimeHasBitsBase(total_bits);
+      field_generators_[(size_t)i]->SetExtraRuntimeHasBitsBase(total_bits);
       total_bits += extra_bits;
     }
   }
@@ -467,7 +468,7 @@ int FieldGeneratorMap::CalculateHasBits() {
 
 void FieldGeneratorMap::SetOneofIndexBase(int index_base) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    field_generators_[i]->SetOneofIndexBase(index_base);
+    field_generators_[(size_t)i]->SetOneofIndexBase(index_base);
   }
 }
 

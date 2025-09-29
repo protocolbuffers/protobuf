@@ -1,12 +1,16 @@
+# TODO: ErrorProne's SelfAssertions are violated in tests
+build --javacopt=-Xep:SelfAssertion:WARN
+
 build:dbg --compilation_mode=dbg
 
 build:opt --compilation_mode=opt
 
-build:san-common --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
+build:san-common --config=dbg --strip=never --copt=-O1 --copt=-fno-omit-frame-pointer
+# TODO ASAN hits ODR violations with shared linkage due to
+# cc_proto_library cyclic dependency.
+build:san-common --dynamic_mode=off
 
 build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
-# ASAN hits ODR violations with shared linkage due to rules_proto.
-build:asan --dynamic_mode=off
 
 build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=memory
 build:msan --copt=-fsanitize-memory-track-origins
@@ -27,6 +31,8 @@ build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+# Abseil passes nullptr to memcmp with 0 size
+build:ubsan --copt=-fno-sanitize=nonnull-attribute
 
 # Workaround Bazel 7 remote cache issues.
 # See https://github.com/bazelbuild/bazel/issues/20161
@@ -38,26 +44,23 @@ build --remote_download_outputs=all
 # running bazelisk with the --migrate flag and filtering out all flags that
 # default to true or are deprecated.
 build --incompatible_check_sharding_support
+build --incompatible_config_setting_private_default_visibility
 build --incompatible_default_to_explicit_init_py
 build --incompatible_disable_native_android_rules
+build --incompatible_disable_starlark_host_transitions
 build --incompatible_disable_target_provider_fields
 build --incompatible_disallow_empty_glob
 build --incompatible_dont_use_javasourceinfoprovider
 build --incompatible_enable_android_toolchain_resolution
 build --incompatible_enable_apple_toolchain_resolution
 build --incompatible_exclusive_test_sandboxed
-build --incompatible_remote_output_paths_relative_to_input_root
 build --incompatible_remote_use_new_exit_code_for_lost_inputs
 build --incompatible_sandbox_hermetic_tmp
-build --incompatible_struct_has_no_methods
 build --incompatible_top_level_aspects_require_providers
 build --incompatible_use_cc_configure_from_rules_cc
-build --incompatible_use_host_features
 
 # We cannot yet build successfully with the following flags:
 #   --incompatible_check_testonly_for_output_files
-#   --incompatible_config_setting_private_default_visibility
-#   --incompatible_disable_starlark_host_transitions
 #   --incompatible_disallow_struct_provider_syntax
 #   --incompatible_no_implicit_file_export
 #   --incompatible_no_rule_outputs_param
@@ -71,10 +74,12 @@ build --incompatible_use_host_features
 #   --incompatible_fail_on_unknown_attributes
 #   --incompatible_merge_fixed_and_default_shell_env
 
-# TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
-# https://github.com/protocolbuffers/protobuf/issues/14313
-common --noenable_bzlmod
+# For easier debugging of build failures.
+common --announce_rc
+build --verbose_failures
 
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
 build --features=layering_check
+
+build --enable_platform_specific_config

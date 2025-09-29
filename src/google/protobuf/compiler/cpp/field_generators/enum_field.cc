@@ -25,6 +25,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -41,9 +44,13 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts) {
   return {
       {"Enum", enum_name},
       {"kDefault", Int32ToString(default_value->number())},
-      Sub("assert_valid",
-          is_open ? ""
-                  : absl::Substitute("assert($0_IsValid(value));", enum_name))
+      Sub("assert_valid", is_open ? ""
+                                  : absl::Substitute(
+                                        R"cc(
+                                          assert(::$0::internal::ValidateEnum(
+                                              value, $1_internal_data_));
+                                        )cc",
+                                        ProtobufNamespace(opts), enum_name))
           .WithSuffix(";"),
 
       {"cached_size_name", MakeVarintCachedSizeName(field)},
@@ -113,6 +120,7 @@ class SingularEnum : public FieldGeneratorBase {
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
     )cc");
   }
+
 
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
@@ -385,11 +393,11 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ void $set_name$(int index, $Enum$ value);
     $DEPRECATED$ void $add_name$($Enum$ value);
     $DEPRECATED$ const $pb$::RepeatedField<int>& $name$() const;
-    $DEPRECATED$ $pb$::RepeatedField<int>* $mutable_name$();
+    $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
 
     private:
     const $pb$::RepeatedField<int>& $_internal_name$() const;
-    $pb$::RepeatedField<int>* $_internal_mutable_name$();
+    $pb$::RepeatedField<int>* $nonnull$ $_internal_mutable_name$();
 
     public:
   )cc");
@@ -405,6 +413,9 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
+    //~ Note: no need to set hasbit in set_$name$(int index). Hasbits only
+    //~ need to be updated if a new element is (potentially) added, not if an
+    //~ existing element is mutated.
     inline void $Msg$::set_$name$(int index, $Enum$ value) {
       $WeakDescriptorSelfPin$;
       $assert_valid$;
@@ -419,6 +430,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
       _internal_mutable_$name_internal$()->Add(value);
+      $set_hasbit$;
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
     }
@@ -433,9 +445,10 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline $pb$::RepeatedField<int>* $Msg$::mutable_$name$()
+    inline $pb$::RepeatedField<int>* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
+      $set_hasbit$;
       $annotate_mutable_list$;
       // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
       $TsanDetectConcurrentMutation$;
@@ -449,7 +462,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return *$field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
+      inline $pb$::RepeatedField<int>* $nonnull$
+      $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         $PrepareSplitMessageForWrite$;
         if ($field_$.IsDefault()) {
@@ -465,7 +479,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
-      inline $pb$::RepeatedField<int>* $Msg$::_internal_mutable_$name_internal$() {
+      inline $pb$::RepeatedField<int>* $nonnull$
+      $Msg$::_internal_mutable_$name_internal$() {
         $TsanDetectConcurrentRead$;
         return &$field_$;
       }
@@ -481,14 +496,14 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
             {"byte_size",
              [&] {
                if (has_cached_size_) {
-                 p->Emit(R"cc(std::size_t byte_size =
-                                  this_.$cached_size_$.Get();)cc");
+                 p->Emit(
+                     R"cc(::size_t byte_size = this_.$cached_size_$.Get();)cc");
                } else {
                  p->Emit(R"cc(
-                   std::size_t byte_size = 0;
-                   auto count = static_cast<std::size_t>(this_._internal_$name$_size());
+                   ::size_t byte_size = 0;
+                   auto count = static_cast<::size_t>(this_._internal_$name$_size());
 
-                   for (std::size_t i = 0; i < count; ++i) {
+                   for (::size_t i = 0; i < count; ++i) {
                      byte_size += ::_pbi::WireFormatLite::EnumSize(
                          this_._internal_$name$().Get(static_cast<int>(i)));
                    }
@@ -535,20 +550,20 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
                  data_size == 0
                      ? 0
                      : $kTagBytes$ + ::_pbi::WireFormatLite::Int32Size(
-                                         static_cast<int32_t>(data_size));
+                                         static_cast<::int32_t>(data_size));
                )cc");
              } else {
                p->Emit(R"cc(
-                 std::size_t{$kTagBytes$} *
+                 ::size_t{$kTagBytes$} *
                      ::_pbi::FromIntSize(this_._internal_$name$_size());
                )cc");
              }
            }},
       },
       R"cc(
-        std::size_t data_size =
+        ::size_t data_size =
             ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
-        std::size_t tag_size = $tag_size$;
+        ::size_t tag_size = $tag_size$;
         total_size += data_size + tag_size;
       )cc");
 }
@@ -570,3 +585,5 @@ std::unique_ptr<FieldGeneratorBase> MakeRepeatedEnumGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

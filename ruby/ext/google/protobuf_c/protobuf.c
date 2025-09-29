@@ -183,7 +183,7 @@ const rb_data_type_t Arena_type = {
 };
 
 static void *ruby_upb_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,
-                                size_t size) {
+                                size_t size, size_t *actual_size) {
   if (size == 0) {
     xfree(ptr);
     return NULL;
@@ -286,7 +286,8 @@ VALUE ObjectCache_Get(const void *key) {
 static VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
   const upb_MessageDef *m;
   upb_Message *msg = Message_GetMutable(msg_rb, &m);
-  if (!upb_Message_DiscardUnknown(msg, m, 128)) {
+  const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(m));
+  if (!upb_Message_DiscardUnknown(msg, m, ext_pool, 128)) {
     rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
   }
 

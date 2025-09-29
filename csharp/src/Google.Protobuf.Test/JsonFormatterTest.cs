@@ -592,6 +592,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void AnyEmpty()
+        {
+            var any = new Any();
+            AssertJson("{ }", JsonFormatter.Default.Format(any));
+        }
+
+        [Test]
         [TestCase(typeof(BoolValue), true, "true")]
         [TestCase(typeof(Int32Value), 32, "32")]
         [TestCase(typeof(Int64Value), 32L, "\"32\"")]

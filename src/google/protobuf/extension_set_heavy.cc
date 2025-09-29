@@ -15,15 +15,22 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <string>
+#include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/base/optimization.h"
+#include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/extension_set_inl.h"
+#include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -43,37 +50,12 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Implementation of ExtensionFinder which finds extensions in a given
-// DescriptorPool, using the given MessageFactory to construct sub-objects.
-// This class is implemented in extension_set_heavy.cc.
-class DescriptorPoolExtensionFinder {
- public:
-  DescriptorPoolExtensionFinder(const DescriptorPool* pool,
-                                MessageFactory* factory,
-                                const Descriptor* extendee)
-      : pool_(pool), factory_(factory), containing_type_(extendee) {}
-
-  bool Find(int number, ExtensionInfo* output);
-
- private:
-  const DescriptorPool* pool_;
-  MessageFactory* factory_;
-  const Descriptor* containing_type_;
-};
-
 void ExtensionSet::AppendToList(
     const Descriptor* extendee, const DescriptorPool* pool,
     std::vector<const FieldDescriptor*>* output) const {
   ForEach(
       [extendee, pool, &output](int number, const Extension& ext) {
-        bool has = false;
-        if (ext.is_repeated) {
-          has = ext.GetSize() > 0;
-        } else {
-          has = !ext.is_cleared;
-        }
-
-        if (has) {
+        if (ext.IsSet()) {
           // TODO: Looking up each field by number is somewhat
           // unfortunate.
           //   Is there a better way?  The problem is that descriptors are
@@ -272,6 +254,7 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
   if (extension == nullptr) {
     return false;
   } else {
+    output->number = extension->number();
     output->type = extension->type();
     output->is_repeated = extension->is_repeated();
     output->is_packed = extension->is_packed();
@@ -285,10 +268,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
           << "Extension factory's GetPrototype() returned nullptr; extension: "
           << extension->full_name();
 
-      if (extension->options().has_lazy()) {
-        output->is_lazy = extension->options().lazy() ? LazyAnnotation::kLazy
-                                                      : LazyAnnotation::kEager;
-      }
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.func = ValidateEnumUsingDescriptor;
       output->enum_validity_check.arg = extension->enum_type();
@@ -389,7 +368,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
       HANDLE_TYPE(FLOAT, float);
       HANDLE_TYPE(DOUBLE, double);
       HANDLE_TYPE(BOOL, bool);
-      HANDLE_TYPE(ENUM, enum);
+      HANDLE_TYPE(ENUM, int32_t);
       HANDLE_TYPE(STRING, string);
 #undef HANDLE_TYPE
 
@@ -446,6 +425,7 @@ bool ExtensionSet::ShouldRegisterAtThisTime(
   return has_all == is_preregistration;
 }
 #endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
+
 
 }  // namespace internal
 }  // namespace protobuf

@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <limits>
@@ -50,6 +51,7 @@
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
+
 
 namespace google {
 namespace protobuf {
@@ -140,9 +142,15 @@ enum { kSooSizeMask = kNotSooBit - 1 };
 // The number of elements that can be stored in the SOO rep. On 64-bit
 // platforms, this is 1 for int64_t, 2 for int32_t, 3 for bool, and 0 for
 // absl::Cord. We return 0 to disable SOO on 32-bit platforms.
-constexpr int SooCapacityElements(size_t element_size) {
-  if (sizeof(void*) < 8) return 0;
-  return std::min<int>(kSooCapacityBytes / element_size, kSooSizeMask);
+template <typename T>
+constexpr int SooCapacityElements() {
+  // RepeatedPtrField always has SOO capacity of 1.
+  if constexpr (std::is_pointer_v<T>) {
+    return 1;
+  }
+  // Disable SOO for RepeatedFields on 32-bit platforms.
+  if constexpr (sizeof(void*) < 8) return 0;
+  return std::min<int>(kSooCapacityBytes / sizeof(T), kSooSizeMask);
 }
 
 struct LongSooRep {
@@ -243,7 +251,7 @@ struct SooRep {
 // We have to specialize several methods in the Cord case to get the memory
 // management right; e.g. swapping when appropriate, etc.
 template <typename Element>
-class RepeatedField final
+class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
     : private internal::RepeatedFieldDestructorSkippableBase<Element> {
   static_assert(
       alignof(Arena) >= alignof(Element),
@@ -307,21 +315,27 @@ class RepeatedField final
 
   ~RepeatedField();
 
-  bool empty() const;
-  int size() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
 
-  const_reference Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  pointer Mutable(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer Mutable(int index)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
-  const_reference operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  operator[](int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return Get(index);
   }
-  reference operator[](int index) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator[](int index)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return *Mutable(index);
   }
 
-  const_reference at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  reference at(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   void Set(int index, const Element& value);
   void Add(Element value);
@@ -365,7 +379,7 @@ class RepeatedField final
   void Truncate(int new_size);
 
   void AddAlreadyReserved(Element value);
-  int Capacity() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
 
   // Adds `n` elements to this instance asserting there is enough capacity.
   // The added elements are uninitialized if `Element` is trivial.
@@ -379,8 +393,10 @@ class RepeatedField final
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  pointer mutable_data() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_pointer data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer mutable_data()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_pointer
+  data() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Swaps entire contents with "other". If they are separate arenas, then
   // copies data between each other.
@@ -389,32 +405,40 @@ class RepeatedField final
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
-  iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
-  const_iterator cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD iterator begin() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  cbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD iterator end() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  end() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_FUTURE_ADD_NODISCARD const_iterator
+  cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Reverse iterator support
-  reverse_iterator rbegin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rbegin()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(end());
   }
-  const_reverse_iterator rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
+  rbegin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(end());
   }
-  reverse_iterator rend() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD reverse_iterator rend()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return reverse_iterator(begin());
   }
-  const_reverse_iterator rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  PROTOBUF_FUTURE_ADD_NODISCARD const_reverse_iterator
+  rend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return const_reverse_iterator(begin());
   }
 
   // Returns the number of bytes used by the repeated field, excluding
   // sizeof(*this)
-  size_t SpaceUsedExcludingSelfLong() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD size_t SpaceUsedExcludingSelfLong() const;
 
-  int SpaceUsedExcludingSelf() const {
+  PROTOBUF_FUTURE_ADD_NODISCARD int SpaceUsedExcludingSelf() const {
     return internal::ToIntSize(SpaceUsedExcludingSelfLong());
   }
 
@@ -437,7 +461,9 @@ class RepeatedField final
   // Gets the Arena on which this RepeatedField stores its elements.
   // Note: this can be inaccurate for split default fields so we make this
   // function non-const.
-  inline Arena* GetArena() { return GetArena(is_soo()); }
+  PROTOBUF_FUTURE_ADD_NODISCARD inline Arena* GetArena() {
+    return GetArena(is_soo());
+  }
 
   // For internal use only.
   //
@@ -461,7 +487,7 @@ class RepeatedField final
   friend class Arena;
 
   static constexpr int kSooCapacityElements =
-      internal::SooCapacityElements(sizeof(Element));
+      internal::SooCapacityElements<Element>();
 
   static constexpr int kInitialSize = 0;
   static PROTOBUF_CONSTEXPR const size_t kHeapRepHeaderSize = sizeof(HeapRep);
@@ -515,8 +541,9 @@ class RepeatedField final
 
   // Destroys all elements in [begin, end).
   // This function does nothing if `Element` is trivial.
-  static void Destroy(const Element* begin, const Element* end) {
-    if (!std::is_trivial<Element>::value) {
+  static void Destroy([[maybe_unused]] const Element* begin,
+                      [[maybe_unused]] const Element* end) {
+    if constexpr (!std::is_trivially_destructible<Element>::value) {
       std::for_each(begin, end, [&](const Element& e) { e.~Element(); });
     }
   }
@@ -542,8 +569,8 @@ class RepeatedField final
   // (previously annotated) memory is released.
   void AnnotateSize(int old_size, int new_size) const {
     if (old_size != new_size) {
-      ABSL_ATTRIBUTE_UNUSED const bool is_soo = this->is_soo();
-      ABSL_ATTRIBUTE_UNUSED const Element* elem = unsafe_elements(is_soo);
+      [[maybe_unused]] const bool is_soo = this->is_soo();
+      [[maybe_unused]] const Element* elem = unsafe_elements(is_soo);
       ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(elem, elem + Capacity(is_soo),
                                          elem + old_size, elem + new_size);
       if (new_size < old_size) {
@@ -560,8 +587,8 @@ class RepeatedField final
       // We need to manually unpoison the SOO buffer because in reflection for
       // split repeated fields, we poison the whole SOO buffer even when we
       // don't actually use the whole SOO buffer (e.g. for RepeatedField<bool>).
-      PROTOBUF_UNPOISON_MEMORY_REGION(soo_rep_.short_rep.data,
-                                      sizeof(soo_rep_.short_rep.data));
+      internal::UnpoisonMemoryRegion(soo_rep_.short_rep.data,
+                                     sizeof(soo_rep_.short_rep.data));
     }
   }
 
@@ -770,7 +797,7 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   const bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
-  ABSL_ATTRIBUTE_UNUSED const int capacity = Capacity(is_soo);
+  [[maybe_unused]] const int capacity = Capacity(is_soo);
   ABSL_DCHECK_GE(capacity - old_size, n) << capacity << ", " << old_size;
   Element* p =
       unsafe_elements(is_soo) + ExchangeCurrentSize(is_soo, old_size + n);
@@ -803,8 +830,7 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, size());
+  internal::RuntimeAssertInBounds(index, size());
   return elements(is_soo())[index];
 }
 
@@ -827,8 +853,7 @@ inline Element& RepeatedField<Element>::at(int index)
 template <typename Element>
 inline Element* RepeatedField<Element>::Mutable(int index)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_GE(index, 0);
-  ABSL_DCHECK_LT(index, size());
+  internal::RuntimeAssertInBounds(index, size());
   return &elements(is_soo())[index];
 }
 
@@ -855,13 +880,13 @@ inline void RepeatedField<Element>::Add(Element value) {
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
-  ABSL_ATTRIBUTE_UNUSED const bool final_is_soo = this->is_soo();
+  [[maybe_unused]] const bool final_is_soo = this->is_soo();
   PROTOBUF_ASSUME(is_soo == final_is_soo);
-  ABSL_ATTRIBUTE_UNUSED const int final_size = size(is_soo);
+  [[maybe_unused]] const int final_size = size(is_soo);
   PROTOBUF_ASSUME(new_size == final_size);
-  ABSL_ATTRIBUTE_UNUSED Element* const final_elements = unsafe_elements(is_soo);
+  [[maybe_unused]] Element* const final_elements = unsafe_elements(is_soo);
   PROTOBUF_ASSUME(elem == final_elements);
-  ABSL_ATTRIBUTE_UNUSED const int final_capacity = Capacity(is_soo);
+  [[maybe_unused]] const int final_capacity = Capacity(is_soo);
   PROTOBUF_ASSUME(capacity == final_capacity);
 }
 
@@ -884,7 +909,15 @@ inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
   const int old_size = size(is_soo);
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
-  int new_size = old_size + static_cast<int>(std::distance(begin, end));
+  // Check for signed overflow.
+  const size_t distance = std::distance(begin, end);
+  ABSL_CHECK_LE(distance, static_cast<size_t>(std::numeric_limits<int>::max()))
+      << "Input too large";
+  // Check again for signed overflow.
+  const int delta = static_cast<int>(distance);
+  ABSL_CHECK_LE(old_size, std::numeric_limits<int>::max() - delta)
+      << "Input too large";
+  const int new_size = old_size + delta;
   if (ABSL_PREDICT_FALSE(new_size > capacity)) {
     Grow(is_soo, old_size, new_size);
     is_soo = false;
@@ -895,13 +928,13 @@ inline void RepeatedField<Element>::AddForwardIterator(Iter begin, Iter end) {
 
   // The below helps the compiler optimize dense loops.
   // Note: we can't call functions in PROTOBUF_ASSUME so use local variables.
-  ABSL_ATTRIBUTE_UNUSED const bool final_is_soo = this->is_soo();
+  [[maybe_unused]] const bool final_is_soo = this->is_soo();
   PROTOBUF_ASSUME(is_soo == final_is_soo);
-  ABSL_ATTRIBUTE_UNUSED const int final_size = size(is_soo);
+  [[maybe_unused]] const int final_size = size(is_soo);
   PROTOBUF_ASSUME(new_size == final_size);
-  ABSL_ATTRIBUTE_UNUSED Element* const final_elements = unsafe_elements(is_soo);
+  [[maybe_unused]] Element* const final_elements = unsafe_elements(is_soo);
   PROTOBUF_ASSUME(elem == final_elements);
-  ABSL_ATTRIBUTE_UNUSED const int final_capacity = Capacity(is_soo);
+  [[maybe_unused]] const int final_capacity = Capacity(is_soo);
   PROTOBUF_ASSUME(capacity == final_capacity);
 }
 
@@ -1148,10 +1181,10 @@ inline int CalculateReserveSize(int capacity, int new_size) {
   }
   constexpr int kMaxSizeBeforeClamp =
       (std::numeric_limits<int>::max() - kHeapRepHeaderSize) / 2;
-  if (PROTOBUF_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
+  if (ABSL_PREDICT_FALSE(capacity > kMaxSizeBeforeClamp)) {
     return std::numeric_limits<int>::max();
   }
-  constexpr int kSooCapacityElements = SooCapacityElements(sizeof(T));
+  constexpr int kSooCapacityElements = SooCapacityElements<T>();
   if (kSooCapacityElements > 0 && kSooCapacityElements < lower_limit) {
     // In this case, we need to set capacity to 0 here to ensure power-of-two
     // sized allocations.
@@ -1215,8 +1248,8 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
   if (old_size > 0) {
     Element* pnew = static_cast<Element*>(new_rep->elements());
     Element* pold = elements(was_soo);
-    // TODO: add absl::is_trivially_relocatable<Element>
-    if (std::is_trivial<Element>::value) {
+    if constexpr (std::is_trivially_copyable<Element>::value ||
+                  absl::is_trivially_relocatable<Element>::value) {
       memcpy(static_cast<void*>(pnew), pold, old_size * sizeof(Element));
     } else {
       for (Element* end = pnew + old_size; pnew != end; ++pnew, ++pold) {
@@ -1258,7 +1291,6 @@ inline void RepeatedField<Element>::Truncate(int new_size) {
 template <>
 PROTOBUF_EXPORT size_t
 RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const;
-
 
 // -------------------------------------------------------------------
 
@@ -1308,8 +1340,12 @@ class RepeatedIterator {
       : it_(other.it_) {}
 
   // dereferenceable
-  constexpr reference operator*() const noexcept { return *it_; }
-  constexpr pointer operator->() const noexcept { return it_; }
+  PROTOBUF_FUTURE_ADD_NODISCARD constexpr reference operator*() const noexcept {
+    return *it_;
+  }
+  PROTOBUF_FUTURE_ADD_NODISCARD constexpr pointer operator->() const noexcept {
+    return it_;
+  }
 
  private:
   // Helper alias to hide the internal type.
@@ -1378,7 +1414,8 @@ class RepeatedIterator {
   }
 
   // indexable
-  constexpr reference operator[](difference_type d) const noexcept {
+  PROTOBUF_FUTURE_ADD_NODISCARD constexpr reference operator[](
+      difference_type d) const noexcept {
     return it_[d];
   }
 
@@ -1436,6 +1473,28 @@ internal::RepeatedFieldBackInsertIterator<T> RepeatedFieldBackInserter(
     RepeatedField<T>* const mutable_field) {
   return internal::RepeatedFieldBackInsertIterator<T>(mutable_field);
 }
+
+namespace internal {
+template <typename T>
+inline void CheckIndexInBoundsOrAbort(const RepeatedField<T>& field,
+                                      int index) {
+  if (ABSL_PREDICT_FALSE(index < 0 || index >= field.size())) {
+    LogIndexOutOfBoundsAndAbort(index, field.size());
+  }
+}
+
+template <typename T>
+const T& CheckedGetOrAbort(const RepeatedField<T>& field, int index) {
+  CheckIndexInBoundsOrAbort(field, index);
+  return field.Get(index);
+}
+
+template <typename T>
+inline T* CheckedMutableOrAbort(RepeatedField<T>* field, int index) {
+  CheckIndexInBoundsOrAbort(*field, index);
+  return field->Mutable(index);
+}
+}  // namespace internal
 
 
 }  // namespace protobuf

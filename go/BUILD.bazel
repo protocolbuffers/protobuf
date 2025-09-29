@@ -1,0 +1,15 @@
+load("//bazel:proto_library.bzl", "proto_library")
+
+filegroup(
+    name = "go_features_proto_srcs",
+    srcs = ["google/protobuf/go_features.proto"],
+    visibility = ["//:__subpackages__"],
+)
+
+proto_library(
+    name = "go_features_proto",
+    srcs = ["google/protobuf/go_features.proto"],
+    strip_import_prefix = "/go",
+    visibility = ["//:__subpackages__"],
+    deps = ["//:descriptor_proto"],
+)

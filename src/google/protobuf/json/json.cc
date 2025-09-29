@@ -12,10 +12,13 @@
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/json/internal/lexer.h"
 #include "google/protobuf/json/internal/parser.h"
 #include "google/protobuf/json/internal/unparser.h"
+#include "google/protobuf/json/internal/writer.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -38,7 +41,8 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
   // TODO: Drop this setting.
-  opts.allow_legacy_syntax = true;
+  opts.allow_legacy_nonconformant_behavior =
+      options.allow_legacy_nonconformant_behavior;
 
   return google::protobuf::json_internal::BinaryToJsonStream(
       resolver, type_url, binary_input, json_output, opts);
@@ -65,7 +69,8 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
   opts.case_insensitive_enum_parsing = options.case_insensitive_enum_parsing;
 
   // TODO: Drop this setting.
-  opts.allow_legacy_syntax = true;
+  opts.allow_legacy_nonconformant_behavior =
+      options.allow_legacy_nonconformant_behavior;
 
   return google::protobuf::json_internal::JsonToBinaryStream(
       resolver, type_url, json_input, binary_output, opts);
@@ -84,6 +89,13 @@ absl::Status JsonToBinaryString(google::protobuf::util::TypeResolver* resolver,
 
 absl::Status MessageToJsonString(const Message& message, std::string* output,
                                  const PrintOptions& options) {
+  io::StringOutputStream out(output);
+  return MessageToJsonStream(message, &out, options);
+}
+
+absl::Status MessageToJsonStream(const Message& message,
+                                 io::ZeroCopyOutputStream* json_output,
+                                 const PrintOptions& options) {
   google::protobuf::json_internal::WriterOptions opts;
   opts.add_whitespace = options.add_whitespace;
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
@@ -93,9 +105,10 @@ absl::Status MessageToJsonString(const Message& message, std::string* output,
   opts.unquote_int64_if_possible = options.unquote_int64_if_possible;
 
   // TODO: Drop this setting.
-  opts.allow_legacy_syntax = true;
+  opts.allow_legacy_nonconformant_behavior =
+      options.allow_legacy_nonconformant_behavior;
 
-  return google::protobuf::json_internal::MessageToJsonString(message, output, opts);
+  return google::protobuf::json_internal::MessageToJsonStream(message, json_output, opts);
 }
 
 absl::Status JsonStringToMessage(absl::string_view input, Message* message,
@@ -112,7 +125,8 @@ absl::Status JsonStreamToMessage(io::ZeroCopyInputStream* input,
   opts.case_insensitive_enum_parsing = options.case_insensitive_enum_parsing;
 
   // TODO: Drop this setting.
-  opts.allow_legacy_syntax = true;
+  opts.allow_legacy_nonconformant_behavior =
+      options.allow_legacy_nonconformant_behavior;
 
   return google::protobuf::json_internal::JsonStreamToMessage(input, message, opts);
 }

@@ -14,7 +14,10 @@ load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _rule_impl(ctx):
-    provided_proto_sources = depset(transitive = [bp[ProtoInfo]._transitive_proto_sources for bp in ctx.attr.blacklisted_protos]).to_list()
+    if ctx.attr.blacklisted_protos and ctx.attr.denylisted_protos:
+        fail("Only one of 'denylisted_protos' and 'blacklisted_protos' can be set (prefer 'denylisted_protos').")
+    denylisted_protos = ctx.attr.denylisted_protos or ctx.attr.blacklisted_protos
+    provided_proto_sources = depset(transitive = [bp[ProtoInfo].transitive_sources for bp in denylisted_protos]).to_list()
 
     flag = ctx.attr.command_line
     if flag.find("$(PLUGIN_OUT)") > -1:
@@ -121,13 +124,20 @@ passed to the proto-compiler:
 A language-specific library that the generated code is compiled against.
 The exact behavior is LANG_proto_library-specific.
 Java, for example, should compile against the runtime."""),
-        "blacklisted_protos": attr.label_list(
+        "denylisted_protos": attr.label_list(
             providers = [ProtoInfo],
             doc = """
 No code will be generated for files in the <code>srcs</code> attribute of
-<code>blacklisted_protos</code>.
+<code>denylisted_protos</code>.
 This is used for .proto files that are already linked into proto runtimes, such as
 <code>any.proto</code>.""",
+        ),
+        # TODO: Remove this once it is safe to do so in OSS.
+        "blacklisted_protos": attr.label_list(
+            providers = [ProtoInfo],
+            doc = """
+Deprecated. Alias for <code>denylisted_protos</code>. Will be removed in a future release.
+""",
         ),
         # TODO: add doc
         "allowlist_different_package": attr.label(

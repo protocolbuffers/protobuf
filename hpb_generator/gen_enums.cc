@@ -5,21 +5,42 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "google/protobuf/compiler/hpb/gen_enums.h"
+#include "hpb_generator/gen_enums.h"
 
 #include <algorithm>
+#include <deque>
 #include <limits>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/compiler/hpb/gen_utils.h"
-#include "google/protobuf/compiler/hpb/names.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "hpb_generator/context.h"
+#include "hpb_generator/gen_utils.h"
+#include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 
-namespace google::protobuf::hpb_generator {
+namespace google {
+namespace protobuf {
+namespace hpb_generator {
 
-namespace protobuf = ::proto2;
+using Sub = google::protobuf::io::Printer::Sub;
+
+namespace {
+
+std::string ContainingTypeNames(const google::protobuf::EnumDescriptor* enum_descriptor) {
+  std::deque<absl::string_view> containing_type_names;
+  auto containing_type = enum_descriptor->containing_type();
+  while (containing_type != nullptr) {
+    containing_type_names.push_front(containing_type->name());
+    containing_type = containing_type->containing_type();
+  }
+  return absl::StrJoin(containing_type_names, "_");
+}
+
+}  // namespace
 
 // Convert enum value to C++ literal.
 //
@@ -36,9 +57,9 @@ std::string EnumInt32ToString(int number) {
   }
 }
 
-std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor) {
-  auto containing_type = enum_descriptor->containing_type();
-  if (containing_type == nullptr) {
+std::string EnumTypeName(const google::protobuf::EnumDescriptor* enum_descriptor) {
+  const std::string containing_types = ContainingTypeNames(enum_descriptor);
+  if (containing_types.empty()) {
     // enums types with no package name are prefixed with protos_ to prevent
     // conflicts with generated C headers.
     if (enum_descriptor->file()->package().empty()) {
@@ -50,24 +71,23 @@ std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor) {
     // Since the enum is in global name space (no package), it will have the
     // same classified name as the C header include, to prevent collision
     // rename as above.
-    if (containing_type->file()->package().empty()) {
-      return ToCIdent(absl::StrCat(containing_type->name(), "_",
-                                   kNoPackageNamePrefix,
+    if (enum_descriptor->containing_type()->file()->package().empty()) {
+      return ToCIdent(absl::StrCat(containing_types, "_", kNoPackageNamePrefix,
                                    enum_descriptor->name()));
     } else {
       return ToCIdent(
-          absl::StrCat(containing_type->name(), "_", enum_descriptor->name()));
+          absl::StrCat(containing_types, "_", enum_descriptor->name()));
     }
   }
 }
 
 std::string EnumValueSymbolInNameSpace(
-    const protobuf::EnumDescriptor* desc,
-    const protobuf::EnumValueDescriptor* value) {
-  auto containing_type = desc->containing_type();
-  if (containing_type != nullptr) {
-    return ToCIdent(absl::StrCat(containing_type->name(), "_", desc->name(),
-                                 "_", value->name()));
+    const google::protobuf::EnumDescriptor* desc,
+    const google::protobuf::EnumValueDescriptor* value) {
+  const std::string containing_types = ContainingTypeNames(desc);
+  if (!containing_types.empty()) {
+    return ToCIdent(
+        absl::StrCat(containing_types, "_", desc->name(), "_", value->name()));
   } else {
     // protos enum values with no package name are prefixed with protos_ to
     // prevent conflicts with generated C headers.
@@ -78,45 +98,44 @@ std::string EnumValueSymbolInNameSpace(
   }
 }
 
-void WriteEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
-  std::vector<const protobuf::EnumValueDescriptor*> values;
+void WriteEnumValues(const google::protobuf::EnumDescriptor* desc, Context& ctx) {
+  std::vector<const google::protobuf::EnumValueDescriptor*> values;
   auto value_count = desc->value_count();
   values.reserve(value_count);
   for (int i = 0; i < value_count; i++) {
     values.push_back(desc->value(i));
   }
   std::stable_sort(values.begin(), values.end(),
-                   [](const protobuf::EnumValueDescriptor* a,
-                      const protobuf::EnumValueDescriptor* b) {
+                   [](const google::protobuf::EnumValueDescriptor* a,
+                      const google::protobuf::EnumValueDescriptor* b) {
                      return a->number() < b->number();
                    });
 
   for (size_t i = 0; i < values.size(); i++) {
     auto value = values[i];
-    output("  $0", EnumValueSymbolInNameSpace(desc, value));
-    output(" = $0", EnumInt32ToString(value->number()));
-    if (i != values.size() - 1) {
-      output(",");
-    }
-    output("\n");
+    ctx.Emit({{"name", EnumValueSymbolInNameSpace(desc, value)},
+              {"number", EnumInt32ToString(value->number())},
+              {"sep", i == values.size() - 1 ? "" : ","}},
+             R"cc(
+               $name$ = $number$$sep$
+             )cc");
   }
 }
 
 void WriteEnumDeclarations(
-    const std::vector<const protobuf::EnumDescriptor*>& enums, Output& output) {
+    const std::vector<const google::protobuf::EnumDescriptor*>& enums, Context& ctx) {
   for (auto enumdesc : enums) {
-    output("enum $0 : int {\n", EnumTypeName(enumdesc));
-    WriteEnumValues(enumdesc, output);
-    output("};\n\n");
+    ctx.Emit({{"type", EnumTypeName(enumdesc)},
+              Sub("enum_vals", [&] { WriteEnumValues(enumdesc, ctx); })
+                  .WithSuffix(",")},
+             R"cc(
+               enum $type$ : int {
+                 $enum_vals$,
+               };
+             )cc");
   }
 }
 
-void WriteHeaderEnumForwardDecls(
-    std::vector<const protobuf::EnumDescriptor*>& enums, Output& output) {
-  for (const auto* enumdesc : enums) {
-    output("enum $0 : int;\n", EnumTypeName(enumdesc));
-  }
-}
-
+}  // namespace hpb_generator
 }  // namespace protobuf
-}  // namespace google::hpb_generator
+}  // namespace google

@@ -11,11 +11,18 @@
 
 #include "google/protobuf/reflection_ops.h"
 
+#include <cstdint>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <gtest/gtest.h>
 #include "absl/strings/str_join.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
 
 
 namespace google {
@@ -274,6 +281,15 @@ TEST(ReflectionOpsTest, DiscardUnknownFields) {
             message.repeated_nested_message(0).unknown_fields().field_count());
 }
 
+TEST(ReflectionOpsTest, DiscardUnknownFieldsIsANoopIfNotPresent) {
+  unittest::TestAllTypes message;
+  EXPECT_EQ(&message.unknown_fields(),
+            &google::protobuf::UnknownFieldSet::default_instance());
+  ReflectionOps::DiscardUnknownFields(&message);
+  EXPECT_EQ(&message.unknown_fields(),
+            &google::protobuf::UnknownFieldSet::default_instance());
+}
+
 TEST(ReflectionOpsTest, DiscardUnknownExtensions) {
   unittest::TestAllExtensions message;
   TestUtil::SetAllExtensions(&message);
@@ -314,20 +330,28 @@ TEST(ReflectionOpsTest, IsInitialized) {
   unittest::TestRequired message;
 
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                            /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
   message.set_a(1);
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, true, true));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                            /*check_descendants=*/true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
   message.set_b(2);
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, true, true));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                            /*check_descendants=*/true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
   message.set_c(3);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 }
 
 TEST(ReflectionOpsTest, ForeignIsInitialized) {
@@ -336,35 +360,44 @@ TEST(ReflectionOpsTest, ForeignIsInitialized) {
   // Starts out initialized because the foreign message is itself an optional
   // field.
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 
   // Once we create that field, the message is no longer initialized.
   message.mutable_optional_message();
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                            /*check_descendants=*/true));
 
   // Initialize it.  Now we're initialized.
   message.mutable_optional_message()->set_a(1);
   message.mutable_optional_message()->set_b(2);
   message.mutable_optional_message()->set_c(3);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 
   // Add a repeated version of the message.  No longer initialized.
   unittest::TestRequired* sub_message = message.add_repeated_message();
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                            /*check_descendants=*/true));
 
   // Initialize that repeated version.
   sub_message->set_a(1);
   sub_message->set_b(2);
   sub_message->set_c(3);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 }
 
 TEST(ReflectionOpsTest, ExtensionIsInitialized) {
@@ -373,62 +406,128 @@ TEST(ReflectionOpsTest, ExtensionIsInitialized) {
   // Starts out initialized because the foreign message is itself an optional
   // field.
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 
   // Once we create that field, the message is no longer initialized.
   message.MutableExtension(unittest::TestRequired::single);
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                            /*check_descendants=*/true));
 
   // Initialize it.  Now we're initialized.
   message.MutableExtension(unittest::TestRequired::single)->set_a(1);
   message.MutableExtension(unittest::TestRequired::single)->set_b(2);
   message.MutableExtension(unittest::TestRequired::single)->set_c(3);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 
   // Add a repeated version of the message.  No longer initialized.
   message.AddExtension(unittest::TestRequired::multi);
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                            /*check_descendants=*/true));
 
   // Initialize that repeated version.
   message.MutableExtension(unittest::TestRequired::multi, 0)->set_a(1);
   message.MutableExtension(unittest::TestRequired::multi, 0)->set_b(2);
   message.MutableExtension(unittest::TestRequired::multi, 0)->set_c(3);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 }
 
 TEST(ReflectionOpsTest, OneofIsInitialized) {
   unittest::TestRequiredOneof message;
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 
   message.mutable_foo_message();
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                            /*check_descendants=*/true));
 
   message.set_foo_int(1);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 
   message.mutable_foo_message();
   EXPECT_FALSE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_FALSE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                            /*check_descendants=*/true));
   message.mutable_foo_message()->set_required_double(0.1);
   EXPECT_TRUE(ReflectionOps::IsInitialized(message));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, true, false));
-  EXPECT_TRUE(ReflectionOps::IsInitialized(message, false, true));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
+}
+
+TEST(ReflectionOpsTest, EmptyMapIsInitialized) {
+  unittest::TestRequired message;
+  message.set_a(1);
+  message.set_b(2);
+  message.set_c(3);
+  message.mutable_map_field();
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
+}
+
+TEST(ReflectionOpsTest, MapIsNotInitializedIfValuesAreNotInitialized) {
+  unittest::TestRequired message;
+  message.set_a(1);
+  message.set_b(2);
+  message.set_c(3);
+
+  unittest::TestRequired sub_message;
+  message.mutable_map_field()->insert({"key", std::move(sub_message)});
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_FALSE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                            /*check_descendants=*/true));
+}
+
+TEST(ReflectionOpsTest, MapIsInitializedIfValuesAreInitialized) {
+  unittest::TestRequired message;
+  message.set_a(1);
+  message.set_b(2);
+  message.set_c(3);
+
+  unittest::TestRequired sub_message;
+  sub_message.set_a(1);
+  sub_message.set_b(2);
+  sub_message.set_c(3);
+  message.mutable_map_field()->insert({"key", std::move(sub_message)});
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/true,
+                                           /*check_descendants=*/false));
+  EXPECT_TRUE(ReflectionOps::IsInitialized(message, /*check_fields=*/false,
+                                           /*check_descendants=*/true));
 }
 
 static std::string FindInitializationErrors(const Message& message) {
@@ -466,15 +565,15 @@ TEST(ReflectionOpsTest, FindExtensionInitializationErrors) {
   message.AddExtension(unittest::TestRequired::multi);
   message.AddExtension(unittest::TestRequired::multi);
   EXPECT_EQ(
-      "(protobuf_unittest.TestRequired.single).a,"
-      "(protobuf_unittest.TestRequired.single).b,"
-      "(protobuf_unittest.TestRequired.single).c,"
-      "(protobuf_unittest.TestRequired.multi)[0].a,"
-      "(protobuf_unittest.TestRequired.multi)[0].b,"
-      "(protobuf_unittest.TestRequired.multi)[0].c,"
-      "(protobuf_unittest.TestRequired.multi)[1].a,"
-      "(protobuf_unittest.TestRequired.multi)[1].b,"
-      "(protobuf_unittest.TestRequired.multi)[1].c",
+      "(proto2_unittest.TestRequired.single).a,"
+      "(proto2_unittest.TestRequired.single).b,"
+      "(proto2_unittest.TestRequired.single).c,"
+      "(proto2_unittest.TestRequired.multi)[0].a,"
+      "(proto2_unittest.TestRequired.multi)[0].b,"
+      "(proto2_unittest.TestRequired.multi)[0].c,"
+      "(proto2_unittest.TestRequired.multi)[1].a,"
+      "(proto2_unittest.TestRequired.multi)[1].b,"
+      "(proto2_unittest.TestRequired.multi)[1].c",
       FindInitializationErrors(message));
 }
 

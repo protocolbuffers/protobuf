@@ -120,16 +120,6 @@ const int kUnknownTypeId2 = 1550056;
   [[message_set getExtension:[MSetMessageExtension1 messageSetExtension]] setI:123];
   [[message_set getExtension:[MSetMessageExtension2 messageSetExtension]] setStr:@"foo"];
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  GPBUnknownField* unknownField =
-      [[[GPBUnknownField alloc] initWithNumber:kUnknownTypeId] autorelease];
-  [unknownField addLengthDelimited:DataFromCStr("bar")];
-  GPBUnknownFieldSet* unknownFieldSet = [[[GPBUnknownFieldSet alloc] init] autorelease];
-  [unknownFieldSet addField:unknownField];
-  [message_set setUnknownFields:unknownFieldSet];
-#pragma clang diagnostic pop
-
   GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] init] autorelease];
   GPBUnknownFields* group = [ufs addGroupWithFieldNumber:GPBWireFormatMessageSetItem];
   [group addFieldNumber:GPBWireFormatMessageSetTypeId varint:kUnknownTypeId2];
@@ -145,18 +135,13 @@ const int kUnknownTypeId2 = 1550056;
 
   GPBUnknownFields* ufs2 = [[[GPBUnknownFields alloc] initFromMessage:raw] autorelease];
   XCTAssertTrue(ufs2.empty);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  XCTAssertEqual([raw.unknownFields countOfFields], (NSUInteger)0);
-#pragma clang diagnostic pop
 
-  XCTAssertEqual(raw.itemArray.count, (NSUInteger)4);
+  XCTAssertEqual(raw.itemArray.count, (NSUInteger)3);
   XCTAssertEqual((uint32_t)[raw.itemArray[0] typeId],
                  [MSetMessageExtension1 messageSetExtension].fieldNumber);
   XCTAssertEqual((uint32_t)[raw.itemArray[1] typeId],
                  [MSetMessageExtension2 messageSetExtension].fieldNumber);
-  XCTAssertEqual([raw.itemArray[2] typeId], kUnknownTypeId);
-  XCTAssertEqual([raw.itemArray[3] typeId], kUnknownTypeId2);
+  XCTAssertEqual([raw.itemArray[2] typeId], kUnknownTypeId2);
 
   MSetMessageExtension1* message1 =
       [MSetMessageExtension1 parseFromData:[((MSetRawMessageSet_Item*)raw.itemArray[0]) message]
@@ -168,8 +153,7 @@ const int kUnknownTypeId2 = 1550056;
                                      error:NULL];
   XCTAssertEqualObjects(message2.str, @"foo");
 
-  XCTAssertEqualObjects([raw.itemArray[2] message], DataFromCStr("bar"));
-  XCTAssertEqualObjects([raw.itemArray[3] message], DataFromCStr("baz"));
+  XCTAssertEqualObjects([raw.itemArray[2] message], DataFromCStr("baz"));
 }
 
 - (void)testParseMessageSet {
@@ -222,15 +206,6 @@ const int kUnknownTypeId2 = 1550056;
   XCTAssertEqual(varint, kUnknownTypeId);
   XCTAssertEqualObjects([group firstLengthDelimited:GPBWireFormatMessageSetMessage],
                         DataFromCStr("bar"));
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  XCTAssertEqual([messageSet.unknownFields countOfFields], (NSUInteger)1);
-  GPBUnknownField* unknownField = [messageSet.unknownFields getField:kUnknownTypeId];
-  XCTAssertNotNil(unknownField);
-  XCTAssertEqual(unknownField.lengthDelimitedList.count, (NSUInteger)1);
-  XCTAssertEqualObjects(unknownField.lengthDelimitedList[0], DataFromCStr("bar"));
-#pragma clang diagnostic pop
 }
 
 - (void)testParseMessageSet_FirstValueSticks {
@@ -309,6 +284,35 @@ const int kUnknownTypeId2 = 1550056;
                  (NSUInteger)0);  // None because they were all partial and dropped.
   GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:messageSet] autorelease];
   XCTAssertTrue(ufs.empty);
+}
+
+- (void)testMessageSet_normalEncoding {
+  MSetMessageEx* msgEx = [MSetMessageEx message];
+  MSetMessageExtension1* message1 = [MSetMessageExtension1 message];
+  message1.i = 123;
+  [msgEx setExtension:[MSetMessageExtension1 doppelgangerMessageSetExtension] value:message1];
+  MSetMessageExtension3* message3 = [MSetMessageExtension3 message];
+  message3.x = 10;
+  [msgEx setExtension:[MSetMessageExtension3 doppelgangerMessageSetExtension] value:message3];
+
+  NSData* data = [msgEx data];
+  XCTAssertNotNil(data);
+
+  NSError* err = nil;
+  MSetMessage* msg = [MSetMessage parseFromData:data
+                              extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                          error:&err];
+  XCTAssertNil(err);
+  XCTAssertNotNil(msg);
+  XCTAssertEqual([[msg getExtension:[MSetMessageExtension1 messageSetExtension]] i], 123);
+  // Extension 3 is unknown on the actually test MessageSet, so it will stay in unknown fields
+  // without being transformed into the group structure.
+  GPBUnknownFields* ufs = [[[GPBUnknownFields alloc] initFromMessage:msg] autorelease];
+  XCTAssertEqual(ufs.count, (NSUInteger)1);
+  NSData* bytes = [ufs
+      firstLengthDelimited:[MSetMessageExtension3 doppelgangerMessageSetExtension].fieldNumber];
+  XCTAssertNotNil(bytes);
+  XCTAssertEqualObjects(bytes, [message3 data]);
 }
 
 - (void)assertFieldsInOrder:(NSData*)data {

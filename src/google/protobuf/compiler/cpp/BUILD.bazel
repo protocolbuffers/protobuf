@@ -8,6 +8,16 @@ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+cc_binary(
+    name = "protoc-gen-cpp",
+    srcs = ["main.cc"],
+    visibility = ["//:__pkg__"],
+    deps = [
+        ":cpp",
+        "//src/google/protobuf/compiler:plugin",
+    ],
+)
+
 cc_library(
     name = "names",
     hdrs = ["names.h"],
@@ -18,7 +28,21 @@ cc_library(
         ":names_internal",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
-        "@com_google_absl//absl/strings",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "generator_headers",
+    hdrs = ["generator.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
     ],
 )
 
@@ -46,18 +70,17 @@ cc_library(
         "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:cord",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/synchronization",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_absl//absl/types:span",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
@@ -67,6 +90,7 @@ cc_library(
         "enum.cc",
         "extension.cc",
         "field.cc",
+        "field_chunk.cc",
         "field_generators/cord_field.cc",
         "field_generators/enum_field.cc",
         "field_generators/map_field.cc",
@@ -78,8 +102,8 @@ cc_library(
         "generator.cc",
         "ifndef_guard.cc",
         "message.cc",
+        "message_layout_helper.cc",
         "namespace_printer.cc",
-        "padding_optimizer.cc",
         "parse_function_generator.cc",
         "service.cc",
         "tracker.cc",
@@ -88,6 +112,7 @@ cc_library(
         "enum.h",
         "extension.h",
         "field.h",
+        "field_chunk.h",
         "field_generators/generators.h",
         "file.h",
         "generator.h",
@@ -105,6 +130,7 @@ cc_library(
     visibility = [
         "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
+        "//src/google/protobuf/compiler/python:__pkg__",  # For testing only.
         "@io_kythe//kythe/cxx/tools:__subpackages__",
     ],
     deps = [
@@ -118,31 +144,36 @@ cc_library(
         "//src/google/protobuf/compiler:versions",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/algorithm:container",
-        "@com_google_absl//absl/base:core_headers",
-        "@com_google_absl//absl/container:btree",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_absl//absl/container:layout",
-        "@com_google_absl//absl/functional:any_invocable",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/log:die_if_null",
-        "@com_google_absl//absl/memory",
-        "@com_google_absl//absl/status",
-        "@com_google_absl//absl/strings",
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/synchronization",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_absl//absl/types:span",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/container:layout",
+        "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/log:die_if_null",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
 proto_library(
     name = "test_bad_identifiers_proto",
     testonly = 1,
-    srcs = ["test_bad_identifiers.proto"],
+    srcs = [
+        "test_bad_identifiers_editions.proto",
+        "test_bad_identifiers_proto2.proto",
+    ],
     strip_import_prefix = "/src",
+    deps = ["//src/google/protobuf:cpp_features_proto"],
 )
 
 cc_proto_library(
@@ -195,8 +226,8 @@ cc_test(
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -223,11 +254,11 @@ cc_test(
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/container:flat_hash_map",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -242,9 +273,25 @@ cc_test(
         "//src/google/protobuf:port",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "field_chunk_test",
+    srcs = ["field_chunk_test.cc"],
+    deps = [
+        ":cpp",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -256,8 +303,8 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf/compiler:command_line_interface_tester",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -270,9 +317,9 @@ cc_test(
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:port",
         "//src/google/protobuf:protobuf_lite",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -288,9 +335,11 @@ cc_test(
         "//src/google/protobuf/compiler:command_line_interface",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -303,8 +352,8 @@ cc_test(
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf/stubs:lite",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -318,8 +367,8 @@ cc_test(
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf/stubs:lite",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -331,8 +380,8 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf:arena",
         "//src/google/protobuf:cc_test_protos",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -347,9 +396,9 @@ cc_test(
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -361,11 +410,10 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings:string_view",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -377,11 +425,10 @@ cc_test(
         "//:protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/strings:string_view",
-        "@com_google_absl//absl/types:optional",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -408,7 +455,8 @@ filegroup(
 filegroup(
     name = "test_proto_srcs",
     srcs = [
-        "test_bad_identifiers.proto",
+        "test_bad_identifiers_editions.proto",
+        "test_bad_identifiers_proto2.proto",
         "test_large_enum_value.proto",
     ],
     visibility = ["//src/google/protobuf/compiler:__pkg__"],

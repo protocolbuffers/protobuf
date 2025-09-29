@@ -8,17 +8,19 @@
 // Author: Jacob Butcher (jbaum@google.com)
 //
 // Test file option java_string_check_utf8.
-edition = "2023";
+edition = "2024";
 
 package proto2_test_check_utf8;
 
-import "google/protobuf/java_features.proto";
+import option "google/protobuf/java_features.proto";
 
 option features.utf8_validation = NONE;
 option features.(pb.java).utf8_validation = VERIFY;
 option java_outer_classname = "TestCheckUtf8";
 
 message StringWrapper {
+  option features.(pb.java).nest_in_file_class = YES;
+
   string req = 1 [features.field_presence = LEGACY_REQUIRED];
 
   string opt = 2;
@@ -26,8 +28,17 @@ message StringWrapper {
 }
 
 message BytesWrapper {
+  option features.(pb.java).nest_in_file_class = YES;
+
   bytes req = 1 [features.field_presence = LEGACY_REQUIRED];
 
   bytes opt = 2;
   repeated bytes rep = 3;
+}
+
+enum EnumWrapper {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  ENUM_UNKNOWN = 0;
+  ENUM_VALUE = 1;
 }

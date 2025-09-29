@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use std::fmt::{self, Debug};
 use std::iter;
 use std::iter::FusedIterator;
 /// Repeated scalar fields are implemented around the runtime-specific
@@ -12,13 +13,12 @@ use std::iter::FusedIterator;
 /// runtime-specific representation of a repeated scalar (`upb_Array*` on upb,
 /// and `RepeatedField<T>*` on cpp).
 use std::marker::PhantomData;
-use std::fmt::{self, Debug};
 
 use crate::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
-    ViewProxy,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, MutProxy, Proxied,
+    Proxy, View, ViewProxy,
+    __internal::runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
     __internal::{Private, SealedInternal},
-    __runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
 };
 
 /// Views the elements in a `repeated` field of `T`.
@@ -157,18 +157,48 @@ where
 
     /// Gets the value at `index`.
     ///
-    /// Returns `None` if `index > len`.
+    /// Returns `None` if `index >= len`.
     #[inline]
-    pub fn get(&self, index: usize) -> Option<View<T>> {
+    pub fn get(&self, index: usize) -> Option<View<'_, T>> {
         self.as_view().get(index)
+    }
+
+    /// Gets the value at `index`.
+    ///
+    /// Returns `None` if `index >= len`.
+    #[inline]
+    pub fn get_mut<'r>(&'r mut self, index: usize) -> Option<Mut<'msg, T>>
+    where
+        T: Message,
+        'r: 'msg,
+    {
+        if index >= self.len() {
+            return None;
+        }
+        // SAFETY: `index` has been checked to be in-bounds
+        Some(unsafe { self.get_mut_unchecked(index) })
     }
 
     /// Gets the value at `index` without bounds-checking.
     ///
     /// # Safety
-    /// Undefined behavior if `index >= len`
+    /// Undefined behavior if `index >= len`.
     #[inline]
-    pub unsafe fn get_unchecked(&self, index: usize) -> View<T> {
+    pub unsafe fn get_mut_unchecked<'r>(&'r mut self, index: usize) -> Mut<'msg, T>
+    where
+        T: Message,
+        'r: 'msg,
+    {
+        // SAFETY: in-bounds as promised
+        unsafe { T::repeated_get_mut_unchecked(self.as_mut(), index) }
+    }
+
+    /// Gets the value at `index` without bounds-checking.
+    ///
+    /// # Safety
+    /// Undefined behavior if `index >= len`.
+    #[inline]
+    pub unsafe fn get_unchecked(&self, index: usize) -> View<'_, T> {
         // SAFETY: in-bounds as promised
         unsafe { self.as_view().get_unchecked(index) }
     }
@@ -182,7 +212,7 @@ where
     /// Sets the value at `index` to the value `val`.
     ///
     /// # Panics
-    /// Panics if `index >= len`
+    /// Panics if `index >= len`.
     #[inline]
     pub fn set(&mut self, index: usize, val: impl IntoProxied<T>) {
         let len = self.len();
@@ -195,20 +225,18 @@ where
     /// Sets the value at `index` to the value `val`.
     ///
     /// # Safety
-    /// Undefined behavior if `index >= len`
+    /// Undefined behavior if `index >= len`.
     #[inline]
     pub unsafe fn set_unchecked(&mut self, index: usize, val: impl IntoProxied<T>) {
         unsafe { T::repeated_set_unchecked(self.as_mut(), index, val) }
     }
 
     /// Iterates over the values in the repeated field.
-    pub fn iter(&self) -> RepeatedIter<T> {
+    pub fn iter(&self) -> RepeatedIter<'_, T> {
         self.as_view().into_iter()
     }
 
     /// Copies from the `src` repeated field into this one.
-    ///
-    /// Also provided by [`MutProxy::set`].
     pub fn copy_from(&mut self, src: RepeatedView<'_, T>) {
         T::repeated_copy_from(src, self.as_mut())
     }
@@ -223,7 +251,7 @@ impl<T> Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    pub fn as_view(&self) -> View<Repeated<T>> {
+    pub fn as_view(&self) -> View<'_, Repeated<T>> {
         RepeatedView { raw: self.inner.raw(), _phantom: PhantomData }
     }
 
@@ -276,7 +304,7 @@ where
 /// # Safety
 /// - It must be sound to call `*_unchecked*(x)` with an `index` less than
 ///   `repeated_len(x)`.
-pub unsafe trait ProxiedInRepeated: Proxied {
+pub unsafe trait ProxiedInRepeated: Proxied + SealedInternal {
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
     fn repeated_new(_private: Private) -> Repeated<Self>;
@@ -303,6 +331,16 @@ pub unsafe trait ProxiedInRepeated: Proxied {
 
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`
+    #[allow(unused_variables)]
+    unsafe fn repeated_get_mut_unchecked(repeated: Mut<Repeated<Self>>, index: usize) -> Mut<Self>
+    where
+        Self: Message,
+    {
+        panic!("repeated_get_mut_unchecked is only implemented for messages");
+    }
+
+    /// # Safety
+    /// `index` must be less than `Self::repeated_len(repeated)`
     unsafe fn repeated_set_unchecked(
         repeated: Mut<Repeated<Self>>,
         index: usize,
@@ -318,6 +356,7 @@ pub unsafe trait ProxiedInRepeated: Proxied {
 }
 
 /// An iterator over the values inside of a [`View<Repeated<T>>`](RepeatedView).
+#[derive(Clone)]
 pub struct RepeatedIter<'msg, T> {
     view: RepeatedView<'msg, T>,
     current_index: usize,
@@ -379,7 +418,10 @@ impl<T> Proxied for Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    type View<'msg> = RepeatedView<'msg, T> where Repeated<T>: 'msg;
+    type View<'msg>
+        = RepeatedView<'msg, T>
+    where
+        Repeated<T>: 'msg;
 }
 
 impl<T> SealedInternal for Repeated<T> where T: ProxiedInRepeated {}
@@ -399,7 +441,10 @@ impl<T> MutProxied for Repeated<T>
 where
     T: ProxiedInRepeated,
 {
-    type Mut<'msg> = RepeatedMut<'msg, T> where Repeated<T>: 'msg;
+    type Mut<'msg>
+        = RepeatedMut<'msg, T>
+    where
+        Repeated<T>: 'msg;
 }
 
 impl<T> AsMut for Repeated<T>
@@ -644,8 +689,14 @@ mod tests {
     }
 
     #[gtest]
-    fn test_repeated_iter_into_proxied() {
+    fn test_repeated_iter() {
         let r: Repeated<i32> = [0, 1, 2, 3].into_iter().into_proxied(Private);
         assert_that!(r.as_view(), elements_are![eq(0), eq(1), eq(2), eq(3)]);
+
+        let mut iter = r.as_view().into_iter();
+        assert_that!(iter.next(), eq(Some(0)));
+        let mut clone = iter.clone();
+        assert_that!(clone.next(), eq(Some(1)));
+        assert_that!(iter.next(), eq(Some(1)));
     }
 }

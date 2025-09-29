@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+// LINT: LEGACY_NAMES
+
 syntax = "proto3";
 
 package proto3;
@@ -66,6 +68,8 @@ message TestMessage {
   optional bytes optional_bytes_value = 49;
   optional EnumType optional_enum_value = 50;
   optional MessageType optional_message_value = 51;
+
+  int32 _nonStandard_name_ = 52;
 }
 
 message TestOneof {
@@ -184,10 +188,13 @@ message TestEvilJson {
   int32 quotes = 3 [json_name = "unbalanced\"quotes"];
   int32 script_and_quotes = 4
       [json_name = "\"<script>alert('hello!);</script>"];
+  int32 empty_string = 5 [json_name = ""];
+  int32 backslash = 6 [json_name = "\\"];
+  int32 low_codepoint = 7 [json_name = "\1"];
 }
 
 message TestExtensions {
-  .protobuf_unittest.TestAllExtensions extensions = 1;
+  .proto2_unittest.TestAllExtensions extensions = 1;
 }
 
 message TestEnumValue {

@@ -1,5 +1,5 @@
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_SERVICE_COMMON_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_SERVICE_COMMON_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_COMMON_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_COMMON_H__
 
 #include <cstddef>
 #include <memory>
@@ -7,7 +7,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -86,4 +85,4 @@ inline void ReportUnexpectedPackedFieldsCall() {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_SERVICE_COMMON_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_COMMON_H__

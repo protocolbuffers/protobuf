@@ -129,6 +129,28 @@ public class RubyServiceDescriptor extends RubyObject {
     return context.nil;
   }
 
+  /*
+   * call-seq:
+   *     ServiceDescriptor.to_proto => ServiceDescriptorProto
+   *
+   * Returns the `ServiceDescriptorProto` of this `ServiceDescriptor`.
+   */
+  @JRubyMethod(name = "to_proto")
+  public IRubyObject toProto(ThreadContext context) {
+    RubyDescriptorPool pool = (RubyDescriptorPool) RubyDescriptorPool.generatedPool(null, null);
+    RubyDescriptor serviceDescriptorProto =
+        (RubyDescriptor)
+            pool.lookup(
+                context, context.runtime.newString("google.protobuf.ServiceDescriptorProto"));
+    RubyClass msgClass = (RubyClass) serviceDescriptorProto.msgclass(context);
+    RubyMessage msg = (RubyMessage) msgClass.newInstance(context, Block.NULL_BLOCK);
+    return msg.decodeBytes(
+        context,
+        msg,
+        CodedInputStream.newInstance(descriptor.toProto().toByteString().toByteArray()), /*freeze*/
+        true);
+  }
+
   protected void setDescriptor(
       ThreadContext context, ServiceDescriptor descriptor, RubyDescriptorPool pool) {
     this.descriptor = descriptor;

@@ -1,3 +1,4 @@
+load("@rules_java//java:java_library.bzl", "java_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
@@ -16,8 +17,6 @@ java_library(
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_code_gson_gson",
         "@maven//:com_google_errorprone_error_prone_annotations",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_j2objc_j2objc_annotations",
     ],
 )
 
@@ -36,8 +35,6 @@ protobuf_versioned_java_library(
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_code_gson_gson",
         "@maven//:com_google_errorprone_error_prone_annotations",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_j2objc_j2objc_annotations",
     ],
 )
 
@@ -90,10 +87,11 @@ junit_tests(
         ":util",
         "//java/core",
         "//java/core:generic_test_protos_java_proto",
-        "@maven//:com_google_code_gson_gson",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_truth_truth",
-        "@maven//:junit_junit",
+        "@protobuf_maven_dev//:com_google_code_gson_gson",
+        "@protobuf_maven_dev//:com_google_guava_guava",
+        "@protobuf_maven_dev//:com_google_j2objc_j2objc_annotations",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
     ],
 )
 

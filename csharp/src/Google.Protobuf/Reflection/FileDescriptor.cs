@@ -63,7 +63,7 @@ namespace Google.Protobuf.Reflection
 
         private readonly Lazy<Dictionary<IDescriptor, DescriptorDeclaration>> declarations;
 
-        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, IEnumerable<FileDescriptor> dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
+        private FileDescriptor(ByteString descriptorData, FileDescriptorProto proto, IList<FileDescriptor> dependencies, DescriptorPool pool, bool allowUnknownDependencies, GeneratedClrTypeInfo generatedCodeInfo)
         {
             SerializedData = descriptorData;
             DescriptorPool = pool;
@@ -128,7 +128,7 @@ namespace Google.Protobuf.Reflection
             return current;
         }
 
-        private DescriptorBase GetDescriptorFromList(IReadOnlyList<DescriptorBase> list, int index)
+        private static DescriptorBase GetDescriptorFromList(IReadOnlyList<DescriptorBase> list, int index)
         {
             // This is fine: it may be a newer version of protobuf than we understand, with a new descriptor
             // field.
@@ -419,7 +419,7 @@ namespace Google.Protobuf.Reflection
         {
             ExtensionRegistry registry = new ExtensionRegistry();
             registry.AddRange(GetAllExtensions(dependencies, generatedCodeInfo));
-    
+
             FileDescriptorProto proto;
             try
             {

@@ -8,6 +8,9 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 #define GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 
+#include <optional>
+
+#include "absl/strings/string_view.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 
@@ -38,21 +41,30 @@ class MapReflectionTester {
   void ExpectClearViaReflection(const Message& message);
   void ExpectClearViaReflectionIterator(Message* message);
   void GetMapValueViaMapReflection(Message* message,
-                                   const std::string& field_name,
+                                   absl::string_view field_name,
                                    const MapKey& map_key, MapValueRef* map_val);
+  void DeleteMapValueViaMapReflection(Message* message,
+                                      absl::string_view field_name,
+                                      const MapKey& map_key);
   Message* GetMapEntryViaReflection(Message* message,
-                                    const std::string& field_name, int index);
-  MapIterator MapBegin(Message* message, const std::string& field_name);
-  MapIterator MapEnd(Message* message, const std::string& field_name);
-  int MapSize(const Message& message, const std::string& field_name);
+                                    absl::string_view field_name, int index);
+  MapIterator MapBegin(Message* message, absl::string_view field_name);
+  MapIterator MapEnd(Message* message, absl::string_view field_name);
+  ConstMapIterator ConstMapBegin(const Message* message,
+                                 absl::string_view field_name);
+  ConstMapIterator ConstMapEnd(const Message* message,
+                               absl::string_view field_name);
+  int MapSize(const Message& message, absl::string_view field_name);
 
-  static MapValueConstRef LookupMapValue(const Reflection& reflection,
-                                         const Message& message,
-                                         const FieldDescriptor& descriptor,
-                                         const MapKey& map_key) {
+  static std::optional<MapValueConstRef> LookupMapValue(
+      const Reflection& reflection, const Message& message,
+      const FieldDescriptor& descriptor, const MapKey& map_key) {
     MapValueConstRef map_val_const;
-    reflection.LookupMapValue(message, &descriptor, map_key, &map_val_const);
-    return map_val_const;
+    if (reflection.LookupMapValue(message, &descriptor, map_key,
+                                  &map_val_const)) {
+      return map_val_const;
+    }
+    return std::nullopt;
   }
 
   static std::string long_string() {
@@ -63,7 +75,7 @@ class MapReflectionTester {
   }
 
  private:
-  const FieldDescriptor* F(const std::string& name);
+  const FieldDescriptor* F(absl::string_view name);
 
   const Descriptor* base_descriptor_;
 

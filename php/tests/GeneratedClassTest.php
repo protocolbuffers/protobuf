@@ -130,6 +130,27 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(0, $deprecationCount);
     }
 
+    public function testDeprecatedFieldSetterDoesNotThrowWarningForRepeatedAndMapFieldsWithEmptyArrays()
+    {
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if (false !== strpos($errstr, ' is deprecated.')) {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
+
+
+        // This behavior exists because otherwise the deprecation is thrown on serializeToJsonString
+        $message = new TestMessage();
+        $message->setDeprecatedRepeatedInt32([]); // repeated field
+        $message->setDeprecatedMapInt32Int32([]); // map field
+
+        restore_error_handler();
+
+        $this->assertEquals(0, $deprecationCount);
+    }
+
     public function testDeprecatedFieldGetterThrowsWarningWithValue()
     {
         $message = new TestMessage([
@@ -592,7 +613,7 @@ class GeneratedClassTest extends TestBase
         $arr = array(1, 2.1, "3");
         $m->setRepeatedInt32($arr);
         $this->assertTrue($m->getRepeatedInt32() instanceof RepeatedField);
-        $this->assertSame("Google\Protobuf\Internal\RepeatedField",
+        $this->assertSame("Google\Protobuf\RepeatedField",
                           get_class($m->getRepeatedInt32()));
         $this->assertSame(3, count($m->getRepeatedInt32()));
         $this->assertSame(1, $m->getRepeatedInt32()[0]);
@@ -883,7 +904,7 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(TestNamespace\NestedEnum::ZERO, $m->getNestedEnum());
     }
 
-    public function testMesssagesAndEnumsWithEmptyPhpNamespace()
+    public function testMessagesAndEnumsWithEmptyPhpNamespace()
     {
         $m = new TestEmptyNamespace();
         $n = new TestEmptyNamespace\NestedMessage();

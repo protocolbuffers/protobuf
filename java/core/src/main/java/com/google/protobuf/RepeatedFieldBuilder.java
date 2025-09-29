@@ -12,7 +12,6 @@ import static com.google.protobuf.Internal.checkNotNull;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.RandomAccess;
 
@@ -45,12 +44,8 @@ public class RepeatedFieldBuilder<
   // Parent to send changes to.
   private GeneratedMessage.BuilderParent parent;
 
-  // List of messages. Never null. It may be immutable, in which case
-  // isMessagesListMutable will be false. See note below.
-  private List<MType> messages;
-
-  // Whether messages is an mutable array that can be modified.
-  private boolean isMessagesListMutable;
+  // List of messages. Never null. It may be immutable.
+  private Internal.ProtobufList<MType> messages;
 
   // List of builders. May be null, in which case, no nested builders were
   // created. If not null, entries represent the builder for that index.
@@ -93,11 +88,22 @@ public class RepeatedFieldBuilder<
   // what is most efficient.
   private MessageOrBuilderExternalList<MType, BType, IType> externalMessageOrBuilderList;
 
+  private static <MsgT extends GeneratedMessage>
+      Internal.ProtobufList<MsgT> passthroughOrCopyToProtobufList(List<MsgT> messages) {
+    if (messages instanceof Internal.ProtobufList) {
+      return (Internal.ProtobufList<MsgT>) messages;
+    }
+    ProtobufArrayList<MsgT> copy =
+        ProtobufArrayList.<MsgT>emptyList().mutableCopyWithCapacity(messages.size());
+    copy.addAll(messages);
+    return copy;
+  }
+
   /**
    * Constructs a new builder with an empty list of messages.
    *
    * @param messages the current list of messages
-   * @param isMessagesListMutable Whether the messages list is mutable
+   * @param isMessagesListMutable Whether the messages list is mutable (unused)
    * @param parent a listener to notify of changes
    * @param isClean whether the builder is initially marked clean
    */
@@ -106,8 +112,7 @@ public class RepeatedFieldBuilder<
       boolean isMessagesListMutable,
       GeneratedMessage.BuilderParent parent,
       boolean isClean) {
-    this.messages = messages;
-    this.isMessagesListMutable = isMessagesListMutable;
+    this.messages = passthroughOrCopyToProtobufList(messages);
     this.parent = parent;
     this.isClean = isClean;
   }
@@ -122,9 +127,8 @@ public class RepeatedFieldBuilder<
    * made.
    */
   private void ensureMutableMessageList() {
-    if (!isMessagesListMutable) {
-      messages = new ArrayList<MType>(messages);
-      isMessagesListMutable = true;
+    if (!messages.isModifiable()) {
+      messages = messages.mutableCopyWithCapacity(messages.size());
     }
   }
 
@@ -408,8 +412,7 @@ public class RepeatedFieldBuilder<
 
   /** Removes all of the elements from this list. The list will be empty after this call returns. */
   public void clear() {
-    messages = Collections.emptyList();
-    isMessagesListMutable = false;
+    messages = ProtobufArrayList.emptyList();
     if (builders != null) {
       for (SingleFieldBuilder<MType, BType, IType> entry : builders) {
         if (entry != null) {
@@ -432,13 +435,13 @@ public class RepeatedFieldBuilder<
     // invalidations.
     isClean = true;
 
-    if (!isMessagesListMutable && builders == null) {
+    if (!messages.isModifiable() && builders == null) {
       // We still have an immutable list and we never created a builder.
       return messages;
     }
 
     boolean allMessagesInSync = true;
-    if (!isMessagesListMutable) {
+    if (!messages.isModifiable()) {
       // We still have an immutable list. Let's see if any of them are out
       // of sync with their builders.
       for (int i = 0; i < messages.size(); i++) {
@@ -465,8 +468,7 @@ public class RepeatedFieldBuilder<
 
     // We're going to return our list as immutable so we mark that we can
     // no longer update it.
-    messages = Collections.unmodifiableList(messages);
-    isMessagesListMutable = false;
+    messages.makeImmutable();
     return messages;
   }
 

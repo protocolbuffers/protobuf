@@ -9,8 +9,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_LITE_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_LITE_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_LITE_ENUM_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_LITE_ENUM_FIELD_H__
 
 #include <cstdint>
 #include <string>
@@ -55,7 +55,6 @@ class ImmutableEnumFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateInitializationCode(io::Printer* printer) const override;
   void GenerateFieldInfo(io::Printer* printer,
                          std::vector<uint16_t>* output) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 
@@ -103,7 +102,6 @@ class RepeatedImmutableEnumFieldLiteGenerator
   void GenerateInitializationCode(io::Printer* printer) const override;
   void GenerateFieldInfo(io::Printer* printer,
                          std::vector<uint16_t>* output) const override;
-  void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
 
@@ -119,4 +117,4 @@ class RepeatedImmutableEnumFieldLiteGenerator
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_LITE_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_LITE_ENUM_FIELD_H__

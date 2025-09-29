@@ -26,7 +26,8 @@ struct Options {
         enforce_lite(false),
         annotate_code(false),
         strip_nonfunctional_codegen(false),
-        jvm_dsl(true) {}
+        jvm_dsl(true),
+        dsl_use_concrete_types(false) {}
 
   bool generate_immutable_code;
   bool generate_mutable_code;
@@ -34,7 +35,6 @@ struct Options {
   // When set, the protoc will generate the current files and all the transitive
   // dependencies as lite runtime.
   bool enforce_lite;
-  bool opensource_runtime = google::protobuf::internal::IsOss();
   // If true, we should build .meta files and emit @Generated annotations into
   // generated code.
   bool annotate_code;
@@ -50,6 +50,13 @@ struct Options {
   // If true, generate JVM-specific DSL code.  This defaults to true for
   // compatibility with the old behavior.
   bool jvm_dsl;
+
+  // If true, the generated DSL code will only utilize concrete types, never
+  // referring to the OrBuilder interfaces.
+  bool dsl_use_concrete_types;
+
+  // Used by protobuf itself and not supported for direct use by users.
+  bool bootstrap = false;
 };
 
 }  // namespace java

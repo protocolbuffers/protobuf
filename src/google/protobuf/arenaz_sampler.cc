@@ -12,6 +12,8 @@
 #include <limits>
 #include <utility>
 
+#include "absl/base/optimization.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -108,7 +110,7 @@ void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
   if (info->max_block_size.load(std::memory_order_relaxed) < allocated) {
     info->max_block_size.store(allocated, std::memory_order_relaxed);
   }
-  const uint64_t tid = 1ULL << (GetCachedTID() % 63);
+  const uint64_t tid = 1ULL << (static_cast<uint64_t>(GetCachedTID()) % 63);
   info->thread_ids.fetch_or(tid, std::memory_order_relaxed);
 }
 
@@ -129,7 +131,7 @@ ThreadSafeArenaStats* SampleSlow(SamplingState& sampling_state) {
   // We will only be negative on our first count, so we should just retry in
   // that case.
   if (first) {
-    if (PROTOBUF_PREDICT_TRUE(--sampling_state.next_sample > 0)) return nullptr;
+    if (ABSL_PREDICT_TRUE(--sampling_state.next_sample > 0)) return nullptr;
     return SampleSlow(sampling_state);
   }
 

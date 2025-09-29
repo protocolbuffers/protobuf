@@ -22,8 +22,10 @@
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   upb_DefPool* symtab;
+  // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
 } PyUpb_DescriptorPool;
 
@@ -78,6 +80,9 @@ PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
+#if PY_VERSION_HEX >= 0x030C0000
+  PyObject_ClearWeakRefs((PyObject*)self);
+#endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
   upb_DefPool_Free(self->symtab);
@@ -142,6 +147,61 @@ static bool PyUpb_DescriptorPool_TryLoadFilename(PyUpb_DescriptorPool* self,
   bool ret = PyUpb_DescriptorPool_TryLoadFileProto(self, file_proto);
   Py_XDECREF(file_proto);
   return ret;
+}
+
+static bool PyUpb_DescriptorPool_TryLoadExtension(PyUpb_DescriptorPool* self,
+                                                  const upb_MessageDef* m,
+                                                  int32_t field_number) {
+  if (!self->db) return false;
+  const char* full_name = upb_MessageDef_FullName(m);
+  PyObject* py_name = PyUnicode_FromStringAndSize(full_name, strlen(full_name));
+  PyObject* py_descriptor = PyObject_CallMethod(
+      self->db, "FindFileContainingExtension", "Oi", py_name, field_number);
+  Py_DECREF(py_name);
+  if (!py_descriptor) {
+    PyErr_Clear();
+    return false;
+  }
+  bool ret = PyUpb_DescriptorPool_TryLoadFileProto(self, py_descriptor);
+  Py_DECREF(py_descriptor);
+  return ret;
+}
+
+static void PyUpb_DescriptorPool_TryLoadAllExtensions(
+    PyUpb_DescriptorPool* self, const upb_MessageDef* m) {
+  if (!self->db) return;
+  const char* full_name = upb_MessageDef_FullName(m);
+  PyObject* py_name = PyUnicode_FromStringAndSize(full_name, strlen(full_name));
+  PyObject* py_list =
+      PyObject_CallMethod(self->db, "FindAllExtensionNumbers", "O", py_name);
+  Py_DECREF(py_name);
+  if (!py_list) {
+    PyErr_Clear();
+    return;
+  }
+  Py_ssize_t size = PyList_Size(py_list);
+  if (size == -1) {
+    PyErr_Format(
+        PyExc_RuntimeError,
+        "FindAllExtensionNumbers() on fall back DB must return a list, not %S",
+        py_list);
+    PyErr_Print();
+    Py_DECREF(py_list);
+    return;
+  }
+  int64_t field_number;
+  const upb_ExtensionRegistry* reg =
+      upb_DefPool_ExtensionRegistry(self->symtab);
+  const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+  for (Py_ssize_t i = 0; i < size; ++i) {
+    PyObject* item = PySequence_GetItem(py_list, i);
+    field_number = PyLong_AsLong(item);
+    Py_DECREF(item);
+    if (!upb_ExtensionRegistry_Lookup(reg, t, field_number)) {
+      PyUpb_DescriptorPool_TryLoadExtension(self, m, field_number);
+    }
+  }
+  Py_DECREF(py_list);
 }
 
 bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) { return true; }
@@ -580,8 +640,15 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByNumber(PyObject* _self,
     return NULL;
   }
 
-  const upb_FieldDef* f = upb_DefPool_FindExtensionByNumber(
-      self->symtab, PyUpb_Descriptor_GetDef(message_descriptor), number);
+  const upb_MessageDef* message_def =
+      PyUpb_Descriptor_GetDef(message_descriptor);
+  const upb_FieldDef* f =
+      upb_DefPool_FindExtensionByNumber(self->symtab, message_def, number);
+  if (f == NULL && self->db) {
+    if (PyUpb_DescriptorPool_TryLoadExtension(self, message_def, number)) {
+      f = upb_DefPool_FindExtensionByNumber(self->symtab, message_def, number);
+    }
+  }
   if (f == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find Extension %d", number);
   }
@@ -593,6 +660,9 @@ static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
                                                         PyObject* msg_desc) {
   PyUpb_DescriptorPool* self = (PyUpb_DescriptorPool*)_self;
   const upb_MessageDef* m = PyUpb_Descriptor_GetDef(msg_desc);
+  if (self->db) {
+    PyUpb_DescriptorPool_TryLoadAllExtensions(self, m);
+  }
   size_t n;
   const upb_FieldDef** ext = upb_DefPool_GetAllExtensions(self->symtab, m, &n);
   PyObject* ret = PyList_New(n);
@@ -654,7 +724,11 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
     PYUPB_MODULE_NAME ".DescriptorPool",
     sizeof(PyUpb_DescriptorPool),
     0,  // tp_itemsize
+#if PY_VERSION_HEX >= 0x030C0000
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC | Py_TPFLAGS_MANAGED_WEAKREF,
+#else
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
+#endif
     PyUpb_DescriptorPool_Slots,
 };
 

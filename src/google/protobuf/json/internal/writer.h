@@ -8,12 +8,8 @@
 #ifndef GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
 #define GOOGLE_PROTOBUF_JSON_INTERNAL_WRITER_H__
 
-#include <cfloat>
-#include <cmath>
+#include <cstddef>
 #include <cstdint>
-#include <iostream>
-#include <limits>
-#include <ostream>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -55,7 +51,7 @@ struct WriterOptions {
   // What those extensions were is explicitly not documented, beyond what exists
   // in the unit tests; we intend to remove this setting eventually. See
   // b/234868512.
-  bool allow_legacy_syntax = false;
+  bool allow_legacy_nonconformant_behavior = false;
 };
 
 template <typename Tuple, typename F, size_t... i>

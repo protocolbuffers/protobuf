@@ -1,28 +1,25 @@
 package com.google.protobuf;
 
+import java.util.Optional;
+
 /**
- * ProtobufToStringOutput controls the output format of {@link Message#toString()}. Specifically, for
- * the Runnable object passed to `callWithDebugFormat` and `callWithTextFormat`, Message.toString()
- * will always output the specified format unless ProtobufToStringOutput is used again to change the
- * output format.
+ * ProtobufToStringOutput controls the output format of {@link Message#toString()}. Specifically,
+ * for the Runnable object passed to `callWithDebugFormat` and `callWithTextFormat`,
+ * Message.toString() will always output the specified format unless ProtobufToStringOutput is used
+ * again to change the output format.
  */
 public final class ProtobufToStringOutput {
   private enum OutputMode {
     DEBUG_FORMAT,
-    TEXT_FORMAT
+    TEXT_FORMAT,
+    DEFAULT_FORMAT
   }
 
   private static final ThreadLocal<OutputMode> outputMode =
-      new ThreadLocal<OutputMode>() {
-        @Override
-        protected OutputMode initialValue() {
-          return OutputMode.TEXT_FORMAT;
-        }
-      };
+      ThreadLocal.withInitial(() -> OutputMode.DEFAULT_FORMAT);
 
   private ProtobufToStringOutput() {}
 
-  @CanIgnoreReturnValue
   private static OutputMode setOutputMode(OutputMode newMode) {
     OutputMode oldMode = outputMode.get();
     outputMode.set(newMode);
@@ -48,5 +45,9 @@ public final class ProtobufToStringOutput {
 
   public static boolean shouldOutputDebugFormat() {
     return outputMode.get() == OutputMode.DEBUG_FORMAT;
+  }
+
+  public static boolean isDefaultFormat() {
+    return outputMode.get() == OutputMode.DEFAULT_FORMAT;
   }
 }

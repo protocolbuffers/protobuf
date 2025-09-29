@@ -11,6 +11,7 @@
 #include <stddef.h>
 
 // Must be last.
+#include "upb/message/message.h"
 #include "upb/port/def.inc"
 
 #ifdef __cplusplus
@@ -37,8 +38,7 @@ typedef enum {
 } upb_UnknownCompareResult;
 
 upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
-    const char* buf1, size_t size1, const char* buf2, size_t size2,
-    int max_depth);
+    const upb_Message* msg1, const upb_Message* msg2, int max_depth);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -11,11 +11,12 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_GEN_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_GEN_H__
 
+#include <cstddef>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -31,13 +32,27 @@ namespace field_layout {
 enum TransformValidation : uint16_t;
 }  // namespace field_layout
 
+PROTOBUF_EXPORT uint32_t
+GetRecodedTagForFastParsing(const FieldDescriptor* field);
+
+PROTOBUF_EXPORT std::optional<uint32_t> GetEndGroupTag(
+    const Descriptor* descriptor);
+
+PROTOBUF_EXPORT uint32_t
+FastParseTableSize(size_t num_fields, std::optional<uint32_t> end_group_tag);
+
+PROTOBUF_EXPORT bool IsFieldTypeEligibleForFastParsing(
+    const FieldDescriptor* field);
+
 // Helper class for generating tailcall parsing functions.
 struct PROTOBUF_EXPORT TailCallTableInfo {
+  // The tailcall parser can only update the first 32 hasbits. Fields with
+  // has-bits beyond the first 32 are handled by mini parsing/fallback.
+  static constexpr int kMaxFastFieldHasbitIndex = 31;
+
   struct MessageOptions {
     bool is_lite;
     bool uses_codegen;
-    // TODO: remove this after A/B test is done.
-    bool should_profile_driven_cluster_aux_subtable;
   };
   struct FieldOptions {
     const FieldDescriptor* field;
@@ -46,12 +61,28 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     float presence_probability;
     // kTvEager, kTvLazy, or 0
     field_layout::TransformValidation lazy_opt;
+    // Whether to use the InlinedStringField representation.
+    // This choice comes from the profile data.
+    // If on, inlined_string_index should be set.
+    // Incompatible with `use_micro_string`.
     bool is_string_inlined;
     bool is_implicitly_weak;
     bool use_direct_tcparser_table;
     bool should_split;
     int inlined_string_index;
+    // Whether to use the MicroString representation.
+    // This choice comes from the temporary opt-in data.
+    // Incompatible with `is_string_inlined`.
+    bool use_micro_string;
   };
+
+  struct FieldEntryInfo;
+  struct AuxEntry;
+
+  static std::vector<FieldEntryInfo> BuildFieldEntries(
+      const Descriptor* descriptor, const MessageOptions& message_options,
+      absl::Span<const FieldOptions> ordered_fields,
+      std::vector<AuxEntry>& aux_entries);
 
   TailCallTableInfo(const Descriptor* descriptor,
                     const MessageOptions& message_options,
@@ -77,11 +108,11 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
       uint16_t coded_tag;
       uint16_t nonfield_info;
     };
-    absl::variant<Empty, Field, NonField> data;
+    std::variant<Empty, Field, NonField> data;
 
-    bool is_empty() const { return absl::holds_alternative<Empty>(data); }
-    const Field* AsField() const { return absl::get_if<Field>(&data); }
-    const NonField* AsNonField() const { return absl::get_if<NonField>(&data); }
+    bool is_empty() const { return std::holds_alternative<Empty>(data); }
+    const Field* AsField() const { return std::get_if<Field>(&data); }
+    const NonField* AsNonField() const { return std::get_if<NonField>(&data); }
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
@@ -116,8 +147,8 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   struct AuxEntry {
     AuxType type;
     struct EnumRange {
-      int16_t start;
-      uint16_t size;
+      int32_t first;
+      int32_t last;
     };
     union {
       const FieldDescriptor* field;

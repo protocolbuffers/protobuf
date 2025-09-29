@@ -22,6 +22,12 @@ namespace compiler {
 namespace rust {
 std::string GetCrateName(Context& ctx, const FileDescriptor& dep);
 
+// Gets the file name for the entry point rs file. This path will be in the same
+// directory as the provided file. This will be the path provided by command
+// line flag, or a default path relative to the provided `file` (which should
+// be the first .proto src proto file).
+std::string GetEntryPointRsFilePath(Context& ctx, const FileDescriptor& file);
+
 std::string GetRsFile(Context& ctx, const FileDescriptor& file);
 std::string GetThunkCcFile(Context& ctx, const FileDescriptor& file);
 std::string GetHeaderFile(Context& ctx, const FileDescriptor& file);
@@ -38,10 +44,12 @@ std::string RawMapThunk(Context& ctx, const Descriptor& msg,
 std::string RawMapThunk(Context& ctx, const EnumDescriptor& desc,
                         absl::string_view key_t, absl::string_view op);
 
-// Returns an absolute path to the Proxied Rust type of the given field.
-// The absolute path is guaranteed to work in the crate that defines the field.
-// It may be crate-relative, or directly reference the owning crate of the type.
+// Returns a path to the Proxied Rust type of the given field. The path will be
+// relative if the type is in the same crate, or absolute if it is in a
+// different crate.
 std::string RsTypePath(Context& ctx, const FieldDescriptor& field);
+std::string RsTypePath(Context& ctx, const Descriptor& message);
+std::string RsTypePath(Context& ctx, const EnumDescriptor& descriptor);
 
 // Returns the 'simple spelling' of the Rust View type for the provided field.
 // For example, `i32` for int32 fields and `SomeMsgView<'$lifetime$>` for
@@ -57,6 +65,8 @@ std::string EnumValueRsName(const EnumValueDescriptor& value);
 
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
+
+std::string OneofCaseEnumCppName(const OneofDescriptor& oneof);
 std::string OneofCaseRsName(const FieldDescriptor& oneof_field);
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field);
@@ -84,27 +94,18 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field);
 // verbatim unless it is a Rust keyword that isn't a legal symbol name.
 std::string RsSafeName(absl::string_view name);
 
-// Constructs a string of the Rust modules which will contain the message.
+// Constructs a string of the Rust modules which will contain the entity.
 //
 // Example: Given a message 'NestedMessage' which is defined in package 'x.y'
 // which is inside 'ParentMessage', the message will be placed in the
-// x::y::ParentMessage_ Rust module, so this function will return the string
-// "x::y::ParentMessage_::".
-//
-// If the message has no package and no containing messages then this returns
-// empty string.
-std::string RustModuleForContainingType(Context& ctx,
-                                        const Descriptor* containing_type);
+// x::y::parent_message Rust module, so this function will return
+// "x::y::parent_message::", with the necessary prefix to make it relative to
+// the current scope, or absolute if the entity is in a different crate.
 std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_);
 std::string RustModule(Context& ctx, const OneofDescriptor& oneof);
-std::string RustInternalModuleName(Context& ctx, const FileDescriptor& file);
 
-std::string GetCrateRelativeQualifiedPath(Context& ctx, const Descriptor& msg);
-std::string GetCrateRelativeQualifiedPath(Context& ctx,
-                                          const EnumDescriptor& enum_);
-std::string GetCrateRelativeQualifiedPath(Context& ctx,
-                                          const OneofDescriptor& oneof);
+std::string RustInternalModuleName(const FileDescriptor& file);
 
 template <typename Desc>
 std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc);
@@ -122,6 +123,10 @@ std::string SnakeToUpperCamelCase(absl::string_view input);
 
 // Converts a SCREAMING_SNAKE_CASE string to an UpperCamelCase string.
 std::string ScreamingSnakeToUpperCamelCase(absl::string_view input);
+
+// Converts a Descriptor's expected C++ fully qualified name to the symbol
+// literal that Crubit expects to be used in the generated bindings.
+std::string CrubitCcSymbolName(const Descriptor& msg);
 
 // Given a fixed prefix, this will repeatedly strip provided
 // string_views if they start with the prefix, the prefix in UpperCamel, or

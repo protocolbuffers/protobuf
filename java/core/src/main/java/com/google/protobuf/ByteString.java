@@ -929,7 +929,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   // equals() and hashCode()
 
   @Override
-  public abstract boolean equals(Object o);
+  public abstract boolean equals(
+          Object o);
 
   /** Base class for leaf {@link ByteString}s (i.e. non-ropes). */
   abstract static class LeafByteString extends ByteString {
@@ -1051,7 +1052,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     // Implementation note.
     // The public methods of this class must be synchronized.  ByteStrings
     // are guaranteed to be immutable.  Without some sort of locking, it could
-    // be possible for one thread to call toByteSring(), while another thread
+    // be possible for one thread to call toByteString(), while another thread
     // is still modifying the underlying byte array.
 
     private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
@@ -1478,7 +1479,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     // equals() and hashCode()
 
     @Override
-    public final boolean equals(Object other) {
+    public final boolean equals(
+            Object other) {
       if (other == this) {
         return true;
       }
@@ -1816,7 +1818,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     @Override
-    public boolean equals(Object other) {
+    public boolean equals(
+            Object other) {
       if (other == this) {
         return true;
       }

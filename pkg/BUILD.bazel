@@ -16,6 +16,7 @@ pkg_files(
     name = "wkt_protos_files",
     srcs = [
         "//:well_known_type_protos",
+        "//go:go_features_proto_srcs",
         "//java/core:java_features_proto_srcs",
         "//src/google/protobuf:cpp_features_proto_srcs",
         "//src/google/protobuf:descriptor_proto_srcs",
@@ -109,6 +110,7 @@ gen_file_lists(
         # Libraries:
         ":protobuf": "libprotobuf",
         ":protobuf_lite": "libprotobuf_lite",
+        ":protoc_public": "libprotoc_public",
         ":protoc": "libprotoc",
         ":upb": "libupb",
         ":protoc-gen-upb": "protoc-gen-upb",
@@ -120,16 +122,21 @@ gen_file_lists(
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
         "//java/core:java_features_proto": "java_features_proto,src/google/protobuf/compiler/java/",
+        "//go:go_features_proto": "go_features_proto,go/",
 
         # Test libraries:
         ":common_test": "common_test",
         ":lite_test_util": "lite_test_util",
         ":test_util": "test_util",
-        "//upb:test_util": "upb_test_util",
+        ":upb_test_util": "upb_test_util",
+        # Conformance tests
+        ":conformance_cpp": "conformance_testee",
+        ":conformance_runner": "conformance_runner",
         # Tests and test-only protos:
         "//upb:test_protos": "upb_test_protos",
         "//upb:test_srcs": "upb_test",
         "//src/google/protobuf:full_test_srcs": "protobuf_test",
+        "//src/google/protobuf:lazily_build_dependencies_test_srcs": "lazily_build_dependencies_test",
         "//src/google/protobuf:test_proto_all_srcs": "protobuf_test_protos",
         "//src/google/protobuf:lite_test_srcs": "protobuf_lite_test",
         "//src/google/protobuf:lite_test_proto_srcs": "protobuf_lite_test_protos",
@@ -191,6 +198,7 @@ cc_dist_library(
     dist_deps = [
         ":protobuf",
         ":protobuf_lite",
+        ":upb",
     ],
     tags = ["manual"],
     deps = [
@@ -208,17 +216,45 @@ cc_dist_library(
 )
 
 cc_dist_library(
+    name = "protoc_public",
+    dist_deps = [
+        ":protobuf",
+        ":protobuf_lite",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler/cpp:names",
+        "//src/google/protobuf/compiler/csharp:names",
+        "//src/google/protobuf/compiler/java:names",
+        "//src/google/protobuf/compiler/objectivec:names",
+        "//src/google/protobuf/compiler/php:names",
+        # TODO Make these private in the next breaking C++ release.
+        "//src/google/protobuf/compiler/cpp:generator_headers",
+        "//src/google/protobuf/compiler/csharp:generator_headers",
+        "//src/google/protobuf/compiler/java:generator_headers",
+        "//src/google/protobuf/compiler/kotlin:generator_headers",
+        "//src/google/protobuf/compiler/objectivec:generator_headers",
+        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/python:generator_headers",
+        "//src/google/protobuf/compiler/ruby:generator_headers",
+    ],
+)
+
+cc_dist_library(
     name = "upb",
     tags = ["manual"],
     deps = [
-        "//upb:generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+        "//upb:generated_code_support",
         "//upb/json",
         "//upb/message:compare",
         "//upb/message:copy",
         "//upb/text",
+        "//upb/text:debug",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
         "//upb/wire:byte_size",
+        "//upb/wire/decode_fast:select",
     ],
 )
 
@@ -226,10 +262,11 @@ cc_dist_library(
     name = "protoc-gen-upb",
     dist_deps = [
         ":upb",
+        ":protobuf",
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator/c:generator_with_main",
+        "//upb_generator/c:protoc-gen-upb",
     ],
 )
 
@@ -237,21 +274,52 @@ cc_dist_library(
     name = "protoc-gen-upbdefs",
     dist_deps = [
         ":upb",
+        ":protobuf",
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator/reflection:generator_with_main",
+        "//upb_generator/reflection:protoc-gen-upbdefs",
     ],
 )
 
 cc_dist_library(
     name = "protoc-gen-upb_minitable",
     dist_deps = [
+        ":protobuf",
         ":upb",
     ],
     tags = ["manual"],
     deps = [
-        "//upb_generator/minitable:generator_with_main",
+        "//upb_generator/minitable:protoc-gen-upb_minitable",
+    ],
+)
+
+cc_dist_library(
+    name = "conformance_cpp",
+    testonly = 1,
+    dist_deps = [":protobuf"],
+    tags = ["manual"],
+    deps = ["//conformance:conformance_cpp"],
+)
+
+cc_dist_library(
+    name = "conformance_runner",
+    testonly = 1,
+    dist_deps = [":protobuf"],
+    tags = ["manual"],
+    deps = ["//conformance:conformance_test_runner"],
+)
+
+cc_dist_library(
+    name = "upb_test_util",
+    testonly = 1,
+    dist_deps = [
+        ":protobuf",
+        ":upb",
+    ],
+    tags = ["manual"],
+    deps = [
+        "//upb:test_util",
     ],
 )
 

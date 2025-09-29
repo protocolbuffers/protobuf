@@ -23,8 +23,10 @@
 // This representation is used by all concrete descriptors.
 
 typedef struct {
-  PyObject_HEAD;
+  // clang-format off
+  PyObject_HEAD
   PyObject* pool;          // We own a ref.
+  // clang-format on
   const void* def;         // Type depends on the class. Kept alive by "pool".
   PyObject* options;       // NULL if not present or not cached.
   PyObject* features;      // NULL if not present or not cached.
@@ -1052,14 +1054,41 @@ static PyObject* PyUpb_FieldDescriptor_GetCppType(PyUpb_DescriptorBase* self,
   return PyLong_FromLong(cpp_types[upb_FieldDef_CType(self->def)]);
 }
 
+static void WarnDeprecatedLabel(void) {
+  static int deprecated_label_count = 100;
+  if (deprecated_label_count > 0) {
+    --deprecated_label_count;
+    PyErr_WarnEx(
+        PyExc_DeprecationWarning,
+        "label() is deprecated. Use is_required() or is_repeated() instead.",
+        3);
+  }
+}
+
 static PyObject* PyUpb_FieldDescriptor_GetLabel(PyUpb_DescriptorBase* self,
                                                 void* closure) {
+  WarnDeprecatedLabel();
   return PyLong_FromLong(upb_FieldDef_Label(self->def));
+}
+
+static PyObject* PyUpb_FieldDescriptor_IsRequired(PyUpb_DescriptorBase* self,
+                                                  void* closure) {
+  return PyBool_FromLong(upb_FieldDef_IsRequired(self->def));
+}
+
+static PyObject* PyUpb_FieldDescriptor_IsRepeated(PyUpb_DescriptorBase* self,
+                                                  void* closure) {
+  return PyBool_FromLong(upb_FieldDef_IsRepeated(self->def));
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetIsExtension(
     PyUpb_DescriptorBase* self, void* closure) {
   return PyBool_FromLong(upb_FieldDef_IsExtension(self->def));
+}
+
+static PyObject* PyUpb_FieldDescriptor_GetIsPacked(PyUpb_DescriptorBase* self,
+                                                   void* closure) {
+  return PyBool_FromLong(upb_FieldDef_IsPacked(self->def));
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetNumber(PyUpb_DescriptorBase* self,
@@ -1158,12 +1187,17 @@ static PyGetSetDef PyUpb_FieldDescriptor_Getters[] = {
     {"type", (getter)PyUpb_FieldDescriptor_GetType, NULL, "Type"},
     {"cpp_type", (getter)PyUpb_FieldDescriptor_GetCppType, NULL, "C++ Type"},
     {"label", (getter)PyUpb_FieldDescriptor_GetLabel, NULL, "Label"},
+    {"is_required", (getter)PyUpb_FieldDescriptor_IsRequired, NULL,
+     "Is Required"},
+    {"is_repeated", (getter)PyUpb_FieldDescriptor_IsRepeated, NULL,
+     "Is Repeated"},
     {"number", (getter)PyUpb_FieldDescriptor_GetNumber, NULL, "Number"},
     {"index", (getter)PyUpb_FieldDescriptor_GetIndex, NULL, "Index"},
     {"default_value", (getter)PyUpb_FieldDescriptor_GetDefaultValue, NULL,
      "Default Value"},
     {"has_default_value", (getter)PyUpb_FieldDescriptor_HasDefaultValue},
     {"is_extension", (getter)PyUpb_FieldDescriptor_GetIsExtension, NULL, "ID"},
+    {"is_packed", (getter)PyUpb_FieldDescriptor_GetIsPacked, NULL, "Is Packed"},
     // TODO
     //{ "id", (getter)GetID, NULL, "ID"},
     {"message_type", (getter)PyUpb_FieldDescriptor_GetMessageType, NULL,
@@ -1519,6 +1553,12 @@ static PyObject* PyUpb_MethodDescriptor_GetServerStreaming(PyObject* self,
   return PyBool_FromLong(upb_MethodDef_ServerStreaming(m) ? 1 : 0);
 }
 
+static PyObject* PyUpb_MethodDescriptor_GetHasOptions(PyObject* _self,
+                                                      void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  return PyBool_FromLong(upb_MethodDef_HasOptions(self->def));
+}
+
 static PyObject* PyUpb_MethodDescriptor_GetOptions(PyObject* _self,
                                                    PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1557,6 +1597,8 @@ static PyGetSetDef PyUpb_MethodDescriptor_Getters[] = {
      "Client streaming", NULL},
     {"server_streaming", PyUpb_MethodDescriptor_GetServerStreaming, NULL,
      "Server streaming", NULL},
+    {"has_options", PyUpb_MethodDescriptor_GetHasOptions, NULL, "Has Options"},
+
     {NULL}};
 
 static PyMethodDef PyUpb_MethodDescriptor_Methods[] = {
@@ -1746,6 +1788,12 @@ static PyObject* PyUpb_ServiceDescriptor_GetMethodsByName(PyObject* _self,
   return PyUpb_ByNameMap_New(&funcs, self->def, self->pool);
 }
 
+static PyObject* PyUpb_ServiceDescriptor_GetHasOptions(PyObject* _self,
+                                                       void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  return PyBool_FromLong(upb_ServiceDef_HasOptions(self->def));
+}
+
 static PyObject* PyUpb_ServiceDescriptor_GetOptions(PyObject* _self,
                                                     PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -1791,6 +1839,7 @@ static PyGetSetDef PyUpb_ServiceDescriptor_Getters[] = {
     {"methods", PyUpb_ServiceDescriptor_GetMethods, NULL, "Methods", NULL},
     {"methods_by_name", PyUpb_ServiceDescriptor_GetMethodsByName, NULL,
      "Methods by name", NULL},
+    {"has_options", PyUpb_ServiceDescriptor_GetHasOptions, NULL, "Has Options"},
     {NULL}};
 
 static PyMethodDef PyUpb_ServiceDescriptor_Methods[] = {

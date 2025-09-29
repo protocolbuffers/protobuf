@@ -33,7 +33,6 @@ class ImmutableFieldGenerator : public FieldGenerator {
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldBuilderInitializationCode(
       io::Printer* printer) const = 0;
-  virtual void GenerateKotlinDslMembers(io::Printer* printer) const = 0;
 
   virtual void GenerateBuilderParsingCodeFromPacked(
       io::Printer* printer) const {

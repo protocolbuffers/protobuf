@@ -4,6 +4,7 @@
 #include <ostream>
 #include <string>
 
+#include "base/sysinfo.h"
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
@@ -26,11 +27,20 @@ struct AnalyzeProfileProtoOptions {
   // true to include presence and usage info instead of only optimization info
   bool print_analysis = false;
 
+  // true to include presence probability info
+  bool print_analysis_all = false;
+
   // Descriptor pool to use. Must not be null.
   const DescriptorPool* pool = nullptr;
 
   // Regular expression for message name matching, empty to include all.
   std::string message_filter;
+
+  // Sort the per-file output by the file name.
+  bool sort_output_by_file_name = false;
+
+  // Number of threads to use to process proto profiles in parallel.
+  int parallelism = NumCPUs();
 };
 
 // Prints analysis for the given proto profile.

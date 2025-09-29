@@ -1,3 +1,5 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load(
     "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
@@ -22,14 +24,20 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:mini_table",
-        "//upb:port",
+        "//upb/base",
         "//upb/base:internal",
+        "//upb/mem",
         "//upb/message:types",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
-    ],
+        "//upb/port",
+    ] + select({
+        "//upb:fasttable_enabled_setting": [
+            "//upb/wire/decode_fast:function_array",
+            "//upb/wire/decode_fast:select",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(
@@ -49,9 +57,9 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        "//upb:base",
-        "//upb:port",
+        "//upb/base",
         "//upb/base:internal",
+        "//upb/port",
     ],
 )
 
@@ -62,17 +70,17 @@ cc_test(
     deps = [
         ":internal",
         ":mini_descriptor",
-        "//:protobuf",
-        "//upb:base",
-        "//upb:mem",
-        "//upb:message",
-        "//upb:mini_table",
-        "//upb:port",
-        "//upb:wire",
+        "//src/google/protobuf",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
         "//upb/message:internal",
-        "@com_google_absl//absl/container:flat_hash_set",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/wire",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 

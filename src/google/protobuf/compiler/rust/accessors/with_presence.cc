@@ -49,10 +49,7 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
                      R"rs(
                   pub fn has_$raw_field_name$($view_self$) -> bool {
                     unsafe {
-                      let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                          <Self as $pbr$::AssociatedMiniTable>::mini_table(),
-                          $upb_mt_field_index$);
-                      $pbr$::upb_Message_HasBaseField(self.raw_msg(), f)
+                      self.inner.ptr().has_field_at_index($upb_mt_field_index$)
                     }
                   }
                   )rs");
@@ -72,10 +69,9 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
                      R"rs(
                     pub fn clear_$raw_field_name$(&mut self) {
                       unsafe {
-                        let mt = <Self as $pbr$::AssociatedMiniTable>::mini_table();
-                        let f = $pbr$::upb_MiniTable_GetFieldByIndex(
-                            mt, $upb_mt_field_index$);
-                        $pbr$::upb_Message_ClearBaseField(self.raw_msg(), f);
+                        self.inner.ptr().clear_field_at_index(
+                          $upb_mt_field_index$
+                        );
                       }
                     })rs");
           }
@@ -83,7 +79,12 @@ void WithPresenceAccessorsInMsgImpl(Context& ctx, const FieldDescriptor& field,
        {"opt_getter",
         [&] {
           // Cord fields don't support the _opt getter.
-          if (field.options().ctype() == FieldOptions::CORD) return;
+          if (ctx.is_cpp() &&
+              field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+              field.cpp_string_type() ==
+                  FieldDescriptor::CppStringType::kCord) {
+            return;
+          }
           ctx.Emit(
               R"rs(
               pub fn $raw_field_name$_opt($view_self$) -> $pb$::Optional<$view_type$> {

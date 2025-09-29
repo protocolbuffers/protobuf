@@ -330,7 +330,7 @@
   // This test exists to verify that CFStrings with embedded NULLs still expose
   // their raw buffer if they are backed by UTF8 storage. If this fails, the
   // quick/direct access paths in GPBCodedOutputStream that depend on
-  // CFStringGetCStringPtr need to be re-evalutated (maybe just removed).
+  // CFStringGetCStringPtr need to be re-evaluated (maybe just removed).
   // And yes, we do get NULLs in strings from some servers.
 
   char zeroTest[] = "\0Test\0String";

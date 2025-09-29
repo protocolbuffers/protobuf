@@ -40,6 +40,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
+#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/googletest.h"
 
 
@@ -1548,15 +1549,14 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
 
     switch (buffer_count_++) {
       case 0:
-        *data = buffer_;
-        *size = sizeof(buffer_);
+        *data = buffer_.get();
+        *size = 1024;
         return true;
       case 1:
         // Return an enormously large buffer that, when combined with the 1k
         // returned already, should overflow the total_bytes_read_ counter in
-        // CodedInputStream.  Note that we'll only read the first 1024 bytes
-        // of this buffer so it's OK that we have it point at buffer_.
-        *data = buffer_;
+        // CodedInputStream.
+        *data = buffer_.get();
         *size = INT_MAX;
         return true;
       default:
@@ -1578,7 +1578,12 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
   int backup_amount_;
 
  private:
-  char buffer_[1024] = {};
+  // On 32-bit platforms, only allocate 1024 bytes because we would exhaust our
+  // address space otherwise. This will result in UB when
+  // CodedInputStream::Refresh computes an out-of-bounds pointer by adding
+  // INT_MAX (from case 1 above) but this is largely only a theoretical issue.
+  std::unique_ptr<char[], void (*)(void*)> buffer_{
+      static_cast<char*>(calloc(sizeof(void*) > 4 ? INT_MAX : 1024, 1)), free};
   int64_t buffer_count_;
 };
 

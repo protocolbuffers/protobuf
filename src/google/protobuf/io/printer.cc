@@ -15,6 +15,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -30,25 +31,23 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
-#include "absl/types/variant.h"
 
 namespace google {
 namespace protobuf {
 namespace io {
 namespace {
 template <typename T>
-absl::optional<T> LookupInFrameStack(
+std::optional<T> LookupInFrameStack(
     absl::string_view var,
-    absl::Span<std::function<absl::optional<T>(absl::string_view)>> frames) {
+    absl::Span<std::function<std::optional<T>(absl::string_view)>> frames) {
   for (size_t i = frames.size(); i >= 1; --i) {
     auto val = frames[i - 1](var);
     if (val.has_value()) {
       return val;
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 }  // namespace
 
@@ -113,12 +112,33 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
     // a while loop, not a do/while loop.
 
     absl::string_view orig = format_string;
+    absl::string_view first_pp_directive;
     while (absl::ConsumePrefix(&format_string, "\n")) {
+      // clang-format will think a # at the beginning of the line in a raw
+      // string is a preprocessor directive and put it at the start of the line,
+      // which throws off indent calculation. Skip past those to find code that
+      // is indented more realistically.
+      if (absl::StartsWith(format_string, "#")) {
+        // We don't want to drop the first #... lines. We just want to skip
+        // through here. Remember to allow resetting later.
+        if (first_pp_directive.empty()) {
+          first_pp_directive = format_string;
+        }
+        size_t next_newline_index = format_string.find('\n');
+        if (next_newline_index != absl::string_view::npos) {
+          format_string = format_string.substr(next_newline_index);
+          continue;
+        }
+      }
       raw_string_indent = 0;
       format.is_raw_string = true;
       while (absl::ConsumePrefix(&format_string, " ")) {
         ++raw_string_indent;
       }
+    }
+    // Reset if we skipped through some #... lines, so that we don't drop them.
+    if (!first_pp_directive.empty()) {
+      format_string = first_pp_directive;
     }
 
     // If we consume the entire string, this probably wasn't a raw string and
@@ -160,6 +180,9 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
       if (comment_index != absl::string_view::npos) {
         line_text = line_text.substr(0, comment_index);
         if (absl::StripLeadingAsciiWhitespace(line_text).empty()) {
+          // If the first line is part of an ignored comment, consider that a
+          // first line as well.
+          is_first = false;
           continue;
         }
       }
@@ -308,11 +331,17 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
 
 // This function is outlined to isolate the use of
 // ABSL_CHECK into the .cc file.
-void Printer::Outdent() {
+void Printer::Outdent(const SourceLocation loc) {
   PrintOptions opts;
   opts.checks_are_debug_only = true;
+
+  // Fills in the file name and line number if they are valid.
+  const std::string source_location_str =
+      loc.line() == 0 ? ""
+                      : absl::StrCat(": ", loc.file_name(), ":", loc.line());
   if (!Validate(indent_ >= options_.spaces_per_indent, opts,
-                "Outdent() without matching Indent()")) {
+                absl::StrCat("Outdent() without matching Indent()",
+                             source_location_str))) {
     return;
   }
   indent_ -= options_.spaces_per_indent;
@@ -329,13 +358,13 @@ void Printer::Emit(absl::Span<const Sub> vars, absl::string_view format,
   PrintImpl(format, {}, opts);
 }
 
-absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
+std::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
     absl::string_view varname, PrintOptions opts) {
   auto it = substitutions_.find(varname);
   if (!Validate(it != substitutions_.end(), opts, [varname] {
         return absl::StrCat("undefined variable in annotation: ", varname);
       })) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::pair<size_t, size_t> range = it->second;
@@ -344,7 +373,7 @@ absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
             "variable used for annotation used multiple times: %s (%d..%d)",
             varname, range.first, range.second);
       })) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return range;
@@ -354,7 +383,7 @@ void Printer::Annotate(absl::string_view begin_varname,
                        absl::string_view end_varname,
                        absl::string_view file_path,
                        const std::vector<int>& path,
-                       absl::optional<AnnotationCollector::Semantic> semantic) {
+                       std::optional<AnnotationCollector::Semantic> semantic) {
   if (options_.annotation_collector == nullptr) {
     return;
   }
@@ -446,7 +475,7 @@ void Printer::IndentIfAtStart() {
   at_start_of_line_ = false;
 }
 
-void Printer::PrintCodegenTrace(absl::optional<SourceLocation> loc) {
+void Printer::PrintCodegenTrace(std::optional<SourceLocation> loc) {
   if (!options_.enable_codegen_trace.value_or(false) || !loc.has_value()) {
     return;
   }
@@ -647,7 +676,7 @@ void Printer::PrintImpl(absl::string_view format,
             continue;
           }
 
-          absl::optional<AnnotationRecord> record =
+          std::optional<AnnotationRecord> record =
               LookupInFrameStack(var, absl::MakeSpan(annotation_lookups_));
 
           if (!Validate(record.has_value(), opts, [var] {
@@ -667,8 +696,8 @@ void Printer::PrintImpl(absl::string_view format,
         continue;
       }
 
-      absl::optional<ValueView> sub;
-      absl::optional<AnnotationRecord> same_name_record;
+      std::optional<ValueView> sub;
+      std::optional<AnnotationRecord> same_name_record;
       if (opts.allow_digit_substitutions && absl::ascii_isdigit(var[0])) {
         if (!Validate(var.size() == 1u, opts,
                       "expected single-digit variable")) {

@@ -33,6 +33,57 @@ of your project, you should pin to a release commit on a release branch.
 This is because even release branches can experience some instability in between
 release commits.
 
+### Bazel with Bzlmod
+
+Protobuf supports
+[Bzlmod](https://bazel.build/external/module) with Bazel 7 +.
+Users should specify a dependency on protobuf in their MODULE.bazel file as
+follows.
+
+```
+bazel_dep(name = "protobuf", version = <VERSION>)
+```
+
+Users can optionally override the repo name, such as for compatibility with
+WORKSPACE.
+
+```
+bazel_dep(name = "protobuf", version = <VERSION>, repo_name = "com_google_protobuf")
+```
+
+### Bazel with WORKSPACE
+
+Users can also add the following to their legacy
+[WORKSPACE](https://bazel.build/external/overview#workspace-system) file.
+
+Note that with the release of 30.x there are a few more load statements to
+properly set up rules_java and rules_python.
+
+```
+http_archive(
+    name = "com_google_protobuf",
+    strip_prefix = "protobuf-VERSION",
+    sha256 = ...,
+    url = ...,
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+
+rules_java_dependencies()
+
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+
+rules_java_toolchains()
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+```
+
 Protobuf Compiler Installation
 ------------------------------
 

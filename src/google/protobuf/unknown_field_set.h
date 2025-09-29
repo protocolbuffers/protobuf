@@ -17,14 +17,17 @@
 
 #include <assert.h>
 
-#include <atomic>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+#include <type_traits>
+#include <utility>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
@@ -43,21 +46,16 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class InternalMetadata;           // metadata_lite.h
-class WireFormat;                 // wire_format.h
+class InternalMetadata;  // metadata_lite.h
+class WireFormat;        // wire_format.h
 class MessageSetFieldSkipperUsingCord;
 // extension_set_heavy.cc
 class UnknownFieldParserHelper;
 struct UnknownFieldSetTestPeer;
 
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-using UFSStringView = absl::string_view;
-#else
-using UFSStringView = const std::string&;
-#endif
 }  // namespace internal
 
-class Message;       // message.h
+class Message;  // message.h
 
 // Represents one field in an UnknownFieldSet.
 class PROTOBUF_EXPORT UnknownField {
@@ -82,7 +80,7 @@ class PROTOBUF_EXPORT UnknownField {
   inline uint64_t varint() const;
   inline uint32_t fixed32() const;
   inline uint64_t fixed64() const;
-  inline internal::UFSStringView length_delimited() const;
+  inline absl::string_view length_delimited() const;
   inline const UnknownFieldSet& group() const;
 
   inline void set_varint(uint64_t value);
@@ -93,9 +91,6 @@ class PROTOBUF_EXPORT UnknownField {
   template <int&...>
   inline void set_length_delimited(std::string&& value);
   inline void set_length_delimited(const absl::Cord& value);
-#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-  inline std::string* mutable_length_delimited();
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
   inline UnknownFieldSet* mutable_group();
 
   inline size_t GetLengthDelimitedSize() const;
@@ -118,11 +113,11 @@ class PROTOBUF_EXPORT UnknownField {
   uint32_t number_;
   uint32_t type_;
   union {
-    uint64_t varint_;
-    uint32_t fixed32_;
-    uint64_t fixed64_;
+    uint64_t varint;
+    uint32_t fixed32;
+    uint64_t fixed64;
     std::string* string_value;
-    UnknownFieldSet* group_;
+    UnknownFieldSet* group;
   } data_;
 };
 
@@ -204,9 +199,6 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void AddLengthDelimited(int number, std::string&& value);
   void AddLengthDelimited(int number, const absl::Cord& value);
 
-#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-  std::string* AddLengthDelimited(int number);
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
   UnknownFieldSet* AddGroup(int number);
 
   // Adds an unknown field from another set.
@@ -252,9 +244,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   friend internal::UnknownFieldParserHelper;
   friend internal::UnknownFieldSetTestPeer;
 
-#if defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
   std::string* AddLengthDelimited(int number);
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
@@ -268,8 +258,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   void SwapSlow(UnknownFieldSet* other);
 
   template <typename MessageType,
-            typename std::enable_if<
-                std::is_base_of<Message, MessageType>::value, int>::type = 0>
+            typename std::enable_if_t<
+                std::is_base_of<Message, MessageType>::value, int> = 0>
   bool InternalMergeFromMessage(const MessageType& message) {
     MergeFrom(message.GetReflection()->GetUnknownFields(message));
     return true;
@@ -288,6 +278,18 @@ class PROTOBUF_EXPORT UnknownFieldSet {
     return MergeFromCodedStream(&coded_stream);
   }
 
+  absl::string_view V2Data() const {
+    return v2_data_ ? *v2_data_ : absl::string_view{};
+  }
+
+  std::string* MutableV2Data() {
+    if (!v2_data_) {
+      v2_data_ = Arena::Create<std::string>(arena());
+    }
+    return v2_data_;
+  }
+
+  std::string* v2_data_ = nullptr;
   RepeatedField<UnknownField> fields_;
 };
 
@@ -315,7 +317,10 @@ const char* UnknownFieldParse(uint64_t tag, UnknownFieldSet* unknown,
 
 constexpr UnknownFieldSet::UnknownFieldSet() = default;
 
-inline UnknownFieldSet::~UnknownFieldSet() { Clear(); }
+inline UnknownFieldSet::~UnknownFieldSet() {
+  Clear();
+  if (arena() == nullptr) delete v2_data_;
+}
 
 inline const UnknownFieldSet& UnknownFieldSet::default_instance() {
   PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT static const UnknownFieldSet
@@ -329,6 +334,7 @@ inline void UnknownFieldSet::Clear() {
   if (!fields_.empty()) {
     ClearFallback();
   }
+  if (v2_data_ != nullptr) v2_data_->clear();
 }
 
 inline bool UnknownFieldSet::empty() const { return fields_.empty(); }
@@ -364,36 +370,36 @@ inline UnknownField::Type UnknownField::type() const {
 
 inline uint64_t UnknownField::varint() const {
   assert(type() == TYPE_VARINT);
-  return data_.varint_;
+  return data_.varint;
 }
 inline uint32_t UnknownField::fixed32() const {
   assert(type() == TYPE_FIXED32);
-  return data_.fixed32_;
+  return data_.fixed32;
 }
 inline uint64_t UnknownField::fixed64() const {
   assert(type() == TYPE_FIXED64);
-  return data_.fixed64_;
+  return data_.fixed64;
 }
-inline internal::UFSStringView UnknownField::length_delimited() const {
+inline absl::string_view UnknownField::length_delimited() const {
   assert(type() == TYPE_LENGTH_DELIMITED);
   return *data_.string_value;
 }
 inline const UnknownFieldSet& UnknownField::group() const {
   assert(type() == TYPE_GROUP);
-  return *data_.group_;
+  return *data_.group;
 }
 
 inline void UnknownField::set_varint(uint64_t value) {
   assert(type() == TYPE_VARINT);
-  data_.varint_ = value;
+  data_.varint = value;
 }
 inline void UnknownField::set_fixed32(uint32_t value) {
   assert(type() == TYPE_FIXED32);
-  data_.fixed32_ = value;
+  data_.fixed32 = value;
 }
 inline void UnknownField::set_fixed64(uint64_t value) {
   assert(type() == TYPE_FIXED64);
-  data_.fixed64_ = value;
+  data_.fixed64 = value;
 }
 inline void UnknownField::set_length_delimited(const absl::string_view value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
@@ -408,15 +414,9 @@ inline void UnknownField::set_length_delimited(const absl::Cord& value) {
   assert(type() == TYPE_LENGTH_DELIMITED);
   absl::CopyCordToString(value, data_.string_value);
 }
-#if !defined(PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE)
-inline std::string* UnknownField::mutable_length_delimited() {
-  assert(type() == TYPE_LENGTH_DELIMITED);
-  return data_.string_value;
-}
-#endif  // PROTOBUF_FUTURE_STRING_VIEW_RETURN_TYPE
 inline UnknownFieldSet* UnknownField::mutable_group() {
   assert(type() == TYPE_GROUP);
-  return data_.group_;
+  return data_.group;
 }
 template <typename MessageType>
 bool UnknownFieldSet::MergeFromMessage(const MessageType& message) {

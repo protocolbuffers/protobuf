@@ -5,8 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSOR_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSOR_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_GENERATOR_H__
+#define GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_GENERATOR_H__
 
 #include <memory>
 #include <string>
@@ -124,13 +124,9 @@ class RepeatedField final : public AccessorGenerator {
 
 class UnsupportedField final : public AccessorGenerator {
  public:
-  explicit UnsupportedField(std::string reason) : reason_(std::move(reason)) {}
   ~UnsupportedField() override = default;
   void InMsgImpl(Context& ctx, const FieldDescriptor& field,
                  AccessorCase accessor_case) const override;
-
- private:
-  std::string reason_;
 };
 
 class Map final : public AccessorGenerator {
@@ -147,4 +143,4 @@ class Map final : public AccessorGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_ACCESSOR_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_RUST_ACCESSORS_GENERATOR_H__

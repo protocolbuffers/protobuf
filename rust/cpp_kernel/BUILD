@@ -1,5 +1,6 @@
 # This package contains Rust protobuf runtime implementation built on top of the C++ backend.
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 cc_library(
@@ -15,7 +16,6 @@ cc_library(
     hdrs = [
         "compare.h",
         "debug.h",
-        "map.h",
         "rust_alloc_for_cpp_api.h",
         "serialized_data.h",
         "strings.h",
@@ -29,9 +29,11 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
-        "@com_google_absl//absl/log:absl_check",
-        "@com_google_absl//absl/log:absl_log",
-        "@com_google_absl//absl/strings:string_view",
+        "@abseil-cpp//absl/functional:overload",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 

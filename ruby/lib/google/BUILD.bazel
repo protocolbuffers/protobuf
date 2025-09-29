@@ -1,5 +1,6 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_ruby//ruby:defs.bzl", "ruby_library")
+load("@rules_ruby//ruby:defs.bzl", "rb_library")
 
 config_setting(
     name = "requires_bundle",
@@ -44,7 +45,6 @@ genrule(
 java_binary(
     name = "protobuf_java_bin",
     create_executable = False,
-    deploy_env = ["@rules_ruby//ruby/runtime:jruby_binary"],
     runtime_deps = [
         "//ruby/src/main/java:protobuf_java",
     ],
@@ -60,14 +60,14 @@ genrule(
     visibility = ["//ruby:__subpackages__"],
 )
 
-ruby_library(
+rb_library(
     name = "protobuf_lib",
     srcs = glob([
         "**/*.rb",
     ]),
     data = select({
         # Platform native implementations
-        "@rules_ruby//ruby/runtime:config_jruby": ["protobuf_java.jar"],
+        "@ruby//engine:jruby": ["protobuf_java.jar"],
         "@platforms//os:osx": ["protobuf_c.bundle"],
         "//conditions:default": ["protobuf_c.so"],
     }) + select({
@@ -76,21 +76,11 @@ ruby_library(
         "//ruby:linux_ffi_enabled": ["libprotobuf_c_ffi.so"],
         "//conditions:default": [],
     }),
-    includes = [
-        "ruby",
-        "ruby/lib",
-    ],
     visibility = ["//ruby:__pkg__"],
     deps = [
         "//ruby:well_known_ruby_protos",
-        "@protobuf_bundle//:bigdecimal",
-    ] + select({
-        "//ruby:ffi_enabled": [
-            "@protobuf_bundle//:ffi",
-            "@protobuf_bundle//:ffi-compiler",
-        ],
-        "//conditions:default": [],
-    }),
+        "@protobuf_bundle",
+    ],
 )
 
 pkg_files(

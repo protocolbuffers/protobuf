@@ -14,30 +14,38 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 
-class IterableByteBufferInputStream extends InputStream {
+final class IterableByteBufferInputStream extends InputStream {
   /** The {@link Iterator} with type {@link ByteBuffer} of {@code input} */
   private Iterator<ByteBuffer> iterator;
+
   /** The current ByteBuffer; */
   private ByteBuffer currentByteBuffer;
+
   /** The number of ByteBuffers in the input data. */
   private int dataSize;
+
   /**
    * Current {@code ByteBuffer}'s index
    *
    * <p>If index equals dataSize, then all the data in the InputStream has been consumed
    */
   private int currentIndex;
+
   /** The current position for current ByteBuffer */
   private int currentByteBufferPos;
+
   /** Whether current ByteBuffer has an array */
   private boolean hasArray;
+
   /**
    * If the current ByteBuffer is unsafe-direct based, currentArray is null; otherwise should be the
    * array inside ByteBuffer.
    */
   private byte[] currentArray;
+
   /** Current ByteBuffer's array offset */
   private int currentArrayOffset;
+
   /**
    * If the current ByteBuffer is unsafe-direct based, currentAddress is the start address of this
    * ByteBuffer; otherwise should be zero.
@@ -61,11 +69,15 @@ class IterableByteBufferInputStream extends InputStream {
   }
 
   private boolean getNextByteBuffer() {
-    currentIndex++;
-    if (!iterator.hasNext()) {
-      return false;
-    }
-    currentByteBuffer = iterator.next();
+    // The loop ensures we skip empty buffers (see
+    // https://github.com/protocolbuffers/protobuf/issues/17850)
+    do {
+      currentIndex++;
+      if (!iterator.hasNext()) {
+        return false;
+      }
+      currentByteBuffer = iterator.next();
+    } while (!currentByteBuffer.hasRemaining());
     currentByteBufferPos = currentByteBuffer.position();
     if (currentByteBuffer.hasArray()) {
       hasArray = true;

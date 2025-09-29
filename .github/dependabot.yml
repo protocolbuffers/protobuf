@@ -4,5 +4,5 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    # Allow up to 3 opened pull requests for github-actions versions
-    open-pull-requests-limit: 3
+    # Don't allow non-security PRs to be opened.
+    open-pull-requests-limit: 0

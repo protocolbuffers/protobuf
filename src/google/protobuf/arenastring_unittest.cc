@@ -8,12 +8,15 @@
 #include "google/protobuf/arenastring.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdlib>
+#include <functional>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
@@ -40,7 +43,7 @@ class SingleArena : public testing::TestWithParam<bool> {
  public:
   std::unique_ptr<Arena> GetArena() {
     if (this->GetParam()) return nullptr;
-    return std::unique_ptr<Arena>(new Arena());
+    return std::make_unique<Arena>();
   }
 };
 
@@ -90,16 +93,11 @@ TEST_P(SingleArena, NullDefault) {
 }
 
 TEST(ArenaStringPtrTest, ConstInit) {
-  // Verify that we can constinit construct an ArenaStringPtr from an arbitrary
-  // ExplicitlyConstructed<std::string>*.
-  static internal::ExplicitlyConstructedArenaString str;
-  PROTOBUF_CONSTINIT static ArenaStringPtr ptr(&str,
-                                               internal::ConstantInitialized{});
-  EXPECT_EQ(&ptr.Get(), str.get_mutable());
-
-  PROTOBUF_CONSTINIT static const ArenaStringPtr ptr2(
+  // Verify that we can constinit construct an ArenaStringPtr from the global
+  // string.
+  PROTOBUF_CONSTINIT static const ArenaStringPtr ptr(
       &internal::fixed_address_empty_string, internal::ConstantInitialized{});
-  EXPECT_EQ(&ptr2.Get(), &internal::GetEmptyStringAlreadyInited());
+  EXPECT_EQ(&ptr.Get(), &internal::GetEmptyStringAlreadyInited());
 }
 
 TEST_P(SingleArena, ConstructEmpty) {

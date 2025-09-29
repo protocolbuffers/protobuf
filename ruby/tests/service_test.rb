@@ -23,7 +23,10 @@ class ServiceTest < Test::Unit::TestCase
   end
 
   def test_method_iteration
-    @test_service.each { |method| assert_kind_of Google::Protobuf::MethodDescriptor, method }
+    @test_service.each do |method|
+      assert_kind_of Google::Protobuf::MethodDescriptor, method
+      assert_instance_of Google::Protobuf::MethodDescriptorProto, method.to_proto
+    end
     assert_equal %w(UnaryOne UnaryTwo), @test_service.map { |method| method.name }.first(2)
   end
 
@@ -33,8 +36,13 @@ class ServiceTest < Test::Unit::TestCase
   end
 
   def test_service_options_extensions
+    omit "JRuby and FFI do not support service options extensions" if defined?(JRUBY_VERSION) || Google::Protobuf::IMPLEMENTATION != :NATIVE
     extension_field = Google::Protobuf::DescriptorPool.generated_pool.lookup('service_test_protos.test_options')
     assert_equal 8325, extension_field.get(@test_service.options).int_option_value
+  end
+
+  def test_service_to_proto
+    assert_instance_of Google::Protobuf::ServiceDescriptorProto, @test_service.to_proto
   end
 
   def test_method_options
