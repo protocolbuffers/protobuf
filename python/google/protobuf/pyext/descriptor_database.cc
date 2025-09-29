@@ -104,7 +104,7 @@ bool PyDescriptorDatabase::FindFileContainingSymbol(
     StringViewArg symbol_name, FileDescriptorProto* output) {
   ScopedPyObjectPtr py_descriptor(
       PyObject_CallMethod(py_database_, "FindFileContainingSymbol", "s#",
-                          symbol_name.c_str(), symbol_name.size()));
+                          symbol_name.data(), symbol_name.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 
@@ -122,7 +122,7 @@ bool PyDescriptorDatabase::FindFileContainingExtension(
     return false;
   }
   ScopedPyObjectPtr py_descriptor(
-      PyObject_CallFunction(py_method.get(), "s#i", containing_type.c_str(),
+      PyObject_CallFunction(py_method.get(), "s#i", containing_type.data(),
                             containing_type.size(), field_number));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
@@ -140,9 +140,8 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
     PyErr_Clear();
     return false;
   }
-  ScopedPyObjectPtr py_list(
-      PyObject_CallFunction(py_method.get(), "s#", containing_type.c_str(),
-                            containing_type.size()));
+  ScopedPyObjectPtr py_list(PyObject_CallFunction(
+      py_method.get(), "s#", containing_type.data(), containing_type.size()));
   if (py_list == nullptr) {
     PyErr_Print();
     return false;
