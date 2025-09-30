@@ -1314,6 +1314,24 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
 
     // Define the Ruby method that dispatches via the cache.
     rb_define_method_id(klass, getter_id, Message_field_dispatch0, 0);
+
+    // Also define fast presence check methods (has_<field>?) for fields with presence.
+    if (upb_FieldDef_HasPresence(f)) {
+      size_t len = strlen(fname);
+      size_t bufsize = len + 6; // "has_" + name + "?" + NUL
+      char* buf = ALLOCA_N(char, bufsize);
+      snprintf(buf, bufsize, "has_%s?", fname);
+      ID presence_id = rb_intern(buf);
+
+      // Avoid overriding any existing method unexpectedly.
+      if (!rb_method_boundp(klass, presence_id, 0)) {
+        FastAccessorEntry* pe = ALLOC(FastAccessorEntry);
+        pe->field = f;
+        pe->accessor_type = METHOD_PRESENCE;
+        st_insert(cache, (st_data_t)presence_id, (st_data_t)pe);
+        rb_define_method_id(klass, presence_id, Message_field_dispatch0, 0);
+      }
+    }
   }
 
   return klass;
