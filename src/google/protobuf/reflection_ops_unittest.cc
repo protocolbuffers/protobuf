@@ -11,6 +11,7 @@
 
 #include "google/protobuf/reflection_ops.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
