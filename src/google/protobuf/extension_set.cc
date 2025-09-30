@@ -153,16 +153,16 @@ void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
   Register(info);
 }
 
-void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
-                                            int number, FieldType type,
-                                            bool is_repeated, bool is_packed,
-                                            const MessageLite* prototype,
-                                            LazyEagerVerifyFnType verify_func,
-                                            LazyAnnotation is_lazy) {
+void ExtensionSet::RegisterMessageExtension(
+    const MessageLite* extendee, int number, FieldType type, bool is_repeated,
+    bool is_packed, const MessageLite* prototype,
+    LazyEagerVerifyFnType verify_func,
+    LazyAnnotation is_lazy) {
   ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
              type == WireFormatLite::TYPE_GROUP);
   ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func, is_lazy);
+                     verify_func,
+                     is_lazy);
   info.message_info = {prototype,
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
                        prototype->GetTcParseTable()
@@ -1922,6 +1922,7 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   }
   return nullptr;
 }
+
 
 std::atomic<ExtensionSet::LazyMessageExtension* (*)(Arena * arena)>
     ExtensionSet::maybe_create_lazy_extension_;

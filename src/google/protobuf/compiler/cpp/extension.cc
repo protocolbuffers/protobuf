@@ -223,6 +223,12 @@ bool ExtensionGenerator::WillGenerateRegistration(InitPriority priority) {
   return true;
 }
 
+namespace {
+void EmitVerifyFuncArgs(io::Printer* p, const Options& options) {
+  p->Emit(R"cc(nullptr,)cc");
+}
+}  // namespace
+
 void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                                               InitPriority priority) {
   ABSL_CHECK(WillGenerateRegistration(priority));
@@ -271,42 +277,48 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           // Options say to verify.
           ShouldVerify(descriptor_->message_type(), options_, scc_analyzer_) &&
           ShouldVerify(descriptor_->containing_type(), options_, scc_analyzer_);
+      const bool should_verify_v2 =
+          should_verify &&
+          ShouldVerifyV2(descriptor_->message_type(), options_, scc_analyzer_);
       const auto message_type = FieldMessageTypeName(descriptor_, options_);
       auto v = p->WithVars(
           {{"verify", should_verify
                           ? absl::StrCat("&", message_type, "::InternalVerify")
                           : "nullptr"},
+           {"verify_v2", should_verify_v2 ? absl::StrCat("&", message_type,
+                                                         "::InternalVerifyV2")
+                                          : "nullptr"},
            {"message_type", message_type},
            {"lazy", "kUndefined"}});
       if (using_implicit_weak_descriptors) {
-        p->Emit(
-            {
-                {"extension_table",
-                 DescriptorTableName(descriptor_->message_type()->file(),
-                                     options_)},
-                {"extension_index", find_index(descriptor_->message_type())},
-            },
-            R"cc(
-              (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
-                   {{&$extendee_table$, $extendee_index$},
-                    {&$extension_table$, $extension_index$}},
-                   $preregister$)
-                   ? ::_pbi::ExtensionSet::RegisterMessageExtension(
-                         ::_pbi::GetPrototypeForWeakDescriptor(
-                             &$extendee_table$, $extendee_index$, true),
-                         $number$, $field_type$, $repeated$, $packed$,
-                         ::_pbi::GetPrototypeForWeakDescriptor(
-                             &$extension_table$, $extension_index$, true),
-                         $verify$, ::_pbi::LazyAnnotation::$lazy$)
-                   : (void)0),
-            )cc");
+        p->Emit({{"extension_table",
+                  DescriptorTableName(descriptor_->message_type()->file(),
+                                      options_)},
+                 {"extension_index", find_index(descriptor_->message_type())},
+                 {"verify_funcs", [&] { EmitVerifyFuncArgs(p, options_); }}},
+                R"cc(
+                  (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
+                       {{&$extendee_table$, $extendee_index$},
+                        {&$extension_table$, $extension_index$}},
+                       $preregister$)
+                       ? ::_pbi::ExtensionSet::RegisterMessageExtension(
+                             ::_pbi::GetPrototypeForWeakDescriptor(
+                                 &$extendee_table$, $extendee_index$, true),
+                             $number$, $field_type$, $repeated$, $packed$,
+                             ::_pbi::GetPrototypeForWeakDescriptor(
+                                 &$extension_table$, $extension_index$, true),
+                             $verify_funcs$, ::_pbi::LazyAnnotation::$lazy$)
+                       : (void)0),
+                )cc");
       } else if (priority == kInitPriority102) {
-        p->Emit(R"cc(
-          ::_pbi::ExtensionSet::RegisterMessageExtension(
-              &$extendee$::default_instance(), $number$, $field_type$,
-              $repeated$, $packed$, &$message_type$::default_instance(),
-              $verify$, ::_pbi::LazyAnnotation::$lazy$),
-        )cc");
+        ABSL_DCHECK(!should_verify_v2);
+        p->Emit({{"verify_funcs", [&] { EmitVerifyFuncArgs(p, options_); }}},
+                R"cc(
+                  ::_pbi::ExtensionSet::RegisterMessageExtension(
+                      &$extendee$::default_instance(), $number$, $field_type$,
+                      $repeated$, $packed$, &$message_type$::default_instance(),
+                      $verify_funcs$, ::_pbi::LazyAnnotation::$lazy$),
+                )cc");
       }
       break;
     }
@@ -317,9 +329,8 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                {{&$extendee_table$, $extendee_index$}}, $preregister$)
                ? ::_pbi::ExtensionSet::RegisterExtension(
-                     ::_pbi::GetPrototypeForWeakDescriptor(&$extendee_table$,
-                                                           $extendee_index$,
-                                                           true),
+                     ::_pbi::GetPrototypeForWeakDescriptor(
+                         &$extendee_table$, $extendee_index$, true),
                      $number$, $field_type$, $repeated$, $packed$)
                : (void)0),
         )cc");

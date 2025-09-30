@@ -141,7 +141,9 @@ struct ExtensionInfo {
         is_packed(ispacked),
         is_lazy(islazy),
         enum_validity_check(),
-        lazy_eager_verify_func(verify_func) {}
+        lazy_eager_verify_func(verify_func)
+  {
+  }
 
   const MessageLite* message = nullptr;
   int number = 0;
@@ -1694,6 +1696,7 @@ class MessageTypeTraits {
 // Used by WireFormatVerify to extract the verify function from the registry.
 LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
     const MessageLite* extendee, int number);
+
 
 // forward declaration.
 class RepeatedMessageGenericTypeTraits;
