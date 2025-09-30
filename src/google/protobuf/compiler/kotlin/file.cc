@@ -32,7 +32,7 @@ using google::protobuf::compiler::java::Options;
 
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
     : file_(file),
-      java_package_(java::FileJavaPackage(file, options)),
+      java_package_(java::FileJavaPackage(file)),
       message_generators_(file->message_type_count()),
       context_(new Context(file, options)),
       name_resolver_(context_->GetNameResolver()),
