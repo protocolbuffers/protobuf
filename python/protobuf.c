@@ -286,15 +286,19 @@ bool PyUpb_ObjCache_IsLocked(void) {
 
 void PyUpb_ObjCache_Lock(void) {
 #ifdef Py_GIL_DISABLED
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  PyUpb_MutexLock(&state->obj_cache->mutex);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (state != NULL) {
+    PyUpb_MutexLock(&state->obj_cache->mutex);
+  }
 #endif
 }
 
 void PyUpb_ObjCache_Unlock(void) {
 #ifdef Py_GIL_DISABLED
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  PyUpb_MutexUnlock(&state->obj_cache->mutex);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (state != NULL) {
+    PyUpb_MutexUnlock(&state->obj_cache->mutex);
+  }
 #endif
 }
 
@@ -312,19 +316,16 @@ void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
 void PyUpb_ObjCache_DeleteLockHeld(const void* key) {
   assert(PyUpb_ObjCache_IsLocked());
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  assert(state != NULL);
-  PyUpb_WeakMap_Delete(state->obj_cache, key);
-}
-
-void PyUpb_ObjCache_Delete(const void* key) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (!state) {
+  if (state != NULL) {
     // During the shutdown sequence, our object's Dealloc() methods can be
     // called *after* our module Dealloc() method has been called.  At that
     // point our state will be NULL and there is nothing to delete out of the
     // map.
-    return;
+    PyUpb_WeakMap_Delete(state->obj_cache, key);
   }
+}
+
+void PyUpb_ObjCache_Delete(const void* key) {
   PyUpb_ObjCache_Lock();
   PyUpb_ObjCache_DeleteLockHeld(key);
   PyUpb_ObjCache_Unlock();
