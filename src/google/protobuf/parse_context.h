@@ -260,6 +260,11 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename Add, typename SizeCb>
   [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add,
                                              SizeCb size_callback);
+  // Same as above, but pass the field directly , so we can preallocate.
+  template <typename Convert, typename T>
+  [[nodiscard]] const char* ReadPackedVarintWithField(const char* ptr,
+                                                      Convert conv,
+                                                      RepeatedField<T>& out);
 
   uint32_t LastTag() const { return last_tag_minus_1_ + 1; }
   bool ConsumeEndGroup(uint32_t start_tag) {
@@ -1360,6 +1365,83 @@ const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
     add(varint);
   }
   return ptr;
+}
+
+template <typename Convert, typename T>
+const char* ReadPackedVarintArrayWithField(const char* ptr, const char* end,
+                                           Convert conv,
+                                           RepeatedField<T>& out) {
+  // If we have enough bytes, we will spend more cpu cycles growing repeated
+  // field, than parsing, so count the number of ints first and preallocate.
+  // Assume that varint are valid and just count the number of bytes with
+  // continuation bit not set. In a valid varint there is only 1 such byte.
+  if ((end - ptr) >= 16 && (out.Capacity() - out.size() < end - ptr)) {
+    int old_size = out.size();
+    int count = out.Capacity() - out.size();
+    // We are not guaranteed to have enough space for worst possible case,
+    // do an actual count and reserve.
+    if (count < end - ptr) {
+      count = std::count_if(ptr, end, [](char c) { return (c & 0x80) == 0; });
+      // We can overread, so if the last byte has a continuation bit set,
+      // we need to account for that.
+      if (end[-1] & 0x80) count++;
+      out.Reserve(old_size + count);
+    }
+    T* x = out.AddNAlreadyReserved(count);
+    ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
+      *x = conv(varint);
+      x++;
+    });
+    int new_size = x - out.data();
+    ABSL_DCHECK_LE(new_size, old_size + count);
+    // We may have overreserved if there was enough capacitiy.
+    // Or encountered malformed data, so set the actaul size to
+    // avoid exposing uninitialized memory.
+    out.Truncate(new_size);
+    return ptr;
+  } else {
+    return ReadPackedVarintArray(
+        ptr, end, [&](uint64_t varint) { out.Add(conv(varint)); });
+  }
+}
+
+template <typename Convert, typename T>
+const char* EpsCopyInputStream::ReadPackedVarintWithField(
+    const char* ptr, Convert conv, RepeatedField<T>& out) {
+  int size = ReadSize(&ptr);
+
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+  int chunk_size = static_cast<int>(buffer_end_ - ptr);
+  while (size > chunk_size) {
+    ptr = ReadPackedVarintArrayWithField(ptr, buffer_end_, conv, out);
+    if (ptr == nullptr) return nullptr;
+    int overrun = static_cast<int>(ptr - buffer_end_);
+    ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
+    if (size - chunk_size <= kSlopBytes) {
+      // The current buffer contains all the information needed, we don't need
+      // to flip buffers. However we must parse from a buffer with enough space
+      // so we are not prone to a buffer overflow.
+      char buf[kSlopBytes + 10] = {};
+      std::memcpy(buf, buffer_end_, kSlopBytes);
+      ABSL_CHECK_LE(size - chunk_size, kSlopBytes);
+      auto end = buf + (size - chunk_size);
+      auto result = ReadPackedVarintArray(
+          buf + overrun, end, [&](uint64_t varint) { out.Add(conv(varint)); });
+      if (result == nullptr || result != end) return nullptr;
+      return buffer_end_ + (result - buf);
+    }
+    size -= overrun + chunk_size;
+    ABSL_DCHECK_GT(size, 0);
+    // We must flip buffers
+    if (limit_ <= kSlopBytes) return nullptr;
+    ptr = Next();
+    if (ptr == nullptr) return nullptr;
+    ptr += overrun;
+    chunk_size = static_cast<int>(buffer_end_ - ptr);
+  }
+  auto end = ptr + size;
+  ptr = ReadPackedVarintArrayWithField(ptr, end, conv, out);
+  return end == ptr ? ptr : nullptr;
 }
 
 template <typename Add, typename SizeCb>

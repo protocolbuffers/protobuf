@@ -1225,20 +1225,23 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
   // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
-  auto* field = &RefAt<RepeatedField<FieldType>>(msg, data.offset());
-  return ctx->ReadPackedVarint(ptr, [field](uint64_t varint) {
-    FieldType val;
-    if (zigzag) {
-      if (sizeof(FieldType) == 8) {
-        val = WireFormatLite::ZigZagDecode64(varint);
-      } else {
-        val = WireFormatLite::ZigZagDecode32(varint);
-      }
-    } else {
-      val = varint;
-    }
-    field->Add(val);
-  });
+  auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
+  return ctx->ReadPackedVarintWithField(
+      ptr,
+      [field](uint64_t varint) {
+        FieldType val;
+        if (zigzag) {
+          if (sizeof(FieldType) == 8) {
+            val = WireFormatLite::ZigZagDecode64(varint);
+          } else {
+            val = WireFormatLite::ZigZagDecode32(varint);
+          }
+        } else {
+          val = varint;
+        }
+        return val;
+      },
+      field);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8P1(PROTOBUF_TC_PARAM_DECL) {
