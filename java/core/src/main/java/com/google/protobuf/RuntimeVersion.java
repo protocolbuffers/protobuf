@@ -65,38 +65,16 @@ public final class RuntimeVersion {
    * @param patch the micro/patch version of Protobuf Java gencode.
    * @param suffix the version suffix e.g. "-rc2", "-dev", etc.
    * @param location the debugging location e.g. generated Java class to put in the error messages.
-   * @deprecated Use other overload.
    * @throws ProtobufRuntimeVersionException if versions are incompatible.
    */
-  @Deprecated
   public static void validateProtobufGencodeVersion(
       RuntimeDomain domain, int major, int minor, int patch, String suffix, String location) {
     validateProtobufGencodeVersionImpl(domain, major, minor, patch, suffix, location);
   }
 
-  /**
-   * Validates that the gencode version is compatible with this runtime version according to
-   * https://protobuf.dev/support/cross-version-runtime-guarantee/.
-   *
-   * <p>This method is currently only used by Protobuf Java **full version** gencode. Do not call it
-   * elsewhere.
-   *
-   * @param domain the domain where Protobuf Java code was generated.
-   * @param major the major version of Protobuf Java gencode.
-   * @param minor the minor version of Protobuf Java gencode.
-   * @param patch the micro/patch version of Protobuf Java gencode.
-   * @param suffix the version suffix e.g. "-rc2", "-dev", etc.
-   * @param location the debugging location e.g. generated Java class to put in the error messages.
-   * @throws ProtobufRuntimeVersionException if versions are incompatible.
-   */
-  public static void validateProtobufGencodeVersion(
-      RuntimeDomain domain, int major, int minor, int patch, String suffix, Class<?> location) {
-    validateProtobufGencodeVersionImpl(domain, major, minor, patch, suffix, location);
-  }
-
   /** The actual implementation of version validation. */
   private static void validateProtobufGencodeVersionImpl(
-      RuntimeDomain domain, int major, int minor, int patch, String suffix, Object location) {
+      RuntimeDomain domain, int major, int minor, int patch, String suffix, String location) {
     if (checkDisabled()) {
       return;
     }
