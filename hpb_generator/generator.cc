@@ -24,6 +24,7 @@
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
 #include "upb_generator/c/names.h"
+#include "upb_generator/minitable/names.h"
 
 namespace google {
 namespace protobuf {
@@ -160,6 +161,8 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
       outer_namespace = "";
     }
     ctx.Emit({{"class_name", ClassName(desc)},
+              {"minitable_name",
+               upb::generator::MiniTableMessagePtrVarName(desc->full_name())},
               {"outer_namespace", outer_namespace},
               {"c_api_msg_type",
                upb::generator::CApiMessageType(desc->full_name())}},
@@ -167,6 +170,7 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
                template <>
                struct AssociatedUpbTypes<$outer_namespace$$class_name$> {
                  using CMessageType = $c_api_msg_type$;
+                 static inline const upb_MiniTable* kMiniTable = $minitable_name$;
                };
              )cc");
   }
