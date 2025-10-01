@@ -8,7 +8,6 @@
 #include "hpb/internal/message_lock.h"
 
 #include <atomic>
-#include <mutex>
 #include <string>
 #include <thread>
 
