@@ -1440,64 +1440,13 @@ final class Utf8 {
 
     @Override
     int encodeUtf8(final String in, final byte[] out, final int offset, final int length) {
-      long outIx = offset;
-      final long outLimit = outIx + length;
-      final int inLimit = in.length();
-      if (inLimit > length || out.length - length < offset) {
-        // Not even enough room for an ASCII-encoded string.
+      byte[] bytes = in.getBytes(Internal.UTF_8);
+      if (bytes.length - offset > length) {
         throw new ArrayIndexOutOfBoundsException(
             "Not enough space in output buffer to encode UTF-8 string");
       }
-
-      // Designed to take advantage of
-      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
-      int inIx = 0;
-      for (char c; inIx < inLimit && (c = in.charAt(inIx)) < 0x80; ++inIx) {
-        UnsafeUtil.putByte(out, outIx++, (byte) c);
-      }
-      if (inIx == inLimit) {
-        // We're done, it was ASCII encoded.
-        return (int) outIx;
-      }
-
-      for (char c; inIx < inLimit; ++inIx) {
-        c = in.charAt(inIx);
-        if (c < 0x80 && outIx < outLimit) {
-          UnsafeUtil.putByte(out, outIx++, (byte) c);
-        } else if (c < 0x800 && outIx <= outLimit - 2L) { // 11 bits, two UTF-8 bytes
-          UnsafeUtil.putByte(out, outIx++, (byte) ((0xF << 6) | (c >>> 6)));
-          UnsafeUtil.putByte(out, outIx++, (byte) (0x80 | (0x3F & c)));
-        } else if ((c < MIN_SURROGATE || MAX_SURROGATE < c) && outIx <= outLimit - 3L) {
-          // Maximum single-char code point is 0xFFFF, 16 bits, three UTF-8 bytes
-          UnsafeUtil.putByte(out, outIx++, (byte) ((0xF << 5) | (c >>> 12)));
-          UnsafeUtil.putByte(out, outIx++, (byte) (0x80 | (0x3F & (c >>> 6))));
-          UnsafeUtil.putByte(out, outIx++, (byte) (0x80 | (0x3F & c)));
-        } else if (outIx <= outLimit - 4L) {
-          // Minimum code point represented by a surrogate pair is 0x10000, 17 bits, four UTF-8
-          // bytes
-          final char low;
-          if (inIx + 1 == inLimit || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
-            throw new UnpairedSurrogateException((inIx - 1), inLimit);
-          }
-          int codePoint = toCodePoint(c, low);
-          UnsafeUtil.putByte(out, outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
-          UnsafeUtil.putByte(out, outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
-          UnsafeUtil.putByte(out, outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 6))));
-          UnsafeUtil.putByte(out, outIx++, (byte) (0x80 | (0x3F & codePoint)));
-        } else {
-          if ((MIN_SURROGATE <= c && c <= MAX_SURROGATE)
-              && (inIx + 1 == inLimit || !isSurrogatePair(c, in.charAt(inIx + 1)))) {
-            // We are surrogates and we're not a surrogate pair.
-            throw new UnpairedSurrogateException(inIx, inLimit);
-          }
-          // Not enough space in the output buffer.
-          throw new ArrayIndexOutOfBoundsException(
-              "Not enough space in output buffer to encode UTF-8 string");
-        }
-      }
-
-      // All bytes have been encoded.
-      return (int) outIx;
+      System.arraycopy(bytes, 0, out, offset, bytes.length);
+      return offset + bytes.length;
     }
 
     @Override
