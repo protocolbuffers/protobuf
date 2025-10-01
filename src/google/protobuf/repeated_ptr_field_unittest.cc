@@ -1186,15 +1186,18 @@ TEST(RepeatedPtrFieldDeathTest, CheckedGetOrAbortTest) {
   RepeatedPtrField<std::string> field;
 
   // Empty container tests.
-  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 0");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1),
+               "Index \\(-1\\) out of bounds of container with size \\(0\\)");
   EXPECT_DEATH(internal::CheckedGetOrAbort(field, field.size()),
-               "index: 0, size: 0");
+               "Index \\(0\\) out of bounds of container with size \\(0\\)");
 
   // Non-empty container tests
   field.Add()->assign("foo");
   field.Add()->assign("bar");
-  EXPECT_DEATH(internal::CheckedGetOrAbort(field, 2), "index: 2, size: 2");
-  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1), "index: -1, size: 2");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, 2),
+               "Index \\(2\\) out of bounds of container with size \\(2\\)");
+  EXPECT_DEATH(internal::CheckedGetOrAbort(field, -1),
+               "Index \\(-1\\) out of bounds of container with size \\(2\\)");
 }
 
 TEST(RepeatedPtrFieldDeathTest, CheckedMutableOrAbortTest) {
@@ -1202,16 +1205,17 @@ TEST(RepeatedPtrFieldDeathTest, CheckedMutableOrAbortTest) {
 
   // Empty container tests.
   EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
-               "index: -1, size: 0");
+               "Index \\(-1\\) out of bounds of container with size \\(0\\)");
   EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, field.size()),
-               "index: 0, size: 0");
+               "Index \\(0\\) out of bounds of container with size \\(0\\)");
 
   // Non-empty container tests
   field.Add()->assign("foo");
   field.Add()->assign("bar");
-  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, 2), "index: 2, size: 2");
+  EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, 2),
+               "Index \\(2\\) out of bounds of container with size \\(2\\)");
   EXPECT_DEATH(internal::CheckedMutableOrAbort(&field, -1),
-               "index: -1, size: 2");
+               "Index \\(-1\\) out of bounds of container with size \\(2\\)");
 }
 // ===================================================================
 
