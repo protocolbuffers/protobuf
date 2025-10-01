@@ -8,7 +8,7 @@
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/compiler/python/pyi_generator.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   google::protobuf::compiler::python::PyiGenerator generator;
   return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }

@@ -8,7 +8,7 @@
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/compiler/python/generator.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
   google::protobuf::compiler::python::Generator generator;
   return google::protobuf::compiler::PluginMain(argc, argv, &generator);
 }
