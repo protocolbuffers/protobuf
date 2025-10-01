@@ -797,6 +797,13 @@ namespace internal {
 #define PROTOBUF_NULLABLE
 #endif
 
+#ifdef PROTOBUF_NO_MERGE
+#error PROTOBUF_NO_MERGE was previously defined
+#endif  // PROTOBUF_NO_MERGE
+#ifndef PROTOBUF_NO_MERGE
+#define PROTOBUF_NO_MERGE
+#endif  // PROTOBUF_NO_MERGE
+
 #ifdef PROTOBUF_PRESERVE_ALL
 #error PROTOBUF_PRESERVE_ALL was previously defined
 #endif  // PROTOBUF_PRESERVE_ALL

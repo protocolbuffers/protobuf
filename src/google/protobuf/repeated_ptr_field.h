@@ -108,7 +108,10 @@ PROTOBUF_PRESERVE_ALL PROTOBUF_EXPORT void LogIndexOutOfBoundsAndAbort(
 PROTOBUF_EXPORT inline void RuntimeAssertInBounds(int index, int size) {
   if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
     if (ABSL_PREDICT_FALSE(index < 0 || index >= size)) {
-      LogIndexOutOfBoundsAndAbort(index, size);
+      // "No merge" attribute used to improve debuggability by telling the
+      // compiler not to merge these failure paths. Note that this is currently
+      // best-effort in clang/llvm.
+      PROTOBUF_NO_MERGE LogIndexOutOfBoundsAndAbort(index, size);
     }
   }
   ABSL_DCHECK_GE(index, 0);
