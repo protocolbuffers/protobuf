@@ -140,7 +140,7 @@ void ExtensionGenerator::GenerateDeclaration(io::Printer* p) const {
           absl::StatusOr<FeatureSetDefaults> defaults =
               FeatureResolver::CompileDefaults(
                   descriptor_->containing_type(), extensions,
-                  ProtocMinimumEdition(), ProtocMaximumEdition());
+                  ProtocMinimumEdition(), MaximumKnownEdition());
           ABSL_CHECK_OK(defaults);
           p->Emit(
               {{"defaults", absl::Base64Escape(defaults->SerializeAsString())},
