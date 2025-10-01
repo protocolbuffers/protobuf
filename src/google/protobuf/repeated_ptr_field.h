@@ -69,11 +69,11 @@ class SwapFieldHelper;
 
 class MapFieldBase;
 
-template <typename It>
+template <typename Element>
 class RepeatedPtrIterator;
-template <typename It, typename VoidPtr>
+template <typename ElementPtr>
 class RepeatedPtrOverPtrsIterator;
-template <typename T>
+template <typename Element>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
 
 // Swaps two non-overlapping blocks of memory of size `N`
@@ -1039,11 +1039,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   // Custom STL-like iterator that iterates over and returns the underlying
   // pointers to Element rather than Element itself.
-  using pointer_iterator =
-      internal::RepeatedPtrOverPtrsIterator<Element*, void*>;
+  using pointer_iterator = internal::RepeatedPtrOverPtrsIterator<Element*>;
   using const_pointer_iterator =
-      internal::RepeatedPtrOverPtrsIterator<const Element* const,
-                                            const void* const>;
+      internal::RepeatedPtrOverPtrsIterator<const Element* const>;
 
   constexpr RepeatedPtrField();
 
@@ -1886,23 +1884,21 @@ class RepeatedPtrIterator {
   using reference = Element&;
 
   RepeatedPtrIterator() : it_(nullptr) {}
-  explicit RepeatedPtrIterator(void* const* it) : it_(it) {}
+  explicit RepeatedPtrIterator(Element* const* data) : it_(data) {}
+  explicit RepeatedPtrIterator(void* const* data)
+      : RepeatedPtrIterator(reinterpret_cast<Element* const*>(data)) {}
 
   // Allows "upcasting" from RepeatedPtrIterator<T**> to
   // RepeatedPtrIterator<const T*const*>.
   template <typename OtherElement,
-            typename std::enable_if<std::is_convertible<
-                OtherElement*, pointer>::value>::type* = nullptr>
+            typename = std::enable_if_t<
+                std::is_convertible_v<OtherElement*, Element*>>>
   RepeatedPtrIterator(const RepeatedPtrIterator<OtherElement>& other)
       : it_(other.it_) {}
 
   // dereferenceable
-  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
-    return *reinterpret_cast<Element*>(*it_);
-  }
-  PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
-    return &(operator*());
-  }
+  PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const { return **it_; }
+  PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const { return *it_; }
 
   // {inc,dec}rementable
   iterator& operator++() {
@@ -1943,11 +1939,11 @@ class RepeatedPtrIterator {
     it_ += d;
     return *this;
   }
-  friend iterator operator+(iterator it, const difference_type d) {
+  friend iterator operator+(iterator it, difference_type d) {
     it += d;
     return it;
   }
-  friend iterator operator+(const difference_type d, iterator it) {
+  friend iterator operator+(difference_type d, iterator it) {
     it += d;
     return it;
   }
@@ -1975,7 +1971,7 @@ class RepeatedPtrIterator {
   friend class RepeatedPtrIterator;
 
   // The internal iterator.
-  void* const* it_;
+  Element* const* it_;
 };
 
 template <typename Traits, typename = void>
@@ -1991,47 +1987,47 @@ struct IteratorConceptSupport<Traits,
 
 // Provides an iterator that operates on pointers to the underlying objects
 // rather than the objects themselves as RepeatedPtrIterator does.
-// Consider using this when working with stl algorithms that change
+// Consider using this when working with STL algorithms that change
 // the array.
-// The VoidPtr template parameter holds the type-agnostic pointer value
-// referenced by the iterator.  It should either be "void *" for a mutable
-// iterator, or "const void* const" for a constant iterator.
-template <typename Element, typename VoidPtr>
+template <typename ElementPtr>
 class RepeatedPtrOverPtrsIterator {
  private:
+  static constexpr bool kIsConst = std::is_const_v<ElementPtr>;
+  using ElementPtrPtr =
+      std::conditional_t<kIsConst, const ElementPtr* const, ElementPtr*>;
+  using VoidPtr = std::conditional_t<kIsConst, const void* const, void*>;
   using traits =
-      std::iterator_traits<typename std::remove_const<Element>::type*>;
+      std::iterator_traits<typename std::remove_const<ElementPtr>::type*>;
 
  public:
   using value_type = typename traits::value_type;
   using difference_type = typename traits::difference_type;
-  using pointer = Element*;
-  using reference = Element&;
+  using pointer = ElementPtr*;
+  using reference = ElementPtr&;
   using iterator_category = typename traits::iterator_category;
   using iterator_concept = typename IteratorConceptSupport<traits>::tag;
-
-  using iterator = RepeatedPtrOverPtrsIterator<Element, VoidPtr>;
+  using iterator = RepeatedPtrOverPtrsIterator<ElementPtr>;
 
   RepeatedPtrOverPtrsIterator() : it_(nullptr) {}
-  explicit RepeatedPtrOverPtrsIterator(VoidPtr* it) : it_(it) {}
+  explicit RepeatedPtrOverPtrsIterator(ElementPtrPtr* data) : it_(data) {}
+  explicit RepeatedPtrOverPtrsIterator(VoidPtr* data)
+      : RepeatedPtrOverPtrsIterator(reinterpret_cast<ElementPtrPtr*>(data)) {}
 
   // Allows "upcasting" from RepeatedPtrOverPtrsIterator<T**> to
   // RepeatedPtrOverPtrsIterator<const T*const*>.
-  template <
-      typename OtherElement, typename OtherVoidPtr,
-      typename std::enable_if<
-          std::is_convertible<OtherElement*, pointer>::value &&
-          std::is_convertible<OtherVoidPtr, VoidPtr>::value>::type* = nullptr>
+  template <typename OtherElementPtr,
+            typename = std::enable_if_t<
+                std::is_convertible_v<OtherElementPtr*, ElementPtr*>>>
   RepeatedPtrOverPtrsIterator(
-      const RepeatedPtrOverPtrsIterator<OtherElement, OtherVoidPtr>& other)
+      const RepeatedPtrOverPtrsIterator<OtherElementPtr>& other)
       : it_(other.it_) {}
 
   // dereferenceable
   PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
-    return *reinterpret_cast<Element*>(it_);
+    return *reinterpret_cast<ElementPtr*>(it_);
   }
   PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
-    return reinterpret_cast<Element*>(it_);
+    return reinterpret_cast<ElementPtr*>(it_);
   }
 
   // {inc,dec}rementable
@@ -2101,11 +2097,11 @@ class RepeatedPtrOverPtrsIterator {
   }
 
  private:
-  template <typename OtherElement, typename OtherVoidPtr>
+  template <typename OtherElement>
   friend class RepeatedPtrOverPtrsIterator;
 
   // The internal iterator.
-  VoidPtr* it_;
+  ElementPtrPtr* it_;
 };
 
 }  // namespace internal
@@ -2149,7 +2145,7 @@ RepeatedPtrField<Element>::pointer_begin() ABSL_ATTRIBUTE_LIFETIME_BOUND {
 template <typename Element>
 inline typename RepeatedPtrField<Element>::const_pointer_iterator
 RepeatedPtrField<Element>::pointer_begin() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return const_pointer_iterator(const_cast<const void* const*>(raw_data()));
+  return const_pointer_iterator(raw_data());
 }
 template <typename Element>
 inline typename RepeatedPtrField<Element>::pointer_iterator
@@ -2175,38 +2171,39 @@ RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 namespace internal {
 
 // A back inserter for RepeatedPtrField objects.
-template <typename T>
+template <typename Element>
 class RepeatedPtrFieldBackInsertIterator {
  public:
   using iterator_category = std::output_iterator_tag;
-  using value_type = T;
+  using value_type = Element;
   using pointer = void;
   using reference = void;
   using difference_type = std::ptrdiff_t;
 
-  RepeatedPtrFieldBackInsertIterator(RepeatedPtrField<T>* const mutable_field)
+  RepeatedPtrFieldBackInsertIterator(
+      RepeatedPtrField<Element>* const mutable_field)
       : field_(mutable_field) {}
-  RepeatedPtrFieldBackInsertIterator<T>& operator=(const T& value) {
+  RepeatedPtrFieldBackInsertIterator<Element>& operator=(const Element& value) {
     *field_->Add() = value;
     return *this;
   }
-  RepeatedPtrFieldBackInsertIterator<T>& operator=(
-      const T* const ptr_to_value) {
+  RepeatedPtrFieldBackInsertIterator<Element>& operator=(
+      const Element* const ptr_to_value) {
     *field_->Add() = *ptr_to_value;
     return *this;
   }
-  RepeatedPtrFieldBackInsertIterator<T>& operator=(T&& value) {
+  RepeatedPtrFieldBackInsertIterator<Element>& operator=(Element&& value) {
     *field_->Add() = std::move(value);
     return *this;
   }
-  RepeatedPtrFieldBackInsertIterator<T>& operator*() { return *this; }
-  RepeatedPtrFieldBackInsertIterator<T>& operator++() { return *this; }
-  RepeatedPtrFieldBackInsertIterator<T>& operator++(int /* unused */) {
+  RepeatedPtrFieldBackInsertIterator<Element>& operator*() { return *this; }
+  RepeatedPtrFieldBackInsertIterator<Element>& operator++() { return *this; }
+  RepeatedPtrFieldBackInsertIterator<Element>& operator++(int /* unused */) {
     return *this;
   }
 
  private:
-  RepeatedPtrField<T>* field_;
+  RepeatedPtrField<Element>* field_;
 };
 
 // A back inserter for RepeatedPtrFields that inserts by transferring ownership
