@@ -20,6 +20,10 @@
 #include "protobuf.h"
 #include "shared_convert.h"
 
+// Cached shared empty frozen Ruby strings to avoid repeated allocations
+static VALUE kEmptyFrozenUtf8String = Qnil;
+static VALUE kEmptyFrozenAscii8String = Qnil;
+
 static upb_StringView Convert_StringData(VALUE str, upb_Arena* arena) {
   upb_StringView ret;
   if (arena) {
@@ -260,12 +264,32 @@ VALUE Convert_UpbToRuby(upb_MessageValue upb_val, TypeInfo type_info,
       }
     }
     case kUpb_CType_String: {
+      // Reuse a shared frozen empty UTF-8 string to avoid allocations.
+      if (upb_val.str_val.size == 0) {
+        if (kEmptyFrozenUtf8String == Qnil) {
+          kEmptyFrozenUtf8String = rb_str_new(NULL, 0);
+          rb_enc_associate(kEmptyFrozenUtf8String, rb_utf8_encoding());
+          rb_obj_freeze(kEmptyFrozenUtf8String);
+          rb_gc_register_mark_object(kEmptyFrozenUtf8String);
+        }
+        return kEmptyFrozenUtf8String;
+      }
       VALUE str_rb = rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
       rb_enc_associate(str_rb, rb_utf8_encoding());
       rb_obj_freeze(str_rb);
       return str_rb;
     }
     case kUpb_CType_Bytes: {
+      // Reuse a shared frozen empty ASCII-8BIT string to avoid allocations.
+      if (upb_val.str_val.size == 0) {
+        if (kEmptyFrozenAscii8String == Qnil) {
+          kEmptyFrozenAscii8String = rb_str_new(NULL, 0);
+          rb_enc_associate(kEmptyFrozenAscii8String, rb_ascii8bit_encoding());
+          rb_obj_freeze(kEmptyFrozenAscii8String);
+          rb_gc_register_mark_object(kEmptyFrozenAscii8String);
+        }
+        return kEmptyFrozenAscii8String;
+      }
       VALUE str_rb = rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
       rb_enc_associate(str_rb, rb_ascii8bit_encoding());
       rb_obj_freeze(str_rb);
