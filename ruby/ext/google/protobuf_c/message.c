@@ -1273,6 +1273,32 @@ static VALUE Message_field_dispatch0(VALUE _self) {
   return Message_field_accessor(_self, entry->field, entry->accessor_type, 0, NULL);
 }
 
+// Generic dispatcher for per-field generated methods (arity 1, for setters and similar).
+static VALUE Message_field_dispatch1(VALUE _self, VALUE arg) {
+  ID mid = rb_frame_this_func();
+  VALUE klass = rb_class_of(_self);
+  VALUE descriptor_rb = rb_ivar_get(klass, descriptor_instancevar_interned);
+
+  if (descriptor_rb == Qnil) {
+    // Fallback to method_missing(method, arg)
+    VALUE argv[2] = {ID2SYM(mid), arg};
+    return Message_method_missing(2, argv, _self);
+  }
+
+  st_table* field_cache = field_cache_for_RubyDescriptor(descriptor_rb);
+  st_data_t val;
+  if (!st_lookup(field_cache, (st_data_t)mid, &val)) {
+    // Not a generated accessor; delegate to method_missing(method, arg).
+    VALUE argv[2] = {ID2SYM(mid), arg};
+    return Message_method_missing(2, argv, _self);
+  }
+
+  FastAccessorEntry* entry = (FastAccessorEntry*)val;
+
+  VALUE argv2[2] = {Qnil, arg};
+  return Message_field_accessor(_self, entry->field, entry->accessor_type, 2, argv2);
+}
+
 VALUE build_class_from_descriptor(VALUE descriptor) {
   const char* name;
   VALUE klass;
@@ -1314,6 +1340,40 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
 
     // Define the Ruby method that dispatches via the cache.
     rb_define_method_id(klass, getter_id, Message_field_dispatch0, 0);
+
+    // Generate fast setter method: <field_name>=
+    {
+      size_t len = strlen(fname);
+      size_t bufsize = len + 2; // name + '=' + NUL
+      char* buf = ALLOCA_N(char, bufsize);
+      snprintf(buf, bufsize, "%s=", fname);
+      ID setter_id = rb_intern(buf);
+
+      if (!rb_method_boundp(klass, setter_id, 0)) {
+        FastAccessorEntry* se = ALLOC(FastAccessorEntry);
+        se->field = f;
+        se->accessor_type = METHOD_SETTER;
+        st_insert(cache, (st_data_t)setter_id, (st_data_t)se);
+        rb_define_method_id(klass, setter_id, Message_field_dispatch1, 1);
+      }
+    }
+
+    // Generate fast wrapper setter: <field_name>_as_value= for well-known wrappers.
+    if (!upb_FieldDef_IsRepeated(f) && IsFieldWrapper(f)) {
+      size_t len = strlen(fname);
+      const char* suffix = "_as_value=";
+      size_t bufsize = len + strlen(suffix) + 1;
+      char* buf = ALLOCA_N(char, bufsize);
+      snprintf(buf, bufsize, "%s%s", fname, suffix);
+      ID wsetter_id = rb_intern(buf);
+      if (!rb_method_boundp(klass, wsetter_id, 0)) {
+        FastAccessorEntry* we = ALLOC(FastAccessorEntry);
+        we->field = f;
+        we->accessor_type = METHOD_WRAPPER_SETTER;
+        st_insert(cache, (st_data_t)wsetter_id, (st_data_t)we);
+        rb_define_method_id(klass, wsetter_id, Message_field_dispatch1, 1);
+      }
+    }
 
     // Also define fast presence check methods (has_<field>?) for fields with presence.
     if (upb_FieldDef_HasPresence(f)) {
