@@ -11,12 +11,10 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/rust/accessors/accessor_case.h"
-#include "google/protobuf/compiler/rust/accessors/default_value.h"
 #include "google/protobuf/compiler/rust/accessors/generator.h"
 #include "google/protobuf/compiler/rust/accessors/with_presence.h"
 #include "google/protobuf/compiler/rust/context.h"
 #include "google/protobuf/compiler/rust/naming.h"
-#include "google/protobuf/compiler/rust/upb_helpers.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {
@@ -26,6 +24,7 @@ namespace rust {
 
 void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                              AccessorCase accessor_case) const {
+  ABSL_CHECK(ctx.is_cpp());
   if (field.has_presence()) {
     WithPresenceAccessorsInMsgImpl(ctx, field, accessor_case);
   }
@@ -35,16 +34,6 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
   ctx.Emit({{"field", RsSafeName(field_name)},
             {"raw_field_name", field_name},
             {"proxied_type", RsTypePath(ctx, field)},
-            {"default_value", DefaultValue(ctx, field)},
-            {"upb_mt_field_index", UpbMiniTableFieldIndex(field)},
-            {"borrowed_type",
-             [&] {
-               if (is_string_type) {
-                 ctx.Emit("$pb$::ProtoStr");
-               } else {
-                 ctx.Emit("[u8]");
-               }
-             }},
             {"transform_borrowed",
              [&] {
                if (is_string_type) {
@@ -90,7 +79,6 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
             {"view_self", ViewReceiver(accessor_case)},
             {"getter_impl",
              [&] {
-               if (ctx.is_cpp()) {
                  ctx.Emit(
                      {{"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")},
                       {"borrowed_getter_thunk",
@@ -109,16 +97,6 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
 
                   $transform_owned$
                 )rs");
-               } else {
-                 ctx.Emit(R"rs(
-                let view = unsafe {
-                  self.inner.ptr().get_string_at_index(
-                    $upb_mt_field_index$, ($default_value$).into()
-                  )
-                };
-                $transform_borrowed$
-              )rs");
-               }
              }},
             {"getter",
              [&] {
@@ -130,7 +108,6 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              }},
             {"setter_impl",
              [&] {
-               if (ctx.is_cpp()) {
                  ctx.Emit({{"setter_thunk", ThunkName(ctx, field, "set")}},
                           R"rs(
               let s = val.into_proxied($pbi$::Private);
@@ -141,23 +118,6 @@ void SingularCord::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 );
               }
             )rs");
-               } else {
-                 ctx.Emit(R"rs(
-              let s = val.into_proxied($pbi$::Private);
-              let (view, arena) =
-                s.into_inner($pbi$::Private).into_raw_parts();
-
-              let parent_arena = self.inner.arena();
-              parent_arena.fuse(&arena);
-
-              unsafe {
-                self.inner.ptr_mut().set_base_field_string_at_index(
-                  $upb_mt_field_index$,
-                  view,
-                );
-              }
-            )rs");
-               }
              }},
             {"setter",
              [&] {
@@ -186,33 +146,20 @@ void SingularCord::InExternC(Context& ctx, const FieldDescriptor& field) const {
       {{"borrowed_getter_thunk", ThunkName(ctx, field, "get_cord_borrowed")},
        {"owned_getter_thunk", ThunkName(ctx, field, "get_cord_owned")},
        {"is_flat_thunk", ThunkName(ctx, field, "cord_is_flat")},
-       {"getter_thunk", ThunkName(ctx, field, "get")},
        {"setter_thunk", ThunkName(ctx, field, "set")},
        {"setter",
         [&] {
-          if (ctx.is_cpp()) {
             ctx.Emit(R"rs(
               fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $pbr$::CppStdString);
             )rs");
-          } else {
-            ctx.Emit(R"rs(
-              fn $setter_thunk$(raw_msg: $pbr$::RawMessage, val: $pbr$::PtrAndLen);
-            )rs");
-          }
         }},
        {"getter_thunks",
         [&] {
-          if (ctx.is_cpp()) {
             ctx.Emit(R"rs(
              fn $is_flat_thunk$(raw_msg: $pbr$::RawMessage) -> bool;
              fn $borrowed_getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::PtrAndLen;
              fn $owned_getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::CppStdString;
            )rs");
-          } else {
-            ctx.Emit({{"getter_thunk", ThunkName(ctx, field, "get")}}, R"rs(
-             fn $getter_thunk$(raw_msg: $pbr$::RawMessage) -> $pbr$::PtrAndLen;
-           )rs");
-          }
         }}},
       R"rs(
           $getter_thunks$

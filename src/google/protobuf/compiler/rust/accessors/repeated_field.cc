@@ -110,15 +110,11 @@ void RepeatedField::InMsgImpl(Context& ctx, const FieldDescriptor& field,
              if (ctx.is_upb()) {
                ctx.Emit(R"rs(
                     pub fn set_$raw_field_name$(&mut self, src: impl $pb$::IntoProxied<$pb$::Repeated<$RsType$>>) {
-                      let val = src.into_proxied($pbi$::Private);
-                      let inner = val.inner($pbi$::Private);
-
-                      self.inner.arena().fuse(inner.arena());
                       unsafe {
-                          <Self as $pbr$::UpbGetMessagePtrMut>::get_ptr_mut(self, $pbi$::Private)
-                              .set_array_at_index(
-                                  $upb_mt_field_index$,
-                                  inner.raw());
+                        $pbr$::message_set_repeated_field(
+                          $pb$::AsMut::as_mut(self).inner,
+                          $upb_mt_field_index$,
+                          src);
                       }
                     }
                   )rs");
