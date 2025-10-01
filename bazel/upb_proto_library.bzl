@@ -20,10 +20,13 @@ load(
     "//bazel:upb_proto_reflection_library.bzl",
     _upb_proto_reflection_library = "upb_proto_reflection_library",
 )
+load("//bazel:visibility.bzl", "upb_clients")
 load(
     "//bazel/private:upb_proto_library_internal/aspect.bzl",
     _GeneratedSrcsInfo = "GeneratedSrcsInfo",
 )
+
+visibility(upb_clients)
 
 # Temporary alias, see b/291827469.
 upb_proto_library = _upb_c_proto_library
