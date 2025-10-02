@@ -18,9 +18,4 @@ public class Proto3LiteSchemaTest extends AbstractProto3LiteSchemaTest {
   protected Schema<Proto3MessageLite> schema() {
     return TestSchemasLite.genericProto3LiteSchema;
   }
-
-  @Override
-  protected void registerSchemas() {
-    TestSchemasLite.registerGenericProto3LiteSchemas();
-  }
 }
