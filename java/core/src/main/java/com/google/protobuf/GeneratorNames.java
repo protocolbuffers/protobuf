@@ -236,27 +236,70 @@ public final class GeneratorNames {
     return underscoresToCamelCase(input, /* capitalizeNextLetter= */ true);
   }
 
-  /** Returns the fully qualified Java class name for the given message descriptor. */
-  public static String getClassName(Descriptor message) {
+  /**
+   * Returns the fully qualified Java bytecode class name for the given message descriptor.
+   *
+   * <p>Nested classes will use '$' as the separator, rather than '.'.
+   */
+  public static String getBytecodeClassName(Descriptor message) {
     // Replicates the logic for ClassName from immutable/names.h
     return getClassFullName(
         getClassNameWithoutPackage(message), message.getFile(), !getNestInFileClass(message));
   }
 
-  /** Returns the fully qualified Java class name for the given enum descriptor. */
-  public static String getClassName(EnumDescriptor enm) {
+  /**
+   * Returns the fully qualified Java bytecode class name for the given enum descriptor.
+   *
+   * <p>Nested classes will use '$' as the separator, rather than '.'.
+   */
+  public static String getBytecodeClassName(EnumDescriptor enm) {
     // Replicates the logic for ClassName from immutable/names.h
     return getClassFullName(
         getClassNameWithoutPackage(enm), enm.getFile(), !getNestInFileClass(enm));
   }
 
-  /** Returns the fully qualified Java class name for the given service descriptor. */
-  static String getClassName(ServiceDescriptor service) {
+  /**
+   * Returns the fully qualified Java bytecode class name for the given service descriptor.
+   *
+   * <p>Nested classes will use '$' as the separator, rather than '.'.
+   */
+  static String getBytecodeClassName(ServiceDescriptor service) {
     // Replicates the logic for ClassName from immutable/names.h
     String suffix = "";
     boolean isOwnFile = !getNestInFileClass(service);
     return getClassFullName(getClassNameWithoutPackage(service), service.getFile(), isOwnFile)
         + suffix;
+  }
+
+  static String getQualifiedFromBytecodeClassName(String bytecodeClassName) {
+    return bytecodeClassName.replace('$', '.');
+  }
+
+  /**
+   * Returns the fully qualified Java class name for the given message descriptor.
+   *
+   * <p>Nested classes will use '.' as the separator, rather than '$'.
+   */
+  public static String getQualifiedClassName(Descriptor message) {
+    return getQualifiedFromBytecodeClassName(getBytecodeClassName(message));
+  }
+
+  /**
+   * Returns the fully qualified Java class name for the given enum descriptor.
+   *
+   * <p>Nested classes will use '.' as the separator, rather than '$'.
+   */
+  public static String getQualifiedClassName(EnumDescriptor enm) {
+    return getQualifiedFromBytecodeClassName(getBytecodeClassName(enm));
+  }
+
+  /**
+   * Returns the fully qualified Java class name for the given service descriptor.
+   *
+   * <p>Nested classes will use '.' as the separator, rather than '$'.
+   */
+  public static String getQualifiedClassName(ServiceDescriptor service) {
+    return getQualifiedFromBytecodeClassName(getBytecodeClassName(service));
   }
 
   private static String getClassFullName(
