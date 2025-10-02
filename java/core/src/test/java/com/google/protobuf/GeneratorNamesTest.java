@@ -115,10 +115,17 @@ public final class GeneratorNamesTest {
   }
 
   @Test
-  public void getClassName_message(
+  public void getBytecodeClassName_message(
       @TestParameter(valuesProvider = MessageClassNameProvider.class) MessageParameter parameter) {
-    assertThat(GeneratorNames.getClassName(parameter.descriptor))
+    assertThat(GeneratorNames.getBytecodeClassName(parameter.descriptor))
         .isEqualTo(parameter.clazz.getName());
+  }
+
+  @Test
+  public void getQualifiedClassName_message(
+      @TestParameter(valuesProvider = MessageClassNameProvider.class) MessageParameter parameter) {
+    assertThat(GeneratorNames.getQualifiedClassName(parameter.descriptor))
+        .isEqualTo(parameter.clazz.getCanonicalName());
   }
 
   private static final class EnumClassNameProvider extends TestParameterValuesProvider {
@@ -143,10 +150,17 @@ public final class GeneratorNamesTest {
   }
 
   @Test
-  public void getClassName_enum(
+  public void getBytecodeClassName_enum(
       @TestParameter(valuesProvider = EnumClassNameProvider.class) EnumParameter parameter) {
-    assertThat(GeneratorNames.getClassName(parameter.descriptor))
+    assertThat(GeneratorNames.getBytecodeClassName(parameter.descriptor))
         .isEqualTo(parameter.clazz.getName());
+  }
+
+  @Test
+  public void getQualifiedClassName_enum(
+      @TestParameter(valuesProvider = EnumClassNameProvider.class) EnumParameter parameter) {
+    assertThat(GeneratorNames.getQualifiedClassName(parameter.descriptor))
+        .isEqualTo(parameter.clazz.getCanonicalName());
   }
 
   private static final class ServiceClassNameProvider extends TestParameterValuesProvider {
@@ -174,10 +188,17 @@ public final class GeneratorNamesTest {
   }
 
   @Test
-  public void getClassName_service(
+  public void getBytecodeClassName_service(
       @TestParameter(valuesProvider = ServiceClassNameProvider.class) ServiceParameter parameter) {
-    assertThat(GeneratorNames.getClassName(parameter.descriptor))
+    assertThat(GeneratorNames.getBytecodeClassName(parameter.descriptor))
         .isEqualTo(parameter.clazz.getName());
+  }
+
+  @Test
+  public void getQualifiedClassName_service(
+      @TestParameter(valuesProvider = ServiceClassNameProvider.class) ServiceParameter parameter) {
+    assertThat(GeneratorNames.getQualifiedClassName(parameter.descriptor))
+        .isEqualTo(parameter.clazz.getCanonicalName());
   }
 
   @Test
