@@ -24,11 +24,6 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
   @Before
   public void setup() {
     schema = schema();
-    registerSchemas();
-  }
-
-  // Subclass should override this method if it needs to register more than one schemas.
-  protected void registerSchemas() {
   }
 
   protected abstract Schema<T> schema();
