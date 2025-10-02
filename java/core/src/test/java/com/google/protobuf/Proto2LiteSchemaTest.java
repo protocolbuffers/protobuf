@@ -21,6 +21,5 @@ public class Proto2LiteSchemaTest extends AbstractProto2LiteSchemaTest {
 
   @Override
   protected void registerSchemas() {
-    TestSchemasLite.registerGenericProto2LiteSchemas();
   }
 }
