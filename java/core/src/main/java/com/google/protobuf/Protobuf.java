@@ -115,14 +115,4 @@ final class Protobuf {
   private Protobuf() {
     schemaFactory = new ManifestSchemaFactory();
   }
-
-  int getTotalSchemaSize() {
-    int result = 0;
-    for (Schema<?> schema : schemaCache.values()) {
-      if (schema instanceof MessageSchema) {
-        result += ((MessageSchema) schema).getSchemaSize();
-      }
-    }
-    return result;
-  }
 }
