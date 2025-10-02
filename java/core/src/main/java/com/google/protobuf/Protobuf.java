@@ -29,29 +29,19 @@ final class Protobuf {
       new ConcurrentHashMap<Class<?>, Schema<?>>();
 
   /** Gets the singleton instance of the Protobuf runtime. */
-  public static Protobuf getInstance() {
+  static Protobuf getInstance() {
     return INSTANCE;
   }
 
   /** Writes the given message to the target {@link Writer}. */
-  public <T> void writeTo(T message, Writer writer) throws IOException {
+  <T> void writeTo(T message, Writer writer) throws IOException {
     schemaFor(message).writeTo(message, writer);
   }
 
   /** Reads fields from the given {@link Reader} and merges them into the message. */
-  public <T> void mergeFrom(T message, Reader reader) throws IOException {
-    mergeFrom(message, reader, ExtensionRegistryLite.getEmptyRegistry());
-  }
-
-  /** Reads fields from the given {@link Reader} and merges them into the message. */
-  public <T> void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
+  <T> void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     schemaFor(message).mergeFrom(message, reader, extensionRegistry);
-  }
-
-  /** Marks repeated/map/extension/unknown fields as immutable. */
-  public <T> void makeImmutable(T message) {
-    schemaFor(message).makeImmutable(message);
   }
 
   /** Checks if all required fields are set. */
@@ -60,7 +50,7 @@ final class Protobuf {
   }
 
   /** Gets the schema for the given message type. */
-  public <T> Schema<T> schemaFor(Class<T> messageType) {
+  <T> Schema<T> schemaFor(Class<T> messageType) {
     checkNotNull(messageType, "messageType");
     @SuppressWarnings("unchecked")
     Schema<T> schema = (Schema<T>) schemaCache.get(messageType);
@@ -78,7 +68,7 @@ final class Protobuf {
 
   /** Gets the schema for the given message. */
   @SuppressWarnings("unchecked")
-  public <T> Schema<T> schemaFor(T message) {
+  <T> Schema<T> schemaFor(T message) {
     return schemaFor((Class<T>) message.getClass());
   }
 
@@ -90,7 +80,7 @@ final class Protobuf {
    * @return the previously registered schema, or {@code null} if the given schema was successfully
    *     registered.
    */
-  public Schema<?> registerSchema(Class<?> messageType, Schema<?> schema) {
+  private Schema<?> registerSchema(Class<?> messageType, Schema<?> schema) {
     checkNotNull(messageType, "messageType");
     checkNotNull(schema, "schema");
     return schemaCache.putIfAbsent(messageType, schema);
@@ -106,7 +96,7 @@ final class Protobuf {
    *     previously.
    */
   @CanIgnoreReturnValue
-  public Schema<?> registerSchemaOverride(Class<?> messageType, Schema<?> schema) {
+  Schema<?> registerSchemaOverride(Class<?> messageType, Schema<?> schema) {
     checkNotNull(messageType, "messageType");
     checkNotNull(schema, "schema");
     return schemaCache.put(messageType, schema);
@@ -114,15 +104,5 @@ final class Protobuf {
 
   private Protobuf() {
     schemaFactory = new ManifestSchemaFactory();
-  }
-
-  int getTotalSchemaSize() {
-    int result = 0;
-    for (Schema<?> schema : schemaCache.values()) {
-      if (schema instanceof MessageSchema) {
-        result += ((MessageSchema) schema).getSchemaSize();
-      }
-    }
-    return result;
   }
 }
