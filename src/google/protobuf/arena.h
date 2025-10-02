@@ -742,8 +742,16 @@ template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
   static_assert(is_destructor_skippable<T>::value, "");
-  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                               : ::operator new(sizeof(T));
+  void* mem;
+  if (arena != nullptr) {
+    mem = arena->AllocateAligned(sizeof(T));
+  } else {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+    mem = __builtin_operator_new(sizeof(T));
+#else
+    mem = ::operator new(sizeof(T));
+#endif
+  }
   return new (mem) T(arena);
 }
 
@@ -766,8 +774,16 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
     internal::Prefetch<kPrefetchOpts, T, T>(typed_from);
   }
   static_assert(is_destructor_skippable<T>::value, "");
-  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                               : ::operator new(sizeof(T));
+  void* mem;
+  if (arena != nullptr) {
+    mem = arena->AllocateAligned(sizeof(T));
+  } else {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+    mem = __builtin_operator_new(sizeof(T));
+#else
+    mem = ::operator new(sizeof(T));
+#endif
+  }
   return new (mem) T(arena, *typed_from);
 }
 
