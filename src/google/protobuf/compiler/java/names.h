@@ -42,28 +42,53 @@ namespace java {
 //
 // Returns:
 //   The fully-qualified Java class name.
-PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
+PROTOC_EXPORT std::string QualifiedClassName(const Descriptor* descriptor);
+
+// TODO Remove this in the next breaking release.
+ABSL_DEPRECATE_AND_INLINE()
+inline std::string ClassName(const Descriptor* descriptor) {
+  return QualifiedClassName(descriptor);
+}
 
 // Requires:
 //   descriptor != NULL
 //
 // Returns:
 //   The fully-qualified Java class name.
-PROTOC_EXPORT std::string ClassName(const EnumDescriptor* descriptor);
+PROTOC_EXPORT std::string QualifiedClassName(const EnumDescriptor* descriptor);
+
+// TODO Remove this in the next breaking release.
+ABSL_DEPRECATE_AND_INLINE()
+inline std::string ClassName(const EnumDescriptor* descriptor) {
+  return QualifiedClassName(descriptor);
+}
 
 // Requires:
 //   descriptor != NULL
 //
 // Returns:
 //   The fully-qualified Java class name.
-PROTOC_EXPORT std::string ClassName(const FileDescriptor* descriptor);
+PROTOC_EXPORT std::string QualifiedClassName(const FileDescriptor* descriptor);
+
+// TODO Remove this in the next breaking release.
+ABSL_DEPRECATE_AND_INLINE()
+inline std::string ClassName(const FileDescriptor* descriptor) {
+  return QualifiedClassName(descriptor);
+}
 
 // Requires:
 //   descriptor != NULL
 //
 // Returns:
 //   The fully-qualified Java class name.
-PROTOC_EXPORT std::string ClassName(const ServiceDescriptor* descriptor);
+PROTOC_EXPORT std::string QualifiedClassName(
+    const ServiceDescriptor* descriptor);
+
+// TODO Remove this in the next breaking release.
+ABSL_DEPRECATE_AND_INLINE()
+inline std::string ClassName(const ServiceDescriptor* descriptor) {
+  return QualifiedClassName(descriptor);
+}
 
 // Requires:
 //   descriptor != NULL
