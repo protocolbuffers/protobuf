@@ -340,7 +340,7 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
 
   for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
     Message* new_entry = prototype->New(arena());
-    rep.AddAllocated(new_entry);
+
     const MapKey& map_key = it.GetKey();
     switch (key_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
@@ -402,6 +402,8 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
         break;
       }
     }
+
+    rep.AddAllocated(new_entry);
   }
 }
 

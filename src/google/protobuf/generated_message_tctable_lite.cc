@@ -2567,8 +2567,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
   int size = ReadSize(&ptr);
   if (ABSL_PREDICT_FALSE(!ptr)) return {};
   auto* str = new (serial_arena->AllocateFromStringBlock()) std::string();
-  field.AddAllocatedForParse(str, arena);
   ptr = ctx->ReadString(ptr, size, str);
+  field.AddAllocatedForParse(str, arena);
   if (ABSL_PREDICT_FALSE(!ptr)) return {};
   PROTOBUF_ASSUME(ptr != nullptr);
   return ptr;

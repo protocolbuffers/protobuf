@@ -211,20 +211,20 @@ MessageLite* ExtensionSet::AddMessage(const FieldDescriptor* descriptor,
 
   // RepeatedPtrField<Message> does not know how to Add() since it cannot
   // allocate an abstract object, so we have to be tricky.
+  auto* repeated = reinterpret_cast<internal::RepeatedPtrFieldBase*>(
+      extension->ptr.repeated_message_value);
   MessageLite* result =
-      reinterpret_cast<internal::RepeatedPtrFieldBase*>(
-          extension->ptr.repeated_message_value)
-          ->AddFromCleared<GenericTypeHandler<MessageLite> >();
+      repeated->AddFromCleared<GenericTypeHandler<MessageLite>>();
   if (result == nullptr) {
-    const MessageLite* prototype;
+    const MessageLite* prototype = nullptr;
     if (extension->ptr.repeated_message_value->empty()) {
       prototype = factory->GetPrototype(descriptor->message_type());
       ABSL_CHECK(prototype != nullptr);
     } else {
       prototype = &extension->ptr.repeated_message_value->Get(0);
     }
-    result = prototype->New(arena_);
-    extension->ptr.repeated_message_value->AddAllocated(result);
+    result = repeated->AddFromPrototype<GenericTypeHandler<MessageLite>>(
+        arena_, prototype);
   }
   return result;
 }
