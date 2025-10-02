@@ -96,22 +96,22 @@ std::string FieldName(const FieldDescriptor* field) {
 
 }  // namespace
 
-std::string ClassName(const Descriptor* descriptor) {
+std::string QualifiedClassName(const Descriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
 
-std::string ClassName(const EnumDescriptor* descriptor) {
+std::string QualifiedClassName(const EnumDescriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
 
-std::string ClassName(const ServiceDescriptor* descriptor) {
+std::string QualifiedClassName(const ServiceDescriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
 
-std::string ClassName(const FileDescriptor* descriptor) {
+std::string QualifiedClassName(const FileDescriptor* descriptor) {
   ClassNameResolver name_resolver;
   return name_resolver.GetClassName(descriptor, true);
 }
