@@ -15,7 +15,6 @@ import org.junit.runners.JUnit4;
 public class Proto3SchemaTest extends AbstractProto3SchemaTest {
   @Override
   protected void registerSchemas() {
-    TestSchemas.registerGenericProto3Schemas();
   }
 
   @Override
