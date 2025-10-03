@@ -1830,7 +1830,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   SerialArena* serial_arena;
   if (ABSL_PREDICT_TRUE(arena != nullptr &&
                         arena->impl_.GetSerialArenaFast(&serial_arena) &&
-                        field.PrepareForParse())) {
+                        !field.HasCleared())) {
     do {
       ptr += sizeof(TagType);
       ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
@@ -2602,7 +2602,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       SerialArena* serial_arena;
       if (ABSL_PREDICT_TRUE(arena != nullptr &&
                             arena->impl_.GetSerialArenaFast(&serial_arena) &&
-                            field.PrepareForParse())) {
+                            !field.HasCleared())) {
         do {
           ptr = ptr2;
           ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
