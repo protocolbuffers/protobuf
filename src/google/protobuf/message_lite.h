@@ -82,6 +82,10 @@ class MessageTableTester;
 
 namespace internal {
 
+// TODO: Remove this once we have a better way to do this.
+PROTOBUF_EXPORT void GenericSwap(MessageLite* lhs, MessageLite* rhs);
+PROTOBUF_EXPORT void GenericSwap(Message* lhs, Message* rhs);
+
 namespace v2 {
 class TableDriven;
 class TableDrivenMessage;
@@ -1137,6 +1141,8 @@ class PROTOBUF_EXPORT MessageLite {
 
   template <typename Type>
   friend const internal::ClassData* internal::GetClassData(const Type& msg);
+  friend void internal::GenericSwap(MessageLite* lhs, MessageLite* rhs);
+  friend void internal::GenericSwap(Message* lhs, Message* rhs);
 
   static bool CheckFieldPresence(const internal::ParseContext& ctx,
                                  const MessageLite& msg,
