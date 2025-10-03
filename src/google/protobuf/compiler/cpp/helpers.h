@@ -776,7 +776,7 @@ template <bool do_nested_types, class T>
 void ForEachField(const Descriptor* d, T&& func) {
   if (do_nested_types) {
     for (int i = 0; i < d->nested_type_count(); i++) {
-      ForEachField<true>(d->nested_type(i), std::forward<T&&>(func));
+      ForEachField<true>(d->nested_type(i), std::forward<T>(func));
     }
   }
   for (int i = 0; i < d->extension_count(); i++) {
@@ -790,7 +790,7 @@ void ForEachField(const Descriptor* d, T&& func) {
 template <class T>
 void ForEachField(const FileDescriptor* d, T&& func) {
   for (int i = 0; i < d->message_type_count(); i++) {
-    ForEachField<true>(d->message_type(i), std::forward<T&&>(func));
+    ForEachField<true>(d->message_type(i), std::forward<T>(func));
   }
   for (int i = 0; i < d->extension_count(); i++) {
     func(d->extension(i));
