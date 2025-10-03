@@ -133,6 +133,7 @@ google/protobuf/stubs/common.h
 google/protobuf/stubs/platform_macros.h
 google/protobuf/stubs/port.h
 google/protobuf/stubs/status_macros.h
+google/protobuf/symbol_checker.h
 google/protobuf/text_format.h
 google/protobuf/thread_safe_arena.h
 google/protobuf/timestamp.pb.h
