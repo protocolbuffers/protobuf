@@ -56,12 +56,18 @@ struct MockExtensionSet {
 ABSL_CHECK_MESSAGE_SIZE(MockExtensionSet, 24);
 
 struct MockRepeatedPtrField {
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   void* arena;       // 8 bytes
+#endif
   int current_size;  // 4 bytes
   int total_size;    // 4 bytes
   void* data;        // 8 bytes
 };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 16);
+#else
 ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 24);
+#endif
 
 struct MockRepeatedField {
   int current_size;  // 4 bytes
@@ -180,7 +186,11 @@ TEST(GeneratedMessageTest, MoreStringSize) {
                                                      // + 0-4 bytes padding
       MockRepeatedPtrField data;                     // 24 bytes
     };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+    ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
+#else
     ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
+#endif
     EXPECT_EQ(sizeof(proto2_unittest::MoreString), sizeof(MockGenerated));
   } else {
     struct MockGenerated : public MockMessageBase {  // 16 bytes
@@ -189,7 +199,11 @@ TEST(GeneratedMessageTest, MoreStringSize) {
                                                      // + 0-4 bytes padding
       MockRepeatedPtrField data;                     // 24 bytes
     };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+    ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
+#else
     ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
+#endif
     EXPECT_EQ(sizeof(proto2_unittest::MoreString), sizeof(MockGenerated));
   }
 #else   // !PROTOBUF_FORCE_SPLIT
