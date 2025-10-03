@@ -22,6 +22,7 @@
 
 #include "absl/base/macros.h"
 #include "absl/meta/type_traits.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/internal_visibility.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
@@ -374,7 +375,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnDestructor(T* PROTOBUF_NULLABLE object) {
     if (object != nullptr) {
-      impl_.AddCleanup(object, &internal::cleanup::arena_destruct_object<T>);
+      impl_.AddCleanup(object,
+                       &internal::cleanup::ArenaDestructObject<T>::Destroy);
     }
   }
 
@@ -474,9 +476,17 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                                              sizeof(char)>
         is_arena_constructable;
 
+    // Note that by this point, for types which have a different arena
+    // representation, `T` is that representation and is expected to have an
+    // arena-enabled constructor.
+    //
+    // For types with a different arena representation, if the arena pointer is
+    // null, the object is allocated directly with `new` as its original type,
+    // since wrapping the type in the arena representation would be wasteful.
     template <typename... Args>
     static T* PROTOBUF_NONNULL ConstructOnArena(void* PROTOBUF_NONNULL ptr,
                                                 Arena& arena, Args&&... args) {
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
       // TODO - ClangTidy gives warnings for calling the deprecated
       // `RepeatedPtrField(Arena*)` constructor here, but this is the correct
       // way to call it as it will allow us to silently switch to a different
@@ -491,8 +501,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
         return new (ptr) T(internal::InternalVisibility(), &arena,
                            static_cast<Args&&>(args)...);
       } else {
+#endif
         return new (ptr) T(&arena, static_cast<Args&&>(args)...);
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
       }
+#endif
     }
 
     template <typename... Args>
@@ -622,9 +635,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     if (trivial) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
-      // We avoid instantiating arena_destruct_object<T> in the trivial case.
-      constexpr auto dtor = &internal::cleanup::arena_destruct_object<
-          std::conditional_t<trivial, std::string, T>>;
+      // We avoid instantiating ArenaDestructObject<T> in the trivial case.
+      constexpr auto dtor = &internal::cleanup::ArenaDestructObject<
+          std::conditional_t<trivial, std::string, T>>::Destroy;
       return AllocateAlignedWithCleanup(sizeof(T), alignof(T), dtor);
     }
   }

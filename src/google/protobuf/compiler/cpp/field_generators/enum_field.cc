@@ -308,9 +308,15 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){arena},
-    )cc");
+    p->Emit({{"internal_metadata_offset",
+              [p] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              decltype($field_$){$internal_metadata_offset$},
+#else
+              decltype($field_$){arena},
+#endif
+            )cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor, which prevents explicit aggregate
       // initialization pre-C++17.
@@ -340,14 +346,29 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{visibility, arena}");
+    p->Emit({{"internal_metadata_offset",
+              [p] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, $internal_metadata_offset$}
+#else
+              $name$_ { visibility, arena }
+#endif
+            )cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{visibility, arena, from.$name$_}");
+    p->Emit({{"internal_metadata_offset",
+              [p] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+#else
+              $name$_ { visibility, arena, from.$name$_ }
+#endif)cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }

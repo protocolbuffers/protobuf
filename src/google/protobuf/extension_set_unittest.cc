@@ -1517,8 +1517,8 @@ TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
       unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
           "repeated_int32_extension");
   ASSERT_NE(desc, nullptr);
-  set.MutableRawRepeatedField(desc->number(), WireFormatLite::TYPE_INT32, false,
-                              desc);
+  set.MutableRawRepeatedField(/*arena=*/nullptr, desc->number(),
+                              WireFormatLite::TYPE_INT32, false, desc);
   EXPECT_EQ(set.NumExtensions(), 1);
 }
 

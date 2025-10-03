@@ -618,6 +618,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
 
+
 #include "google/protobuf/os_macros_undef.inc"
 
 // Protobuf does not support building with a number of warnings that are noisy

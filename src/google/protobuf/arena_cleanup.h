@@ -29,9 +29,11 @@ namespace cleanup {
 
 // Helper function invoking the destructor of `object`
 template <typename T>
-void arena_destruct_object(void* PROTOBUF_NONNULL object) {
-  reinterpret_cast<T*>(object)->~T();
-}
+struct ArenaDestructObject {
+  static void Destroy(void* PROTOBUF_NONNULL object) {
+    reinterpret_cast<T*>(object)->~T();
+  }
+};
 
 // CleanupNode contains the object (`elem`) that needs to be
 // destroyed, and the function to destroy it (`destructor`)
