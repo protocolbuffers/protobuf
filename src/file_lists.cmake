@@ -139,6 +139,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_feature_helper.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_metadata_locator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/gzip_stream.h
@@ -263,6 +264,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/has_bits.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_metadata_locator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32.h
@@ -1247,6 +1249,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/inlined_string_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_feature_helper_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_message_util_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_metadata_locator_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest.cc
@@ -1288,6 +1291,7 @@ set(lazily_build_dependencies_test_files
 set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/edition_unittest.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_metadata_locator_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto2_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
