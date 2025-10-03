@@ -7,8 +7,8 @@
 
 use std::alloc::{alloc, Layout};
 
-#[no_mangle]
-extern "C" fn proto2_rust_alloc(size: usize, align: usize) -> *mut u8 {
+#[unsafe(no_mangle)]
+unsafe extern "C" fn proto2_rust_alloc(size: usize, align: usize) -> *mut u8 {
     if size == 0 {
         // A 0-sized layout is legal but the global allocator isn't required to support
         // it so return a dangling pointer instead.

@@ -12,7 +12,7 @@ mod sys {
 use sys::message::message::RawMessage;
 use sys::mini_table::mini_table::RawMiniTable;
 
-extern "C" {
+unsafe extern "C" {
     /// Returns the minimum needed length (excluding NULL) that `buf` has to be
     /// to hold the `msg`s debug string.
     ///

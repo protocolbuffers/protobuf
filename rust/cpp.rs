@@ -103,7 +103,7 @@ pub struct InnerProtoString {
     owned_ptr: CppStdString,
 }
 
-extern "C" {
+unsafe extern "C" {
     pub fn proto2_rust_Message_delete(m: RawMessage);
     pub fn proto2_rust_Message_clear(m: RawMessage);
     pub fn proto2_rust_Message_parse(m: RawMessage, input: PtrAndLen) -> bool;
@@ -149,7 +149,7 @@ impl From<&[u8]> for InnerProtoString {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     fn proto2_rust_cpp_new_string(src: PtrAndLen) -> CppStdString;
     fn proto2_rust_cpp_delete_string(src: CppStdString);
     fn proto2_rust_cpp_string_to_view(src: CppStdString) -> PtrAndLen;
@@ -324,7 +324,7 @@ impl From<RustStringRawParts> for String {
     }
 }
 
-extern "C" {
+unsafe extern "C" {
     fn proto2_rust_utf8_debug_string(raw: RawMessage) -> RustStringRawParts;
 }
 
@@ -335,7 +335,7 @@ pub fn debug_string(raw: RawMessage, f: &mut fmt::Formatter<'_>) -> fmt::Result 
     write!(f, "{dbg_str}")
 }
 
-extern "C" {
+unsafe extern "C" {
     /// # Safety
     /// - `raw1` and `raw2` legally dereferenceable MessageLite* pointers.
     #[link_name = "proto2_rust_messagelite_equals"]
@@ -662,7 +662,7 @@ macro_rules! impl_repeated_primitives {
         $reserve_thunk:ident $(,)?
     ]),* $(,)?) => {
         $(
-            extern "C" {
+            unsafe extern "C" {
                 fn $new_thunk() -> RawRepeatedField;
                 fn $free_thunk(f: RawRepeatedField);
                 fn $add_thunk(f: RawRepeatedField, v: <$t as CppTypeConversions>::InsertElemType);
@@ -747,7 +747,7 @@ macro_rules! impl_repeated_primitives {
 
 impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoString, ProtoBytes);
 
-extern "C" {
+unsafe extern "C" {
     pub fn proto2_rust_RepeatedField_Message_new() -> RawRepeatedField;
     pub fn proto2_rust_RepeatedField_Message_free(field: RawRepeatedField);
     pub fn proto2_rust_RepeatedField_Message_size(field: RawRepeatedField) -> usize;
@@ -1354,7 +1354,7 @@ macro_rules! impl_map_primitives {
         $remove_thunk:ident,
     ]),* $(,)?) => {
         $(
-            extern "C" {
+            unsafe extern "C" {
                 pub fn $insert_thunk(
                     m: RawMap,
                     key: $cpp_type,
@@ -1397,7 +1397,7 @@ impl_map_primitives!(
     ProtoString, PtrAndLen;
 );
 
-extern "C" {
+unsafe extern "C" {
     fn proto2_rust_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
 
     pub fn proto2_rust_map_new(key_prototype: MapValue, value_prototype: MapValue) -> RawMap;
