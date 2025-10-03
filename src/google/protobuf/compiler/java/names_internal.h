@@ -33,19 +33,19 @@ inline std::string JoinPackage(absl::string_view a, absl::string_view b) {
   }
 }
 
-inline std::string DefaultJavaPackage(const FileDescriptor* file) {
-  if (file->options().has_java_package()) {
-    return file->options().java_package();
+inline std::string DefaultJavaPackage(const FileDescriptor& file) {
+  if (file.options().has_java_package()) {
+    return file.options().java_package();
   } else {
     return JoinPackage(google::protobuf::internal::IsOss() ? "" : "com.google.protos",
-                       file->package());
+                       file.package());
   }
 }
 
 // The package name to use for a file that is being compiled as proto2-API.
 // If the file is declared as proto1-API, this may involve using the alternate
 // package name.
-inline std::string Proto2DefaultJavaPackage(const FileDescriptor* file) {
+inline std::string Proto2DefaultJavaPackage(const FileDescriptor& file) {
 
   return DefaultJavaPackage(file);
 }

@@ -122,7 +122,7 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
 }
 
 std::string FileJavaPackage(const FileDescriptor* file) {
-  return Proto2DefaultJavaPackage(file);
+  return Proto2DefaultJavaPackage(*file);
 }
 
 std::string JavaPackageDirectory(const FileDescriptor* file) {
