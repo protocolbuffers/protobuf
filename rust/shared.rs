@@ -25,7 +25,7 @@ pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
 pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
 pub use crate::optional::Optional;
 pub use crate::proxied::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy, View,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, View,
     ViewProxy,
 };
 pub use crate::r#enum::{Enum, UnknownEnumValue};
