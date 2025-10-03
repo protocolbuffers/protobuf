@@ -139,7 +139,7 @@ public final class GeneratorNames {
       FileDescriptorProtoOrBuilder file, boolean useOldOuterClassnameDefault) {
     // Replicates the logic of ClassNameResolver::GetFileDefaultImmutableClassName.
     String name = file.getName();
-    name = name.substring(name.lastIndexOf('/'));
+    name = name.substring(name.lastIndexOf('/') + 1);
     name = underscoresToCamelCase(stripProto(name));
     return useOldOuterClassnameDefault ? name : name + "Proto";
   }
