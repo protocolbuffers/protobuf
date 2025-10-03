@@ -309,6 +309,9 @@ struct DescriptorTable;
 class DescriptorPoolExtensionFinder;
 class ExtensionSet;
 class HasBitsTestPeer;
+class InternalMetadataOffset;
+template <typename T, size_t kFieldOffset>
+struct InternalMetadataOffsetHelper;
 class LazyField;
 class RepeatedPtrFieldBase;
 class TcParser;
@@ -1109,6 +1112,9 @@ class PROTOBUF_EXPORT MessageLite {
   friend class internal::DescriptorPoolExtensionFinder;
   friend class internal::ExtensionSet;
   friend class internal::HasBitsTestPeer;
+  friend class internal::InternalMetadataOffset;
+  template <typename T, size_t kFieldOffset>
+  friend struct internal::InternalMetadataOffsetHelper;
   friend class internal::LazyField;
   friend class internal::SwapFieldHelper;
   friend class internal::TcParser;

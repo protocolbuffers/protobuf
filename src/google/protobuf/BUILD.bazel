@@ -660,6 +660,7 @@ cc_library(
         "has_bits.h",
         "implicit_weak_message.h",
         "inlined_string_field.h",
+        "internal_metadata_locator.h",
         "map.h",
         "map_field_lite.h",
         "map_type_handler.h",
@@ -888,6 +889,36 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "internal_metadata_locator_test_proto",
+    srcs = ["internal_metadata_locator_test.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "internal_metadata_locator_test_cc_proto",
+    deps = [":internal_metadata_locator_test_proto"],
+)
+
+cc_test(
+    name = "internal_metadata_locator_test",
+    size = "small",
+    srcs = [
+        "internal_metadata_locator_test.cc",
+    ],
+    deps = [
+        ":arena",
+        ":internal_metadata_locator_test_cc_proto",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 # This provides just the header files for use in projects that need to build
 # shared libraries for dynamic loading. This target is available until Bazel
 # adds native support for such use cases.
@@ -1001,6 +1032,7 @@ filegroup(
     name = "test_proto_srcs",
     srcs = [
         "any_test.proto",
+        "internal_metadata_locator_test.proto",
         "map_proto2_unittest.proto",
         "map_unittest.proto",
         "unittest.proto",
