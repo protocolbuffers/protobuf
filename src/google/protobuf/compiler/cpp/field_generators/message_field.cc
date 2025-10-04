@@ -335,7 +335,9 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
           if (_this->$field_$ == nullptr) {
             _this->$field_$ = from.$field_$->New(arena);
           }
-          _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
+          static const auto merge_to_from =
+              ::google::protobuf::internal::GetClassData(*_this->$field_$)->merge_to_from;
+          merge_to_from(*_this->$field_$, *from.$field_$);
         )cc");
   } else if (should_split()) {
     p->Emit(
@@ -354,7 +356,9 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
       if (_this->$field_$ == nullptr) {
         _this->$field_$ = $superclass$::CopyConstruct(arena, *from.$field_$);
       } else {
-        _this->$field_$->MergeFrom(*from.$field_$);
+        static const auto merge_to_from =
+            ::google::protobuf::internal::GetClassData(*_this->$field_$)->merge_to_from;
+        merge_to_from(*_this->$field_$, *from.$field_$);
       }
     )cc");
   }
