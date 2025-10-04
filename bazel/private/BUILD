@@ -83,7 +83,10 @@ bzl_library(
         "bazel_java_proto_library_rule.bzl",
         "java_proto_support.bzl",
     ],
-    visibility = ["//bazel:__subpackages__"],
+    visibility = [
+        "//bazel:__subpackages__",
+        "//java/com/google/protobuf/interop/bazel:__subpackages__",
+    ],
     deps = [
         ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",
