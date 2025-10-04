@@ -11,15 +11,22 @@ edition = "2024";
 
 package protobuf_test_messages.edition;
 
-import option "google/protobuf/java_features.proto";
-
 option java_package = "com.google.protobuf.large.openenum.edition";
 option features.(pb.java).large_enum = true;
 
+import option "google/protobuf/java_features.proto";
+
+message LargeOpenEnumParent {
+  repeated LargeOpenEnum e = 1;
+}
+
 enum LargeOpenEnum {
+  option allow_alias = true;
+
   LARGE_ENUM_UNSPECIFIED = 0;
   LARGE_ENUM1 = 1;
   LARGE_ENUM2 = 2;
+  LARGE_ENUM2_ALIAS = 2;
   LARGE_ENUM3 = 3;
   LARGE_ENUM4 = 4;
   LARGE_ENUM5 = 5;
@@ -2018,4 +2025,5 @@ enum LargeOpenEnum {
   LARGE_ENUM1998 = 1998;
   LARGE_ENUM1999 = 1999;
   LARGE_ENUM2000 = 2000;
+  LARGE_ENUM1_ALIAS = 1;  // Aliased value that is far away from the original.
 }
