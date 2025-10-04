@@ -29,8 +29,6 @@ public abstract class AbstractSchemaTest<T extends MessageLite> {
 
   // Subclass should override this method if it needs to register more than one schemas.
   protected void registerSchemas() {
-    // Register this schema with the runtime to support processing of nested messages.
-    Protobuf.getInstance().registerSchemaOverride(schema.newInstance().getClass(), schema);
   }
 
   protected abstract Schema<T> schema();
