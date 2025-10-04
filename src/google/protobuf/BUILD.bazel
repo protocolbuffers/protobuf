@@ -317,6 +317,7 @@ proto_library(
     visibility = [
         "//:__pkg__",
         "//pkg:__pkg__",
+        "//rust/test:__pkg__",
     ],
 )
 
