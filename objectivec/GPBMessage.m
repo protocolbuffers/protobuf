@@ -3475,10 +3475,8 @@ GPB_INLINE BOOL GPBIsSetSelForField(const char *selName, size_t selNameLength,
 
 GPB_INLINE BOOL GPBFieldHasHas(GPBFieldDescriptor *descriptor) {
   // It gets has/setHas selectors if...
-  //  - not in a oneof (negative has index)
   //  - not clearing on zero
-  return (descriptor->description_->hasIndex >= 0) &&
-         ((descriptor->description_->flags & GPBFieldClearHasIvarOnZero) == 0);
+  return ((descriptor->description_->flags & GPBFieldClearHasIvarOnZero) == 0);
 }
 
 GPB_INLINE BOOL GPBIsHasSelForField(const char *selName, size_t selNameLength,

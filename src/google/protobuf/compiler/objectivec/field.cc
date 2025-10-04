@@ -275,7 +275,7 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
 }
 
 bool FieldGenerator::WantsHasProperty() const {
-  return descriptor_->has_presence() && !descriptor_->real_containing_oneof();
+  return descriptor_->has_presence();
 }
 
 SingleFieldGenerator::SingleFieldGenerator(
