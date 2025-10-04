@@ -316,6 +316,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
         type_info_(type_info),
         table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)),
         arena_(arena) {}
+  explicit constexpr UntypedMapBase(TypeInfo type_info)
+      : UntypedMapBase(/*arena=*/nullptr, type_info) {}
 
   UntypedMapBase(const UntypedMapBase&) = delete;
   UntypedMapBase& operator=(const UntypedMapBase&) = delete;
