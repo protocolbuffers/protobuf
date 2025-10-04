@@ -100,7 +100,7 @@ public final class Descriptors {
                     JavaEditionDefaults.PROTOBUF_INTERNAL_JAVA_EDITION_DEFAULTS.getBytes(
                         Internal.ISO_8859_1),
                     registry));
-          } catch (Exception e) {
+          } catch (InvalidProtocolBufferException e) {
             throw new AssertionError(e);
           }
         }
@@ -158,6 +158,7 @@ public final class Descriptors {
     /** Convert the descriptor to its protocol message representation. */
     @Override
     public FileDescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       return proto;
     }
 
@@ -198,6 +199,18 @@ public final class Descriptors {
 
     /** Get the {@code FileOptions}, defined in {@code descriptor.proto}. */
     public FileOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code FileOptions} without triggering lazy parsing of custom options. */
+    protected FileOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private FileOptions getOptions(boolean parseCustomOptions) {
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
       if (this.options == null) {
         FileOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -535,6 +548,25 @@ public final class Descriptors {
       return internalBuildGeneratedFileFrom(descriptorDataParts, dependencies);
     }
 
+    public void internalUpdateExtensionRegistry(ExtensionRegistry registry) {
+      this.registry = registry;
+    }
+
+    public static void internalUpdateFileDescriptor(FileDescriptor descriptor) {
+      if (descriptor.registry == null
+          || descriptor.registry.equals(ExtensionRegistry.getEmptyRegistry())) {
+        return;
+      }
+      synchronized (descriptor) {
+        if (descriptor.registry == null
+            || descriptor.registry.equals(ExtensionRegistry.getEmptyRegistry())) {
+          return;
+        }
+        internalUpdateFileDescriptor(descriptor, descriptor.registry);
+        descriptor.registry = null;
+      }
+    }
+
     /**
      * This method is to be called by generated code only. It updates the FileDescriptorProto
      * associated with the descriptor by parsing it again with the given ExtensionRegistry. This is
@@ -542,6 +574,7 @@ public final class Descriptors {
      */
     public static void internalUpdateFileDescriptor(
         FileDescriptor descriptor, ExtensionRegistry registry) {
+      // System.out.println("internalUpdateFileDescriptor called during static init?");
       ByteString bytes = descriptor.proto.toByteString();
       try {
         FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
@@ -581,6 +614,7 @@ public final class Descriptors {
     private final FileDescriptorTables tables;
     private final boolean placeholder;
     private volatile boolean featuresResolved;
+    private volatile ExtensionRegistry registry;
 
     private FileDescriptor(
         final FileDescriptorProto proto,
@@ -660,7 +694,7 @@ public final class Descriptors {
           FileDescriptorProto.newBuilder()
               .setName(message.getFullName() + ".placeholder.proto")
               .setPackage(packageName)
-              .addMessageType(message.toProto())
+              .addMessageType(message.toRawProto())
               .build();
       this.dependencies = new FileDescriptor[0];
       this.publicDependencies = new FileDescriptor[0];
@@ -817,6 +851,11 @@ public final class Descriptors {
     /** Convert the descriptor to its protocol message representation. */
     @Override
     public DescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
+      return proto;
+    }
+
+    protected DescriptorProto toRawProto() {
       return proto;
     }
 
@@ -868,6 +907,20 @@ public final class Descriptors {
 
     /** Get the {@code MessageOptions}, defined in {@code descriptor.proto}. */
     public MessageOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code MessageOptions} without triggering lazy parsing of custom options. */
+    protected MessageOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private MessageOptions getOptions(boolean parseCustomOptions) {
+      // TODO: Can this get moved to getExtensions instead so normal calls to getOptions that don't
+      // look at custom options don't reparse?
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
       if (this.options == null) {
         MessageOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -1343,6 +1396,7 @@ public final class Descriptors {
     /** Convert the descriptor to its protocol message representation. */
     @Override
     public FieldDescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       return proto;
     }
 
@@ -1412,8 +1466,8 @@ public final class Descriptors {
       // (custom options) into unknown fields.
       if (type == Type.MESSAGE
           && !(typeDescriptor != null
-              && ((Descriptor) typeDescriptor).toProto().getOptions().getMapEntry())
-          && !(containingType != null && containingType.toProto().getOptions().getMapEntry())
+              && ((Descriptor) typeDescriptor).getRawOptions().getMapEntry())
+          && !(containingType != null && containingType.getRawOptions().getMapEntry())
           && this.features != null
           && getFeatures().getMessageEncoding() == FeatureSet.MessageEncoding.DELIMITED) {
         return Type.GROUP;
@@ -1432,7 +1486,7 @@ public final class Descriptors {
       if (getType() != Type.STRING) {
         return false;
       }
-      if (getContainingType().toProto().getOptions().getMapEntry()) {
+      if (getContainingType().getRawOptions().getMapEntry()) {
         // Always enforce strict UTF-8 checking for map fields.
         return true;
       }
@@ -1448,7 +1502,7 @@ public final class Descriptors {
     public boolean isMapField() {
       return getType() == Type.MESSAGE
           && isRepeated()
-          && getMessageType().toProto().getOptions().getMapEntry();
+          && getMessageType().getRawOptions().getMapEntry();
     }
 
     // I'm pretty sure values() constructs a new array every time, since there
@@ -1519,6 +1573,18 @@ public final class Descriptors {
 
     /** Get the {@code FieldOptions}, defined in {@code descriptor.proto}. */
     public FieldOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code FieldOptions} without triggering lazy parsing of custom options. */
+    protected FieldOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private FieldOptions getOptions(boolean parseCustomOptions) {
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
       if (this.options == null) {
         FieldOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2054,8 +2120,7 @@ public final class Descriptors {
 
     @Override
     void validateFeatures() throws DescriptorValidationException {
-      if (containingType != null
-          && containingType.toProto().getOptions().getMessageSetWireFormat()) {
+      if (containingType != null && containingType.getRawOptions().getMessageSetWireFormat()) {
         if (isExtension()) {
           if (isRequired() || isRepeated() || getType() != Type.MESSAGE) {
             throw new DescriptorValidationException(
@@ -2281,6 +2346,7 @@ public final class Descriptors {
     /** Convert the descriptor to its protocol message representation. */
     @Override
     public EnumDescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       return proto;
     }
 
@@ -2353,6 +2419,18 @@ public final class Descriptors {
 
     /** Get the {@code EnumOptions}, defined in {@code descriptor.proto}. */
     public EnumOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code EnumOptions} without triggering lazy parsing of custom options. */
+    protected EnumOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private EnumOptions getOptions(boolean parseCustomOptions) {
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
       if (this.options == null) {
         EnumOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2590,6 +2668,7 @@ public final class Descriptors {
     /** Convert the descriptor to its protocol message representation. */
     @Override
     public EnumValueDescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       return proto;
     }
 
@@ -2638,6 +2717,18 @@ public final class Descriptors {
 
     /** Get the {@code EnumValueOptions}, defined in {@code descriptor.proto}. */
     public EnumValueOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code EnumValueOptions} without triggering lazy parsing of custom options. */
+    protected EnumValueOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private EnumValueOptions getOptions(boolean parseCustomOptions) {
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
       if (this.options == null) {
         EnumValueOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2712,6 +2803,7 @@ public final class Descriptors {
     /** Convert the descriptor to its protocol message representation. */
     @Override
     public ServiceDescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       return proto;
     }
 
@@ -2744,6 +2836,19 @@ public final class Descriptors {
 
     /** Get the {@code ServiceOptions}, defined in {@code descriptor.proto}. */
     public ServiceOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code ServiceOptions} without triggering lazy parsing of custom options. */
+    protected ServiceOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private ServiceOptions getOptions(boolean parseCustomOptions) {
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
+
       if (this.options == null) {
         ServiceOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -2855,6 +2960,7 @@ public final class Descriptors {
     /** Convert the descriptor to its protocol message representation. */
     @Override
     public MethodDescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       return proto;
     }
 
@@ -2912,6 +3018,19 @@ public final class Descriptors {
 
     /** Get the {@code MethodOptions}, defined in {@code descriptor.proto}. */
     public MethodOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code MethodOptions} without triggering lazy parsing of custom options. */
+    protected MethodOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private MethodOptions getOptions(boolean parseCustomOptions) {
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
+
       if (this.options == null) {
         MethodOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -3055,6 +3174,7 @@ public final class Descriptors {
                       .getUnknownFields()
                       .hasField(JavaFeaturesProto.java_.getNumber())
               );
+      // TODO: Skip additional parse for unknown features by using built in registry on first parse
       if (hasPossibleCustomJavaFeature || hasPossibleUnknownJavaFeature) {
         ExtensionRegistry registry = ExtensionRegistry.newInstance();
         registry.add(JavaFeaturesProto.java_);
@@ -3544,6 +3664,18 @@ public final class Descriptors {
     }
 
     public OneofOptions getOptions() {
+      return getOptions(/* parseCustomOptions= */ true);
+    }
+
+    /** Get the {@code OneofOptions} without triggering lazy parsing of custom options. */
+    protected OneofOptions getRawOptions() {
+      return getOptions(/* parseCustomOptions= */ false);
+    }
+
+    private OneofOptions getOptions(boolean parseCustomOptions) {
+      if (parseCustomOptions) {
+        FileDescriptor.internalUpdateFileDescriptor(getFile());
+      }
       if (this.options == null) {
         OneofOptions strippedOptions = this.proto.getOptions();
         if (strippedOptions.hasFeatures()) {
@@ -3572,6 +3704,7 @@ public final class Descriptors {
 
     @Override
     public OneofDescriptorProto toProto() {
+      FileDescriptor.internalUpdateFileDescriptor(getFile());
       return proto;
     }
 
