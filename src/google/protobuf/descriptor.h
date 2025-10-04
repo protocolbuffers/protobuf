@@ -3122,6 +3122,8 @@ struct FieldRangeImpl {
     using iterator_category = std::forward_iterator_tag;
     using value_type = const FieldDescriptor*;
     using difference_type = int;
+    using pointer = const FieldDescriptor* const*;
+    using reference = const FieldDescriptor* const&;
 
     value_type operator*() { return descriptor->field(idx); }
 
