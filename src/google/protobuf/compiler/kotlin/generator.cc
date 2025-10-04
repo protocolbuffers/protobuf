@@ -82,8 +82,8 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
   std::vector<std::string> all_files;
   std::vector<std::string> all_annotations;
 
-  std::unique_ptr<FileGenerator> file_generator(
-      new FileGenerator(file, file_options));
+  std::unique_ptr<FileGenerator> file_generator =
+      std::make_unique<FileGenerator>(file, file_options);
 
   if (!file_generator) return false;
 
