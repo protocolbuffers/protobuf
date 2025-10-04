@@ -5,7 +5,7 @@ package legacy_gencode_test.proto3;
 option java_outer_classname = "Proto3GencodeTestProto";
 
 message TestMessage {
-  optional string x = 2;
+  string x = 2;
   NestedTestMessage y = 3;
 }
 
