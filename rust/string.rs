@@ -13,7 +13,7 @@ use crate::__internal::runtime::InnerProtoString;
 use crate::__internal::{Private, SealedInternal};
 use crate::{
     utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied,
-    Proxy, View, ViewProxy,
+    View, ViewProxy,
 };
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
@@ -130,8 +130,6 @@ impl IntoProxied<ProtoBytes> for Arc<[u8]> {
 }
 
 impl SealedInternal for &[u8] {}
-
-impl<'msg> Proxy<'msg> for &'msg [u8] {}
 
 impl AsView for &[u8] {
     type Proxied = ProtoBytes;
@@ -533,8 +531,6 @@ impl AsView for ProtoString {
         self.as_view()
     }
 }
-
-impl<'msg> Proxy<'msg> for &'msg ProtoStr {}
 
 impl AsView for &ProtoStr {
     type Proxied = ProtoString;

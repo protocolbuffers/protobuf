@@ -7,8 +7,7 @@
 
 use crate::__internal::{Private, SealedInternal};
 use crate::{
-    AsView, IntoProxied, IntoView, ProtoBytes, ProtoStr, ProtoString, Proxied, Proxy, View,
-    ViewProxy,
+    AsView, IntoProxied, IntoView, ProtoBytes, ProtoStr, ProtoString, Proxied, View, ViewProxy,
 };
 use paste::paste;
 use std::cmp::PartialEq;
@@ -40,8 +39,6 @@ macro_rules! impl_cord_types {
               unimplemented!("Proto Cord should never be constructed");
             }
           }
-
-          impl<'msg> Proxy<'msg> for [< $t Cow>]<'msg> {}
 
           impl<'msg> ViewProxy<'msg> for [< $t Cow>]<'msg> {}
 

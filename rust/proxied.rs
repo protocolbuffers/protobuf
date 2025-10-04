@@ -45,7 +45,6 @@
 //! indirection between the user and the internal memory representation.
 
 use crate::__internal::{Private, SealedInternal};
-use std::fmt::Debug;
 
 /// A type that can be accessed through a reference-like proxy.
 ///
@@ -201,24 +200,14 @@ pub trait IntoMut<'msg>: SealedInternal + AsMut {
         'msg: 'shorter;
 }
 
-/// Declares conversion operations common to all proxies (both views and mut
-/// proxies).
-///
-/// This trait is intentionally made non-object-safe to prevent a potential
-/// future incompatible change.
-pub trait Proxy<'msg>:
-    SealedInternal + 'msg + IntoView<'msg> + Sync + Unpin + Sized + Debug
-{
-}
-
 /// Declares conversion operations common to view proxies.
-pub trait ViewProxy<'msg>: SealedInternal + Proxy<'msg> + Send {}
+pub trait ViewProxy<'msg>: SealedInternal + Send + IntoView<'msg> {}
 
 /// Declares operations common to all mut proxies.
 ///
 /// This trait is intentionally made non-object-safe to prevent a potential
 /// future incompatible change.
-pub trait MutProxy<'msg>: SealedInternal + Proxy<'msg> + AsMut + IntoMut<'msg> {
+pub trait MutProxy<'msg>: SealedInternal + AsMut + IntoMut<'msg> + IntoView<'msg> {
     /// Gets an immutable view of this field. This is shorthand for `as_view`.
     ///
     /// This provides a shorter lifetime than `into_view` but can also be called
@@ -306,8 +295,6 @@ mod tests {
         }
     }
 
-    impl<'msg> Proxy<'msg> for MyProxiedView<'msg> {}
-
     impl<'msg> ViewProxy<'msg> for MyProxiedView<'msg> {}
 
     impl<'msg> AsView for MyProxiedView<'msg> {
@@ -333,8 +320,6 @@ mod tests {
     }
 
     impl<'msg> SealedInternal for MyProxiedMut<'msg> {}
-
-    impl<'msg> Proxy<'msg> for MyProxiedMut<'msg> {}
 
     impl<'msg> AsView for MyProxiedMut<'msg> {
         type Proxied = MyProxied;
