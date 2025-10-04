@@ -95,7 +95,13 @@ class DynamicMapField final : public MapFieldBase {
   // allow the caller to use the appropriate lookup function. During prototype
   // building we need to use a different one.
   DynamicMapField(const Message* default_entry,
-                  const Message* mapped_default_entry_if_message, Arena* arena);
+                  const Message* mapped_default_entry_if_message,
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+                  InternalMetadataOffset offset
+#else
+                  Arena* arena
+#endif
+  );
   DynamicMapField(const DynamicMapField&) = delete;
   DynamicMapField& operator=(const DynamicMapField&) = delete;
   ~DynamicMapField();
@@ -146,6 +152,20 @@ static auto DefaultEntryToTypeInfo(
       mapped_default_entry_if_message);
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+DynamicMapField::DynamicMapField(const Message* default_entry,
+                                 const Message* mapped_default_entry_if_message,
+                                 InternalMetadataOffset offset)
+    : MapFieldBase(default_entry),
+      map_(offset.TranslateForMember<offsetof(DynamicMapField, map_)>(),
+           DefaultEntryToTypeInfo(default_entry,
+                                  mapped_default_entry_if_message)) {
+  // This invariant is required by `GetMapRaw` to easily access the map
+  // member without paying for dynamic dispatch.
+  static_assert(MapFieldBaseForParse::MapOffset() ==
+                PROTOBUF_FIELD_OFFSET(DynamicMapField, map_));
+}
+#else
 DynamicMapField::DynamicMapField(const Message* default_entry,
                                  const Message* mapped_default_entry_if_message,
                                  Arena* arena)
@@ -157,6 +177,7 @@ DynamicMapField::DynamicMapField(const Message* default_entry,
   static_assert(MapFieldBaseForParse::MapOffset() ==
                 PROTOBUF_FIELD_OFFSET(DynamicMapField, map_));
 }
+#endif
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(map_.arena(), nullptr);
@@ -500,7 +521,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   }
 
   if (type_info_->extensions_offset != -1) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+    new (MutableExtensionsRaw()) ExtensionSet();
+#else
     new (MutableExtensionsRaw()) ExtensionSet(arena);
+#endif
   }
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
@@ -610,7 +635,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                           ? type_info_->factory->GetPrototype(sub)
                           : type_info_->factory->GetPrototypeNoLock(sub)
                     : nullptr,
-                arena);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+                FieldInternalMetadataOffset(i)
+#else
+                arena
+#endif
+            );
           } else {
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
             new (field_ptr)
