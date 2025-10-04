@@ -9796,7 +9796,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
   // First set the value on the UnknownFieldSet corresponding to the
   // innermost message.
-  std::unique_ptr<UnknownFieldSet> unknown_fields(new UnknownFieldSet());
+  std::unique_ptr<UnknownFieldSet> unknown_fields =
+      std::make_unique<UnknownFieldSet>();
   if (!SetOptionValue(field, unknown_fields.get())) {
     return false;  // SetOptionValue() already added the error.
   }
@@ -9806,8 +9807,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   for (std::vector<const FieldDescriptor*>::reverse_iterator iter =
            intermediate_fields.rbegin();
        iter != intermediate_fields.rend(); ++iter) {
-    std::unique_ptr<UnknownFieldSet> parent_unknown_fields(
-        new UnknownFieldSet());
+    std::unique_ptr<UnknownFieldSet> parent_unknown_fields =
+        std::make_unique<UnknownFieldSet>();
     switch ((*iter)->type()) {
       case FieldDescriptor::TYPE_MESSAGE: {
         std::string outstr;

@@ -1797,7 +1797,8 @@ class TextFormatParserTest : public testing::Test {
  protected:
   void ExpectFailure(const std::string& input, const std::string& message,
                      int line, int col) {
-    std::unique_ptr<unittest::TestAllTypes> proto(new unittest::TestAllTypes);
+    std::unique_ptr<unittest::TestAllTypes> proto =
+        std::make_unique<unittest::TestAllTypes>();
     ExpectFailure(input, message, line, col, proto.get());
   }
 
@@ -1867,7 +1868,8 @@ class TextFormatParserTest : public testing::Test {
 };
 
 TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
-  std::unique_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  std::unique_ptr<unittest::TestAllTypes> message =
+      std::make_unique<unittest::TestAllTypes>();
   const Descriptor* d = message->GetDescriptor();
 
   std::string stringData =
@@ -1934,7 +1936,8 @@ TEST_F(TextFormatParserTest, ParseInfoTreeBuilding) {
 }
 
 TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
-  std::unique_ptr<unittest::TestAllTypes> message(new unittest::TestAllTypes);
+  std::unique_ptr<unittest::TestAllTypes> message =
+      std::make_unique<unittest::TestAllTypes>();
   const Descriptor* d = message->GetDescriptor();
 
 #define EXPECT_FIELD(name, value, valuestring)                             \

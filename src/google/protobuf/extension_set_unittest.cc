@@ -543,7 +543,7 @@ TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
 
 TEST(ExtensionSetTest, SwapExtensionBothFullWithArena) {
   Arena arena1;
-  std::unique_ptr<Arena> arena2(new Arena());
+  std::unique_ptr<Arena> arena2 = std::make_unique<Arena>();
 
   unittest::TestAllExtensions* message1 =
       Arena::Create<unittest::TestAllExtensions>(&arena1);
