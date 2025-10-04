@@ -39,6 +39,7 @@ void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
   // Do the merging in steps to avoid Key*Value number of instantiations and
   // reduce code duplication per instantation.
   NodeBase* nodes = nullptr;
+  Arena* arena = this->arena();
 
   // First, allocate all the nodes without types.
   for (size_t i = 0; i < other.num_elements_; ++i) {
@@ -63,9 +64,9 @@ void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
       out_node = out_node->next;
       auto& in = *other.GetValue<Value>(it.node_);
       if constexpr (std::is_same_v<MessageLite, Value>) {
-        class_data->PlacementNew(out, arena())->CheckTypeAndMergeFrom(in);
+        class_data->PlacementNew(out, arena)->CheckTypeAndMergeFrom(in);
       } else {
-        Arena::CreateInArenaStorage(out, this->arena_, in);
+        Arena::CreateInArenaStorage(out, arena, in);
       }
     }
   });
@@ -78,8 +79,8 @@ void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
       nodes = nodes->next;
       const Key& in = *other.GetKey<Key>(it.node_);
       Key* out = GetKey<Key>(node);
-      if (!internal::InitializeMapKey(out, in, this->arena_)) {
-        Arena::CreateInArenaStorage(out, this->arena_, in);
+      if (!internal::InitializeMapKey(out, in, arena)) {
+        Arena::CreateInArenaStorage(out, arena, in);
       }
 
       static_cast<KeyMapBase<Key>*>(this)->InsertOrReplaceNode(
@@ -92,7 +93,8 @@ void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
   if (arena() == other.arena()) {
     InternalSwap(&other);
   } else {
-    UntypedMapBase tmp(arena_, type_info_);
+    Arena* arena = this->arena();
+    UntypedMapBase tmp(arena, type_info_);
     InternalSwap(&tmp);
 
     ABSL_DCHECK(empty());
@@ -101,7 +103,7 @@ void UntypedMapBase::UntypedSwap(UntypedMapBase& other) {
     other.ClearTable(true);
     other.UntypedMergeFrom(tmp);
 
-    if (arena_ == nullptr) tmp.ClearTable(false);
+    if (arena == nullptr) tmp.ClearTable(false);
   }
 }
 
@@ -117,7 +119,7 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
 void UntypedMapBase::ClearTableImpl(bool reset) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
-  if (arena_ == nullptr) {
+  if (arena() == nullptr) {
     const auto loop = [this](auto destroy_node) {
       NodeBase** table = table_;
       for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
