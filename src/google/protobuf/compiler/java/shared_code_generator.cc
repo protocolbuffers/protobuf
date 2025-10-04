@@ -52,9 +52,9 @@ void SharedCodeGenerator::Generate(
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
-    std::unique_ptr<io::Printer> printer(new io::Printer(
+    std::unique_ptr<io::Printer> printer = std::make_unique<io::Printer>(
         output.get(), '$',
-        options_.annotate_code ? &annotation_collector : nullptr));
+        options_.annotate_code ? &annotation_collector : nullptr);
     std::string info_relative_path = absl::StrCat(classname, ".java.pb.meta");
     std::string info_full_path = absl::StrCat(filename, ".pb.meta");
     printer->Print(
