@@ -79,6 +79,23 @@ if (protobuf_BUILD_PROTOC_BINARIES)
   endforeach ()
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
+if (protobuf_BUILD_PROTOC_PLUGIN_BINARIES)
+  set(_protobuf_plugins cpp csharp java kotlin objectivec php python pyi ruby rust)
+  foreach(_plugin ${_protobuf_plugins})
+    set(_plugin_binary protoc-gen-${_plugin})
+    install(TARGETS ${_plugin_binary} EXPORT protobuf-targets
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_plugin_binary}
+      BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_plugin_binary})
+    if (UNIX AND NOT APPLE)
+      set_property(TARGET ${_plugin_binary}
+        PROPERTY INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
+    elseif (APPLE)
+      set_property(TARGET ${_plugin_binary}
+        PROPERTY INSTALL_RPATH "@loader_path/../lib")
+    endif()
+  endforeach()
+endif (protobuf_BUILD_PROTOC_PLUGIN_BINARIES)
+
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 if (protobuf_BUILD_LIBUPB)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/upb.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
