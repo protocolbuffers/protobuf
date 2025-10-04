@@ -343,10 +343,19 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
     reflection->UnsafeArenaReleaseLast(message, descriptor);
   }
   for (Py_ssize_t i = 0; i < length; ++i) {
+#ifdef Py_GIL_DISABLED
+    PyObject* item = PyList_GetItemRef(child_list, i);
+    if (!item) return;
+#else
+    PyObject* item = PyList_GET_ITEM(child_list, i);
+#endif
     Message* child_message =
-        reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i))->message;
+        reinterpret_cast<CMessage*>(item)->message;
     reflection->UnsafeArenaAddAllocatedMessage(message, descriptor,
                                                child_message);
+#ifdef Py_GIL_DISABLED
+    Py_DECREF(item);
+#endif
   }
 }
 
@@ -374,6 +383,7 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   // Support the old sort_function argument for backwards
   // compatibility.
   if (kwds != nullptr) {
+    // Okay to use thread-unsafe API since kwds cannot be modified concurrently
     PyObject* sort_func = PyDict_GetItemString(kwds, "sort_function");
     if (sort_func != nullptr) {
       // Must set before deleting as sort_func is a borrowed reference
