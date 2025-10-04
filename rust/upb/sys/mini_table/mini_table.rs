@@ -51,7 +51,7 @@ pub type RawMiniTableField = NonNull<upb_MiniTableField>;
 // we are not currently using it.
 opaque_pointee!(upb_Status);
 
-extern "C" {
+unsafe extern "C" {
     /// Finds the field with the provided number, will return NULL if no such
     /// field is found.
     ///

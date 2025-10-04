@@ -21,7 +21,7 @@ use sys::opaque_pointee::opaque_pointee;
 opaque_pointee!(upb_Message);
 pub type RawMessage = NonNull<upb_Message>;
 
-extern "C" {
+unsafe extern "C" {
     /// # Safety
     /// - `mini_table` and `arena` must be valid to deref
     pub fn upb_Message_New(mini_table: RawMiniTable, arena: RawArena) -> Option<RawMessage>;
