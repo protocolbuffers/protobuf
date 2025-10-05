@@ -733,7 +733,6 @@ TEST(RepeatedField, AddAndAssignRanges) {
 }
 
 TEST(RepeatedField, CopyConstructIntegers) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<int>;
   RepeatedType original;
   original.Add(1);
@@ -744,14 +743,14 @@ TEST(RepeatedField, CopyConstructIntegers) {
   EXPECT_EQ(1, fields1.Get(0));
   EXPECT_EQ(2, fields1.Get(1));
 
-  RepeatedType fields2(token, nullptr, original);
-  ASSERT_EQ(2, fields2.size());
-  EXPECT_EQ(1, fields2.Get(0));
-  EXPECT_EQ(2, fields2.Get(1));
+  auto* fields2 = Arena::Create<RepeatedType>(nullptr, original);
+  ASSERT_EQ(2, fields2->size());
+  EXPECT_EQ(1, fields2->Get(0));
+  EXPECT_EQ(2, fields2->Get(1));
+  delete fields2;
 }
 
 TEST(RepeatedField, CopyConstructCords) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<absl::Cord>;
   RepeatedType original;
   original.Add(absl::Cord("hello"));
@@ -762,43 +761,37 @@ TEST(RepeatedField, CopyConstructCords) {
   EXPECT_EQ("hello", fields1.Get(0));
   EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
 
-  RepeatedType fields2(token, nullptr, original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ("hello", fields1.Get(0));
-  EXPECT_EQ("world and text to avoid SSO", fields2.Get(1));
+  auto* fields2 = Arena::Create<RepeatedType>(nullptr, original);
+  ASSERT_EQ(2, fields2->size());
+  EXPECT_EQ("hello", fields2->Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields2->Get(1));
+  delete fields2;
 }
 
 TEST(RepeatedField, CopyConstructIntegersWithArena) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<int>;
   RepeatedType original;
   original.Add(1);
   original.Add(2);
 
   Arena arena;
-  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
-  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ(1, fields1.Get(0));
-  EXPECT_EQ(2, fields1.Get(1));
+  auto* fields1 = Arena::Create<RepeatedType>(&arena, original);
+  ASSERT_EQ(2, fields1->size());
+  EXPECT_EQ(1, fields1->Get(0));
+  EXPECT_EQ(2, fields1->Get(1));
 }
 
 TEST(RepeatedField, CopyConstructCordsWithArena) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<absl::Cord>;
   RepeatedType original;
   original.Add(absl::Cord("hello"));
   original.Add(absl::Cord("world and text to avoid SSO"));
 
   Arena arena;
-  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
-  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ("hello", fields1.Get(0));
-  EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
-
-  // Contract requires dtor to be invoked for absl::Cord
-  fields1.~RepeatedType();
+  auto* fields1 = Arena::Create<RepeatedType>(&arena, original);
+  ASSERT_EQ(2, fields1->size());
+  EXPECT_EQ("hello", fields1->Get(0));
+  EXPECT_EQ("world and text to avoid SSO", fields1->Get(1));
 }
 
 TEST(RepeatedField, IteratorConstruct) {
