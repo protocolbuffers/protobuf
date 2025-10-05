@@ -374,7 +374,7 @@ public class UnknownFieldSetTest {
 
   @Test
   public void testCopyFrom() throws Exception {
-    TestEmptyMessage message = TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).build();
+    TestEmptyMessage message = emptyMessage.toBuilder().build();
 
     assertThat(message.toString()).isEqualTo(emptyMessage.toString());
   }
@@ -405,7 +405,7 @@ public class UnknownFieldSetTest {
 
   @Test
   public void testAsMap() throws Exception {
-    UnknownFieldSet.Builder builder = UnknownFieldSet.newBuilder().mergeFrom(unknownFields);
+    UnknownFieldSet.Builder builder = unknownFields.toBuilder();
     Map<Integer, UnknownFieldSet.Field> mapFromBuilder = builder.asMap();
     assertThat(mapFromBuilder).isNotEmpty();
     UnknownFieldSet fields = builder.build();
@@ -415,22 +415,20 @@ public class UnknownFieldSetTest {
 
   @Test
   public void testClear() throws Exception {
-    UnknownFieldSet fields = UnknownFieldSet.newBuilder().mergeFrom(unknownFields).clear().build();
+    UnknownFieldSet fields = unknownFields.toBuilder().clear().build();
     assertThat(fields.asMap()).isEmpty();
   }
 
   @Test
   public void testClearMessage() throws Exception {
-    TestEmptyMessage message =
-        TestEmptyMessage.newBuilder().mergeFrom(emptyMessage).clear().build();
+    TestEmptyMessage message = emptyMessage.toBuilder().clear().build();
     assertThat(message.getSerializedSize()).isEqualTo(0);
   }
 
   @Test
   public void testClearField() throws Exception {
     int fieldNumber = unknownFields.asMap().keySet().iterator().next();
-    UnknownFieldSet fields =
-        UnknownFieldSet.newBuilder().mergeFrom(unknownFields).clearField(fieldNumber).build();
+    UnknownFieldSet fields = unknownFields.toBuilder().clearField(fieldNumber).build();
     assertThat(fields.hasField(fieldNumber)).isFalse();
   }
 
@@ -636,7 +634,7 @@ public class UnknownFieldSetTest {
         UnittestProto3.TestEmptyMessage.parseFrom(data, ExtensionRegistryLite.getEmptyRegistry());
     assertThat(message.toByteString()).isEqualTo(data);
 
-    message = UnittestProto3.TestEmptyMessage.newBuilder().mergeFrom(message).build();
+    message = message.toBuilder().build();
     assertThat(message.toByteString()).isEqualTo(data);
 
     assertThat(data)
