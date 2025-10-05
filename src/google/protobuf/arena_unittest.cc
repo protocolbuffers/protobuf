@@ -1465,11 +1465,11 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     // Fill some repeated fields on the arena to test for leaks. Also that the
     // newly allocated memory is approximately the size of the cleanups for the
     // repeated messages.
-    RepeatedField<int32_t> repeated_int32(&arena);
+    auto* repeated_int32 = Arena::Create<RepeatedField<int32_t>>(&arena);
     auto* repeated_message =
         Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
     for (int i = 0; i < 100; i++) {
-      repeated_int32.Add(42);
+      repeated_int32->Add(42);
       repeated_message->Add()->set_optional_int32(42);
       EXPECT_EQ(&arena, repeated_message->Get(0).GetArena());
       const TestAllTypes* msg_in_repeated_field = &repeated_message->Get(0);
