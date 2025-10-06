@@ -84,6 +84,7 @@ cc_test(
         "//hpb",
         "//hpb:arena",
         "//hpb:extension",
+        "//hpb:options",
         "//hpb_generator/tests:test_model_hpb_proto",
         "//upb/mem",
         "//upb/mini_table",
