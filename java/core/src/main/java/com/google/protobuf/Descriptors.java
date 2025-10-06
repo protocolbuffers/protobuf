@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1604,7 +1605,7 @@ public final class Descriptors {
         return false;
       }
 
-      if (!getMessageType().getName().toLowerCase().equals(getName())) {
+      if (!getMessageType().getName().toLowerCase(Locale.ROOT).equals(getName())) {
         // Group fields always are always the lowercase type name.
         return false;
       }

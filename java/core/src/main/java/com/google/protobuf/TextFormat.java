@@ -2222,9 +2222,9 @@ public final class TextFormat {
         // .proto file, which actually matches their type names, not their field
         // names.
         if (field == null) {
-          // Explicitly specify US locale so that this code does not break when
+          // Explicitly specify the 'neutral' ROOT locale so that this code does not break when
           // executing in Turkey.
-          final String lowerName = name.toLowerCase(Locale.US);
+          final String lowerName = name.toLowerCase(Locale.ROOT);
           field = type.findFieldByName(lowerName);
           // If the case-insensitive match worked but the field is NOT a group,
           if (field != null && !field.isGroupLike()) {
