@@ -363,7 +363,12 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             cc_infos = [target[CcInfo]] + [dep[CcInfo] for dep in ctx.attr._cpp_thunks_deps] + dep_cc_infos,
         ) for thunk in cc_thunks_gencode])
 
-        dep_variant_info_for_native_gencode = [DepVariantInfo(cc_info = thunks_cc_info)]
+        dep_variant_info_for_native_gencode = [DepVariantInfo(
+            cc_info = thunks_cc_info,
+            dep_info = None,
+            build_info = None,
+            crate_info = None,
+        )]
 
     runtime = proto_lang_toolchain.runtime
     dep_variant_info_for_runtime = DepVariantInfo(
