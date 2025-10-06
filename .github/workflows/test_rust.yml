@@ -18,7 +18,6 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         config:
-          - { name: "No bzlmod", flags: --noenable_bzlmod --enable_workspace }
           - { name: "Bzlmod and Workspace", flags: --enable_bzlmod --enable_workspace }
           - { name: Optimized, flags: --config=opt }
           - { name: ASAN, flags: --config=asan }
@@ -35,10 +34,6 @@ jobs:
             image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:8.0.1-1.90.0-e1c2fe666ffa9b941b126541a26340d0ea787cea"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
-
-          # rules_rust does not support workspace + bazel 8, so we test workspace + bazel 7
-          - name: "No bzlmod"
-            image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604"
 
     name: Linux ${{ matrix.config.name }}
     runs-on: ubuntu-22-4core
