@@ -630,13 +630,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   return (description_->flags & GPBFieldRequired) != 0;
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (BOOL)isOptional {
-  return self.fieldType == GPBFieldTypeSingle && !self.isRequired;
-}
-#pragma clang diagnostic pop
-
 - (GPBFieldType)fieldType {
   GPBFieldFlags flags = description_->flags;
   if ((flags & GPBFieldRepeated) != 0) {
