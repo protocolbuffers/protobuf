@@ -31,7 +31,7 @@ const upb_MiniTable google__protobuf__compiler__Version_msg_init = {
 #endif
 };
 
-const upb_MiniTable* google__protobuf__compiler__Version_msg_init_ptr = &google__protobuf__compiler__Version_msg_init;
+const upb_MiniTable* const google__protobuf__compiler__Version_msg_init_ptr = &google__protobuf__compiler__Version_msg_init;
 static const upb_MiniTableSubInternal google_protobuf_compiler_CodeGeneratorRequest__submsgs[3] = {
   {.UPB_PRIVATE(submsg) = &google__protobuf__compiler__Version_msg_init_ptr},
   {.UPB_PRIVATE(submsg) = &google__protobuf__FileDescriptorProto_msg_init_ptr},
@@ -55,7 +55,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorRequest_msg_init = 
 #endif
 };
 
-const upb_MiniTable* google__protobuf__compiler__CodeGeneratorRequest_msg_init_ptr = &google__protobuf__compiler__CodeGeneratorRequest_msg_init;
+const upb_MiniTable* const google__protobuf__compiler__CodeGeneratorRequest_msg_init_ptr = &google__protobuf__compiler__CodeGeneratorRequest_msg_init;
 static const upb_MiniTableSubInternal google_protobuf_compiler_CodeGeneratorResponse__submsgs[1] = {
   {.UPB_PRIVATE(submsg) = &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init_ptr},
 };
@@ -77,7 +77,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init =
 #endif
 };
 
-const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse_msg_init_ptr = &google__protobuf__compiler__CodeGeneratorResponse_msg_init;
+const upb_MiniTable* const google__protobuf__compiler__CodeGeneratorResponse_msg_init_ptr = &google__protobuf__compiler__CodeGeneratorResponse_msg_init;
 static const upb_MiniTableSubInternal google_protobuf_compiler_CodeGeneratorResponse_File__submsgs[1] = {
   {.UPB_PRIVATE(submsg) = &google__protobuf__GeneratedCodeInfo_msg_init_ptr},
 };
@@ -98,7 +98,7 @@ const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse__File_msg_
 #endif
 };
 
-const upb_MiniTable* google__protobuf__compiler__CodeGeneratorResponse__File_msg_init_ptr = &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init;
+const upb_MiniTable* const google__protobuf__compiler__CodeGeneratorResponse__File_msg_init_ptr = &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init;
 const upb_MiniTableEnum google__protobuf__compiler__CodeGeneratorResponse__Feature_enum_init = {
     64,
     0,
