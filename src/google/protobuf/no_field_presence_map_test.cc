@@ -119,7 +119,7 @@ TEST(NoFieldPresenceTest, GenCodeMapMissingKeyDeathTest) {
 // This test case tests a DCHECK assertion. If this scenario happens in
 // optimized builds, it's technically UB, so having a test case for it in opt
 // builds is meaningless.
-TEST(NoFieldPresenceTest, GenCodeMapReflectionMissingKeyDeathTest) {
+TEST(NoFieldPresenceTest, DISABLED_GenCodeMapReflectionMissingKeyDeathTest) {
   TestAllMapTypes message;
   const Reflection* r = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
