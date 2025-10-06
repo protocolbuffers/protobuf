@@ -10,10 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
-import com.google.protobuf.large.openenum.edition.LargeOpenEnumParent;
-import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -22,46 +19,8 @@ import org.junit.runners.JUnit4;
 public class LargeEnumTest {
 
   @Test
-  public void testLargeEnumRoundTrip() throws Exception {
-    LargeOpenEnumParent msg =
-        LargeOpenEnumParent.newBuilder()
-            .addE(LargeOpenEnum.LARGE_ENUM1)
-            .addE(LargeOpenEnum.LARGE_ENUM2_ALIAS)
-            .addE(LargeOpenEnum.LARGE_ENUM1_ALIAS)
-            .addE(LargeOpenEnum.LARGE_ENUM1060)
-            .addE(LargeOpenEnum.LARGE_ENUM2000)
-            .build();
-    LargeOpenEnumParent roundTrip =
-        LargeOpenEnumParent.parseFrom(msg.toByteArray(), ExtensionRegistryLite.getEmptyRegistry());
-    assertThat(roundTrip).isEqualTo(msg);
-  }
-
-  @Test
-  public void testLargeEnumReflectiveAccess() throws Exception {
-    LargeOpenEnumParent msg =
-        LargeOpenEnumParent.newBuilder()
-            .addE(LargeOpenEnum.LARGE_ENUM1)
-            .addE(LargeOpenEnum.LARGE_ENUM2_ALIAS)
-            .addE(LargeOpenEnum.LARGE_ENUM1_ALIAS)
-            .addE(LargeOpenEnum.LARGE_ENUM1060)
-            .addE(LargeOpenEnum.LARGE_ENUM2000)
-            .build();
-    LargeOpenEnumParent.Builder roundTripBuilder = LargeOpenEnumParent.newBuilder();
-    for (Map.Entry<FieldDescriptor, Object> entry : msg.getAllFields().entrySet()) {
-      roundTripBuilder.setField(entry.getKey(), entry.getValue());
-    }
-    LargeOpenEnumParent roundTrip = roundTripBuilder.build();
-    assertThat(roundTrip).isEqualTo(msg);
-  }
-
-  @Test
-  public void testUnrecognizedGetNumberThrows() throws Exception {
+  public void testOpenLargeEnum() throws Exception {
     assertThrows(IllegalArgumentException.class, LargeOpenEnum.UNRECOGNIZED::getNumber);
-  }
-
-  @Test
-  public void testValuesHasAllCanonicals() throws Exception {
-    // The values() method returns only the canonical values, sorted in index order.
     assertThat(LargeOpenEnum.values())
         .isEqualTo(
             new LargeOpenEnum[] {

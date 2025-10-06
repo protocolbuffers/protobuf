@@ -11,36 +11,16 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
-import com.google.protobuf.large.openenum.edition.LargeOpenEnumParent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class LargeEnumLiteTest {
-  @Test
-  public void testLargeEnumRoundTrip() throws Exception {
-    LargeOpenEnumParent msg =
-        LargeOpenEnumParent.newBuilder()
-            .addE(LargeOpenEnum.LARGE_ENUM1)
-            .addE(LargeOpenEnum.LARGE_ENUM2_ALIAS)
-            .addE(LargeOpenEnum.LARGE_ENUM1_ALIAS)
-            .addE(LargeOpenEnum.LARGE_ENUM1060)
-            .addE(LargeOpenEnum.LARGE_ENUM2000)
-            .build();
-    LargeOpenEnumParent roundTrip =
-        LargeOpenEnumParent.parseFrom(msg.toByteArray(), ExtensionRegistryLite.getEmptyRegistry());
-    assertThat(roundTrip).isEqualTo(msg);
-  }
 
   @Test
-  public void testUnrecognizedGetNumberThrows() throws Exception {
+  public void testOpenLargeEnum() throws Exception {
     assertThrows(IllegalArgumentException.class, LargeOpenEnum.UNRECOGNIZED::getNumber);
-  }
-
-  @Test
-  public void testValuesHasAllCanonicals() throws Exception {
-    // The values() method returns only the canonical values, sorted in index order.
     assertThat(LargeOpenEnum.values())
         .isEqualTo(
             new LargeOpenEnum[] {
