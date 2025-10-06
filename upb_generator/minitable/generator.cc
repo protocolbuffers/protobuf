@@ -129,7 +129,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
           IsCrossFile(field) && !upb_MiniTableField_IsMap(f)) {
         if (seen.insert(pools.GetMiniTable64(field.message_type())).second) {
           output(
-              "__attribute__((weak)) const upb_MiniTable* $0 ="
+              "__attribute__((weak)) const upb_MiniTable* const $0 ="
               " &UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken);\n",
               MessagePtrVarName(field.message_type()));
         }
@@ -205,7 +205,7 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("  })\n");
   }
   output("};\n\n");
-  output("const upb_MiniTable* $0 = &$1;\n", MessagePtrVarName(message),
+  output("const upb_MiniTable* const $0 = &$1;\n", MessagePtrVarName(message),
          MessageVarName(message));
 }
 
@@ -281,7 +281,8 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   for (auto message : this_file_messages) {
     output("extern const upb_MiniTable $0;\n", MessageVarName(message));
-    output("extern const upb_MiniTable* $0;\n", MessagePtrVarName(message));
+    output("extern const upb_MiniTable* const $0;\n",
+           MessagePtrVarName(message));
   }
   for (auto ext : this_file_exts) {
     output("extern const upb_MiniTableExtension $0;\n", ExtensionVarName(ext));
@@ -351,7 +352,8 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
 
   if (options.one_output_per_message) {
     for (auto message : messages) {
-      output("extern const upb_MiniTable* $0;\n", MessagePtrVarName(message));
+      output("extern const upb_MiniTable* const $0;\n",
+             MessagePtrVarName(message));
     }
     for (const auto e : enums) {
       output("extern const upb_MiniTableEnum $0;\n", EnumVarName(e));
