@@ -2042,8 +2042,8 @@ void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
       // Allocate split instance when needed.
       uint32_t size = GetSizeofSplit(table);
       Arena* arena = msg->GetArena();
-      split = (arena == nullptr) ? ::operator new(size)
-                                 : arena->AllocateAligned(size);
+      split =
+          (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
       memcpy(split, default_split, size);
     }
     out = split;

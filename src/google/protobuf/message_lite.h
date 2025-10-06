@@ -1450,13 +1450,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
   if (arena != nullptr) {
     mem = arena->AllocateAligned(allocation_size_);
   } else {
-#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
-    // Allows the compiler to merge or optimize away the allocation even if it
-    // would violate the observability guarantees of ::operator new.
-    mem = __builtin_operator_new(allocation_size_);
-#else
-    mem = ::operator new(allocation_size_);
-#endif
+    mem = Allocate(allocation_size_);
   }
   return PlacementNew(prototype_for_func, prototype_for_copy, mem, arena);
 }

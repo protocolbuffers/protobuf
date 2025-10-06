@@ -986,7 +986,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   // Construct the reflection object.
 
   // Allocate the prototype fields.
-  void* base = operator new(size);
+  void* base = internal::Allocate(size);
   memset(base, 0, size);
 
   // We have already locked the factory so we should not lock in the constructor
