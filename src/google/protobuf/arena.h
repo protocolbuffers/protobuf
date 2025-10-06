@@ -741,30 +741,34 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
-  if (arena != nullptr) {
-    using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
-    static_assert(is_destructor_skippable<ArenaRepT>::value, "");
-
-    void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
-    ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
-    return internal::FieldArenaRep<T>::Get(arena_rep);
-  } else {
-    static_assert(is_destructor_skippable<T>::value, "");
-
+  auto operator_new = [](size_t size) -> void* {
 #if ABSL_HAVE_BUILTIN(__builtin_operator_new)
-    void* mem = __builtin_operator_new(sizeof(T));
+    return __builtin_operator_new(size);
 #else
-    void* mem = ::operator new(sizeof(T));
+    return ::operator new(size);
 #endif
+  };
 
-    // Fields which use arena offsets don't have constructors that take an arena
-    // pointer. Since the arena is nullptr, it is safe to default construct the
-    // object.
-    if constexpr (internal::FieldHasArenaOffset<T>()) {
-      return new (mem) T();
+  if constexpr (internal::FieldHasArenaOffset<T>()) {
+    if (arena != nullptr) {
+      using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+      static_assert(is_destructor_skippable<ArenaRepT>::value);
+
+      void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
+      ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
+      return internal::FieldArenaRep<T>::Get(arena_rep);
     } else {
-      return new (mem) T(nullptr);
+      static_assert(is_destructor_skippable<T>::value);
+      // Fields which use arena offsets don't have constructors that take an
+      // arena pointer. Since the arena is nullptr, it is safe to default
+      // construct the object.
+      return new (operator_new(sizeof(T))) T();
     }
+  } else {
+    static_assert(is_destructor_skippable<T>::value);
+    void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
+                                 : operator_new(sizeof(T));
+    return new (mem) T(arena);
   }
 }
 
