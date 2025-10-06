@@ -447,6 +447,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
 #endif
   }
 
+  // Insert all the nodes in the list. `count` must be the number of nodes in
+  // the list.
+  // Last-one-wins when there are duplicate keys.
+  void InsertOrReplaceNodes(NodeBase* list, map_index_t count);
+
   // Alignment of the nodes is the same as alignment of NodeBase.
   NodeBase* AllocNode() { return AllocNode(type_info_.node_size); }
 
@@ -795,6 +800,25 @@ class KeyMapBase : public UntypedMapBase {
     return is_new;
   }
 
+  // Insert the given nodes.
+  // On duplicates we discard the previous values.
+  void InsertOrReplaceNodes(KeyNode* list, map_index_t count) {
+    ResizeIfLoadIsOutOfRangeForMultiInsert(num_elements_ + count);
+
+    while (list != nullptr) {
+      auto* node = list;
+      list = static_cast<KeyNode*>(list->next);
+
+      auto p = this->FindHelper(node->key());
+      map_index_t b = p.bucket;
+      if (ABSL_PREDICT_FALSE(p.node != nullptr)) {
+        EraseImpl(p.bucket, static_cast<KeyNode*>(p.node), true);
+      }
+      InsertUnique(b, node);
+      ++num_elements_;
+    }
+  }
+
   // Insert the given Node in bucket b.  If that would make bucket b too big,
   // and bucket b is not a tree, create a tree for buckets b.
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
@@ -899,16 +923,20 @@ class KeyMapBase : public UntypedMapBase {
     return false;
   }
 
+  void ResizeIfLoadIsOutOfRangeForMultiInsert(size_type new_size) {
+    if (const map_index_t needed_capacity = CalculateCapacityForSize(new_size);
+        needed_capacity != this->num_buckets_) {
+      Resize(std::max(kMinTableSize, needed_capacity));
+    }
+  }
+
   // Interpret `head` as a linked list and insert all the nodes into `this`.
   // REQUIRES: this->empty()
   // REQUIRES: the input nodes have unique keys
   PROTOBUF_NOINLINE void MergeIntoEmpty(NodeBase* head, size_t num_nodes) {
     ABSL_DCHECK_EQ(size(), size_t{0});
     ABSL_DCHECK_NE(num_nodes, size_t{0});
-    if (const map_index_t needed_capacity = CalculateCapacityForSize(num_nodes);
-        needed_capacity != this->num_buckets_) {
-      Resize(std::max(kMinTableSize, needed_capacity));
-    }
+    ResizeIfLoadIsOutOfRangeForMultiInsert(num_nodes);
     num_elements_ = num_nodes;
     AssertLoadFactor();
     while (head != nullptr) {

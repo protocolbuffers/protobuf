@@ -255,6 +255,15 @@ UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
       static_cast<uint8_t>(value_type)};
 }
 
+void UntypedMapBase::InsertOrReplaceNodes(NodeBase* list, map_index_t count) {
+  if (ABSL_PREDICT_FALSE(count == 0)) return;
+  VisitKeyType([=](auto key_type) {
+    using Key = typename decltype(key_type)::type;
+    static_cast<KeyMapBase<Key>&>(*this).InsertOrReplaceNodes(
+        static_cast<typename KeyMapBase<Key>::KeyNode*>(list), count);
+  });
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
