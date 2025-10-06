@@ -18,6 +18,7 @@
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
@@ -135,6 +136,43 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
               #[allow(unused_imports, nonstandard_style)]
               pub use internal_do_not_use_$mod_name$::*;
             )rs");
+  }
+
+  auto v = ctx.printer().WithVars({
+      {"pbu", "::protobuf::__internal::runtime::__unstable"},
+  });
+  if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen) {
+    ctx.Emit(R"rs(
+      pub mod __unstable {
+    )rs");
+    for (const FileDescriptor* file : files) {
+      FileDescriptorProto descriptor_proto;
+      file->CopyTo(&descriptor_proto);
+      ctx.Emit({{"name", DescriptorInfoName(*file)},
+                {"serialized_descriptor",
+                 absl::CHexEscape(descriptor_proto.SerializeAsString())},
+                {"deps",
+                 [&] {
+                   for (int i = 0; i < file->dependency_count(); ++i) {
+                     const FileDescriptor& dep = *file->dependency(i);
+                     std::string mod = IsInCurrentlyGeneratingCrate(ctx, dep)
+                                           ? "super"
+                                           : GetCrateName(ctx, dep);
+                     ctx.Emit(
+                         {{"mod", mod}, {"dep_name", DescriptorInfoName(dep)}},
+                         "&$mod$::__unstable::$dep_name$,\n");
+                   }
+                 }}},
+               R"rs(
+          pub static $name$: $pbu$::DescriptorInfo = $pbu$::DescriptorInfo {
+            descriptor: b"$serialized_descriptor$",
+            deps: &[
+              $deps$
+            ],
+          };
+      )rs");
+    }
+    ctx.Emit("}\n");
   }
 }
 

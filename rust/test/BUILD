@@ -458,3 +458,13 @@ rust_upb_proto_library(
     testonly = True,
     deps = [":srcsless_library_test_parent_proto"],
 )
+
+# Eventually we should have a Rust target for descriptor.proto directly
+# alongside that file. This is currently difficult to do, because many of our
+# CI jobs are not prepared to handle a Rust dependency in
+# //src/google/protobuf.
+rust_upb_proto_library(
+    name = "descriptor_upb_rust_proto",
+    testonly = True,
+    deps = ["//src/google/protobuf:descriptor_proto"],
+)

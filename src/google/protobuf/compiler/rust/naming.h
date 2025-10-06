@@ -148,6 +148,9 @@ class MultiCasePrefixStripper final {
 std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
                             absl::string_view value_name);
 
+// Returns the name of the generated DescriptorInfo object for the given file.
+std::string DescriptorInfoName(const FileDescriptor& file);
+
 // Describes the names and conversions for a supported map key type.
 struct MapKeyType {
   // Identifier used in thunk name.

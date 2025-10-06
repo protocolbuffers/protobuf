@@ -54,7 +54,7 @@ genrule(
         "google/protobuf/type.u.pb.rs",
         "google/protobuf/wrappers.u.pb.rs",
     ],
-    cmd = "echo $(SRCS) | sed 's?^src/??' | xargs $(location //:protoc) -I src --rust_out=$(@D) --rust_opt=experimental-codegen=enabled,kernel=upb",
+    cmd = "echo $(SRCS) | sed 's?src/??g' | xargs $(location //:protoc) -I src --rust_out=$(@D) --rust_opt=experimental-codegen=enabled,kernel=upb",
     tools = ["//:protoc"],
 )
 

@@ -439,6 +439,13 @@ absl::string_view MultiCasePrefixStripper::StripPrefix(
   return name;
 }
 
+std::string DescriptorInfoName(const FileDescriptor& file) {
+  std::string name =
+      absl::StrReplaceAll(StripProto(file.name()), {{"/", "_"}, {"-", "_"}});
+  absl::AsciiStrToUpper(&name);
+  return absl::StrCat(name, "_DESCRIPTOR_INFO");
+}
+
 }  // namespace rust
 }  // namespace compiler
 }  // namespace protobuf
