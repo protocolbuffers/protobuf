@@ -160,18 +160,59 @@ struct TransparentSupport<std::string> {
   }
 };
 
+struct NodeBase;
+
+class NodePointer {
+ public:
+  constexpr NodePointer() = default;
+  NodePointer(NodeBase* ptr) : v_(reinterpret_cast<uintptr_t>(ptr)) {}
+  NodePointer(NodePointer* ptr) : v_(reinterpret_cast<uintptr_t>(ptr) + 1) {}
+
+  static constexpr NodePointer EndOfTable() {
+    NodePointer ptr;
+    ptr.v_ = 1;
+    return ptr;
+  }
+
+  bool is_node() const { return (v_ & 1) == 0; }
+  NodeBase* as_node() const {
+    ABSL_DCHECK(is_node());
+    return reinterpret_cast<NodeBase*>(v_);
+  }
+
+  bool is_bucket() const { return !is_node(); }
+  NodePointer* as_bucket() const {
+    ABSL_DCHECK(is_bucket());
+    return reinterpret_cast<NodePointer*>(v_ - 1);
+  }
+
+  void* raw_pointer() const { return reinterpret_cast<void*>(v_); }
+  void raw_increment(size_t n) { v_ += n; }
+
+ private:
+  uintptr_t v_;
+};
+
+// All the nodes are chained in a single linked list to simplify iteration.
+// However, they are not linked directly.
+// The last node of a bucket points to the next _bucket_, not the next _node_.
+// This simplifies insertion because you don't have to look for the
+// previous/next node accross buckets to update.
+// The _bucket_ pointers are stable until a rehash, but then you have to
+// reinsert all nodes so update those is fine.
 struct NodeBase {
   // Align the node to allow KeyNode to predict the location of the key.
   // This way sizeof(NodeBase) contains any possible padding it was going to
   // have between NodeBase and the key.
-  alignas(kMaxMessageAlignment) NodeBase* next;
+  alignas(kMaxMessageAlignment) NodePointer next;
 
   void* GetVoidKey() { return this + 1; }
   const void* GetVoidKey() const { return this + 1; }
 };
 
 constexpr size_t kGlobalEmptyTableSize = 1;
-PROTOBUF_EXPORT extern NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize];
+PROTOBUF_EXPORT extern NodePointer const
+    kGlobalEmptyTable[kGlobalEmptyTableSize];
 
 class UntypedMapBase;
 
@@ -219,8 +260,6 @@ class UntypedMapIterator {
     return Iter(*this);
   }
   NodeBase* node_;
-  const UntypedMapBase* m_;
-  map_index_t bucket_index_;
 };
 
 // These properties are depended upon by Rust FFI.
@@ -235,9 +274,7 @@ static_assert(std::is_standard_layout<UntypedMapIterator>::value,
               "UntypedMapIterator must be standard layout.");
 static_assert(offsetof(UntypedMapIterator, node_) == 0,
               "node_ must be the first field of UntypedMapIterator.");
-static_assert(sizeof(UntypedMapIterator) ==
-                  sizeof(void*) * 2 +
-                      std::max(sizeof(uint32_t), alignof(void*)),
+static_assert(sizeof(UntypedMapIterator) == sizeof(void*),
               "UntypedMapIterator does not have the expected size for FFI");
 static_assert(
     alignof(UntypedMapIterator) == std::max(alignof(void*), alignof(uint32_t)),
@@ -314,7 +351,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
         num_buckets_(internal::kGlobalEmptyTableSize),
         index_of_first_non_null_(internal::kGlobalEmptyTableSize),
         type_info_(type_info),
-        table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)),
+        table_(const_cast<NodePointer*>(internal::kGlobalEmptyTable)),
         arena_(arena) {}
 
   UntypedMapBase(const UntypedMapBase&) = delete;
@@ -394,7 +431,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   // We make this a static function to reduce the cost in MapField.
   // All the end iterators are singletons anyway.
-  static UntypedMapIterator EndIterator() { return {nullptr, nullptr, 0}; }
+  static UntypedMapIterator EndIterator() { return {nullptr}; }
 
   // Calls `f(k)` with the key of the node, where `k` is the appropriate type
   // according to the stored TypeInfo.
@@ -463,24 +500,20 @@ class PROTOBUF_EXPORT UntypedMapBase {
     internal::SizedDelete(node, node_size);
   }
 
-  void DeleteTable(NodeBase** table, map_index_t n) {
+  void DeleteTable(NodePointer* table, map_index_t n) {
     if (auto* a = arena()) {
-      a->ReturnArrayMemory(table, n * sizeof(NodeBase*));
+      a->ReturnArrayMemory(table, n * sizeof(NodePointer));
     } else {
-      internal::SizedDelete(table, n * sizeof(NodeBase*));
+      internal::SizedDelete(table, n * sizeof(NodePointer));
     }
   }
 
-  NodeBase** CreateEmptyTable(map_index_t n) {
-    ABSL_DCHECK_GE(n, kMinTableSize);
-    ABSL_DCHECK_EQ(n & (n - 1), 0u);
-    NodeBase** result =
-        arena_ == nullptr
-            ? static_cast<NodeBase**>(::operator new(n * sizeof(NodeBase*)))
-            : Arena::CreateArray<NodeBase*>(arena_, n);
-    memset(result, 0, n * sizeof(result[0]));
-    return result;
-  }
+  // Reset the buckets in `table_` to be empty.
+  void ResetTablePointers();
+
+  // Created an empty table with `n` buckets.
+  // Sets `table_`, `num_buckets_` and `index_of_first_non_null_`.
+  void CreateEmptyTable(map_index_t n);
 
   void DeleteNode(NodeBase* node);
 
@@ -488,7 +521,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   map_index_t num_buckets_;
   map_index_t index_of_first_non_null_;
   TypeInfo type_info_;
-  NodeBase** table_;  // an array with num_buckets_ entries
+  NodePointer* table_;  // an array with num_buckets_ entries
   Arena* arena_;
 };
 
@@ -569,28 +602,25 @@ inline UntypedMapIterator UntypedMapBase::begin() const {
     node = nullptr;
   } else {
     bucket_index = index_of_first_non_null_;
-    node = table_[bucket_index];
+    node = table_[bucket_index].as_node();
     PROTOBUF_ASSUME(node != nullptr);
   }
-  return UntypedMapIterator{node, this, bucket_index};
+  return UntypedMapIterator{node};
 }
 
 inline void UntypedMapIterator::PlusPlus() {
-  if (node_->next != nullptr) {
-    node_ = node_->next;
-    return;
+  ABSL_DCHECK(node_ != nullptr) << "Incremented an end iterator.";
+  auto ptr = node_->next;
+  while (!ptr.is_node()) {
+    auto* new_bucket = ptr.as_bucket();
+    if (ABSL_PREDICT_FALSE(new_bucket == nullptr)) {
+      node_ = nullptr;
+      return;
+    }
+    ptr = *new_bucket;
   }
-
-  for (map_index_t i = bucket_index_ + 1; i < m_->num_buckets_; ++i) {
-    NodeBase* node = m_->table_[i];
-    if (node == nullptr) continue;
-    node_ = node;
-    bucket_index_ = i;
-    return;
-  }
-
-  node_ = nullptr;
-  bucket_index_ = 0;
+  node_ = ptr.as_node();
+  PROTOBUF_ASSUME(node_ != nullptr);
 }
 
 // Base class used by TcParser to extract the map object from a map field.
@@ -669,7 +699,6 @@ const T& ReadKey(const void* ptr) {
 
 template <typename Key>
 struct KeyNode : NodeBase {
-  static constexpr size_t kOffset = sizeof(NodeBase);
   decltype(auto) key() const { return ReadKey<Key>(GetVoidKey()); }
 };
 
@@ -722,32 +751,33 @@ class KeyMapBase : public UntypedMapBase {
     return UntypedMapBase::GetKey<Key>(node);
   }
 
-  PROTOBUF_NOINLINE size_type EraseImpl(map_index_t b, KeyNode* node,
-                                        bool do_destroy) {
-    // Force bucket_index to be in range.
-    b &= (num_buckets_ - 1);
-
-    const auto find_prev = [&] {
-      NodeBase** prev = table_ + b;
-      for (; *prev != nullptr && *prev != node; prev = &(*prev)->next) {
+  PROTOBUF_NOINLINE size_type EraseImpl(KeyNode* node, bool do_destroy) {
+    // First we find the bucket.
+    NodePointer* bucket = [&] {
+      NodePointer ptr = node->next;
+      while (ptr.is_node()) ptr = ptr.as_node()->next;
+      // First we find the start of the bucket
+      auto* res = ptr.as_bucket();
+      return res == nullptr ? &table_[num_buckets_ - 1] : res - 1;
+    }();
+    // Then we find the prev in the bucket.
+    NodePointer* prev = [&] {
+      NodePointer* prev = bucket;
+      while (prev->as_node() != node) {
+        prev = &(prev->as_node()->next);
       }
       return prev;
-    };
+    }();
 
-    NodeBase** prev = find_prev();
-    if (*prev == nullptr) {
-      // The bucket index is wrong. The table was modified since the iterator
-      // was made, so let's find the new bucket.
-      b = FindHelper(TS::ToView(node->key())).bucket;
-      prev = find_prev();
-    }
-    ABSL_DCHECK_EQ(*prev, node);
-    *prev = (*prev)->next;
+    ABSL_DCHECK_EQ(prev->as_node(), node);
+    *prev = prev->as_node()->next;
+
+    ABSL_DCHECK(table_ <= bucket && bucket < table_ + num_buckets_);
 
     --num_elements_;
-    if (ABSL_PREDICT_FALSE(b == index_of_first_non_null_)) {
+    if (ABSL_PREDICT_FALSE(bucket - table_ == index_of_first_non_null_)) {
       while (index_of_first_non_null_ < num_buckets_ &&
-             table_[index_of_first_non_null_] == nullptr) {
+             !table_[index_of_first_non_null_].is_node()) {
         ++index_of_first_non_null_;
       }
     }
@@ -762,7 +792,7 @@ class KeyMapBase : public UntypedMapBase {
 
   PROTOBUF_NOINLINE size_type EraseImpl(typename TS::ViewType k) {
     if (auto result = FindHelper(k); result.node != nullptr) {
-      return EraseImpl(result.bucket, static_cast<KeyNode*>(result.node), true);
+      return EraseImpl(static_cast<KeyNode*>(result.node), true);
     }
     return 0;
   }
@@ -770,7 +800,9 @@ class KeyMapBase : public UntypedMapBase {
   NodeAndBucket FindHelper(typename TS::ViewType k) const {
     AssertLoadFactor();
     map_index_t b = BucketNumber(k);
-    for (auto* node = table_[b]; node != nullptr; node = node->next) {
+    for (NodePointer ptr = table_[b]; ptr.is_node();
+         ptr = ptr.as_node()->next) {
+      auto* node = ptr.as_node();
       if (TS::ToView(static_cast<KeyNode*>(node)->key()) == k) {
         return {node, b};
       }
@@ -782,10 +814,10 @@ class KeyMapBase : public UntypedMapBase {
   // If the key is a duplicate, it inserts the new node and deletes the old one.
   bool InsertOrReplaceNode(KeyNode* node) {
     bool is_new = true;
-    auto p = this->FindHelper(node->key());
+    auto p = this->FindHelper(TS::ToView(node->key()));
     map_index_t b = p.bucket;
     if (ABSL_PREDICT_FALSE(p.node != nullptr)) {
-      EraseImpl(p.bucket, static_cast<KeyNode*>(p.node), true);
+      EraseImpl(static_cast<KeyNode*>(p.node), true);
       is_new = false;
     } else if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
       b = BucketNumber(node->key());  // bucket_number
@@ -801,24 +833,21 @@ class KeyMapBase : public UntypedMapBase {
   // bucket.  num_elements_ is not modified.
   void InsertUnique(map_index_t b, KeyNode* node) {
     ABSL_DCHECK(index_of_first_non_null_ == num_buckets_ ||
-                table_[index_of_first_non_null_] != nullptr);
+                table_[index_of_first_non_null_].as_node() != nullptr);
     // In practice, the code that led to this point may have already
     // determined whether we are inserting into an empty list, a short list,
     // or whatever.  But it's probably cheap enough to recompute that here;
     // it's likely that we're inserting into an empty or short list.
     ABSL_DCHECK(FindHelper(TS::ToView(node->key())).node == nullptr);
     AssertLoadFactor();
-    auto*& head = table_[b];
-    if (head == nullptr) {
-      head = node;
-      node->next = nullptr;
-      index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
-    } else if (ShouldInsertAfterHead(node)) {
-      node->next = head->next;
-      head->next = node;
+    NodePointer& head = table_[b];
+    if (ShouldInsertAfterHead(node) && head.is_node()) {
+      node->next = head.as_node()->next;
+      head.as_node()->next = node;
     } else {
       node->next = head;
       head = node;
+      index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
     }
   }
 
@@ -911,11 +940,12 @@ class KeyMapBase : public UntypedMapBase {
     }
     num_elements_ = num_nodes;
     AssertLoadFactor();
+    const auto bucketer = MakeBucketer();
     while (head != nullptr) {
       KeyNode* node = static_cast<KeyNode*>(head);
-      head = head->next;
+      head = head->next.as_node();
       absl::PrefetchToLocalCacheNta(head);
-      InsertUnique(BucketNumber(TS::ToView(node->key())), node);
+      InsertUnique(bucketer(node->key()), node);
     }
   }
 
@@ -926,28 +956,32 @@ class KeyMapBase : public UntypedMapBase {
     if (num_buckets_ == kGlobalEmptyTableSize) {
       // This is the global empty array.
       // Just overwrite with a new one. No need to transfer or free anything.
-      num_buckets_ = index_of_first_non_null_ = new_num_buckets;
-      table_ = CreateEmptyTable(num_buckets_);
+      CreateEmptyTable(new_num_buckets);
       return;
     }
 
     ABSL_DCHECK_GE(new_num_buckets, kMinTableSize);
     const auto old_table = table_;
     const map_index_t old_table_size = num_buckets_;
-    num_buckets_ = new_num_buckets;
-    table_ = CreateEmptyTable(num_buckets_);
-    const map_index_t start = index_of_first_non_null_;
-    index_of_first_non_null_ = num_buckets_;
-    for (map_index_t i = start; i < old_table_size; ++i) {
-      for (KeyNode* node = static_cast<KeyNode*>(old_table[i]);
-           node != nullptr;) {
-        auto* next = static_cast<KeyNode*>(node->next);
-        InsertUnique(BucketNumber(TS::ToView(node->key())), node);
-        node = next;
+    const map_index_t old_start = index_of_first_non_null_;
+    CreateEmptyTable(new_num_buckets);
+    const auto bucketer = MakeBucketer();
+    for (map_index_t i = old_start; i < old_table_size; ++i) {
+      for (NodePointer ptr = old_table[i]; ptr.is_node();) {
+        KeyNode* node = static_cast<KeyNode*>(ptr.as_node());
+        ptr = node->next;
+        InsertUnique(bucketer(node->key()), node);
       }
     }
     DeleteTable(old_table, old_table_size);
     AssertLoadFactor();
+  }
+
+  auto MakeBucketer() const {
+    return [salt = table_,
+            mask = num_buckets_ - 1](typename TS::ViewType k) -> map_index_t {
+      return Hash(k, salt) & mask;
+    };
   }
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
@@ -1137,6 +1171,8 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
                     "Scalar must be <= than uint64_t");
     }
     static_assert(internal::kMaxMessageAlignment >= sizeof(uint64_t));
+    static_assert(PROTOBUF_FIELD_OFFSET(Node, kv) == sizeof(internal::NodeBase),
+                  "GetVoidKey requires this.");
     static_assert(sizeof(Node) - sizeof(internal::NodeBase) >= sizeof(uint64_t),
                   "We must have at least this bytes for MpMap initialization");
   }
@@ -1172,7 +1208,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     using pointer = const value_type*;
     using reference = const value_type&;
 
-    const_iterator() : BaseIt{nullptr, nullptr, 0} {}
+    const_iterator() : BaseIt{nullptr} {}
     const_iterator(const const_iterator&) = default;
     const_iterator& operator=(const const_iterator&) = default;
     explicit const_iterator(BaseIt it) : BaseIt(it) {}
@@ -1214,7 +1250,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     using pointer = value_type*;
     using reference = value_type&;
 
-    iterator() : BaseIt{nullptr, nullptr, 0} {}
+    iterator() : BaseIt{nullptr} {}
     iterator(const iterator&) = default;
     iterator& operator=(const iterator&) = default;
     explicit iterator(BaseIt it) : BaseIt(it) {}
@@ -1308,8 +1344,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   template <typename K = key_type>
   iterator find(const key_arg<K>& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto res = this->FindHelper(TS::ToView(key));
-    return iterator(internal::UntypedMapIterator{static_cast<Node*>(res.node),
-                                                 this, res.bucket});
+    return iterator(internal::UntypedMapIterator{static_cast<Node*>(res.node)});
   }
 
   template <typename K = key_type>
@@ -1418,8 +1453,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   iterator erase(iterator pos) ABSL_ATTRIBUTE_LIFETIME_BOUND {
     auto next = std::next(pos);
-    ABSL_DCHECK_EQ(pos.m_, static_cast<Base*>(this));
-    this->EraseImpl(pos.bucket_index_, static_cast<Node*>(pos.node_), true);
+    this->EraseImpl(static_cast<Node*>(pos.node_), true);
     return next;
   }
 
@@ -1470,7 +1504,10 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   struct Node : Base::KeyNode {
     using key_type = Key;
     using mapped_type = T;
-    value_type kv;
+
+    // Align the kv to allow NodeBase::GetVoidKey() to predict the location of
+    // the key.
+    alignas(internal::kMaxMessageAlignment) value_type kv;
   };
 
   static constexpr auto GetTypeInfo() {
@@ -1536,23 +1573,26 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
   template <typename K, typename... Args>
   std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
-    auto p = this->FindHelper(TS::ToView(k));
-    internal::map_index_t b = p.bucket;
-    // Case 1: key was already present.
-    if (p.node != nullptr) {
-      return std::make_pair(iterator(internal::UntypedMapIterator{
-                                static_cast<Node*>(p.node), this, p.bucket}),
-                            false);
+    const auto key_view = TS::ToView(k);
+    internal::map_index_t b = this->BucketNumber(key_view);
+
+    for (internal::NodePointer ptr = this->table_[b]; ptr.is_node();
+         ptr = ptr.as_node()->next) {
+      auto* node = static_cast<Node*>(ptr.as_node());
+      // Case 1: key was already present.
+      if (TS::ToView(node->key()) == key_view) {
+        return {iterator(internal::UntypedMapIterator{node}), false};
+      }
     }
+
     // Case 2: insert.
     if (this->ResizeIfLoadIsOutOfRange(this->num_elements_ + 1)) {
-      b = this->BucketNumber(TS::ToView(k));
+      b = this->BucketNumber(key_view);
     }
     auto* node = CreateNode(std::forward<K>(k), std::forward<Args>(args)...);
     this->InsertUnique(b, node);
     ++this->num_elements_;
-    return std::make_pair(iterator(internal::UntypedMapIterator{node, this, b}),
-                          true);
+    return {iterator(internal::UntypedMapIterator{node}), true};
   }
 
   using Base::arena;

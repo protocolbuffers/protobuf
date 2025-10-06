@@ -452,4 +452,17 @@ TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
 }  // namespace protobuf
 }  // namespace google
 
+auto CodegenMapIteratorPlusPlus(google::protobuf::Map<int, int>::iterator it) {
+  return ++it;
+}
+
+auto CodegenMapIteratorIncrementAndCompare(google::protobuf::Map<int, int>& m,
+                                           google::protobuf::Map<int, int>::iterator it) {
+  return ++it == m.end();
+}
+
+static int odr_use [[maybe_unused]] =
+    (benchmark::DoNotOptimize(&CodegenMapIteratorPlusPlus),
+     benchmark::DoNotOptimize(&CodegenMapIteratorIncrementAndCompare), 0);
+
 #include "google/protobuf/port_undef.inc"

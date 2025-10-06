@@ -30,12 +30,13 @@ struct MapBenchmarkPeer {
   static double GetMeanProbeLength(const T& map) {
     double total_probe_cost = 0;
     for (map_index_t b = 0; b < map.num_buckets_; ++b) {
-      auto* node = map.table_[b];
+      auto ptr = map.table_[b];
       size_t cost = 0;
-      while (node != nullptr) {
+      while (ptr.is_node()) {
+        auto* node = ptr.as_node();
         total_probe_cost += static_cast<double>(cost);
         cost++;
-        node = node->next;
+        ptr = node->next;
       }
     }
     return total_probe_cost / map.size();
