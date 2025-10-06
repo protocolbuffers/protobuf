@@ -158,8 +158,8 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   if (mt_64->UPB_PRIVATE(field_count) > 0) {
     std::string fields_array_name = MiniTableFieldsVarName(message.full_name());
     fields_array_ref = "&" + fields_array_name + "[0]";
-    output("static const upb_MiniTableField $0[$1] = {\n", fields_array_name,
-           mt_64->UPB_PRIVATE(field_count));
+    output("static const upb_MiniTableField $0[$1] UPB_FORCE_RELRO = {\n",
+           fields_array_name, mt_64->UPB_PRIVATE(field_count));
     for (int i = 0; i < mt_64->UPB_PRIVATE(field_count); i++) {
       WriteMessageField(message.FindFieldByNumber(
                             mt_64->UPB_PRIVATE(fields)[i].UPB_PRIVATE(number)),
@@ -222,7 +222,7 @@ void WriteEnum(upb::EnumDefPtr e, Output& output) {
 
   output(
       R"cc(
-        const upb_MiniTableEnum $0 = {
+        const upb_MiniTableEnum $0 UPB_FORCE_RELRO = {
             $1,
             $2,
             $3,
