@@ -24,14 +24,28 @@ pkg_tar(
     visibility = ["//rust:__pkg__"],
 )
 
-# Run the cargo test with only a bundled linux-x86_64 protoc.
 sh_binary(
     name = "cargo_test",
     srcs = ["cargo_test.sh"],
+    args = ["$(location //:protoc)"],
     data = [
         ":workspace",
         "//:protoc",
     ],
+    tags = ["manual"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
+)
+
+# Test for compatibility with generated code from an old protoc version.
+sh_binary(
+    name = "compatibility_test",
+    srcs = ["cargo_test.sh"],
+    args = ["$(location @protoc_v33//:protoc)"],
+    data = [
+        ":workspace",
+        "@protoc_v33//:protoc",
+    ],
+    env = {"ALLOW_PROTOC_VERSION_MISMATCH": ""},
     tags = ["manual"],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
