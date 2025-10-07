@@ -2960,6 +2960,23 @@ TEST(GeneratedMapFieldTest, DuplicatedKeyWireFormat) {
   EXPECT_EQ(12, map_message.map_field().find(key)->second.dummy5());
 }
 
+TEST(GeneratedMapFieldTest, DuplicateEntriesInWireFormatLastOneWins) {
+  UNITTEST::TestMap message;
+
+  std::string bytes;
+  {
+    UNITTEST::TestMap tmp;
+    (*tmp.mutable_map_int32_int32())[1] = 1;
+    bytes = tmp.SerializeAsString();
+
+    (*tmp.mutable_map_int32_int32())[1] = 2;
+    absl::StrAppend(&bytes, tmp.SerializeAsString());
+  }
+
+  ASSERT_TRUE(message.ParseFromString(bytes));
+  EXPECT_THAT(message.map_int32_int32(), ElementsAre(Pair(1, 2)));
+}
+
 // Exhaustive combinations of keys, values, and junk in any order.
 // This re-tests some of the things tested above, but if it fails
 // it's more work to determine what went wrong, so it isn't necessarily
