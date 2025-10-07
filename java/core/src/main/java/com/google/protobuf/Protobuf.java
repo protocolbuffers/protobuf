@@ -13,10 +13,6 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * Main runtime interface for protobuf. Applications should interact with this interface (rather
- * than directly accessing internal APIs) in order to perform operations on protobuf messages.
- */
 @ExperimentalApi
 @CheckReturnValue
 final class Protobuf {
