@@ -39,11 +39,6 @@ final class Protobuf {
   }
 
   /** Reads fields from the given {@link Reader} and merges them into the message. */
-  <T> void mergeFrom(T message, Reader reader) throws IOException {
-    mergeFrom(message, reader, ExtensionRegistryLite.getEmptyRegistry());
-  }
-
-  /** Reads fields from the given {@link Reader} and merges them into the message. */
   <T> void mergeFrom(T message, Reader reader, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     schemaFor(message).mergeFrom(message, reader, extensionRegistry);
