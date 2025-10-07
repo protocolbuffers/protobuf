@@ -71,6 +71,7 @@ google/protobuf/feature_resolver.h
 google/protobuf/field_access_listener.h
 google/protobuf/field_mask.pb.h
 google/protobuf/field_mask.proto
+google/protobuf/field_with_arena.h
 google/protobuf/generated_enum_reflection.h
 google/protobuf/generated_enum_util.h
 google/protobuf/generated_message_bases.h

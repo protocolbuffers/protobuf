@@ -529,6 +529,17 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "field_with_arena_test",
+    srcs = ["field_with_arena_test.cc"],
+    deps = [
+        ":arena",
+        ":protobuf_lite",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "arena",
     srcs = [
@@ -654,6 +665,7 @@ cc_library(
         "explicitly_constructed.h",
         "extension_set.h",
         "extension_set_inl.h",
+        "field_with_arena.h",
         "generated_enum_util.h",
         "generated_message_tctable_decl.h",
         "generated_message_tctable_impl.h",
