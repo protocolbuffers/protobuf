@@ -80,7 +80,9 @@ static constexpr const ::_pb::ServiceDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULL
 const ::uint32_t
     TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto::offsets[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
         protodesc_cold) = {
-        0x000, // bitmap
+        0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures_NestInFileClassFeature, _impl_._has_bits_),
+        3, // hasbit index offset
         0x081, // bitmap
         PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_._has_bits_),
         8, // hasbit index offset
@@ -99,7 +101,7 @@ const ::uint32_t
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
         {0, sizeof(::pb::JavaFeatures_NestInFileClassFeature)},
-        {1, sizeof(::pb::JavaFeatures)},
+        {3, sizeof(::pb::JavaFeatures)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::pb::_JavaFeatures_NestInFileClassFeature_default_instance_._instance,
@@ -177,6 +179,10 @@ PROTOBUF_CONSTINIT const uint32_t JavaFeatures_Utf8Validation_internal_data_[] =
 
 class JavaFeatures_NestInFileClassFeature::_Internal {
  public:
+  using HasBits =
+      decltype(::std::declval<JavaFeatures_NestInFileClassFeature>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature, _impl_._has_bits_);
 };
 
 JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -249,7 +255,7 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 0, 0, 0, 2>
 JavaFeatures_NestInFileClassFeature::_table_ = {
   {
-    0,  // no _has_bits_
+    PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature, _impl_._has_bits_),
     0, // no _extensions_
     0, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),

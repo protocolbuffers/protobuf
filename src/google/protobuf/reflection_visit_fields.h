@@ -98,8 +98,7 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
   ABSL_CHECK(!schema.HasWeakFields()) << "weak fields are not supported";
 
   // See Reflection::ListFields for the optimization.
-  const uint32_t* const has_bits =
-      schema.HasHasbits() ? reflection->GetHasBits(message) : nullptr;
+  const uint32_t* const has_bits = reflection->GetHasBits(message);
   const uint32_t* const has_bits_indices = schema.has_bit_indices_;
   const Descriptor* descriptor = GetDescriptor(reflection);
   const int field_count = descriptor->field_count();

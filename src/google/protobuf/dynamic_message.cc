@@ -871,7 +871,13 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   size = AlignOffset(size);
 
   // Next the has_bits, which is an array of uint32s.
-  type_info->has_bits_offset = -1;
+  type_info->has_bits_offset = size;
+  type_info->has_bits_indices.reset(new uint32_t[type->field_count()]);
+  // Initialize to kNoHasbit, fields that need a hasbit will overwrite.
+  std::fill(type_info->has_bits_indices.get(),
+            type_info->has_bits_indices.get() + type->field_count(),
+            static_cast<uint32_t>(internal::kNoHasbit));
+
   int max_hasbit = 0;
   for (int i = 0; i < type->field_count(); i++) {
     const FieldDescriptor* field = type->field(i);
@@ -911,26 +917,14 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
         continue;
       }
 
-      if (type_info->has_bits_offset == -1) {
-        // At least one field in the message requires a hasbit, so allocate
-        // hasbits.
-        type_info->has_bits_offset = size;
-        uint32_t* has_bits_indices = new uint32_t[type->field_count()];
-        for (int j = 0; j < type->field_count(); j++) {
-          // Initialize to kNoHasbit, fields that need a hasbit will overwrite.
-          has_bits_indices[j] = static_cast<uint32_t>(internal::kNoHasbit);
-        }
-        type_info->has_bits_indices.reset(has_bits_indices);
-      }
       type_info->has_bits_indices[i] = max_hasbit++;
     }
   }
 
-  if (max_hasbit > 0) {
-    int has_bits_array_size = DivideRoundingUp(max_hasbit, bitsizeof(uint32_t));
-    size += has_bits_array_size * sizeof(uint32_t);
-    size = AlignOffset(size);
-  }
+  int has_bits_array_size =
+      DivideRoundingUp(std::max(max_hasbit, 1), bitsizeof(uint32_t));
+  size += has_bits_array_size * sizeof(uint32_t);
+  size = AlignOffset(size);
 
   // The oneof_case, if any. It is an array of uint32s.
   if (real_oneof_count > 0) {

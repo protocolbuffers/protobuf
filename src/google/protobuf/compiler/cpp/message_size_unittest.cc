@@ -99,8 +99,9 @@ TEST(GeneratedMessageTest, ReservedSize) {
 
 TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
-    MockExtensionSet extensions;                   // 24 bytes
+    int hasbits[1];                                // 4 bytes
     int cached_size;                               // 4 bytes
+    MockExtensionSet extensions;                   // 24 bytes
     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes of padding
   };
@@ -257,13 +258,14 @@ TEST(GeneratedMessageTest, BoolMessageSize) {
 
 TEST(GeneratedMessageTest, OneofSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
-    void* foo;                                     // 8 bytes
+    int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
+    void* foo;                                     // 8 bytes
     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
                                                    // + 0-4 bytes padding
     uint32_t oneof_case[1];                        // 4 bytes
   };
-  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 32);
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
   EXPECT_EQ(sizeof(proto2_unittest::TestOneof), sizeof(MockGenerated));
 }
 

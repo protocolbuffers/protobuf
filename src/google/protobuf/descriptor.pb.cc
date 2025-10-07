@@ -1653,7 +1653,9 @@ const ::uint32_t
         6,
         2,
         3,
-        0x000, // bitmap
+        0x081, // bitmap
+        PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet_VisibilityFeature, _impl_._has_bits_),
+        3, // hasbit index offset
         0x083, // bitmap
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_._has_bits_),
         PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSet, _impl_._extensions_),
@@ -1760,13 +1762,13 @@ static const ::_pbi::MigrationSchema
         {362, sizeof(::google::protobuf::UninterpretedOption_NamePart)},
         {369, sizeof(::google::protobuf::UninterpretedOption)},
         {386, sizeof(::google::protobuf::FeatureSet_VisibilityFeature)},
-        {387, sizeof(::google::protobuf::FeatureSet)},
-        {407, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
-        {416, sizeof(::google::protobuf::FeatureSetDefaults)},
-        {425, sizeof(::google::protobuf::SourceCodeInfo_Location)},
-        {438, sizeof(::google::protobuf::SourceCodeInfo)},
-        {444, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
-        {457, sizeof(::google::protobuf::GeneratedCodeInfo)},
+        {389, sizeof(::google::protobuf::FeatureSet)},
+        {409, sizeof(::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault)},
+        {418, sizeof(::google::protobuf::FeatureSetDefaults)},
+        {427, sizeof(::google::protobuf::SourceCodeInfo_Location)},
+        {440, sizeof(::google::protobuf::SourceCodeInfo)},
+        {446, sizeof(::google::protobuf::GeneratedCodeInfo_Annotation)},
+        {459, sizeof(::google::protobuf::GeneratedCodeInfo)},
 };
 static const ::_pb::Message* PROTOBUF_NONNULL const file_default_instances[] = {
     &::google::protobuf::_FileDescriptorSet_default_instance_._instance,
@@ -13604,6 +13606,10 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* PROTOBUF_RESTRICT PR
 
 class FeatureSet_VisibilityFeature::_Internal {
  public:
+  using HasBits =
+      decltype(::std::declval<FeatureSet_VisibilityFeature>()._impl_._has_bits_);
+  static constexpr ::int32_t kHasBitsOffset =
+      8 * PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._has_bits_);
 };
 
 FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -13675,7 +13681,7 @@ FeatureSet_VisibilityFeature::GetClassData() const {
 constexpr ::_pbi::TcParseTable<0, 0, 0, 0, 2>
 FeatureSet_VisibilityFeature::_table_ = {
   {
-    0,  // no _has_bits_
+    PROTOBUF_FIELD_OFFSET(FeatureSet_VisibilityFeature, _impl_._has_bits_),
     0, // no _extensions_
     0, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),

@@ -1311,7 +1311,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 
   // Swapping bits need to happen after swapping fields, because the latter may
   // depend on the has bit information.
-  if (schema_.HasHasbits()) {
+  {
     uint32_t* lhs_has_bits = MutableHasBits(lhs);
     uint32_t* rhs_has_bits = MutableHasBits(rhs);
 
@@ -1784,8 +1784,7 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   // encapsulation because this function takes a noticeable about of CPU
   // fleetwide and properly allowing this optimization through public interfaces
   // seems more trouble than it is worth.
-  const uint32_t* const has_bits =
-      schema_.HasHasbits() ? GetHasBits(message) : nullptr;
+  const uint32_t* const has_bits = GetHasBits(message);
   const uint32_t* const has_bits_indices = schema_.has_bit_indices_;
   if constexpr (!kForIsEmpty) {
     output->reserve(descriptor.field_count());
@@ -3096,12 +3095,10 @@ void* Reflection::MutableRawSplitImpl(Message* message,
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
-  ABSL_DCHECK(schema_.HasHasbits());
   return &GetConstRefAtOffset<uint32_t>(message, schema_.HasBitsOffset());
 }
 
 uint32_t* Reflection::MutableHasBits(Message* message) const {
-  ABSL_DCHECK(schema_.HasHasbits());
   return GetPointerAtOffset<uint32_t>(message, schema_.HasBitsOffset());
 }
 
@@ -3339,8 +3336,7 @@ void Reflection::ClearHasBit(Message* message,
 void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
                                  const FieldDescriptor* field) const {
   ABSL_DCHECK(!field->options().weak());
-  if (!schema_.HasHasbits() ||
-      schema_.HasBitIndex(field) == static_cast<uint32_t>(kNoHasbit)) {
+  if (schema_.HasBitIndex(field) == static_cast<uint32_t>(kNoHasbit)) {
     return;
   }
   const Reflection* r1 = message1->GetReflection();
@@ -3694,13 +3690,11 @@ void Reflection::PopulateTcParseEntries(
     entries->offset = schema_.GetFieldOffset(field);
     if (oneof != nullptr) {
       entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
-    } else if (schema_.HasHasbits()) {
+    } else {
       entries->has_idx =
           entry.hasbit_idx >= 0
               ? static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx)
               : kNoHasbit;
-    } else {
-      entries->has_idx = 0;
     }
     entries->aux_idx = entry.aux_idx;
     entries->type_card = entry.type_card;
@@ -3821,7 +3815,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 
   void* p = ::operator new(byte_size);
   auto* res = ::new (p) TcParseTableBase{
-      static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
+      static_cast<uint16_t>(schema_.HasBitsOffset()),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
@@ -3901,6 +3895,7 @@ ReflectionSchema MigrationToReflectionSchema(
     return offsets + migration_schema.offsets_index + n;
   };
   result.has_bits_offset_ = next();
+  ABSL_DCHECK_GT(result.has_bits_offset_, 0);
   result.extensions_offset_ = next();
   result.oneof_case_offset_ = next();
   result.weak_field_map_offset_ = next();
