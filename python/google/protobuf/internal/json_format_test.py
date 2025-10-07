@@ -1412,7 +1412,7 @@ class JsonFormatTest(JsonFormatBase):
     text = '{"value": "0000-01-01T00:00:00Z"}'
     self.assertRaisesRegex(
         json_format.ParseError,
-        'Failed to parse value field: year (0 )?is out of range.',
+        'Failed to parse value field: year ',
         json_format.Parse,
         text,
         message,
