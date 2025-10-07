@@ -52,8 +52,9 @@ final class Protobuf {
     Schema<T> schema = (Schema<T>) schemaCache.get(messageType);
     if (schema == null) {
       schema = schemaFactory.createSchema(messageType);
+      checkNotNull(schema, "schema");
       @SuppressWarnings("unchecked")
-      Schema<T> previous = (Schema<T>) registerSchema(messageType, schema);
+      Schema<T> previous = (Schema<T>) schemaCache.putIfAbsent(messageType, schema);
       if (previous != null) {
         // A new schema was registered by another thread.
         schema = previous;
@@ -66,20 +67,6 @@ final class Protobuf {
   @SuppressWarnings("unchecked")
   <T> Schema<T> schemaFor(T message) {
     return schemaFor((Class<T>) message.getClass());
-  }
-
-  /**
-   * Registers the given schema for the message type only if a schema was not already registered.
-   *
-   * @param messageType the type of message on which the schema operates.
-   * @param schema the schema for the message type.
-   * @return the previously registered schema, or {@code null} if the given schema was successfully
-   *     registered.
-   */
-  private Schema<?> registerSchema(Class<?> messageType, Schema<?> schema) {
-    checkNotNull(messageType, "messageType");
-    checkNotNull(schema, "schema");
-    return schemaCache.putIfAbsent(messageType, schema);
   }
 
   private Protobuf() {
