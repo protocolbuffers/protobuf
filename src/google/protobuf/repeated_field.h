@@ -58,6 +58,8 @@ namespace protobuf {
 
 class Message;
 class UnknownField;  // For the allowlist
+class UnknownFieldSet;
+class DynamicMessage;
 
 namespace internal {
 
@@ -290,8 +292,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
   constexpr RepeatedField();
   RepeatedField(const RepeatedField& rhs) : RepeatedField(nullptr, rhs) {}
 
+#ifndef PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR
   // TODO: make this constructor private
   explicit RepeatedField(Arena* arena);
+#endif
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
@@ -486,11 +490,21 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
 
   friend class Arena;
 
+#ifdef PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR
+  // For access to private arena constructor.
+  friend class UnknownFieldSet;
+  friend class DynamicMessage;
+#endif
+
   static constexpr int kSooCapacityElements =
       internal::SooCapacityElements<Element>();
 
   static constexpr int kInitialSize = 0;
   static PROTOBUF_CONSTEXPR const size_t kHeapRepHeaderSize = sizeof(HeapRep);
+
+#ifdef PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR
+  explicit RepeatedField(Arena* arena);
+#endif
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
   RepeatedField(Arena* arena, RepeatedField&& rhs);
