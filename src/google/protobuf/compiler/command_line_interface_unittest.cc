@@ -3151,6 +3151,105 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
   EXPECT_EQ("bar.proto", descriptor_set.file(3).name());
 }
 
+TEST_F(CommandLineInterfaceTest, OptionImportWithDebugRedactFieldIsNotError) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    import "google/protobuf/descriptor.proto";
+                    extend .google.protobuf.FileOptions {
+                      optional int32 file_opt = 5000 [debug_redact = true];
+                    }
+                )schema");
+  CreateTempFile("bar.proto",
+                 R"schema(
+                    edition = "2024";
+                    import option "custom_option.proto";
+                    option (file_opt) = 1;
+                    message Bar {
+                      int32 foo = 1;
+                    }
+                 )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_imports --proto_path=$tmpdir bar.proto "
+      "--experimental_editions");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, OptionImportWithDebugRedactIsError) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    import "google/protobuf/descriptor.proto";
+                    enum MyEnum {
+                      MY_ENUM_VALUE = 0 [debug_redact = true];
+                    }
+                    extend .google.protobuf.FieldOptions {
+                      optional MyEnum file_opt = 5000 [debug_redact = true];
+                    }
+                )schema");
+  CreateTempFile("bar.proto",
+                 R"schema(
+                    edition = "2024";
+                    import option "custom_option.proto";
+                    message Bar {
+                      int32 foo = 1 [(file_opt) = MY_ENUM_VALUE];
+                    }
+                 )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_imports --proto_path=$tmpdir bar.proto "
+      "--experimental_editions");
+
+  ExpectErrorSubstring(
+      "bar.proto: Option dependency custom_option.proto contains a custom "
+      "option file_opt marked debug_redact");
+}
+
+TEST_F(CommandLineInterfaceTest, OptionImportWithDebugRedactDeeplyNested) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto",
+                 R"schema(
+                    syntax = "proto2";
+                    import "google/protobuf/descriptor.proto";
+                    enum MyEnum {
+                      MY_ENUM_VALUE = 0 [debug_redact = true];
+                    }
+                    message Container {
+                      optional MyEnum enm = 1;
+                    }
+                    message MyMessage {
+                      optional MyMessage msg = 1;
+                      optional Container ctr = 2;
+                    }
+                    extend .google.protobuf.FieldOptions {
+                      optional MyMessage file_opt = 5000 [debug_redact = true];
+                    }
+                )schema");
+  CreateTempFile("bar.proto",
+                 R"schema(
+                    edition = "2024";
+                    import option "custom_option.proto";
+                    message Bar {
+                      int32 foo = 1 [(file_opt).msg = {}];
+                    }
+                 )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--include_imports --proto_path=$tmpdir bar.proto "
+      "--experimental_editions");
+
+  ExpectErrorSubstring(
+      "bar.proto: Option dependency custom_option.proto contains a custom "
+      "option file_opt marked debug_redact");
+}
+
 TEST_F(CommandLineInterfaceTest, DisallowMissingOptionImportsDescriptorSetIn) {
   FileDescriptorSet file_descriptor_set;
 

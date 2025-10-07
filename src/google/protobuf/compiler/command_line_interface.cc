@@ -24,6 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -1039,6 +1040,97 @@ bool HasReservedFieldNumber(const FieldDescriptor* field) {
   return false;
 }
 
+bool HasDebugRedactBehavior(const EnumDescriptor& enm) {
+  for (int i = 0; i < enm.value_count(); ++i) {
+    const EnumValueDescriptor* value = enm.value(i);
+    if (value->options().debug_redact()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool HasDebugRedactBehavior(
+    const Descriptor& desc,
+    absl::flat_hash_map<const Descriptor*, bool>& visited);
+
+bool HasDebugRedactBehavior(
+    const FieldDescriptor& field,
+    absl::flat_hash_map<const Descriptor*, bool>& visited) {
+  // We do not check field.options().debug_redact() here because that only
+  // controls redaction of that specific field.  The problematic case is enum
+  // values, which can turn *other* custom options into redaction markers.
+  if (field.enum_type() != nullptr &&
+      HasDebugRedactBehavior(*field.enum_type())) {
+    return true;
+  }
+  if (field.message_type() != nullptr &&
+      HasDebugRedactBehavior(*field.message_type(), visited)) {
+    return true;
+  }
+  return false;
+}
+
+bool HasDebugRedactBehavior(
+    const Descriptor& desc,
+    absl::flat_hash_map<const Descriptor*, bool>& visited) {
+  auto result = visited.emplace(&desc, false);
+  if (!result.second) {
+    return result.first->second;
+  }
+  for (int i = 0; i < desc.field_count(); ++i) {
+    if (HasDebugRedactBehavior(*desc.field(i), visited)) {
+      visited[&desc] = true;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Look for any enums with values marked debug_redact within this message
+// schema.  These can be used to mark fields that need to be redacted in debug
+// string APIs, but are only discoverable via reflection that doesn't force
+// linkage.
+std::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
+  std::optional<std::string> debug_redact_value;
+  absl::flat_hash_map<const Descriptor*, bool> visited;
+  google::protobuf::internal::VisitDescriptors(
+      desc, [&debug_redact_value, &visited](const FieldDescriptor& field) {
+        if (field.is_extension() && HasDebugRedactBehavior(field, visited)) {
+          debug_redact_value = field.full_name();
+        }
+      });
+  return debug_redact_value;
+}
+
+bool ValidateOptionImports(const FileDescriptor& file,
+                           const DescriptorPool& pool,
+                           DescriptorPool::ErrorCollector* printer) {
+  for (int i = 0; i < file.option_dependency_count(); ++i) {
+    const FileDescriptor* dep =
+        pool.FindFileByName(file.option_dependency_name(i));
+    if (dep == nullptr) {
+      // If we don't have the dependency we can't validate it, assume it's ok.
+      continue;
+    }
+    std::optional<std::string> debug_redact_value = FindDebugRedactMarker(*dep);
+    if (debug_redact_value.has_value()) {
+      printer->RecordError(
+          file.name(), "", nullptr, DescriptorPool::ErrorCollector::OPTION_NAME,
+          absl::StrCat(
+              "Option dependency ", dep->name(), " contains a custom option ",
+              *debug_redact_value,
+              " marked debug_redact, which is used to mark fields that need to "
+              "be redacted in debug string APIs. Switch to a regular import or "
+              "remove the debug_redact annotation to avoid potentially leaking "
+              "sensitive data."));
+      return false;
+    }
+  }
+
+  return true;
+}
+
 }  // namespace
 
 namespace {
@@ -1294,6 +1386,11 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   bool validation_error = false;  // Defer exiting so we log more warnings.
 
   for (auto& file : parsed_files) {
+    if (!ValidateOptionImports(*file, *descriptor_pool,
+                               error_collector.get())) {
+      validation_error = true;
+    }
+
     google::protobuf::internal::VisitDescriptors(
         *file, [&](const FieldDescriptor& field) {
           if (HasReservedFieldNumber(&field)) {
