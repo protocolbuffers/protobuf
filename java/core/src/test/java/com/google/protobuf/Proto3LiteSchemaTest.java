@@ -21,6 +21,5 @@ public class Proto3LiteSchemaTest extends AbstractProto3LiteSchemaTest {
 
   @Override
   protected void registerSchemas() {
-    TestSchemasLite.registerGenericProto3LiteSchemas();
   }
 }
