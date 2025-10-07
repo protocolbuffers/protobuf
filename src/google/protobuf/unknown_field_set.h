@@ -319,7 +319,8 @@ constexpr UnknownFieldSet::UnknownFieldSet() = default;
 
 inline UnknownFieldSet::~UnknownFieldSet() {
   Clear();
-  if (arena() == nullptr) delete v2_data_;
+  ABSL_DCHECK_EQ(arena(), nullptr);
+  delete v2_data_;
 }
 
 inline const UnknownFieldSet& UnknownFieldSet::default_instance() {
