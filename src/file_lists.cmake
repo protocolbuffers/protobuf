@@ -127,6 +127,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_inl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/feature_resolver.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/field_access_listener.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_with_arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_reflection.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.h
@@ -257,6 +258,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/explicitly_constructed.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_inl.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_with_arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_decl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_impl.h
@@ -1242,6 +1244,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/edition_message_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/feature_resolver_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_with_arena_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_lite_test.cc
