@@ -954,7 +954,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
   };
 
-  template <typename Iterator, typename KeyValueFunctor,
+  template <bool skip_cleared, typename Iterator, typename KeyValueFunctor,
             typename PrefetchFunctor>
   static void ForEachPrefetchImpl(Iterator it, Iterator end,
                                   KeyValueFunctor func,
@@ -970,11 +970,25 @@ class PROTOBUF_EXPORT ExtensionSet {
     // For the middle extensions, call func and then prefetch the extension
     // kPrefetchDistance after the current one.
     for (; prefetch != end; ++it, ++prefetch) {
-      func(it->first, it->second);
+      if constexpr (skip_cleared) {
+        if (ABSL_PREDICT_TRUE(!it->second.is_cleared)) {
+          func(it->first, it->second);
+        }
+      } else {
+        func(it->first, it->second);
+      }
       prefetch_func(prefetch->second.PrefetchPtr());
     }
     // Call func on the rest without prefetching.
-    for (; it != end; ++it) func(it->first, it->second);
+    for (; it != end; ++it) {
+      if constexpr (skip_cleared) {
+        if (ABSL_PREDICT_TRUE(!it->second.is_cleared)) {
+          func(it->first, it->second);
+        }
+      } else {
+        func(it->first, it->second);
+      }
+    }
   }
 
   // Similar to std::for_each, but returning void.
@@ -982,26 +996,29 @@ class PROTOBUF_EXPORT ExtensionSet {
   // that the KeyValueFunctor can be agnostic vis-a-vis KeyValue-vs-std::pair.
   // Applies a functor to the <int, Extension&> pairs in sorted order and
   // prefetches ahead.
-  template <typename KeyValueFunctor, typename PrefetchFunctor>
+  template <bool skip_cleared = true, typename KeyValueFunctor,
+            typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
     if (ABSL_PREDICT_FALSE(is_large())) {
-      ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
-                          std::move(func), std::move(prefetch_func));
+      ForEachPrefetchImpl<skip_cleared>(map_.large->begin(), map_.large->end(),
+                                        std::move(func),
+                                        std::move(prefetch_func));
       return;
     }
-    ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
-                        std::move(prefetch_func));
+    ForEachPrefetchImpl<skip_cleared>(flat_begin(), flat_end(), std::move(func),
+                                      std::move(prefetch_func));
   }
   // As above, but const.
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) const {
     if (ABSL_PREDICT_FALSE(is_large())) {
-      ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
-                          std::move(func), std::move(prefetch_func));
+      ForEachPrefetchImpl</*skip_cleared=*/true>(
+          map_.large->begin(), map_.large->end(), std::move(func),
+          std::move(prefetch_func));
       return;
     }
-    ForEachPrefetchImpl(flat_begin(), flat_end(), std::move(func),
-                        std::move(prefetch_func));
+    ForEachPrefetchImpl</*skip_cleared=*/true>(
+        flat_begin(), flat_end(), std::move(func), std::move(prefetch_func));
   }
 
   // As above, but without prefetching. This is for use in cases where we never
@@ -1009,7 +1026,12 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename Iterator, typename KeyValueFunctor>
   static void ForEachNoPrefetch(Iterator begin, Iterator end,
                                 KeyValueFunctor func) {
-    for (Iterator it = begin; it != end; ++it) func(it->first, it->second);
+    for (Iterator it = begin; it != end; ++it) {
+      if (ABSL_PREDICT_FALSE(it->second.is_cleared)) {
+        continue;
+      }
+      func(it->first, it->second);
+    }
   }
 
   // Loops through [begin, end), and returns true as soon as some element
@@ -1018,6 +1040,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   static bool AnyOfNoPrefetch(Iterator begin, Iterator end,
                               KeyValueFunctor predicate) {
     for (Iterator it = begin; it != end; ++it) {
+      if (ABSL_PREDICT_FALSE(it->second.is_cleared)) continue;
       if (predicate(it->first, it->second)) {
         return true;
       }

@@ -180,7 +180,8 @@ ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
   ABSL_DCHECK(arena_ == nullptr);
 
-  ForEach([](int /* number */, Extension& ext) { ext.Free(); }, PrefetchNta{});
+  ForEach</*skip_cleared=*/false>(
+      [](int /* number */, Extension& ext) { ext.Free(); }, PrefetchNta{});
   if (ABSL_PREDICT_FALSE(is_large())) {
     delete map_.large;
   } else {
@@ -242,11 +243,8 @@ bool ExtensionSet::LazyHasUnparsed(int number) const {
 
 int ExtensionSet::NumExtensions() const {
   int result = 0;
-  ForEachNoPrefetch([&result](int /* number */, const Extension& ext) {
-    if (!ext.is_cleared) {
-      ++result;
-    }
-  });
+  ForEachNoPrefetch(
+      [&result](int /* number */, const Extension& ext) { ++result; });
   return result;
 }
 
@@ -821,9 +819,6 @@ void ExtensionSet::InternalMergeFromSmallToEmpty(const MessageLite* extendee,
   auto dst_it = map_.flat;
   other.ForEach(
       [extendee, this, &dst_it, &other](int number, const Extension& ext) {
-        if (ext.is_cleared) {
-          return;
-        }
         dst_it->first = number;
         this->InternalExtensionMergeFromIntoUninitializedExtension(
             dst_it->second, extendee, number, ext, other.arena_);
@@ -1384,7 +1379,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
 #undef HANDLE_TYPE
       }
     }
-  } else if (!is_cleared) {
+  } else {
     result += WireFormatLite::TagSize(number, real_type(type));
     switch (real_type(type)) {
 #define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)      \
@@ -1511,6 +1506,8 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
     return true;
   }
 
+  // TODO: Can this be removed? It is left here for now since IsInitialized
+  // is called from outside of `ForEach` methods.
   if (is_cleared) return true;
 
   if (!is_lazy) return ptr.message_value->IsInitialized();
@@ -1778,6 +1775,9 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
           break;
       }
     }
+    // TODO: Can this be removed? It is left here for now since
+    // InternalSerializeFieldWithCachedSizesToArray is called from outside of
+    // `ForEach` methods.
   } else if (!is_cleared) {
     switch (real_type(type)) {
 #define HANDLE_TYPE(UPPERCASE, CAMELCASE, VALUE)                               \
@@ -1855,8 +1855,6 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
                                                         number, target, stream);
   }
 
-  if (is_cleared) return target;
-
   target = stream->EnsureSpace(target);
   // Start group.
   target = io::CodedOutputStream::WriteTagToArray(
@@ -1888,8 +1886,6 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
     // normal way.
     return ByteSize(number);
   }
-
-  if (is_cleared) return 0;
 
   size_t our_size = WireFormatLite::kMessageSetItemTagsSize;
 
