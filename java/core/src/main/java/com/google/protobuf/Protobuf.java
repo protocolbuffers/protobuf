@@ -49,11 +49,6 @@ final class Protobuf {
     schemaFor(message).mergeFrom(message, reader, extensionRegistry);
   }
 
-  /** Marks repeated/map/extension/unknown fields as immutable. */
-  <T> void makeImmutable(T message) {
-    schemaFor(message).makeImmutable(message);
-  }
-
   /** Checks if all required fields are set. */
   <T> boolean isInitialized(T message) {
     return schemaFor(message).isInitialized(message);
