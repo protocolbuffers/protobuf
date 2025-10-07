@@ -320,7 +320,7 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         }
 
         unsafe fn repeated_free(_private: $pbi$::Private, f: &mut $pb$::Repeated<Self>) {
-          $pbr$::free_enum_repeated(f)
+          unsafe { $pbr$::free_enum_repeated(f) }
         }
 
         fn repeated_len(r: $pb$::View<$pb$::Repeated<Self>>) -> usize {

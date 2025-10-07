@@ -795,7 +795,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
              }},
         },
         R"rs(
-        extern "C" {
+        unsafe extern "C" {
           $message_externs$
           $accessor_externs$
           $oneof_externs$

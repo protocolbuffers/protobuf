@@ -17,7 +17,7 @@ pub const UPB_MALLOC_ALIGN: usize = 8;
 const _CHECK_UPB_MALLOC_ALIGN_AT_LEAST_POINTER_ALIGNED: () =
     assert!(UPB_MALLOC_ALIGN >= align_of::<*const ()>());
 
-extern "C" {
+unsafe extern "C" {
     // `Option<NonNull<T: Sized>>` is ABI-compatible with `*mut T`
     pub fn upb_Arena_New() -> Option<RawArena>;
     pub fn upb_Arena_Free(arena: RawArena);

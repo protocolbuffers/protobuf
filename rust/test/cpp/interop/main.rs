@@ -27,7 +27,7 @@ macro_rules! proto_assert_eq {
 
 // Helper functions invoking C++ Protobuf APIs directly in C++.
 // Defined in `test_utils.cc`.
-extern "C" {
+unsafe extern "C" {
     fn TakeOwnershipAndGetOptionalInt64(msg: *mut c_void) -> i64;
     fn DeserializeInteropTestMessage(data: *const u8, len: usize) -> *mut c_void;
     fn MutateInteropTestMessage(msg: *mut c_void);

@@ -262,7 +262,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
             aliases = {runtime: "protobuf"},
             output = lib,
             metadata = rmeta,
-            edition = "2021",
+            edition = "2024",
             is_test = False,
             rustc_env = {},
             compile_data = depset([]),

@@ -19,7 +19,7 @@ use sys::opaque_pointee::opaque_pointee;
 opaque_pointee!(upb_Array);
 pub type RawArray = NonNull<upb_Array>;
 
-extern "C" {
+unsafe extern "C" {
     pub fn upb_Array_New(a: RawArena, r#type: CType) -> RawArray;
     pub fn upb_Array_Size(arr: RawArray) -> usize;
     pub fn upb_Array_Set(arr: RawArray, i: usize, val: upb_MessageValue);
