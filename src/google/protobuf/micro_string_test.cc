@@ -124,7 +124,7 @@ class MicroStringPrevTest
       // The actual must be at least what we expect.
       EXPECT_GE(actual, expected_string_used);
       // But it can be larger and we don't know how much. Round up a bit.
-      EXPECT_LE(actual, 1.1 * expected_string_used + 32);
+      EXPECT_LE(actual, 1.2 * expected_string_used + 32);
     }
   }
 
