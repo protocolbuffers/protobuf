@@ -82,22 +82,6 @@ final class Protobuf {
     return schemaCache.putIfAbsent(messageType, schema);
   }
 
-  /**
-   * Visible for testing only. Registers the given schema for the message type. If a schema was
-   * previously registered, it will be replaced by the provided schema.
-   *
-   * @param messageType the type of message on which the schema operates.
-   * @param schema the schema for the message type.
-   * @return the previously registered schema, or {@code null} if no schema was registered
-   *     previously.
-   */
-  @CanIgnoreReturnValue
-  Schema<?> registerSchemaOverride(Class<?> messageType, Schema<?> schema) {
-    checkNotNull(messageType, "messageType");
-    checkNotNull(schema, "schema");
-    return schemaCache.put(messageType, schema);
-  }
-
   private Protobuf() {
     schemaFactory = new ManifestSchemaFactory();
   }
