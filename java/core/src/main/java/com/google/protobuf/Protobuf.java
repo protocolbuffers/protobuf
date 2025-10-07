@@ -90,7 +90,7 @@ final class Protobuf {
    * @return the previously registered schema, or {@code null} if the given schema was successfully
    *     registered.
    */
-  Schema<?> registerSchema(Class<?> messageType, Schema<?> schema) {
+  private Schema<?> registerSchema(Class<?> messageType, Schema<?> schema) {
     checkNotNull(messageType, "messageType");
     checkNotNull(schema, "schema");
     return schemaCache.putIfAbsent(messageType, schema);
