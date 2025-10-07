@@ -438,7 +438,7 @@ TEST(CppGeneratedCode, SerializeUsingArena) {
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(&model, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(), hpb::ParseOptionsDefault())
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
           .value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
@@ -452,7 +452,7 @@ TEST(CppGeneratedCode, SerializeProxyUsingArena) {
       ::hpb::Serialize(&model_proxy, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(), hpb::ParseOptionsDefault())
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
           .value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
@@ -465,7 +465,7 @@ TEST(CppGeneratedCode, SerializeNestedMessageUsingArena) {
   absl::StatusOr<absl::string_view> bytes = ::hpb::Serialize(child, arena);
   EXPECT_EQ(true, bytes.ok());
   TestModel parsed_model =
-      ::hpb::Parse<TestModel>(bytes.value(), hpb::ParseOptionsDefault())
+      ::hpb::Parse<TestModel>(bytes.value(), hpb::DefaultParseOptions())
           .value();
   EXPECT_EQ("Hello World", parsed_model.str1());
 }
