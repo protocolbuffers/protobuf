@@ -11,20 +11,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.testing.Proto2Testing.Proto2Message;
 import com.google.protobuf.testing.Proto3Testing.Proto3Message;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public final class BinaryProtocolTest {
-  @Before
-  public void setup() {
-    TestSchemas.registerGenericProto2Schemas();
-
-    Protobuf.getInstance()
-        .registerSchemaOverride(Proto3Message.class, TestSchemas.genericProto3Schema);
-  }
 
   @Test
   public void proto3Roundtrip() throws Exception {
