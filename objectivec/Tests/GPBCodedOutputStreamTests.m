@@ -401,7 +401,7 @@
   NSOutputStream* output = [[[NSOutputStream alloc] initToBuffer:buffer
                                                         capacity:sizeof(buffer)] autorelease];
 
-  NSMutableData* outputBuffer = [NSMutableData data];
+  NSMutableData* outputBuffer = [[NSMutableData alloc] initWithLength:1];
   GPBCodedOutputStream* codedOutput =
       [[GPBCodedOutputStream alloc] initWithOutputStream:output data:outputBuffer];
 
