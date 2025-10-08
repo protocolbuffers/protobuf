@@ -3,6 +3,7 @@ name: Bazel Release
 on:
   # Can be triggered from the GitHub Actions ui, using the "Run workflow" button on
   # https://github.com/protocolbuffers/protobuf/actions/workflows/release_bazel_module.yaml
+  # TODO(alexeagle): consider automating the trigger from a new release being created
   workflow_dispatch:
     inputs:
       tag_name:
@@ -27,6 +28,6 @@ jobs:
     needs: release
     uses: ./.github/workflows/publish_to_bcr.yaml
     with:
-      tag_name: ${{ inputs.tag_name || github.ref_name }}
+      tag_name: ${{ inputs.tag_name }}
     secrets:
       BCR_PUBLISH_TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
