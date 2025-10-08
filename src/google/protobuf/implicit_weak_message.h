@@ -13,6 +13,7 @@
 #include <string>
 
 #include "google/protobuf/arena.h"
+#include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -252,6 +253,15 @@ struct WeakRepeatedPtrField {
   }
 #endif
 };
+
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+namespace internal {
+
+template <typename T>
+using WeakRepeatedPtrFieldWithArena = FieldWithArena<WeakRepeatedPtrField<T>>;
+
+}  // namespace internal
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
 }  // namespace protobuf
 }  // namespace google
