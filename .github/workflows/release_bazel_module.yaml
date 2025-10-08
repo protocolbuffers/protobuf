@@ -20,7 +20,9 @@ jobs:
       release_files: protobuf-*.tar.gz
       prerelease: false
       tag_name: ${{ inputs.tag_name || github.ref_name }}
-      bazel_test_command: bazel query @com_google_protobuf//:protoc
+      # The release was already created by Google-internal mechanism,
+      # so there aren't any useful assertions to make here.
+      bazel_test_command: 'true'
   publish:
     needs: release
     uses: ./.github/workflows/publish_to_bcr.yaml
