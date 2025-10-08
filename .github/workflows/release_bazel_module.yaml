@@ -20,7 +20,7 @@ jobs:
     with:
       release_files: protobuf-*.tar.gz
       prerelease: false
-      tag_name: ${{ inputs.tag_name || github.ref_name }}
+      tag_name: ${{ inputs.tag_name }}
       # The release was already created by Google-internal mechanism,
       # so there aren't any useful assertions to make here.
       bazel_test_command: 'true'
