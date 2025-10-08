@@ -15,6 +15,10 @@ public abstract class GeneratedFile {
 
   protected GeneratedFile() {}
 
+  protected static ExtensionRegistry getCollectedExtensionRegistry() {
+    return ExtensionRegistry.getEmptyRegistry();
+  }
+
   /** Add an optional extension from a file that may or may not be in the classpath. */
   protected static void addOptionalExtension(
       ExtensionRegistry registry, final String className, final String fieldName) {
