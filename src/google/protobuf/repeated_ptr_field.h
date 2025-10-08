@@ -1022,7 +1022,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   // Arena enabled constructors: for internal use only.
   RepeatedPtrField(internal::InternalVisibility, Arena* arena)
-      : RepeatedPtrField(arena) {}
+      : RepeatedPtrFieldBase(arena) {}
   RepeatedPtrField(internal::InternalVisibility, Arena* arena,
                    const RepeatedPtrField& rhs)
       : RepeatedPtrField(arena, rhs) {}
