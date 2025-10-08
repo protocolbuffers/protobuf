@@ -10,6 +10,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnum;
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +18,33 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class LargeEnumTest {
+  @Test
+  public void valueOfString_returnsCorrectObject() {
+    assertThat(LargeOpenAliasingEnum.valueOf("LARGE_ENUM1"))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM1);
+  }
+
+  @Test
+  public void valueOfEnumValueDescriptors_withAliasing_returnsCorrectObject() {
+    assertThat(
+            LargeOpenAliasingEnum.valueOf(LargeOpenAliasingEnum.LARGE_ENUM1.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM1);
+    assertThat(
+            LargeOpenAliasingEnum.valueOf(LargeOpenAliasingEnum.LARGE_ENUM100.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM100);
+    assertThat(
+            LargeOpenAliasingEnum.valueOf(
+                LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenAliasingEnum.LARGE_ENUM1_ALIAS);
+  }
+
+  @Test
+  public void valueOfEnumValueDescriptors_withoutAliasing_returnsCorrectObject() {
+    assertThat(LargeOpenEnum.valueOf(LargeOpenEnum.LARGE_ENUM1.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenEnum.LARGE_ENUM1);
+    assertThat(LargeOpenEnum.valueOf(LargeOpenEnum.LARGE_ENUM100.getValueDescriptor()))
+        .isSameInstanceAs(LargeOpenEnum.LARGE_ENUM100);
+  }
 
   @Test
   public void testOpenLargeEnum() throws Exception {

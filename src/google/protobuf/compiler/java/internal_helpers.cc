@@ -220,10 +220,14 @@ void GenerateLarge(
         }},
        {"for_number_func",
         [&] {
+          printer->Emit(R"(
+                $classname$ found = null;
+          )");
           for (int count = 0; count < interface_count; count++) {
             printer->Emit({{"count", absl::StrCat(count)}}, R"(
-                if ($classname$$count$.forNumber$count$(value) != null) {
-                  return $classname$$count$.forNumber$count$(value);
+                found = $classname$$count$.forNumber$count$(value);
+                if (found != null) {
+                  return found;
                 }
                 )");
           }
@@ -233,10 +237,14 @@ void GenerateLarge(
         }},
        {"value_of_func",
         [&] {
+          printer->Emit(R"(
+            $classname$ found = null;
+          )");
           for (int count = 0; count < interface_count; count++) {
             printer->Emit({{"count", absl::StrCat(count)}}, R"(
-              if ($classname$$count$.valueOf$count$(name) != null) {
-                return $classname$$count$.valueOf$count$(name);
+              found = $classname$$count$.valueOf$count$(name);
+              if (found != null) {
+                return found;
               }
             )");
           }
@@ -362,16 +370,22 @@ void GenerateLarge(
                 "      \"EnumValueDescriptor is not for this type.\");\n"
                 "  }\n",
                 "classname", descriptor->name());
+            // Aliases are literally the same object as the enum value they
+            // alias, so we can just get it by the number .
+            printer->Print(R"(
+                  $classname$ found = $classname$.forNumber(desc.getNumber());
+                  if (found != null) {
+                    return found;
+                  }
+                  )");
             if (!descriptor->is_closed()) {
+              printer->Print("  return UNRECOGNIZED;\n");
+            } else {
               printer->Print(
-                  "  if (desc.getIndex() == -1) {\n"
-                  "    return UNRECOGNIZED;\n"
-                  "  }\n");
+                  "  throw new java.lang.IllegalArgumentException(\n"
+                  "      \"EnumValueDescriptor has an invalid number.\");\n");
             }
-            printer->Print(
-                "  return values()[desc.getIndex()];\n"
-                "}\n"
-                "\n");
+            printer->Print("}\n");
           }
         }}},
       R"(
