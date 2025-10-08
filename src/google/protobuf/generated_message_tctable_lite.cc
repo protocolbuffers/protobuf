@@ -1228,7 +1228,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
   return ctx->ReadPackedVarintWithField(
       ptr,
-      [field](uint64_t varint) {
+      [](uint64_t varint) {
         FieldType val;
         if (zigzag) {
           if (sizeof(FieldType) == 8) {
