@@ -12,8 +12,7 @@
 use crate::__internal::runtime::InnerProtoString;
 use crate::__internal::{Private, SealedInternal};
 use crate::{
-    utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Optional, Proxied,
-    Proxy, View, ViewProxy,
+    utf8::Utf8Chunks, AsView, IntoProxied, IntoView, Mut, MutProxied, Optional, Proxied, View,
 };
 use std::borrow::Cow;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
@@ -131,8 +130,6 @@ impl IntoProxied<ProtoBytes> for Arc<[u8]> {
 
 impl SealedInternal for &[u8] {}
 
-impl<'msg> Proxy<'msg> for &'msg [u8] {}
-
 impl AsView for &[u8] {
     type Proxied = ProtoBytes;
 
@@ -149,8 +146,6 @@ impl<'msg> IntoView<'msg> for &'msg [u8] {
         self
     }
 }
-
-impl<'msg> ViewProxy<'msg> for &'msg [u8] {}
 
 /// The bytes were not valid UTF-8.
 #[derive(Debug, PartialEq)]
@@ -534,8 +529,6 @@ impl AsView for ProtoString {
     }
 }
 
-impl<'msg> Proxy<'msg> for &'msg ProtoStr {}
-
 impl AsView for &ProtoStr {
     type Proxied = ProtoString;
 
@@ -552,8 +545,6 @@ impl<'msg> IntoView<'msg> for &'msg ProtoStr {
         self
     }
 }
-
-impl<'msg> ViewProxy<'msg> for &'msg ProtoStr {}
 
 /// Implements `PartialCmp` and `PartialEq` for the `lhs` against the `rhs`
 /// using `AsRef<[u8]>`.

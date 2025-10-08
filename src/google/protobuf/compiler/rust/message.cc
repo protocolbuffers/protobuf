@@ -608,9 +608,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         // - `$Msg$View` does not use thread-local data.
         unsafe impl Send for $Msg$View<'_> {}
 
-        impl<'msg> $pb$::Proxy<'msg> for $Msg$View<'msg> {}
-        impl<'msg> $pb$::ViewProxy<'msg> for $Msg$View<'msg> {}
-
         impl<'msg> $pb$::AsView for $Msg$View<'msg> {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'msg, $Msg$> {
@@ -682,9 +679,6 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         // SAFETY:
         // - `$Msg$Mut` does not perform any shared mutation.
         unsafe impl Sync for $Msg$Mut<'_> {}
-
-        impl<'msg> $pb$::Proxy<'msg> for $Msg$Mut<'msg> {}
-        impl<'msg> $pb$::MutProxy<'msg> for $Msg$Mut<'msg> {}
 
         impl<'msg> $pb$::AsView for $Msg$Mut<'msg> {
           type Proxied = $Msg$;

@@ -15,8 +15,7 @@ use std::iter::FusedIterator;
 use std::marker::PhantomData;
 
 use crate::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, MutProxy, Proxied,
-    Proxy, View, ViewProxy,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Message, Mut, MutProxied, Proxied, View,
     __internal::runtime::{InnerRepeated, InnerRepeatedMut, RawRepeatedField},
     __internal::{Private, SealedInternal},
 };
@@ -460,8 +459,6 @@ where
 
 impl<'msg, T> SealedInternal for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
-impl<'msg, T> Proxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
-
 impl<'msg, T> AsView for RepeatedView<'msg, T>
 where
     T: ProxiedInRepeated + 'msg,
@@ -487,11 +484,7 @@ where
     }
 }
 
-impl<'msg, T> ViewProxy<'msg> for RepeatedView<'msg, T> where T: ProxiedInRepeated + 'msg {}
-
 impl<'msg, T> SealedInternal for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
-
-impl<'msg, T> Proxy<'msg> for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
 impl<'msg, T> AsView for RepeatedMut<'msg, T>
 where
@@ -542,8 +535,6 @@ where
         RepeatedMut { inner: self.inner, _phantom: PhantomData }
     }
 }
-
-impl<'msg, T> MutProxy<'msg> for RepeatedMut<'msg, T> where T: ProxiedInRepeated + 'msg {}
 
 impl<'msg, T> iter::Iterator for RepeatedIter<'msg, T>
 where

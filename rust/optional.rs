@@ -10,7 +10,7 @@
 #![allow(unused)]
 
 use crate::__internal::Private;
-use crate::{Mut, MutProxied, MutProxy, Proxied, View, ViewProxy};
+use crate::{Mut, MutProxied, Proxied, View};
 use std::convert::{AsMut, AsRef};
 use std::fmt::{self, Debug};
 use std::panic;
@@ -51,12 +51,20 @@ impl<T> Optional<T> {
 
     /// Constructs an `Optional<T>` with a `T` value and presence bit.
     pub fn new(val: T, is_set: bool) -> Self {
-        if is_set { Optional::Set(val) } else { Optional::Unset(val) }
+        if is_set {
+            Optional::Set(val)
+        } else {
+            Optional::Unset(val)
+        }
     }
 
     /// Converts into an `Option` of the set value, ignoring any unset value.
     pub fn into_option(self) -> Option<T> {
-        if let Optional::Set(x) = self { Some(x) } else { None }
+        if let Optional::Set(x) = self {
+            Some(x)
+        } else {
+            None
+        }
     }
 
     /// Returns if the field is set.

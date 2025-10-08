@@ -277,9 +277,6 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         type View<'a> = $name$;
       }
 
-      impl $pb$::Proxy<'_> for $name$ {}
-      impl $pb$::ViewProxy<'_> for $name$ {}
-
       impl $pb$::AsView for $name$ {
         type Proxied = $name$;
 

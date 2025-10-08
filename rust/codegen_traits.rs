@@ -7,8 +7,8 @@
 
 //! Traits that are implemented by codegen types.
 
+use crate::MutProxied;
 use crate::__internal::SealedInternal;
-use crate::{MutProxied, MutProxy, ViewProxy};
 use create::Parse;
 use interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop};
 use read::Serialize;
@@ -35,7 +35,6 @@ pub trait Message: SealedInternal
 
 /// A trait that all generated message views implement.
 pub trait MessageView<'msg>: SealedInternal
-    + ViewProxy<'msg, Proxied = Self::Message>
     // Read traits:
     + Debug + Serialize + Default
     // Thread safety:
@@ -51,7 +50,6 @@ pub trait MessageView<'msg>: SealedInternal
 
 /// A trait that all generated message muts implement.
 pub trait MessageMut<'msg>: SealedInternal
-    + MutProxy<'msg, MutProxied = Self::Message>
     // Read traits:
     + Debug + Serialize
     // Write traits:
