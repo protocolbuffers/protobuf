@@ -583,6 +583,24 @@
   XCTAssertFalse(message.hasOptionalString);
   XCTAssertEqualObjects(message.optionalString, @"");
 
+  // Test oneof.
+  XCTAssertFalse(message.hasOneofUint32);
+  XCTAssertEqual(message.oneofUint32, 0U);
+  XCTAssertEqual(message.oneofFieldOneOfCase, TestAllTypes_OneofField_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertFalse(message.hasOneofUint32);
+  [message setHasOneofUint32:NO];
+  XCTAssertFalse(message.hasOneofUint32);
+  XCTAssertEqual(message.oneofUint32, 0U);
+  XCTAssertEqual(message.oneofFieldOneOfCase, TestAllTypes_OneofField_OneOfCase_GPBUnsetOneOfCase);
+  message.oneofUint32 = 1;
+  XCTAssertEqual(message.oneofUint32, 1);
+  XCTAssertTrue(message.hasOneofUint32);
+  XCTAssertEqual(message.oneofFieldOneOfCase, TestAllTypes_OneofField_OneOfCase_OneofUint32);
+  [message setHasOneofUint32:NO];
+  XCTAssertFalse(message.hasOneofUint32);
+  XCTAssertEqual(message.oneofUint32, 0);
+  XCTAssertEqual(message.oneofFieldOneOfCase, TestAllTypes_OneofField_OneOfCase_GPBUnsetOneOfCase);
+
   // Test optional data.
   XCTAssertFalse(message.hasOptionalBytes);
   XCTAssertEqualObjects(message.optionalBytes, GPBEmptyNSData());
