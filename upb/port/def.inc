@@ -484,6 +484,21 @@ Error, UINTPTR_MAX is undefined
 #define UPB_NO_SANITIZE_ADDRESS
 #endif
 
+// Minitable fields do not contain pointers, which means they would end up in a
+// different section of the binary than the minitable or submessages. Forcing
+// them into the read-only relocatable section improves cache and TLB locality.
+#if defined(__PIE__) && UPB_HAS_ATTRIBUTE(section)
+#if defined(__ELF__)
+#define UPB_FORCE_RELRO __attribute__((section(".data.rel.ro")))
+#elif defined(__MACH__)
+#define UPB_FORCE_RELRO __attribute__((section("__DATA_CONST,__const")))
+#else
+#define UPB_FORCE_RELRO
+#endif
+#else
+#define UPB_FORCE_RELRO
+#endif
+
 // Linker arrays combine elements from multiple translation units into a single
 // array that can be iterated over at runtime.
 //
