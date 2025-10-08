@@ -7,7 +7,7 @@ load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
 
-def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = []):
+def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = [], alwayslink = False):
     """Like cc_library(), but callable from rules.
 
     Args:
@@ -54,6 +54,7 @@ def cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos, includes = []):
         compilation_outputs = compilation_outputs,
         linking_contexts = linking_contexts,
         disallow_dynamic_library = cc_common.is_enabled(feature_configuration = feature_configuration, feature_name = "targets_windows") or not cc_common.is_enabled(feature_configuration = feature_configuration, feature_name = "supports_dynamic_linker"),
+        alwayslink = alwayslink,
     )
 
     return CcInfo(
