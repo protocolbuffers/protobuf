@@ -1,4 +1,3 @@
-
 """Release binary integrity hashes.
 
 This file contents are entirely replaced during release publishing, by .github/workflows/release_prep.sh
