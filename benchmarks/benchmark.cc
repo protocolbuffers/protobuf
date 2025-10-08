@@ -137,6 +137,7 @@ static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
           true);
     }
     bytes_per_iter = _upb_DefPool_BytesLoaded(defpool.ptr());
+    benchmark::DoNotOptimize(defpool);
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
 }
@@ -168,6 +169,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
         exit(1);
       }
       bytes_per_iter += input.size();
+      benchmark::DoNotOptimize(proto);
     }
 
     if (Mode == WithLayout) {
@@ -245,6 +247,7 @@ static void BM_Parse_Upb_FileDesc(benchmark::State& state) {
       printf("Failed to parse with status %d.\n", status);
       exit(1);
     }
+    benchmark::DoNotOptimize(set);
     upb_Arena_Free(arena);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
@@ -314,6 +317,7 @@ void BM_Parse_Proto2(benchmark::State& state) {
       printf("Failed to parse.\n");
       exit(1);
     }
+    benchmark::DoNotOptimize(proto);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
@@ -327,6 +331,7 @@ static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   proto.ParseFromArray(descriptor.data, descriptor.size);
   for (auto _ : state) {
     proto.SerializePartialToArray(buf, sizeof(buf));
+    benchmark::DoNotOptimize(buf);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
@@ -363,6 +368,7 @@ static void BM_SerializeDescriptor_Upb(benchmark::State& state) {
       exit(1);
     }
     total += size;
+    benchmark::DoNotOptimize(data);
     upb_Arena_Free(enc_arena);
   }
   state.SetBytesProcessed(total);
@@ -404,6 +410,7 @@ static void BM_JsonParse_Upb(benchmark::State& state) {
         upb_benchmark_FileDescriptorProto_new(arena);
     upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
                    defpool.ptr(), 0, arena, nullptr);
+    benchmark::DoNotOptimize(proto);
     upb_Arena_Free(arena);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
@@ -419,6 +426,7 @@ static void BM_JsonParse_Proto2(benchmark::State& state) {
   for (auto _ : state) {
     protobuf::FileDescriptorProto proto;
     ABSL_CHECK_OK(google::protobuf::json::JsonStringToMessage(json, &proto));
+    benchmark::DoNotOptimize(proto);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
 }
@@ -444,6 +452,7 @@ static void BM_JsonSerialize_Upb(benchmark::State& state) {
     // encoder twice, once to discover the size of the buffer.
     upb_JsonEncode(UPB_UPCAST(set), md, nullptr, 0, json_str.data(),
                    json_str.size(), nullptr);
+    benchmark::DoNotOptimize(json_str);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
 }
@@ -457,6 +466,7 @@ static void BM_JsonSerialize_Proto2(benchmark::State& state) {
   for (auto _ : state) {
     json.clear();
     ABSL_CHECK_OK(google::protobuf::json::MessageToJsonString(proto, &json));
+    benchmark::DoNotOptimize(json);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
 }
