@@ -37,9 +37,7 @@ class PROTOC_EXPORT RustGenerator final
     return FEATURE_PROTO3_OPTIONAL | FEATURE_SUPPORTS_EDITIONS;
   }
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override {
-    return Edition::EDITION_2024;
-  }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 };
 
 }  // namespace rust

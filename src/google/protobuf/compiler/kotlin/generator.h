@@ -44,9 +44,7 @@ class PROTOC_EXPORT KotlinGenerator : public CodeGenerator {
   uint64_t GetSupportedFeatures() const override;
 
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override {
-    return Edition::EDITION_2024;
-  }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 
   std::vector<const FieldDescriptor*> GetFeatureExtensions() const override {
     return {GetExtensionReflection(pb::java)};

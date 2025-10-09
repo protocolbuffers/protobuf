@@ -34,9 +34,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
            Feature::FEATURE_SUPPORTS_EDITIONS;
   }
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override {
-    return Edition::EDITION_2024;
-  }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 };
 
 }  // namespace ruby

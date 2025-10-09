@@ -1661,11 +1661,11 @@ bool CommandLineInterface::SetupFeatureResolution(DescriptorPool& pool) {
                         << ProtocMinimumEdition() << ".";
         return false;
       }
-      if (output.generator->GetMaximumEdition() != ProtocMaximumEdition()) {
+      if (output.generator->GetMaximumEdition() > ProtocMaximumEdition()) {
         ABSL_LOG(ERROR) << "Built-in generator " << output.name
                         << " specifies a maximum edition "
                         << output.generator->GetMaximumEdition()
-                        << " which is not the protoc maximum "
+                        << " which is later than the protoc maximum "
                         << ProtocMaximumEdition() << ".";
         return false;
       }

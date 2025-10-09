@@ -57,9 +57,7 @@ class TestGenerator : public CodeGenerator {
   }
 
   Edition GetMinimumEdition() const override { return Edition::EDITION_PROTO2; }
-  Edition GetMaximumEdition() const override {
-    return Edition::EDITION_2024;
-  }
+  Edition GetMaximumEdition() const override { return Edition::EDITION_2024; }
 };
 
 // This test verifies that all the expected insertion points exist.  It does

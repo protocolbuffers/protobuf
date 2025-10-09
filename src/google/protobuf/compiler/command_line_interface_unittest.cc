@@ -1671,7 +1671,7 @@ TEST_F(CommandLineInterfaceTest, InvalidMaximumEditionError) {
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
       "generator --test_out specifies a maximum edition 99999_TEST_ONLY which "
-      "is not the protoc maximum");
+      "is later than the protoc maximum");
 }
 
 TEST_F(CommandLineInterfaceTest, InvalidFeatureExtensionError) {
