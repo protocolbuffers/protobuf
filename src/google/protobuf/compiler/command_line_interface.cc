@@ -1600,8 +1600,8 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
     return nullptr;
   }
 
-  std::unique_ptr<SimpleDescriptorDatabase> database{
-      new SimpleDescriptorDatabase()};
+  std::unique_ptr<SimpleDescriptorDatabase> database =
+      std::make_unique<SimpleDescriptorDatabase>();
 
   for (int j = 0; j < file_descriptor_set.file_size(); j++) {
     FileDescriptorProto previously_added_file_descriptor_proto;
