@@ -16,6 +16,10 @@ import option "google/protobuf/java_features.proto";
 option java_package = "com.google.protobuf.large.openaliasingenum.edition";
 option features.(pb.java).large_enum = true;
 
+message LargeOpenAliasingEnumParent {
+  repeated LargeOpenAliasingEnum values = 1;
+}
+
 enum LargeOpenAliasingEnum {
   option allow_alias = true;
 
