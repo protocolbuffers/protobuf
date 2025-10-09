@@ -185,11 +185,16 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value
   return [self initWithOutputStream:nil data:data];
 }
 
-// This initializer isn't exposed, but it is the designated initializer.
-// Setting OutputStream and NSData is to control the buffering behavior/size
-// of the work, but that is more obvious via the bufferSize: version.
+// This initializer isn't publicly exposed, but it is the designated initializer.
+// Setting OutputStream and NSData is to control the buffering behavior/size of the work.
 - (instancetype)initWithOutputStream:(NSOutputStream *)output data:(NSMutableData *)data {
   if ((self = [super init])) {
+#if defined(DEBUG) && DEBUG
+    // The public interface (above) can't violate this, but the tests cheat and directly call
+    // so ensure the invariant is enforced.
+    NSAssert((output == nil) || ([data length] != 0),
+             @"Internal error, can't have an output stream and a zero length buffer");
+#endif
     buffer_ = [data retain];
     state_.bytes = [data mutableBytes];
     state_.size = [data length];
