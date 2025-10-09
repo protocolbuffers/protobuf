@@ -39,7 +39,7 @@ class FieldWithArena {
     StaticallyVerifyLayout();
     // Construct `T` after setting `_internal_metadata_` so that `T` can safely
     // call ResolveArena().
-    new (&field_) T(kOffset, std::forward<Args>(args)...);
+    new (&field_) T(BuildOffset(), std::forward<Args>(args)...);
   }
 
   // The destructor of `FieldWithArena` must only be called if the field is
@@ -59,7 +59,7 @@ class FieldWithArena {
  private:
   friend InternalMetadataOffset;
 
-  static const InternalMetadataOffset kOffset;
+  static constexpr InternalMetadataOffset BuildOffset();
 
   // A method to statically verify the offset of `field_storage_`. We need to
   // define this in a member function out of line because `FieldWithArena` needs
@@ -81,9 +81,10 @@ class FieldWithArena {
 };
 
 template <typename T>
-constexpr internal::InternalMetadataOffset FieldWithArena<T>::kOffset =
-    internal::InternalMetadataOffset::Build<
-        FieldWithArena<T>, offsetof(FieldWithArena<T>, field_)>();
+constexpr InternalMetadataOffset FieldWithArena<T>::BuildOffset() {
+  return InternalMetadataOffset::Build<FieldWithArena,
+                                       offsetof(FieldWithArena, field_)>();
+}
 
 template <typename Element>
 constexpr void FieldWithArena<Element>::StaticallyVerifyLayout() {
