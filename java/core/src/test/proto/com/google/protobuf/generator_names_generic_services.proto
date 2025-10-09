@@ -1,0 +1,15 @@
+edition = "2023";
+
+package google.protobuf;
+
+option java_package = "com.google.protobuf";
+option java_generic_services = true;
+
+message GenericServiceMessage {
+  int32 field = 1;
+}
+
+service TestGenericService {
+  // Test method.
+  rpc Foo(GenericServiceMessage) returns (GenericServiceMessage) {}
+}
