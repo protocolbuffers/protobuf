@@ -114,7 +114,6 @@ class Map : public FieldGeneratorBase {
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
-    GenerateConstructorCode(p);
     GenerateMergingCode(p);
   }
 
@@ -158,8 +157,6 @@ class Map : public FieldGeneratorBase {
       )cc");
     }
   }
-
-  void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {

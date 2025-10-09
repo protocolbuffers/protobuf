@@ -93,13 +93,6 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateConstructorCode(io::Printer* p) const override {
-    if (!is_oneof()) return;
-    p->Emit(R"cc(
-      $ns$::_$Msg$_default_instance_.$field_$ = $kDefault$;
-    )cc");
-  }
-
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     p->Emit(R"cc(
       _this->$field_$ = from.$field_$;
@@ -366,8 +359,6 @@ class RepeatedEnum : public FieldGeneratorBase {
       )cc");
     }
   }
-
-  void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;

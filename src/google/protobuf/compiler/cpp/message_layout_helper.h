@@ -140,9 +140,8 @@ class MessageLayoutHelper {
   // calls ArenaStringPtr::Destroy on each.
   //
   // MESSAGE is grouped next, as our Clear/SharedDtor code walks it and calls
-  // delete on each.  We initialize these fields with a NULL pointer (see
-  // MessageFieldGenerator::GenerateConstructorCode), which allows them to be
-  // memset.
+  // delete on each.  We initialize these fields with a NULL pointer, which
+  // allows them to be memset.
   //
   // ZERO_INITIALIZABLE is memset in Clear/SharedCtor
   //

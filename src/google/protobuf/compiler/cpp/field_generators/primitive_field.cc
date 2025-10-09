@@ -128,16 +128,6 @@ class SingularPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateConstructorCode(io::Printer* p) const override {
-    if (!is_oneof()) {
-      return;
-    }
-
-    p->Emit(R"cc(
-      $pkg$::_$Msg$_default_instance_.$field_$ = $kDefault$;
-    )cc");
-  }
-
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     p->Emit(R"cc(
       _this->$field_$ = from.$field_$;
@@ -341,8 +331,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
       )cc");
     }
   }
-
-  void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     if (should_split()) {

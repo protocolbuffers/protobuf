@@ -107,7 +107,6 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
-  void GenerateConstructorCode(io::Printer* p) const override {}
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -503,7 +502,6 @@ class OneofMessage : public SingularMessage {
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
-  void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
@@ -665,11 +663,6 @@ void OneofMessage::GenerateDestructorCode(io::Printer* p) const {
   // behavior.
 }
 
-void OneofMessage::GenerateConstructorCode(io::Printer* p) const {
-  // Don't print any constructor code. The field is in a union. We allocate
-  // space only when this field is used.
-}
-
 void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(!has_hasbit_);
   p->Emit(R"cc(
@@ -732,7 +725,6 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
-  void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
@@ -933,10 +925,6 @@ void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   p->Emit(R"cc(
     $field_$.InternalSwap(&other->$field_$);
   )cc");
-}
-
-void RepeatedMessage::GenerateConstructorCode(io::Printer* p) const {
-  // Not needed for repeated fields.
 }
 
 void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {

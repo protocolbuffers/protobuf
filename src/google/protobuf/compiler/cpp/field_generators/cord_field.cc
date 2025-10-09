@@ -67,7 +67,6 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
@@ -126,7 +125,6 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   // Overrides CordFieldGenerator behavior.
   ArenaDtorNeeds NeedsArenaDestructor() const override {
@@ -242,14 +240,6 @@ void CordFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$field$.swap(other->$field$);\n");
-}
-
-void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
-  ABSL_CHECK(!should_split());
-  Formatter format(printer, variables_);
-  if (!field_->default_value_string().empty()) {
-    format("$field$ = ::absl::string_view($default$, $default_length$);\n");
-  }
 }
 
 void CordFieldGenerator::GenerateArenaDestructorCode(

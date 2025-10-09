@@ -204,7 +204,6 @@ class SingularStringView : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
-  void GenerateConstructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
@@ -471,25 +470,22 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
   )cc");
 }
 
-void SingularStringView::GenerateConstructorCode(io::Printer* p) const {
-  if ((is_inlined() && EmptyDefault()) || is_oneof()) return;
-  ABSL_DCHECK(!is_inlined());
-
-  p->Emit(R"cc(
-    $field_$.InitDefault();
-  )cc");
-
-  if (EmptyDefault()) {
-    p->Emit(R"cc(
-      if ($pbi$::DebugHardenForceCopyDefaultString()) {
-        $field_$.Set("", GetArena());
-      }
-    )cc");
-  }
-}
-
 void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
-  GenerateConstructorCode(p);
+  if (!(is_inlined() && EmptyDefault()) && !is_oneof()) {
+    ABSL_DCHECK(!is_inlined());
+
+    p->Emit(R"cc(
+      $field_$.InitDefault();
+    )cc");
+
+    if (EmptyDefault()) {
+      p->Emit(R"cc(
+        if ($pbi$::DebugHardenForceCopyDefaultString()) {
+          $field_$.Set("", GetArena());
+        }
+      )cc");
+    }
+  }
 
   if (is_inlined()) {
     p->Emit(R"cc(
@@ -673,8 +669,6 @@ class RepeatedStringView : public FieldGeneratorBase {
       )cc");
     }
   }
-
-  void GenerateConstructorCode(io::Printer* p) const override {}
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     if (should_split()) {

@@ -140,8 +140,6 @@ class FieldGeneratorBase {
 
   virtual void GenerateSwappingCode(io::Printer* p) const = 0;
 
-  virtual void GenerateConstructorCode(io::Printer* p) const = 0;
-
   virtual void GenerateDestructorCode(io::Printer* p) const {}
 
   virtual void GenerateArenaDestructorCode(io::Printer* p) const {
@@ -395,16 +393,6 @@ class FieldGenerator {
   void GenerateSwappingCode(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateSwappingCode(p);
-  }
-
-  // Generates initialization code for private members declared by
-  // GeneratePrivateMembers().
-  //
-  // These go into the message class's SharedCtor() method, invoked by each of
-  // the generated constructors.
-  void GenerateConstructorCode(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateConstructorCode(p);
   }
 
   // Generates any code that needs to go in the class's SharedDtor() method,
