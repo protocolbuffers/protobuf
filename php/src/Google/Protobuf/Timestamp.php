@@ -83,7 +83,7 @@ class Timestamp extends \Google\Protobuf\Internal\TimestampBase
 {
     /**
      * Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must
-     * be between -315576000000 and 315576000000 inclusive (which corresponds to
+     * be between -62135596800 and 253402300799 inclusive (which corresponds to
      * 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z).
      *
      * Generated from protobuf field <code>int64 seconds = 1;</code>
@@ -108,7 +108,7 @@ class Timestamp extends \Google\Protobuf\Internal\TimestampBase
      *
      *     @type int|string $seconds
      *           Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must
-     *           be between -315576000000 and 315576000000 inclusive (which corresponds to
+     *           be between -62135596800 and 253402300799 inclusive (which corresponds to
      *           0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z).
      *     @type int $nanos
      *           Non-negative fractions of a second at nanosecond resolution. This field is
@@ -125,7 +125,7 @@ class Timestamp extends \Google\Protobuf\Internal\TimestampBase
 
     /**
      * Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must
-     * be between -315576000000 and 315576000000 inclusive (which corresponds to
+     * be between -62135596800 and 253402300799 inclusive (which corresponds to
      * 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z).
      *
      * Generated from protobuf field <code>int64 seconds = 1;</code>
@@ -138,7 +138,7 @@ class Timestamp extends \Google\Protobuf\Internal\TimestampBase
 
     /**
      * Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must
-     * be between -315576000000 and 315576000000 inclusive (which corresponds to
+     * be between -62135596800 and 253402300799 inclusive (which corresponds to
      * 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z).
      *
      * Generated from protobuf field <code>int64 seconds = 1;</code>
