@@ -88,6 +88,13 @@ void CppMessageExterns(Context& ctx, const Descriptor& msg) {
       fn $new_thunk$() -> $pbr$::RawMessage;
       fn $default_instance_thunk$() -> $pbr$::RawMessage;
     )rs");
+
+  if (msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
+    ctx.Emit({{"get_descriptor_thunk", ThunkName(ctx, msg, "get_descriptor")}},
+             R"rs(
+        fn $get_descriptor_thunk$() -> *const std::ffi::c_void;
+      )rs");
+  }
 }
 
 void MessageDrop(Context& ctx, const Descriptor& msg) {
@@ -795,6 +802,20 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           $oneof_externs$
         }
     )rs");
+    if (msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
+      ctx.Emit(
+          {{"Msg", RsSafeName(msg.name())},
+           {"get_descriptor_thunk", ThunkName(ctx, msg, "get_descriptor")}},
+          R"rs(
+        impl $Msg$ {
+          /// Returns a pointer to the descriptor for this message.
+          /// This method is only available on C++ kernel for non-Lite messages.
+          pub fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {
+            unsafe { $get_descriptor_thunk$() }
+          }
+        }
+      )rs");
+    }
   }
 
   ctx.printer().PrintRaw("\n");
@@ -860,6 +881,18 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   }
 }  // NOLINT(readability/fn_size)
 
+void GenerateDescriptorThunkCc(Context& ctx, const Descriptor& msg) {
+  ABSL_CHECK(ctx.is_cpp());
+  if (msg.file()->options().optimize_for() == FileOptions::LITE_RUNTIME) return;
+  ctx.Emit({{"QualifiedMsg", cpp::QualifiedClassName(&msg)},
+            {"get_descriptor_thunk", ThunkName(ctx, msg, "get_descriptor")}},
+           R"cc(
+             const void* $get_descriptor_thunk$() {
+               return $QualifiedMsg$::GetDescriptor();
+             }
+           )cc");
+}
+
 // Generates code for a particular message in `.pb.thunk.cc`.
 void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
   ABSL_CHECK(ctx.is_cpp());
@@ -893,6 +926,8 @@ void GenerateThunksCc(Context& ctx, const Descriptor& msg) {
   for (int i = 0; i < msg.real_oneof_decl_count(); ++i) {
     GenerateOneofThunkCc(ctx, *msg.real_oneof_decl(i));
   }
+
+  GenerateDescriptorThunkCc(ctx, msg);
 
   ctx.Emit(R"(}  //extern "C"
   )");
