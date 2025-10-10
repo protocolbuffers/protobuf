@@ -316,6 +316,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
         type_info_(type_info),
         table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)),
         arena_(arena) {}
+  explicit constexpr UntypedMapBase(TypeInfo type_info)
+      : UntypedMapBase(/*arena=*/nullptr, type_info) {}
 
   UntypedMapBase(const UntypedMapBase&) = delete;
   UntypedMapBase& operator=(const UntypedMapBase&) = delete;
@@ -451,15 +453,16 @@ class PROTOBUF_EXPORT UntypedMapBase {
   NodeBase* AllocNode() { return AllocNode(type_info_.node_size); }
 
   NodeBase* AllocNode(size_t node_size) {
-    return static_cast<NodeBase*>(arena_ == nullptr
+    Arena* arena = this->arena();
+    return static_cast<NodeBase*>(arena == nullptr
                                       ? ::operator new(node_size)
-                                      : arena_->AllocateAligned(node_size));
+                                      : arena->AllocateAligned(node_size));
   }
 
   void DeallocNode(NodeBase* node) { DeallocNode(node, type_info_.node_size); }
 
   void DeallocNode(NodeBase* node, size_t node_size) {
-    ABSL_DCHECK(arena_ == nullptr);
+    ABSL_DCHECK(arena() == nullptr);
     internal::SizedDelete(node, node_size);
   }
 
@@ -474,10 +477,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
   NodeBase** CreateEmptyTable(map_index_t n) {
     ABSL_DCHECK_GE(n, kMinTableSize);
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
+    Arena* arena = this->arena();
     NodeBase** result =
-        arena_ == nullptr
+        arena == nullptr
             ? static_cast<NodeBase**>(::operator new(n * sizeof(NodeBase*)))
-            : Arena::CreateArray<NodeBase*>(arena_, n);
+            : Arena::CreateArray<NodeBase*>(arena, n);
     memset(result, 0, n * sizeof(result[0]));
     return result;
   }
@@ -1483,7 +1487,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
   }
 
   void DeleteNode(Node* node) {
-    if (this->arena_ == nullptr) {
+    if (this->arena() == nullptr) {
       node->kv.first.~key_type();
       node->kv.second.~mapped_type();
       this->DeallocNode(node, sizeof(Node));
@@ -1497,19 +1501,19 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
         std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
         key_type>::type;
     Node* node = static_cast<Node*>(this->AllocNode(sizeof(Node)));
+    Arena* arena = this->arena();
 
     // Even when arena is nullptr, CreateInArenaStorage is still used to
     // ensure the arena of submessage will be consistent. Otherwise,
     // submessage may have its own arena when message-owned arena is enabled.
     // Note: This only works if `Key` is not arena constructible.
     if (!internal::InitializeMapKey(const_cast<Key*>(&node->kv.first),
-                                    std::forward<K>(k), this->arena_)) {
-      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
-                                  this->arena_,
+                                    std::forward<K>(k), arena)) {
+      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first), arena,
                                   static_cast<TypeToInit>(std::forward<K>(k)));
     }
     // Note: if `T` is arena constructible, `Args` needs to be empty.
-    Arena::CreateInArenaStorage(&node->kv.second, this->arena_,
+    Arena::CreateInArenaStorage(&node->kv.second, arena,
                                 std::forward<Args>(args)...);
     return node;
   }
