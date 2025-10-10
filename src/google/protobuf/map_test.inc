@@ -98,9 +98,9 @@ struct MapTestPeer {
   static bool InsertOrReplaceNode(T& map, typename T::key_type key,
                                   typename T::mapped_type value) {
     using Node = typename T::Node;
-    auto* node = static_cast<Node*>(map.AllocNode(sizeof(Node)));
+    auto* node = static_cast<Node*>(map.AllocNode(sizeof(Node), map.arena()));
     ::new (static_cast<void*>(&node->kv)) typename T::value_type{key, value};
-    return GetKeyMapBase(map).InsertOrReplaceNode(node);
+    return GetKeyMapBase(map).InsertOrReplaceNode(node, map.arena());
   }
 
   template <typename T>
