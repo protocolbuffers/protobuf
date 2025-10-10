@@ -9,6 +9,7 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 cc_binary(
     name = "protoc-gen-objectivec",
     srcs = ["main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":objectivec",
         "//src/google/protobuf/compiler:plugin",
