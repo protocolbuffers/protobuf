@@ -25,13 +25,15 @@ namespace internal {
 // This class is used to store `InternalMetadata` alongside `T` with an
 // `InternalMetadataResolver`, since `InternalMetadataResolver`s can only point
 // to an existing arena pointer "nearby" in memory.
+//
+// Note that `FieldWithArena<T>` is destructor-skippable if and only if `T` is
+// destructor-skippable.
 template <typename T>
-class FieldWithArena {
+class FieldWithArena : public ContainerDestructorSkippableBase<T> {
  public:
   using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
 
-  FieldWithArena() : FieldWithArena(/*arena=*/nullptr) {}
+  constexpr FieldWithArena() : field_() {}
 
   template <typename... Args>
   explicit FieldWithArena(Arena* arena, Args&&... args)
@@ -42,10 +44,12 @@ class FieldWithArena {
     new (&field_) T(BuildOffset(), std::forward<Args>(args)...);
   }
 
-  // The destructor of `FieldWithArena` must only be called if the field is
-  // not allocated on an arena.
   ~FieldWithArena() {
-    ABSL_DCHECK_EQ(GetArena(), nullptr);
+    // The destructor of `FieldWithArena` for destructor-skippable types must
+    // only be called if the field is not allocated on an arena.
+    if constexpr (Arena::is_destructor_skippable<T>::value) {
+      ABSL_DCHECK_EQ(GetArena(), nullptr);
+    }
     field_.~T();
   }
 

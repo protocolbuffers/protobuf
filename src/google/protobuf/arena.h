@@ -832,6 +832,21 @@ inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string, false>() {
   return impl_.AllocateFromStringBlock();
 }
 
+namespace internal {
+
+// This class is used to define `DestructorSkippable_` for some containing type
+// if and only if `T` is destructor-skippable.
+template <typename T,
+          bool kDestructorSkippable = Arena::is_destructor_skippable<T>::value>
+struct ContainerDestructorSkippableBase {};
+
+template <typename T>
+struct ContainerDestructorSkippableBase<T, /*kDestructorSkippable=*/true> {
+  using DestructorSkippable_ = void;
+};
+
+}  // namespace internal
+
 }  // namespace protobuf
 }  // namespace google
 
