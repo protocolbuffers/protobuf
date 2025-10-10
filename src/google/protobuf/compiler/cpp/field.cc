@@ -306,8 +306,6 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
     return;
   }
 
-  ABSL_CHECK(HasHasbit(field, opts));
-
   int32_t index = *idx / 32;
   std::string mask = absl::StrFormat("0x%08xU", 1u << (*idx % 32));
 
@@ -381,7 +379,7 @@ void FieldGeneratorTable::Build(
   for (const auto* field : internal::FieldRange(descriptor_)) {
     size_t index = static_cast<size_t>(field->index());
     std::optional<uint32_t> has_bit_index;
-    if (!has_bit_indices.empty() && has_bit_indices[index] >= 0) {
+    if (has_bit_indices[index] >= 0) {
       has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
     }
 

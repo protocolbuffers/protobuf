@@ -55,6 +55,7 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 
   // The following naming is required to match protobuf naming conventions.
   struct {
+    internal::HasBits<1> _has_bits_;     // NOLINT
     internal::CachedSize _cached_size_;  // NOLINT
   } _impl_;                              // NOLINT
 };

@@ -288,16 +288,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
 
   auto GenerateTableBase = [&] {
     p->Emit(
-        {{"has_bits_offset",
-          [&] {
-            if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
-              p->Emit(
-                  "PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_),\n");
-            } else {
-              p->Emit("0,  // no _has_bits_\n");
-            }
-          }},
-         {"extension_offset",
+        {{"extension_offset",
           [&] {
             if (descriptor_->extension_range_count() != 0) {
               p->Emit("PROTOBUF_FIELD_OFFSET($classname$, $extensions$),\n");
@@ -366,7 +357,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
           }}},
         // clang-format off
         R"cc(
-        $has_bits_offset$,
+        PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_),
         $extension_offset$,
         $max_field_number$, $fast_idx_mask$,  // max_field_number, fast_idx_mask
         offsetof(decltype(_table_), field_lookup_table),

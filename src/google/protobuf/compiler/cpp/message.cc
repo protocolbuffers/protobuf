@@ -664,11 +664,9 @@ MessageGenerator::MessageGenerator(
       }));
 
   // This message has hasbits iff one or more fields need one.
+  has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
   for (auto field : optimized_order_) {
     if (HasHasbit(field, options_)) {
-      if (has_bit_indices_.empty()) {
-        has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
-      }
       has_bit_indices_[field->index()] = max_has_bit_index_++;
     }
     if (IsStringInlined(field, options_)) {
@@ -709,7 +707,7 @@ bool MessageGenerator::ShouldGenerateEnclosingIf(
 }
 
 size_t MessageGenerator::HasBitsSize() const {
-  return (max_has_bit_index_ + 31) / 32;
+  return std::max<size_t>(1, (max_has_bit_index_ + 31) / 32);
 }
 
 size_t MessageGenerator::InlinedStringDonatedSize() const {
@@ -727,8 +725,7 @@ MessageGenerator::HasBitVars(const FieldDescriptor* field) const {
 }
 
 int MessageGenerator::HasBitIndex(const FieldDescriptor* field) const {
-  return has_bit_indices_.empty() ? kNoHasbit
-                                  : has_bit_indices_[field->index()];
+  return has_bit_indices_[field->index()];
 }
 
 int MessageGenerator::HasByteIndex(const FieldDescriptor* field) const {
@@ -1570,9 +1567,6 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
 
 void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  // Prepare decls for _cached_size_ and _has_bits_.  Their position in the
-  // output will be determined later.
-  bool need_to_emit_cached_size = true;
   const size_t sizeof_has_bits = HasBitsSize();
 
   // To minimize padding, data members are divided into three sections:
@@ -1612,21 +1606,14 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
         }},
        {"has_bits",
         [&] {
-          if (has_bit_indices_.empty()) return;
-
           // _has_bits_ is frequently accessed, so to reduce code size and
           // improve speed, it should be close to the start of the object.
           // Placing _cached_size_ together with _has_bits_ improves cache
           // locality despite potential alignment padding.
           p->Emit({{"sizeof_has_bits", sizeof_has_bits}}, R"cc(
             $pbi$::HasBits<$sizeof_has_bits$> _has_bits_;
+            $pbi$::CachedSize _cached_size_;
           )cc");
-          if (need_to_emit_cached_size) {
-            p->Emit(R"cc(
-              $pbi$::CachedSize _cached_size_;
-            )cc");
-            need_to_emit_cached_size = false;
-          }
         }},
        {"field_members",
         [&] {
@@ -1687,15 +1674,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             }
           }
         }},
-       {"cached_size_if_no_hasbits",
-        [&] {
-          if (!need_to_emit_cached_size) return;
-
-          need_to_emit_cached_size = false;
-          p->Emit(R"cc(
-            $pbi$::CachedSize _cached_size_;
-          )cc");
-        }},
        {"oneof_case",
         [&] {
           // Generate _oneof_case_.
@@ -1747,7 +1725,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           $decl_split$;
           $oneof_members$;
           //~ Members assumed to align to 4 bytes:
-          $cached_size_if_no_hasbits$;
           $oneof_case$;
           $weak_field_map$;
           //~ For detecting when concurrent accessor calls cause races.
@@ -1755,8 +1732,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
         };
         $union_impl$;
       )cc");
-
-  ABSL_DCHECK(!need_to_emit_cached_size);
 }
 
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
@@ -2487,7 +2462,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   p->Emit(
       {{"has_bit",
         [&] {
-          if (has_bit_indices_.empty()) return;
           p->Emit(
               R"cc(
                 using HasBits =
@@ -2665,8 +2639,7 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
     return absl::StrCat("0x", absl::Hex(res, absl::kZeroPad3));
   };
 
-  const bool has_has_bits =
-      !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_);
+  const bool has_has_bits = true;
   const bool has_extensions = descriptor_->extension_range_count() > 0;
   const bool has_oneofs = descriptor_->real_oneof_decl_count() > 0;
   const bool has_weak_fields = num_weak_fields_ > 0;
@@ -2892,14 +2865,12 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   };
 
   auto init_has_bits = [&] {
-    if (!has_bit_indices_.empty()) {
-      if (init_type == InitType::kArenaCopy) {
-        separator();
-        p->Emit("_has_bits_{from._has_bits_}");
-      }
+    if (init_type == InitType::kArenaCopy) {
       separator();
-      p->Emit("_cached_size_{0}");
+      p->Emit("_has_bits_{from._has_bits_}");
     }
+    separator();
+    p->Emit("_cached_size_{0}");
   };
 
   auto init_fields = [&] {
@@ -2943,13 +2914,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_cached_size_if_no_hasbits = [&] {
-    if (has_bit_indices_.empty()) {
-      separator();
-      p->Emit("_cached_size_{0}");
-    }
-  };
-
   auto init_oneof_cases = [&] {
     if (int count = descriptor_->real_oneof_decl_count()) {
       separator();
@@ -2985,7 +2949,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
   init_fields();
   init_split();
   init_oneofs();
-  init_cached_size_if_no_hasbits();
   init_oneof_cases();
   init_weak_field_map();
 }
@@ -3273,7 +3236,6 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   int has_bit_word_index = -1;
   auto load_has_bits = [&](const FieldDescriptor* field) {
-    if (has_bit_indices_.empty()) return;
     int has_bit_index = has_bit_indices_[field->index()];
     if (has_bit_word_index != has_bit_index / 32) {
       p->Emit({{"declare", has_bit_word_index < 0 ? "::uint32_t " : ""},
@@ -3284,15 +3246,11 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
   };
 
   auto has_message = [&](const FieldDescriptor* field) {
-    if (has_bit_indices_.empty()) {
-      p->Emit("from.$field$ != nullptr");
-    } else {
-      int has_bit_index = has_bit_indices_[field->index()];
-      p->Emit({{"condition",
-                GenerateConditionMaybeWithProbabilityForField(
-                    has_bit_index, field, options_, /*is_repeated=*/false)}},
-              "$condition$");
-    }
+    int has_bit_index = has_bit_indices_[field->index()];
+    p->Emit({{"condition",
+              GenerateConditionMaybeWithProbabilityForField(
+                  has_bit_index, field, options_, /*is_repeated=*/false)}},
+            "$condition$");
   };
 
   auto emit_copy_message = [&](const FieldDescriptor* field) {
@@ -3801,10 +3759,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
 
   // We don't clear donated status.
 
-  if (!has_bit_indices_.empty()) {
-    // Step 5: Everything else.
-    format("$has_bits$.Clear();\n");
-  }
+  // Step 5: Everything else.
+  format("$has_bits$.Clear();\n");
 
   format("_internal_metadata_.Clear<$unknown_fields_type$>();\n");
 
