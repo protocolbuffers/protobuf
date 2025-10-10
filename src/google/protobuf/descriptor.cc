@@ -600,8 +600,7 @@ class FlatAllocatorImpl {
     }
 
     PROTOBUF_DEBUG_COUNTER("AllocateFieldNames.Fallback").Inc();
-    std::string lowercase_name = std::string(name);
-    absl::AsciiStrToLower(&lowercase_name);
+    const std::string lowercase_name = absl::AsciiStrToLower(name);
     const std::string camelcase_name =
         ToCamelCase(name, /* lower_first = */ true);
     const std::string json_name =
@@ -1094,7 +1093,7 @@ const int FieldDescriptor::kLastReservedNumber;
 
 namespace {
 
-std::string EnumValueToPascalCase(const std::string& input) {
+std::string EnumValueToPascalCase(absl::string_view input) {
   bool next_upper = true;
   std::string result;
   result.reserve(input.size());
@@ -1129,7 +1128,7 @@ class PrefixRemover {
 
   // Tries to remove the enum prefix from this enum value.
   // If this is not possible, returns the input verbatim.
-  std::string MaybeRemove(absl::string_view str) {
+  absl::string_view MaybeRemove(absl::string_view str) {
     // We can't just lowercase and strip str and look for a prefix.
     // We need to properly recognize the difference between:
     //
@@ -1149,14 +1148,14 @@ class PrefixRemover {
       }
 
       if (absl::ascii_tolower(str[i]) != prefix_[j++]) {
-        return std::string(str);
+        return str;
       }
     }
 
     // If we didn't make it through the prefix, we've failed to strip the
     // prefix.
     if (j < prefix_.size()) {
-      return std::string(str);
+      return str;
     }
 
     // Skip underscores between prefix and further characters.
@@ -1166,12 +1165,12 @@ class PrefixRemover {
 
     // Enum label can't be the empty string.
     if (i == str.size()) {
-      return std::string(str);
+      return str;
     }
 
     // We successfully stripped the prefix.
     str.remove_prefix(i);
-    return std::string(str);
+    return str;
   }
 
  private:
@@ -1342,23 +1341,22 @@ using LocationsByPathMap =
     absl::flat_hash_map<std::string, const SourceCodeInfo_Location*>;
 
 absl::flat_hash_set<std::string>* AllowedCustomOptionExtendees() {
-  const char* kOptionNames[] = {
+  static constexpr absl::string_view kOptionNames[] = {
       "FileOptions",   "MessageOptions",   "FieldOptions",
       "EnumOptions",   "EnumValueOptions", "ServiceOptions",
       "MethodOptions", "OneofOptions",     "ExtensionRangeOptions"};
   auto allowed_proto3_extendees = new absl::flat_hash_set<std::string>();
-  allowed_proto3_extendees->reserve(sizeof(kOptionNames) /
-                                    sizeof(kOptionNames[0]));
+  allowed_proto3_extendees->reserve(std::size(kOptionNames) * 2);
 
-  for (const char* option_name : kOptionNames) {
+  for (absl::string_view option_name : kOptionNames) {
     // descriptor.proto has a different package name in opensource. We allow
     // both so the opensource protocol compiler can also compile internal
     // proto3 files with custom options. See: b/27567912
-    allowed_proto3_extendees->insert(std::string("google.protobuf.") +
-                                     option_name);
+    allowed_proto3_extendees->insert(
+        absl::StrCat("google.protobuf.", option_name));
     // Split the word to trick the opensource processing scripts so they
     // will keep the original package name.
-    allowed_proto3_extendees->insert(std::string("proto2.") + option_name);
+    allowed_proto3_extendees->insert(absl::StrCat("proto2.", option_name));
   }
   return allowed_proto3_extendees;
 }
@@ -3555,7 +3553,7 @@ bool FormatLineOptions(int depth, const Message& options,
   std::string prefix(depth * 2, ' ');
   std::vector<std::string> all_options;
   if (RetrieveOptions(depth, options, pool, &all_options)) {
-    for (const std::string& option : all_options) {
+    for (absl::string_view option : all_options) {
       absl::SubstituteAndAppend(output, "$0option $1;\n", prefix, option);
     }
   }
@@ -3573,19 +3571,18 @@ static std::string GetLegacySyntaxName(Edition edition) {
 class SourceLocationCommentPrinter {
  public:
   template <typename DescType>
-  SourceLocationCommentPrinter(const DescType* desc, const std::string& prefix,
-                               const DebugStringOptions& options)
-      : options_(options), prefix_(prefix) {
+  SourceLocationCommentPrinter(const DescType* desc, std::string prefix,
+                               DebugStringOptions options)
+      : options_(options), prefix_(std::move(prefix)) {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
     have_source_loc_ =
         options.include_comments && desc->GetSourceLocation(&source_loc_);
   }
   SourceLocationCommentPrinter(const FileDescriptor* file,
-                               const std::vector<int>& path,
-                               const std::string& prefix,
-                               const DebugStringOptions& options)
-      : options_(options), prefix_(prefix) {
+                               const std::vector<int>& path, std::string prefix,
+                               DebugStringOptions options)
+      : options_(options), prefix_(std::move(prefix)) {
     // Perform the SourceLocation lookup only if we're including user comments,
     // because the lookup is fairly expensive.
     have_source_loc_ =
@@ -3594,7 +3591,7 @@ class SourceLocationCommentPrinter {
   void AddPreComment(std::string* output) {
     if (have_source_loc_) {
       // Detached leading comments.
-      for (const std::string& leading_detached_comment :
+      for (absl::string_view leading_detached_comment :
            source_loc_.leading_detached_comments) {
         absl::StrAppend(output, FormatComment(leading_detached_comment), "\n");
       }
@@ -3612,9 +3609,9 @@ class SourceLocationCommentPrinter {
 
   // Format comment such that each line becomes a full-line C++-style comment in
   // the DebugString() output.
-  std::string FormatComment(const std::string& comment_text) {
-    std::string stripped_comment = comment_text;
-    absl::StripAsciiWhitespace(&stripped_comment);
+  std::string FormatComment(absl::string_view comment_text) {
+    absl::string_view stripped_comment =
+        absl::StripAsciiWhitespace(comment_text);
     std::string output;
     for (absl::string_view line : absl::StrSplit(stripped_comment, '\n')) {
       absl::SubstituteAndAppend(&output, "$0// $1\n", prefix_, line);
@@ -4928,7 +4925,7 @@ class DescriptorBuilder {
         std::vector<const FieldDescriptor*>::const_iterator
             intermediate_fields_end,
         const FieldDescriptor* innermost_field,
-        const std::string& debug_msg_name,
+        absl::string_view debug_msg_name,
         const UnknownFieldSet& unknown_fields);
 
     // Validates the value for the option field of the currently interpreted
@@ -6868,7 +6865,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 
   absl::flat_hash_set<absl::string_view> reserved_name_set;
-  for (const std::string& name : proto.reserved_name()) {
+  for (absl::string_view name : proto.reserved_name()) {
     if (!reserved_name_set.insert(name).second) {
       AddError(name, proto, DescriptorPool::ErrorCollector::NAME, [&] {
         return absl::Substitute("Field name \"$0\" is reserved multiple times.",
@@ -6993,7 +6990,7 @@ JsonNameDetails GetJsonNameDetails(const FieldDescriptorProto* field,
   return {field, std::move(default_json_name), false};
 }
 
-bool JsonNameLooksLikeExtension(std::string name) {
+bool JsonNameLooksLikeExtension(absl::string_view name) {
   return !name.empty() && name.front() == '[' && name.back() == ']';
 }
 
@@ -7033,7 +7030,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
       absl::string_view existing_type = match.is_custom ? "custom" : "default";
       // If the matched name differs (which it can only differ in case), include
       // it in the error message, for maximum clarity to user.
-      std::string name_suffix = "";
+      std::string name_suffix;
       if (details.orig_name != match.orig_name) {
         name_suffix = absl::StrCat(" (\"", match.orig_name, "\")");
       }
@@ -7579,7 +7576,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   }
 
   absl::flat_hash_set<absl::string_view> reserved_name_set;
-  for (const std::string& name : proto.reserved_name()) {
+  for (absl::string_view name : proto.reserved_name()) {
     if (!reserved_name_set.insert(name).second) {
       AddError(name, proto, DescriptorPool::ErrorCollector::NAME, [&] {
         return absl::Substitute("Enum value \"$0\" is reserved multiple times.",
@@ -9051,13 +9048,13 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
           ValidateSymbolForDeclaration(declaration.full_name());
       if (err.has_value()) {
         AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
-                 [err] { return *err; });
+                 [err = *std::move(err)] { return err; });
       }
       if (!IsNonMessageType(declaration.type())) {
         err = ValidateSymbolForDeclaration(declaration.type());
         if (err.has_value()) {
           AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
-                   [err] { return *err; });
+                   [err = *std::move(err)] { return err; });
         }
       }
     }
@@ -9315,7 +9312,7 @@ bool ContainsBadUnderscores(absl::string_view name) {
   if (name.empty()) {
     return false;
   }
-  if (name[0] == '_' || name[name.size() - 1] == '_') {
+  if (name.front() == '_' || name.back() == '_') {
     return true;
   }
   for (size_t i = 1; i < name.size(); ++i) {
@@ -9663,13 +9660,14 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   const Descriptor* descriptor = options_descriptor;
   const FieldDescriptor* field = nullptr;
   std::vector<const FieldDescriptor*> intermediate_fields;
-  std::string debug_msg_name = "";
+  std::string debug_msg_name;
 
   std::vector<int> dest_path = options_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
     builder_->undefine_resolved_name_.clear();
-    const std::string& name_part = uninterpreted_option_->name(i).name_part();
+    const absl::string_view name_part =
+        uninterpreted_option_->name(i).name_part();
     if (!debug_msg_name.empty()) {
       absl::StrAppend(&debug_msg_name, ".");
     }
@@ -9956,7 +9954,7 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
     std::vector<const FieldDescriptor*>::const_iterator
         intermediate_fields_iter,
     std::vector<const FieldDescriptor*>::const_iterator intermediate_fields_end,
-    const FieldDescriptor* innermost_field, const std::string& debug_msg_name,
+    const FieldDescriptor* innermost_field, absl::string_view debug_msg_name,
     const UnknownFieldSet& unknown_fields) {
   // We do linear searches of the UnknownFieldSet and its sub-groups.  This
   // should be fine since it's unlikely that any one options structure will
@@ -10203,16 +10201,17 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
         });
       }
       const EnumDescriptor* enum_type = option_field->enum_type();
-      const std::string& value_name = uninterpreted_option_->identifier_value();
+      const absl::string_view value_name =
+          uninterpreted_option_->identifier_value();
       const EnumValueDescriptor* enum_value = nullptr;
 
       if (enum_type->file()->pool() != DescriptorPool::generated_pool()) {
         // Note that the enum value's fully-qualified name is a sibling of the
         // enum's name, not a child of it.
-        std::string fully_qualified_name = std::string(enum_type->full_name());
-        fully_qualified_name.resize(fully_qualified_name.size() -
-                                    enum_type->name().size());
-        fully_qualified_name += value_name;
+        std::string fully_qualified_name = absl::StrCat(
+            enum_type->full_name().substr(
+                0, enum_type->full_name().size() - enum_type->name().size()),
+            value_name);
 
         // Search for the enum value's descriptor in the builder's pool. Note
         // that we use DescriptorBuilder::FindSymbolNotEnforcingDeps(), not
@@ -10383,8 +10382,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     });
     return false;
   } else {
-    std::string serial;
-    dynamic->SerializeToString(&serial);  // Never fails
+    std::string serial = dynamic->SerializeAsString();
     if (option_field->type() == FieldDescriptor::TYPE_MESSAGE) {
       unknown_fields->AddLengthDelimited(option_field->number(), serial);
     } else {
@@ -10504,11 +10502,7 @@ void DescriptorBuilder::LogUnusedDependency(const FileDescriptorProto& proto,
 Symbol DescriptorPool::CrossLinkOnDemandHelper(absl::string_view name,
                                                bool expecting_enum) const {
   (void)expecting_enum;  // Parameter is used by Google-internal code.
-  auto lookup_name = std::string(name);
-  if (!lookup_name.empty() && lookup_name[0] == '.') {
-    lookup_name = lookup_name.substr(1);
-  }
-  Symbol result = tables_->FindByNameHelper(this, lookup_name);
+  Symbol result = tables_->FindByNameHelper(this, absl::StripPrefix(name, "."));
   return result;
 }
 
