@@ -3821,7 +3821,11 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 
   void* p = ::operator new(byte_size);
   auto* res = ::new (p) TcParseTableBase{
-      static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
+      static_cast<uint16_t>(
+          schema_.HasHasbits()
+              ? schema_.HasBitsOffset()
+              // Just put something safe here. _cached_size_ is fine.
+              : schema_.default_instance_->GetClassData()->cached_size_offset),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
