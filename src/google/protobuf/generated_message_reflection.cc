@@ -1189,12 +1189,14 @@ void Reflection::SwapFieldsImpl(
     if (field->is_extension()) {
       if constexpr (unsafe_shallow_swap) {
         MutableExtensionSet(message1)->UnsafeShallowSwapExtension(
-            MutableExtensionSet(message2), field->number());
+            message1->GetArena(), MutableExtensionSet(message2),
+            field->number());
       } else {
         const Message* prototype =
             message_factory_->GetPrototype(message1->GetDescriptor());
         MutableExtensionSet(message1)->SwapExtension(
-            prototype, MutableExtensionSet(message2), field->number());
+            message1->GetArena(), prototype, MutableExtensionSet(message2),
+            message2->GetArena(), field->number());
       }
       continue;
     } else if (schema_.InRealOneof(field)) {
@@ -1642,24 +1644,23 @@ Message* Reflection::ReleaseLast(Message* message,
                                  const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(ReleaseLast, REPEATED, MESSAGE);
 
+  Arena* arena = message->GetArena();
   Message* released;
   if (field->is_extension()) {
     released = static_cast<Message*>(
-        MutableExtensionSet(message)->ReleaseLast(field->number()));
+        MutableExtensionSet(message)->ReleaseLast(arena, field->number()));
   } else {
     if (IsMapFieldInApi(field)) {
-      released =
-          MutableRaw<MapFieldBase>(message, field)
-              ->MutableRepeatedField()
-              ->ReleaseLast<GenericTypeHandler<Message>>(message->GetArena());
+      released = MutableRaw<MapFieldBase>(message, field)
+                     ->MutableRepeatedField()
+                     ->ReleaseLast<GenericTypeHandler<Message>>(arena);
     } else {
-      released =
-          MutableRaw<RepeatedPtrFieldBase>(message, field)
-              ->ReleaseLast<GenericTypeHandler<Message>>(message->GetArena());
+      released = MutableRaw<RepeatedPtrFieldBase>(message, field)
+                     ->ReleaseLast<GenericTypeHandler<Message>>(arena);
     }
   }
   if (internal::DebugHardenForceCopyInRelease()) {
-    return MaybeForceCopy(message->GetArena(), released);
+    return MaybeForceCopy(arena, released);
   } else {
     return released;
   }
@@ -1671,7 +1672,8 @@ Message* Reflection::UnsafeArenaReleaseLast(
 
   if (field->is_extension()) {
     return static_cast<Message*>(
-        MutableExtensionSet(message)->UnsafeArenaReleaseLast(field->number()));
+        MutableExtensionSet(message)->UnsafeArenaReleaseLast(
+            message->GetArena(), field->number()));
   } else {
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
@@ -1930,7 +1932,7 @@ bool Reflection::IsEmpty(const Message& message) const {
     USAGE_MUTABLE_CHECK_ALL(Set##TYPENAME, SINGULAR, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
       return MutableExtensionSet(message)->Set<TYPE>(                          \
-          field->number(), field->type(), value, field);                       \
+          message->GetArena(), field->number(), field->type(), value, field);  \
     } else {                                                                   \
       SetField<TYPE>(message, field, value);                                   \
     }                                                                          \
@@ -1964,7 +1966,8 @@ bool Reflection::IsEmpty(const Message& message) const {
     USAGE_MUTABLE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
       MutableExtensionSet(message)->Add<TYPE>(                                 \
-          field->number(), field->type(), field->is_packed(), value, field);   \
+          message->GetArena(), field->number(), field->type(),                 \
+          field->is_packed(), value, field);                                   \
     } else {                                                                   \
       AddField<TYPE>(message, field, value);                                   \
     }                                                                          \
@@ -2122,9 +2125,10 @@ absl::string_view Reflection::GetStringView(const Message& message,
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            std::string value) const {
   USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     return MutableExtensionSet(message)->Set<std::string>(
-        field->number(), field->type(), std::move(value), field);
+        arena, field->number(), field->type(), std::move(value), field);
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2132,7 +2136,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(message->GetArena());
+                Arena::Create<absl::Cord>(arena);
           }
           *(*MutableField<absl::Cord*>(message, field)) = value;
           break;
@@ -2148,9 +2152,8 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
           MutableField<InlinedStringField>(message, field)
-              ->Set(value, message->GetArena(),
-                    IsInlinedStringDonated(*message, field), states, mask,
-                    message);
+              ->Set(value, arena, IsInlinedStringDonated(*message, field),
+                    states, mask, message);
           break;
         } else if (IsMicroString(field)) {
           if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
@@ -2158,7 +2161,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
             MutableField<MicroString>(message, field)->InitDefault();
           }
           MutableField<MicroString>(message, field)
-              ->Set(std::move(value), message->GetArena());
+              ->Set(std::move(value), arena);
           break;
         }
 
@@ -2171,7 +2174,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           MutableField<ArenaStringPtr>(message, field)->InitDefault();
         }
         MutableField<ArenaStringPtr>(message, field)
-            ->Set(std::move(value), message->GetArena());
+            ->Set(std::move(value), arena);
         break;
       }
     }
@@ -2181,10 +2184,11 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
 void Reflection::SetString(Message* message, const FieldDescriptor* field,
                            const absl::Cord& value) const {
   USAGE_MUTABLE_CHECK_ALL(SetString, SINGULAR, STRING);
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
-    return absl::CopyCordToString(value,
-                                  MutableExtensionSet(message)->MutableString(
-                                      field->number(), field->type(), field));
+    return absl::CopyCordToString(
+        value, MutableExtensionSet(message)->MutableString(
+                   arena, field->number(), field->type(), field));
   } else {
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
@@ -2192,7 +2196,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           if (!HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             *MutableField<absl::Cord*>(message, field) =
-                Arena::Create<absl::Cord>(message->GetArena());
+                Arena::Create<absl::Cord>(arena);
           }
           *(*MutableField<absl::Cord*>(message, field)) = value;
         } else {
@@ -2208,7 +2212,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
-          str->Set(std::string(value), message->GetArena(),
+          str->Set(std::string(value), arena,
                    IsInlinedStringDonated(*message, field), states, mask,
                    message);
         } else if (IsMicroString(field)) {
@@ -2217,14 +2221,14 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
             MutableField<MicroString>(message, field)->InitDefault();
           }
           auto* str = MutableField<MicroString>(message, field);
-          str->Set(std::string(value), message->GetArena());
+          str->Set(std::string(value), arena);
         } else {
           if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
             ClearOneof(message, field->containing_oneof());
             MutableField<ArenaStringPtr>(message, field)->InitDefault();
           }
           auto* str = MutableField<ArenaStringPtr>(message, field);
-          str->Set(std::string(value), message->GetArena());
+          str->Set(std::string(value), arena);
         }
         break;
       }
@@ -2330,7 +2334,7 @@ void Reflection::AddString(Message* message, const FieldDescriptor* field,
   USAGE_MUTABLE_CHECK_ALL(AddString, REPEATED, STRING);
   if (field->is_extension()) {
     MutableExtensionSet(message)->Add<std::string>(
-        field->number(),
+        message->GetArena(), field->number(),
         field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
                                           : FieldDescriptor::TYPE_BYTES,
         field) = std::move(value);
@@ -2400,8 +2404,8 @@ void Reflection::SetEnumValueInternal(Message* message,
                                       const FieldDescriptor* field,
                                       int value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->Set<int>(field->number(), field->type(),
-                                           value, field);
+    MutableExtensionSet(message)->Set<int>(message->GetArena(), field->number(),
+                                           field->type(), value, field);
   } else {
     SetField<int>(message, field, value);
   }
@@ -2491,8 +2495,9 @@ void Reflection::AddEnumValueInternal(Message* message,
                                       const FieldDescriptor* field,
                                       int value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->Add<int>(field->number(), field->type(),
-                                           field->is_packed(), value, field);
+    MutableExtensionSet(message)->Add<int>(message->GetArena(), field->number(),
+                                           field->type(), field->is_packed(),
+                                           value, field);
   } else {
     AddField<int>(message, field, value);
   }
@@ -2543,7 +2548,7 @@ const Message& Reflection::GetMessage(const Message& message,
 
   if (field->is_extension()) {
     return static_cast<const Message&>(GetExtensionSet(message).GetMessage(
-        field->number(), field->message_type(), factory));
+        message.GetArena(), field->number(), field->message_type(), factory));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return *GetDefaultMessageInstance(field);
@@ -2563,9 +2568,10 @@ Message* Reflection::MutableMessage(Message* message,
 
   if (factory == nullptr) factory = message_factory_;
 
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     return static_cast<Message*>(
-        MutableExtensionSet(message)->MutableMessage(field, factory));
+        MutableExtensionSet(message)->MutableMessage(arena, field, factory));
   } else {
     Message* result;
 
@@ -2576,7 +2582,7 @@ Message* Reflection::MutableMessage(Message* message,
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
         const Message* default_message = GetDefaultMessageInstance(field);
-        *result_holder = default_message->New(message->GetArena());
+        *result_holder = default_message->New(arena);
       }
     } else {
       SetHasBit(message, field);
@@ -2584,7 +2590,7 @@ Message* Reflection::MutableMessage(Message* message,
 
     if (*result_holder == nullptr) {
       const Message* default_message = GetDefaultMessageInstance(field);
-      *result_holder = default_message->New(message->GetArena());
+      *result_holder = default_message->New(arena);
     }
     result = *result_holder;
     return result;
@@ -2597,9 +2603,10 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
   USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
 
 
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
-        field->number(), field->type(), field, sub_message);
+        arena, field->number(), field->type(), field, sub_message);
   } else {
     if (schema_.InRealOneof(field)) {
       if (sub_message == nullptr) {
@@ -2618,7 +2625,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
       SetHasBit(message, field);
     }
     Message** sub_message_holder = MutableRaw<Message*>(message, field);
-    if (message->GetArena() == nullptr) {
+    if (arena == nullptr) {
       delete *sub_message_holder;
     }
     *sub_message_holder = sub_message;
@@ -2668,9 +2675,10 @@ Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
 
   if (factory == nullptr) factory = message_factory_;
 
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     return static_cast<Message*>(
-        MutableExtensionSet(message)->UnsafeArenaReleaseMessage(field,
+        MutableExtensionSet(message)->UnsafeArenaReleaseMessage(arena, field,
                                                                 factory));
   } else {
     if (!schema_.InRealOneof(field)) {
@@ -2754,9 +2762,10 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
 
   if (factory == nullptr) factory = message_factory_;
 
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     return static_cast<Message*>(
-        MutableExtensionSet(message)->AddMessage(field, factory));
+        MutableExtensionSet(message)->AddMessage(arena, field, factory));
   } else {
     Message* result = nullptr;
 
@@ -2780,12 +2789,12 @@ Message* Reflection::AddMessage(Message* message, const FieldDescriptor* field,
       } else {
         prototype = &repeated->Get<GenericTypeHandler<Message> >(0);
       }
-      result = prototype->New(message->GetArena());
+      result = prototype->New(arena);
       // We can guarantee here that repeated and result are either both heap
       // allocated or arena owned. So it is safe to call the unsafe version
       // of AddAllocated.
-      repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
-          message->GetArena(), result);
+      repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(arena,
+                                                                     result);
     }
 
     return result;
@@ -2797,8 +2806,9 @@ void Reflection::AddAllocatedMessage(Message* message,
                                      Message* new_entry) const {
   USAGE_MUTABLE_CHECK_ALL(AddAllocatedMessage, REPEATED, MESSAGE);
 
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
-    MutableExtensionSet(message)->AddAllocatedMessage(field, new_entry);
+    MutableExtensionSet(message)->AddAllocatedMessage(arena, field, new_entry);
   } else {
     RepeatedPtrFieldBase* repeated = nullptr;
     if (IsMapFieldInApi(field)) {
@@ -2807,8 +2817,7 @@ void Reflection::AddAllocatedMessage(Message* message,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    repeated->AddAllocated<GenericTypeHandler<Message>>(message->GetArena(),
-                                                        new_entry);
+    repeated->AddAllocated<GenericTypeHandler<Message>>(arena, new_entry);
     SetHasBitForRepeated(message, field);
   }
 }
@@ -2818,8 +2827,9 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
                                                 Message* new_entry) const {
   USAGE_MUTABLE_CHECK_ALL(UnsafeArenaAddAllocatedMessage, REPEATED, MESSAGE);
 
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
-    MutableExtensionSet(message)->UnsafeArenaAddAllocatedMessage(field,
+    MutableExtensionSet(message)->UnsafeArenaAddAllocatedMessage(arena, field,
                                                                  new_entry);
   } else {
     RepeatedPtrFieldBase* repeated = nullptr;
@@ -2829,8 +2839,8 @@ void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
     } else {
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
-    repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
-        message->GetArena(), new_entry);
+    repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(arena,
+                                                                   new_entry);
     SetHasBitForRepeated(message, field);
   }
 }
@@ -2903,7 +2913,8 @@ void* Reflection::MutableRawRepeatedField(Message* message,
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
-        field->number(), field->type(), field->is_packed(), field);
+        message->GetArena(), field->number(), field->type(), field->is_packed(),
+        field);
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
@@ -3592,7 +3603,8 @@ void* Reflection::RepeatedFieldData(Message* message,
   }
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
-        field->number(), field->type(), field->is_packed(), field);
+        message->GetArena(), field->number(), field->type(), field->is_packed(),
+        field);
   } else {
     return MutableRaw<char>(message, field);
   }
