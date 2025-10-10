@@ -342,3 +342,29 @@ use_repo(
     "nuget_python_x86-64_3.9.0",
     "python-3.9.0",
 )
+
+# For testing old Rust gencode against the current runtime. We will most likely
+# guarantee support for gencode only going back as far as v34, but v33.0-rc1 is
+# the newest release at the time of this writing.
+bazel_dep(name = "protoc_v33", version = "0.0.1", dev_dependency = True)
+archive_override(
+    module_name = "protoc_v33",
+    integrity = "sha256-oiBmha94XINyydO5/+bOd/SH1EjcbOFsnvH0kMrUZHQ=",
+    patch_cmds = ["""
+cat > MODULE.bazel << EOF
+module(
+    name = "protoc_v33",
+    version = "0.0.1",
+)
+EOF
+    """, """
+cat > BUILD.bazel << EOF
+filegroup(
+    name = "protoc",
+    srcs = ["bin/protoc"],
+    visibility = ["//visibility:public"],
+)
+EOF
+    """],
+    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v33.0-rc1/protoc-33.0-rc-1-linux-x86_64.zip"],
+)

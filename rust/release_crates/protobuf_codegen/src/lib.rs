@@ -68,6 +68,30 @@ fn expected_protoc_version(cargo_version: &str) -> String {
     v.join(".")
 }
 
+fn validate_protoc_version(protoc_path: &PathBuf) {
+    // This environment variable is an escape hatch for disabling the protoc version check. We need
+    // this to test for compatibility with old generated code, but otherwise this should not be
+    // used.
+    if env::var("ALLOW_PROTOC_VERSION_MISMATCH").is_ok() {
+        return;
+    }
+
+    let mut version_cmd = std::process::Command::new(protoc_path);
+    let output = version_cmd
+        .arg("--version")
+        .output()
+        .map_err(|e| {
+            format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())
+        })
+        .unwrap();
+
+    let protoc_version = protoc_version(&String::from_utf8(output.stdout).unwrap());
+    let expected_protoc_version = expected_protoc_version(VERSION);
+    if protoc_version != expected_protoc_version {
+        panic!("Expected protoc version {} but found {}", expected_protoc_version, protoc_version);
+    }
+}
+
 fn protoc_from_env() -> PathBuf {
     env::var_os("PROTOC").map(PathBuf::from).unwrap_or(PathBuf::from("protoc"))
 }
@@ -147,19 +171,7 @@ impl CodeGen {
     }
 
     pub fn generate_and_compile(&self) -> Result<(), String> {
-        let mut version_cmd = std::process::Command::new(&self.protoc_path);
-        let output = version_cmd.arg("--version").output().map_err(|e| {
-            format!("failed to run protoc --version: {} {}", e, missing_protoc_error_message())
-        })?;
-
-        let protoc_version = protoc_version(&String::from_utf8(output.stdout).unwrap());
-        let expected_protoc_version = expected_protoc_version(VERSION);
-        if protoc_version != expected_protoc_version {
-            panic!(
-                "Expected protoc version {} but found {}",
-                expected_protoc_version, protoc_version
-            );
-        }
+        validate_protoc_version(&self.protoc_path);
 
         let mut cmd = std::process::Command::new(&self.protoc_path);
         for input in &self.inputs {

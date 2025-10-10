@@ -49,7 +49,7 @@ tar -xv < $WORKSPACE_TAR
 popd
 
 # Put the Bazel-built protoc at the beginning of $PATH
-PATH=$(dirname $(rlocation com_google_protobuf/protoc)):$PATH
+PATH=$(realpath $(dirname $1)):$PATH
 
 export RUSTFLAGS="-Dmismatched-lifetime-syntaxes"
 
