@@ -93,16 +93,6 @@ class RepeatedIterator;
 // Sentinel base class.
 struct RepeatedFieldBase {};
 
-// We can't skip the destructor for, e.g., arena allocated RepeatedField<Cord>.
-template <typename Element,
-          bool Trivial = Arena::is_destructor_skippable<Element>::value>
-struct RepeatedFieldDestructorSkippableBase : RepeatedFieldBase {};
-
-template <typename Element>
-struct RepeatedFieldDestructorSkippableBase<Element, true> : RepeatedFieldBase {
-  using DestructorSkippable_ = void;
-};
-
 template <size_t kMinSize>
 struct HeapRep {
   // Avoid 'implicitly deleted dtor' warnings on certain compilers.
@@ -254,7 +244,8 @@ struct SooRep {
 // management right; e.g. swapping when appropriate, etc.
 template <typename Element>
 class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedField final
-    : private internal::RepeatedFieldDestructorSkippableBase<Element> {
+    : private internal::RepeatedFieldBase,
+      private internal::ContainerDestructorSkippableBase<Element> {
   static_assert(
       alignof(Arena) >= alignof(Element),
       "We only support types that have an alignment smaller than Arena");
