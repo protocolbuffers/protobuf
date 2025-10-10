@@ -10,7 +10,7 @@ on:
         type: string
     secrets:
       # This token should be owned by https://github.com/protobuf-team-bot
-      BCR_PUBLISH_TOKEN:
+      BOT_ACCESS_TOKEN:
         required: true
   # In case of problems, let release engineers retry by manually dispatching
   # the workflow from the GitHub UI
@@ -33,4 +33,4 @@ jobs:
       id-token: write
     secrets:
       # Necessary to push to the BCR fork, and to open a pull request against a registry
-      publish_token: ${{ secrets.BCR_PUBLISH_TOKEN }}
+      publish_token: ${{ secrets.BOT_ACCESS_TOKEN }}
