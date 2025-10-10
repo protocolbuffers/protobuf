@@ -342,7 +342,7 @@ unsafe extern "C" {
     pub fn raw_message_equals(raw1: RawMessage, raw2: RawMessage) -> bool;
 }
 
-pub type RawMapIter = UntypedMapIterator;
+pub type RawMapIter = MapIterator;
 
 #[derive(Debug)]
 #[doc(hidden)]
@@ -864,17 +864,16 @@ impl<'msg> InnerMapMut<'msg> {
 
 /// An untyped iterator in a map, produced via `.cbegin()` on a typed map.
 ///
-/// This struct is ABI-compatible with `proto2::internal::UntypedMapIterator`.
+/// This struct is ABI-compatible with `proto2::rust::(unnamed)::MapIterator`.
 /// It is trivially constructible and destructible.
 #[repr(C)]
 #[doc(hidden)]
-pub struct UntypedMapIterator {
+pub struct MapIterator {
     node: *mut c_void,
     map: *const c_void,
-    bucket_index: u32,
 }
 
-impl UntypedMapIterator {
+impl MapIterator {
     /// Returns `true` if this iterator is at the end of the map.
     fn at_end(&self) -> bool {
         // This behavior is verified via test `IteratorNodeFieldIsNullPtrAtEnd`.
@@ -899,11 +898,7 @@ impl UntypedMapIterator {
     pub unsafe fn next_unchecked<'a, K, V, FfiKey, FfiValue>(
         &mut self,
 
-        iter_get_thunk: unsafe fn(
-            iter: &mut UntypedMapIterator,
-            key: *mut FfiKey,
-            value: *mut FfiValue,
-        ),
+        iter_get_thunk: unsafe fn(iter: &mut MapIterator, key: *mut FfiKey, value: *mut FfiValue),
         from_ffi_key: impl FnOnce(FfiKey) -> View<'a, K>,
         from_ffi_value: impl FnOnce(FfiValue) -> View<'a, V>,
     ) -> Option<(View<'a, K>, View<'a, V>)>
@@ -926,14 +921,14 @@ impl UntypedMapIterator {
         // SAFETY:
         // - The backing map is alive as promised by the caller.
         // - `self.at_end()` is false and the `get` does not change that.
-        // - `UntypedMapIterator` has the same ABI as
-        //   `proto2::internal::UntypedMapIterator`. It is statically checked to be:
+        // - `MapIterator` has the same ABI as
+        //   `proto2::rust::MapIterator`. It is statically checked to be:
         //   - Trivially copyable.
         //   - Trivially destructible.
         //   - Standard layout.
         //   - The size and alignment of the Rust type above.
         //   - With the `node_` field first.
-        unsafe { proto2_rust_thunk_UntypedMapIterator_increment(self) }
+        unsafe { proto2_rust_thunk_MapIterator_increment(self) }
 
         // SAFETY:
         // - The `get` function always writes valid values to `ffi_key` and `ffi_value`
@@ -1189,7 +1184,7 @@ where
 
     unsafe fn get(m: RawMap, key: View<'_, Self>, value: *mut MapValue) -> bool;
 
-    unsafe fn iter_get(iter: &mut UntypedMapIterator, key: *mut Self::FfiKey, value: *mut MapValue);
+    unsafe fn iter_get(iter: &mut MapIterator, key: *mut Self::FfiKey, value: *mut MapValue);
 
     unsafe fn remove(m: RawMap, key: View<'_, Self>) -> bool;
 }
@@ -1226,7 +1221,7 @@ macro_rules! generate_map_key_impl {
 
             #[inline]
             unsafe fn iter_get(
-                iter: &mut UntypedMapIterator,
+                iter: &mut MapIterator,
                 key: *mut Self::FfiKey,
                 value: *mut MapValue,
             ) {
@@ -1366,7 +1361,7 @@ macro_rules! impl_map_primitives {
                     value: *mut MapValue,
                 ) -> bool;
                 pub fn $iter_get_thunk(
-                    iter: &mut UntypedMapIterator,
+                    iter: &mut MapIterator,
                     key: *mut $cpp_type,
                     value: *mut MapValue,
                 );
@@ -1398,13 +1393,13 @@ impl_map_primitives!(
 );
 
 unsafe extern "C" {
-    fn proto2_rust_thunk_UntypedMapIterator_increment(iter: &mut UntypedMapIterator);
+    fn proto2_rust_thunk_MapIterator_increment(iter: &mut MapIterator);
 
     pub fn proto2_rust_map_new(key_prototype: MapValue, value_prototype: MapValue) -> RawMap;
     pub fn proto2_rust_map_free(m: RawMap);
     pub fn proto2_rust_map_clear(m: RawMap);
     pub fn proto2_rust_map_size(m: RawMap) -> usize;
-    pub fn proto2_rust_map_iter(m: RawMap) -> UntypedMapIterator;
+    pub fn proto2_rust_map_iter(m: RawMap) -> MapIterator;
 }
 
 fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {

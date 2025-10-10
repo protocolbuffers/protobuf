@@ -109,7 +109,7 @@ void MapFieldBase::SetMapIteratorValue(
     MapIteratorBase<kIsMutable>* map_iter) const {
   if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
 
-  const UntypedMapBase& map = *map_iter->iter_.m_;
+  const UntypedMapBase& map = GetMapRaw();
   NodeBase* node = map_iter->iter_.node_;
   auto& key = map_iter->key_;
   map.VisitKey(node,

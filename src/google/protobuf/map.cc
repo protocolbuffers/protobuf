@@ -31,7 +31,45 @@ namespace internal {
 std::atomic<MapFieldBaseForParse::SyncFunc>
     MapFieldBaseForParse::sync_map_with_repeated{};
 
-NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
+ABSL_CONST_INIT NodePointer const kGlobalEmptyTable[kGlobalEmptyTableSize] = {
+    NodePointer::EndOfTable()};
+
+inline void UntypedMapBase::ResetTablePointers() {
+  auto* table = table_;
+  auto* const end = table_ + num_buckets_;
+
+  // Each bucket in the table has an "end" that points to the next bucket.
+  // The last bucket's end points to a "null" bucket to indicate the end of the
+  // table.
+
+  // To help vectorization we do it in chunks.
+  // It helps the compiler make a single vector and do the += on the vector.
+
+  if (num_buckets_ >= 4) {
+    NodePointer vec[4] = {NodePointer(table + 1), NodePointer(table + 2),
+                          NodePointer(table + 3), NodePointer(table + 4)};
+    for (; table != end; table += 4) {
+      memcpy(table, &vec, sizeof(vec));
+      for (auto& v : vec) v.raw_increment(sizeof(vec));
+    }
+  } else {
+    ABSL_DCHECK_EQ(num_buckets_, 2);
+    table[0] = table + 1;
+  }
+  end[-1] = NodePointer::EndOfTable();
+  return;
+}
+
+void UntypedMapBase::CreateEmptyTable(map_index_t n) {
+  ABSL_DCHECK_GE(n, kMinTableSize);
+  ABSL_DCHECK_EQ(n & (n - 1), 0u);
+  num_buckets_ = index_of_first_non_null_ = n;
+  table_ =
+      arena_ == nullptr
+          ? static_cast<NodePointer*>(::operator new(n * sizeof(NodePointer)))
+          : Arena::CreateArray<NodePointer>(arena_, n);
+  ResetTablePointers();
+}
 
 void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
   if (other.empty()) return;
@@ -60,7 +98,7 @@ void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
 
     for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
       Value* out = GetValue<Value>(out_node);
-      out_node = out_node->next;
+      out_node = out_node->next.as_node();
       auto& in = *other.GetValue<Value>(it.node_);
       if constexpr (std::is_same_v<MessageLite, Value>) {
         class_data->PlacementNew(out, arena())->CheckTypeAndMergeFrom(in);
@@ -75,7 +113,7 @@ void UntypedMapBase::UntypedMergeFrom(const UntypedMapBase& other) {
     using Key = typename decltype(key_type)::type;
     for (auto it = other.begin(); !it.Equals(EndIterator()); it.PlusPlus()) {
       NodeBase* node = nodes;
-      nodes = nodes->next;
+      nodes = nodes->next.as_node();
       const Key& in = *other.GetKey<Key>(it.node_);
       Key* out = GetKey<Key>(node);
       if (!internal::InitializeMapKey(out, in, this->arena_)) {
@@ -117,17 +155,17 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
 void UntypedMapBase::ClearTableImpl(bool reset) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
 
-  if (arena_ == nullptr) {
+  if (arena_ == nullptr && !empty()) {
     const auto loop = [this](auto destroy_node) {
-      NodeBase** table = table_;
-      for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
-           b < end; ++b) {
-        for (NodeBase* node = table[b]; node != nullptr;) {
-          NodeBase* next = node->next;
-          absl::PrefetchToLocalCacheNta(next);
+      auto* table = table_;
+      for (map_index_t i = index_of_first_non_null_, end = num_buckets_;
+           i < end; ++i) {
+        for (NodePointer ptr = table[i]; ptr.is_node();) {
+          auto* node = ptr.as_node();
+          ptr = node->next;
+          absl::PrefetchToLocalCacheNta(ptr.raw_pointer());
           destroy_node(node);
           SizedDelete(node, type_info_.node_size);
-          node = next;
         }
       }
     };
@@ -161,7 +199,7 @@ void UntypedMapBase::ClearTableImpl(bool reset) {
   }
 
   if (reset) {
-    std::fill(table_, table_ + num_buckets_, nullptr);
+    ResetTablePointers();
     num_elements_ = 0;
     index_of_first_non_null_ = num_buckets_;
   } else {

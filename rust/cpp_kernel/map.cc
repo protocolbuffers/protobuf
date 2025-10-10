@@ -159,17 +159,23 @@ bool Remove(internal::UntypedMapBase* m, Key key) {
   return internal::RustMapHelper::EraseImpl(map_base, AsViewType(key));
 }
 
+struct MapIterator {
+  google::protobuf::internal::UntypedMapIterator iterator;
+  const google::protobuf::internal::UntypedMapBase* map;
+};
+static_assert(sizeof(MapIterator) == sizeof(void*) * 2,
+              "Must match the ABI in cpp.rs");
+
 template <typename Key>
-void IterGet(const internal::UntypedMapIterator* iter, Key* key,
-             MapValue* value) {
-  internal::NodeBase* node = iter->node_;
+void IterGet(const MapIterator* iter, Key* key, MapValue* value) {
+  internal::NodeBase* node = iter->iterator.node_;
   if constexpr (std::is_same<Key, PtrAndLen>::value) {
-    const std::string* s = iter->m_->GetKey<std::string>(node);
+    const std::string* s = static_cast<const std::string*>(node->GetVoidKey());
     *key = PtrAndLen{s->data(), s->size()};
   } else {
-    *key = *iter->m_->GetKey<Key>(node);
+    *key = *static_cast<const Key*>(node->GetVoidKey());
   }
-  PopulateMapValue(*iter->m_, node, *value);
+  PopulateMapValue(*iter->map, node, *value);
 }
 
 }  // namespace
@@ -179,9 +185,8 @@ void IterGet(const internal::UntypedMapIterator* iter, Key* key,
 
 extern "C" {
 
-void proto2_rust_thunk_UntypedMapIterator_increment(
-    google::protobuf::internal::UntypedMapIterator* iter) {
-  iter->PlusPlus();
+void proto2_rust_thunk_MapIterator_increment(google::protobuf::rust::MapIterator* iter) {
+  iter->iterator.PlusPlus();
 }
 
 google::protobuf::internal::UntypedMapBase* proto2_rust_map_new(
@@ -200,9 +205,9 @@ size_t proto2_rust_map_size(google::protobuf::internal::UntypedMapBase* m) {
   return m->size();
 }
 
-google::protobuf::internal::UntypedMapIterator proto2_rust_map_iter(
+google::protobuf::rust::MapIterator proto2_rust_map_iter(
     google::protobuf::internal::UntypedMapBase* m) {
-  return m->begin();
+  return {m->begin(), m};
 }
 
 void proto2_rust_map_free(google::protobuf::internal::UntypedMapBase* m) {
@@ -233,7 +238,7 @@ void proto2_rust_map_clear(google::protobuf::internal::UntypedMapBase* m) {
   }                                                                         \
                                                                             \
   void proto2_rust_map_iter_get_##suffix(                                   \
-      const google::protobuf::internal::UntypedMapIterator* iter, cpp_type* key,      \
+      const google::protobuf::rust::MapIterator* iter, cpp_type* key,                 \
       google::protobuf::rust::MapValue* value) {                                      \
     return google::protobuf::rust::IterGet(iter, key, value);                         \
   }
