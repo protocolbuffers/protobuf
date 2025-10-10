@@ -2194,6 +2194,7 @@ TEST(MESSAGE_TEST_NAME, AllAddMethodsOnRepeatedStringField) {
   msg.clear_repeated_string();
 }
 
+
 }  // namespace protobuf
 }  // namespace google
 
