@@ -58,12 +58,12 @@ ABSL_CONST_INIT absl::Mutex m[8] = {
     absl::Mutex(absl::kConstInit), absl::Mutex(absl::kConstInit)};
 void unlock_func(const void* msg)
     ABSL_UNLOCK_FUNCTION(m[absl::HashOf(msg) & 0x7]) {
-  m[absl::HashOf(msg) & 0x7].Unlock();
+  m[absl::HashOf(msg) & 0x7].unlock();
 }
 
 ::hpb::internal::UpbExtensionUnlocker lock_func(const void* msg)
     ABSL_EXCLUSIVE_LOCK_FUNCTION(m[absl::HashOf(msg) & 0x7]) {
-  m[absl::HashOf(msg) & 0x7].Lock();
+  m[absl::HashOf(msg) & 0x7].lock();
   return &unlock_func;
 }
 
