@@ -142,10 +142,8 @@ std::string GenerateConditionMaybeWithProbability(
         (is_batch ? "Batch" : ""), (is_repeated ? "ForRepeated" : ""),
         *has_array_index, mask);
   }
-  if (probability.has_value()) {
-    return absl::StrFormat("PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY(%s, %.3f)",
-                           condition, *probability);
-  }
+  // TODO: b/393587858 - Add the PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY wrapper
+  // back after the ablation experiment is complete.
   return condition;
 }
 
