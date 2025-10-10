@@ -3089,6 +3089,12 @@ inline SymbolVisibility EnumDescriptor::visibility_keyword() const {
   return static_cast<SymbolVisibility>(visibility_);
 }
 
+// Returns true if the enum is contained within a "namespace" message:
+// - there is a containing message
+// - the message has local visibility, whether explicitly or by file default
+// - the message has no fields, only a reserved range from 1 to max
+PROTOBUF_EXPORT bool EnumContainedInNamespaceMessage(const EnumDescriptor& enm);
+
 namespace internal {
 
 inline const std::string& DefaultValueStringAsString(
