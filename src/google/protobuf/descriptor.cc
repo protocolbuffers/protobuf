@@ -8399,40 +8399,7 @@ void DescriptorBuilder::CheckVisibilityRulesVisit(
 // * has reserved range of 1 to max.
 bool DescriptorBuilder::IsEnumNamespaceMessage(
     const EnumDescriptor& enm) const {
-  const Descriptor* container = enm.containing_type();
-  const FeatureSet::VisibilityFeature::DefaultSymbolVisibility
-      default_visibility = enm.features().default_symbol_visibility();
-  // Only allowed for top-level messages
-  if (container->containing_type() != nullptr) {
-    return false;
-  }
-
-  bool default_to_local =
-      default_visibility == FeatureSet::VisibilityFeature::STRICT ||
-      default_visibility == FeatureSet::VisibilityFeature::LOCAL_ALL;
-
-  bool is_local =
-      container->visibility_keyword() == SymbolVisibility::VISIBILITY_LOCAL ||
-      (container->visibility_keyword() == SymbolVisibility::VISIBILITY_UNSET &&
-       default_to_local);
-
-  // must either be marked local, or unset with file default making it local
-  if (!is_local) {
-    return false;
-  }
-
-  if (container->reserved_range_count() != 1) {
-    return false;
-  }
-
-  const Descriptor::ReservedRange* range = container->reserved_range(0);
-  if (range == nullptr ||
-      (range->start != 1 &&
-       range->end != FieldDescriptor::kLastReservedNumber)) {
-    return false;
-  }
-
-  return true;
+  return EnumContainedInNamespaceMessage(enm);
 }
 
 // Enforce File-wide visibility and co-location rules.
@@ -10794,6 +10761,50 @@ absl::string_view ShortEditionName(Edition edition) {
   return absl::StripPrefix(Edition_Name(edition), "EDITION_");
 }
 }  // namespace internal
+
+bool EnumContainedInNamespaceMessage(const EnumDescriptor& enm) {
+  const Descriptor* container = enm.containing_type();
+  // Only allowed for top-level messages
+  if (container->containing_type() != nullptr) {
+    return false;
+  }
+
+  EnumDescriptorProto enm_proto;
+  enm.CopyTo(&enm_proto);
+
+  DescriptorProto container_proto;
+  container->CopyHeadingTo(&container_proto);
+  const FeatureSet::VisibilityFeature::DefaultSymbolVisibility
+      default_visibility =
+          enm_proto.options().features().default_symbol_visibility();
+
+  bool default_to_local =
+      default_visibility == FeatureSet::VisibilityFeature::STRICT ||
+      default_visibility == FeatureSet::VisibilityFeature::LOCAL_ALL;
+
+  bool is_local =
+      container_proto.visibility() == SymbolVisibility::VISIBILITY_LOCAL ||
+      (container_proto.visibility() == SymbolVisibility::VISIBILITY_UNSET &&
+       default_to_local);
+
+  // must either be marked local, or unset with file default making it local
+  if (!is_local) {
+    return false;
+  }
+
+  if (container->reserved_range_count() != 1) {
+    return false;
+  }
+
+  const Descriptor::ReservedRange* range = container->reserved_range(0);
+  if (range == nullptr ||
+      (range->start != 1 &&
+       range->end != FieldDescriptor::kLastReservedNumber)) {
+    return false;
+  }
+
+  return true;
+}
 
 }  // namespace protobuf
 }  // namespace google
