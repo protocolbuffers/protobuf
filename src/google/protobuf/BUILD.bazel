@@ -674,6 +674,7 @@ cc_library(
         "implicit_weak_message.h",
         "inlined_string_field.h",
         "internal_metadata_locator.h",
+        "internal_visibility.h",
         "map.h",
         "map_field_lite.h",
         "map_type_handler.h",

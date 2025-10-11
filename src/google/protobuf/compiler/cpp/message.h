@@ -149,7 +149,9 @@ class MessageGenerator {
     // Some field has logic that needs to run.
     bool needs_to_run_constructor = false;
   };
-  NewOpRequirements GetNewOp(io::Printer* arena_emitter) const;
+  NewOpRequirements GetNewOp(io::Printer* arena_emitter,
+                             bool use_arena_offset) const;
+  void GenerateNewOp(io::Printer* p, bool use_arena_offset) const;
 
 
   // Helpers for GenerateSerializeWithCachedSizes().
