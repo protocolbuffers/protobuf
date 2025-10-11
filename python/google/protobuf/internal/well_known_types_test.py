@@ -530,7 +530,7 @@ class TimeUtilTest(TimeUtilTestBase):
     )
     self.assertRaisesRegex(
         ValueError,
-        'year (0 )?is out of range',
+        'year ',
         message.FromJsonString,
         '0000-01-01T00:00:00Z',
     )

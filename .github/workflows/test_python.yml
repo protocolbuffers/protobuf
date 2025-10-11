@@ -28,7 +28,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -47,6 +47,8 @@ jobs:
           - version: "3.12"
             continuous-only: true
           - version: "3.13"
+            continuous-only: true
+          - version: "3.14"
           - type: C++
             version: aarch64
             targets: //python/... //python:aarch64_test
@@ -77,7 +79,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: [ "3.12", "3.13" ]
+        version: [ "3.12", "3.13", "3.14" ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -85,6 +87,8 @@ jobs:
             targets: //python/... //python:python_version_test
             flags: --define=use_fast_cpp_protos=true
           - version: "3.13"
+            continuous-only: true
+          - version: "3.14"
             continuous-only: true
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
