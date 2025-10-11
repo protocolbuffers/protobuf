@@ -1497,6 +1497,15 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 #endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
 
+  void AddAllocatedWithArena(Arena* arena, Element* value);
+
+  PROTOBUF_FUTURE_ADD_NODISCARD Element* ReleaseLastWithArena(Arena* arena);
+
+  void UnsafeArenaAddAllocatedWithArena(Arena* arena, Element* value);
+
+  void ExtractSubrangeWithArena(Arena* arena, int start, int num,
+                                Element** elements);
+
   void AddAllocatedForParse(Element* p, Arena* arena) {
     return RepeatedPtrFieldBase::AddAllocatedForParse(p, arena);
   }
@@ -1724,6 +1733,13 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
 template <typename Element>
 inline void RepeatedPtrField<Element>::ExtractSubrange(int start, int num,
                                                        Element** elements) {
+  ExtractSubrangeWithArena(GetArena(), start, num, elements);
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::ExtractSubrangeWithArena(
+    Arena* arena, int start, int num, Element** elements) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_GE(start, 0);
   ABSL_DCHECK_GE(num, 0);
   ABSL_DCHECK_LE(start + num, size());
@@ -1734,7 +1750,6 @@ inline void RepeatedPtrField<Element>::ExtractSubrange(int start, int num,
       << "Releasing elements without transferring ownership is an unsafe "
          "operation.  Use UnsafeArenaExtractSubrange.";
   if (elements != nullptr) {
-    Arena* arena = GetArena();
     auto* extracted = data() + start;
     if (internal::DebugHardenForceCopyInRelease()) {
       // Always copy.
@@ -1874,17 +1889,36 @@ inline size_t RepeatedPtrField<Element>::SpaceUsedExcludingSelfLong() const {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
-  RepeatedPtrFieldBase::AddAllocated<TypeHandler>(GetArena(), value);
+  AddAllocatedWithArena(GetArena(), value);
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::AddAllocatedWithArena(Arena* arena,
+                                                             Element* value) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+  RepeatedPtrFieldBase::AddAllocated<TypeHandler>(arena, value);
 }
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaAddAllocated(Element* value) {
-  RepeatedPtrFieldBase::UnsafeArenaAddAllocated<TypeHandler>(GetArena(), value);
+  UnsafeArenaAddAllocatedWithArena(GetArena(), value);
+}
+
+template <typename Element>
+inline void RepeatedPtrField<Element>::UnsafeArenaAddAllocatedWithArena(
+    Arena* arena, Element* value) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+  RepeatedPtrFieldBase::UnsafeArenaAddAllocated<TypeHandler>(arena, value);
 }
 
 template <typename Element>
 inline Element* RepeatedPtrField<Element>::ReleaseLast() {
-  return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>(GetArena());
+  return ReleaseLastWithArena(GetArena());
+}
+template <typename Element>
+inline Element* RepeatedPtrField<Element>::ReleaseLastWithArena(Arena* arena) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+  return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>(arena);
 }
 
 template <typename Element>
