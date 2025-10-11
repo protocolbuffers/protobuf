@@ -2594,7 +2594,8 @@ FileDescriptorSet::FileDescriptorSet(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorSet)
 }
@@ -2850,8 +2851,8 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
         from._internal_file());
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -5652,7 +5653,8 @@ ExtensionRangeOptions::ExtensionRangeOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -6026,8 +6028,8 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -8961,7 +8963,8 @@ FileOptions::FileOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000400U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -9699,8 +9702,8 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -9803,7 +9806,8 @@ MessageOptions::MessageOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -10193,8 +10197,8 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -10936,7 +10940,8 @@ FieldOptions::FieldOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -11537,8 +11542,8 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -11631,7 +11636,8 @@ OneofOptions::OneofOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -11932,8 +11938,8 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -12019,7 +12025,8 @@ EnumOptions::EnumOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -12380,8 +12387,8 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -12472,7 +12479,8 @@ EnumValueOptions::EnumValueOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -12857,8 +12865,8 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -12949,7 +12957,8 @@ ServiceOptions::ServiceOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -13275,8 +13284,8 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -13367,7 +13376,8 @@ MethodOptions::MethodOptions(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                 ? ::google::protobuf::Message::CopyConstruct(arena, *from._impl_.features_)
@@ -13728,8 +13738,8 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -14696,7 +14706,8 @@ FeatureSet::FeatureSet(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, field_presence_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -15049,6 +15060,7 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
+  ::google::protobuf::Arena* arena = _this->GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSet)
   ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -15082,8 +15094,8 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
@@ -16357,7 +16369,8 @@ SourceCodeInfo::SourceCodeInfo(
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(this, from._impl_._extensions_);
+  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+                                from.GetArena());
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo)
 }
@@ -16613,8 +16626,8 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
         from._internal_location());
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(&default_instance(),
-                                from._impl_._extensions_);
+  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
+                                from._impl_._extensions_, from.GetArena());
   _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
