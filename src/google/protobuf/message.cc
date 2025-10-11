@@ -245,7 +245,7 @@ void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
                                 const void* default_message) {
   ABSL_DCHECK_NE(message, default_message);
   void* split =
-      (arena == nullptr) ? ::operator new(size) : arena->AllocateAligned(size);
+      (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
   memcpy(split, default_split, size);
   return split;
 }
