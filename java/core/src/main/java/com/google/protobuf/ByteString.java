@@ -648,23 +648,21 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *     Integer.MAX_VALUE
    */
   public static ByteString copyFrom(Iterable<ByteString> byteStrings) {
-    // Determine the size;
-    final int size;
-    if (!(byteStrings instanceof Collection)) {
-      int tempSize = 0;
-      for (Iterator<ByteString> iter = byteStrings.iterator();
-          iter.hasNext();
-          iter.next(), ++tempSize) {}
-      size = tempSize;
+    final Collection<ByteString> collection;
+    if (byteStrings instanceof Collection) {
+      collection = (Collection<ByteString>) byteStrings;
     } else {
-      size = ((Collection<ByteString>) byteStrings).size();
+      collection = new ArrayList<ByteString>();
+      for (ByteString byteString : byteStrings) {
+        collection.add(byteString);
+      }
     }
 
-    if (size == 0) {
+    if (collection.isEmpty()) {
       return EMPTY;
     }
 
-    return balancedConcat(byteStrings.iterator(), size);
+    return balancedConcat(collection.iterator(), collection.size());
   }
 
   // Internal function used by copyFrom(Iterable<ByteString>).
