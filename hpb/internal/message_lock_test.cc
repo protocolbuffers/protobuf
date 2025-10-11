@@ -63,7 +63,7 @@ void unlock_func(const void* msg)
 
 ::hpb::internal::UpbExtensionUnlocker lock_func(const void* msg)
     ABSL_EXCLUSIVE_LOCK_FUNCTION(m[absl::HashOf(msg) & 0x7]) {
-  m[absl::HashOf(msg) & 0x7].Lock();
+  m[absl::HashOf(msg) & 0x7].lock();
   return &unlock_func;
 }
 
