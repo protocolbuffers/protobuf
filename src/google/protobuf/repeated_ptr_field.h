@@ -246,9 +246,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void Destroy() {
     ABSL_DCHECK(NeedsDestroy());
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+    ABSL_DCHECK_EQ(GetArena(), nullptr);
+#else
     // TODO: arena check is redundant once all `RepeatedPtrField`s
     // with non-null arena are owned by the arena.
     if (ABSL_PREDICT_FALSE(GetArena() != nullptr)) return;
+#endif
 
     using H = CommonHandler<TypeHandler>;
     int n = allocated_size();
