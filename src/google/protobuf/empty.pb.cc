@@ -9,6 +9,7 @@
 #include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/wire_format_lite.h"
