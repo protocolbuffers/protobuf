@@ -203,15 +203,15 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
 void MatchIndicesPostProcessorForSmartList(std::vector<int>* match_list1,
                                            std::vector<int>* match_list2) {
   int last_matched_index = -1;
-  for (size_t i = 0; i < match_list1->size(); ++i) {
-    if (match_list1->at(i) < 0) {
+  for (int & i : *match_list1) {
+    if (i < 0) {
       continue;
     }
-    if (last_matched_index < 0 || match_list1->at(i) > last_matched_index) {
-      last_matched_index = match_list1->at(i);
+    if (last_matched_index < 0 || i > last_matched_index) {
+      last_matched_index = i;
     } else {
-      match_list2->at(match_list1->at(i)) = -1;
-      match_list1->at(i) = -1;
+      match_list2->at(i) = -1;
+      i = -1;
     }
   }
 }

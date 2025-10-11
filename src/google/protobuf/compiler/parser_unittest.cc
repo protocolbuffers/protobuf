@@ -3187,11 +3187,11 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     const std::string debug_string =
         descriptor->DebugStringWithOptions(debug_string_options);
 
-    for (int i = 0; i < ABSL_ARRAYSIZE(expected_comments); ++i) {
+    for (auto & expected_comment : expected_comments) {
       std::string::size_type found_pos =
-          debug_string.find(expected_comments[i]);
+          debug_string.find(expected_comment);
       EXPECT_TRUE(found_pos != std::string::npos)
-          << "\"" << expected_comments[i] << "\" not found.";
+          << "\"" << expected_comment << "\" not found.";
     }
 
     // Result of DebugStringWithOptions should be parseable.
