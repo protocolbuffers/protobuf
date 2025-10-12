@@ -92,6 +92,10 @@
 #pragma pop_macro("GID_MAX")
 #endif  // defined(__FreeBSD__) || defined(__OpenBSD__)
 
+#ifdef __illumos__
+#pragma pop_macro("UID_MAX")
+#endif  // __illumos__
+
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #pragma pop_macro("DEBUG")
 #endif  // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)

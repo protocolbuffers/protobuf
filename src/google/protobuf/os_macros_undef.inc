@@ -158,6 +158,12 @@
 #undef GID_MAX
 #endif  // defined(__FreeBSD__) || defined(__OpenBSD__)
 
+#ifdef __illumos__
+// Inconvenient macro name from /usr/include/limits.h.
+#pragma push_macro("UID_MAX")
+#undef UID_MAX
+#endif  // __illumos__
+
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 // Don't let Objective-C Macros interfere with proto identifiers with the same
 // name.
