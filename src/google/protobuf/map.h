@@ -1277,7 +1277,7 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
       // Disable for integral types to reduce code bloat.
       typename = typename std::enable_if<!std::is_integral<K>::value>::type>
   T& operator[](key_arg<K>&& key) ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return try_emplace(std::forward<K>(key)).first->second;
+    return try_emplace(std::forward<key_arg<K>>(key)).first->second;
   }
 
   template <typename K = key_type>
