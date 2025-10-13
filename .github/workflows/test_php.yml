@@ -189,7 +189,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - version: '8.3'
+          - version: 'pre-installed'
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS PHP ${{ matrix.version }}
     # noop
@@ -201,23 +201,15 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
-      - name: Uninstall problematic libgd
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        run: brew uninstall --ignore-dependencies gd
-
       - name: Install dependencies
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: brew install coreutils gd
 
       - name: Pin PHP version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: shivammathur/setup-php@c541c155eee45413f5b09a52248675b1a2575231 # 2.31.1
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # 2.35.5
         with:
           php-version: ${{ matrix.version }}
-
-      - name: Check PHP version
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
 
       - name: Setup composer
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
