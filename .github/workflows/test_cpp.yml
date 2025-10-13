@@ -110,14 +110,19 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         arch: [x86_64, aarch64]
-    name: Linux Release ${{ matrix.arch }}
+        include:
+          - arch: aarch64
+            continuous-only: true
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux Release ${{ matrix.arch }}
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Cross compile protoc for ${{ matrix.arch }}
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
         with:
@@ -125,11 +130,13 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-${{ matrix.arch }}
       - name: Setup sccache
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/sccache@v4
         with:
           cache-prefix: linux-release-${{ matrix.arch }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
       - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v4
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.0.1-${{ matrix.arch }}-168f9c9d015a0fa16611e1e9eede796fe9bfbb69

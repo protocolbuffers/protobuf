@@ -96,15 +96,17 @@ jobs:
             PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }} rake test'
 
   linux-aarch64:
-    name: Linux aarch64
+    name: ${{ inputs.continuous-prefix || '' }} Linux aarch64
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
+        if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
+        if: ${{ inputs.continuous-run }}
         id: cross-compile
         uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v4
         with:
@@ -113,6 +115,7 @@ jobs:
           architecture: linux-aarch64
 
       - name: Run tests
+        if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v4
         with:
           image: arm64v8/ruby:3.1.4-buster
