@@ -590,7 +590,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* context,
                             std::string* error) const {
-  absl::MutexLock lock(&mutex_);
+  absl::MutexLock lock(mutex_);
   import_map_.clear();
   // Calculate file name.
   file_ = file;
