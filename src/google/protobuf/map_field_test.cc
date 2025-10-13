@@ -329,7 +329,8 @@ TEST_P(MapFieldStateTest, SwapClean) {
   ArenaHolder<MapFieldType> other(arena_.get());
   AddOneStillClean(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(/*arena=*/arena_.get(), other.get(),
+                   /*other_arena=*/arena_.get());
 
   Expect(map_field_.get(), CLEAN, 1, 1);
 
@@ -352,7 +353,8 @@ TEST_P(MapFieldStateTest, SwapMapDirty) {
   ArenaHolder<MapFieldType> other(arena_.get());
   MakeMapDirty(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(/*arena=*/arena_.get(), other.get(),
+                   /*other_arena=*/arena_.get());
 
   Expect(map_field_.get(), MAP_DIRTY, 1, 0);
 
@@ -375,7 +377,8 @@ TEST_P(MapFieldStateTest, SwapRepeatedDirty) {
   ArenaHolder<MapFieldType> other(arena_.get());
   MakeRepeatedDirty(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(/*arena=*/arena_.get(), other.get(),
+                   /*other_arena=*/arena_.get());
 
   Expect(map_field_.get(), REPEATED_DIRTY, 0, 1);
 

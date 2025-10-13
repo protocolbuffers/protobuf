@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "google/protobuf/stubs/common.h"
+#include "base/types.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {

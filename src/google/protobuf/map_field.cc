@@ -32,17 +32,20 @@ namespace internal {
 
 MapFieldBase::~MapFieldBase() { delete maybe_payload(); }
 
-void MapFieldBase::MergeFrom(const MapFieldBase& other) {
-  MutableMap()->UntypedMergeFrom(other.GetMap());
+void MapFieldBase::MergeFrom(Arena* arena, const MapFieldBase& other) {
+  MutableMap()->UntypedMergeFrom(arena, other.GetMap());
 }
 
-void MapFieldBase::Swap(MapFieldBase* other) {
-  if (arena() == other->arena()) {
+void MapFieldBase::Swap(Arena* arena, MapFieldBase* other, Arena* other_arena) {
+  ABSL_DCHECK_EQ(arena, this->arena());
+  ABSL_DCHECK_EQ(other_arena, other->arena());
+
+  if (arena == other_arena) {
     InternalSwap(other);
     return;
   }
   MapFieldBase::SwapPayload(*this, *other);
-  GetMapRaw().UntypedSwap(other->GetMapRaw());
+  GetMapRaw().UntypedSwap(arena, other->GetMapRaw(), other_arena);
 }
 
 const Message* MapFieldBase::GetPrototype() const {
@@ -83,26 +86,31 @@ bool MapFieldBase::InsertOrLookupMapValueNoSync(const MapKey& map_key,
   }
 
   auto& map = GetMapRaw();
+  Arena* arena = map.arena();
 
-  NodeBase* node = map.AllocNode();
+  NodeBase* node = map.AllocNode(arena);
   map.VisitValue(node, [&](auto* v) { InitializeKeyValue(v); });
   val->SetValue(map.GetVoidValue(node));
 
   return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
     InitializeKeyValue(map.GetKey(node), key);
     map.InsertOrReplaceNode(
+        arena,
         static_cast<typename std::decay_t<decltype(map)>::KeyNode*>(node));
     return true;
   });
 }
 
-bool MapFieldBase::DeleteMapValue(const MapKey& map_key) {
-  return VisitMapKey(map_key, *MutableMap(), [](auto& map, const auto& key) {
-    return map.EraseImpl(key);
-  });
+bool MapFieldBase::DeleteMapValue(Arena* arena, const MapKey& map_key) {
+  return VisitMapKey(map_key, *MutableMap(),
+                     [arena](auto& map, const auto& key) {
+                       return map.EraseImpl(arena, key);
+                     });
 }
 
-void MapFieldBase::ClearMapNoSync() { GetMapRaw().ClearTable(true); }
+void MapFieldBase::ClearMapNoSync() {
+  GetMapRaw().ClearTable(arena(), /*reset=*/true);
+}
 
 template <bool kIsMutable>
 void MapFieldBase::SetMapIteratorValue(

@@ -335,9 +335,9 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   bool IsRepeatedFieldValid() const;
   // Insures operations after won't get executed before calling this.
   bool IsMapValid() const;
-  bool DeleteMapValue(const MapKey& map_key);
-  void MergeFrom(const MapFieldBase& other);
-  void Swap(MapFieldBase* other);
+  bool DeleteMapValue(Arena* arena, const MapKey& map_key);
+  void MergeFrom(Arena* arena, const MapFieldBase& other);
+  void Swap(Arena* arena, MapFieldBase* other, Arena* other_arena);
   void InternalSwap(MapFieldBase* other);
   // Sync Map with repeated field and returns the size of map.
   int size() const;
