@@ -2548,7 +2548,7 @@ const Message& Reflection::GetMessage(const Message& message,
 
   if (field->is_extension()) {
     return static_cast<const Message&>(GetExtensionSet(message).GetMessage(
-        field->number(), field->message_type(), factory));
+        message.GetArena(), field->number(), field->message_type(), factory));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
       return *GetDefaultMessageInstance(field);

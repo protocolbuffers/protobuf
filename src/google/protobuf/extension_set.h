@@ -370,9 +370,10 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
   }
 
-  const MessageLite& GetMessage(int number,
+  const MessageLite& GetMessage(Arena* arena, int number,
                                 const MessageLite& default_value) const;
-  const MessageLite& GetMessage(int number, const Descriptor* message_type,
+  const MessageLite& GetMessage(Arena* arena, int number,
+                                const Descriptor* message_type,
                                 MessageFactory* factory) const;
 
   // |descriptor| may be nullptr so long as it is known that the descriptor for
@@ -1481,13 +1482,15 @@ class PROTOBUF_EXPORT StringTypeTraits {
   typedef StringTypeTraits Singular;
   static constexpr bool kLifetimeBound = true;
 
-  static inline const std::string& Get(int number, const ExtensionSet& set,
+  static inline const std::string& Get(Arena* arena, int number,
+                                       const ExtensionSet& set,
                                        ConstType default_value) {
     return set.Get<std::string>(number, default_value);
   }
   static inline const std::string* GetPtr(int number, const ExtensionSet& set,
                                           ConstType default_value) {
-    return &Get(number, set, default_value);
+    // Note that we can pass `nullptr` arena since the arena argument is unused.
+    return &Get(/*arena=*/nullptr, number, set, default_value);
   }
   static inline void Set(Arena* arena, int number, FieldType field_type,
                          const std::string& value, ExtensionSet* set) {
@@ -1673,9 +1676,10 @@ class MessageTypeTraits {
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
 
-  static inline ConstType Get(int number, const ExtensionSet& set,
+  static inline ConstType Get(Arena* arena, int number, const ExtensionSet& set,
                               ConstType default_value) {
-    return static_cast<const Type&>(set.GetMessage(number, default_value));
+    return static_cast<const Type&>(
+        set.GetMessage(arena, number, default_value));
   }
   static inline std::nullptr_t GetPtr(int /* number */,
                                       const ExtensionSet& /* set */,

@@ -94,9 +94,10 @@ inline WireFormatLite::FieldType field_type(FieldType type) {
                  FieldDescriptor::LABEL_##LABEL);                           \
   ABSL_DCHECK_EQ(cpp_type((EXTENSION).type), FieldDescriptor::CPPTYPE_##CPPTYPE)
 
-const MessageLite& ExtensionSet::GetMessage(int number,
+const MessageLite& ExtensionSet::GetMessage(Arena* arena, int number,
                                             const Descriptor* message_type,
                                             MessageFactory* factory) const {
+  ABSL_DCHECK_EQ(arena, GetArena());
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr || extension->is_cleared) {
     // Not present.  Return the default value.
@@ -105,7 +106,7 @@ const MessageLite& ExtensionSet::GetMessage(int number,
     ABSL_DCHECK_TYPE(*extension, OPTIONAL, MESSAGE);
     if (extension->is_lazy) {
       return extension->ptr.lazymessage_value->GetMessage(
-          *factory->GetPrototype(message_type), GetArena());
+          *factory->GetPrototype(message_type), arena);
     } else {
       return *extension->ptr.message_value;
     }

@@ -451,7 +451,8 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 // Messages
 
 const MessageLite& ExtensionSet::GetMessage(
-    int number, const MessageLite& default_value) const {
+    Arena* arena, int number, const MessageLite& default_value) const {
+  ABSL_DCHECK_EQ(arena, GetArena());
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
@@ -459,8 +460,7 @@ const MessageLite& ExtensionSet::GetMessage(
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     if (extension->is_lazy) {
-      return extension->ptr.lazymessage_value->GetMessage(default_value,
-                                                          GetArena());
+      return extension->ptr.lazymessage_value->GetMessage(default_value, arena);
     } else {
       return *extension->ptr.message_value;
     }

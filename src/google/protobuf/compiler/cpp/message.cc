@@ -940,7 +940,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               const ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_get$;
-        return _proto_TypeTraits::Get(id.number(), $extensions$, id.default_value());
+        return _proto_TypeTraits::Get(GetArena(), id.number(), $extensions$,
+                                      id.default_value());
       }
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
