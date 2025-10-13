@@ -443,7 +443,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename T>
   auto& Add(Arena* arena, int number, FieldType type,
             const FieldDescriptor* descriptor) {
-    ABSL_DCHECK_EQ(arena, GetArena());
+    DebugAssertArenaMatches(arena);
     static_assert(std::is_class_v<T>);
     Extension& ext = FindOrCreate(arena, number, type, true, false, descriptor,
                                   &CreateImpl<RepFor<T>>);
@@ -453,7 +453,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename T>
   void Add(Arena* arena, int number, FieldType type, bool packed, T value,
            const FieldDescriptor* descriptor) {
-    ABSL_DCHECK_EQ(arena, GetArena());
+    DebugAssertArenaMatches(arena);
     static_assert(std::is_arithmetic_v<T>,
                   "Only arithmetic types take `packed`");
     Extension& ext = FindOrCreate(arena, number, type, true, packed, descriptor,
@@ -1270,6 +1270,26 @@ class PROTOBUF_EXPORT ExtensionSet {
   static KeyValue* AllocateFlatMap(Arena* arena,
                                    uint16_t powerof2_flat_capacity);
   static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
+
+  void DebugAssertArenaMatches(Arena* arena) const {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+    // If we don't have an arena ptr, then we can't DCHECK that the arena is
+    // correct.
+    (void)arena;
+#else
+    ABSL_DCHECK_EQ(arena, GetArena());
+#endif
+  }
+
+  void DebugAssertSameArena(const ExtensionSet& other) const {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+    // If we don't have an arena ptr, then we can't DCHECK that the arenas
+    // match.
+    (void)other;
+#else
+    ABSL_DCHECK_EQ(GetArena(), other.GetArena());
+#endif
+  }
 
   Arena* arena_;
 

@@ -97,7 +97,7 @@ inline WireFormatLite::FieldType field_type(FieldType type) {
 const MessageLite& ExtensionSet::GetMessage(Arena* arena, int number,
                                             const Descriptor* message_type,
                                             MessageFactory* factory) const {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  DebugAssertArenaMatches(arena);
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr || extension->is_cleared) {
     // Not present.  Return the default value.
@@ -116,7 +116,7 @@ const MessageLite& ExtensionSet::GetMessage(Arena* arena, int number,
 MessageLite* ExtensionSet::MutableMessage(Arena* arena,
                                           const FieldDescriptor* descriptor,
                                           MessageFactory* factory) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  DebugAssertArenaMatches(arena);
   Extension* extension;
   if (MaybeNewExtension(arena, descriptor->number(), descriptor, &extension)) {
     extension->type = descriptor->type();
@@ -145,7 +145,7 @@ MessageLite* ExtensionSet::MutableMessage(Arena* arena,
 MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
                                           const FieldDescriptor* descriptor,
                                           MessageFactory* factory) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  DebugAssertArenaMatches(arena);
   Extension* extension = FindOrNull(descriptor->number());
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -174,7 +174,7 @@ MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     Arena* arena, const FieldDescriptor* descriptor, MessageFactory* factory) {
-  ABSL_DCHECK_EQ(arena, GetArena());
+  DebugAssertArenaMatches(arena);
   Extension* extension = FindOrNull(descriptor->number());
   if (extension == nullptr) {
     // Not present.  Return nullptr.
