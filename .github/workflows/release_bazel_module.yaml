@@ -30,4 +30,4 @@ jobs:
     with:
       tag_name: ${{ inputs.tag_name }}
     secrets:
-      BCR_PUBLISH_TOKEN: ${{ secrets.BCR_PUBLISH_TOKEN }}
+      BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
