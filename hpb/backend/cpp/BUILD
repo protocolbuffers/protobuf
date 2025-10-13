@@ -30,3 +30,9 @@ cc_library(
         "//hpb/internal",
     ],
 )
+
+cc_library(
+    name = "error",
+    hdrs = ["error.h"],
+    visibility = ["//hpb:__subpackages__"],
+)

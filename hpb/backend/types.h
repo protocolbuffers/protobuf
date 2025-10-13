@@ -14,6 +14,7 @@
 #include "upb/mem/arena.hpp"
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
 #include "google/protobuf/arena.h"
+#include "hpb/backend/cpp/error.h"
 #endif
 
 namespace hpb {
@@ -27,6 +28,7 @@ using Arena = ::upb::Arena;
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
 namespace cpp {
 using Arena = google::protobuf::Arena;
+using Error = ::hpb::internal::backend::cpp::Error;
 }
 #else
 #error "Unsupported hpb backend"
