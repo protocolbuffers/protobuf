@@ -1467,6 +1467,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   friend class DynamicMessage;
 
+  friend class google::protobuf::internal::ExtensionSet;
+
   friend class internal::MapFieldBase;
 
   friend class internal::TcParser;
