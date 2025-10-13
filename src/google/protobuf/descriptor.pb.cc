@@ -2867,7 +2867,8 @@ void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
 PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FileDescriptorSet&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_file()))
@@ -6044,7 +6045,8 @@ void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
 PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const ExtensionRangeOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -9718,7 +9720,8 @@ void FileOptions::CopyFrom(const FileOptions& from) {
 PROTOBUF_NOINLINE bool FileOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FileOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000400U)) {
@@ -10213,7 +10216,8 @@ void MessageOptions::CopyFrom(const MessageOptions& from) {
 PROTOBUF_NOINLINE bool MessageOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const MessageOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
@@ -11558,7 +11562,8 @@ void FieldOptions::CopyFrom(const FieldOptions& from) {
 PROTOBUF_NOINLINE bool FieldOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FieldOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -11954,7 +11959,8 @@ void OneofOptions::CopyFrom(const OneofOptions& from) {
 PROTOBUF_NOINLINE bool OneofOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const OneofOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -12403,7 +12409,8 @@ void EnumOptions::CopyFrom(const EnumOptions& from) {
 PROTOBUF_NOINLINE bool EnumOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const EnumOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (CheckHasBit(this_._impl_._has_bits_[0], 0x00000001U)) {
@@ -12881,7 +12888,8 @@ void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
 PROTOBUF_NOINLINE bool EnumValueOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const EnumValueOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -13300,7 +13308,8 @@ void ServiceOptions::CopyFrom(const ServiceOptions& from) {
 PROTOBUF_NOINLINE bool ServiceOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const ServiceOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -13754,7 +13763,8 @@ void MethodOptions::CopyFrom(const MethodOptions& from) {
 PROTOBUF_NOINLINE bool MethodOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const MethodOptions&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   if (!::google::protobuf::internal::AllAreInitialized(this_._internal_uninterpreted_option()))
@@ -15110,7 +15120,8 @@ void FeatureSet::CopyFrom(const FeatureSet& from) {
 PROTOBUF_NOINLINE bool FeatureSet::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FeatureSet&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   return true;
@@ -16642,7 +16653,8 @@ void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
 PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const SourceCodeInfo&>(msg);
-  if (!this_._impl_._extensions_.IsInitialized(&default_instance())) {
+  if (!this_._impl_._extensions_.IsInitialized(this_.GetArena(),
+                                        &default_instance())) {
     return false;
   }
   return true;

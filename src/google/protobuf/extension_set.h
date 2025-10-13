@@ -498,7 +498,7 @@ class PROTOBUF_EXPORT ExtensionSet {
                      ExtensionSet* other, Arena* other_arena, int number);
   void UnsafeShallowSwapExtension(Arena* arena, ExtensionSet* other,
                                   int number);
-  bool IsInitialized(const MessageLite* extendee) const;
+  bool IsInitialized(Arena* arena, const MessageLite* extendee) const;
 
   // Lite parser
   const char* ParseField(uint64_t tag, const char* ptr,

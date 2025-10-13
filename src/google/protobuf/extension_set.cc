@@ -1128,10 +1128,11 @@ void ExtensionSet::UnsafeShallowSwapExtension(Arena* arena, ExtensionSet* other,
   }
 }
 
-bool ExtensionSet::IsInitialized(const MessageLite* extendee) const {
+bool ExtensionSet::IsInitialized(Arena* arena,
+                                 const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
-  Arena* const arena = GetArena();
+  ABSL_DCHECK_EQ(arena, GetArena());
   if (ABSL_PREDICT_FALSE(is_large())) {
     for (const auto& kv : *map_.large) {
       if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
