@@ -3067,7 +3067,7 @@ void Reflection::PrepareSplitMessageForWrite(Message* message) const {
   if (*split == default_split) {
     uint32_t size = schema_.SizeofSplit();
     Arena* arena = message->GetArena();
-    *split = (arena == nullptr) ? ::operator new(size)
+    *split = (arena == nullptr) ? internal::Allocate(size)
                                 : arena->AllocateAligned(size);
     memcpy(*split, default_split, size);
   }
@@ -3831,7 +3831,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       sizeof(TcParseTableBase::FieldAux) * table_info.aux_entries.size() +
       sizeof(char) * table_info.field_name_data.size();
 
-  void* p = ::operator new(byte_size);
+  void* p = internal::Allocate(byte_size);
   auto* res = ::new (p) TcParseTableBase{
       static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
       schema_.HasExtensionSet()

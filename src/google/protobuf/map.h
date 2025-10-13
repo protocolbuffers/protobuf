@@ -452,7 +452,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
 
   NodeBase* AllocNode(size_t node_size) {
     return static_cast<NodeBase*>(arena_ == nullptr
-                                      ? ::operator new(node_size)
+                                      ? Allocate(node_size)
                                       : arena_->AllocateAligned(node_size));
   }
 
@@ -476,7 +476,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
     ABSL_DCHECK_EQ(n & (n - 1), 0u);
     NodeBase** result =
         arena_ == nullptr
-            ? static_cast<NodeBase**>(::operator new(n * sizeof(NodeBase*)))
+            ? static_cast<NodeBase**>(Allocate(n * sizeof(NodeBase*)))
             : Arena::CreateArray<NodeBase*>(arena_, n);
     memset(result, 0, n * sizeof(result[0]));
     return result;

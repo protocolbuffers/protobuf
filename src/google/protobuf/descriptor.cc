@@ -2288,7 +2288,7 @@ Type* DescriptorPool::Tables::Allocate() {
 
 void* DescriptorPool::Tables::AllocateBytes(int size) {
   if (size == 0) return nullptr;
-  void* p = ::operator new(size + RoundUpTo<8>(sizeof(int)));
+  void* p = internal::Allocate(size + RoundUpTo<8>(sizeof(int)));
   int* sizep = static_cast<int*>(p);
   misc_allocs_.emplace_back(sizep);
   *sizep = size;
@@ -2305,7 +2305,7 @@ internal::FlatAllocator::Allocation* DescriptorPool::Tables::CreateFlatAlloc(
       typename std::tuple_element<sizeof...(T) - 1, std::tuple<T...>>::type>();
   size_t total_size =
       last_end + RoundUpTo<FlatAlloc::kMaxAlign>(sizeof(FlatAlloc));
-  char* data = static_cast<char*>(::operator new(total_size));
+  char* data = static_cast<char*>(internal::Allocate(total_size));
   auto* res = ::new (data) FlatAlloc(ends);
   flat_allocs_.emplace_back(res);
 
