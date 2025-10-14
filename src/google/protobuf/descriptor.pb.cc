@@ -2900,7 +2900,7 @@ PROTOBUF_NOINLINE void FileDescriptorSet::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorSet)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -6092,7 +6092,7 @@ PROTOBUF_NOINLINE void ExtensionRangeOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -9676,7 +9676,7 @@ PROTOBUF_NOINLINE void FileOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -10281,7 +10281,7 @@ PROTOBUF_NOINLINE void MessageOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MessageOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -11608,7 +11608,7 @@ PROTOBUF_NOINLINE void FieldOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -12092,7 +12092,7 @@ PROTOBUF_NOINLINE void OneofOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -12535,7 +12535,7 @@ PROTOBUF_NOINLINE void EnumOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -13007,7 +13007,7 @@ PROTOBUF_NOINLINE void EnumValueOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -13446,7 +13446,7 @@ PROTOBUF_NOINLINE void ServiceOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -13896,7 +13896,7 @@ PROTOBUF_NOINLINE void MethodOptions::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodOptions)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -15248,7 +15248,7 @@ PROTOBUF_NOINLINE void FeatureSet::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FeatureSet)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
@@ -16858,7 +16858,7 @@ PROTOBUF_NOINLINE void SourceCodeInfo::Clear() {
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo)
   ::size_t total_size = 0;
-  total_size += this_._impl_._extensions_.ByteSize();
+  total_size += this_._impl_._extensions_.ByteSize(&this_);
 
   ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
