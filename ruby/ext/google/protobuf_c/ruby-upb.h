@@ -161,6 +161,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_TSAN 0
 #endif
 
+#if UPB_HAS_FEATURE(memory_sanitizer)
+#define UPB_MSAN 1
+#else
+#define UPB_MSAN 0
+#endif
+
 // An unfortunate concession to C++17 and MSVC, which don't support zero-sized
 // structs.
 #if UPB_ASAN || UPB_HWASAN || UPB_TSAN
@@ -807,6 +813,10 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 #include <sanitizer/hwasan_interface.h>
 #endif
 
+#if UPB_MSAN
+#include <sanitizer/msan_interface.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -847,6 +857,14 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
 #if UPB_HWASAN || UPB_TSAN
   xsan->state = 0;
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_MarkInitialized)(void* addr, size_t size) {
+#if UPB_HAS_FEATURE(memory_sanitizer)
+  if (size) {
+    __msan_unpoison(addr, size);
+  }
 #endif
 }
 
@@ -16681,6 +16699,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_ASAN
 #undef UPB_HWASAN
 #undef UPB_HWASAN_POISON_TAG
+#undef UPB_MSAN
 #undef UPB_MALLOC_ALIGN
 #undef UPB_TSAN
 #undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN

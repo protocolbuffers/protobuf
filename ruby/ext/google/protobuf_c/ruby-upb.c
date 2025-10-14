@@ -160,6 +160,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_TSAN 0
 #endif
 
+#if UPB_HAS_FEATURE(memory_sanitizer)
+#define UPB_MSAN 1
+#else
+#define UPB_MSAN 0
+#endif
+
 // An unfortunate concession to C++17 and MSVC, which don't support zero-sized
 // structs.
 #if UPB_ASAN || UPB_HWASAN || UPB_TSAN
@@ -16300,9 +16306,8 @@ static char* encode_fixed32(char* ptr, upb_encstate* e, uint32_t val) {
 
 #define UPB_PB_VARINT_MAX_LEN 10
 
-// Need gnu extended inline asm; msan can't instrument stores in inline assembly
-#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__)) && \
-    !UPB_HAS_FEATURE(memory_sanitizer)
+// Need gnu extended inline asm
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
 #define UPB_ARM64_ASM
 #endif
 
@@ -16353,8 +16358,10 @@ UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
       : [addr] "=&r"(addr), [mask] "=&r"(mask)
       : [val] "r"(val), [ptr] "r"(ptr), [cnt] "r"((uint64_t)skip)
       : "memory");
-  // Encode the final byte after the continuation bytes.
   uint32_t continuations = UPB_PB_VARINT_MAX_LEN - 1 - skip;
+  // msan can't instrument stores in inline assembly
+  UPB_PRIVATE(upb_Xsan_MarkInitialized)(ptr, continuations);
+  // Encode the final byte after the continuation bytes.
   ptr[continuations] = val >> (7 * continuations);
   return ptr;
 }
@@ -17148,6 +17155,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_ASAN
 #undef UPB_HWASAN
 #undef UPB_HWASAN_POISON_TAG
+#undef UPB_MSAN
 #undef UPB_MALLOC_ALIGN
 #undef UPB_TSAN
 #undef UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN
