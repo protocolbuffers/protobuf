@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <type_traits>
 
 #include "absl/log/absl_check.h"
@@ -92,6 +93,52 @@ class InternalMetadataOffset {
         static_cast<int32_t>(kInternalMetadataOffset - field_offset));
   }
 
+  // Translates an offset relative to some class `T` to an offset relative to
+  // the member at offset `kMemberOffset` within `T`. This is used when passing
+  // `InternalMetadataOffset`s to members of a class where the offset was
+  // constructed relative to the start of `T`.
+  //
+  // For example, here is how you would pass an `InternalMetadataOffset` to a
+  // member `Baz` of a class `Bar`, which itself is a member of `Foo`.
+  //
+  // ```cc
+  // struct Baz {
+  //   int some_value;
+  //   InternalMetadataResolver resolver;
+  //
+  //   Baz(int value, InternalMetadataOffset offset)
+  //       : some_value(value), resolver(offset) {}
+  // };
+  //
+  // struct Bar {
+  //   int some_value;
+  //   Baz baz;
+  //
+  //   Bar(int value, InternalMetadataOffset offset)
+  //       : some_value(value),
+  //         baz(2 * value, offset.TranslateForMember<offsetof(Bar, baz)>()) {}
+  // };
+  //
+  // struct Foo {
+  //   InternalMetadata _internal_metadata_;
+  //   Bar field1;
+  //
+  //   explicit Foo(Arena* arena)
+  //       : _internal_metadata_(arena),
+  //         field1(123,
+  //                InternalMetadataOffset::Build<Foo, PROTOBUF_FIELD_OFFSET(
+  //                                                       Foo, field1)>()) {}
+  // };
+  // ```
+  template <size_t kMemberOffset>
+  constexpr InternalMetadataOffset TranslateForMember() const {
+    if (IsSentinel()) {
+      return InternalMetadataOffset();
+    }
+    return InternalMetadataOffset(offset_ -
+                                  static_cast<int32_t>(kMemberOffset));
+  }
+
   // If true, this `InternalMetadataOffset` does not point to any metadata.
   constexpr bool IsSentinel() const {
     return offset_ == kSentinelInternalMetadataOffset;
@@ -100,12 +147,7 @@ class InternalMetadataOffset {
   // The offset from the start of the field to the internal metadata of the
   // containing type (either a `MessageLite` or some other internal class, like
   // `RepeatedPtrFieldWithArena`).
-  //
-  // This should only be called if `IsSentinel()` is false.
-  constexpr int32_t Offset() const {
-    ABSL_DCHECK(!IsSentinel());
-    return offset_;
-  }
+  constexpr int32_t Offset() const { return offset_; }
 
  private:
   // A private constructor for non-sentinel offsets which can only be called
@@ -117,24 +159,52 @@ class InternalMetadataOffset {
 
 // A class which can recover the `InternalMetadata` field from a containing type
 // given a pointer to another field contained by that type.
-class InternalMetadataResolver {
+template <uint32_t kTaggedBits>
+class TaggedInternalMetadataResolver {
  public:
-  // Builds an `InternalMetadataResolver` which points to no metadata.
-  constexpr InternalMetadataResolver() = default;
+  static_assert(kTaggedBits < std::numeric_limits<uint32_t>::digits);
+  static constexpr uint32_t kTagMask = (uint32_t{1} << kTaggedBits) - 1;
 
-  constexpr explicit InternalMetadataResolver(InternalMetadataOffset offset)
-      : offset_(offset) {}
+  // Builds an `InternalMetadataResolver` which points to no metadata.
+  constexpr TaggedInternalMetadataResolver() = default;
+
+  constexpr explicit TaggedInternalMetadataResolver(
+      InternalMetadataOffset offset)
+      : offset_(static_cast<uint32_t>(offset.Offset())) {
+    ABSL_DCHECK_EQ(offset_ & kTagMask, uint32_t{0});
+  }
+
+  constexpr int32_t Offset() const {
+    return static_cast<int32_t>(offset_ & ~kTagMask);
+  }
+
+  constexpr void SetTag(uint32_t tag) {
+    ABSL_DCHECK_EQ(tag & ~kTagMask, uint32_t{0});
+    offset_ = (offset_ & ~kTagMask) | tag;
+  }
+
+  constexpr uint32_t Tag() const { return offset_ & kTagMask; }
+
+  // Swaps only the tags of the two resolvers, leaving their offsets unchanged.
+  void SwapTags(TaggedInternalMetadataResolver& other) {
+    const uint32_t swap_tag = Tag() ^ other.Tag();
+    offset_ ^= swap_tag;
+    other.offset_ ^= swap_tag;
+  }
 
  private:
   template <auto Resolver, typename T>
   friend inline Arena* ResolveArena(const T* object);
+  template <auto Resolver, uint32_t kTaggedBits_, typename T>
+  friend inline Arena* ResolveTaggedArena(const T* object);
 
   // Finds the `Arena*` from the `InternalMetadata` of the containing type given
   // the `this` pointer to the field contained by that type.
-  template <typename T, InternalMetadataResolver T::* Resolver>
+  template <typename T,
+            TaggedInternalMetadataResolver<kTaggedBits> T::* Resolver>
   static inline Arena* FindArena(const T* object) {
     auto& resolver = object->*Resolver;
-    if (resolver.offset_.IsSentinel()) {
+    if (resolver.Offset() == 0) {
       return nullptr;
     }
     return resolver.FindInternalMetadata(object).arena();
@@ -144,12 +214,15 @@ class InternalMetadataResolver {
   // start of the field.
   inline const InternalMetadata& FindInternalMetadata(
       const void* object) const {
+    ABSL_DCHECK_NE(Offset(), 0);
     return *reinterpret_cast<const InternalMetadata*>(
-        reinterpret_cast<const char*>(object) + offset_.Offset());
+        reinterpret_cast<const char*>(object) + Offset());
   }
 
-  InternalMetadataOffset offset_;
+  uint32_t offset_ = InternalMetadataOffset().Offset();
 };
+
+using InternalMetadataResolver = TaggedInternalMetadataResolver<0>;
 
 // Resolves an `Arena*` from the `InternalMetadata` of a containing type (which
 // has a member `InternalMetadata _internal_metadata_`) given a reference to a
@@ -201,6 +274,12 @@ class InternalMetadataResolver {
 template <auto Resolver, typename T>
 inline Arena* ResolveArena(const T* object) {
   return InternalMetadataResolver::FindArena<T, Resolver>(object);
+}
+
+template <auto Resolver, uint32_t kTaggedBits, typename T>
+inline Arena* ResolveTaggedArena(const T* object) {
+  return TaggedInternalMetadataResolver<kTaggedBits>::template FindArena<
+      T, Resolver>(object);
 }
 
 }  // namespace internal
