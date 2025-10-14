@@ -30,13 +30,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Logger;
 
 /**
@@ -416,8 +416,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           + " security vulnerability:"
           + " https://github.com/protocolbuffers/protobuf/security/advisories/GHSA-h4h5-3hr4-j3g2";
 
-  protected static final Set<String> loggedPre22TypeNames =
-      Collections.synchronizedSet(new HashSet<String>());
+  protected static final Set<String> loggedPre22TypeNames = new CopyOnWriteArraySet<String>();
 
   static void warnPre22Gencode(Class<?> messageClass) {
     if (System.getProperty(PRE22_GENCODE_SILENCE_PROPERTY) != null) {
