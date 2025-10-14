@@ -126,10 +126,14 @@ void DebugAssertUniformLikelyPresence(
 // uses arena offsets, it no longer needs arena seeding, and it is not
 // zero-initializable.
 bool MessageHasFieldUsingArenaOffset(const Descriptor* descriptor) {
-  return absl::c_any_of(FieldRange(descriptor),
-                        [](const FieldDescriptor* field) {
-                          return IsRepeatedPtrField(field) || field->is_map();
-                        }) ||
+  return absl::c_any_of(
+             FieldRange(descriptor),
+             [](const FieldDescriptor* field) {
+               return field->is_repeated() || field->is_map() ||
+                      (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+                       field->cpp_string_type() ==
+                           FieldDescriptor::CppStringType::kStringPiece);
+             }) ||
          descriptor->extension_range_count() > 0;
 }
 
@@ -4065,7 +4069,7 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
         print_arena_offset();
       }
     } else if (field->is_repeated()) {
-      if (use_arena_offset && IsRepeatedPtrField(field)) {
+      if (use_arena_offset) {
         op.needs_memcpy = true;
       } else {
         op.needs_arena_seeding = true;
