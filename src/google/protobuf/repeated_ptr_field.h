@@ -185,6 +185,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       : tagged_rep_or_elem_(nullptr), current_size_(0) {}
   constexpr explicit RepeatedPtrFieldBase(InternalMetadataOffset offset)
       : tagged_rep_or_elem_(nullptr), current_size_(0), resolver_(offset) {}
+  RepeatedPtrFieldBase(InternalMetadataOffset offset, Arena* arena)
+      : RepeatedPtrFieldBase(offset) {
+    ABSL_DCHECK_EQ(arena, GetArena());
+  }
 #else
   constexpr RepeatedPtrFieldBase()
       : tagged_rep_or_elem_(nullptr), current_size_(0), arena_(nullptr) {}
@@ -1136,9 +1140,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                              internal::InternalMetadataOffset offset)
       : RepeatedPtrField(offset) {}
   RepeatedPtrField(internal::InternalVisibility,
-                   internal::InternalMetadataOffset offset,
+                   internal::InternalMetadataOffset offset, Arena* arena,
                    const RepeatedPtrField& rhs)
-      : RepeatedPtrField(offset, rhs) {}
+      : RepeatedPtrField(offset, arena, rhs) {}
 
 #else
   RepeatedPtrField(internal::InternalVisibility, Arena* arena)
@@ -1166,17 +1170,16 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
       : RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
             internal::InternalMetadataOffset(),
-#else
-            /*arena=*/nullptr,
 #endif
-            rhs) {
+            /*arena=*/nullptr, rhs) {
   }
   RepeatedPtrField& operator=(const RepeatedPtrField& other)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
-      : RepeatedPtrField(internal::InternalMetadataOffset(), std::move(rhs)) {}
+      : RepeatedPtrField(internal::InternalMetadataOffset(), /*arena=*/nullptr,
+                         std::move(rhs)) {}
 #else
   RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
       : RepeatedPtrField(nullptr, std::move(rhs)) {}
@@ -1496,9 +1499,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   constexpr explicit RepeatedPtrField(internal::InternalMetadataOffset offset);
-  RepeatedPtrField(internal::InternalMetadataOffset offset,
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena);
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena,
                    const RepeatedPtrField& rhs);
-  RepeatedPtrField(internal::InternalMetadataOffset offset,
+  RepeatedPtrField(internal::InternalMetadataOffset offset, Arena* arena,
                    RepeatedPtrField&& rhs);
 #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
@@ -1564,14 +1568,21 @@ constexpr
   // CreateMessage<RepeatedPtrField<T>> for incomplete Ts.
 }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+template <typename Element>
+inline RepeatedPtrField<Element>::RepeatedPtrField(
+    internal::InternalMetadataOffset offset, Arena* arena)
+    : RepeatedPtrFieldBase(offset) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+}
+#endif
+
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
     internal::InternalMetadataOffset offset,
-#else
-    Arena* arena,
 #endif
-    const RepeatedPtrField& rhs)
+    Arena* arena, const RepeatedPtrField& rhs)
     : RepeatedPtrFieldBase(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
           offset
@@ -1580,7 +1591,8 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
 #endif
       ) {
   StaticValidityCheck();
-  MergeFrom(rhs);
+  if (rhs.empty()) return;
+  RepeatedPtrFieldBase::MergeFrom<Element>(rhs, arena);
 }
 
 template <typename Element>
@@ -1612,10 +1624,8 @@ template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
     internal::InternalMetadataOffset offset,
-#else
-    Arena* arena,
 #endif
-    RepeatedPtrField&& rhs)
+    Arena* arena, RepeatedPtrField&& rhs)
     : RepeatedPtrFieldBase(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
           offset
@@ -1623,11 +1633,9 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
           arena
 #endif
       ) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   // We don't just call Swap(&rhs) here because it would perform 3 copies if rhs
   // is on a different arena.
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  Arena* arena = GetArena();
-#endif
   if (internal::CanMoveWithInternalSwap(arena, rhs.GetArena())) {
     InternalSwap(&rhs);
   } else {

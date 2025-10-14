@@ -40,18 +40,8 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-namespace {
 using ::google::protobuf::internal::WireFormat;
 using Sub = ::google::protobuf::io::Printer::Sub;
-
-void InternalMetadataOffsetFormatString(io::Printer* p) {
-  p->Emit(R"cc(
-    ::_pbi::InternalMetadataOffset::Build<
-        $classtype$, PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$name$_)>()
-  )cc");
-}
-
-}  // namespace
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
@@ -177,19 +167,15 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 #endif
             )cc");
   } else if (field_->is_repeated()) {
-    if (IsRepeatedPtrField(field_)) {
-      p->Emit({{"internal_metadata_offset",
-                [&] { InternalMetadataOffsetFormatString(p); }}},
-              R"cc(
+    p->Emit({{"internal_metadata_offset",
+              [&] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-                $name$_{visibility, $internal_metadata_offset$}
+              $name$_{visibility, $internal_metadata_offset$}
 #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-                $name$_ {}
+              $name$_ {}
 #endif
-              )cc");
-    } else {
-      p->Emit("$name$_{}");
-    }
+            )cc");
   } else {
     p->Emit({{"default", DefaultValue(options_, field_)}},
             "$name$_{$default$}");
@@ -211,7 +197,7 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   } else if (field_->is_repeated()) {
     if (ShouldSplit(field_, options_)) {
       p->Emit("$name$_{}");  // RawPtr<Repeated>
-    } else if (IsRepeatedPtrField(field_)) {
+    } else {
       p->Emit({{"internal_metadata_offset",
                 [p] { InternalMetadataOffsetFormatString(p); }}},
               R"cc(
@@ -221,8 +207,6 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
                 $name$_ { visibility, arena }
 #endif
               )cc");
-    } else {
-      p->Emit("$name$_{visibility, arena}");
     }
   } else {
     p->Emit({{"default", DefaultValue(options_, field_)}},
@@ -237,25 +221,23 @@ void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
               [p] { InternalMetadataOffsetFormatString(p); }}},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, ($internal_metadata_offset$), arena,
+                      from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif
             )cc");
   } else if (field_->is_repeated()) {
-    if (IsRepeatedPtrField(field_)) {
-      p->Emit({{"internal_metadata_offset",
-                [p] { InternalMetadataOffsetFormatString(p); }}},
-              R"cc(
+    p->Emit({{"internal_metadata_offset",
+              [p] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-                $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, ($internal_metadata_offset$), arena,
+                      from.$name$_}
 #else
-                $name$_ { visibility, arena, from.$name$_ }
+              $name$_ { visibility, arena, from.$name$_ }
 #endif
-              )cc");
-    } else {
-      p->Emit("$name$_{visibility, arena, from.$name$_}");
-    }
+            )cc");
   } else {
     p->Emit("$name$_{from.$name$_}");
   }
@@ -307,6 +289,13 @@ pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {
   return CppGenerator::GetResolvedSourceFeatures(*field_)
       .GetExtension(pb::cpp)
       .string_type();
+}
+
+void FieldGeneratorBase::InternalMetadataOffsetFormatString(io::Printer* p) {
+  p->Emit(R"cc(
+    ::_pbi::InternalMetadataOffset::Build<
+        $classtype$, PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$name$_)>()
+  )cc");
 }
 
 namespace {

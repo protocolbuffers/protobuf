@@ -530,6 +530,16 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
       continue;
     }
     switch (field->cpp_type()) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+#define HANDLE_TYPE(CPPTYPE, TYPE)                                         \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                                 \
+    if (!field->is_repeated()) {                                           \
+      new (field_ptr) TYPE(field->default_value_##TYPE());                 \
+    } else {                                                               \
+      new (field_ptr) RepeatedField<TYPE>(FieldInternalMetadataOffset(i)); \
+    }                                                                      \
+    break;
+#else
 #define HANDLE_TYPE(CPPTYPE, TYPE)                         \
   case FieldDescriptor::CPPTYPE_##CPPTYPE:                 \
     if (!field->is_repeated()) {                           \
@@ -538,6 +548,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
       new (field_ptr) RepeatedField<TYPE>(arena);          \
     }                                                      \
     break;
+#endif
 
       HANDLE_TYPE(INT32, int32_t);
       HANDLE_TYPE(INT64, int64_t);
@@ -552,7 +563,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
         if (!field->is_repeated()) {
           new (field_ptr) int{field->default_value_enum()->number()};
         } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+          new (field_ptr) RepeatedField<int>(FieldInternalMetadataOffset(i));
+#else
           new (field_ptr) RepeatedField<int>(arena);
+#endif
         }
         break;
 
@@ -572,7 +587,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                 arena->OwnDestructor(static_cast<absl::Cord*>(field_ptr));
               }
             } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              new (field_ptr)
+                  RepeatedField<absl::Cord>(FieldInternalMetadataOffset(i));
+#else
               new (field_ptr) RepeatedField<absl::Cord>(arena);
+#endif
               if (arena != nullptr) {
                 // Needs to destroy Cord elements.
                 arena->OwnDestructor(

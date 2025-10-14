@@ -564,12 +564,12 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
                                                 map_)>()) {}
 
   TypeDefinedMapFieldBase(const Message* prototype,
-                          InternalMetadataOffset offset,
+                          InternalMetadataOffset offset, Arena* arena,
                           const TypeDefinedMapFieldBase& from)
       : MapFieldBase(prototype),
         map_(offset
                  .TranslateForMember<offsetof(TypeDefinedMapFieldBase, map_)>(),
-             from.GetMap()) {}
+             arena, from.GetMap()) {}
 #else
   TypeDefinedMapFieldBase(const Message* prototype, Arena* arena)
       : MapFieldBase(prototype), map_(arena) {}
@@ -654,11 +654,11 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
       : MapField(offset) {}
   constexpr MapField(InternalVisibility, InternalMetadataOffset offset)
       : MapField(offset) {}
-  MapField(InternalVisibility, InternalMetadataOffset offset,
+  MapField(InternalVisibility, InternalMetadataOffset offset, Arena* arena,
            const MapField& from)
       : TypeDefinedMapFieldBase<Key, T>(
             static_cast<const Message*>(Derived::internal_default_instance()),
-            offset, from) {}
+            offset, arena, from) {}
 #else
   explicit MapField(Arena* arena)
       : TypeDefinedMapFieldBase<Key, T>(
@@ -677,6 +677,9 @@ class MapField final : public TypeDefinedMapFieldBase<Key, T> {
   explicit constexpr MapField(InternalMetadataOffset offset)
       : MapField::TypeDefinedMapFieldBase(Derived::internal_default_instance(),
                                           offset) {}
+  MapField(InternalMetadataOffset offset, Arena* arena) : MapField(offset) {
+    ABSL_DCHECK_EQ(arena, this->arena());
+  }
 #endif
 
   typedef void InternalArenaConstructable_;
