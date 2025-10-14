@@ -267,6 +267,8 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
 
+inline constexpr bool EnableProtoFieldPresenceHints() { return false; }
+
 inline constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
   return true;
