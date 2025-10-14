@@ -397,7 +397,20 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @throws IndexOutOfBoundsException if {@code offset} or {@code size} are out of bounds
    */
   public static ByteString copyFrom(byte[] bytes, int offset, int size) {
+    try {
+      return copyFrom(bytes, offset, size, /* requireUtf8= */ false);
+    } catch (InvalidProtocolBufferException e) {
+      throw new AssertionError(
+          "Expected no InvalidProtocolBufferException as data UTF8 validity is not checked.", e);
+    }
+  }
+
+  static ByteString copyFrom(byte[] bytes, int offset, int size, boolean requireUtf8)
+      throws InvalidProtocolBufferException {
     checkRange(offset, offset + size, bytes.length);
+    if (requireUtf8 && !Utf8.isValidUtf8(bytes, offset, offset + size)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     return new LiteralByteString(byteArrayCopier.copyFrom(bytes, offset, size));
   }
 
@@ -416,6 +429,19 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * library.
    */
   static ByteString wrap(ByteBuffer buffer) {
+    try {
+      return wrap(buffer, /* requireUtf8= */ false);
+    } catch (InvalidProtocolBufferException e) {
+      throw new AssertionError(
+          "Expected no InvalidProtocolBufferException as data UTF8 validity is not checked.", e);
+    }
+  }
+
+  static ByteString wrap(ByteBuffer buffer, boolean requireUtf8)
+      throws InvalidProtocolBufferException {
+    if (requireUtf8 && !Utf8.isValidUtf8(buffer)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     if (buffer.hasArray()) {
       final int offset = buffer.arrayOffset();
       return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
@@ -434,6 +460,18 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * to force a classload of ByteString before LiteralByteString.
    */
   static ByteString wrap(byte[] bytes) {
+    try {
+      return wrap(bytes, /* requireUtf8= */ false);
+    } catch (InvalidProtocolBufferException e) {
+      throw new AssertionError(
+          "Expected no InvalidProtocolBufferException as data UTF8 validity is not checked.", e);
+    }
+  }
+
+  static ByteString wrap(byte[] bytes, boolean requireUtf8) throws InvalidProtocolBufferException {
+    if (requireUtf8 && !Utf8.isValidUtf8(bytes)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     // TODO: Return EMPTY when bytes are empty to reduce allocations?
     return new LiteralByteString(bytes);
   }
@@ -443,6 +481,19 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * to force a classload of ByteString before BoundedByteString and LiteralByteString.
    */
   static ByteString wrap(byte[] bytes, int offset, int length) {
+    try {
+      return wrap(bytes, offset, length, /* requireUtf8= */ false);
+    } catch (InvalidProtocolBufferException e) {
+      throw new AssertionError(
+          "Expected no InvalidProtocolBufferException as data UTF8 validity is not checked.", e);
+    }
+  }
+
+  static ByteString wrap(byte[] bytes, int offset, int length, boolean requireUtf8)
+      throws InvalidProtocolBufferException {
+    if (requireUtf8 && !Utf8.isValidUtf8(bytes, offset, offset + length)) {
+      throw InvalidProtocolBufferException.invalidUtf8();
+    }
     return new BoundedByteString(bytes, offset, length);
   }
 

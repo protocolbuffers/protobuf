@@ -958,16 +958,15 @@ public abstract class CodedInputStream {
       return result;
     }
 
-    @Override
-    public ByteString readBytes() throws IOException {
+    private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
         final ByteString result =
             immutable && enableAliasing
-                ? ByteString.wrap(buffer, pos, size)
-                : ByteString.copyFrom(buffer, pos, size);
+                ? ByteString.wrap(buffer, pos, size, requireUtf8)
+                : ByteString.copyFrom(buffer, pos, size, requireUtf8);
         pos += size;
         return result;
       }
@@ -975,7 +974,12 @@ public abstract class CodedInputStream {
         return ByteString.EMPTY;
       }
       // Slow path:  Build a byte array first then copy it.
-      return ByteString.wrap(readRawBytes(size));
+      return ByteString.wrap(readRawBytes(size), requireUtf8);
+    }
+
+    @Override
+    public ByteString readBytes() throws IOException {
+      return readBytesInternal(/* requireUtf8= */ false);
     }
 
     @Override
@@ -1659,20 +1663,19 @@ public abstract class CodedInputStream {
       return result;
     }
 
-    @Override
-    public ByteString readBytes() throws IOException {
+    private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= remaining()) {
         if (immutable && enableAliasing) {
           final ByteBuffer result = slice(pos, pos + size);
           pos += size;
-          return ByteString.wrap(result);
+          return ByteString.wrap(result, requireUtf8);
         } else {
           // Use UnsafeUtil to copy the memory to bytes instead of using ByteBuffer ways.
           byte[] bytes = new byte[size];
           UnsafeUtil.copyMemory(pos, bytes, 0, size);
           pos += size;
-          return ByteString.wrap(bytes);
+          return ByteString.wrap(bytes, requireUtf8);
         }
       }
 
@@ -1683,6 +1686,11 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.negativeSize();
       }
       throw InvalidProtocolBufferException.truncatedMessage();
+    }
+
+    @Override
+    public ByteString readBytes() throws IOException {
+      return readBytesInternal(/* requireUtf8= */ false);
     }
 
     @Override
@@ -2444,13 +2452,12 @@ public abstract class CodedInputStream {
       return result;
     }
 
-    @Override
-    public ByteString readBytes() throws IOException {
+    private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
       final int size = readRawVarint32();
       if (size <= (bufferSize - pos) && size > 0) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
-        final ByteString result = ByteString.copyFrom(buffer, pos, size);
+        final ByteString result = ByteString.copyFrom(buffer, pos, size, requireUtf8);
         pos += size;
         return result;
       }
@@ -2460,7 +2467,12 @@ public abstract class CodedInputStream {
       if (size < 0) {
         throw InvalidProtocolBufferException.negativeSize();
       }
-      return readBytesSlowPath(size);
+      return readBytesSlowPath(size, requireUtf8);
+    }
+
+    @Override
+    public ByteString readBytes() throws IOException {
+      return readBytesInternal(/* requireUtf8= */ false);
     }
 
     @Override
@@ -3057,12 +3069,12 @@ public abstract class CodedInputStream {
      * Like readBytes, but caller must have already checked the fast path: (size <= (bufferSize -
      * pos) && size > 0 || size == 0)
      */
-    private ByteString readBytesSlowPath(final int size) throws IOException {
+    private ByteString readBytesSlowPath(final int size, boolean requireUtf8) throws IOException {
       final byte[] result = readRawBytesSlowPathOneChunk(size);
       if (result != null) {
         // We must copy as the byte array was handed off to the InputStream and a malicious
         // implementation could retain a reference.
-        return ByteString.copyFrom(result);
+        return ByteString.copyFrom(result, 0, result.length, requireUtf8);
       }
 
       final int originalBufferPos = pos;
@@ -3093,6 +3105,9 @@ public abstract class CodedInputStream {
         tempPos += chunk.length;
       }
 
+      if (requireUtf8 && !Utf8.isValidUtf8(bytes)) {
+        throw InvalidProtocolBufferException.invalidUtf8();
+      }
       return ByteString.wrap(bytes);
     }
 
@@ -3546,21 +3561,27 @@ public abstract class CodedInputStream {
 
     @Override
     public ByteString readBytes() throws IOException {
+      return readBytesInternal(/* requireUtf8= */ false);
+    }
+
+    private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= currentByteBufferLimit - currentByteBufferPos) {
         if (immutable && enableAliasing) {
           final int idx = (int) (currentByteBufferPos - currentAddress);
-          final ByteString result = ByteString.wrap(slice(idx, idx + size));
+          final ByteString result = ByteString.wrap(slice(idx, idx + size), requireUtf8);
           currentByteBufferPos += size;
           return result;
         } else {
           byte[] bytes = new byte[size];
           UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
           currentByteBufferPos += size;
-          return ByteString.wrap(bytes);
+          return ByteString.wrap(bytes, requireUtf8);
         }
       } else if (size > 0 && size <= remaining()) {
-        if (immutable && enableAliasing) {
+        if (immutable && enableAliasing && !requireUtf8) {
+          // Read bytes into a list of ByteStrings and concatenate them.
+          // This fast path is not available for validating UTF8 before converting to ByteString.
           ArrayList<ByteString> byteStrings = new ArrayList<>();
           int l = size;
           while (l > 0) {
@@ -3575,9 +3596,10 @@ public abstract class CodedInputStream {
           }
           return ByteString.copyFrom(byteStrings);
         } else {
+          // Read all bytes into a new array and wrap it in a ByteString.
           byte[] temp = new byte[size];
           readRawBytesTo(temp, 0, size);
-          return ByteString.wrap(temp);
+          return ByteString.wrap(temp, requireUtf8);
         }
       }
 
