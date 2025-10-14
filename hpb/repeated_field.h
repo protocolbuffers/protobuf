@@ -18,6 +18,10 @@
 
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 #include "hpb/backend/upb/repeated_field.h"
+#elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
+#include "hpb/backend/cpp/repeated_field.h"
+#else
+#error "Unsupported backend"
 #endif
 
 namespace hpb {
