@@ -160,7 +160,7 @@ DynamicMapField::DynamicMapField(const Message* default_entry,
 
 DynamicMapField::~DynamicMapField() {
   ABSL_DCHECK_EQ(map_.arena(), nullptr);
-  map_.ClearTable(false);
+  map_.ClearTable(/*arena=*/nullptr, /*reset=*/false);
 }
 
 }  // namespace internal

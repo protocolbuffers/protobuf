@@ -205,12 +205,12 @@ google::protobuf::internal::UntypedMapIterator proto2_rust_map_iter(
 }
 
 void proto2_rust_map_free(google::protobuf::internal::UntypedMapBase* m) {
-  m->ClearTable(false);
+  m->ClearTable(m->arena(), /*reset=*/false);
   delete m;
 }
 
 void proto2_rust_map_clear(google::protobuf::internal::UntypedMapBase* m) {
-  m->ClearTable(true);
+  m->ClearTable(m->arena(), /*reset=*/true);
 }
 
 #define DEFINE_KEY_SPECIFIC_MAP_OPERATIONS(cpp_type, suffix)                \

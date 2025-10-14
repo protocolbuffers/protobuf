@@ -335,7 +335,7 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
       reflection->MutableMapData(message, self->parent_field_descriptor);
   const internal::MapFieldBase* other_field = other_reflection->GetMapData(
       *other_message, other_map->parent_field_descriptor);
-  field->MergeFrom(*other_field);
+  field->MergeFrom(message->GetArena(), *other_field);
   self->version++;
   Py_RETURN_NONE;
 }

@@ -2832,8 +2832,11 @@ static void SerializeMapKey(UntypedMapBase& map, NodeBase* node,
 
 void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
                                       const TcParseTableBase* table,
-                                      UntypedMapBase& map, uint32_t tag,
-                                      NodeBase* node, MapAuxInfo map_info) {
+                                      UntypedMapBase& map, Arena* arena,
+                                      uint32_t tag, NodeBase* node,
+                                      MapAuxInfo map_info) {
+  ABSL_DCHECK_EQ(arena, map.arena());
+
   std::string serialized;
   {
     io::StringOutputStream string_output(&serialized);
@@ -2845,7 +2848,7 @@ void TcParser::WriteMapEntryAsUnknown(MessageLite* msg,
   }
   GetUnknownFieldOps(table).write_length_delimited(msg, tag >> 3, serialized);
 
-  if (map.arena() == nullptr) {
+  if (arena == nullptr) {
     map.DeleteNode(node);
   }
 }
@@ -2997,8 +3000,9 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
 
   const uint32_t saved_tag = data.tag();
 
+  Arena* arena = map.arena();
   while (true) {
-    NodeBase* node = map.AllocNode();
+    NodeBase* node = map.AllocNode(arena);
     char* const node_end =
         reinterpret_cast<char*>(node) + map.type_info().node_size;
     void* const node_key = node->GetVoidKey();
@@ -3016,23 +3020,22 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     map.VisitKey(  //
         node, absl::Overload{
                   [&](std::string* str) {
-                    Arena::CreateInArenaStorage(str, map.arena());
+                    Arena::CreateInArenaStorage(str, arena);
                   },
                   // Already initialized above. Do nothing here.
                   [](void*) {},
               });
 
     map.VisitValue(  //
-        node, absl::Overload{
-                  [&](std::string* str) {
-                    Arena::CreateInArenaStorage(str, map.arena());
-                  },
-                  [&](MessageLite* msg) {
-                    aux[1].table->class_data->PlacementNew(msg, map.arena());
-                  },
-                  // Already initialized above. Do nothing here.
-                  [](void*) {},
-              });
+        node,
+        absl::Overload{
+            [&](std::string* str) { Arena::CreateInArenaStorage(str, arena); },
+            [&](MessageLite* msg) {
+              aux[1].table->class_data->PlacementNew(msg, arena);
+            },
+            // Already initialized above. Do nothing here.
+            [](void*) {},
+        });
 
     ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
       return ParseOneMapEntry(node, ptr, ctx, aux, table, entry, map);
@@ -3040,7 +3043,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
 
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
       // Parsing failed. Delete the node that we didn't insert.
-      if (map.arena() == nullptr) map.DeleteNode(node);
+      if (arena == nullptr) map.DeleteNode(node);
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
 
@@ -3048,25 +3051,25 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
             map_info.value_is_validated_enum &&
             !internal::ValidateEnumInlined(*map.GetValue<int32_t>(node),
                                            aux[1].enum_data))) {
-      WriteMapEntryAsUnknown(msg, table, map, saved_tag, node, map_info);
+      WriteMapEntryAsUnknown(msg, table, map, arena, saved_tag, node, map_info);
     } else {
       // Done parsing the node, insert it.
       switch (map.type_info().key_type_kind()) {
         case UntypedMapBase::TypeKind::kBool:
           static_cast<KeyMapBase<bool>&>(map).InsertOrReplaceNode(
-              static_cast<KeyMapBase<bool>::KeyNode*>(node));
+              arena, static_cast<KeyMapBase<bool>::KeyNode*>(node));
           break;
         case UntypedMapBase::TypeKind::kU32:
           static_cast<KeyMapBase<uint32_t>&>(map).InsertOrReplaceNode(
-              static_cast<KeyMapBase<uint32_t>::KeyNode*>(node));
+              arena, static_cast<KeyMapBase<uint32_t>::KeyNode*>(node));
           break;
         case UntypedMapBase::TypeKind::kU64:
           static_cast<KeyMapBase<uint64_t>&>(map).InsertOrReplaceNode(
-              static_cast<KeyMapBase<uint64_t>::KeyNode*>(node));
+              arena, static_cast<KeyMapBase<uint64_t>::KeyNode*>(node));
           break;
         case UntypedMapBase::TypeKind::kString:
           static_cast<KeyMapBase<std::string>&>(map).InsertOrReplaceNode(
-              static_cast<KeyMapBase<std::string>::KeyNode*>(node));
+              arena, static_cast<KeyMapBase<std::string>::KeyNode*>(node));
           break;
         default:
           Unreachable();
