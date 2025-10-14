@@ -58,7 +58,7 @@ class MapFieldLite {
     // everything (as opposed to leaving an allocation behind with no
     // data in it, as would happen if a vector was resize'd to zero.
     // Map::Swap with an empty map accomplishes that.
-    decltype(map_) swapped_map(map_.arena());
+    decltype(map_) swapped_map;
     map_.InternalSwap(&swapped_map);
   }
 #endif
