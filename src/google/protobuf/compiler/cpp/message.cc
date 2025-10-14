@@ -2875,7 +2875,13 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     if (descriptor_->extension_range_count() > 0 &&
         init_type != InitType::kConstexpr) {
       separator();
-      p->Emit("_extensions_{visibility, arena}");
+      p->Emit(R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+        _extensions_ {}
+#else
+        _extensions_ { visibility, arena }
+#endif
+      )cc");
     }
   };
 
@@ -3991,7 +3997,11 @@ MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp(
     op.needs_to_run_constructor = true;
   }
 
-  if (descriptor_->extension_range_count() > 0) {
+  // Extension set does not use arena offsets, since we were able to remove all
+  // uses of `GetArena()` by passing the arena pointer from above. We will
+  // flag-gate the removal of the arena pointer in the extension set with the
+  // arena offset changes for measurement purposes.
+  if (descriptor_->extension_range_count() > 0 && !use_arena_offset) {
     op.needs_arena_seeding = true;
     ++arena_seeding_count;
     if (arena_emitter) {
@@ -4146,7 +4156,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
   const bool has_repeated_ptr_field = absl::c_any_of(
       FieldRange(descriptor_),
       [](const FieldDescriptor* field) { return IsRepeatedPtrField(field); });
-  if (has_repeated_ptr_field) {
+  if (has_repeated_ptr_field || descriptor_->extension_range_count() > 0) {
     p->Emit({{"new_op", [&] { GenerateNewOp(p, /*use_arena_offset=*/false); }},
              {"new_op_with_arena_offset",
               [&] { GenerateNewOp(p, /*use_arena_offset=*/true); }}},

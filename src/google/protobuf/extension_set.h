@@ -248,9 +248,10 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
 // off to the ExtensionSet for parsing.  Etc.
 class PROTOBUF_EXPORT ExtensionSet {
  public:
-  constexpr ExtensionSet() : ExtensionSet(nullptr) {}
+  constexpr ExtensionSet() = default;
   ExtensionSet(const ExtensionSet& rhs) = delete;
 
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
   // Arena enabled constructors: for internal use only.
   ExtensionSet(internal::InternalVisibility, Arena* arena)
       : ExtensionSet(arena) {}
@@ -259,6 +260,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // to `InternalVisibility` overloaded constructor(s).
   explicit constexpr ExtensionSet(Arena* arena);
   ExtensionSet(ArenaInitialized, Arena* arena) : ExtensionSet(arena) {}
+#endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
 
   ExtensionSet& operator=(const ExtensionSet&) = delete;
   ~ExtensionSet();
@@ -406,7 +408,9 @@ class PROTOBUF_EXPORT ExtensionSet {
                                          const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
 #undef desc
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
   Arena* GetArena() const { return arena_; }
+#endif
 
   // repeated fields -------------------------------------------------
 
@@ -615,9 +619,11 @@ class PROTOBUF_EXPORT ExtensionSet {
   // as .dll.
   int SpaceUsedExcludingSelf() const;
 
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
   static constexpr size_t InternalGetArenaOffset(internal::InternalVisibility) {
     return PROTOBUF_FIELD_OFFSET(ExtensionSet, arena_);
   }
+#endif
 
  private:
   template <typename Type>
@@ -1291,24 +1297,28 @@ class PROTOBUF_EXPORT ExtensionSet {
 #endif
   }
 
-  Arena* arena_;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+  Arena* arena_ = nullptr;
+#endif
 
   // Manual memory-management:
   // map_.flat is an allocated array of flat_capacity_ elements.
   // [map_.flat, map_.flat + flat_size_) is the currently-in-use prefix.
-  uint16_t flat_capacity_;
-  uint16_t flat_size_;  // negative int16_t(flat_size_) indicates is_large()
+  uint16_t flat_capacity_ = 0;
+  uint16_t flat_size_ = 0;  // negative int16_t(flat_size_) indicates is_large()
   union AllocatedData {
     KeyValue* flat;
 
     // If flat_capacity_ > kMaximumFlatCapacity, switch to LargeMap,
     // which guarantees O(n lg n) CPU but larger constant factors.
     LargeMap* large;
-  } map_;
+  } map_ = {nullptr};
 };
 
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
 constexpr ExtensionSet::ExtensionSet(Arena* arena)
     : arena_(arena), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
+#endif
 
 // ===================================================================
 // Glue for generated extension accessors

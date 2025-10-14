@@ -500,7 +500,11 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   }
 
   if (type_info_->extensions_offset != -1) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+    new (MutableExtensionsRaw()) ExtensionSet();
+#else
     new (MutableExtensionsRaw()) ExtensionSet(arena);
+#endif
   }
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
