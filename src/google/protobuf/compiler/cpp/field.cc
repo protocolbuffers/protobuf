@@ -166,7 +166,17 @@ FieldGeneratorBase::FieldGeneratorBase(const FieldDescriptor* field,
 void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_repeated()) {
+  if (field_->is_map()) {
+    p->Emit({{"internal_metadata_offset",
+              [p] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+              $name$_{visibility, $internal_metadata_offset$}
+#else
+              $name$_ {}
+#endif
+            )cc");
+  } else if (field_->is_repeated()) {
     if (IsRepeatedPtrField(field_)) {
       p->Emit({{"internal_metadata_offset",
                 [&] { InternalMetadataOffsetFormatString(p); }}},
@@ -189,7 +199,15 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_map()) {
-    p->Emit("$name$_{visibility, arena}");
+    p->Emit({{"internal_metadata_offset",
+              [p] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+              $name$_{visibility, $internal_metadata_offset$}
+#else
+              $name$_ { visibility, arena }
+#endif
+            )cc");
   } else if (field_->is_repeated()) {
     if (ShouldSplit(field_, options_)) {
       p->Emit("$name$_{}");  // RawPtr<Repeated>
@@ -214,7 +232,17 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
 
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
-  if (field_->is_repeated()) {
+  if (field_->is_map()) {
+    p->Emit({{"internal_metadata_offset",
+              [p] { InternalMetadataOffsetFormatString(p); }}},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+#else
+              $name$_ { visibility, arena, from.$name$_ }
+#endif
+            )cc");
+  } else if (field_->is_repeated()) {
     if (IsRepeatedPtrField(field_)) {
       p->Emit({{"internal_metadata_offset",
                 [p] { InternalMetadataOffsetFormatString(p); }}},

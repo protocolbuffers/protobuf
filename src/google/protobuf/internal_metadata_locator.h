@@ -92,6 +92,52 @@ class InternalMetadataOffset {
         static_cast<int32_t>(kInternalMetadataOffset - field_offset));
   }
 
+  // Translates an offset relative to some class `T` to an offset relative to
+  // the member at offset `kMemberOffset` within `T`. This is used when passing
+  // `InternalMetadataOffset`s to members of a class where the offset was
+  // constructed relative to the start of `T`.
+  //
+  // For example, here is how you would pass an `InternalMetadataOffset` to a
+  // member `Baz` of a class `Bar`, which itself is a member of `Foo`.
+  //
+  // ```cc
+  // struct Baz {
+  //   int some_value;
+  //   InternalMetadataResolver resolver;
+  //
+  //   Baz(int value, InternalMetadataOffset offset)
+  //       : some_value(value), resolver(offset) {}
+  // };
+  //
+  // struct Bar {
+  //   int some_value;
+  //   Baz baz;
+  //
+  //   Bar(int value, InternalMetadataOffset offset)
+  //       : some_value(value),
+  //         baz(2 * value, offset.TranslateForMember<offsetof(Bar, baz)>()) {}
+  // };
+  //
+  // struct Foo {
+  //   InternalMetadata _internal_metadata_;
+  //   Bar field1;
+  //
+  //   explicit Foo(Arena* arena)
+  //       : _internal_metadata_(arena),
+  //         field1(123,
+  //                InternalMetadataOffset::Build<Foo, PROTOBUF_FIELD_OFFSET(
+  //                                                       Foo, field1)>()) {}
+  // };
+  // ```
+  template <size_t kMemberOffset>
+  constexpr InternalMetadataOffset TranslateForMember() const {
+    if (IsSentinel()) {
+      return InternalMetadataOffset();
+    }
+    return InternalMetadataOffset(offset_ -
+                                  static_cast<int32_t>(kMemberOffset));
+  }
+
   // If true, this `InternalMetadataOffset` does not point to any metadata.
   constexpr bool IsSentinel() const {
     return offset_ == kSentinelInternalMetadataOffset;

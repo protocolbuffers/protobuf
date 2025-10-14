@@ -95,7 +95,13 @@ class DynamicMapField final : public MapFieldBase {
   // allow the caller to use the appropriate lookup function. During prototype
   // building we need to use a different one.
   DynamicMapField(const Message* default_entry,
-                  const Message* mapped_default_entry_if_message, Arena* arena);
+                  const Message* mapped_default_entry_if_message,
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+                  InternalMetadataOffset offset
+#else
+                  Arena* arena
+#endif
+  );
   DynamicMapField(const DynamicMapField&) = delete;
   DynamicMapField& operator=(const DynamicMapField&) = delete;
   ~DynamicMapField();
@@ -148,10 +154,21 @@ static auto DefaultEntryToTypeInfo(
 
 DynamicMapField::DynamicMapField(const Message* default_entry,
                                  const Message* mapped_default_entry_if_message,
-                                 Arena* arena)
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+                                 InternalMetadataOffset offset
+#else
+                                 Arena* arena
+#endif
+                                 )
     : MapFieldBase(default_entry),
-      map_(arena, DefaultEntryToTypeInfo(default_entry,
-                                         mapped_default_entry_if_message)) {
+      map_(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+          offset.TranslateForMember<offsetof(DynamicMapField, map_)>(),
+#else
+          arena,
+#endif
+          DefaultEntryToTypeInfo(default_entry,
+                                 mapped_default_entry_if_message)) {
   // This invariant is required by `GetMapRaw` to easily access the map
   // member without paying for dynamic dispatch.
   static_assert(MapFieldBaseForParse::MapOffset() ==
@@ -614,7 +631,12 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
                           ? type_info_->factory->GetPrototype(sub)
                           : type_info_->factory->GetPrototypeNoLock(sub)
                     : nullptr,
-                arena);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+                FieldInternalMetadataOffset(i)
+#else
+                arena
+#endif
+            );
           } else {
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
             new (field_ptr)
