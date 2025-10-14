@@ -13,10 +13,11 @@
 #include <cstdint>
 #include <string>
 
-#include "absl/base/optimization.h"
+#include "absl/base/no_destructor.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
@@ -98,7 +99,17 @@ void UntypedMapBase::UntypedSwap(Arena* arena, UntypedMapBase& other,
   if (arena == other_arena) {
     InternalSwap(&other);
   } else {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+    // `FieldWithArena` checks that the arena pointer is null when destroying a
+    // destructor-skippable type. Since `UntypedMapBase` is
+    // destructor-skippable, we need to put it in an `absl::NoDestructor` and
+    // manually destroy it if the arena pointer is null.
+    absl::NoDestructor<FieldWithArena<UntypedMapBase>> tmp_container(
+        arena, type_info_);
+    UntypedMapBase& tmp = tmp_container->field();
+#else
     UntypedMapBase tmp(arena, type_info_);
+#endif
     InternalSwap(&tmp);
 
     ABSL_DCHECK(empty());
@@ -107,7 +118,12 @@ void UntypedMapBase::UntypedSwap(Arena* arena, UntypedMapBase& other,
     other.ClearTable(other_arena, /*reset=*/true);
     other.UntypedMergeFrom(other_arena, tmp);
 
-    if (arena == nullptr) tmp.ClearTable(arena, /*reset=*/false);
+    if (arena == nullptr) {
+      tmp.ClearTable(arena, /*reset=*/false);
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+      tmp.~UntypedMapBase();
+#endif
+    }
   }
 }
 
@@ -127,8 +143,13 @@ void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
   if (arena == nullptr) {
     const auto loop = [this](auto destroy_node) {
       NodeBase** table = table_;
-      for (map_index_t b = index_of_first_non_null_, end = num_buckets_;
-           b < end; ++b) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+      map_index_t index_of_first_non_null = 0;
+#else
+      map_index_t index_of_first_non_null = index_of_first_non_null_;
+#endif
+      for (map_index_t b = index_of_first_non_null, end = num_buckets_; b < end;
+           ++b) {
         for (NodeBase* node = table[b]; node != nullptr;) {
           NodeBase* next = node->next;
           absl::PrefetchToLocalCacheNta(next);
@@ -170,7 +191,9 @@ void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
   if (reset) {
     std::fill(table_, table_ + num_buckets_, nullptr);
     num_elements_ = 0;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
     index_of_first_non_null_ = num_buckets_;
+#endif
   } else {
     DeleteTable(arena, table_, num_buckets_);
   }

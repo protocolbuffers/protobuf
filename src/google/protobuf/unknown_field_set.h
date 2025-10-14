@@ -254,6 +254,21 @@ class PROTOBUF_EXPORT UnknownFieldSet {
 
   Arena* arena() { return fields_.GetArena(); }
 
+  const RepeatedField<UnknownField>& fields() const {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+    return fields_.field();
+#else
+    return fields_;
+#endif
+  }
+  RepeatedField<UnknownField>& fields() {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+    return fields_.field();
+#else
+    return fields_;
+#endif
+  }
+
   void ClearFallback();
   void SwapSlow(UnknownFieldSet* other);
 
@@ -290,7 +305,11 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   }
 
   std::string* v2_data_ = nullptr;
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+  internal::RepeatedFieldWithArena<UnknownField> fields_;
+#else
   RepeatedField<UnknownField> fields_;
+#endif
 };
 
 namespace internal {
@@ -332,17 +351,17 @@ inline const UnknownFieldSet& UnknownFieldSet::default_instance() {
 inline void UnknownFieldSet::ClearAndFreeMemory() { Clear(); }
 
 inline void UnknownFieldSet::Clear() {
-  if (!fields_.empty()) {
+  if (!fields().empty()) {
     ClearFallback();
   }
   if (v2_data_ != nullptr) v2_data_->clear();
 }
 
-inline bool UnknownFieldSet::empty() const { return fields_.empty(); }
+inline bool UnknownFieldSet::empty() const { return fields().empty(); }
 
 inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
   if (arena() == x->arena()) {
-    fields_.Swap(&x->fields_);
+    fields().Swap(&x->fields());
   } else {
     // We might need to do a deep copy, so use Merge instead
     SwapSlow(x);
@@ -350,13 +369,13 @@ inline void UnknownFieldSet::Swap(UnknownFieldSet* x) {
 }
 
 inline int UnknownFieldSet::field_count() const {
-  return static_cast<int>(fields_.size());
+  return static_cast<int>(fields().size());
 }
 inline const UnknownField& UnknownFieldSet::field(int index) const {
-  return (fields_)[static_cast<size_t>(index)];
+  return (fields())[static_cast<size_t>(index)];
 }
 inline UnknownField* UnknownFieldSet::mutable_field(int index) {
-  return &(fields_)[static_cast<size_t>(index)];
+  return &(fields())[static_cast<size_t>(index)];
 }
 
 inline void UnknownFieldSet::AddLengthDelimited(int number,
