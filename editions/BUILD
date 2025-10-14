@@ -327,7 +327,7 @@ exports_files(
 proto_library(
     name = "test_editions_default_features_proto",
     testonly = True,
-    srcs = ["proto/test_editions_default_features.proto"],
+    srcs = ["input/test_editions_default_features.proto"],
 )
 
 cc_proto_library(
