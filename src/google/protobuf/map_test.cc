@@ -23,8 +23,6 @@
 #include "absl/random/random.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/arena_test_util.h"
-#include "google/protobuf/internal_metadata_locator.h"
-#include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -58,7 +56,6 @@ using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 
 TEST(MapTest, CopyConstructIntegers) {
-  auto token = internal::InternalVisibilityForTesting{};
   using MapType = Map<int32_t, int32_t>;
   MapType original;
   original[1] = 2;
@@ -69,18 +66,15 @@ TEST(MapTest, CopyConstructIntegers) {
   EXPECT_EQ(map1[1], 2);
   EXPECT_EQ(map1[2], 3);
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  MapType map2(token, InternalMetadataOffset(), original);
-#else
-  MapType map2(token, nullptr, original);
-#endif
-  ASSERT_EQ(map2.size(), 2);
-  EXPECT_EQ(map2[1], 2);
-  EXPECT_EQ(map2[2], 3);
+  auto* map2 = Arena::Create<MapType>(nullptr, original);
+  ASSERT_EQ(map2->size(), 2);
+  EXPECT_EQ((*map2)[1], 2);
+  EXPECT_EQ((*map2)[2], 3);
+
+  delete map2;
 }
 
 TEST(MapTest, CopyConstructStrings) {
-  auto token = internal::InternalVisibilityForTesting{};
   using MapType = Map<std::string, std::string>;
   MapType original;
   original["1"] = "2";
@@ -91,18 +85,15 @@ TEST(MapTest, CopyConstructStrings) {
   EXPECT_EQ(map1["1"], "2");
   EXPECT_EQ(map1["2"], "3");
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  MapType map2(token, InternalMetadataOffset(), original);
-#else
-  MapType map2(token, nullptr, original);
-#endif
-  ASSERT_EQ(map2.size(), 2);
-  EXPECT_EQ(map2["1"], "2");
-  EXPECT_EQ(map2["2"], "3");
+  auto* map2 = Arena::Create<MapType>(nullptr, original);
+  ASSERT_EQ(map2->size(), 2);
+  EXPECT_EQ((*map2)["1"], "2");
+  EXPECT_EQ((*map2)["2"], "3");
+
+  delete map2;
 }
 
 TEST(MapTest, CopyConstructMessages) {
-  auto token = internal::InternalVisibilityForTesting{};
   using MapType = Map<std::string, TestAllTypes>;
   MapType original;
   original["1"].set_optional_int32(1);
@@ -113,95 +104,54 @@ TEST(MapTest, CopyConstructMessages) {
   EXPECT_EQ(map1["1"].optional_int32(), 1);
   EXPECT_EQ(map1["2"].optional_int32(), 2);
 
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  MapType map2(token, InternalMetadataOffset(), original);
-#else
-  MapType map2(token, nullptr, original);
-#endif
-  ASSERT_EQ(map2.size(), 2);
-  EXPECT_EQ(map2["1"].optional_int32(), 1);
-  EXPECT_EQ(map2["2"].optional_int32(), 2);
+  auto* map2 = Arena::Create<MapType>(nullptr, original);
+  ASSERT_EQ(map2->size(), 2);
+  EXPECT_EQ((*map2)["1"].optional_int32(), 1);
+  EXPECT_EQ((*map2)["2"].optional_int32(), 2);
+
+  delete map2;
 }
 
 TEST(MapTest, CopyConstructIntegersWithArena) {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  using MapTypeWithArena = internal::MapWithArena<int32_t, int32_t>;
-#else
-  auto token = internal::InternalVisibilityForTesting{};
-#endif
   using MapType = Map<int32_t, int32_t>;
   MapType original;
   original[1] = 2;
   original[2] = 3;
 
   Arena arena;
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  alignas(MapTypeWithArena) char mem[sizeof(MapTypeWithArena)];
-  MapTypeWithArena& map1_with_arena =
-      *new (mem) MapTypeWithArena(&arena, original);
-  MapType& map1 = map1_with_arena.field();
-#else
-  alignas(MapType) char mem1[sizeof(MapType)];
-  MapType& map1 = *new (mem1) MapType(token, &arena, original);
-#endif
-  ASSERT_EQ(map1.size(), 2);
-  EXPECT_EQ(map1[1], 2);
-  EXPECT_EQ(map1[2], 3);
-  EXPECT_EQ(map1[2], 3);
+  auto* map1 = Arena::Create<MapType>(&arena, original);
+  ASSERT_EQ(map1->size(), 2);
+  EXPECT_EQ((*map1)[1], 2);
+  EXPECT_EQ((*map1)[2], 3);
+  EXPECT_EQ((*map1)[2], 3);
 }
 
 TEST(MapTest, CopyConstructStringsWithArena) {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  using MapTypeWithArena = internal::MapWithArena<std::string, std::string>;
-#else
-  auto token = internal::InternalVisibilityForTesting{};
-#endif
   using MapType = Map<std::string, std::string>;
   MapType original;
   original["1"] = "2";
   original["2"] = "3";
 
   Arena arena;
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  alignas(MapTypeWithArena) char mem[sizeof(MapTypeWithArena)];
-  MapTypeWithArena& map1_with_arena =
-      *new (mem) MapTypeWithArena(&arena, original);
-  MapType& map1 = map1_with_arena.field();
-#else
-  alignas(MapType) char mem1[sizeof(MapType)];
-  MapType& map1 = *new (mem1) MapType(token, &arena, original);
-#endif
-  ASSERT_EQ(map1.size(), 2);
-  EXPECT_EQ(map1["1"], "2");
-  EXPECT_EQ(map1["2"], "3");
+  auto* map1 = Arena::Create<MapType>(&arena, original);
+  ASSERT_EQ(map1->size(), 2);
+  EXPECT_EQ((*map1)["1"], "2");
+  EXPECT_EQ((*map1)["2"], "3");
 }
 
 TEST(MapTest, CopyConstructMessagesWithArena) {
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  using MapTypeWithArena = internal::MapWithArena<std::string, TestAllTypes>;
-#else
-  auto token = internal::InternalVisibilityForTesting{};
-#endif
   using MapType = Map<std::string, TestAllTypes>;
   MapType original;
   original["1"].set_optional_int32(1);
   original["2"].set_optional_int32(2);
 
   Arena arena;
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-  alignas(MapTypeWithArena) char mem[sizeof(MapTypeWithArena)];
-  MapTypeWithArena& map1_with_arena =
-      *new (mem) MapTypeWithArena(&arena, original);
-  MapType& map1 = map1_with_arena.field();
-#else
-  alignas(MapType) char mem1[sizeof(MapType)];
-  MapType& map1 = *new (mem1) MapType(token, &arena, original);
-#endif
-  ASSERT_EQ(map1.size(), 2);
-  EXPECT_EQ(map1["1"].optional_int32(), 1);
-  EXPECT_EQ(map1["1"].GetArena(), &arena);
-  EXPECT_EQ(map1["2"].optional_int32(), 2);
-  EXPECT_EQ(map1["2"].GetArena(), &arena);
+  auto* map1 = Arena::Create<MapType>(&arena, original);
+  ASSERT_EQ(map1->size(), 2);
+  EXPECT_EQ((*map1)["1"].optional_int32(), 1);
+  EXPECT_EQ((*map1)["1"].GetArena(), &arena);
+  EXPECT_EQ((*map1)["2"].optional_int32(), 2);
+  EXPECT_EQ((*map1)["2"].GetArena(), &arena);
 }
 
 TEST(MapTest, CopyConstructionMaintainsProperLoadFactor) {
