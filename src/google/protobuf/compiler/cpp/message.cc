@@ -126,10 +126,11 @@ void DebugAssertUniformLikelyPresence(
 // uses arena offsets, it no longer needs arena seeding, and it is not
 // zero-initializable.
 bool MessageHasFieldUsingArenaOffset(const Descriptor* descriptor) {
-  return absl::c_any_of(FieldRange(descriptor),
-                        [](const FieldDescriptor* field) {
-                          return field->is_repeated() || field->is_map();
-                        }) ||
+  return absl::c_any_of(
+             FieldRange(descriptor),
+             [](const FieldDescriptor* field) {
+               return field->is_repeated() || field->is_map();
+             }) ||
          descriptor->extension_range_count() > 0;
 }
 
