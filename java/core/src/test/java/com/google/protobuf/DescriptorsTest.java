@@ -805,32 +805,6 @@ public class DescriptorsTest {
       }
     }
 
-    /** Tests that parsing an unknown enum throws an exception */
-    @Test
-    public void testParseUnknownEnum() {
-      FieldDescriptorProto.Builder field =
-          FieldDescriptorProto.newBuilder()
-              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
-              .setTypeName("UnknownEnum")
-              .setType(FieldDescriptorProto.Type.TYPE_ENUM)
-              .setName("bar")
-              .setNumber(1);
-      DescriptorProto.Builder messageType =
-          DescriptorProto.newBuilder().setName("Foo").addField(field);
-      FileDescriptorProto fooProto =
-          FileDescriptorProto.newBuilder()
-              .setName("foo.proto")
-              .addDependency("bar.proto")
-              .addMessageType(messageType)
-              .build();
-      try {
-        Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
-        assertWithMessage("DescriptorValidationException expected").fail();
-      } catch (DescriptorValidationException expected) {
-        assertThat(expected.getMessage()).contains("\"UnknownEnum\" is not an enum type.");
-      }
-    }
-
     /**
      * Tests the translate/crosslink for an example where a message field's name and type name are
      * the same.
@@ -1011,6 +985,45 @@ public class DescriptorsTest {
       assertThat(field.getNumber()).isEqualTo(2147476052);
       assertThat(field.getContainingType().isPlaceholder()).isTrue();
       assertThat(field.getContainingType().getFullName()).isEqualTo("MessageSet");
+    }
+
+    @Test
+    public void testUnknownEnumFieldsAllowed() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .addDependency("bar.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Foo")
+                      // TYPE_ENUM signals that this is an enum field, not a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("bar")
+                              .setNumber(1)
+                              .setType(FieldDescriptorProto.Type.TYPE_ENUM))
+                      // Default values signal that this must be an enum field, not a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Baz")
+                              .setName("baz")
+                              .setNumber(2)
+                              .setDefaultValue("BAZ_VALUE")))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor barField = foo.findMessageTypeByName("Foo").findFieldByName("bar");
+      FieldDescriptor bazField = foo.findMessageTypeByName("Foo").findFieldByName("baz");
+
+      assertThat(barField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(bazField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(barField.hasDefaultValue()).isFalse();
+      assertThat(bazField.hasDefaultValue()).isTrue();
+      assertThat(bazField.getDefaultValue()).isEqualTo(null);
     }
 
     @Test
