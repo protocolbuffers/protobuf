@@ -989,6 +989,31 @@ public class DescriptorsTest {
     }
 
     @Test
+    public void testUnknownMessageSetExtension() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .addDependency("message_set.proto")
+              .addExtension(
+                  FieldDescriptorProto.newBuilder()
+                      .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                      .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                      .setExtendee("MessageSet")
+                      .setName("bar")
+                      .setNumber(2147476052))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor field = foo.findExtensionByName("bar");
+
+      assertThat(field.isExtension()).isTrue();
+      assertThat(field.getNumber()).isEqualTo(2147476052);
+      assertThat(field.getContainingType().isPlaceholder()).isTrue();
+      assertThat(field.getContainingType().getFullName()).isEqualTo("MessageSet");
+    }
+
+    @Test
     public void testHiddenDependency() throws Exception {
       FileDescriptorProto barProto =
           FileDescriptorProto.newBuilder()
