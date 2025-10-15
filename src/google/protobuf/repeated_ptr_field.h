@@ -2175,7 +2175,7 @@ struct IteratorConceptSupport {
 
 template <typename Traits>
 struct IteratorConceptSupport<Traits,
-                              absl::void_t<typename Traits::iterator_concept>> {
+                              std::void_t<typename Traits::iterator_concept>> {
   using tag = typename Traits::iterator_concept;
 };
 
