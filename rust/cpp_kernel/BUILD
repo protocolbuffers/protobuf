@@ -21,14 +21,14 @@ cc_library(
         "strings.h",
     ],
     visibility = [
-        "//rust:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+        "//:__subpackages__",
+        "@com_google_protobuf//src/google/protobuf:__subpackages__",
     ],
     deps = [
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
-        "//src/google/protobuf",
-        "//src/google/protobuf:protobuf_lite",
-        "//src/google/protobuf/io",
+        "@com_google_protobuf//src/google/protobuf",
+        "@com_google_protobuf//src/google/protobuf:protobuf_lite",
+        "@com_google_protobuf//src/google/protobuf/io",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
@@ -41,6 +41,6 @@ rust_library(
     name = "rust_alloc_for_cpp_api",
     srcs = ["rust_alloc_for_cpp_api.rs"],
     visibility = [
-        "//rust:__subpackages__",
+        "//:__subpackages__",
     ],
 )

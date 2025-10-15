@@ -159,7 +159,7 @@ upb_amalgamation(
         "//upb/wire:writer",
     ],
     strip_import_prefix = ["src"],
-    visibility = ["//rust:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(

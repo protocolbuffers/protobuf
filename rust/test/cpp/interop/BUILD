@@ -2,10 +2,10 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_rust//rust:defs.bzl", "rust_test")
-load("//bazel:cc_proto_library.bzl", "cc_proto_library")
-load("//bazel:proto_library.bzl", "proto_library")
+load("@com_google_protobuf//bazel:cc_proto_library.bzl", "cc_proto_library")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
 load(
-    "//rust:defs.bzl",
+    "//:defs.bzl",
     "rust_cc_proto_library",
 )
 
@@ -14,7 +14,7 @@ cc_library(
     srcs = ["test_utils.cc"],
     deps = [
         ":interop_test_cc_proto",
-        "//rust/cpp_kernel:cpp_api",
+        "//cpp_kernel:cpp_api",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
     ],
@@ -26,7 +26,7 @@ rust_test(
     deps = [
         ":interop_test_cpp_rust_proto",
         ":test_utils",
-        "//rust:protobuf_cpp",
+        "//:protobuf_cpp",
         "@crate_index//:googletest",
     ],
 )

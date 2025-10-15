@@ -9,7 +9,7 @@ syntax = "proto3";
 
 package rust_proto3_unittest;
 
-import "rust/test/unittest_import.proto";
+import "test/unittest_import.proto";
 
 option optimize_for = SPEED;
 

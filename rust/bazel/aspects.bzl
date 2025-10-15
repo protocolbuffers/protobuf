@@ -9,11 +9,11 @@ load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVari
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:rustc.bzl", "rustc_compile_action")
-load("//bazel/common:proto_common.bzl", "proto_common")
-load("//bazel/common:proto_info.bzl", "ProtoInfo")
-load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
+load("@com_google_protobuf//bazel/common:proto_common.bzl", "proto_common")
+load("@com_google_protobuf//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@com_google_protobuf//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
 
-visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/..."])
+visibility(["//...", "//third_party/crubit/rs_bindings_from_cc/..."])
 
 CrateMappingInfo = provider(
     doc = "Struct mapping crate name to the .proto import paths",
@@ -38,9 +38,9 @@ def label_to_crate_name(ctx, label, toolchain):
 
 def proto_rust_toolchain_label(is_upb):
     if is_upb:
-        return "//rust:proto_rust_upb_toolchain"
+        return "//:proto_rust_upb_toolchain"
     else:
-        return "//rust:proto_rust_cpp_toolchain"
+        return "//:proto_rust_cpp_toolchain"
 
 def _register_crate_mapping_write_action(name, actions, crate_mappings):
     """Registers an action that generates a crate mapping for a proto_library.
@@ -420,9 +420,9 @@ def _make_proto_library_aspect(is_upb):
             ),
             "_cpp_thunks_deps": attr.label_list(
                 default = [
-                    Label("//rust/cpp_kernel:cpp_api"),
-                    Label("//src/google/protobuf"),
-                    Label("//src/google/protobuf:protobuf_lite"),
+                    Label("//cpp_kernel:cpp_api"),
+                    Label("@com_google_protobuf//src/google/protobuf"),
+                    Label("@com_google_protobuf//src/google/protobuf:protobuf_lite"),
                 ],
             ),
             "_error_format": attr.label(

@@ -54,5 +54,5 @@ pkg_files(
         "//upb/wire:source_files",
     ],
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//rust:__pkg__"],
+    visibility = ["//visibility:public"],
 )

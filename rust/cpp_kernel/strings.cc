@@ -1,10 +1,10 @@
-#include "rust/cpp_kernel/strings.h"
+#include "cpp_kernel/strings.h"
 
 #include <cstring>
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "rust/cpp_kernel/rust_alloc_for_cpp_api.h"
+#include "cpp_kernel/rust_alloc_for_cpp_api.h"
 
 namespace google {
 namespace protobuf {

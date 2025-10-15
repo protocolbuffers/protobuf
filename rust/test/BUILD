@@ -5,15 +5,15 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
-load("//bazel:proto_library.bzl", "proto_library")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
 load(
-    "//rust:defs.bzl",
+    "//:defs.bzl",
     "rust_cc_proto_library",
     "rust_upb_proto_library",
 )
 
 package(
-    default_visibility = ["//rust:__subpackages__"],
+    default_visibility = ["//:__subpackages__"],
 )
 
 pkg_files(
@@ -26,8 +26,8 @@ pkg_files(
 pkg_files(
     name = "google_protobuf_proto_srcs",
     srcs = [
-        "//src/google/protobuf:cpp_features_proto_srcs",
-        "//src/google/protobuf:descriptor_proto_srcs",
+        "@com_google_protobuf//src/google/protobuf:cpp_features_proto_srcs",
+        "@com_google_protobuf//src/google/protobuf:descriptor_proto_srcs",
     ],
     prefix = "proto",
     strip_prefix = strip_prefix.from_root("src"),
@@ -92,7 +92,7 @@ proto_library(
     name = "edition2023_proto",
     testonly = True,
     srcs = ["edition2023.proto"],
-    deps = ["//src/google/protobuf:cpp_features_proto"],
+    deps = ["@com_google_protobuf//src/google/protobuf:cpp_features_proto"],
 )
 
 rust_cc_proto_library(
@@ -466,5 +466,5 @@ rust_upb_proto_library(
 rust_upb_proto_library(
     name = "descriptor_upb_rust_proto",
     testonly = True,
-    deps = ["//src/google/protobuf:descriptor_proto"],
+    deps = ["@com_google_protobuf//src/google/protobuf:descriptor_proto"],
 )

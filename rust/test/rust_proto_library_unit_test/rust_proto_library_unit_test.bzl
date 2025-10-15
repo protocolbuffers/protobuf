@@ -1,9 +1,9 @@
 """This module contains unit tests for rust_proto_library and its aspect."""
 
 load("@bazel_skylib//lib:unittest.bzl", "analysistest", "asserts")
-load("//bazel:proto_library.bzl", "proto_library")
-load("//rust:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
-load("//rust/bazel:aspects.bzl", "RustProtoInfo")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+load("//:defs.bzl", "rust_cc_proto_library", "rust_upb_proto_library")
+load("//bazel:aspects.bzl", "RustProtoInfo")
 load(":defs.bzl", "ActionsInfo", "attach_cc_aspect", "attach_upb_aspect")
 
 def _find_actions_with_mnemonic(actions, mnemonic):
@@ -30,14 +30,14 @@ def _check_crate_mapping(actions, target_name):
         ))
     expected_content = """grand_parent_proto
 2
-rust/test/rust_proto_library_unit_test/grandparent1.proto
-rust/test/rust_proto_library_unit_test/grandparent2.proto
+test/rust_proto_library_unit_test/grandparent1.proto
+test/rust_proto_library_unit_test/grandparent2.proto
 parent_proto
 1
-rust/test/rust_proto_library_unit_test/parent.proto
+test/rust_proto_library_unit_test/parent.proto
 parent2_proto
 1
-rust/test/rust_proto_library_unit_test/parent2.proto
+test/rust_proto_library_unit_test/parent2.proto
 """
     if crate_mapping_action.content != expected_content:
         fail("The crate mapping file content didn't match. Was: {}".format(

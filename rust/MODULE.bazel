@@ -1,0 +1,51 @@
+module(
+    name = "protobuf-rust",
+    version = "34.0-dev",
+)
+
+bazel_dep(name = "protobuf", repo_name = "com_google_protobuf")
+local_path_override(
+    module_name = "protobuf",
+    path = "../",
+)
+
+
+bazel_dep(name = "rules_cc", version = "0.0.17")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+bazel_dep(name = "rules_rust", version = "0.63.0")
+bazel_dep(name = "rules_shell", version = "0.2.0")
+bazel_dep(name = "abseil-cpp", version = "20250512.1")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
+
+# As of October 2025, our minimum supported Rust version is 1.79. However, we
+# use 1.85.0 here so that we can get some test coverage with edition 2024.
+# Cargo and our Bazel WORKSPACE build are both still on edition 2021.
+rust.toolchain(
+    edition = "2024",
+    versions = ["1.85.0"],
+)
+
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", dev_dependency = True)
+crate.spec(
+    package = "googletest",
+    version = ">0.0.0",
+)
+crate.spec(
+    package = "paste",
+    version = ">=1",
+)
+crate.spec(
+    package = "quote",
+    version = ">=1",
+)
+crate.spec(
+    package = "syn",
+    version = ">=2",
+)
+crate.from_specs()
+use_repo(crate, crate_index = "crates")
+
+
+bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)

@@ -7,7 +7,7 @@
 
 syntax = "proto2";
 
-import public "rust/test/no_package_import.proto";
+import public "test/no_package_import.proto";
 
 message MsgWithoutPackage {}
 

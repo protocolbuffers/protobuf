@@ -9,6 +9,6 @@ syntax = "proto2";
 
 package child_package;
 
-import public "rust/test/parent.proto";
+import public "test/parent.proto";
 
 message Child {}

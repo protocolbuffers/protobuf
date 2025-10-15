@@ -273,8 +273,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 #include "google/protobuf/map.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
-#include "rust/cpp_kernel/serialized_data.h"
-#include "rust/cpp_kernel/strings.h"
+#include "cpp_kernel/serialized_data.h"
+#include "cpp_kernel/strings.h"
         )cc");
   }
 

@@ -8,7 +8,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["@com_google_protobuf//:license"])
 
 rust_library(
     name = "sys",
@@ -35,7 +35,7 @@ rust_library(
         "wire/wire.rs",
     ],
     rustc_flags = ["--cfg=bzl"],
-    visibility = ["//rust/upb:__subpackages__"],
+    visibility = ["//upb:__subpackages__"],
     deps = [":upb_c_api"],
 )
 
@@ -51,21 +51,21 @@ cc_library(
     name = "upb_c_api",
     srcs = ["upb_api.c"],
     deps = [
-        "//upb/mem",
-        "//upb/message",
-        "//upb/message:compare",
-        "//upb/message:copy",
-        "//upb/mini_descriptor",
-        "//upb/mini_table",
-        "//upb/text:debug",
+        "@com_google_protobuf//upb/mem",
+        "@com_google_protobuf//upb/message",
+        "@com_google_protobuf//upb/message:compare",
+        "@com_google_protobuf//upb/message:copy",
+        "@com_google_protobuf//upb/mini_descriptor",
+        "@com_google_protobuf//upb/mini_table",
+        "@com_google_protobuf//upb/text:debug",
     ],
 )
 
 pkg_files(
     name = "srcs",
     srcs = glob(["**/*"]),
-    strip_prefix = strip_prefix.from_root("rust/upb"),
+    strip_prefix = strip_prefix.from_root("upb"),
     visibility = [
-        "//rust/upb:__subpackages__",
+        "//upb:__subpackages__",
     ],
 )

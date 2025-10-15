@@ -16,7 +16,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/message_lite.h"
-#include "rust/cpp_kernel/rust_alloc_for_cpp_api.h"
+#include "cpp_kernel/rust_alloc_for_cpp_api.h"
 
 namespace google {
 namespace protobuf {
