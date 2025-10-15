@@ -1150,7 +1150,13 @@ public final class Descriptors {
           DescriptorProto.newBuilder()
               .setName(name)
               .addExtensionRange(
-                  DescriptorProto.ExtensionRange.newBuilder().setStart(1).setEnd(536870912).build())
+                  DescriptorProto.ExtensionRange.newBuilder()
+                      .setStart(1)
+                      // 2^31 - 1, which is the largest possible extension for messages that set
+                      // message_set_wire_format = true.  Since this is a placeholder and we don't
+                      // have a schema, this is safest setting.
+                      .setEnd(2147483647)
+                      .build())
               .build();
       this.fullName = fullname;
 
@@ -1165,8 +1171,8 @@ public final class Descriptors {
       // Create a placeholder FileDescriptor to hold this message.
       this.parent = new FileDescriptor(packageName, this);
 
-      extensionRangeLowerBounds = new int[] {1};
-      extensionRangeUpperBounds = new int[] {536870912};
+      extensionRangeLowerBounds = new int[] {this.proto.getExtensionRange(0).getStart()};
+      extensionRangeUpperBounds = new int[] {this.proto.getExtensionRange(0).getEnd()};
 
       placeholder = true;
     }
