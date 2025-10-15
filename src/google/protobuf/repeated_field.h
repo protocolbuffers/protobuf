@@ -382,7 +382,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
-        absl::disjunction<internal::is_supported_integral_type<Element>,
+        std::disjunction<internal::is_supported_integral_type<Element>,
                           internal::is_supported_floating_point_type<Element>,
                           std::is_same<absl::Cord, Element>,
                           std::is_same<UnknownField, Element>,
