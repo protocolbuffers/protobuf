@@ -318,6 +318,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
         resolver_(offset),
         type_info_(type_info),
         table_(const_cast<NodeBase**>(internal::kGlobalEmptyTable)) {}
+  constexpr UntypedMapBase(InternalMetadataOffset offset, Arena* arena,
+                           TypeInfo type_info)
+      : UntypedMapBase(offset, type_info) {
+    ABSL_DCHECK_EQ(arena, this->arena());
+  }
   explicit constexpr UntypedMapBase(TypeInfo type_info)
       : UntypedMapBase(InternalMetadataOffset(), type_info) {}
 
@@ -1110,13 +1115,14 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   constexpr Map() : Map(internal::InternalMetadataOffset()) {}
-  Map(const Map& other) : Map(internal::InternalMetadataOffset(), other) {}
+  Map(const Map& other)
+      : Map(internal::InternalMetadataOffset(), /*arena=*/nullptr, other) {}
 
   Map(internal::InternalVisibility, internal::InternalMetadataOffset offset)
       : Map(offset) {}
   Map(internal::InternalVisibility, internal::InternalMetadataOffset offset,
-      const Map& other)
-      : Map(offset, other) {}
+      Arena* arena, const Map& other)
+      : Map(offset, arena, other) {}
 
   Map(Map&& other) noexcept : Map(internal::InternalMetadataOffset()) {
     if (other.arena() != nullptr) {
@@ -1175,10 +1181,15 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
       : Base(offset, GetTypeInfo()) {
     StaticValidityCheck();
   }
+  Map(internal::InternalMetadataOffset offset, Arena* arena) : Map(offset) {
+    ABSL_DCHECK_EQ(arena, this->arena());
+  }
 
-  Map(internal::InternalMetadataOffset offset, const Map& other) : Map(offset) {
+  Map(internal::InternalMetadataOffset offset, Arena* arena, const Map& other)
+      : Map(offset) {
+    ABSL_DCHECK_EQ(arena, this->arena());
     StaticValidityCheck();
-    CopyFromImpl(arena(), other);
+    CopyFromImpl(arena, other);
   }
 #else
   // If PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR is defined, make the

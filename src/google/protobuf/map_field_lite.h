@@ -42,14 +42,19 @@ class MapFieldLite {
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   explicit constexpr MapFieldLite(InternalMetadataOffset offset)
       : map_(offset) {}
+  MapFieldLite(InternalMetadataOffset offset, Arena* arena)
+      : MapFieldLite(offset) {
+    ABSL_DCHECK_EQ(arena, GetMap().arena());
+  }
   constexpr MapFieldLite(ArenaInitialized, InternalMetadataOffset offset)
       : MapFieldLite(offset) {}
 
   constexpr MapFieldLite(InternalVisibility, InternalMetadataOffset offset)
       : map_(offset) {}
-  MapFieldLite(InternalVisibility, InternalMetadataOffset offset,
+  MapFieldLite(InternalVisibility, InternalMetadataOffset offset, Arena* arena,
                const MapFieldLite& from)
       : map_(offset) {
+    ABSL_DCHECK_EQ(arena, GetMap().arena());
     MergeFrom(from);
   }
 #else

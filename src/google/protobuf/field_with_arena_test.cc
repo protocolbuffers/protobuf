@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/internal_metadata_locator.h"
 
@@ -19,8 +20,10 @@ struct TestType {
   InternalMetadataResolver resolver;
 
   explicit TestType(int value) : value(value) {}
-  TestType(InternalMetadataOffset offset, int value)
-      : value(value), resolver(offset) {}
+  TestType(InternalMetadataOffset offset, Arena* arena, int value)
+      : value(value), resolver(offset) {
+    ABSL_DCHECK_EQ(arena, GetArena());
+  }
 
   Arena* GetArena() const { return ResolveArena<&TestType::resolver>(this); }
 };
@@ -43,9 +46,11 @@ struct TestTypeNotDestructorSkippable {
 
   explicit TestTypeNotDestructorSkippable(std::string value)
       : value(std::move(value)) {}
-  TestTypeNotDestructorSkippable(InternalMetadataOffset offset,
+  TestTypeNotDestructorSkippable(InternalMetadataOffset offset, Arena* arena,
                                  std::string value)
-      : value(std::move(value)), resolver(offset) {}
+      : value(std::move(value)), resolver(offset) {
+    ABSL_DCHECK_EQ(arena, GetArena());
+  }
 
   Arena* GetArena() const {
     return ResolveArena<&TestTypeNotDestructorSkippable::resolver>(this);
