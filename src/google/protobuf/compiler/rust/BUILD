@@ -5,10 +5,6 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-################################################################################
-# Protocol Buffers Compiler - Rust code generator
-################################################################################
-
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -25,6 +21,85 @@ cc_binary(
     deps = [
         ":rust",
         "//src/google/protobuf/compiler:plugin",
+    ],
+)
+
+cc_library(
+    name = "context",
+    srcs = ["context.cc"],
+    hdrs = ["context.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "rust_field_type",
+    srcs = ["rust_field_type.cc"],
+    hdrs = ["rust_field_type.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/log:absl_log",
+    ],
+)
+
+cc_library(
+    name = "naming",
+    srcs = [
+        "naming.cc",
+        "rust_keywords.cc",
+    ],
+    hdrs = [
+        "naming.h",
+        "rust_keywords.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//src/google/protobuf/compiler/rust:__subpackages__"],
+    deps = [
+        ":context",
+        ":rust_field_type",
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_bootstrap",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/compiler/cpp:helpers",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "naming_test",
+    size = "small",
+    srcs = ["naming_test.cc"],
+    deps = [
+        ":context",
+        ":naming",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -132,30 +207,6 @@ bootstrap_cc_library(
     ],
 )
 
-cc_library(
-    name = "context",
-    srcs = ["context.cc"],
-    hdrs = ["context.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = [
-        "//src/google/protobuf/compiler/rust:__subpackages__",
-    ],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf/compiler:code_generator",
-        "//src/google/protobuf/io:printer",
-        "@abseil-cpp//absl/algorithm:container",
-        "@abseil-cpp//absl/container:flat_hash_map",
-        "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/status:statusor",
-        "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/types:span",
-    ],
-)
-
 bootstrap_cc_library(
     name = "enum",
     srcs = ["enum.cc"],
@@ -186,36 +237,6 @@ cc_test(
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "naming",
-    srcs = [
-        "naming.cc",
-        "rust_keywords.cc",
-    ],
-    hdrs = [
-        "naming.h",
-        "rust_keywords.h",
-    ],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = [
-        "//src/google/protobuf/compiler/rust:__subpackages__",
-    ],
-    deps = [
-        ":context",
-        ":rust_field_type",
-        "//src/google/protobuf",
-        "//src/google/protobuf:port",
-        "//src/google/protobuf/compiler:code_generator",
-        "//src/google/protobuf/compiler/cpp:names_internal",
-        "@abseil-cpp//absl/container:flat_hash_set",
-        "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
-        "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/strings:str_format",
     ],
 )
 
@@ -260,22 +281,6 @@ cc_test(
         ":relative_path",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "rust_field_type",
-    srcs = ["rust_field_type.cc"],
-    hdrs = ["rust_field_type.h"],
-    copts = COPTS,
-    strip_include_prefix = "/src",
-    visibility = [
-        "//src/google/protobuf/compiler/rust:__subpackages__",
-    ],
-    deps = [
-        "//src/google/protobuf",
-        "//src/google/protobuf:port",
-        "@abseil-cpp//absl/log:absl_log",
     ],
 )
 
