@@ -3455,9 +3455,15 @@ public final class Descriptors {
                 scopeToTry.setLength(dotpos + 1);
                 scopeToTry.append(name);
                 result = findSymbol(scopeToTry.toString(), filter);
+                fullname = scopeToTry.toString();
+                break;
               }
-              fullname = scopeToTry.toString();
-              break;
+              if (filter != FileDescriptorTables.SearchFilter.TYPES_ONLY || isType(result)) {
+                fullname = scopeToTry.toString();
+                break;
+              }
+              // We found the symbol, but it's not a type and we're looking for types only.
+              // Keep looking.
             }
 
             // Not found.  Remove the name so we can try again.

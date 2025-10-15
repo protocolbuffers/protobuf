@@ -1027,6 +1027,42 @@ public class DescriptorsTest {
     }
 
     @Test
+    public void testUnknownFieldWithUnknownNestedType() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .setPackage("com.google.protobuf")
+              .addDependency("bar.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("FirstMessage")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("com.google.protobuf.Bar.Baz")
+                              .setName("baz")
+                              .setNumber(1)))
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Foo")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("bar")
+                              .setNumber(2)))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor baz = foo.findMessageTypeByName("FirstMessage").findFieldByName("baz");
+      FieldDescriptor bar = foo.findMessageTypeByName("Foo").findFieldByName("bar");
+
+      assertThat(baz.getMessageType().isPlaceholder()).isTrue();
+      assertThat(bar.getMessageType().isPlaceholder()).isTrue();
+    }
+
+    @Test
     public void testHiddenDependency() throws Exception {
       FileDescriptorProto barProto =
           FileDescriptorProto.newBuilder()
