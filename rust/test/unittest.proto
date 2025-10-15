@@ -17,7 +17,7 @@ edition = "2023";
 
 package rust_unittest;
 
-import "rust/test/unittest_import.proto";
+import "test/unittest_import.proto";
 
 option features = { enum_type : CLOSED, repeated_field_encoding : EXPANDED, utf8_validation : NONE };
 option cc_enable_arenas = true;

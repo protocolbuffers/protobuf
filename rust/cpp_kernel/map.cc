@@ -13,7 +13,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
-#include "rust/cpp_kernel/strings.h"
+#include "cpp_kernel/strings.h"
 
 namespace google {
 namespace protobuf {

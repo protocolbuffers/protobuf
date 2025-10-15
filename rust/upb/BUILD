@@ -7,7 +7,7 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["@com_google_protobuf//:license"])
 
 rust_library(
     name = "upb",
@@ -25,11 +25,11 @@ rust_library(
     ],
     rustc_flags = ["--cfg=bzl"],
     visibility = [
-        "//rust:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+        "//:__subpackages__",
+        "@com_google_protobuf//src/google/protobuf:__subpackages__",
     ],
     deps = [
-        "//rust/upb/sys",
+        "//upb/sys",
     ],
 )
 
@@ -45,12 +45,12 @@ rust_test(
 pkg_files(
     name = "src",
     srcs = glob(["*"]) + [
-        "//rust/upb/sys:srcs",
+        "//upb/sys:srcs",
     ],
     prefix = "upb",
-    strip_prefix = strip_prefix.from_root("rust/upb"),
+    strip_prefix = strip_prefix.from_root("upb"),
     visibility = [
-        "//rust:__subpackages__",
-        "//src/google/protobuf:__subpackages__",
+        "//:__subpackages__",
+        "@com_google_protobuf//src/google/protobuf:__subpackages__",
     ],
 )

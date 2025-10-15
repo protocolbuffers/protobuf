@@ -314,11 +314,7 @@ proto_library(
     name = "descriptor_proto",
     srcs = ["descriptor.proto"],
     strip_import_prefix = "/src",
-    visibility = [
-        "//:__pkg__",
-        "//pkg:__pkg__",
-        "//rust/test:__pkg__",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 upb_c_proto_library(
@@ -343,7 +339,7 @@ proto_library(
     name = "cpp_features_proto",
     srcs = ["cpp_features.proto"],
     strip_import_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [":descriptor_proto"],
 )
 
@@ -697,9 +693,7 @@ cc_library(
     }),
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-    ],
+    visibility = ["//visibility:public"],
     # In Bazel 6.0+, these will be `interface_deps`:
     deps = [
         ":arena",
@@ -802,9 +796,7 @@ cc_library(
     copts = COPTS,
     linkopts = LINK_OPTS,
     strip_include_prefix = "/src",
-    visibility = [
-        "//:__subpackages__",
-    ],
+    visibility = ["//visibility:public"],
     deps = [
         ":internal_visibility",
         ":micro_string",
@@ -987,19 +979,19 @@ filegroup(
         "type.proto",
         "wrappers.proto",
     ],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "descriptor_proto_srcs",
     srcs = ["descriptor.proto"],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "cpp_features_proto_srcs",
     srcs = ["cpp_features.proto"],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

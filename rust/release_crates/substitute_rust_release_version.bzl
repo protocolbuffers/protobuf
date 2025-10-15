@@ -1,6 +1,6 @@
 """A rule to textually replace {{VERSION}} with the Rust release version in files."""
 
-load("//:protobuf_version.bzl", "PROTOBUF_RUST_VERSION")
+load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_RUST_VERSION")
 
 # Temporarily append a -release suffix to non-RC versions until we consider the
 # release stable. Since "release" lexicographically comes after "rc", Cargo

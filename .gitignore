@@ -164,6 +164,7 @@ vendor/
 
 # Ignore the bazel symlinks
 /bazel-*
+/rust/bazel-*
 
 # ruby test output
 ruby/tests/basic_test_pb.rb

@@ -9,7 +9,7 @@ syntax = "proto3";
 
 package rust_unittest;
 
-import "rust/test/unittest.proto";
+import "test/unittest.proto";
 
 option cc_enable_arenas = true;
 

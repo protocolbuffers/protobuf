@@ -5,7 +5,7 @@ package srcsless_library_test;
 // The purpose of this proto is for a test where a proto_library target that has
 // no srcs (an "alias library") can be used in the middle between this parent
 // target and this imported file.
-import "rust/test/srcsless_library_test_child.proto";
+import "test/srcsless_library_test_child.proto";
 
 option java_multiple_files = true;
 

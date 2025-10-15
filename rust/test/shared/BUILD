@@ -32,19 +32,19 @@ pkg_files(
         ],
     ),
     prefix = "tests",
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//:__subpackages__"],
 )
 
 rust_test(
     name = "ctype_cord_upb_test",
     srcs = ["ctype_cord_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -53,12 +53,12 @@ rust_test(
     name = "ctype_cord_cpp_test",
     srcs = ["ctype_cord_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -67,13 +67,13 @@ rust_test(
     name = "child_parent_upb_test",
     srcs = ["child_parent_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:child_upb_rust_proto",
-        "//rust/test:parent_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:child_upb_rust_proto",
+        "//test:parent_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -82,13 +82,13 @@ rust_test(
     name = "child_parent_cpp_test",
     srcs = ["child_parent_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:child_cpp_rust_proto",
-        "//rust/test:parent_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:child_cpp_rust_proto",
+        "//test:parent_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -98,7 +98,7 @@ rust_test(
     srcs = ["edition2023_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:edition2023_cpp_rust_proto",
+        "//test:edition2023_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -108,7 +108,7 @@ rust_test(
     srcs = ["edition2023_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:edition2023_upb_rust_proto",
+        "//test:edition2023_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -117,13 +117,13 @@ rust_test(
     name = "enum_cpp_test",
     srcs = ["enum_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:enums_cpp_rust_proto",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:enums_cpp_rust_proto",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -132,13 +132,13 @@ rust_test(
     name = "enum_upb_test",
     srcs = ["enum_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:enums_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:enums_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -148,7 +148,7 @@ rust_test(
     srcs = ["import_public_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:import_public_cpp_rust_proto",
+        "//test:import_public_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -158,7 +158,7 @@ rust_test(
     srcs = ["import_public_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:import_public_upb_rust_proto",
+        "//test:import_public_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -168,9 +168,9 @@ rust_test(
     srcs = ["package_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:dots_in_package_cpp_rust_proto",
-        "//rust/test:no_package_cpp_rust_proto",
-        "//rust/test:package_cpp_rust_proto",
+        "//test:dots_in_package_cpp_rust_proto",
+        "//test:no_package_cpp_rust_proto",
+        "//test:package_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -180,9 +180,9 @@ rust_test(
     srcs = ["package_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:dots_in_package_upb_rust_proto",
-        "//rust/test:no_package_upb_rust_proto",
-        "//rust/test:package_upb_rust_proto",
+        "//test:dots_in_package_upb_rust_proto",
+        "//test:no_package_upb_rust_proto",
+        "//test:package_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -190,26 +190,26 @@ rust_test(
 rust_test(
     name = "package_disambiguation_cpp_test",
     srcs = ["package_disambiguation_test.rs"],
-    deps = ["//rust/test:package_disabiguation_cpp_rust_proto"],
+    deps = ["//test:package_disabiguation_cpp_rust_proto"],
 )
 
 rust_test(
     name = "package_disambiguation_upb_test",
     srcs = ["package_disambiguation_test.rs"],
-    deps = ["//rust/test:package_disabiguation_upb_rust_proto"],
+    deps = ["//test:package_disabiguation_upb_rust_proto"],
 )
 
 rust_test(
     name = "bad_names_cpp_test",
     srcs = ["bad_names_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:bad_names_cpp_rust_proto",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:bad_names_cpp_rust_proto",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -218,13 +218,13 @@ rust_test(
     name = "bad_names_upb_test",
     srcs = ["bad_names_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:bad_names_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:bad_names_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -234,7 +234,7 @@ rust_test(
     srcs = ["nested_types_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:unittest_cpp_rust_proto",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -244,7 +244,7 @@ rust_test(
     srcs = ["nested_types_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust/test:unittest_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -253,16 +253,16 @@ rust_test(
     name = "accessors_cpp_test",
     srcs = ["accessors_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_cpp_rust_proto",
-        "//rust/test:unittest_import_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:unittest_cpp_rust_proto",
+        "//test:unittest_import_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -271,16 +271,16 @@ rust_test(
     name = "accessors_upb_test",
     srcs = ["accessors_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:unittest_import_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:unittest_import_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -289,13 +289,13 @@ rust_test(
     name = "accessors_proto3_cpp_test",
     srcs = ["accessors_proto3_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_proto3_cpp_rust_proto",
-        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:unittest_proto3_cpp_rust_proto",
+        "//test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -304,13 +304,13 @@ rust_test(
     name = "accessors_proto3_upb_test",
     srcs = ["accessors_proto3_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:unittest_proto3_optional_upb_rust_proto",
-        "//rust/test:unittest_proto3_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:unittest_proto3_optional_upb_rust_proto",
+        "//test:unittest_proto3_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -319,17 +319,17 @@ rust_test(
     name = "serialization_upb_test",
     srcs = ["serialization_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:unittest_proto3_optional_upb_rust_proto",
-        "//rust/test:unittest_proto3_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:unittest_proto3_optional_upb_rust_proto",
+        "//test:unittest_proto3_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -338,17 +338,17 @@ rust_test(
     name = "serialization_cpp_test",
     srcs = ["serialization_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_cpp_rust_proto",
-        "//rust/test:unittest_proto3_cpp_rust_proto",
-        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:unittest_cpp_rust_proto",
+        "//test:unittest_proto3_cpp_rust_proto",
+        "//test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -357,13 +357,13 @@ rust_test(
     name = "simple_nested_cpp_test",
     srcs = ["simple_nested_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:map_unittest_cpp_rust_proto",
-        "//rust/test:nested_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:map_unittest_cpp_rust_proto",
+        "//test:nested_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -372,13 +372,13 @@ rust_test(
     name = "simple_nested_upb_test",
     srcs = ["simple_nested_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:map_unittest_upb_rust_proto",
-        "//rust/test:nested_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:map_unittest_upb_rust_proto",
+        "//test:nested_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -387,15 +387,15 @@ rust_test(
     name = "accessors_repeated_cpp_test",
     srcs = ["accessors_repeated_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -404,15 +404,15 @@ rust_test(
     name = "accessors_repeated_upb_test",
     srcs = ["accessors_repeated_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -421,17 +421,17 @@ rust_test(
     name = "accessors_map_cpp_test",
     srcs = ["accessors_map_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:enums_cpp_rust_proto",
-        "//rust/test:map_unittest_cpp_rust_proto",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:enums_cpp_rust_proto",
+        "//test:map_unittest_cpp_rust_proto",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -440,17 +440,17 @@ rust_test(
     name = "accessors_map_upb_test",
     srcs = ["accessors_map_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:enums_upb_rust_proto",
-        "//rust/test:map_unittest_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:enums_upb_rust_proto",
+        "//test:map_unittest_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -460,9 +460,9 @@ rust_test(
     srcs = ["fields_with_imported_types_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:fields_with_imported_types_cpp_rust_proto",
-        "//rust/test:imported_types_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:fields_with_imported_types_cpp_rust_proto",
+        "//test:imported_types_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -472,9 +472,9 @@ rust_test(
     srcs = ["fields_with_imported_types_test.rs"],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:fields_with_imported_types_upb_rust_proto",
-        "//rust/test:imported_types_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:fields_with_imported_types_upb_rust_proto",
+        "//test:imported_types_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -483,12 +483,12 @@ rust_test(
     name = "message_copy_merge_cpp_test",
     srcs = ["message_copy_merge_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp": "protobuf",
+        "//:protobuf_cpp": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -497,12 +497,12 @@ rust_test(
     name = "message_copy_merge_upb_test",
     srcs = ["message_copy_merge_test.rs"],
     aliases = {
-        "//rust:protobuf_upb": "protobuf",
+        "//:protobuf_upb": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -511,13 +511,13 @@ rust_test(
     name = "proto_macro_cpp_test",
     srcs = ["proto_macro_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp": "protobuf",
+        "//:protobuf_cpp": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp",
-        "//rust/test:map_unittest_cpp_rust_proto",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp",
+        "//test:map_unittest_cpp_rust_proto",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -526,15 +526,15 @@ rust_test(
     name = "proto_macro_upb_test",
     srcs = ["proto_macro_test.rs"],
     aliases = {
-        "//rust:protobuf_upb": "protobuf",
-        "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
+        "//:protobuf_upb": "protobuf",
+        "//:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_gtest_matchers_upb",
-        "//rust:protobuf_upb",
-        "//rust/test:map_unittest_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_gtest_matchers_upb",
+        "//:protobuf_upb",
+        "//test:map_unittest_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -543,19 +543,19 @@ rust_test(
     name = "gtest_matchers_cpp_test",
     srcs = ["gtest_matchers_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp": "protobuf",
-        "//rust:protobuf_gtest_matchers_cpp": "protobuf_gtest_matchers",
+        "//:protobuf_cpp": "protobuf",
+        "//:protobuf_gtest_matchers_cpp": "protobuf_gtest_matchers",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp",
-        "//rust:protobuf_gtest_matchers_cpp",
-        "//rust/test:unittest_cpp_rust_proto",
-        "//rust/test:unittest_proto3_cpp_rust_proto",
-        "//rust/test:unittest_proto3_optional_cpp_rust_proto",
+        "//:protobuf_cpp",
+        "//:protobuf_gtest_matchers_cpp",
+        "//test:unittest_cpp_rust_proto",
+        "//test:unittest_proto3_cpp_rust_proto",
+        "//test:unittest_proto3_optional_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -564,19 +564,19 @@ rust_test(
     name = "gtest_matchers_upb_test",
     srcs = ["gtest_matchers_test.rs"],
     aliases = {
-        "//rust:protobuf_upb": "protobuf",
-        "//rust:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
+        "//:protobuf_upb": "protobuf",
+        "//:protobuf_gtest_matchers_upb": "protobuf_gtest_matchers",
     },
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_gtest_matchers_upb",
-        "//rust:protobuf_upb",
-        "//rust/test:unittest_proto3_optional_upb_rust_proto",
-        "//rust/test:unittest_proto3_upb_rust_proto",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_gtest_matchers_upb",
+        "//:protobuf_upb",
+        "//test:unittest_proto3_optional_upb_rust_proto",
+        "//test:unittest_proto3_upb_rust_proto",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -585,11 +585,11 @@ rust_test(
     name = "no_internal_access_test_cpp",
     srcs = ["no_internal_access_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
+        "//:protobuf_cpp_export",
         "@crate_index//:googletest",
     ],
 )
@@ -598,11 +598,11 @@ rust_test(
     name = "no_internal_access_test_upb",
     srcs = ["no_internal_access_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
+        "//:protobuf_upb_export",
         "@crate_index//:googletest",
     ],
 )
@@ -611,12 +611,12 @@ rust_test(
     name = "threading_test_cpp",
     srcs = ["threading_test.rs"],
     aliases = {
-        "//rust:protobuf_cpp_export": "protobuf",
+        "//:protobuf_cpp_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_cpp_export",
-        "//rust/test:unittest_cpp_rust_proto",
+        "//:protobuf_cpp_export",
+        "//test:unittest_cpp_rust_proto",
         "@crate_index//:googletest",
     ],
 )
@@ -625,12 +625,12 @@ rust_test(
     name = "threading_test_upb",
     srcs = ["threading_test.rs"],
     aliases = {
-        "//rust:protobuf_upb_export": "protobuf",
+        "//:protobuf_upb_export": "protobuf",
     },
     rustc_flags = ["--cfg=bzl"],
     deps = [
-        "//rust:protobuf_upb_export",
-        "//rust/test:unittest_upb_rust_proto",
+        "//:protobuf_upb_export",
+        "//test:unittest_upb_rust_proto",
         "@crate_index//:googletest",
     ],
 )

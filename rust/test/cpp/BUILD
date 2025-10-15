@@ -12,9 +12,9 @@
 #   `//rust:protobuf`.
 
 load("@rules_rust//rust:defs.bzl", "rust_test")
-load("//bazel:proto_library.bzl", "proto_library")
+load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
 load(
-    "//rust:defs.bzl",
+    "//:defs.bzl",
     "rust_cc_proto_library",
 )
 
@@ -49,7 +49,7 @@ rust_test(
     deps = [
         ":debug_cpp_rust_proto",
         ":optimize_for_lite_cpp_rust_proto",
-        "//rust:protobuf_cpp_export",
+        "//:protobuf_cpp_export",
         "@crate_index//:googletest",
     ],
 )

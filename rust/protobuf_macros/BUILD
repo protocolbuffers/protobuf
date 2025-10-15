@@ -14,7 +14,7 @@ rust_proc_macro(
     srcs = PROC_MACRO_SRCS,
     visibility = [
         "//devtools/rust/rust_analyzer/proc_macros:__pkg__",
-        "//rust:__subpackages__",
+        "//:__subpackages__",
     ],
     deps = [
         "@crate_index//:quote",
@@ -25,7 +25,7 @@ rust_proc_macro(
 pkg_files(
     name = "rust_protobuf_macros_src",
     srcs = PROC_MACRO_SRCS,
-    strip_prefix = strip_prefix.from_root("rust/protobuf_macros"),
+    strip_prefix = strip_prefix.from_root("protobuf_macros"),
 )
 
 pkg_filegroup(
@@ -34,5 +34,5 @@ pkg_filegroup(
         ":rust_protobuf_macros_src",
     ],
     prefix = "src",
-    visibility = ["//rust/release_crates:__subpackages__"],
+    visibility = ["//release_crates:__subpackages__"],
 )

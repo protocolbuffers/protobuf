@@ -2,7 +2,7 @@
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_DEBUG_H__
 
 #include "google/protobuf/message_lite.h"
-#include "rust/cpp_kernel/strings.h"
+#include "cpp_kernel/strings.h"
 
 extern "C" {
 

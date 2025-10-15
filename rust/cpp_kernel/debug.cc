@@ -1,9 +1,9 @@
-#include "rust/cpp_kernel/debug.h"
+#include "cpp_kernel/debug.h"
 
 #include <string>
 
 #include "google/protobuf/message_lite.h"
-#include "rust/cpp_kernel/strings.h"
+#include "cpp_kernel/strings.h"
 
 extern "C" {
 

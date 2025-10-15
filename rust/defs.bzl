@@ -3,10 +3,10 @@
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("@rules_rust//rust:defs.bzl", "rust_common")
 load("@rules_rust//rust:rust_common.bzl", "CrateInfo", "DepInfo")
-load("//bazel/common:proto_common.bzl", "proto_common")
-load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("@com_google_protobuf//bazel/common:proto_common.bzl", "proto_common")
+load("@com_google_protobuf//bazel/common:proto_info.bzl", "ProtoInfo")
 load(
-    "//rust/bazel:aspects.bzl",
+    "//bazel:aspects.bzl",
     "RustProtoInfo",
     "label_to_crate_name",
     "proto_rust_toolchain_label",
@@ -44,7 +44,7 @@ def rust_proto_library(name, deps, **args):
     native.alias(
         name = name + "_rust_proto",
         actual = select({
-            "//rust:use_upb_kernel": name + "_upb_rust_proto",
+            "//:use_upb_kernel": name + "_upb_rust_proto",
             "//conditions:default": name + "_cpp_rust_proto",
         }),
         **alias_args
@@ -53,14 +53,14 @@ def rust_proto_library(name, deps, **args):
     rust_upb_proto_library(
         name = name + "_upb_rust_proto",
         deps = deps,
-        visibility = ["//rust/test:__subpackages__"],
+        visibility = ["//test:__subpackages__"],
         **args
     )
 
     rust_cc_proto_library(
         name = name + "_cpp_rust_proto",
         deps = deps,
-        visibility = ["//rust/test:__subpackages__"],
+        visibility = ["//test:__subpackages__"],
         **args
     )
 

@@ -1,4 +1,4 @@
-#include "rust/cpp_kernel/compare.h"
+#include "cpp_kernel/compare.h"
 
 #include <string>
 

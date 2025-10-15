@@ -8,7 +8,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
-#include "rust/cpp_kernel/strings.h"
+#include "cpp_kernel/strings.h"
 
 extern "C" {
 #define expose_repeated_field_methods(ty, rust_ty)                             \
