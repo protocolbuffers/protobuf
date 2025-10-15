@@ -18,7 +18,7 @@ cc_binary(
 
 cc_binary(
     name = "protoc-gen-pyi",
-    srcs = ["pyi_main.cc"],
+    srcs = ["pyi_plugin_main.cc"],
     visibility = ["//visibility:public"],
     deps = [
         ":python",
