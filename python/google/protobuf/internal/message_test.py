@@ -1001,6 +1001,50 @@ class MessageTest(unittest.TestCase):
     self.assertEqual('oneof_nested_message',
                      m2.child.payload.WhichOneof('oneof_field'))
 
+  def testOneofReleaseMergeFrom(self, message_module):
+    m = unittest_pb2.TestOneof2()
+    m.foo_message.moo_int = 123
+    reference = m.foo_message
+    self.assertEqual(m.foo_message.moo_int, 123)
+    m2 = unittest_pb2.TestOneof2()
+    m2.foo_lazy_message.moo_int = 456
+    m.MergeFrom(m2)
+    self.assertEqual(reference.moo_int, 123)
+    self.assertEqual(m.foo_message.moo_int, 0)
+    m.foo_message.CopyFrom(reference)
+    self.assertEqual(m.foo_message.moo_int, 123)
+
+  def testNestedOneofRleaseMergeFrom(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    m.payload.oneof_nested_message.bb = 1
+    m.child.payload.oneof_nested_message.bb = 2
+    ref1 = m.payload.oneof_nested_message
+    ref2 = m.child.payload.oneof_nested_message
+    other = message_module.NestedTestAllTypes()
+    other.payload.oneof_uint32 = 22
+    other.child.payload.oneof_string = 'hi'
+    self.assertEqual(ref1.bb, 1)
+    self.assertEqual(ref2.bb, 2)
+    m.MergeFrom(other)
+    # oneof messages are released
+    self.assertEqual(ref1.bb, 1)
+    self.assertEqual(ref2.bb, 2)
+    self.assertEqual(m.payload.oneof_nested_message.bb, 0)
+    self.assertEqual(m.child.payload.oneof_nested_message.bb, 0)
+    self.assertEqual(m.payload.oneof_uint32, 22)
+    self.assertEqual(m.child.payload.oneof_string, 'hi')
+
+  def testOneofNotReleaseMergeFrom(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    m.payload.oneof_nested_message.bb = 1
+    ref = m.payload.oneof_nested_message
+    other = message_module.NestedTestAllTypes()
+    other.payload.oneof_nested_message.bb = 2
+    self.assertEqual(ref.bb, 1)
+    m.MergeFrom(other)
+    # oneof message is not released
+    self.assertEqual(ref.bb, 2)
+
   def testOneofNestedMessageInit(self, message_module):
     m = message_module.TestAllTypes(
         oneof_nested_message=message_module.TestAllTypes.NestedMessage())
