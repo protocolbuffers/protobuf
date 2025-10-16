@@ -1,6 +1,11 @@
-################################################################################
-# Protocol Buffers Compiler - PHP code generator
-################################################################################
+# Copyright (c) 2019, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Public targets for PHP code generator.
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -13,7 +18,9 @@ cc_library(
     hdrs = ["names.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//visibility:public",
+    ],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
@@ -24,8 +31,12 @@ cc_library(
 
 cc_library(
     name = "php",
-    srcs = ["php_generator.cc"],
-    hdrs = ["php_generator.h"],
+    srcs = [
+        "php_generator.cc",
+    ],
+    hdrs = [
+        "php_generator.h",
+    ],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
