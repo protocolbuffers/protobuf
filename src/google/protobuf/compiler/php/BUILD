@@ -30,7 +30,7 @@ cc_library(
 )
 
 cc_library(
-    name = "php",
+    name = "php_generator",
     srcs = [
         "php_generator.cc",
     ],
@@ -62,7 +62,7 @@ cc_test(
     name = "generator_unittest",
     srcs = ["generator_unittest.cc"],
     deps = [
-        ":php",
+        ":php_generator",
         "//:protobuf",
         "//src/google/protobuf/compiler:command_line_interface_tester",
         "@googletest//:gtest",
