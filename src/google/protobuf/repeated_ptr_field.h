@@ -1149,12 +1149,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   RepeatedPtrField(internal::InternalVisibility, Arena* arena,
                    RepeatedPtrField&& rhs)
       : RepeatedPtrField(arena, std::move(rhs)) {}
-
-#ifndef PROTOBUF_FUTURE_REMOVE_REPEATED_PTR_FIELD_ARENA_CONSTRUCTOR
-  // TODO: make constructor private
-  [[deprecated("Use Arena::Create<RepeatedPtrField<...>>(Arena*) instead")]]
-  explicit RepeatedPtrField(Arena* arena);
-#endif
 #endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
   template <typename Iter,
@@ -1504,9 +1498,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   RepeatedPtrField(Arena* arena, const RepeatedPtrField& rhs);
   RepeatedPtrField(Arena* arena, RepeatedPtrField&& rhs);
 
-#ifdef PROTOBUF_FUTURE_REMOVE_REPEATED_PTR_FIELD_ARENA_CONSTRUCTOR
   explicit RepeatedPtrField(Arena* arena);
-#endif
 #endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
 

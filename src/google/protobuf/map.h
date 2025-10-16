@@ -1181,22 +1181,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     CopyFromImpl(arena(), other);
   }
 #else
-  // If PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR is defined, make the
-  // arena-enabled constructor private.
-#ifdef PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR
 
  private:
-#endif
   explicit Map(Arena* arena) : Base(arena, GetTypeInfo()) {
     StaticValidityCheck();
   }
 
-  // If PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR was not defined, we
-  // need to add the private tag here.
-#ifndef PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR
-
- private:
-#endif
   Map(Arena* arena, const Map& other) : Map(arena) {
     StaticValidityCheck();
     CopyFromImpl(arena, other);

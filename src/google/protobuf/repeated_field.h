@@ -403,13 +403,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   RepeatedField(const RepeatedField& rhs) : RepeatedField(nullptr, rhs) {}
 #endif
 
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-#ifndef PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR
-  // TODO: make this constructor private
-  explicit RepeatedField(Arena* arena);
-#endif
-#endif
-
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
                 Element, decltype(*std::declval<Iter>())>::value>::type>
@@ -630,10 +623,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   friend class internal::FieldWithArena<RepeatedField<Element>>;
 
-#ifdef PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR
   // For access to private arena constructor.
   friend class UnknownFieldSet;
-#endif
 
   static constexpr int kSooCapacityElements =
       internal::SooCapacityElements<Element>();
@@ -647,9 +638,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                 const RepeatedField& rhs);
   RepeatedField(internal::InternalMetadataOffset offset, RepeatedField&& rhs);
 #else
-#ifdef PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR
   explicit RepeatedField(Arena* arena);
-#endif
 
   RepeatedField(Arena* arena, const RepeatedField& rhs);
   RepeatedField(Arena* arena, RepeatedField&& rhs);
