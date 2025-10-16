@@ -64,6 +64,13 @@ void ClearMessage(internal::PtrOrRawMutable<T> message) {
   backend::ClearMessage(message);
 }
 
+// Note that the default extension registry is the the generated registry.
+template <typename T>
+hpb::StatusOr<T> Parse(absl::string_view bytes, ParseOptions options) {
+  return backend::Parse<T>(bytes, options);
+}
+
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
                                 absl::string_view bytes,
@@ -72,11 +79,6 @@ ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
   return backend::Parse(message, bytes, extension_registry);
 }
 
-// Note that the default extension registry is the the generated registry.
-template <typename T>
-hpb::StatusOr<T> Parse(absl::string_view bytes, ParseOptions options) {
-  return backend::Parse<T>(bytes, options);
-}
 
 // Deprecated. Use the overload that returns hpb::StatusOr<T> instead.
 // Note that the default extension registry is the empty registry.
@@ -87,6 +89,7 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
                             ExtensionRegistry::empty_registry()) {
   return backend::Parse<T>(bytes, extension_registry);
 }
+#endif
 
 template <typename T>
 absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,

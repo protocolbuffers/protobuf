@@ -65,6 +65,8 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
                                                                {{".", "::"}}),
                                            "::protos")}},
                R"cc(
+#include "hpb/internal/internal.h"
+
                  // message stubs
                  namespace $namespace$ {
 

@@ -17,6 +17,7 @@ cc_library(
         "//hpb:multibackend",
     ] + select({
         "//hpb:hpb_backend_cpp": [
+            "//hpb/backend/cpp:error",
             "//src/google/protobuf:arena",
         ],
         "//hpb:hpb_backend_upb": [

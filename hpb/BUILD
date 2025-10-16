@@ -95,6 +95,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
     ] + select({
         ":hpb_backend_cpp": [
+            "//hpb/backend/cpp:repeated_field",
         ],
         ":hpb_backend_upb": [
             "//hpb/backend/upb:repeated_field",
