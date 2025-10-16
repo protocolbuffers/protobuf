@@ -476,38 +476,6 @@ final class RopeByteString extends ByteString {
   // =================================================================
   // equals() and hashCode()
 
-  @Override
-  public boolean equals(
-          Object other) {
-    if (other == this) {
-      return true;
-    }
-    if (!(other instanceof ByteString)) {
-      return false;
-    }
-
-    ByteString otherByteString = (ByteString) other;
-    if (totalLength != otherByteString.size()) {
-      return false;
-    }
-    if (totalLength == 0) {
-      return true;
-    }
-
-    // You don't really want to be calling equals on long strings, but since
-    // we cache the hashCode, we effectively cache inequality. We use the cached
-    // hashCode if it's already computed.  It's arguable we should compute the
-    // hashCode here, and if we're going to be testing a bunch of byteStrings,
-    // it might even make sense.
-    int thisHash = peekCachedHashCode();
-    int thatHash = otherByteString.peekCachedHashCode();
-    if (thisHash != 0 && thatHash != 0 && thisHash != thatHash) {
-      return false;
-    }
-
-    return equalsFragments(otherByteString);
-  }
-
   /**
    * Determines if this string is equal to another of the same length by iterating over the leaf
    * nodes. On each step of the iteration, the overlapping segments of the leaves are compared.
@@ -515,7 +483,8 @@ final class RopeByteString extends ByteString {
    * @param other string of the same length as this one
    * @return true if the values of this string equals the value of the given one
    */
-  private boolean equalsFragments(ByteString other) {
+  @Override
+  public boolean equalsInternal(ByteString other) {
     int thisOffset = 0;
     Iterator<LeafByteString> thisIter = new PieceIterator(this);
     LeafByteString thisString = thisIter.next();
