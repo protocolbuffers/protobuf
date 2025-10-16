@@ -3550,7 +3550,8 @@ Type* Reflection::MutableRepeatedField(Message* message,
 template <typename Type>
 void Reflection::AddField(Message* message, const FieldDescriptor* field,
                           const Type& value) const {
-  MutableRaw<RepeatedField<Type>>(message, field)->Add(value);
+  MutableRaw<RepeatedField<Type>>(message, field)
+      ->AddWithArena(message->GetArena(), value);
   SetHasBitForRepeated(message, field);
 }
 
@@ -3560,7 +3561,7 @@ Type* Reflection::AddField(Message* message,
   RepeatedPtrField<Type>* repeated =
       MutableRaw<RepeatedPtrField<Type>>(message, field);
   SetHasBitForRepeated(message, field);
-  return repeated->Add();
+  return repeated->AddWithArena(message->GetArena());
 }
 
 MessageFactory* Reflection::GetMessageFactory() const {
