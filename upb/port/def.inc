@@ -398,6 +398,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRESERVE_NONE
 #endif
 
+#if UPB_HAS_ATTRIBUTE(preserve_most)
+#define UPB_PRESERVE_MOST __attribute__((preserve_most))
+#else
+#define UPB_PRESERVE_MOST
+#endif
+
 /* This check is not fully robust: it does not require that we have "musttail"
  * support available. We need tail calls to avoid consuming arbitrary amounts
  * of stack space.
