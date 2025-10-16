@@ -95,7 +95,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
 bool PyDescriptorDatabase::FindFileByName(StringViewArg filename,
                                           FileDescriptorProto* output) {
   ScopedPyObjectPtr py_descriptor(PyObject_CallMethod(
-      py_database_, "FindFileByName", "s#", filename.c_str(), filename.size()));
+      py_database_, "FindFileByName", "s#", filename.data(), filename.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 
