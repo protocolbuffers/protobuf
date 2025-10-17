@@ -301,8 +301,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               decltype($field_$){$internal_metadata_offset$},
@@ -332,8 +331,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -347,8 +345,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -362,11 +359,10 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif)cc");
@@ -449,7 +445,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
-      _internal_mutable_$name_internal$()->Add(value);
+      _internal_mutable_$name_internal$()->InternalAddWithArena(
+          internal_visibility(), GetArena(), value);
       $set_hasbit$;
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
