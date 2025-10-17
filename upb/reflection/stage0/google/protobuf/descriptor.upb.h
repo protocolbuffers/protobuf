@@ -4669,6 +4669,22 @@ UPB_INLINE bool google_protobuf_FieldOptions_FeatureSupport_has_edition_removed(
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FieldOptions__FeatureSupport_msg_init(), 4);
   return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
 }
+UPB_INLINE void google_protobuf_FieldOptions_FeatureSupport_clear_removal_error(google_protobuf_FieldOptions_FeatureSupport* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FieldOptions__FeatureSupport_msg_init(), 5);
+  upb_Message_ClearBaseField(UPB_UPCAST(msg), &field);
+}
+UPB_INLINE upb_StringView google_protobuf_FieldOptions_FeatureSupport_removal_error(const google_protobuf_FieldOptions_FeatureSupport* msg) {
+  upb_StringView default_val = upb_StringView_FromString("");
+  upb_StringView ret;
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FieldOptions__FeatureSupport_msg_init(), 5);
+  _upb_Message_GetNonExtensionField(UPB_UPCAST(msg), &field,
+                                    &default_val, &ret);
+  return ret;
+}
+UPB_INLINE bool google_protobuf_FieldOptions_FeatureSupport_has_removal_error(const google_protobuf_FieldOptions_FeatureSupport* msg) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FieldOptions__FeatureSupport_msg_init(), 5);
+  return upb_Message_HasBaseField(UPB_UPCAST(msg), &field);
+}
 
 UPB_INLINE void google_protobuf_FieldOptions_FeatureSupport_set_edition_introduced(google_protobuf_FieldOptions_FeatureSupport *msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FieldOptions__FeatureSupport_msg_init(), 1);
@@ -4684,6 +4700,10 @@ UPB_INLINE void google_protobuf_FieldOptions_FeatureSupport_set_deprecation_warn
 }
 UPB_INLINE void google_protobuf_FieldOptions_FeatureSupport_set_edition_removed(google_protobuf_FieldOptions_FeatureSupport *msg, int32_t value) {
   const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FieldOptions__FeatureSupport_msg_init(), 4);
+  upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
+}
+UPB_INLINE void google_protobuf_FieldOptions_FeatureSupport_set_removal_error(google_protobuf_FieldOptions_FeatureSupport *msg, upb_StringView value) {
+  const upb_MiniTableField field = *upb_MiniTable_FindFieldByNumber(google__protobuf__FieldOptions__FeatureSupport_msg_init(), 5);
   upb_Message_SetBaseField((upb_Message *)msg, &field, &value);
 }
 

@@ -1912,6 +1912,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   // accessors -------------------------------------------------------
   enum : int {
     kDeprecationWarningFieldNumber = 3,
+    kRemovalErrorFieldNumber = 5,
     kEditionIntroducedFieldNumber = 1,
     kEditionDeprecatedFieldNumber = 2,
     kEditionRemovedFieldNumber = 4,
@@ -1930,6 +1931,22 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
   const ::std::string& _internal_deprecation_warning() const;
   PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(const ::std::string& value);
   ::std::string* PROTOBUF_NONNULL _internal_mutable_deprecation_warning();
+
+  public:
+  // optional string removal_error = 5;
+  bool has_removal_error() const;
+  void clear_removal_error() ;
+  const ::std::string& removal_error() const;
+  template <typename Arg_ = const ::std::string&, typename... Args_>
+  void set_removal_error(Arg_&& arg, Args_... args);
+  ::std::string* PROTOBUF_NONNULL mutable_removal_error();
+  [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_removal_error();
+  void set_allocated_removal_error(::std::string* PROTOBUF_NULLABLE value);
+
+  private:
+  const ::std::string& _internal_removal_error() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_removal_error(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_removal_error();
 
   public:
   // optional .google.protobuf.Edition edition_introduced = 1;
@@ -1969,7 +1986,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 4,
+  static const ::google::protobuf::internal::TcParseTable<3, 5,
                                    3, 0,
                                    2>
       _table_;
@@ -1993,6 +2010,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::internal::ArenaStringPtr deprecation_warning_;
+    ::google::protobuf::internal::ArenaStringPtr removal_error_;
     int edition_introduced_;
     int edition_deprecated_;
     int edition_removed_;
@@ -18592,14 +18610,14 @@ inline void FieldOptions_EditionDefault::set_allocated_value(::std::string* PROT
 
 // optional .google.protobuf.Edition edition_introduced = 1;
 inline bool FieldOptions_FeatureSupport::has_edition_introduced() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void FieldOptions_FeatureSupport::clear_edition_introduced() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_introduced_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000002U);
+                  0x00000004U);
 }
 inline ::google::protobuf::Edition FieldOptions_FeatureSupport::edition_introduced() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.FeatureSupport.edition_introduced)
@@ -18607,7 +18625,7 @@ inline ::google::protobuf::Edition FieldOptions_FeatureSupport::edition_introduc
 }
 inline void FieldOptions_FeatureSupport::set_edition_introduced(::google::protobuf::Edition value) {
   _internal_set_edition_introduced(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.FeatureSupport.edition_introduced)
 }
 inline ::google::protobuf::Edition FieldOptions_FeatureSupport::_internal_edition_introduced() const {
@@ -18624,14 +18642,14 @@ inline void FieldOptions_FeatureSupport::_internal_set_edition_introduced(::goog
 
 // optional .google.protobuf.Edition edition_deprecated = 2;
 inline bool FieldOptions_FeatureSupport::has_edition_deprecated() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;
 }
 inline void FieldOptions_FeatureSupport::clear_edition_deprecated() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_deprecated_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000004U);
+                  0x00000008U);
 }
 inline ::google::protobuf::Edition FieldOptions_FeatureSupport::edition_deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.FeatureSupport.edition_deprecated)
@@ -18639,7 +18657,7 @@ inline ::google::protobuf::Edition FieldOptions_FeatureSupport::edition_deprecat
 }
 inline void FieldOptions_FeatureSupport::set_edition_deprecated(::google::protobuf::Edition value) {
   _internal_set_edition_deprecated(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.FeatureSupport.edition_deprecated)
 }
 inline ::google::protobuf::Edition FieldOptions_FeatureSupport::_internal_edition_deprecated() const {
@@ -18725,14 +18743,14 @@ inline void FieldOptions_FeatureSupport::set_allocated_deprecation_warning(::std
 
 // optional .google.protobuf.Edition edition_removed = 4;
 inline bool FieldOptions_FeatureSupport::has_edition_removed() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
   return value;
 }
 inline void FieldOptions_FeatureSupport::clear_edition_removed() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.edition_removed_ = 0;
   ClearHasBit(_impl_._has_bits_[0],
-                  0x00000008U);
+                  0x00000010U);
 }
 inline ::google::protobuf::Edition FieldOptions_FeatureSupport::edition_removed() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.FeatureSupport.edition_removed)
@@ -18740,7 +18758,7 @@ inline ::google::protobuf::Edition FieldOptions_FeatureSupport::edition_removed(
 }
 inline void FieldOptions_FeatureSupport::set_edition_removed(::google::protobuf::Edition value) {
   _internal_set_edition_removed(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.FeatureSupport.edition_removed)
 }
 inline ::google::protobuf::Edition FieldOptions_FeatureSupport::_internal_edition_removed() const {
@@ -18753,6 +18771,75 @@ inline void FieldOptions_FeatureSupport::_internal_set_edition_removed(::google:
                                           assert(::google::protobuf::internal::ValidateEnum(
                                               value, ::google::protobuf::Edition_internal_data_));
                                           _impl_.edition_removed_ = value;
+}
+
+// optional string removal_error = 5;
+inline bool FieldOptions_FeatureSupport::has_removal_error() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  return value;
+}
+inline void FieldOptions_FeatureSupport::clear_removal_error() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.removal_error_.ClearToEmpty();
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000002U);
+}
+inline const ::std::string& FieldOptions_FeatureSupport::removal_error() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.FeatureSupport.removal_error)
+  return _internal_removal_error();
+}
+template <typename Arg_, typename... Args_>
+PROTOBUF_ALWAYS_INLINE void FieldOptions_FeatureSupport::set_removal_error(Arg_&& arg, Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  _impl_.removal_error_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.FeatureSupport.removal_error)
+}
+inline ::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::mutable_removal_error()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ::std::string* _s = _internal_mutable_removal_error();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FieldOptions.FeatureSupport.removal_error)
+  return _s;
+}
+inline const ::std::string& FieldOptions_FeatureSupport::_internal_removal_error() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.removal_error_.Get();
+}
+inline void FieldOptions_FeatureSupport::_internal_set_removal_error(const ::std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.removal_error_.Set(value, GetArena());
+}
+inline ::std::string* PROTOBUF_NONNULL FieldOptions_FeatureSupport::_internal_mutable_removal_error() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  return _impl_.removal_error_.Mutable( GetArena());
+}
+inline ::std::string* PROTOBUF_NULLABLE FieldOptions_FeatureSupport::release_removal_error() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:google.protobuf.FieldOptions.FeatureSupport.removal_error)
+  if (!CheckHasBit(_impl_._has_bits_[0], 0x00000002U)) {
+    return nullptr;
+  }
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  auto* released = _impl_.removal_error_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.removal_error_.Set("", GetArena());
+  }
+  return released;
+}
+inline void FieldOptions_FeatureSupport::set_allocated_removal_error(::std::string* PROTOBUF_NULLABLE value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  } else {
+    ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  }
+  _impl_.removal_error_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.removal_error_.IsDefault()) {
+    _impl_.removal_error_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldOptions.FeatureSupport.removal_error)
 }
 
 // -------------------------------------------------------------------

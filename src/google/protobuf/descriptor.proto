@@ -822,6 +822,10 @@ message FieldOptions {
     // this one, the last default assigned will be used, and proto files will
     // not be able to override it.
     optional Edition edition_removed = 4;
+
+    // The removal error text if this feature is used after the edition it was
+    // removed in.
+    optional string removal_error = 5;
   }
   optional FeatureSupport feature_support = 22;
 
