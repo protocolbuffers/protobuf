@@ -510,10 +510,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
         const Struct& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
-    ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, ::std::string, ::google::protobuf::Value,
-                      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-                      ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE>
-        fields_;
+    ::google::protobuf::internal::MapField<Struct_FieldsEntry_DoNotUse, ::std::string, ::google::protobuf::Value> fields_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
