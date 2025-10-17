@@ -1121,30 +1121,14 @@ class PROTOBUF_EXPORT ExtensionSet {
     return false;
   }
 
-  // Returns true and fills field_number and extension if extension is found.
-  // Note to support packed repeated field compatibility, it also fills whether
-  // the tag on wire is packed, which can be different from
-  // extension->is_packed (whether packed=true is specified).
-  template <typename ExtensionFinder>
-  bool FindExtensionInfoFromTag(uint32_t tag, ExtensionFinder* extension_finder,
-                                int* field_number, ExtensionInfo* extension,
-                                bool* was_packed_on_wire) {
-    *field_number = WireFormatLite::GetTagFieldNumber(tag);
-    WireFormatLite::WireType wire_type = WireFormatLite::GetTagWireType(tag);
-    return FindExtensionInfoFromFieldNumber(wire_type, *field_number,
-                                            extension_finder, extension,
-                                            was_packed_on_wire);
-  }
-
   // Returns true and fills extension if extension is found.
   // Note to support packed repeated field compatibility, it also fills whether
   // the tag on wire is packed, which can be different from
   // extension->is_packed (whether packed=true is specified).
   template <typename ExtensionFinder>
-  bool FindExtensionInfoFromFieldNumber(int wire_type, int field_number,
-                                        ExtensionFinder* extension_finder,
-                                        ExtensionInfo* extension,
-                                        bool* was_packed_on_wire) const {
+  static bool FindExtensionInfoFromFieldNumber(
+      int wire_type, int field_number, ExtensionFinder* extension_finder,
+      ExtensionInfo* extension, bool* was_packed_on_wire) {
     if (!extension_finder->Find(field_number, extension)) {
       return false;
     }
@@ -1170,8 +1154,8 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Find the prototype for a LazyMessage from the extension registry. Returns
   // null if the extension is not found.
-  const MessageLite* GetPrototypeForLazyMessage(const MessageLite* extendee,
-                                                int number) const;
+  static const MessageLite* GetPrototypeForLazyMessage(
+      const MessageLite* extendee, int number);
 
   // Returns true if extension is present and lazy.
   bool HasLazy(int number) const;
@@ -1204,16 +1188,19 @@ class PROTOBUF_EXPORT ExtensionSet {
     return ext;
   }
 
-  bool FindExtension(int wire_type, uint32_t field, const MessageLite* extendee,
-                     const internal::ParseContext* /*ctx*/,
-                     ExtensionInfo* extension, bool* was_packed_on_wire) {
+  static bool FindExtension(int wire_type, uint32_t field,
+                            const MessageLite* extendee,
+                            const internal::ParseContext* /*ctx*/,
+                            ExtensionInfo* extension,
+                            bool* was_packed_on_wire) {
     GeneratedExtensionFinder finder(extendee);
     return FindExtensionInfoFromFieldNumber(wire_type, field, &finder,
                                             extension, was_packed_on_wire);
   }
-  bool FindExtension(int wire_type, uint32_t field, const Message* extendee,
-                     const internal::ParseContext* ctx,
-                     ExtensionInfo* extension, bool* was_packed_on_wire);
+  static bool FindExtension(int wire_type, uint32_t field,
+                            const Message* extendee,
+                            const internal::ParseContext* ctx,
+                            ExtensionInfo* extension, bool* was_packed_on_wire);
   // Used for MessageSet only
   const char* ParseFieldMaybeLazily(uint64_t tag, const char* ptr,
                                     const MessageLite* extendee,
