@@ -78,9 +78,7 @@ template <typename Key, typename T>
 class MapFieldLite;
 class MapFieldBase;
 
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type>
+template <typename Derived, typename Key, typename T>
 class MapField;
 
 struct MapTestPeer;
