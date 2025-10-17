@@ -101,7 +101,8 @@ inline constexpr CodeGeneratorResponse::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorResponse, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_)>()
+            ::google::protobuf::compiler::CodeGeneratorResponse,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_ {}
@@ -140,7 +141,8 @@ inline constexpr CodeGeneratorRequest::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_to_generate_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_)>()
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_to_generate_ {}
@@ -148,7 +150,8 @@ inline constexpr CodeGeneratorRequest::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         proto_file_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_)>()
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         proto_file_ {}
@@ -160,7 +163,8 @@ inline constexpr CodeGeneratorRequest::Impl_::Impl_(
         compiler_version_{nullptr},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         source_file_descriptors_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         source_file_descriptors_ {}
@@ -704,26 +708,29 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        file_to_generate_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_)>()
-        ), from.file_to_generate_}
+        file_to_generate_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_)>()
+        , from.file_to_generate_}
         #else
         file_to_generate_ { visibility, arena, from.file_to_generate_ }
         #endif
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        proto_file_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_)>()
-        ), from.proto_file_}
+        proto_file_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_)>()
+        , from.proto_file_}
         #else
         proto_file_ { visibility, arena, from.proto_file_ }
         #endif
         ,
         parameter_(arena, from.parameter_),
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        source_file_descriptors_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
-        ), from.source_file_descriptors_}
+        source_file_descriptors_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
+        , from.source_file_descriptors_}
         #else
         source_file_descriptors_ { visibility, arena, from.source_file_descriptors_ }
         #endif
@@ -755,7 +762,8 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_to_generate_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_)>()
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.file_to_generate_)>()
         }
         #else
         file_to_generate_ { visibility, arena }
@@ -763,7 +771,8 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
         ,
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         proto_file_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_)>()
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.proto_file_)>()
         }
         #else
         proto_file_ { visibility, arena }
@@ -772,7 +781,8 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
         parameter_(arena),
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         source_file_descriptors_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorRequest, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
+            ::google::protobuf::compiler::CodeGeneratorRequest,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
         }
         #else
         source_file_descriptors_ { visibility, arena }
@@ -1562,9 +1572,10 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        file_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorResponse, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_)>()
-        ), from.file_}
+        file_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::compiler::CodeGeneratorResponse,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_)>()
+        , from.file_}
         #else
         file_ { visibility, arena, from.file_ }
         #endif
@@ -1600,7 +1611,8 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         file_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::compiler::CodeGeneratorResponse, PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_)>()
+            ::google::protobuf::compiler::CodeGeneratorResponse,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse, _impl_.file_)>()
         }
         #else
         file_ { visibility, arena }

@@ -19,6 +19,11 @@ namespace internal {
 class ExtensionSet;
 class InternalVisibilityForTesting;
 class InternalMetadata;
+class ParseContext;
+
+template <typename T, bool sign>
+const char* VarintParser(void* object, Arena* arena, const char* ptr,
+                         ParseContext* ctx);
 
 // Empty class to use as a mandatory 'internal token' for functions that have to
 // be public, such as arena constructors, but that are for internal use only.
@@ -33,6 +38,10 @@ class InternalVisibility {
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::internal::ExtensionSet;
   friend class ::google::protobuf::internal::InternalMetadata;
+
+  template <typename T, bool sign>
+  friend const char* internal::VarintParser(void* object, Arena* arena,
+                                            const char* ptr, ParseContext* ctx);
 
   friend class InternalVisibilityForTesting;
 };
