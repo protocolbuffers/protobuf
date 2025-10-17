@@ -157,8 +157,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_map()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -167,8 +166,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 #endif
             )cc");
   } else if (field_->is_repeated()) {
-    p->Emit({{"internal_metadata_offset",
-              [&] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -185,8 +183,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_map()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -198,8 +195,7 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
     if (ShouldSplit(field_, options_)) {
       p->Emit("$name$_{}");  // RawPtr<Repeated>
     } else {
-      p->Emit({{"internal_metadata_offset",
-                [p] { InternalMetadataOffsetFormatString(p); }}},
+      p->Emit({InternalMetadataOffsetSub(p)},
               R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
                 $name$_{visibility, $internal_metadata_offset$}
@@ -217,21 +213,19 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_map()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif
             )cc");
   } else if (field_->is_repeated()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif
@@ -289,11 +283,16 @@ pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {
       .string_type();
 }
 
-void FieldGeneratorBase::InternalMetadataOffsetFormatString(io::Printer* p) {
-  p->Emit(R"cc(
-    ::_pbi::InternalMetadataOffset::Build<
-        $classtype$, PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$name$_)>()
-  )cc");
+Sub FieldGeneratorBase::InternalMetadataOffsetSub(io::Printer* p) {
+  return Sub("internal_metadata_offset",
+             [p] {
+               p->Emit(R"cc(
+                 ::_pbi::InternalMetadataOffset::Build<
+                     $classtype$,
+                     PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$name$_)>()
+               )cc");
+             })
+      .WithSuffix("");
 }
 
 namespace {
