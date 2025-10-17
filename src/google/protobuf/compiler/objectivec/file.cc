@@ -836,8 +836,17 @@ void FileGenerator::DetermineNeededDeps(
     PublicDepsHandling public_deps_handling) const {
   // This logic captures the deps that are needed for types thus removing the
   // ones that are only deps because they provide the definitions for custom
-  // options. If protoc gets something like "import options" then this logic can
-  // go away as the non "import options" deps would be the ones needed.
+  // options.
+  //
+  // However, this as the side effect of if something was needed and it was
+  // coming from a `import public` *within* an `import`, then a `#import` will
+  // be generated for that otherwise transitive import. If some build system
+  // wants to do some sort of strict layering checks on the generated code, then
+  // it will fail those checks.
+  //
+  // Since the original intent of this "mode" was to help prune out headers for
+  // custom options, and protobuf now does support `import option`, it likely
+  // makes sense to remove this in the future instead.
 
   if (public_deps_handling == PublicDepsHandling::kForceInclude) {
     for (int i = 0; i < file_->public_dependency_count(); i++) {
