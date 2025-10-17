@@ -87,13 +87,18 @@ UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_LONGJMP(e->err, 1);
 }
 
+// Subtraction is used for bounds checks, and the C standard says that pointer
+// subtraction is UB if the pointers aren't part of the same array or one past
+// the end, so we must avoid NULL - NULL. C++ defines it though.
+static char initial_buf_sentinel;
+
 UPB_NOINLINE
 static char* encode_growbuffer(char* ptr, upb_encstate* e, size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
   size_t new_size = upb_roundup_pow2(needed_size);
-  char* new_buf =
-      upb_Arena_Realloc(e->arena, (void*)e->buf, old_size, new_size);
+  void* old_buf = e->buf == &initial_buf_sentinel ? NULL : (void*)e->buf;
+  char* new_buf = upb_Arena_Realloc(e->arena, old_buf, old_size, new_size);
 
   if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
 
@@ -804,13 +809,14 @@ static upb_EncodeStatus _upb_Encode(const upb_Message* msg,
 
   e.status = kUpb_EncodeStatus_Ok;
   e.arena = arena;
-  e.buf = NULL;
-  e.limit = NULL;
+  e.buf = &initial_buf_sentinel;
+  e.limit = &initial_buf_sentinel;
   e.depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
 
-  return upb_Encoder_Encode(NULL, &e, msg, l, buf, size, prepend_len);
+  return upb_Encoder_Encode(&initial_buf_sentinel, &e, msg, l, buf, size,
+                            prepend_len);
 }
 
 upb_EncodeStatus upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
