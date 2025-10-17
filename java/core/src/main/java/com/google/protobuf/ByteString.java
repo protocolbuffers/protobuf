@@ -988,6 +988,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     if (!(o instanceof ByteString)) {
       return false;
     }
+
     ByteString other = (ByteString) o; // Non-null due to instanceof check above.
     int size = size();
     if (size != other.size()) {
