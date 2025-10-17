@@ -857,6 +857,19 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
         }
       }
     )rs");
+
+    // TODO: Check if we are in a forced lite runtime in addition
+    // to the existing check.
+    if (msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
+      ctx.Emit({{"Msg", RsSafeName(msg.name())}},
+               R"rs(
+              impl $pb$::MessageDescriptorInterop for $Msg$ {
+                fn __unstable_get_descriptor() -> *const $std$::ffi::c_void {
+                  unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as Default>::default().raw_msg()) }
+                }
+              }
+            )rs");
+    }
   }
 }  // NOLINT(readability/fn_size)
 
