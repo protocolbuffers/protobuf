@@ -49,6 +49,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "third_party/boundary_proxy/proto_compare/annotation.proto";
+
 option cc_enable_arenas = true;
 option go_package = "google.golang.org/protobuf/types/known/wrapperspb";
 option java_package = "com.google.protobuf";
@@ -56,6 +58,11 @@ option java_outer_classname = "WrappersProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+
+// Mark this file as having proto_compare annotations to cross TPC boundary
+// proxy. This is for internal testing only.
+option (proto_compare.file_vetting_status) = "latest";
+option (proto_compare.file_use_case) = FILE_USE_CASE_INTERNAL_TPC;
 
 // Wrapper message for `double`.
 //
