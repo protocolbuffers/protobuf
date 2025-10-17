@@ -48,6 +48,13 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_removed = 4;</code>
      */
     protected $edition_removed = null;
+    /**
+     * The removal error text if this feature is used after the edition it was
+     * removed in.
+     *
+     * Generated from protobuf field <code>optional string removal_error = 5;</code>
+     */
+    protected $removal_error = null;
 
     /**
      * Constructor.
@@ -69,6 +76,9 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      *           The edition this feature is no longer available in.  In editions after
      *           this one, the last default assigned will be used, and proto files will
      *           not be able to override it.
+     *     @type string $removal_error
+     *           The removal error text if this feature is used after the edition it was
+     *           removed in.
      * }
      */
     public function __construct($data = NULL) {
@@ -228,6 +238,44 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\Edition::class);
         $this->edition_removed = $var;
+
+        return $this;
+    }
+
+    /**
+     * The removal error text if this feature is used after the edition it was
+     * removed in.
+     *
+     * Generated from protobuf field <code>optional string removal_error = 5;</code>
+     * @return string
+     */
+    public function getRemovalError()
+    {
+        return isset($this->removal_error) ? $this->removal_error : '';
+    }
+
+    public function hasRemovalError()
+    {
+        return isset($this->removal_error);
+    }
+
+    public function clearRemovalError()
+    {
+        unset($this->removal_error);
+    }
+
+    /**
+     * The removal error text if this feature is used after the edition it was
+     * removed in.
+     *
+     * Generated from protobuf field <code>optional string removal_error = 5;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setRemovalError($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->removal_error = $var;
 
         return $this;
     }
