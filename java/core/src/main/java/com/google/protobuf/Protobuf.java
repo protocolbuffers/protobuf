@@ -16,13 +16,13 @@ import java.util.concurrent.ConcurrentMap;
 @ExperimentalApi
 @CheckReturnValue
 final class Protobuf {
+  // Whether to check if ClassValue is available and use it if so.
+  private static final boolean TRY_CLASS_VALUE_CACHE = true;
   private static final Protobuf INSTANCE = new Protobuf();
 
   private final SchemaFactory schemaFactory;
-
-  // TODO: b/341207042 - Consider using ClassValue instead.
-  private final ConcurrentMap<Class<?>, Schema<?>> schemaCache =
-      new ConcurrentHashMap<Class<?>, Schema<?>>();
+  private final ConcurrentMap<Class<?>, Schema<?>> schemaCache;
+  private final ClassValueSchemaCache classValueSchemaCache;
 
   /** Gets the singleton instance of the Protobuf runtime. */
   static Protobuf getInstance() {
@@ -48,19 +48,23 @@ final class Protobuf {
   /** Gets the schema for the given message type. */
   <T> Schema<T> schemaFor(Class<T> messageType) {
     checkNotNull(messageType, "messageType");
-    @SuppressWarnings("unchecked")
-    Schema<T> schema = (Schema<T>) schemaCache.get(messageType);
-    if (schema == null) {
-      schema = schemaFactory.createSchema(messageType);
-      checkNotNull(schema, "schema");
+    if (classValueSchemaCache != null) {
+      return classValueSchemaCache.get(messageType);
+    } else {
       @SuppressWarnings("unchecked")
-      Schema<T> previous = (Schema<T>) schemaCache.putIfAbsent(messageType, schema);
-      if (previous != null) {
-        // A new schema was registered by another thread.
-        schema = previous;
+      Schema<T> schema = (Schema<T>) schemaCache.get(messageType);
+      if (schema == null) {
+        schema = schemaFactory.createSchema(messageType);
+        checkNotNull(schema, "schema");
+        @SuppressWarnings("unchecked")
+        Schema<T> previous = (Schema<T>) schemaCache.putIfAbsent(messageType, schema);
+        if (previous != null) {
+          // A new schema was registered by another thread.
+          schema = previous;
+        }
       }
+      return schema;
     }
-    return schema;
   }
 
   /** Gets the schema for the given message. */
@@ -70,6 +74,21 @@ final class Protobuf {
   }
 
   private Protobuf() {
+    boolean hasClassValue = false;
+    try {
+      Class.forName("java.lang.ClassValue");
+      hasClassValue = true;
+    } catch (ClassNotFoundException e) {
+      // ClassValue is not available
+    }
+
     schemaFactory = new ManifestSchemaFactory();
+    if (TRY_CLASS_VALUE_CACHE && hasClassValue) {
+      schemaCache = null;
+      classValueSchemaCache = new ClassValueSchemaCache(schemaFactory);
+    } else {
+      schemaCache = new ConcurrentHashMap<>();
+      classValueSchemaCache = null;
+    }
   }
 }
