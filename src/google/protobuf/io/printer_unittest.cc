@@ -11,6 +11,7 @@
 
 #include "google/protobuf/io/printer.h"
 
+#include <cstddef>
 #include <optional>
 #include <ostream>
 #include <string>
@@ -23,6 +24,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
