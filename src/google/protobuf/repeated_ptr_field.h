@@ -77,6 +77,8 @@ class RepeatedPtrIterator;
 template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
 template <typename T>
+class RepeatedPtrFieldBackInsertIterator;
+template <typename T>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
 
 // Swaps two non-overlapping blocks of memory of size `N`
@@ -415,7 +417,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   void CloseGap(int start, int num);
 
-  void Reserve(int capacity, Arena* arena);
+  void ReserveWithArena(Arena* arena, int capacity);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -1459,6 +1461,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
+  // Friended to allow calling `*WithArena` variants.
+  template <typename T>
+  friend class internal::RepeatedPtrFieldBackInsertIterator;
+
   // Friended to allow calling `AddAllocated` from our private base class with
   // arena pointers, which may be cached in the iterator. This saves us needing
   // to call `GetArena()` on the `RepeatedPtrField` every insertion, which has 2
@@ -1472,6 +1478,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   friend class DynamicMessage;
 
+  friend class google::protobuf::Reflection;
+
   friend class google::protobuf::internal::ExtensionSet;
 
   friend class internal::MapFieldBase;
@@ -1484,6 +1492,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // The MapFieldBase implementation needs to be able to static_cast down to
   // `RepeatedPtrFieldBase`.
   friend internal::MapFieldBase;
+
+  friend class internal::v2::TableDrivenParse;
 
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
@@ -1501,6 +1511,13 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   explicit RepeatedPtrField(Arena* arena);
 #endif  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
+
+  pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
+  void AddWithArena(Arena* arena, Element&& value);
+
+  template <typename Iter>
+  void AddWithArena(Arena* arena, Iter begin, Iter end);
 
   void AddAllocatedWithArena(Arena* arena, Element* value);
 
@@ -1681,23 +1698,35 @@ inline Element* RepeatedPtrField<Element>::Mutable(int index)
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::Add()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  return RepeatedPtrFieldBase::Add<TypeHandler>(GetArena());
+  return AddWithArena(GetArena());
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::InternalAddWithArena(
     internal::InternalVisibility, Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return AddWithArena(arena);
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE Element* RepeatedPtrField<Element>::AddWithArena(
+    Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
   return RepeatedPtrFieldBase::Add<TypeHandler>(arena);
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Element&& value) {
-  RepeatedPtrFieldBase::Add<TypeHandler>(GetArena(), std::move(value));
+  AddWithArena(GetArena(), std::move(value));
 }
 
 template <typename Element>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::InternalAddWithArena(
     internal::InternalVisibility, Arena* arena, Element&& value) {
+  AddWithArena(arena, std::move(value));
+}
+
+template <typename Element>
+PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
+    Arena* arena, Element&& value) {
   RepeatedPtrFieldBase::Add<TypeHandler>(arena, std::move(value));
 }
 
@@ -1705,14 +1734,21 @@ template <typename Element>
 template <typename Iter>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Iter begin,
                                                            Iter end) {
+  AddWithArena(GetArena(), std::move(begin), std::move(end));
+}
+
+template <typename Element>
+template <typename Iter>
+PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
+    Arena* arena, Iter begin, Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>::value) {
     int reserve = static_cast<int>(std::distance(begin, end));
-    Reserve(size() + reserve);
+    ReserveWithArena(arena, size() + reserve);
   }
   for (; begin != end; ++begin) {
-    *Add() = *begin;
+    *AddWithArena(arena) = *begin;
   }
 }
 
@@ -1934,7 +1970,7 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
-  return RepeatedPtrFieldBase::Reserve(new_size, GetArena());
+  return RepeatedPtrFieldBase::ReserveWithArena(GetArena(), new_size);
 }
 
 template <typename Element>
@@ -2006,7 +2042,7 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.Reserve(field.size() + additional, field.GetArena());
+    field.ReserveWithArena(field.GetArena(), field.size() + additional);
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
@@ -2340,18 +2376,18 @@ class RepeatedPtrFieldBackInsertIterator {
   using difference_type = std::ptrdiff_t;
 
   RepeatedPtrFieldBackInsertIterator(RepeatedPtrField<T>* const mutable_field)
-      : field_(mutable_field) {}
+      : field_(mutable_field), arena_(mutable_field->GetArena()) {}
   RepeatedPtrFieldBackInsertIterator<T>& operator=(const T& value) {
-    *field_->Add() = value;
+    *field_->AddWithArena(arena_) = value;
     return *this;
   }
   RepeatedPtrFieldBackInsertIterator<T>& operator=(
       const T* const ptr_to_value) {
-    *field_->Add() = *ptr_to_value;
+    *field_->AddWithArena(arena_) = *ptr_to_value;
     return *this;
   }
   RepeatedPtrFieldBackInsertIterator<T>& operator=(T&& value) {
-    *field_->Add() = std::move(value);
+    *field_->AddWithArena(arena_) = std::move(value);
     return *this;
   }
   RepeatedPtrFieldBackInsertIterator<T>& operator*() { return *this; }
@@ -2362,6 +2398,7 @@ class RepeatedPtrFieldBackInsertIterator {
 
  private:
   RepeatedPtrField<T>* field_;
+  Arena* arena_;
 };
 
 // A back inserter for RepeatedPtrFields that inserts by transferring ownership
