@@ -3001,8 +3001,14 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   const uint32_t saved_tag = data.tag();
 
   Arena* arena = map.arena();
+  NodeBase* nodes_to_insert = nullptr;
+  // We need to insert in the right order, so we append to the tail of the list.
+  NodeBase** tail = &nodes_to_insert;
+  size_t node_count = 0;
+
   while (true) {
     NodeBase* node = map.AllocNode(arena);
+
     char* const node_end =
         reinterpret_cast<char*>(node) + map.type_info().node_size;
     void* const node_key = node->GetVoidKey();
@@ -3042,8 +3048,11 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     });
 
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
-      // Parsing failed. Delete the node that we didn't insert.
-      if (arena == nullptr) map.DeleteNode(node);
+      if (arena == nullptr) {
+        // Parsing failed. Delete the node that we didn't insert.
+        map.DeleteNode(node);
+      }
+      map.InsertOrReplaceNodes(arena, nodes_to_insert, node_count);
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
 
@@ -3053,30 +3062,17 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
                                            aux[1].enum_data))) {
       WriteMapEntryAsUnknown(msg, table, map, arena, saved_tag, node, map_info);
     } else {
-      // Done parsing the node, insert it.
-      switch (map.type_info().key_type_kind()) {
-        case UntypedMapBase::TypeKind::kBool:
-          static_cast<KeyMapBase<bool>&>(map).InsertOrReplaceNode(
-              arena, static_cast<KeyMapBase<bool>::KeyNode*>(node));
-          break;
-        case UntypedMapBase::TypeKind::kU32:
-          static_cast<KeyMapBase<uint32_t>&>(map).InsertOrReplaceNode(
-              arena, static_cast<KeyMapBase<uint32_t>::KeyNode*>(node));
-          break;
-        case UntypedMapBase::TypeKind::kU64:
-          static_cast<KeyMapBase<uint64_t>&>(map).InsertOrReplaceNode(
-              arena, static_cast<KeyMapBase<uint64_t>::KeyNode*>(node));
-          break;
-        case UntypedMapBase::TypeKind::kString:
-          static_cast<KeyMapBase<std::string>&>(map).InsertOrReplaceNode(
-              arena, static_cast<KeyMapBase<std::string>::KeyNode*>(node));
-          break;
-        default:
-          Unreachable();
-      }
+      // Commit the node to the list.
+      node->next = nullptr;
+      *tail = node;
+      tail = &node->next;
+      ++node_count;
     }
 
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
+    // We use Done instead of DataAvailable to allow collecting as many objects
+    // in `nodes_to_insert` as we can, even if the input is sharded.
+    if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+      map.InsertOrReplaceNodes(arena, nodes_to_insert, node_count);
       PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
 
@@ -3086,6 +3082,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
     ptr = ptr2;
   }
 
+  map.InsertOrReplaceNodes(arena, nodes_to_insert, node_count);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
