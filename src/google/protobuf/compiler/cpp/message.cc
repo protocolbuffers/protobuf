@@ -4702,11 +4702,9 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
                 $DCHK$(!::_pbi::IsDescendant(*this, from))
                     << "Source of CopyFrom cannot be a descendant of the "
                        "target.";
-#ifdef PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
                 $DCHK$(!::_pbi::IsDescendant(from, *this))
                     << "Target of CopyFrom cannot be a descendant of the "
                        "source.";
-#endif  // PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY
                 Clear();)cc");
             } else {
               p->Emit(R"cc(
