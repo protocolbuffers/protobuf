@@ -68,16 +68,22 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
     }
   }
 
+  void** new_elems = new_rep->elements;
+
   if (using_sso()) {
     new_rep->capacity = new_capacity;
-    new_rep->allocated_size = tagged_rep_or_elem_ != nullptr ? 1 : 0;
-    new_rep->elements[0] = tagged_rep_or_elem_;
+    new_elems[0] = tagged_rep_or_elem_;
   } else {
     Rep* old_rep = rep();
+    void** old_elems = old_rep->elements;
     new_rep->capacity = new_capacity;
-    new_rep->allocated_size = old_rep->allocated_size;
-    memcpy(new_rep->elements, old_rep->elements,
-           new_rep->allocated_size * kPtrSize);
+    // Important: We need to copy all elements, not just the allocated ones,
+    // because when adding new elements, the callers pre-move the old sentinel
+    // to the new location beyond `old_allocated_size`. It's normally just 1
+    // element beyond, but we don't assume that here for safety.
+    // TODO: Possible optimization: if it's always 1 beyond, we could copy just
+    // `min(old_allocated_size + 1, old_capacity)` elements.
+    memcpy(new_elems, old_elems, old_capacity * kPtrSize);
     size_t old_total_size = old_capacity * kPtrSize + kRepHeaderSize;
     if (arena == nullptr) {
       internal::SizedDelete(old_rep, old_total_size);
@@ -86,10 +92,19 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
     }
   }
 
+  // Update the sentinels. Do this first just to be safe.
+
+  // If the field was at capacity before extending, the old pointers didn't
+  // contain any sentinels, so we insert it here. If the field was not at
+  // capacity, however, the old pointers contained at least one sentinel, which
+  // have been copied over by memcpy() above.
+  new_elems[old_capacity] = nullptr;
+  new_elems[new_capacity - 1] = nullptr;
+
   tagged_rep_or_elem_ =
       reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(new_rep) + 1);
 
-  return &new_rep->elements[current_size_];
+  return &new_elems[current_size_];
 }
 
 void RepeatedPtrFieldBase::Reserve(int capacity, Arena* arena) {
@@ -115,10 +130,14 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
     }
   } else {
     // Close up a gap of "num" elements starting at offset "start".
-    Rep* r = rep();
-    for (int i = start + num; i < r->allocated_size; ++i)
-      r->elements[i - num] = r->elements[i];
-    r->allocated_size -= num;
+    void** elems = rep()->elements;
+    const int allocated_size = AllocatedSize();
+    for (int i = start + num; i < allocated_size; ++i) {
+      elems[i - num] = elems[i];
+    }
+    for (int i = allocated_size - num; i < allocated_size; ++i) {
+      elems[i] = nullptr;
+    }
   }
   ExchangeCurrentSize(current_size_ - num);
 }
@@ -137,12 +156,13 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
+  if (from.empty()) return;
   int new_size = current_size_ + from.current_size_;
   auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<std::string* const*>(from.elements());
   auto end = src + from.current_size_;
-  auto end_assign = src + std::min(ClearedCount(), from.current_size_);
-  for (; src < end_assign; ++dst, ++src) {
+  UpdateSentinelsForAdd(from.current_size_);
+  for (; src < end && *dst != nullptr; ++dst, ++src) {
     (*dst)->assign(**src);
   }
   if (arena != nullptr) {
@@ -155,22 +175,25 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
     }
   }
   ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
-  }
 }
 
 
 int RepeatedPtrFieldBase::MergeIntoClearedMessages(
     const RepeatedPtrFieldBase& from) {
   Prefetch5LinesFrom1Line(&from);
+  ABSL_DCHECK_NE(&from, this);
+  ABSL_DCHECK(HasCleared());
+  if (from.empty()) return 0;
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
+  auto dst_end = dst + Capacity();
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
-  int count = std::min(ClearedCount(), from.current_size_);
+  auto src_end = src + from.current_size_;
   const ClassData* class_data = GetClassData(*src[0]);
-  for (int i = 0; i < count; ++i) {
-    ABSL_DCHECK(src[i] != nullptr);
-    dst[i]->MergeFromWithClassData(*src[i], class_data);
+  int count = 0;
+  for (; src < src_end && dst < dst_end && *dst != nullptr; ++dst, ++src) {
+    ABSL_DCHECK(*src != nullptr);
+    (*dst)->MergeFromWithClassData(**src, class_data);
+    ++count;
   }
   return count;
 }
@@ -185,7 +208,8 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
   const void* const* src = from.elements();
   auto end = src + from.current_size_;
   constexpr ptrdiff_t kPrefetchstride = 1;
-  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
+  UpdateSentinelsForAdd(from.current_size_);
+  if (ABSL_PREDICT_FALSE(HasCleared())) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
@@ -202,9 +226,6 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     *dst = copy_fn(arena, *src);
   }
   ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
-  }
 }
 
 template <>
@@ -219,7 +240,8 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
   auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
   auto end = src + from.current_size_;
   const ClassData* class_data = GetClassData(*src[0]);
-  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
+  UpdateSentinelsForAdd(from.current_size_);
+  if (ABSL_PREDICT_FALSE(HasCleared())) {
     int recycled = MergeIntoClearedMessages(from);
     dst += recycled;
     src += recycled;
@@ -230,9 +252,6 @@ void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     (*dst)->MergeFromWithClassData(**src, class_data);
   }
   ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
-  }
 }
 
 }  // namespace internal
