@@ -1851,7 +1851,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   } else {
     do {
       ptr += sizeof(TagType);
-      std::string* str = field.Add();
+      std::string* str = field.AddWithArena(arena);
       ptr = InlineGreedyStringParser(str, ptr, ctx);
       if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
         PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2604,6 +2604,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
   const uint16_t rep = type_card & field_layout::kRepMask;
   const uint16_t xform_val = type_card & field_layout::kTvMask;
   void* const base = MaybeGetSplitBase(msg, is_split, table);
+  auto* arena = msg->GetArena();
   switch (rep) {
     case field_layout::kRepSString: {
       auto& field = MaybeCreateRepeatedPtrFieldRefAt<std::string, is_split>(
@@ -2611,7 +2612,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      auto* arena = msg->GetArena();
       SerialArena* serial_arena;
       if (ABSL_PREDICT_TRUE(arena != nullptr &&
                             arena->impl_.GetSerialArenaFast(&serial_arena) &&
@@ -2630,7 +2630,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       } else {
         do {
           ptr = ptr2;
-          std::string* str = field.Add();
+          std::string* str = field.AddWithArena(arena);
           ptr = InlineGreedyStringParser(str, ptr, ctx);
           if (ABSL_PREDICT_FALSE(
                   ptr == nullptr ||
@@ -2775,8 +2775,9 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
 
   const char* ptr2 = ptr;
   uint32_t next_tag;
+  Arena* arena = msg->GetArena();
   do {
-    MessageLite* value = AddMessage(inner_table, field, msg->GetArena());
+    MessageLite* value = AddMessage(inner_table, field, arena);
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoopPreserveNone(value, ptr, ctx, inner_table);
     };

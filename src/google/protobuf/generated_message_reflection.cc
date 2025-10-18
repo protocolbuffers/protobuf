@@ -3561,7 +3561,7 @@ Type* Reflection::AddField(Message* message,
   RepeatedPtrField<Type>* repeated =
       MutableRaw<RepeatedPtrField<Type>>(message, field);
   SetHasBitForRepeated(message, field);
-  return repeated->Add();
+  return repeated->AddWithArena(message->GetArena());
 }
 
 MessageFactory* Reflection::GetMessageFactory() const {
