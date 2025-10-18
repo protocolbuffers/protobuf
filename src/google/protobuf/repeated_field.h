@@ -1485,7 +1485,14 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
     // called only when arena is nullptr.
     absl::NoDestructor<internal::RepeatedFieldWithArena<Element>>
         temp_container(other_arena);
-    SwapFallbackWithTemp(arena, *other, other_arena, temp_container->field());
+    auto& temp = temp_container->field();
+    SwapFallbackWithTemp(arena, *other, other_arena, temp);
+
+    // If the element type is not destructor-skippable, then we need to invoke
+    // the destructor of the temporary `RepeatedField`.
+    if constexpr (!Arena::is_destructor_skippable<RepeatedField>::value) {
+      temp.~RepeatedField();
+    }
   } else {
     RepeatedField<Element> temp;
 #else
