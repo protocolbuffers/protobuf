@@ -1,12 +1,8 @@
-#include "google/protobuf/message.h"
-
 #include <limits>
 
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
-
-constexpr bool kHasFullRuntime = true;
 
 extern "C" {
 
@@ -44,19 +40,6 @@ void proto2_rust_Message_copy_from(google::protobuf::MessageLite* dst,
 void proto2_rust_Message_merge_from(google::protobuf::MessageLite* dst,
                                     const google::protobuf::MessageLite& src) {
   dst->CheckTypeAndMergeFrom(src);
-}
-
-// Returns a pointer to the descriptor of the message, or nullptr if
-// the message is not google::protobuf::Message.
-const void* proto2_rust_Message_get_descriptor(const google::protobuf::MessageLite* m) {
-  if constexpr (kHasFullRuntime) {
-    auto msg = google::protobuf::DynamicCastMessage<google::protobuf::Message>(m);
-    if (msg == nullptr) {
-      return nullptr;
-    }
-    return msg->GetDescriptor();
-  }
-  return nullptr;
 }
 
 }  // extern "C"

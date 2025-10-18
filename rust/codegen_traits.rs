@@ -273,13 +273,4 @@ pub(crate) mod interop {
         #[cfg(cpp_kernel)]
         unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(raw: *mut c_void) -> Self;
     }
-
-    /// A trait that provides a descriptor for a message.
-    /// This is only implemented by the messages that implement the
-    /// `proto2::Message` interface.
-    #[cfg(all(cpp_kernel, not(lite_runtime)))]
-    pub trait MessageDescriptorInterop {
-        /// Returns a pointer to a `proto2::Descriptor`.
-        fn __unstable_get_descriptor() -> *const std::ffi::c_void;
-    }
 }

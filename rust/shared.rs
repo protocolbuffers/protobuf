@@ -14,8 +14,6 @@ use std::fmt;
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 
-#[cfg(all(cpp_kernel, not(lite_runtime)))]
-pub use crate::codegen_traits::interop::MessageDescriptorInterop;
 pub use crate::codegen_traits::{
     create::Parse,
     interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
