@@ -92,7 +92,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   return &new_rep->elements[current_size_];
 }
 
-void RepeatedPtrFieldBase::Reserve(int capacity, Arena* arena) {
+void RepeatedPtrFieldBase::ReserveWithArena(Arena* arena, int capacity) {
   ABSL_DCHECK_EQ(arena, GetArena());
   int delta = capacity - Capacity();
   if (delta > 0) {

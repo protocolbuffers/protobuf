@@ -415,7 +415,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   void CloseGap(int start, int num);
 
-  void Reserve(int capacity, Arena* arena);
+  void ReserveWithArena(Arena* arena, int capacity);
 
   template <typename TypeHandler>
   static inline Value<TypeHandler>* copy(const Value<TypeHandler>* value) {
@@ -1487,6 +1487,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // `RepeatedPtrFieldBase`.
   friend internal::MapFieldBase;
 
+  friend class internal::v2::TableDrivenParse;
+
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   using TypeHandler = internal::GenericTypeHandler<Element>;
 
@@ -1952,7 +1954,7 @@ inline Element* RepeatedPtrField<Element>::UnsafeArenaReleaseLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {
-  return RepeatedPtrFieldBase::Reserve(new_size, GetArena());
+  return RepeatedPtrFieldBase::ReserveWithArena(GetArena(), new_size);
 }
 
 template <typename Element>
@@ -2024,7 +2026,7 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.Reserve(field.size() + additional, field.GetArena());
+    field.ReserveWithArena(field.GetArena(), field.size() + additional);
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
