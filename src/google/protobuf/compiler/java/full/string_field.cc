@@ -217,7 +217,9 @@ void ImmutableStringFieldGenerator::GenerateMembers(
       "    java.lang.String s = bs.toStringUtf8();\n");
   printer->Annotate("{", "}", descriptor_);
   if (CheckUtf8(descriptor_)) {
+
     printer->Print(variables_, "    $name$_ = s;\n");
+
   } else {
     printer->Print(variables_,
                    "    if (bs.isValidUtf8()) {\n"
@@ -407,9 +409,11 @@ void ImmutableStringFieldGenerator::GenerateBuildingCode(
 void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-                   "$name$_ = input.readStringRequireUtf8();\n"
-                   "$set_has_field_bit_builder$\n");
+    printer->Print(
+        variables_,
+        "$name$_ = "
+        "input.readStringRequireUtf8();\n"
+        "$set_has_field_bit_builder$\n");
   } else {
     printer->Print(variables_,
                    "$name$_ = input.readBytes();\n"
@@ -673,10 +677,12 @@ void ImmutableStringOneofFieldGenerator::GenerateBuildingCode(
 void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-                   "java.lang.String s = input.readStringRequireUtf8();\n"
-                   "$set_oneof_case_message$;\n"
-                   "$oneof_name$_ = s;\n");
+    printer->Print(
+        variables_,
+        "$set_oneof_case_message$;\n"
+        "$oneof_name$_ = "
+        "input.readStringRequireUtf8();\n"
+    );
   } else {
     printer->Print(variables_,
                    "com.google.protobuf.ByteString bs = input.readBytes();\n"
@@ -982,10 +988,11 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuildingCode(
 void RepeatedImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-                   "java.lang.String s = input.readStringRequireUtf8();\n"
-                   "ensure$capitalized_name$IsMutable();\n"
-                   "$name$_.add(s);\n");
+    printer->Print(
+        variables_,
+        "ensure$capitalized_name$IsMutable();\n"
+        "$name$_.add(input.readStringRequireUtf8());\n"
+    );
   } else {
     printer->Print(variables_,
                    "com.google.protobuf.ByteString bs = input.readBytes();\n"
