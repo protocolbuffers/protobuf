@@ -164,6 +164,15 @@ class FieldDescriptor
         $this->proto3_optional = $proto3_optional;
     }
 
+    public function hasPresence()
+    {
+        if ($this->isRepeated()) {
+            return false;
+        }
+        return $this->getType() == GPBType::MESSAGE ||
+               !is_null($this->containing_oneof);
+    }
+
     public function getContainingOneof()
     {
         return $this->containing_oneof;
