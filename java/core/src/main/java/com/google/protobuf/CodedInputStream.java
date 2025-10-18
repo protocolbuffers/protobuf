@@ -2889,7 +2889,7 @@ public abstract class CodedInputStream {
                   buffer.length - bufferSize,
                   //  do not exceed the total bytes limit
                   sizeLimit - totalBytesRetired - bufferSize));
-      if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
+      if (bytesRead < -1 || bytesRead > buffer.length) {
         throw new IllegalStateException(
             input.getClass()
                 + "#read(byte[]) returned invalid result: "
