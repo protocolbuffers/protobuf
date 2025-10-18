@@ -10,10 +10,13 @@
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
