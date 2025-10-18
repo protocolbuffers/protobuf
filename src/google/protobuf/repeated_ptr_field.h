@@ -77,6 +77,8 @@ class RepeatedPtrIterator;
 template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
 template <typename T>
+class RepeatedPtrFieldBackInsertIterator;
+template <typename T>
 class AllocatedRepeatedPtrFieldBackInsertIterator;
 
 // Swaps two non-overlapping blocks of memory of size `N`
@@ -1459,6 +1461,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
+  // Friended to allow calling `*WithArena` variants.
+  template <typename T>
+  friend class internal::RepeatedPtrFieldBackInsertIterator;
+
   // Friended to allow calling `AddAllocated` from our private base class with
   // arena pointers, which may be cached in the iterator. This saves us needing
   // to call `GetArena()` on the `RepeatedPtrField` every insertion, which has 2
@@ -2370,18 +2376,18 @@ class RepeatedPtrFieldBackInsertIterator {
   using difference_type = std::ptrdiff_t;
 
   RepeatedPtrFieldBackInsertIterator(RepeatedPtrField<T>* const mutable_field)
-      : field_(mutable_field) {}
+      : field_(mutable_field), arena_(mutable_field->GetArena()) {}
   RepeatedPtrFieldBackInsertIterator<T>& operator=(const T& value) {
-    *field_->Add() = value;
+    *field_->AddWithArena(arena_) = value;
     return *this;
   }
   RepeatedPtrFieldBackInsertIterator<T>& operator=(
       const T* const ptr_to_value) {
-    *field_->Add() = *ptr_to_value;
+    *field_->AddWithArena(arena_) = *ptr_to_value;
     return *this;
   }
   RepeatedPtrFieldBackInsertIterator<T>& operator=(T&& value) {
-    *field_->Add() = std::move(value);
+    *field_->AddWithArena(arena_) = std::move(value);
     return *this;
   }
   RepeatedPtrFieldBackInsertIterator<T>& operator*() { return *this; }
@@ -2392,6 +2398,7 @@ class RepeatedPtrFieldBackInsertIterator {
 
  private:
   RepeatedPtrField<T>* field_;
+  Arena* arena_;
 };
 
 // A back inserter for RepeatedPtrFields that inserts by transferring ownership
