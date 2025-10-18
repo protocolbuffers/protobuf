@@ -5295,7 +5295,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
             $WeakDescriptorSelfPin$;
             $annotate_bytesize$;
             // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
-            ::size_t total_size = this_.$extensions$.MessageSetByteSize();
+            ::size_t total_size = this_.$extensions$.MessageSetByteSize(&this_);
             if (this_.$have_unknown_fields$) {
               total_size += ::_pbi::ComputeUnknownMessageSetItemsSize(
                   this_.$unknown_fields$);
@@ -5353,7 +5353,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         [&] {
           if (descriptor_->extension_range_count() == 0) return;
           p->Emit(R"cc(
-            total_size += this_.$extensions$.ByteSize();
+            total_size += this_.$extensions$.ByteSize(&this_);
           )cc");
         }},
        {"prefetch",
