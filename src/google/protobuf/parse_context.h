@@ -247,12 +247,13 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   template <typename Tag, typename T>
-  [[nodiscard]] const char* ReadRepeatedFixed(const char* ptr, Tag expected_tag,
+  [[nodiscard]] const char* ReadRepeatedFixed(const char* ptr, Arena* arena,
+                                              Tag expected_tag,
                                               RepeatedField<T>* out);
 
   template <typename T>
-  [[nodiscard]] const char* ReadPackedFixed(const char* ptr, int size,
-                                            RepeatedField<T>* out);
+  [[nodiscard]] const char* ReadPackedFixed(const char* ptr, Arena* arena,
+                                            int size, RepeatedField<T>* out);
   // Helpers for ReadPackedVarint and ReadPackedVarintWithField.
   template <typename Add>
   static const char* ReadPackedVarintArray(const char* ptr, const char* end,
@@ -260,7 +261,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename Convert, typename T>
   static const char* ReadPackedVarintArrayWithField(const char* ptr,
                                                     const char* end,
-                                                    Convert conv,
+                                                    Arena* arena, Convert conv,
                                                     RepeatedField<T>& out);
   template <typename Add>
   [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add) {
@@ -272,6 +273,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // Same as above, but pass the field directly , so we can preallocate.
   template <typename Convert, typename T>
   [[nodiscard]] const char* ReadPackedVarintWithField(const char* ptr,
+                                                      Arena* arena,
                                                       Convert conv,
                                                       RepeatedField<T>& out);
 
@@ -1301,11 +1303,11 @@ inline const char* EpsCopyInputStream::ReadMicroStringWithSize(const char* ptr,
 
 
 template <typename Tag, typename T>
-const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
+const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr, Arena* arena,
                                                   Tag expected_tag,
                                                   RepeatedField<T>* out) {
   do {
-    out->Add(UnalignedLoad<T>(ptr));
+    out->AddWithArena(arena, UnalignedLoad<T>(ptr));
     ptr += sizeof(T);
     if (ABSL_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
   } while (UnalignedLoad<Tag>(ptr) == expected_tag && (ptr += sizeof(Tag)));
@@ -1325,14 +1327,16 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
   GOOGLE_PROTOBUF_ASSERT_RETURN(predicate, nullptr)
 
 template <typename T>
-const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
+const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
+                                                int size,
                                                 RepeatedField<T>* out) {
+  ABSL_DCHECK_EQ(arena, out->GetArena());
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int nbytes = BytesAvailable(ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
-    out->Reserve(old_entries + num);
+    out->ReserveWithArena(arena, old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
@@ -1352,7 +1356,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
-  out->Reserve(old_entries + num);
+  out->ReserveWithArena(arena, old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
@@ -1380,7 +1384,10 @@ const char* EpsCopyInputStream::ReadPackedVarintArray(const char* ptr,
 
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
-    const char* ptr, const char* end, Convert conv, RepeatedField<T>& out) {
+    const char* ptr, const char* end, Arena* arena, Convert conv,
+    RepeatedField<T>& out) {
+  ABSL_DCHECK_EQ(arena, out.GetArena());
+
   // If we have enough bytes, we will spend more cpu cycles growing repeated
   // field, than parsing, so count the number of ints first and preallocate.
   // Assume that varint are valid and just count the number of bytes with
@@ -1395,7 +1402,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
       // We can overread, so if the last byte has a continuation bit set,
       // we need to account for that.
       if (end[-1] & 0x80) count++;
-      out.Reserve(old_size + count);
+      out.ReserveWithArena(arena, old_size + count);
     }
     T* x = out.AddNAlreadyReserved(count);
     ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
@@ -1410,20 +1417,21 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     out.Truncate(new_size);
     return ptr;
   } else {
-    return ReadPackedVarintArray(
-        ptr, end, [&](uint64_t varint) { out.Add(conv(varint)); });
+    return ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
+      out.AddWithArena(arena, conv(varint));
+    });
   }
 }
 
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintWithField(
-    const char* ptr, Convert conv, RepeatedField<T>& out) {
+    const char* ptr, Arena* arena, Convert conv, RepeatedField<T>& out) {
   int size = ReadSize(&ptr);
 
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {
-    ptr = ReadPackedVarintArrayWithField(ptr, buffer_end_, conv, out);
+    ptr = ReadPackedVarintArrayWithField(ptr, buffer_end_, arena, conv, out);
     if (ptr == nullptr) return nullptr;
     int overrun = static_cast<int>(ptr - buffer_end_);
     ABSL_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
@@ -1436,7 +1444,8 @@ const char* EpsCopyInputStream::ReadPackedVarintWithField(
       ABSL_CHECK_LE(size - chunk_size, kSlopBytes);
       auto end = buf + (size - chunk_size);
       auto result = ReadPackedVarintArray(
-          buf + overrun, end, [&](uint64_t varint) { out.Add(conv(varint)); });
+          buf + overrun, end,
+          [&](uint64_t varint) { out.AddWithArena(arena, conv(varint)); });
       if (result == nullptr || result != end) return nullptr;
       return buffer_end_ + (result - buf);
     }
@@ -1450,7 +1459,7 @@ const char* EpsCopyInputStream::ReadPackedVarintWithField(
     chunk_size = static_cast<int>(buffer_end_ - ptr);
   }
   auto end = ptr + size;
-  ptr = ReadPackedVarintArrayWithField(ptr, end, conv, out);
+  ptr = ReadPackedVarintArrayWithField(ptr, end, arena, conv, out);
   return end == ptr ? ptr : nullptr;
 }
 
@@ -1582,24 +1591,31 @@ template <typename T>
 
 // These are packed varints
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedInt32Parser(void* object,
+                                                            Arena* arena,
                                                             const char* ptr,
                                                             ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt32Parser(void* object,
+                                                             Arena* arena,
                                                              const char* ptr,
                                                              ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedInt64Parser(void* object,
+                                                            Arena* arena,
                                                             const char* ptr,
                                                             ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt64Parser(void* object,
+                                                             Arena* arena,
                                                              const char* ptr,
                                                              ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt32Parser(void* object,
+                                                             Arena* arena,
                                                              const char* ptr,
                                                              ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt64Parser(void* object,
+                                                             Arena* arena,
                                                              const char* ptr,
                                                              ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedEnumParser(void* object,
+                                                           Arena* arena,
                                                            const char* ptr,
                                                            ParseContext* ctx);
 
@@ -1620,20 +1636,23 @@ template <typename T, typename Validator>
 }
 
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedBoolParser(void* object,
+                                                           Arena* arena,
                                                            const char* ptr,
                                                            ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedFixed32Parser(
-    void* object, const char* ptr, ParseContext* ctx);
+    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedSFixed32Parser(
-    void* object, const char* ptr, ParseContext* ctx);
+    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedFixed64Parser(
-    void* object, const char* ptr, ParseContext* ctx);
+    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedSFixed64Parser(
-    void* object, const char* ptr, ParseContext* ctx);
+    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedFloatParser(void* object,
+                                                            Arena* arena,
                                                             const char* ptr,
                                                             ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedDoubleParser(void* object,
+                                                             Arena* arena,
                                                              const char* ptr,
                                                              ParseContext* ctx);
 

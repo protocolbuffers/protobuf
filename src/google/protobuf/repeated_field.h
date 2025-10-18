@@ -64,8 +64,13 @@ class DynamicMessage;
 class UnknownField;  // For the allowlist
 class UnknownFieldSet;
 class DynamicMessage;
+class Reflection;
 
 namespace internal {
+
+class EpsCopyInputStream;
+class TcParser;
+class WireFormat;
 
 template <typename T, int kHeapRepHeaderSize>
 constexpr int RepeatedFieldLowerClampLimit() {
@@ -482,6 +487,12 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   template <typename Iter>
   void Add(Iter begin, Iter end);
 
+  // The following APIs are for internal use only.
+  void InternalAddWithArena(internal::InternalVisibility, Arena* arena,
+                            Element value);
+  pointer InternalAddWithArena(internal::InternalVisibility,
+                               Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
   // Removes the last element in the array.
   void RemoveLast();
 
@@ -632,6 +643,12 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   friend class internal::FieldWithArena<RepeatedField<Element>>;
 
+  // For access to private `*WithArena` functions.
+  friend class google::protobuf::Reflection;
+  friend class internal::EpsCopyInputStream;
+  friend class internal::TcParser;
+  friend class internal::WireFormat;
+
   // For access to private arena constructor.
   friend class UnknownFieldSet;
 
@@ -690,6 +707,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   }
 #endif
 
+  void ReserveWithArena(Arena* arena, int new_size);
+
+  void AddWithArena(Arena* arena, Element value);
+  pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+
   void SwapFallbackWithTemp(Arena* arena, RepeatedField& other,
                             Arena* other_arena, RepeatedField<Element>& temp);
 
@@ -737,8 +759,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // the old container from `old_size` to `Capacity()` (unpoison memory)
   // directly before it is being released, and annotate the new container from
   // `Capacity()` to `old_size` (poison unused memory).
-  void Grow(bool was_soo, int old_size, int new_size);
-  void GrowNoAnnotate(bool was_soo, int old_size, int new_size);
+  void Grow(Arena* arena, bool was_soo, int old_size, int new_size);
+  void Grow(bool was_soo, int old_size, int new_size) {
+    Grow(GetArena(), was_soo, old_size, new_size);
+  }
+  void GrowNoAnnotate(Arena* arena, bool was_soo, int old_size, int new_size);
 
   // Annotates a change in size of this instance. This function should be called
   // with (capacity, old_size) after new memory has been allocated and filled
@@ -1153,12 +1178,25 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(Element value) {
+  AddWithArena(GetArena(), std::move(value));
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::InternalAddWithArena(
+    internal::InternalVisibility, Arena* arena, Element value) {
+  AddWithArena(arena, std::move(value));
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+
   bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(is_soo, old_size, old_size + 1);
+    Grow(arena, is_soo, old_size, old_size + 1);
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
@@ -1181,10 +1219,24 @@ inline void RepeatedField<Element>::Add(Element value) {
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return AddWithArena(GetArena());
+}
+
+template <typename Element>
+inline Element* RepeatedField<Element>::InternalAddWithArena(
+    internal::InternalVisibility, Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  return AddWithArena(arena);
+}
+
+template <typename Element>
+inline Element* RepeatedField<Element>::AddWithArena(Arena* arena)
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ABSL_DCHECK_EQ(arena, GetArena());
+
   bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == Capacity())) {
-    Grow(is_soo, old_size, old_size + 1);
+    Grow(arena, is_soo, old_size, old_size + 1);
     is_soo = false;
   }
   void* p = unsafe_elements(is_soo) + ExchangeCurrentSize(is_soo, old_size + 1);
@@ -1238,10 +1290,11 @@ inline void RepeatedField<Element>::AddInputIterator(Iter begin, Iter end) {
   Element* last = elem + capacity;
   UnpoisonBuffer();
 
+  Arena* arena = GetArena();
   while (begin != end) {
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
-      GrowNoAnnotate(is_soo, size, size + 1);
+      GrowNoAnnotate(arena, is_soo, size, size + 1);
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);
@@ -1520,23 +1573,29 @@ inline int CalculateReserveSize(int capacity, int new_size) {
 }  // namespace internal
 
 template <typename Element>
-void RepeatedField<Element>::Reserve(int new_size) {
+inline void RepeatedField<Element>::Reserve(int new_size) {
+  ReserveWithArena(GetArena(), new_size);
+}
+
+template <typename Element>
+void RepeatedField<Element>::ReserveWithArena(Arena* arena, int new_size) {
   const bool was_soo = is_soo();
   if (ABSL_PREDICT_FALSE(new_size > Capacity(was_soo))) {
-    Grow(was_soo, size(was_soo), new_size);
+    Grow(arena, was_soo, size(was_soo), new_size);
   }
 }
 
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
+PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(Arena* arena,
+                                                              bool was_soo,
                                                               int old_size,
                                                               int new_size) {
+  ABSL_DCHECK_EQ(arena, GetArena());
   const int old_capacity = Capacity(was_soo);
   ABSL_DCHECK_GT(new_size, old_capacity);
   HeapRep* new_rep;
-  Arena* arena = GetArena();
 
   new_size = internal::CalculateReserveSize<Element, kHeapRepHeaderSize>(
       old_capacity, new_size);
@@ -1601,10 +1660,11 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(bool was_soo,
 // However, as explained in b/266411038#comment9, this causes issues
 // in shared libraries for Youtube (and possibly elsewhere).
 template <typename Element>
-PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(bool was_soo, int old_size,
+PROTOBUF_NOINLINE void RepeatedField<Element>::Grow(Arena* arena, bool was_soo,
+                                                    int old_size,
                                                     int new_size) {
   UnpoisonBuffer();
-  GrowNoAnnotate(was_soo, old_size, new_size);
+  GrowNoAnnotate(arena, was_soo, old_size, new_size);
   AnnotateSize(Capacity(), old_size);
 }
 

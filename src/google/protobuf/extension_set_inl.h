@@ -33,7 +33,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
     return internal::Packed##CPP_CAMELCASE##Parser(                       \
         MutableRawRepeatedField(arena, number, info.type, info.is_packed, \
                                 info.descriptor),                         \
-        ptr, ctx);
+        arena, ptr, ctx);
       HANDLE_TYPE(INT32, Int32);
       HANDLE_TYPE(INT64, Int64);
       HANDLE_TYPE(UINT32, UInt32);

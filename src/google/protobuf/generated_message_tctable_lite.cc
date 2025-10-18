@@ -843,9 +843,10 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
   }
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<LayoutType>>(msg, data.offset());
+  Arena* arena = msg->GetArena();
   const auto tag = UnalignedLoad<TagType>(ptr);
   do {
-    field.Add(UnalignedLoad<LayoutType>(ptr + sizeof(TagType)));
+    field.AddWithArena(arena, UnalignedLoad<LayoutType>(ptr + sizeof(TagType)));
     ptr += sizeof(TagType) + sizeof(LayoutType);
     if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
       PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -885,7 +886,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedFixed(
   auto& field = RefAt<RepeatedField<LayoutType>>(msg, data.offset());
   int size = ReadSize(&ptr);
   // TODO: add a tailcalling variant of ReadPackedFixed.
-  return ctx->ReadPackedFixed(ptr, size,
+  return ctx->ReadPackedFixed(ptr, msg->GetArena(), size,
                               static_cast<RepeatedField<LayoutType>*>(&field));
 }
 
@@ -1156,6 +1157,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   }
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
+  Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   do {
     ptr += sizeof(TagType);
@@ -1164,7 +1166,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
-    field.Add(ZigZagDecodeHelper<FieldType, zigzag>(tmp));
+    field.AddWithArena(arena, ZigZagDecodeHelper<FieldType, zigzag>(tmp));
     if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
       PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
@@ -1227,7 +1229,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
   return ctx->ReadPackedVarintWithField(
-      ptr,
+      ptr, msg->GetArena(),
       [](uint64_t varint) {
         FieldType val;
         if (zigzag) {
@@ -1370,6 +1372,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
   }
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
+  Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   PrefetchEnumData(xform_val, aux);
@@ -1388,7 +1391,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
       ptr = ptr2;
       PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
     }
-    field.Add(static_cast<int32_t>(tmp));
+    field.AddWithArena(arena, static_cast<int32_t>(tmp));
     if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
       PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
@@ -1428,13 +1431,14 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnum(
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
   auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
+  Arena* arena = msg->GetArena();
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   PrefetchEnumData(xform_val, aux);
   return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
     if (!EnumIsValidAux(value, xform_val, aux)) {
       AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), value);
     } else {
-      field->Add(value);
+      field->AddWithArena(arena, value);
     }
   });
 }
@@ -1519,6 +1523,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnumSmallRange(
   }
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
+  Arena* arena = msg->GetArena();
   auto expected_tag = UnalignedLoad<TagType>(ptr);
   const uint8_t max = data.aux_idx();
   do {
@@ -1526,7 +1531,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnumSmallRange(
     if (ABSL_PREDICT_FALSE(min > v || v > max)) {
       PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
-    field.Add(static_cast<int32_t>(v));
+    field.AddWithArena(arena, static_cast<int32_t>(v));
     ptr += sizeof(TagType) + 1;
     if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
       PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -1571,6 +1576,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
   ptr += sizeof(TagType);
   auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
   const uint8_t max = data.aux_idx();
+  Arena* arena = msg->GetArena();
 
   return ctx->ReadPackedVarint(
       ptr,
@@ -1578,7 +1584,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
         if (ABSL_PREDICT_FALSE(min > v || v > max)) {
           AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
         } else {
-          field->Add(v);
+          field->AddWithArena(arena, v);
         }
       },
       /*size_callback=*/
@@ -1602,8 +1608,10 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
         int64_t new_size =
             int64_t{field->size()} +
             std::min(size_bytes, std::max(1024, ctx->MaximumReadSize(ptr)));
-        field->Reserve(static_cast<int32_t>(
-            std::min(new_size, int64_t{std::numeric_limits<int32_t>::max()})));
+        field->ReserveWithArena(
+            arena,
+            static_cast<int32_t>(std::min(
+                new_size, int64_t{std::numeric_limits<int32_t>::max()})));
       });
 }
 
@@ -2110,6 +2118,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   const uint16_t type_card = entry.type_card;
   const uint16_t rep = type_card & field_layout::kRepMask;
+  Arena* arena = msg->GetArena();
   if (rep == field_layout::kRep64Bits) {
     if (decoded_wiretype != WireFormatLite::WIRETYPE_FIXED64) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
@@ -2121,7 +2130,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
     uint32_t next_tag;
     do {
       ptr = ptr2;
-      *field.Add() = UnalignedLoad<uint64_t>(ptr);
+      *field.AddWithArena(arena) = UnalignedLoad<uint64_t>(ptr);
       ptr += size;
       if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
       ptr2 = ReadTag(ptr, &next_tag);
@@ -2139,7 +2148,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
     uint32_t next_tag;
     do {
       ptr = ptr2;
-      *field.Add() = UnalignedLoad<uint32_t>(ptr);
+      *field.AddWithArena(arena) = UnalignedLoad<uint32_t>(ptr);
       ptr += size;
       if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
       ptr2 = ReadTag(ptr, &next_tag);
@@ -2170,15 +2179,16 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   int size = ReadSize(&ptr);
   uint16_t rep = type_card & field_layout::kRepMask;
+  Arena* arena = msg->GetArena();
   if (rep == field_layout::kRep64Bits) {
     auto& field = MaybeCreateRepeatedFieldRefAt<uint64_t, is_split>(
         base, entry.offset, msg);
-    ptr = ctx->ReadPackedFixed(ptr, size, &field);
+    ptr = ctx->ReadPackedFixed(ptr, arena, size, &field);
   } else {
     ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
     auto& field = MaybeCreateRepeatedFieldRefAt<uint32_t, is_split>(
         base, entry.offset, msg);
-    ptr = ctx->ReadPackedFixed(ptr, size, &field);
+    ptr = ctx->ReadPackedFixed(ptr, arena, size, &field);
   }
 
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
@@ -2268,6 +2278,7 @@ const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   auto& field = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
       base, entry.offset, msg);
+  Arena* arena = msg->GetArena();
 
   TcParseTableBase::FieldAux aux;
   if (is_validated_enum) {
@@ -2288,7 +2299,7 @@ const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
       tmp = sizeof(FieldType) == 8 ? WireFormatLite::ZigZagDecode64(tmp)
                                    : WireFormatLite::ZigZagDecode32(tmp);
     }
-    field.Add(static_cast<FieldType>(tmp));
+    field.AddWithArena(arena, static_cast<FieldType>(tmp));
     if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
     ptr2 = ReadTag(ptr, &next_tag);
     if (ABSL_PREDICT_FALSE(ptr2 == nullptr)) goto error;
@@ -2377,6 +2388,7 @@ const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   auto* field = &MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
       base, entry.offset, msg);
+  Arena* arena = msg->GetArena();
 
   if (is_validated_enum) {
     const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
@@ -2385,12 +2397,13 @@ const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
       if (!EnumIsValidAux(value, xform_val, aux)) {
         AddUnknownEnum(msg, table, data.tag(), value);
       } else {
-        field->Add(value);
+        field->AddWithArena(arena, value);
       }
     });
   } else {
     return ctx->ReadPackedVarint(ptr, [=](uint64_t value) {
-      field->Add(is_zigzag ? (sizeof(FieldType) == 8
+      field->AddWithArena(
+          arena, is_zigzag ? (sizeof(FieldType) == 8
                                   ? WireFormatLite::ZigZagDecode64(value)
                                   : WireFormatLite::ZigZagDecode32(
                                         static_cast<uint32_t>(value)))
@@ -2598,7 +2611,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      auto* arena = field.GetArena();
+      auto* arena = msg->GetArena();
       SerialArena* serial_arena;
       if (ABSL_PREDICT_TRUE(arena != nullptr &&
                             arena->impl_.GetSerialArenaFast(&serial_arena) &&
