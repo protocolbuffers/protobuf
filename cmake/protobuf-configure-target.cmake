@@ -7,8 +7,8 @@
 
 # Refactors configuration options set on all Protobuf targets
 function(protobuf_configure_target target)
-    if(protobuf_LINK_LIBATOMIC)
-        target_link_libraries(libprotobuf PRIVATE atomic)
+    if(protobuf_LINK_LIBATOMIC AND "${target}" STREQUAL "libprotobuf")
+        target_link_libraries("${target}" PRIVATE atomic)
     endif()
 
     target_compile_features("${target}" PUBLIC cxx_std_17)
