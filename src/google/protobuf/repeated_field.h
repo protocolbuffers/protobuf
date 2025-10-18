@@ -985,12 +985,9 @@ template <typename Element>
 RepeatedField<Element>::~RepeatedField() {
   StaticValidityCheck();
   const bool is_soo = this->is_soo();
-  auto arena = GetArena(
-#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-      is_soo
-#endif
-  );
+
 #ifndef NDEBUG
+  auto* arena = GetArena();
   // Try to trigger segfault / asan failure in non-opt builds if arena_
   // lifetime has ended before the destructor.
   if (arena) (void)arena->SpaceAllocated();
@@ -1005,7 +1002,22 @@ RepeatedField<Element>::~RepeatedField() {
     Destroy(elem, elem + size);
   }
   UnpoisonBuffer();
-  if (!is_soo) InternalDeallocate<true>(arena);
+  if (!is_soo) {
+    Arena* arena = nullptr;
+    // The destructor is never called for arena-allocated `RepeatedField`s
+    // unless the element type is not destructor-skippable. This means we can
+    // avoid calling `GetArena()` if the element type is destructor-skippable.
+    if constexpr (Arena::is_destructor_skippable<Element>::value) {
+      ABSL_DCHECK_EQ(GetArena(), nullptr);
+    } else {
+      arena = GetArena(
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+          is_soo
+#endif
+      );
+    }
+    InternalDeallocate</*in_destructor=*/true>(arena);
+  }
 }
 
 template <typename Element>
@@ -1478,14 +1490,21 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
   Arena* other_arena = other->GetArena();
   if (internal::CanUseInternalSwap(arena, other_arena)) {
     InternalSwap(other);
-#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
   } else if (other_arena != nullptr) {
     // We can't call the destructor of the temp container since it allocates
     // memory from an arena, and the destructor of FieldWithArena expects to be
     // called only when arena is nullptr.
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
     absl::NoDestructor<internal::RepeatedFieldWithArena<Element>>
         temp_container(other_arena);
     auto& temp = temp_container->field();
+#else
+    // We can't use absl::NoDestructor here because the arena-enabled
+    // constructor of `RepeatedField` is private.
+    alignas(RepeatedField<Element>)
+        uint8_t temp_storage[sizeof(RepeatedField<Element>)];
+    auto& temp = *new (temp_storage) RepeatedField<Element>(other_arena);
+#endif
     SwapFallbackWithTemp(arena, *other, other_arena, temp);
 
     // If the element type is not destructor-skippable, then we need to invoke
@@ -1495,10 +1514,6 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
     }
   } else {
     RepeatedField<Element> temp;
-#else
-  } else {
-    RepeatedField<Element> temp(other_arena);
-#endif
     SwapFallbackWithTemp(arena, *other, other_arena, temp);
   }
 }
