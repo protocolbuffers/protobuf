@@ -44,18 +44,22 @@ TEST(RawPtr, Basic) {
 }
 
 TEST(RawPtr, Constexpr) {
+#ifdef __windows__
+  constexpr RawPtr<Obj> raw(kZeroBuffer);
+#else
   constexpr RawPtr<Obj> raw;
+#endif
   EXPECT_EQ(raw->i, 0);
   EXPECT_EQ((*raw).i, 0);
   EXPECT_EQ(static_cast<void*>(&raw->i), kZeroBuffer);
   EXPECT_EQ(static_cast<void*>(raw.Get()), kZeroBuffer);
   EXPECT_TRUE(raw.IsDefault());
 
-  static constexpr Obj obj = {1};
-  constexpr RawPtr<Obj> raw2(&obj);
+  static constexpr Obj obj1 = {1};
+  constexpr RawPtr<Obj> raw2(&obj1);
   EXPECT_EQ(raw2->i, 1);
   EXPECT_EQ((*raw2).i, 1);
-  EXPECT_EQ(static_cast<void*>(raw2.Get()), &obj);
+  EXPECT_EQ(static_cast<void*>(raw2.Get()), &obj1);
   EXPECT_FALSE(raw2.IsDefault());
 }
 
