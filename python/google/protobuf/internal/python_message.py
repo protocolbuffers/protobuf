@@ -443,7 +443,8 @@ def _DefaultValueConstructorForField(field):
       type_checker = type_checkers.GetTypeChecker(field)
       def MakeRepeatedScalarDefault(message):
         return containers.RepeatedScalarFieldContainer(
-            message._listener_for_children, type_checker)
+            message._listener_for_children, type_checker, field
+        )
       return MakeRepeatedScalarDefault
 
   if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
