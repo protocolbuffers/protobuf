@@ -34,7 +34,8 @@ inline constexpr FieldMask::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         paths_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldMask, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
+            ::google::protobuf::FieldMask,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         paths_ {}
@@ -137,9 +138,10 @@ PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        paths_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldMask, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
-        ), from.paths_}
+        paths_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::FieldMask,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
+        , from.paths_}
         #else
         paths_ { visibility, arena, from.paths_ }
         #endif
@@ -167,7 +169,8 @@ PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         paths_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::FieldMask, PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
+            ::google::protobuf::FieldMask,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldMask, _impl_.paths_)>()
         }
         #else
         paths_ { visibility, arena }
