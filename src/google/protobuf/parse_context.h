@@ -253,6 +253,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename T>
   [[nodiscard]] const char* ReadPackedFixed(const char* ptr, int size,
                                             RepeatedField<T>* out);
+  // Helpers for ReadPackedVarint and ReadPackedVarintWithField.
+  template <typename Add>
+  static const char* ReadPackedVarintArray(const char* ptr, const char* end,
+                                           Add add);
+  template <typename Convert, typename T>
+  static const char* ReadPackedVarintArrayWithField(const char* ptr,
+                                                    const char* end,
+                                                    Convert conv,
+                                                    RepeatedField<T>& out);
   template <typename Add>
   [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add) {
     return ReadPackedVarint(ptr, add, [](int) {});
@@ -1357,7 +1366,9 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
 }
 
 template <typename Add>
-const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
+const char* EpsCopyInputStream::ReadPackedVarintArray(const char* ptr,
+                                                      const char* end,
+                                                      Add add) {
   while (ptr < end) {
     uint64_t varint;
     ptr = VarintParse(ptr, &varint);
@@ -1368,9 +1379,8 @@ const char* ReadPackedVarintArray(const char* ptr, const char* end, Add add) {
 }
 
 template <typename Convert, typename T>
-const char* ReadPackedVarintArrayWithField(const char* ptr, const char* end,
-                                           Convert conv,
-                                           RepeatedField<T>& out) {
+const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
+    const char* ptr, const char* end, Convert conv, RepeatedField<T>& out) {
   // If we have enough bytes, we will spend more cpu cycles growing repeated
   // field, than parsing, so count the number of ints first and preallocate.
   // Assume that varint are valid and just count the number of bytes with
