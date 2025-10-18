@@ -351,8 +351,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               decltype($field_$){$internal_metadata_offset$},
@@ -372,8 +371,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -387,8 +385,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -402,11 +399,10 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif)cc");
