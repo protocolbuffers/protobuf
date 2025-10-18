@@ -1,5 +1,6 @@
 # TODO: migrate all dependencies from WORKSPACE to MODULE.bazel
 # https://github.com/protocolbuffers/protobuf/issues/14313
+# temp change
 
 module(
     name = "protobuf",
