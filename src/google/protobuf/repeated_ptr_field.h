@@ -1510,6 +1510,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   void AddWithArena(Arena* arena, Element&& value);
 
+  template <typename Iter>
+  void AddWithArena(Arena* arena, Iter begin, Iter end);
+
   void AddAllocatedWithArena(Arena* arena, Element* value);
 
   PROTOBUF_FUTURE_ADD_NODISCARD Element* ReleaseLastWithArena(Arena* arena);
@@ -1725,14 +1728,21 @@ template <typename Element>
 template <typename Iter>
 PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::Add(Iter begin,
                                                            Iter end) {
+  AddWithArena(GetArena(), std::move(begin), std::move(end));
+}
+
+template <typename Element>
+template <typename Iter>
+PROTOBUF_NDEBUG_INLINE void RepeatedPtrField<Element>::AddWithArena(
+    Arena* arena, Iter begin, Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>::value) {
     int reserve = static_cast<int>(std::distance(begin, end));
-    Reserve(size() + reserve);
+    ReserveWithArena(arena, size() + reserve);
   }
   for (; begin != end; ++begin) {
-    *Add() = *begin;
+    *AddWithArena(arena) = *begin;
   }
 }
 
