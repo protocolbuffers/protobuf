@@ -110,24 +110,16 @@ struct RepeatedFieldBase {};
 template <size_t kMinSize>
 class HeapRep {
  public:
-  explicit HeapRep(uint32_t capacity) : capacity_(capacity) {
-    StaticallyVerifySize();
-  }
+  explicit HeapRep(uint32_t capacity) : capacity_(capacity) {}
   // Avoid 'implicitly deleted dtor' warnings on certain compilers.
   ~HeapRep() = delete;
 
   uint32_t capacity() const { return capacity_; }
 
-  const void* elements() const { return elements_; }
-  void* elements() { return elements_; }
+  const void* elements() const { return this + 1; }
+  void* elements() { return this + 1; }
 
  private:
-  static constexpr void StaticallyVerifySize() {
-    static_assert(sizeof(HeapRep) == offsetof(HeapRep, elements_),
-                  "`elements_` must be the last member of `HeapRep` and "
-                  "consume no space.");
-  }
-
   // Align to 8 as sanitizers are picky on the alignment of containers to start
   // at 8 byte offsets even when compiling for 32 bit platforms.
   union {
@@ -140,7 +132,6 @@ class HeapRep {
     // power-of-two sized allocations, which enables Arena optimizations.
     char padding_[kMinSize];
   };
-  void* elements_[];
 };
 #else
 template <size_t kMinSize>
