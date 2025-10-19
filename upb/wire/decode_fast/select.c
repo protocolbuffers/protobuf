@@ -95,7 +95,12 @@ static bool upb_DecodeFast_GetFieldCardinality(
 static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
                                         upb_DecodeFast_Type* out_type) {
-  upb_FieldType type = upb_MiniTableField_Type(field);
+  // We use descriptortype directly instead of upb_MiniTableField_Type because
+  // we want the munging of field->descriptortype:
+  //  - kUpb_FieldType_String -> kUpb_FieldType_Bytes if no UTF-8 validation is
+  //    required.
+  //  - kUpb_FieldType_Enum -> kUpb_FieldType_Int32 if the enum is open.
+  upb_FieldType type = field->UPB_PRIVATE(descriptortype);
 
   if (type == kUpb_FieldType_Group || upb_MiniTableField_IsClosedEnum(field)) {
     return false;  // Currently not supported.
@@ -152,6 +157,14 @@ static uint64_t upb_DecodeFast_GetPresence(const upb_MiniTableField* field,
     // don't have a hasbit, we just set the high bit which won't be stored.
     *out_data = 63;
     return true;
+  }
+}
+
+static uint64_t upb_DecodeFast_GetSubmsgIndex(const upb_MiniTableField* field) {
+  if (upb_MiniTableField_IsSubMessage(field)) {
+    return field->UPB_PRIVATE(submsg_index);
+  } else {
+    return 0;
   }
 }
 

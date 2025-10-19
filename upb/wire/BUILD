@@ -29,6 +29,7 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         "//third_party/utf8_range",
+        "//upb/base",
         "//upb/mem",
         "//upb/mem:internal",
         "//upb/message",
@@ -72,7 +73,7 @@ cc_library(
         "//upb/port",
     ] + select({
         "//upb:fasttable_enabled_setting": [
-            "//upb/wire/decode_fast:dispatch",
+            "//upb/wire/decode_fast:field_parsers",
         ],
         "//conditions:default": [],
     }),
