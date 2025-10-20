@@ -7,7 +7,7 @@ set -o errexit -o nounset -o pipefail
 # https://github.com/bazel-contrib/.github/blob/v7.2.3/.github/workflows/release_ruleset.yaml#L104
 TAG=$1
 PREFIX="protobuf-${TAG:1}"
-ARCHIVE="$PREFIX.tar.gz"
+ARCHIVE="$PREFIX.bazel.tar.gz"
 ARCHIVE_TMP=$(mktemp)
 INTEGRITY_FILE=${PREFIX}/bazel/private/prebuilt_tool_integrity.bzl
 
