@@ -1491,18 +1491,54 @@ where
     }
 }
 
+/// Message equality definition which may have both false-negatives and false-positives in the face
+/// of unknown fields.
+///
+/// This behavior is deliberately held back from being exposed as an `Eq` trait for messages. The
+/// reason is that it is impossible to properly compare unknown fields for message equality, since
+/// without the schema you cannot know how to interpret the wire format properly for comparison.
+///
+/// False negative cases (where message_eq will return false on unknown fields where it
+/// would return true if the fields were known) are common and will occur in production: for
+/// example, as map and repeated fields look exactly the same, map field order is unstable, the
+/// comparison cannot know to treat it as unordered and will return false when it was the same
+/// map but in a different order.
+///
+/// False positives cases (where message_eq will return true on unknown fields where it would have
+/// return false if the fields were known) are possible but uncommon in practice. One example
+/// of this direction can occur if two fields are defined in the same oneof and both are present on
+/// the wire but in opposite order, without the schema these messages appear equal but with the
+/// schema they are not-equal.
+///
+/// This lossy behavior in the face of unknown fields is especially problematic in the face of
+/// extensions and other treeshaking behaviors where a given field being known or not to binary is a
+/// spooky-action-at-a-distance behavior, which may lead to surprising changes in outcome in
+/// equality tests based on changes made arbitrarily distant from the code performing the equality
+/// check.
+///
+/// Broadly this is recommended for use in tests (where unknown field behaviors are rarely a
+/// concern), and in limited/targeted cases where the lossy behavior in the face of unknown fields
+/// behavior is unlikely to be a problem.
+pub fn message_eq<T>(a: &T, b: &T) -> bool
+where
+    T: AsView + Debug,
+    for<'a> View<'a, <T as AsView>::Proxied>: CppGetRawMessage,
+{
+    unsafe {
+        raw_message_equals(
+            a.as_view().get_raw_message(Private),
+            b.as_view().get_raw_message(Private),
+        )
+    }
+}
+
 impl<T> MatcherEq for T
 where
     Self: AsView + Debug,
     for<'a> View<'a, <Self as AsView>::Proxied>: CppGetRawMessage,
 {
     fn matches(&self, o: &Self) -> bool {
-        unsafe {
-            raw_message_equals(
-                self.as_view().get_raw_message(Private),
-                o.as_view().get_raw_message(Private),
-            )
-        }
+        message_eq(self, o)
     }
 }
 
