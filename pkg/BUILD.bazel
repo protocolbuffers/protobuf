@@ -343,6 +343,7 @@ cc_dist_library(
     ],
     tags = ["manual"],
     deps = [
+        "//src/google/protobuf:descriptor_test_utils",
         "//src/google/protobuf:lite_test_util",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",

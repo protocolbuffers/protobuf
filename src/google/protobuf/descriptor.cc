@@ -85,6 +85,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/symbol_checker.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
 
@@ -2361,6 +2362,8 @@ absl::string_view DescriptorPool::ErrorCollector::ErrorLocationName(
       return "IMPORT";
     case EDITIONS:
       return "EDITIONS";
+    case SYMBOL:
+      return "SYMBOL";
     case OTHER:
       return "OTHER";
   }
@@ -4802,57 +4805,6 @@ class DescriptorBuilder {
                        const MethodDescriptorProto& proto);
   void SuggestFieldNumbers(FileDescriptor* file,
                            const FileDescriptorProto& proto);
-  void CheckVisibilityRules(FileDescriptor* file,
-                            const FileDescriptorProto& proto);
-
-  // Internal State used for checking visibility rules.
-  struct DescriptorAndProto {
-    const Descriptor* descriptor;
-    const DescriptorProto* proto;
-  };
-
-  struct EnumDescriptorAndProto {
-    const EnumDescriptor* descriptor;
-    const EnumDescriptorProto* proto;
-  };
-
-  struct VisibilityCheckerState {
-    FileDescriptor* containing_file;
-
-    std::vector<DescriptorAndProto> nested_messages;
-    std::vector<EnumDescriptorAndProto> nested_enums;
-    std::vector<EnumDescriptorAndProto> namespaced_enums;
-  };
-
-  void CheckVisibilityRulesVisit(const Descriptor& message,
-                                 const DescriptorProto& proto,
-                                 VisibilityCheckerState& state);
-  void CheckVisibilityRulesVisit(const EnumDescriptor& enm,
-                                 const EnumDescriptorProto& proto,
-                                 VisibilityCheckerState& state);
-  void CheckVisibilityRulesVisit(const FileDescriptor&,
-                                 const FileDescriptorProto& proto,
-                                 VisibilityCheckerState& state) {}
-  void CheckVisibilityRulesVisit(const FieldDescriptor&,
-                                 const FieldDescriptorProto& proto,
-                                 VisibilityCheckerState& state) {}
-  void CheckVisibilityRulesVisit(const EnumValueDescriptor&,
-                                 const EnumValueDescriptorProto& proto,
-                                 VisibilityCheckerState& state) {}
-  void CheckVisibilityRulesVisit(const OneofDescriptor&,
-                                 const OneofDescriptorProto& proto,
-                                 VisibilityCheckerState& state) {}
-  void CheckVisibilityRulesVisit(const Descriptor::ExtensionRange&,
-                                 const DescriptorProto::ExtensionRange& proto,
-                                 VisibilityCheckerState& state) {}
-  void CheckVisibilityRulesVisit(const MethodDescriptor&,
-                                 const MethodDescriptorProto& proto,
-                                 VisibilityCheckerState& state) {}
-  void CheckVisibilityRulesVisit(const ServiceDescriptor&,
-                                 const ServiceDescriptorProto& proto,
-                                 VisibilityCheckerState& state) {}
-
-  bool IsEnumNamespaceMessage(const EnumDescriptor& enm) const;
 
 
   // Checks that the extension field matches what is declared.
@@ -6732,8 +6684,16 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
         });
   }
   if (!had_errors_ && pool_->enforce_symbol_visibility_) {
-    // Check Symbol Visibility Rules.
-    CheckVisibilityRules(result, proto);
+    SymbolChecker symbol_checker(result, proto);
+    // Check Symbol Visibility and future co-location Rules.
+    auto errors = symbol_checker.CheckSymbolVisibilityRules();
+    if (!errors.empty()) {
+      for (const auto& error : errors) {
+        AddError(error.symbol_name(), *error.descriptor(),
+                 DescriptorPool::ErrorCollector::SYMBOL,
+                 error.message().data());
+      }
+    }
   }
 
   if (had_errors_) {
@@ -8367,139 +8327,6 @@ void DescriptorBuilder::SuggestFieldNumbers(FileDescriptor* file,
       AddError(message->full_name(), *hints->first_reason,
                hints->first_reason_location, make_error);
     }
-  }
-}
-
-// Populate VisibilityCheckerState for messages.
-void DescriptorBuilder::CheckVisibilityRulesVisit(
-    const Descriptor& message, const DescriptorProto& proto,
-    VisibilityCheckerState& state) {
-  if (message.containing_type() != nullptr) {
-    state.nested_messages.push_back(DescriptorAndProto{&message, &proto});
-  }
-}
-
-// Populate VisibilityCheckerState for enums.
-void DescriptorBuilder::CheckVisibilityRulesVisit(
-    const EnumDescriptor& enm, const EnumDescriptorProto& proto,
-    VisibilityCheckerState& state) {
-  if (enm.containing_type() != nullptr) {
-    if (IsEnumNamespaceMessage(enm)) {
-      state.namespaced_enums.push_back(EnumDescriptorAndProto{&enm, &proto});
-    } else {
-      state.nested_enums.push_back(EnumDescriptorAndProto{&enm, &proto});
-    }
-  }
-}
-
-// Returns true iff the message is a pure zero field message used only for Enum
-// namespacing.  AKA it is:
-// * top-level
-// * visibility local either explicitly or by file default
-// * has reserved range of 1 to max.
-bool DescriptorBuilder::IsEnumNamespaceMessage(
-    const EnumDescriptor& enm) const {
-  const Descriptor* container = enm.containing_type();
-  const FeatureSet::VisibilityFeature::DefaultSymbolVisibility
-      default_visibility = enm.features().default_symbol_visibility();
-  // Only allowed for top-level messages
-  if (container->containing_type() != nullptr) {
-    return false;
-  }
-
-  bool default_to_local =
-      default_visibility == FeatureSet::VisibilityFeature::STRICT ||
-      default_visibility == FeatureSet::VisibilityFeature::LOCAL_ALL;
-
-  bool is_local =
-      container->visibility_keyword() == SymbolVisibility::VISIBILITY_LOCAL ||
-      (container->visibility_keyword() == SymbolVisibility::VISIBILITY_UNSET &&
-       default_to_local);
-
-  // must either be marked local, or unset with file default making it local
-  if (!is_local) {
-    return false;
-  }
-
-  if (container->reserved_range_count() != 1) {
-    return false;
-  }
-
-  const Descriptor::ReservedRange* range = container->reserved_range(0);
-  if (range == nullptr ||
-      (range->start != 1 &&
-       range->end != FieldDescriptor::kLastReservedNumber)) {
-    return false;
-  }
-
-  return true;
-}
-
-// Enforce File-wide visibility and co-location rules.
-void DescriptorBuilder::CheckVisibilityRules(FileDescriptor* file,
-                                             const FileDescriptorProto& proto) {
-  // Check DefaultSymbolVisibility first.
-  //
-  // For Edition 2024:
-  // If DefaultSymbolVisibility is STRICT enforce it with caveats for:
-  //
-
-  VisibilityCheckerState state;
-
-  // Build our state object so we can apply rules based on type.
-  internal::VisitDescriptors(
-      *file, proto, [&](const auto& descriptor, const auto& proto) {
-        CheckVisibilityRulesVisit(descriptor, proto, state);
-      });
-
-  // In edition 2024 we only enforce STRICT visibility rules. There are possibly
-  // more rules to come in future editions, but for now just apply the rule for
-  // enforcing nested symbol local visibility. There is a single caveat for,
-  // allowing nested enums to have visibility set only when
-  //
-  // local msg { export enum {} reserved 1 to max; }
-  for (auto& nested : state.nested_messages) {
-    if (nested.descriptor->visibility_keyword() ==
-            SymbolVisibility::VISIBILITY_EXPORT &&
-        nested.descriptor->features().default_symbol_visibility() ==
-            FeatureSet::VisibilityFeature::STRICT) {
-      AddError(
-          nested.descriptor->full_name(), *nested.proto,
-          DescriptorPool::ErrorCollector::INPUT_TYPE, [&] {
-            return absl::StrCat(
-                "\"", nested.descriptor->name(),
-                "\" is a nested message and cannot be `export` with STRICT "
-                "default_symbol_visibility. It must be moved to top-level, "
-                "ideally "
-                "in its own file in order to be `export`.");
-          });
-    }
-  }
-
-  for (auto& nested : state.nested_enums) {
-    if (nested.descriptor->visibility_keyword() ==
-            SymbolVisibility::VISIBILITY_EXPORT &&
-        nested.descriptor->features().default_symbol_visibility() ==
-            FeatureSet::VisibilityFeature::STRICT) {
-      // This list contains only enums not considered 'namespaced' by
-      // IsEnumNamespaceMessage
-
-      AddError(nested.descriptor->full_name(), *nested.proto,
-               DescriptorPool::ErrorCollector::INPUT_TYPE, [&] {
-                 return absl::StrCat(
-                     "\"", nested.descriptor->name(),
-                     "\" is a nested enum and cannot be marked `export` with "
-                     "STRICT "
-                     "default_symbol_visibility. It must be moved to "
-                     "top-level, ideally "
-                     "in its own file in order to be `export`. For C++ "
-                     "namespacing of enums in a messages use: `local "
-                     "message <OuterNamespace> { export enum ",
-                     nested.descriptor->name(), " {...} reserved 1 to max; }`");
-               });
-    }
-
-    // Enforce Future rules here:
   }
 }
 

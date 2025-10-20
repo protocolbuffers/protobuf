@@ -126,6 +126,9 @@ class Symbol;
 // Defined in unknown_field_set.h.
 class UnknownField;
 
+// Defined in symbol_checker.h
+class SymbolChecker;
+
 // Defined in command_line_interface.cc
 namespace compiler {
 class CodeGenerator;
@@ -582,6 +585,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     friend class Descriptor;
     friend class DescriptorPool;
     friend class DescriptorBuilder;
+    friend class SymbolChecker;
   };
 
   // The number of extension ranges in this message type.
@@ -786,6 +790,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class OneofDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
+  friend class SymbolChecker;
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 160);
@@ -1488,6 +1493,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
  private:
   friend class Symbol;
   friend bool internal::IsEnumFullySequential(const EnumDescriptor* enum_desc);
+  friend class SymbolChecker;
   typedef EnumOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -2047,6 +2053,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
+  friend class SymbolChecker;
   friend class FileDescriptorLegacy;
   typedef FileOptions OptionsType;
 
@@ -2282,6 +2289,7 @@ class PROTOBUF_EXPORT DescriptorPool {
       OPTION_VALUE,   // value in option assignment
       IMPORT,         // import error
       EDITIONS,       // editions-related error
+      SYMBOL,         // Symbol visibility and co-location related error
       OTHER           // some other problem
     };
     static absl::string_view ErrorLocationName(ErrorLocation location);

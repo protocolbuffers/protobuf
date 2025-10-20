@@ -60,6 +60,7 @@
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_legacy.h"
+#include "google/protobuf/descriptor_test_utils.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/internal_feature_helper.h"
@@ -240,33 +241,6 @@ MethodDescriptorProto* AddMethod(ServiceDescriptorProto* service,
 void AddEmptyEnum(FileDescriptorProto* file, absl::string_view name) {
   AddEnumValue(AddEnum(file, name), absl::StrCat(name, "_DUMMY"), 1);
 }
-
-class MockErrorCollector : public DescriptorPool::ErrorCollector {
- public:
-  MockErrorCollector() = default;
-  ~MockErrorCollector() override = default;
-
-  std::string text_;
-  std::string warning_text_;
-
-  // implements ErrorCollector ---------------------------------------
-  void RecordError(absl::string_view filename, absl::string_view element_name,
-                   const Message* descriptor, ErrorLocation location,
-                   absl::string_view message) override {
-    absl::SubstituteAndAppend(&text_, "$0: $1: $2: $3\n", filename,
-                              element_name, ErrorLocationName(location),
-                              message);
-  }
-
-  // implements ErrorCollector ---------------------------------------
-  void RecordWarning(absl::string_view filename, absl::string_view element_name,
-                     const Message* descriptor, ErrorLocation location,
-                     absl::string_view message) override {
-    absl::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3\n", filename,
-                              element_name, ErrorLocationName(location),
-                              message);
-  }
-};
 
 // ===================================================================
 
@@ -620,18 +594,6 @@ void ExtractDebugString(
   debug_strings->push_back({file->name(), file->DebugString()});
 }
 
-class SimpleErrorCollector : public io::ErrorCollector {
- public:
-  // implements ErrorCollector ---------------------------------------
-  void RecordError(int line, int column, absl::string_view message) override {
-    last_error_ = absl::StrFormat("%d:%d:%s", line, column, message);
-  }
-
-  const std::string& last_error() { return last_error_; }
-
- private:
-  std::string last_error_;
-};
 // Test that the result of FileDescriptor::DebugString() can be used to create
 // the original descriptors.
 TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
@@ -4715,123 +4677,6 @@ TEST(CustomOptions, DebugString) {
 }
 
 // ===================================================================
-
-
-class ValidationErrorTest : public testing::Test {
- protected:
-  void SetUp() override {
-    // Enable extension declaration enforcement since most test cases want to
-    // exercise the full validation.
-    pool_.EnforceExtensionDeclarations(ExtDeclEnforcementLevel::kAllExtensions);
-  }
-  // Parse file_text as a FileDescriptorProto in text format and add it
-  // to the DescriptorPool.  Expect no errors.
-  const FileDescriptor* BuildFile(absl::string_view file_text) {
-    FileDescriptorProto file_proto;
-    EXPECT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
-    return ABSL_DIE_IF_NULL(pool_.BuildFile(file_proto));
-  }
-
-  FileDescriptorProto ParseFile(absl::string_view file_name,
-                                absl::string_view file_text) {
-    io::ArrayInputStream input_stream(file_text.data(), file_text.size());
-    SimpleErrorCollector error_collector;
-    io::Tokenizer tokenizer(&input_stream, &error_collector);
-    compiler::Parser parser;
-    parser.RecordErrorsTo(&error_collector);
-    FileDescriptorProto proto;
-    ABSL_CHECK(parser.Parse(&tokenizer, &proto))
-        << error_collector.last_error() << "\n"
-        << file_text;
-    ABSL_CHECK_EQ("", error_collector.last_error());
-    proto.set_name(file_name);
-    return proto;
-  }
-
-  const FileDescriptor* ParseAndBuildFile(absl::string_view file_name,
-                                          absl::string_view file_text) {
-    return pool_.BuildFile(ParseFile(file_name, file_text));
-  }
-
-
-  // Add file_proto to the DescriptorPool. Expect errors to be produced which
-  // match the given error text.
-  void BuildFileWithErrors(const FileDescriptorProto& file_proto,
-                           testing::Matcher<std::string> expected_errors) {
-    MockErrorCollector error_collector;
-    EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
-                nullptr);
-    EXPECT_THAT(error_collector.text_, expected_errors);
-  }
-
-  // Parse file_text as a FileDescriptorProto in text format and add it
-  // to the DescriptorPool.  Expect errors to be produced which match the
-  // given error text.
-  void BuildFileWithErrors(const std::string& file_text,
-                           testing::Matcher<std::string> expected_errors) {
-    FileDescriptorProto file_proto;
-    ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
-    BuildFileWithErrors(file_proto, expected_errors);
-  }
-
-  // Parse a proto file and build it.  Expect errors to be produced which match
-  // the given error text.
-  void ParseAndBuildFileWithErrors(absl::string_view file_name,
-                                   absl::string_view file_text,
-                                   absl::string_view expected_errors) {
-    MockErrorCollector error_collector;
-    EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
-                                                &error_collector) == nullptr);
-    EXPECT_EQ(expected_errors, error_collector.text_);
-  }
-
-  void ParseAndBuildFileWithErrorSubstr(absl::string_view file_name,
-                                        absl::string_view file_text,
-                                        absl::string_view expected_errors) {
-    MockErrorCollector error_collector;
-    EXPECT_TRUE(pool_.BuildFileCollectingErrors(ParseFile(file_name, file_text),
-                                                &error_collector) == nullptr);
-    EXPECT_THAT(error_collector.text_, HasSubstr(expected_errors));
-  }
-
-  // Parse file_text as a FileDescriptorProto in text format and add it
-  // to the DescriptorPool.  Expect errors to be produced which match the
-  // given warning text.
-  void BuildFileWithWarnings(const std::string& file_text,
-                             const std::string& expected_warnings) {
-    FileDescriptorProto file_proto;
-    ASSERT_TRUE(TextFormat::ParseFromString(file_text, &file_proto));
-
-    MockErrorCollector error_collector;
-    EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector));
-    EXPECT_EQ(expected_warnings, error_collector.warning_text_);
-  }
-
-  // Builds some already-parsed file in our test pool.
-  void BuildFileInTestPool(const FileDescriptor* file) {
-    FileDescriptorProto file_proto;
-    file->CopyTo(&file_proto);
-    ASSERT_TRUE(pool_.BuildFile(file_proto) != nullptr);
-  }
-
-  // Build descriptor.proto in our test pool. This allows us to extend it in
-  // the test pool, so we can test custom options.
-  void BuildDescriptorMessagesInTestPool() {
-    BuildFileInTestPool(DescriptorProto::descriptor()->file());
-  }
-
-  void BuildDescriptorMessagesInTestPoolWithErrors(
-      absl::string_view expected_errors) {
-    FileDescriptorProto file_proto;
-    DescriptorProto::descriptor()->file()->CopyTo(&file_proto);
-    MockErrorCollector error_collector;
-    EXPECT_TRUE(pool_.BuildFileCollectingErrors(file_proto, &error_collector) ==
-                nullptr);
-    EXPECT_EQ(error_collector.text_, expected_errors);
-  }
-
-  DescriptorPool pool_;
-};
 
 TEST_F(ValidationErrorTest, AlreadyDefined) {
   BuildFileWithErrors(
@@ -10153,10 +9998,9 @@ TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNested) {
       }
     }
   )schema",
-      "\"Inner\" is a nested message and cannot be `export` with STRICT "
-      "default_symbol_visibility. It must be moved to top-level, ideally in "
-      "its own file "
-      "in order to be `export`.");
+      "\"naming.LocalOuter.Inner\" is a nested message and cannot be `export` "
+      "with STRICT default_symbol_visibility. It must be moved to top-level, "
+      "ideally in its own file in order to be `export`.");
 }
 
 TEST_F(FeaturesTest, VisibilityFeatureSetStrictBadNestedDisabled) {

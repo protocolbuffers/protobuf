@@ -5039,9 +5039,8 @@ TEST_F(CommandLineInterfaceTest, VisibilityFeatureSetStrictBadNestedMessage) {
       "--experimental_editions "  // remove when edition 2024 is valid
       "--include_source_info --proto_path=$tmpdir vis.proto");
   ExpectErrorSubstring(
-      "vis.proto: \"Inner\" is a nested message and cannot be `export` with "
-      "STRICT "
-      "default_symbol_visibility");
+      "vis.proto: \"naming.LocalOuter.Inner\" is a nested message and cannot "
+      "be `export` with STRICT default_symbol_visibility");
 }
 
 // ===================================================================
