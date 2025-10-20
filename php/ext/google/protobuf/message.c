@@ -773,6 +773,9 @@ PHP_METHOD(Message, serializeToJsonString) {
     if (Z_LVAL_P(flags) & PRESERVE_PROTO_FIELD_NAMES) {
       options |= upb_JsonEncode_UseProtoNames;
     }
+    if (Z_LVAL_P(flags) & EMIT_DEFAULTS) {
+      options |= upb_JsonEncode_EmitDefaults;
+    }
   }
 
   upb_Status_Clear(&status);

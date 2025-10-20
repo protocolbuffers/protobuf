@@ -24,4 +24,6 @@ void PrintOptions_ModuleInit() {
   zend_declare_class_constant_long(options_ce, "ALWAYS_PRINT_ENUMS_AS_INTS",
                                    sizeof("ALWAYS_PRINT_ENUMS_AS_INTS") - 1,
                                    ALWAYS_PRINT_ENUMS_AS_INTS);
+  zend_declare_class_constant_long(options_ce, "EMIT_DEFAULTS",
+                                   sizeof("EMIT_DEFAULTS") - 1, EMIT_DEFAULTS);
 }
