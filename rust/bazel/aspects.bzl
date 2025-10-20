@@ -3,6 +3,7 @@
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_rust//:version.bzl", RUST_VERSION = "VERSION")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVariantInfo")
@@ -32,6 +33,14 @@ RustProtoInfo = provider(
                          "dependencies of the current proto_library.",
     },
 )
+
+def _version_parts(version):
+    major, minor = version.split(".")[0:2]
+    return (int(major), int(minor))
+
+def _rust_version_ge(version):
+    """Checks if the rust version as at least the given major.minor version."""
+    return _version_parts(RUST_VERSION) >= _version_parts(version)
 
 def label_to_crate_name(ctx, label, toolchain):
     return label.name.replace("-", "_")
@@ -243,6 +252,13 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
     lib = ctx.actions.declare_file(lib_name)
     rmeta = ctx.actions.declare_file(rmeta_name)
 
+    if _rust_version_ge("0.66"):
+        deps = deps
+        proc_macro_deps = []
+    else:
+        deps = depset(deps)
+        proc_macro_deps = depset()
+
     # TODO: Use higher level rules_rust API once available.
     providers = rustc_compile_action(
         ctx = ctx,
@@ -253,8 +269,8 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
             type = "rlib",
             root = src,
             srcs = depset([src] + extra_srcs),
-            deps = depset(deps),
-            proc_macro_deps = depset([]),
+            deps = deps,
+            proc_macro_deps = proc_macro_deps,
             # Make "protobuf" into an alias for the runtime. This allows the
             # generated code to use a consistent name, even though the actual
             # name of the runtime crate varies depending on the protobuf kernel
