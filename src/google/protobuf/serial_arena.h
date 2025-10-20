@@ -115,7 +115,7 @@ class PROTOBUF_EXPORT SerialArena {
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(static_cast<void*>(limit_), static_cast<void*>(ptr()));
 
     if (alloc_client == AllocationClient::kArray) {
       if (void* res = TryAllocateFromCachedBlock(n)) {
@@ -200,7 +200,7 @@ class PROTOBUF_EXPORT SerialArena {
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(static_cast<void*>(limit_), static_cast<void*>(ptr()));
     char* ret = ptr();
     if (ABSL_PREDICT_FALSE(limit_ - ret < static_cast<ptrdiff_t>(n))) {
       return false;
@@ -235,7 +235,7 @@ class PROTOBUF_EXPORT SerialArena {
     char* next = ret + n;
     set_ptr(next);
     AddCleanup(ret, destructor);
-    ABSL_DCHECK_GE(limit_, ptr());
+    ABSL_DCHECK_GE(static_cast<void*>(limit_), static_cast<void*>(ptr()));
     MaybePrefetchData(next);
     return ret;
   }
