@@ -3,6 +3,7 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//bazel:cc_proto_library.bzl", starlark_cc_proto_library = "cc_proto_library")
+load("//build_defs:platforms.bzl", "PLATFORMS")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 
@@ -25,9 +26,7 @@ create_compiler_config_setting(
 
 platform(
     name = "x64_windows-clang-cl",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:windows",
+    constraint_values = PLATFORMS["win64"] + [
         # This is necessary for Bazel 7 compatibility with a MODULE.bazel file that still works in
         # Bazel 8.  Using cc_configure_extension from rules_cc produces a @local_config_cc
         # repository that's not compatible with @bazel_tools//tools/cpp:clang-cl from before
@@ -38,9 +37,7 @@ platform(
 
 platform(
     name = "x64_windows-msvc-cl",
-    constraint_values = [
-        "@platforms//cpu:x86_64",
-        "@platforms//os:windows",
+    constraint_values = PLATFORMS["win64"] + [
         # This may be necessary in case cc_configure_extension from rules_cc produces a
         # @local_config_cc repository that's not compatible with @bazel_tools//tools/cpp:msvc from
         # before Bazel 8, as with clang-cl above, to avoid silently falling back to clang-cl.
@@ -64,13 +61,13 @@ selects.config_setting_group(
     ],
 )
 
-platform(
-    name = "aarch64_linux",
-    constraint_values = [
-        "@platforms//cpu:aarch64",
-        "@platforms//os:linux",
-    ],
-)
+[
+    platform(
+        name = name,
+        constraint_values = constraints,
+    )
+    for name, constraints in PLATFORMS.items()
+]
 
 config_setting(
     name = "aarch64",
