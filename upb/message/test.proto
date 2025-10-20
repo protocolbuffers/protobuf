@@ -214,3 +214,8 @@ message TestOneOfAlignment {
     fixed64 should_be_sixty_four_aligned = 11;
   }
 }
+
+message TestRepeatedMessageBig {
+  repeated TestRepeatedMessageBig repeated_message = 1;
+  repeated bytes repeated_bytes = 2;
+}

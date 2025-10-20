@@ -8,6 +8,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <optional>
 #include <string>
@@ -875,6 +876,81 @@ TEST(MessageTest, SkippedVarintSize) {
       val >>= 7;
     } while (val);
     EXPECT_EQ(skip, 10 - count);
+  }
+}
+
+TEST(MessageTest, MessageTooBig) {
+  if (sizeof(size_t) <= 4) {
+    GTEST_SKIP() << "Skipping test because size_t is too small";
+  }
+  if (UPB_MSAN || UPB_ASAN) {
+    GTEST_SKIP() << "Skipping test because sanitizers that track shadow memory "
+                    "increase overhead and lead to OOMs";
+  }
+  upb::Arena arena;
+  size_t buf_size = 2 * 1024;
+  void* bytes = upb_Arena_Malloc(arena.ptr(), buf_size);
+  memset(bytes, 0, buf_size);
+  upb_StringView bytes_view;
+  bytes_view.data = (const char*)bytes;
+  bytes_view.size = buf_size;
+  upb_test_TestRepeatedMessageBig* msg =
+      upb_test_TestRepeatedMessageBig_new(arena.ptr());
+
+  {
+    size_t size;
+    upb_test_TestRepeatedMessageBig_resize_repeated_bytes(msg, 1024,
+                                                          arena.ptr());
+    upb_StringView* arr =
+        upb_test_TestRepeatedMessageBig_mutable_repeated_bytes(msg, &size);
+
+    for (size_t i = 0; i < size; i++) {
+      arr[i] = bytes_view;
+    }
+    // Message is slightly more than 2mb to serialize
+  }
+  {
+    upb_test_TestRepeatedMessageBig* parent =
+        upb_test_TestRepeatedMessageBig_new(arena.ptr());
+    upb_test_TestRepeatedMessageBig_resize_repeated_message(parent, 1024,
+                                                            arena.ptr());
+    size_t size;
+    upb_test_TestRepeatedMessageBig** arr =
+        upb_test_TestRepeatedMessageBig_mutable_repeated_message(parent, &size);
+
+    for (size_t i = 0; i < size; i++) {
+      arr[i] = msg;
+    }
+    // Message is slightly more than 2gb to serialize, but no individual length
+    // delimited message is larger
+    msg = parent;
+  }
+  char* ptr;
+  size_t size;
+  upb_EncodeStatus status;
+  {
+    upb::Arena out_arena;
+    status =
+        upb_Encode(UPB_UPCAST(msg), &upb_0test__TestRepeatedMessageBig_msg_init,
+                   0, out_arena.ptr(), &ptr, &size);
+    // If the top level message exceeds the limit, that's OK
+  }
+  if (status == kUpb_EncodeStatus_OutOfMemory) {
+    GTEST_SKIP()
+        << "Skipping test because we could not allocate a few gigabytes";
+  }
+  EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
+  {
+    upb::Arena out_arena;
+    status = upb_EncodeLengthPrefixed(
+        UPB_UPCAST(msg), &upb_0test__TestRepeatedMessageBig_msg_init, 0,
+        out_arena.ptr(), &ptr, &size);
+  }
+  if (status != kUpb_EncodeStatus_OutOfMemory &&
+      status != kUpb_EncodeStatus_MaxSizeExceeded) {
+    // If we ever try to length-delimit something larger than fits in 32 bits,
+    // it's an error
+    FAIL() << "Expected OutOfMemory or MaxSizeExceeded, got " << status;
   }
 }
 

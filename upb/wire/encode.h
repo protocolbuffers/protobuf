@@ -49,8 +49,11 @@ typedef enum {
   // One or more required fields are missing. Only returned if
   // kUpb_EncodeOption_CheckRequired is set.
   kUpb_EncodeStatus_MissingRequired = 3,
+
+  // The message is larger than protobuf's 2GB size limit.
+  kUpb_EncodeStatus_MaxSizeExceeded = 4,
 } upb_EncodeStatus;
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:encode_status)
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
 
 UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
