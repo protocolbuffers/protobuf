@@ -1103,10 +1103,14 @@ UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
     }
   }
 
-  // We want to invalidate pointers to the old region if hwasan is enabled, so
-  // we poison and unpoison even if ptr == ret.
-  UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, oldsize);
-  return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
+  if (ret) {
+    // We want to invalidate pointers to the old region if hwasan is enabled, so
+    // we poison and unpoison even if ptr == ret. However, if reallocation fails
+    // we do not want to poison the old memory, or attempt to poison null.
+    UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, oldsize);
+    return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
+  }
+  return ret;
 }
 
 #ifdef __cplusplus
@@ -5980,8 +5984,11 @@ typedef enum {
   // One or more required fields are missing. Only returned if
   // kUpb_EncodeOption_CheckRequired is set.
   kUpb_EncodeStatus_MissingRequired = 3,
+
+  // The message is larger than protobuf's 2GB size limit.
+  kUpb_EncodeStatus_MaxSizeExceeded = 4,
 } upb_EncodeStatus;
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:encode_status)
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
 
 UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
