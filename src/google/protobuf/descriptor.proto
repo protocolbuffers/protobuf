@@ -826,6 +826,9 @@ message FieldOptions {
     // The removal error text if this feature is used after the edition it was
     // removed in.
     optional string removal_error = 5;
+
+    // New field for testing
+    optional string testing_error = 6;
   }
   optional FeatureSupport feature_support = 22;
 
