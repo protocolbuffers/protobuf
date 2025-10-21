@@ -34,7 +34,7 @@ class GeneratedPhpdocTest extends TestBase
         }
     }
 
-    public function providePhpDocForGettersAndSetters()
+    public static function providePhpDocForGettersAndSetters()
     {
         return [
             [
