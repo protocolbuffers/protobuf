@@ -94,7 +94,8 @@ static const upb_FieldDef* get_field(Message* msg, zend_string* member) {
       m, ZSTR_VAL(member), ZSTR_LEN(member));
 
   if (!f) {
-    zend_throw_exception_ex(NULL, 0, "No such property %s.",
+    zend_throw_exception_ex(NULL, 0, "No such property %s on %s.",
+                            ZSTR_VAL(member),
                             ZSTR_VAL(msg->desc->class_entry->name));
   }
 

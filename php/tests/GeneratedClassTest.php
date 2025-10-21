@@ -41,6 +41,14 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(1, $m->getOptionalInt32());
     }
 
+    public function testUnknownPropertyErrorIncludesPropertyAndClass()
+    {
+        $m = new TestMessage();
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('No such property does_not_exist on Foo\\TestMessage');
+        $m->does_not_exist;
+    }
+
     #########################################################
     # Test int32 field.
     #########################################################
