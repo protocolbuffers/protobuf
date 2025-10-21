@@ -126,15 +126,34 @@ SUPPORTED_PYTHON_VERSIONS = [
     "3.13",
 ]
 
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+
+[
+    python.toolchain(
+        python_version = python_version,
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]
+
 # TODO: Replace system_python with hermetic_python.
-# TODO: Remove dev_dependency once system_python is no longer used and we support
-# python/upb in Bazel.
+python.defaults(python_version = SUPPORTED_PYTHON_VERSIONS[-1])
+use_repo(
+    python,
+    system_python = "python_{}".format(SUPPORTED_PYTHON_VERSIONS[-1].replace(".", "_")),
+)
+
+# TODO: Remove dev_dependency once system_python is no longer used and we support python/upb in Bazel
 system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
 system_python.find(
     name = "system_python",
     minimum = "3.9",
 )
-use_repo(system_python, "system_python")
+use_repo(system_python, system_python_dev = "system_python")
+
+override_repo(
+    python,
+    python_3_13 = "system_python_dev",
+)
 
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_dependency = True)
 
