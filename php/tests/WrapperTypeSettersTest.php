@@ -57,7 +57,7 @@ class WrapperTypeSettersTest extends TestBase
         }
     }
 
-    public function gettersAndSettersDataProvider()
+    public static function gettersAndSettersDataProvider()
     {
         return [
             [TestWrapperSetters::class, DoubleValue::class, "setDoubleValue", "setDoubleValueUnwrapped", "getDoubleValue", "getDoubleValueUnwrapped", [
@@ -155,7 +155,7 @@ class WrapperTypeSettersTest extends TestBase
         (new $class())->$setter($value);
     }
 
-    public function invalidSettersDataProvider()
+    public static function invalidSettersDataProvider()
     {
         return [
             [TestWrapperSetters::class, "setDoubleValueUnwrapped", "abc"],
@@ -212,7 +212,7 @@ class WrapperTypeSettersTest extends TestBase
         $this->assertEquals($expectedInstance->$getter()->getValue(), $actualInstance->$getter()->getValue());
     }
 
-    public function constructorWithWrapperTypeDataProvider()
+    public static function constructorWithWrapperTypeDataProvider()
     {
         return [
             [TestWrapperSetters::class, DoubleValue::class, 'double_value', 'getDoubleValue', 1.1],
@@ -247,7 +247,7 @@ class WrapperTypeSettersTest extends TestBase
         $this->assertTrue(true);
     }
 
-    public function constructorWithRepeatedWrapperTypeDataProvider()
+    public static function constructorWithRepeatedWrapperTypeDataProvider()
     {
         $sv7 = new StringValue(['value' => 'seven']);
         $sv8 = new StringValue(['value' => 'eight']);
@@ -292,7 +292,7 @@ class WrapperTypeSettersTest extends TestBase
         $this->assertTrue(true);
     }
 
-    public function constructorWithMapWrapperTypeDataProvider()
+    public static function constructorWithMapWrapperTypeDataProvider()
     {
         $sv7 = new StringValue(['value' => 'seven']);
         $sv8 = new StringValue(['value' => 'eight']);
