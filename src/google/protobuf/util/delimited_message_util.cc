@@ -19,7 +19,7 @@ namespace util {
 bool SerializeDelimitedToFileDescriptor(const MessageLite& message,
                                         int file_descriptor) {
   io::FileOutputStream output(file_descriptor);
-  return SerializeDelimitedToZeroCopyStream(message, &output);
+  return SerializeDelimitedToZeroCopyStream(message, &output) && output.Flush();
 }
 
 bool SerializeDelimitedToOstream(const MessageLite& message,
