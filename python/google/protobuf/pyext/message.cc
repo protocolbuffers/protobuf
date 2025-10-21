@@ -1190,7 +1190,10 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
           if (new_msg == nullptr) {
             return -1;
           }
-          InitWKTOrMerge(descriptor->message_type(), new_msg.get(), next.get());
+          if (InitWKTOrMerge(descriptor->message_type(), new_msg.get(),
+                             next.get()) < 0) {
+            return -1;
+          }
         }
         if (PyErr_Occurred()) {
           // Check to see how PyIter_Next() exited.
