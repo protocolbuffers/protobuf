@@ -148,7 +148,7 @@ upb_CType pbphp_dtype_to_type(upb_FieldType type) {
     CASE(Enum, Enum);
     CASE(Int32, Int32);
     CASE(Int64, Int64);
-    CASE(UInt32, Int32);
+    CASE(UInt32, UInt32);
     CASE(UInt64, UInt64);
     CASE(SInt32, Int32);
     CASE(SInt64, Int64);

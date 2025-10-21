@@ -269,6 +269,43 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(MIN_INT32, $m->getOptionalUint32());
     }
 
+    public function testUint32ArrayConstructor()
+    {
+        $m1 = new TestMessage(['optional_uint32' => 2147483648]);
+        $this->assertSame(MIN_INT32, $m1->getOptionalUint32());
+
+        $m2 = new TestMessage(['optional_uint32' => MAX_UINT32]);
+        $this->assertSame(-1, $m2->getOptionalUint32());
+    }
+
+    public function testRepeatedUint32Boundaries()
+    {
+        $m = new TestMessage();
+        $rf = $m->getRepeatedUint32();
+
+        $rf[] = 0;
+        $rf[] = MAX_INT32;
+        $rf[] = 2147483648;
+        $rf[] = MAX_UINT32;
+
+        $this->assertSame(0, $rf[0]);
+        $this->assertSame(MAX_INT32, $rf[1]);
+        $this->assertSame(MIN_INT32, $rf[2]);
+        $this->assertSame(-1, $rf[3]);
+    }
+
+    public function testMapUint32Uint32Boundaries()
+    {
+        $m = new TestMessage();
+        $map = $m->getMapUint32Uint32();
+
+        $map[1] = 0;
+        $map[MAX_UINT32] = MAX_UINT32;
+
+        $this->assertSame(0, $map[1]);
+        $this->assertSame(-1, $map[MAX_UINT32]);
+    }
+
     #########################################################
     # Test int64 field.
     #########################################################
