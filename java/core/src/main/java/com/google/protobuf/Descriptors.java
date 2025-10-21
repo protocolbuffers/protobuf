@@ -727,8 +727,6 @@ public final class Descriptors {
               .setPackage(packageName)
               .addMessageType(message.toProto())
               .build());
-
-      tables.addSymbol(message);
     }
 
     /** Create a placeholder FileDescriptor for an EnumDescriptor. */
@@ -743,8 +741,6 @@ public final class Descriptors {
               .setPackage(packageName)
               .addEnumType(enm.toProto())
               .build());
-
-      tables.addSymbol(enm);
     }
 
     public void resolveAllFeaturesImmutable() {
