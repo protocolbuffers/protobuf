@@ -291,7 +291,7 @@ static bool to_bool(zval* from, bool* to) {
       *to = (Z_LVAL_P(from) != 0);
       return true;
     case IS_DOUBLE:
-      *to = (Z_LVAL_P(from) != 0);
+      *to = (Z_DVAL_P(from) != 0.0);
       return true;
     case IS_STRING:
       if (Z_STRLEN_P(from) == 0 ||
