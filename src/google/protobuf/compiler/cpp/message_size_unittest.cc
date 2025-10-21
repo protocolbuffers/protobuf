@@ -13,6 +13,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_bases.h"
+#include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
@@ -76,9 +77,18 @@ ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 24);
 #endif
 
 struct MockRepeatedField {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+  internal::InternalMetadataResolver resolver;  // 4 bytes
+  int size;                                     // 4 bytes
+  union {                                       // 8 bytes
+    void* heap_rep;
+    uint8_t soo_capacity[internal::kSooCapacityBytes];
+  };
+#else
   int current_size;  // 4 bytes
   int total_size;    // 4 bytes
   void* data;        // 8 bytes
+#endif
 };
 ABSL_CHECK_MESSAGE_SIZE(MockRepeatedField, 16);
 
