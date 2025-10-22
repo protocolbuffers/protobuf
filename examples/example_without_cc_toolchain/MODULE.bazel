@@ -12,4 +12,10 @@ local_path_override(
     path = "../..",
 )
 
-register_toolchains("@protobuf//bazel/toolchains:prebuilt_protoc")
+protoc = use_extension("@protobuf//bazel:extensions.bzl", "protoc")
+protoc.prebuilt_toolchain(
+    name = "prebuilt_protoc",
+    version = "34.0",
+)
+use_repo(protoc, "prebuilt_protoc")
+register_toolchains("@prebuilt_protoc//:all")
