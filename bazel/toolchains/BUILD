@@ -44,6 +44,7 @@ filegroup(
 # The public API users set
 bool_flag(
     name = "prefer_prebuilt_protoc",
+    # TODO(alexeagle): this should be True after the feature is vetted with some adoption
     build_setting_default = False,
     visibility = ["//visibility:public"],
 )
