@@ -1,0 +1,15 @@
+"""Bazel module dependencies"""
+
+module(
+    name = "com_google_protobuf-example-without-cc-toolchain",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "protobuf")
+local_path_override(
+    module_name = "protobuf",
+    path = "../..",
+)
+
+register_toolchains("@protobuf//bazel/toolchains:prebuilt_protoc")
