@@ -42,7 +42,7 @@ proto_toolchain(
     proto_compiler = "{protoc_label}",
 )
 """.format(
-        protoc_label = ":bin/protoc.exe" if rctx.attr.platform.startswith("win") else ":bin/protoc",
+        protoc_label = "bin/protoc.exe" if rctx.attr.platform.startswith("win") else "bin/protoc",
     ))
 
 prebuilt_protoc_repo = repository_rule(
