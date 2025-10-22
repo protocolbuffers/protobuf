@@ -94,6 +94,7 @@ def _generate_rust_gencode(
         proto_info,
         proto_lang_toolchain,
         crate_mapping,
+        feature_configuration,
         is_upb):
     """Generates Rust gencode
 
@@ -106,6 +107,7 @@ def _generate_rust_gencode(
         proto_lang_toolchain (ProtoLangToolchainInfo): proto lang toolchain for Rust
         crate_mapping (File): File containing the mapping from .proto file import path to its
                       corresponding containing Rust crate name.
+        feature_configuration (FeatureConfiguration): A feature configuration.
         is_upb (Bool): True when generating gencode for UPB, False otherwise.
     Returns:
         rs_outputs (([File], [File]): tuple(generated Rust files, generated C++ thunks).
@@ -130,13 +132,16 @@ def _generate_rust_gencode(
             proto_info = proto_info,
             extension = ".pb.thunks.cc",
         )
+    forced_lite_runtime = cc_common.is_enabled(feature_configuration = feature_configuration, feature_name = "proto_force_lite_runtime")
+
     additional_args = ctx.actions.args()
 
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={},forced_lite_runtime={}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
             entry_point_rs_output.basename,
+            "true" if forced_lite_runtime else "false",
         ),
     )
 
@@ -361,6 +366,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         target[ProtoInfo],
         proto_lang_toolchain,
         crate_mapping_file,
+        feature_configuration,
         is_upb,
     )
 

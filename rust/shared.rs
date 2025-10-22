@@ -15,6 +15,8 @@ use std::fmt;
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 
 pub use crate::__internal::runtime::message_eq;
+#[cfg(all(cpp_kernel, not(lite_runtime)))]
+pub use crate::codegen_traits::interop::MessageDescriptorInterop;
 pub use crate::codegen_traits::{
     create::Parse,
     interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
