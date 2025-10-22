@@ -1,7 +1,7 @@
 "Repository rule that downloads a pre-compiled protoc from our official release for a single platform."
 
 load(":prebuilt_tool_integrity.bzl", "RELEASED_BINARY_INTEGRITY")
-load("//bazel/toolchains:prebuilt_toolchains.bzl", "PROTOC_PLATFORMS")
+load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 
 def release_version_to_artifact_name(release_version, platform):
     # versions have a "v" prefix like "v28.0"
@@ -52,7 +52,7 @@ prebuilt_protoc_repo = repository_rule(
         "platform": attr.string(
             doc = "A platform that protobuf ships a release for",
             mandatory = True,
-            values = PROTOC_PLATFORMS.keys(),
+            values = PROTOBUF_PLATFORMS.keys(),
         ),
         "version": attr.string(
             doc = "Release tag from protocolbuffers/protobuf repo, e.g. 'v25.3'",
