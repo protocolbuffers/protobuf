@@ -2661,9 +2661,14 @@ class PROTOBUF_EXPORT DescriptorPool {
                                   std::unique_ptr<MemoBase>>>();
 #endif  // SWIG
 
+  using Mutex = absl::Mutex;
+  using MutexLock = absl::MutexLock;
+  using MutexLockMaybe = absl::MutexLockMaybe;
+  using ReaderMutexLock = absl::ReaderMutexLock;
+
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
-  absl::Mutex* mutex_;
+  Mutex* mutex_;
 
   // See constructor.
   DescriptorDatabase* fallback_database_;
