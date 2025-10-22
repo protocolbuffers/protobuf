@@ -15,6 +15,7 @@ local_path_override(
 protoc = use_extension("@protobuf//bazel:extensions.bzl", "protoc")
 protoc.prebuilt_toolchain(
     name = "prebuilt_protoc",
+    # FIXME: users shouldn't be able to vary the version here from the protobuf module
     version = "v33.0",
 )
 use_repo(protoc, "prebuilt_protoc", "prebuilt_protoc.osx_aarch_64")
