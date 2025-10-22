@@ -117,15 +117,22 @@ register_toolchains(
 
 # Define toolchains that use pre-built protoc binaries.
 protoc = use_extension("//bazel/private:prebuilt_protoc_extension.bzl", "protoc")
-protoc.prebuilt_toolchain(
-    version = "v33.0",
+use_repo(
+    protoc,
+    "prebuilt_protoc.linux_aarch_64",
+    "prebuilt_protoc.osx_aarch_64",
+    "prebuilt_protoc.linux_ppcle_64",
+    "prebuilt_protoc.linux_s390_64",
+    "prebuilt_protoc.linux_x86_32",
+    "prebuilt_protoc.linux_x86_64",
+    "prebuilt_protoc.osx_x86_64",
+    "prebuilt_protoc.win32",
+    "prebuilt_protoc.win64",
 )
-use_repo(protoc, "prebuilt_protoc_hub")
 
-# This will take priority in the toolchain resolution process.
 # However this registration only matters if the config_setting for prefer_prebuilt_protoc is true,
 # using --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
-register_toolchains("@prebuilt_protoc_hub//:all")
+register_toolchains("//bazel/private/toolchains/prebuilt:all")
 
 # From-source protobuf toolchains
 # Fallback if nothing is already registered
