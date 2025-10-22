@@ -100,7 +100,7 @@ toolchain(
     # Bazel does not follow this attribute during analysis, so the referenced repo
     # will only be fetched if this toolchain is selected.
     toolchain = "@{user_repository_name}.{platform}//:prebuilt_protoc_toolchain",
-    toolchain_type = "@protobuf//bazel/private:proto_toolchain_type",
+    toolchain_type = "@com_google_protobuf//bazel/private:proto_toolchain_type",
 )
 """.format(
             platform = platform.replace("-", "_"),
