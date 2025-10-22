@@ -24,6 +24,10 @@ ProtoCrateNamesInfo = provider(
 
 def _user_visible_label(ctx):
     label = str(ctx.label)
+
+    # Remove exactly one leading underscore for the crate name, since we add that when
+    # rust_proto_library delegates to either rust_cc_proto_library or rust_upb_proto_library.
+    label = label.removeprefix("_")
     label = label.removesuffix("_cpp_rust_proto")
     label = label.removesuffix("_upb_rust_proto")
     return label + "_rust_proto"

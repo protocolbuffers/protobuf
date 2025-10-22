@@ -29,27 +29,29 @@ def rust_proto_library(name, deps, **args):
                 .format(name),
         )
     name = name.removesuffix("_rust_proto")
+    rust_cpp_target_name = "_%s_cpp_rust_proto" % name
+    rust_upb_target_name = "_%s_upb_rust_proto" % name
     alias_args = {}
     if "visibility" in args:
         alias_args["visibility"] = args.pop("visibility")
     native.alias(
         name = name + "_rust_proto",
         actual = select({
-            "//rust:use_upb_kernel": name + "_upb_rust_proto",
-            "//conditions:default": name + "_cpp_rust_proto",
+            "//rust:use_upb_kernel": rust_upb_target_name,
+            "//conditions:default": rust_cpp_target_name,
         }),
         **alias_args
     )
 
     rust_upb_proto_library(
-        name = name + "_upb_rust_proto",
+        name = rust_upb_target_name,
         deps = deps,
         visibility = ["//rust/test:__subpackages__"],
         **args
     )
 
     rust_cc_proto_library(
-        name = name + "_cpp_rust_proto",
+        name = rust_cpp_target_name,
         deps = deps,
         visibility = ["//rust/test:__subpackages__"],
         **args
