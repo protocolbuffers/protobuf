@@ -68,6 +68,13 @@ using ::testing::HasSubstr;
 namespace google {
 namespace protobuf {
 
+namespace {
+
+// Align n to next multiple of 8
+constexpr uint64_t Align8(uint64_t n) { return (n + 7) & -8; }
+
+}  // namespace
+
 
 class Notifier {
  public:
@@ -444,8 +451,10 @@ TEST(ArenaTest, MoveCtorOnArena) {
   TestUtil::ExpectAllFieldsSet(moved->payload());
 
   // The only extra allocation with moves is sizeof(NestedTestAllTypes).
-  EXPECT_EQ(usage_by_move, sizeof(NestedTestAllTypes));
-  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+  // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
+  // be a multiple of 8 on 32-bit platforms.
+  EXPECT_EQ(usage_by_move, Align8(sizeof(NestedTestAllTypes)));
+  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
   // checking current implementation specifics for protobuf internal.
@@ -493,13 +502,15 @@ TEST(ArenaTest, RepeatedPtrFieldMoveCtorOnArena) {
   TestUtil::ExpectAllFieldsSet(moved->Get(0));
 
   // The only extra allocation with moves is sizeof(RepeatedPtrField).
+  // Align up to 8 bytes to match default arena alignment, as sizeof(T) may not
+  // be a multiple of 8 on 32-bit platforms.
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
   EXPECT_EQ(usage_by_move,
-            sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>));
+            Align8(sizeof(internal::RepeatedPtrFieldWithArena<TestAllTypes>)));
 #else
-  EXPECT_EQ(usage_by_move, sizeof(internal::RepeatedPtrFieldBase));
+  EXPECT_EQ(usage_by_move, Align8(sizeof(internal::RepeatedPtrFieldBase)));
 #endif
-  EXPECT_LT(usage_by_move + sizeof(TestAllTypes), usage_original);
+  EXPECT_LT(usage_by_move + Align8(sizeof(TestAllTypes)), usage_original);
 
   // Status after move is unspecified and must not be assumed. It's merely
   // checking current implementation specifics for protobuf internal.
@@ -1694,9 +1705,6 @@ TEST(ArenaTest, MessageLiteOnArena) {
   arena.Reset();
 }
 #endif  // PROTOBUF_RTTI
-
-// Align n to next multiple of 8
-uint64_t Align8(uint64_t n) { return (n + 7) & -8; }
 
 TEST(ArenaTest, SpaceAllocated_and_Used) {
   Arena arena_1;
