@@ -1,4 +1,5 @@
 # Simulate a non-functional CC toolchain
-# Users should be able to use pre-built protoc toolchains instead.
 common --per_file_copt=external/.*protobuf.*@--THIS_CC_TOOLCHAIN_IS_BROKEN
 common --host_per_file_copt=external/.*protobuf.*@--THIS_CC_TOOLCHAIN_IS_BROKEN
+# But, users should be able to use pre-built protoc toolchains instead.
+common --incompatible_enable_proto_toolchain_resolution
