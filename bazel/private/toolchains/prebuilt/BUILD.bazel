@@ -1,0 +1,40 @@
+"""Create lazy definitions to reference the pre-built protoc toolchains.
+
+Ensures that Bazel only downloads required binaries for selected toolchains.
+
+This follows guidance here:
+https://docs.bazel.build/versions/main/skylark/deploying.html#registering-toolchains
+"
+Note that in order to resolve toolchains in the analysis phase
+Bazel needs to analyze all toolchain targets that are registered.
+Bazel will not need to analyze all targets referenced by toolchain.toolchain attribute.
+If in order to register toolchains you need to perform complex computation in the repository,
+consider splitting the repository with toolchain targets
+from the repository with <LANG>_toolchain targets.
+Former will be always fetched,
+and the latter will only be fetched when user actually needs to build <LANG> code.
+"
+
+The "complex computation" in our case is simply downloading our pre-built protoc binaries.
+This guidance tells us how to avoid that: we put the toolchain targets in the alias repository
+with only the toolchain attribute pointing into the platform-specific repositories.
+
+These can be registered in the workspace file or passed to --extra_toolchains flag.
+By default all these toolchains are registered by the protoc module extension
+so users don't normally need to interact with these targets.
+"""
+
+load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
+[
+    toolchain(
+        name = "{}_toolchain".format(platform.replace("-", "_")),
+        exec_compatible_with = meta["compatible_with"],
+        # Toolchain resolution will only permit this toolchain if the config_setting for prefer_prebuilt_protoc is true,
+        target_settings = ["@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc.flag_set"],
+        # Bazel does not follow this attribute during analysis, so the referenced repo
+        # will only be fetched if this toolchain is selected.
+        toolchain = "@prebuilt_protoc.{}//:prebuilt_protoc_toolchain".format(platform.replace("-", "_")),
+        toolchain_type = "@com_google_protobuf//bazel/private:proto_toolchain_type",
+    )
+    for platform, meta in PROTOBUF_PLATFORMS.items()
+]
