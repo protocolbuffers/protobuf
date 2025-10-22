@@ -14,7 +14,9 @@ RELEASED_BINARY_INTEGRITY = {
         os,
         arch,
     ]): NULLSHA
-    for [os, arch] in {
-        "linux": ["aarch_64", "x86_64"],
-    }
+    for [os, arch] in [
+        ("linux", "x86_64"),
+        ("osx", "aarch_64"),
+        ("win", "x86_64"),
+    ]
 }
