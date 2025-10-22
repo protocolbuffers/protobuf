@@ -107,6 +107,7 @@ prebuilt_toolchains_repo = repository_rule(
 toolchain(
     name = "{platform}_toolchain",
     exec_compatible_with = {compatible_with},
+    target_settings = ["@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc.flag_set"],
     # Bazel does not follow this attribute during analysis, so the referenced repo
     # will only be fetched if this toolchain is selected.
     toolchain = "@{user_repository_name}.{platform}//:prebuilt_protoc_toolchain",
