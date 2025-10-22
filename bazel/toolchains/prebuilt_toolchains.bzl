@@ -100,7 +100,7 @@ toolchain(
     # Bazel does not follow this attribute during analysis, so the referenced repo
     # will only be fetched if this toolchain is selected.
     toolchain = "@{user_repository_name}.{platform}//:prebuilt_protoc_toolchain",
-    toolchain_type = "@rules_proto//proto:toolchain_type",
+    toolchain_type = "@protobuf//bazel/private:proto_toolchain_type",
 )
 """.format(
             platform = platform.replace("-", "_"),
@@ -109,7 +109,7 @@ toolchain(
         )
     repository_ctx.file("BUILD.bazel", build_content)
 
-protoc_toolchains_repo = repository_rule(
+prebuilt_toolchains_repo = repository_rule(
     _toolchains_repo_impl,
     doc = """\
     Creates a single repository with toolchain definitions for all known platforms

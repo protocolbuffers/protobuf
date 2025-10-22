@@ -1,6 +1,6 @@
 "Repository rule that downloads a pre-compiled protoc from our official release for a single platform."
 
-load(":prebuild_tool_integrity.bzl", "RELEASED_BINARY_INTEGRITY")
+load(":prebuilt_tool_integrity.bzl", "RELEASED_BINARY_INTEGRITY")
 load("//bazel/toolchains:prebuilt_toolchains.bzl", "PROTOC_PLATFORMS")
 
 def release_version_to_artifact_name(release_version, platform):
