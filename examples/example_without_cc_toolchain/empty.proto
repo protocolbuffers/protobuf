@@ -1,0 +1,5 @@
+edition = "2023";
+
+package examples.without.cc.toolchain;
+
+message EmptyMessage {}

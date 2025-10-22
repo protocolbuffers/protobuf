@@ -39,3 +39,8 @@ filegroup(
         "//bazel:__pkg__",
     ],
 )
+
+alias(
+    name = "prebuilt_protoc",
+    actual = "//bazel/private:prebuilt_protoc_toolchain",
+)
