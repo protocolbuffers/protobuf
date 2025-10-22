@@ -23,6 +23,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/unittest_features.pb.h"
 #include "google/protobuf/unittest_invalid_features.pb.h"
 
@@ -2978,6 +2979,190 @@ TEST_F(CommandLineInterfaceTest, WriteDescriptorSet) {
   EXPECT_TRUE(descriptor_set.file(0).message_type(0).field(0).has_json_name());
 }
 
+TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetOut) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      int32 file_opt = 50000;
+    }
+  )schema");
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "custom_option.proto";
+    option (file_opt) = 99;
+    message Foo {}
+  )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "foo.proto");
+  // Descriptor set should not have source code info.
+  EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
+  // Descriptor set should have custom options.
+  ASSERT_EQ(descriptor_set.file(0).options().unknown_fields().field_count(), 1);
+  EXPECT_EQ(descriptor_set.file(0).options().unknown_fields().field(0).number(),
+            50000);
+  EXPECT_EQ(descriptor_set.file(0).options().unknown_fields().field(0).varint(),
+            99);
+}
+
+TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetOut_IncludeImports) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("custom_option.proto", R"schema(
+    edition = "2024";
+    import "google/protobuf/descriptor.proto";
+    extend google.protobuf.FileOptions {
+      int32 file_opt = 50000;
+    }
+  )schema");
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2024";
+    import option "custom_option.proto";
+    option (file_opt) = 99;
+    message Foo {}
+  )schema");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
+      "--proto_path=$tmpdir foo.proto --include_imports");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_EQ(descriptor_set.file_size(), 3);
+  EXPECT_EQ(descriptor_set.file(0).name(), "google/protobuf/descriptor.proto");
+  EXPECT_EQ(descriptor_set.file(1).name(), "custom_option.proto");
+  EXPECT_EQ(descriptor_set.file(2).name(), "foo.proto");
+  // Descriptor set should have custom options.
+  ASSERT_EQ(descriptor_set.file(2).options().unknown_fields().field_count(), 1);
+  EXPECT_EQ(descriptor_set.file(2).options().unknown_fields().field(0).number(),
+            50000);
+  EXPECT_EQ(descriptor_set.file(2).options().unknown_fields().field(0).varint(),
+            99);
+}
+
+TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetIn) {
+  FileDescriptorSet file_descriptor_set;
+
+  DescriptorProto::descriptor()->file()->CopyTo(file_descriptor_set.add_file());
+  pb::CppFeatures::descriptor()->file()->CopyTo(file_descriptor_set.add_file());
+
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_syntax("editions");
+  file->set_edition(Edition::EDITION_2024);
+  file->add_option_dependency(pb::CppFeatures::descriptor()->file()->name());
+  file->set_name("foo.proto");
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_field();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_name("a");
+  field->set_number(1);
+  field->mutable_options()
+      ->mutable_features()
+      ->MutableExtension(pb::cpp)
+      ->set_string_type(pb::CppFeatures::VIEW);
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin foo.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "foo.proto");
+  // Descriptor set should have custom options set.
+  EXPECT_EQ(descriptor_set.file(0)
+                .message_type(0)
+                .field(0)
+                .options()
+                .features()
+                .GetExtension(pb::cpp)
+                .string_type(),
+            pb::CppFeatures::VIEW);
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ImportOption_DescriptorSetIn_MissingOptionDependency) {
+  FileDescriptorSet file_descriptor_set;
+
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_syntax("editions");
+  file->set_edition(Edition::EDITION_2024);
+  file->add_option_dependency(pb::CppFeatures::descriptor()->file()->name());
+  file->set_name("foo.proto");
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_field();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_name("a");
+  field->set_number(1);
+  field->mutable_options()
+      ->mutable_features()
+      ->MutableExtension(pb::cpp)
+      ->set_string_type(pb::CppFeatures::VIEW);
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin foo.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "foo.proto");
+  // Descriptor set should have custom options set.
+  EXPECT_EQ(descriptor_set.file(0)
+                .message_type(0)
+                .field(0)
+                .options()
+                .features()
+                .GetExtension(pb::cpp)
+                .string_type(),
+            pb::CppFeatures::VIEW);
+}
+
+TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetIn_MissingImport) {
+  FileDescriptorSet file_descriptor_set;
+
+  CreateTempFile("foo.proto",
+                 R"schema(
+      edition = "2024";
+      import option "bar.proto";
+      import option "google/protobuf/cpp_features.proto";
+      option features.(pb.cpp).string_type = VIEW;
+    )schema");
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin foo.proto");
+
+  ExpectErrorSubstring("bar.proto: File not found");
+  ExpectErrorSubstring(
+      "google/protobuf/cpp_features.proto: File not found");
+  ExpectErrorSubstring("foo.proto:5:14: Option \"features.(pb.cpp)\" unknown");
+}
+
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
@@ -3248,32 +3433,6 @@ TEST_F(CommandLineInterfaceTest, OptionImportWithDebugRedactDeeplyNested) {
   ExpectErrorSubstring(
       "bar.proto: Option dependency custom_option.proto contains a custom "
       "option file_opt marked debug_redact");
-}
-
-TEST_F(CommandLineInterfaceTest, DisallowMissingOptionImportsDescriptorSetIn) {
-  FileDescriptorSet file_descriptor_set;
-
-  FileDescriptorProto* file = file_descriptor_set.add_file();
-  file->set_syntax("editions");
-  file->set_edition(Edition::EDITION_2024);
-  file->set_name("foo.proto");
-  file->add_option_dependency("bar.proto");
-  file->add_message_type()->set_name("Foo");
-
-  // Add an unknown field to the file options to make it look like a custom
-  // option.
-  file->mutable_message_type(0)
-      ->mutable_options()
-      ->mutable_unknown_fields()
-      ->AddVarint(123, 456);
-
-  WriteDescriptorSet("foo.bin", &file_descriptor_set);
-
-  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptor_set "
-      "--include_imports --descriptor_set_in=$tmpdir/foo.bin "
-      "--proto_path=$tmpdir --experimental_editions foo.proto");
-
-  ExpectErrorSubstring("foo.proto: Import \"bar.proto\" was not found");
 }
 
 TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetention) {

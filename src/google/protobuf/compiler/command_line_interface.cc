@@ -337,10 +337,12 @@ void CommandLineInterface::GetTransitiveDependencies(
   for (int i = 0; i < file->option_dependency_count(); ++i) {
     const FileDescriptor* dep =
         file->pool()->FindFileByName(file->option_dependency_name(i));
-    ABSL_CHECK(dep != nullptr)
+    ABSL_CHECK(dep != nullptr || !descriptor_set_in_names_.empty())
         << "Option dependency " << file->option_dependency_name(i)
         << " not found in pool.  This should never happen.";
-    GetTransitiveDependencies(dep, already_seen, output, options);
+    if (dep != nullptr) {
+      GetTransitiveDependencies(dep, already_seen, output, options);
+    }
   }
 
   // Add this file.
@@ -1362,7 +1364,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
-  descriptor_pool->EnforceOptionDependencies(true);
+  descriptor_pool->EnforceOptionDependencies(descriptor_set_in_names_.empty());
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
 
@@ -3213,6 +3215,15 @@ bool CommandLineInterface::WriteDescriptorSet(
         const FileDescriptor* dependency = file->dependency(j);
         // if the dependency isn't in parsed files, mark it as already seen
         if (to_output.find(dependency) == to_output.end()) {
+          already_seen.insert(dependency);
+        }
+      }
+      for (int j = 0; j < file->option_dependency_count(); j++) {
+        const FileDescriptor* dependency =
+            file->pool()->FindFileByName(file->option_dependency_name(j));
+        // if the dependency isn't in parsed files, mark it as already seen
+        if (dependency != nullptr &&
+            to_output.find(dependency) == to_output.end()) {
           already_seen.insert(dependency);
         }
       }
