@@ -1196,8 +1196,6 @@ inline void RepeatedField<Element>::InternalAddWithArena(
 
 template <typename Element>
 inline void RepeatedField<Element>::AddWithArena(Arena* arena, Element value) {
-  ABSL_DCHECK_EQ(arena, GetArena());
-
   bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
   int capacity = Capacity(is_soo);
@@ -1238,8 +1236,6 @@ inline Element* RepeatedField<Element>::InternalAddWithArena(
 template <typename Element>
 inline Element* RepeatedField<Element>::AddWithArena(Arena* arena)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ABSL_DCHECK_EQ(arena, GetArena());
-
   bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == Capacity())) {
@@ -1254,8 +1250,6 @@ template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::AddForwardIterator(Arena* arena, Iter begin,
                                                        Iter end) {
-  ABSL_DCHECK_EQ(arena, GetArena());
-
   bool is_soo = this->is_soo();
   const int old_size = size(is_soo);
   int capacity = Capacity(is_soo);
@@ -1293,8 +1287,6 @@ template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::AddInputIterator(Arena* arena, Iter begin,
                                                      Iter end) {
-  ABSL_DCHECK_EQ(arena, GetArena());
-
   bool is_soo = this->is_soo();
   int size = this->size(is_soo);
   int capacity = Capacity(is_soo);

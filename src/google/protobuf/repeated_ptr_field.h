@@ -408,7 +408,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void CopyFrom(const RepeatedPtrFieldBase& other, Arena* arena) {
-    ABSL_DCHECK_EQ(arena, GetArena());
     if (&other == this) return;
     Clear<TypeHandler>();
     if (other.empty()) return;
@@ -1936,7 +1935,6 @@ inline void RepeatedPtrField<Element>::AddAllocated(Element* value) {
 template <typename Element>
 inline void RepeatedPtrField<Element>::AddAllocatedWithArena(Arena* arena,
                                                              Element* value) {
-  ABSL_DCHECK_EQ(arena, GetArena());
   RepeatedPtrFieldBase::AddAllocated<TypeHandler>(arena, value);
 }
 
@@ -1948,7 +1946,6 @@ inline void RepeatedPtrField<Element>::UnsafeArenaAddAllocated(Element* value) {
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaAddAllocatedWithArena(
     Arena* arena, Element* value) {
-  ABSL_DCHECK_EQ(arena, GetArena());
   RepeatedPtrFieldBase::UnsafeArenaAddAllocated<TypeHandler>(arena, value);
 }
 
@@ -1958,7 +1955,6 @@ inline Element* RepeatedPtrField<Element>::ReleaseLast() {
 }
 template <typename Element>
 inline Element* RepeatedPtrField<Element>::ReleaseLastWithArena(Arena* arena) {
-  ABSL_DCHECK_EQ(arena, GetArena());
   return RepeatedPtrFieldBase::ReleaseLast<TypeHandler>(arena);
 }
 
