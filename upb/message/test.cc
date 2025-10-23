@@ -41,6 +41,7 @@
 #include "upb/message/test.upbdefs.h"
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/debug_string.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
