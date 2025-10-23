@@ -1133,12 +1133,12 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   // Arena enabled constructors: for internal use only.
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  constexpr RepeatedPtrField(internal::InternalVisibility,
-                             internal::InternalMetadataOffset offset)
+  constexpr PROTOBUF_ALWAYS_INLINE RepeatedPtrField(
+      internal::InternalVisibility, internal::InternalMetadataOffset offset)
       : RepeatedPtrField(offset) {}
-  RepeatedPtrField(internal::InternalVisibility,
-                   internal::InternalMetadataOffset offset,
-                   const RepeatedPtrField& rhs)
+  PROTOBUF_ALWAYS_INLINE RepeatedPtrField(
+      internal::InternalVisibility, internal::InternalMetadataOffset offset,
+      const RepeatedPtrField& rhs)
       : RepeatedPtrField(offset, rhs) {}
 
 #else
@@ -1157,7 +1157,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                 Element, decltype(*std::declval<Iter>())>::value>::type>
   RepeatedPtrField(Iter begin, Iter end);
 
-  RepeatedPtrField(const RepeatedPtrField& rhs)
+  PROTOBUF_ALWAYS_INLINE RepeatedPtrField(const RepeatedPtrField& rhs)
       : RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
             internal::InternalMetadataOffset(),
@@ -1170,7 +1170,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-  RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
+  PROTOBUF_ALWAYS_INLINE RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
       : RepeatedPtrField(internal::InternalMetadataOffset(), std::move(rhs)) {}
 #else
   RepeatedPtrField(RepeatedPtrField&& rhs) noexcept
@@ -1553,7 +1553,7 @@ template <typename Element>
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 constexpr
 #endif
-    inline RepeatedPtrField<Element>::RepeatedPtrField(
+    PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         internal::InternalMetadataOffset offset
 #else
@@ -1573,7 +1573,7 @@ constexpr
 }
 
 template <typename Element>
-inline RepeatedPtrField<Element>::RepeatedPtrField(
+PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
     internal::InternalMetadataOffset offset,
 #else
@@ -1593,7 +1593,8 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
 
 template <typename Element>
 template <typename Iter, typename>
-inline RepeatedPtrField<Element>::RepeatedPtrField(Iter begin, Iter end) {
+PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(Iter begin,
+                                                                   Iter end) {
   StaticValidityCheck();
   Add(begin, end);
 }
