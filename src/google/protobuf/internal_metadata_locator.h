@@ -26,7 +26,7 @@ class InternalMetadataOffset {
 
  public:
   // A sentinel `InternalMetadataOffset`, which does not point to any metadata.
-  constexpr InternalMetadataOffset() = default;
+  constexpr PROTOBUF_ALWAYS_INLINE InternalMetadataOffset() = default;
 
   // Constructs an `InternalMetadataOffset` which can recover the
   // `InternalMetadata` from a containing type `T` given the starting address of
@@ -35,7 +35,7 @@ class InternalMetadataOffset {
   // This method expects to find a field with name `_internal_metadata_` in `T`,
   // and the type of that field should be `InternalMetadata`.
   template <typename T, size_t kFieldOffset>
-  static constexpr InternalMetadataOffset Build() {
+  static constexpr PROTOBUF_ALWAYS_INLINE InternalMetadataOffset Build() {
     static_assert(
         std::is_same_v<std::remove_const_t<decltype(T::_internal_metadata_)>,
                        InternalMetadata>,
