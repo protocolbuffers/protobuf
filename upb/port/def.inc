@@ -398,6 +398,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRESERVE_NONE
 #endif
 
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
+#define UPB_ARM64_ASM 1
+#else
+#define UPB_ARM64_ASM 0
+#endif
+
 /* This check is not fully robust: it does not require that we have "musttail"
  * support available. We need tail calls to avoid consuming arbitrary amounts
  * of stack space.
