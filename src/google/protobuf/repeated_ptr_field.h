@@ -37,7 +37,6 @@
 #include "absl/base/prefetch.h"
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
-#include "absl/meta/type_traits.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/field_with_arena.h"
@@ -1102,7 +1101,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
-        absl::disjunction<
+        std::disjunction<
             internal::is_supported_string_type<Element>,
             internal::is_supported_message_type<Element>>::value,
         "We only support string and Message types in RepeatedPtrField.");
@@ -2176,7 +2175,7 @@ struct IteratorConceptSupport {
 
 template <typename Traits>
 struct IteratorConceptSupport<Traits,
-                              absl::void_t<typename Traits::iterator_concept>> {
+                              std::void_t<typename Traits::iterator_concept>> {
   using tag = typename Traits::iterator_concept;
 };
 

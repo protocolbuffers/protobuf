@@ -34,7 +34,6 @@
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
-#include "absl/meta/type_traits.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -1235,12 +1234,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     static_assert(alignof(internal::NodeBase) >= alignof(mapped_type),
                   "Alignment of mapped type is too high.");
     static_assert(
-        absl::disjunction<internal::is_supported_integral_type<key_type>,
-                          internal::is_supported_string_type<key_type>,
-                          internal::is_internal_map_key_type<key_type>>::value,
+        std::disjunction<internal::is_supported_integral_type<key_type>,
+                         internal::is_supported_string_type<key_type>,
+                         internal::is_internal_map_key_type<key_type>>::value,
         "We only support integer, string, or designated internal key "
         "types.");
-    static_assert(absl::disjunction<
+    static_assert(std::disjunction<
                       internal::is_supported_scalar_type<mapped_type>,
                       is_proto_enum<mapped_type>,
                       internal::is_supported_message_type<mapped_type>,
