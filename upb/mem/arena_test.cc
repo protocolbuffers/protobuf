@@ -27,7 +27,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/random/distributions.h"
 #include "absl/random/random.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "absl/synchronization/notification.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
@@ -446,7 +446,7 @@ class Environment {
   }
 
   std::shared_ptr<const upb::Arena> IndexedNonNullArena(size_t index) {
-    absl::MutexLock lock(&mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     std::shared_ptr<const upb::Arena>& ret = arenas_[index];
     if (!ret) ret = std::make_shared<const upb::Arena>();
     return ret;
@@ -475,7 +475,7 @@ class Environment {
   void SwapRandomArena(absl::BitGen& gen, std::shared_ptr<const upb::Arena>& a,
                        size_t min_index) {
     size_t i = RandomIndex(gen, min_index);
-    absl::MutexLock lock(&mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
     arenas_[i].swap(a);
   }
 
@@ -489,7 +489,7 @@ class Environment {
   }
 
   ArenaArray arenas_ ABSL_GUARDED_BY(mutex_);
-  absl::Mutex mutex_;
+  std::mutex mutex_;
 };
 
 TEST(ArenaTest, FuzzSingleThreaded) {

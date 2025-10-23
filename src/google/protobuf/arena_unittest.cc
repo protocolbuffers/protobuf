@@ -29,7 +29,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/barrier.h"
 #include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
@@ -48,8 +47,6 @@
 #include "google/protobuf/unittest_import.pb.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
-
-#include "absl/synchronization/mutex.h"
 
 // Must be included last
 #include "google/protobuf/port_def.inc"

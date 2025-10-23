@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -19,7 +20,6 @@
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -56,8 +56,8 @@ static_assert(alignof(GlobalEmptyString) >= 4, "");
 }  // namespace
 
 const std::string& LazyString::Init() const {
-  static absl::Mutex mu{absl::kConstInit};
-  mu.Lock();
+  static std::mutex mu;
+  std::lock_guard<std::mutex> lk(mu);
   const std::string* res = inited_.load(std::memory_order_acquire);
   if (res == nullptr) {
     auto init_value = init_value_;
@@ -65,7 +65,6 @@ const std::string& LazyString::Init() const {
         std::string(init_value.ptr, init_value.size);
     inited_.store(res, std::memory_order_release);
   }
-  mu.Unlock();
   return *res;
 }
 

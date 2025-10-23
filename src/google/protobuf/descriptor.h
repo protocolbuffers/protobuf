@@ -51,7 +51,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
@@ -2577,7 +2577,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     static bool type_key;
     auto key = std::pair<const void*, const void*>(descriptor, &type_key);
     {
-      absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
+      std::lock_guard<std::mutex> lock(&pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);
       if (it != pool->field_memo_table_->end()) {
         return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
@@ -2586,7 +2586,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     auto result = std::make_unique<MemoData<ResultT>>();
     result->value = func(descriptor);
     {
-      absl::MutexLock lock(&pool->field_memo_table_mutex_);
+      std::lock_guard<std::mutex> lock(&pool->field_memo_table_mutex_);
       auto insert_result =
           pool->field_memo_table_->insert({key, std::move(result)});
       auto it = insert_result.first;
@@ -2652,7 +2652,7 @@ class PROTOBUF_EXPORT DescriptorPool {
                                      PlaceholderType placeholder_type) const;
 
 #ifndef SWIG
-  mutable absl::Mutex field_memo_table_mutex_;
+  mutable std::mutex field_memo_table_mutex_;
   mutable std::unique_ptr<absl::flat_hash_map<
       std::pair<const void*, const void*>, std::unique_ptr<MemoBase>>>
       field_memo_table_ ABSL_GUARDED_BY(field_memo_table_mutex_) =
@@ -2663,7 +2663,7 @@ class PROTOBUF_EXPORT DescriptorPool {
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
-  absl::Mutex* mutex_;
+  std::mutex* mutex_;
 
   // See constructor.
   DescriptorDatabase* fallback_database_;

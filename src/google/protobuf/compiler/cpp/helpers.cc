@@ -17,6 +17,8 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <mutex>
+#include <new>
 #include <queue>
 #include <string>
 #include <type_traits>
@@ -40,7 +42,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -2055,14 +2057,14 @@ static bool HasBootstrapProblem(const FileDescriptor* file,
                                 const Options& options,
                                 bool* has_opt_codesize_extension) {
   struct BootstrapGlobals {
-    absl::Mutex mutex;
+    std::mutex mutex;
     absl::flat_hash_set<const FileDescriptor*> cached ABSL_GUARDED_BY(mutex);
     absl::flat_hash_set<const FileDescriptor*> non_cached
         ABSL_GUARDED_BY(mutex);
   };
   static auto& bootstrap_cache = *new BootstrapGlobals();
 
-  absl::MutexLock lock(&bootstrap_cache.mutex);
+  std::lock_guard<std::mutex> lock(bootstrap_cache.mutex);
   if (bootstrap_cache.cached.contains(file)) return true;
   if (bootstrap_cache.non_cached.contains(file)) return false;
 

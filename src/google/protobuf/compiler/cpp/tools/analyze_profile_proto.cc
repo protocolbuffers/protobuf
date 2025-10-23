@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <optional>
 #include <ostream>
 #include <sstream>
@@ -42,7 +43,6 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
@@ -556,7 +556,7 @@ ParallelRunResults RunInParallel(
     size_t num_runs, size_t num_workers,
     const std::function<std::string(size_t i)>& get_run_id,
     const std::function<absl::Status(size_t i)>& do_work) {
-  absl::Mutex mu;
+  std::mutex mu;
   ParallelRunResults results;
   {
     ThreadPool threads{static_cast<int>(std::min(num_runs, num_workers))};
@@ -571,7 +571,7 @@ ParallelRunResults RunInParallel(
         const absl::Duration duration = absl::Now() - start;
 
         // Synchronous section.
-        absl::MutexLock lock(mu);
+        std::lock_guard<std::mutex> lock(mu);
         ++results.num_done;
         ++(status.ok() ? results.num_succeeded : results.num_failed);
         results.status.Update(status);
@@ -599,7 +599,7 @@ absl::Status AnalyzeAndAggregateProfileProtosToText(
   ASSIGN_OR_RETURN(const auto paths, FindProtoProfileFiles(root));
 
   // Process files in parallel.
-  absl::Mutex mu;
+  std::mutex mu;
   std::vector<std::stringstream> substreams{paths.size()};
   Stats merged_stats;
   const auto results = RunInParallel(
@@ -619,7 +619,7 @@ absl::Status AnalyzeAndAggregateProfileProtosToText(
                          AnalyzeProfileProto(substream, path, options));
 
         // Synchronous section.
-        absl::MutexLock lock(mu);
+        std::lock_guard<std::mutex> lock(mu);
         Aggregate(stats, merged_stats);
         if (!options.sort_output_by_file_name) {
           stream << substream.str() << std::endl;

@@ -15,6 +15,7 @@
 #include <cstdint>
 #include <cstring>
 #include <new>  // IWYU pragma: keep for operator new().
+#include <mutex>
 #include <optional>
 #include <queue>
 #include <string>
@@ -29,7 +30,6 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -323,7 +323,7 @@ class GeneratedMessageFactory final : public MessageFactory {
       files_;
   DynamicMessageFactory dropped_defaults_factory_;
 
-  absl::Mutex mutex_;
+  std::mutex mutex_;
   class MessagePtr {
    public:
     MessagePtr() : value_() {}

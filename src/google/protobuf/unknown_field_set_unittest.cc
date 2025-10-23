@@ -26,7 +26,7 @@
 #include "absl/functional/bind_front.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "google/protobuf/descriptor.h"

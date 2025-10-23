@@ -21,7 +21,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
+#include <mutex>
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/python/helpers.h"
 #include "google/protobuf/descriptor.h"
@@ -590,7 +590,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* context,
                             std::string* error) const {
-  absl::MutexLock lock(&mutex_);
+  std::lock_guard<std::mutex> lock(mutex_);
   import_map_.clear();
   // Calculate file name.
   file_ = file;

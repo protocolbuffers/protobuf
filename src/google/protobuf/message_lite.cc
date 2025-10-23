@@ -778,7 +778,7 @@ struct ShutdownData {
   }
 
   std::vector<std::pair<void (*)(const void*), const void*>> functions;
-  absl::Mutex mutex;
+  std::mutex mutex;
 };
 
 static void RunZeroArgFunc(const void* arg) {
@@ -792,7 +792,7 @@ void OnShutdown(void (*func)()) {
 
 void OnShutdownRun(void (*f)(const void*), const void* arg) {
   auto shutdown_data = ShutdownData::get();
-  absl::MutexLock lock(&shutdown_data->mutex);
+  std::lock_guard<std::mutex> lock(shutdown_data->mutex);
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 
