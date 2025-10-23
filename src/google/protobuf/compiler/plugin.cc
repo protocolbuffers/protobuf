@@ -10,7 +10,6 @@
 #include "google/protobuf/compiler/plugin.h"
 
 #include <iostream>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -20,9 +19,7 @@
 #include <unistd.h>
 #endif
 
-#include "absl/base/log_severity.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/globals.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
@@ -31,7 +28,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/io_win32.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 
 namespace google {

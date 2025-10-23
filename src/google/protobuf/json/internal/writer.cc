@@ -8,7 +8,6 @@
 #include "google/protobuf/json/internal/writer.h"
 
 #include <cstdint>
-#include <initializer_list>
 #include <limits>
 #include <utility>
 

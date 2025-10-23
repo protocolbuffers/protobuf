@@ -8,10 +8,8 @@
 #include "google/protobuf/compiler/csharp/csharp_message.h"
 
 #include <algorithm>
-#include <sstream>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"

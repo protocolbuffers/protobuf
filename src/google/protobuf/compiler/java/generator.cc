@@ -19,7 +19,6 @@
 
 #include <memory>
 
-#include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/java/file.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"

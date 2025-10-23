@@ -7,22 +7,14 @@
 
 #include "google/protobuf/inlined_string_field.h"
 
-#include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <string>
 #include <utility>
 
-#include "absl/base/optimization.h"
-#include "absl/log/absl_check.h"
-#include "absl/strings/internal/resize_uninitialized.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/parse_context.h"
 
 
 // clang-format off

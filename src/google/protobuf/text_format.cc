@@ -27,13 +27,11 @@
 #include <vector>
 
 #include "absl/base/macros.h"
-#include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -56,7 +54,6 @@
 #include "google/protobuf/reflection_mode.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
-#include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
 // Must be included last.

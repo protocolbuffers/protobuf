@@ -6,7 +6,6 @@
 #include "google/protobuf/cpp_features.pb.h"
 
 #include <algorithm>
-#include <type_traits>
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/internal_visibility.h"
@@ -15,7 +14,6 @@
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
-#include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/wire_format.h"
 // @@protoc_insertion_point(includes)
 

@@ -10,7 +10,6 @@
 #include <float.h>  // FLT_DIG and DBL_DIG
 
 #include <cmath>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
@@ -19,7 +18,6 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/charconv.h"
-#include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"
 
 namespace google {

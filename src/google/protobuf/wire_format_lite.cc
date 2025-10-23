@@ -14,15 +14,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
-#include <new>
 #include <string>
 #include <type_traits>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"

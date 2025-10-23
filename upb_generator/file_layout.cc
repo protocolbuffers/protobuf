@@ -7,12 +7,9 @@
 
 #include "upb_generator/file_layout.h"
 
-#include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "upb/reflection/def.hpp"
-#include "upb_generator/common.h"
 
 namespace upb {
 namespace generator {

@@ -14,7 +14,6 @@
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/port.h"
