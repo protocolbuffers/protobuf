@@ -394,6 +394,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRESERVE_NONE
 #endif
 
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
+#define UPB_ARM64_ASM 1
+#else
+#define UPB_ARM64_ASM 0
+#endif
+
 /* This check is not fully robust: it does not require that we have "musttail"
  * support available. We need tail calls to avoid consuming arbitrary amounts
  * of stack space.
@@ -16312,14 +16318,9 @@ static char* encode_fixed32(char* ptr, upb_encstate* e, uint32_t val) {
 
 #define UPB_PB_VARINT_MAX_LEN 10
 
-// Need gnu extended inline asm
-#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
-#define UPB_ARM64_ASM
-#endif
-
-#ifdef UPB_ARM64_ASM
-UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
-                                                  uint64_t val) {
+#if UPB_ARM64_ASM
+UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
+                                            uint64_t val) {
   ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
   uint64_t clz;
   __asm__("clz %[cnt], %[val]\n" : [cnt] "=r"(clz) : [val] "r"(val));
@@ -16395,11 +16396,7 @@ char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
     *ptr = val;
     return ptr;
   } else {
-#ifdef UPB_ARM64_ASM
-    return encode_longvarint_arm64(ptr, e, val);
-#else
     return encode_longvarint(ptr, e, val);
-#endif
   }
 }
 
@@ -16408,11 +16405,7 @@ char* encode_longlength(char* ptr, upb_encstate* e, uint64_t val) {
   if (val > INT32_MAX) {
     encode_err(e, kUpb_EncodeStatus_MaxSizeExceeded);
   }
-#ifdef UPB_ARM64_ASM
-  return encode_longvarint_arm64(ptr, e, val);
-#else
   return encode_longvarint(ptr, e, val);
-#endif
 }
 
 UPB_FORCEINLINE
@@ -17213,3 +17206,4 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_XSAN
 #undef UPB_XSAN_STRUCT_SIZE
 #undef UPB_ENABLE_REF_CYCLE_CHECKS
+#undef UPB_ARM64_ASM
