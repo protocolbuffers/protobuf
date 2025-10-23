@@ -11,8 +11,6 @@
 
 #include "google/protobuf/compiler/java/full/message.h"
 
-#include <algorithm>
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
@@ -39,9 +37,7 @@
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -841,7 +837,14 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
   // Memoizes whether the protocol buffer is fully initialized (has all
   // required fields). -1 means not yet computed. 0 means false and 1 means
   // true.
-  printer->Print("private byte memoizedIsInitialized = -1;\n");
+  if (internal::IsOss()) {
+    // Leave this as non-transient in OSS to avoid breaking customers that are
+    // holding GSON wrong.
+    // TODO: Remove this in a future PBJ breaking release.
+    printer->Print("private byte memoizedIsInitialized = -1;\n");
+  } else {
+    printer->Print("private transient byte memoizedIsInitialized = -1;\n");
+  }
   printer->Print(
       "@java.lang.Override\n"
       "public final boolean isInitialized() {\n");
