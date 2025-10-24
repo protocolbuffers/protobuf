@@ -10,9 +10,12 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.ForeignMessage;
 import proto2_unittest.UnittestProto.TestAllExtensions;
 import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestLazyExtensions;
+import proto2_unittest.UnittestProto.TestLazyMessage;
 import proto2_unittest.UnittestProto.TestRequired;
 import proto2_unittest.UnittestProto.TestRequiredForeign;
 import java.util.List;
@@ -414,6 +417,23 @@ public class MessageTest {
                 encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes)))
         .that(contains(serializedMessage, expectedBytes))
         .isTrue();
+  }
+
+  @Test
+  public void dummy() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    TestAllTypes.Builder builder = TestUtil.getAllSetBuilder();
+    TestLazyExtensions message =
+        TestLazyExtensions.newBuilder()
+            .setExtension(
+                UnittestProto.lazyExtensionsLazyMessage,
+                TestLazyMessage.newBuilder().setSubMessage(builder).build())
+            .build();
+    byte[] data = message.toByteArray();
+    TestLazyExtensions proto =
+        TestLazyExtensions.parseFrom(data, ExtensionRegistry.getGeneratedRegistry());
+    byte[] temp = proto.toByteArray();
+    System.out.println("temp: " + temp.length);
   }
 
   private static String encodeHex(ByteString bytes) {

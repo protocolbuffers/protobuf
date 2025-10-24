@@ -1218,7 +1218,14 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
             // after lazy field parsed. So when we use LazyField globally,
             // we need to change the following write method to write cached
             // bytes directly rather than write the parsed message.
-            FieldSet.writeField(descriptor, next.getValue(), output);
+            if (descriptor.getLiteJavaType() == WireFormat.JavaType.MESSAGE
+                && next instanceof LazyField.LazyEntry<?>) {
+              output.writeBytes(
+                  descriptor.getNumber(),
+                  ((LazyField.LazyEntry<?>) next).getField().toByteString());
+            } else {
+              FieldSet.writeField(descriptor, next.getValue(), output);
+            }
           }
           if (iter.hasNext()) {
             next = iter.next();

@@ -326,8 +326,18 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException;
+
+    default void mergeMessage(
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry,
+        FieldDescriptor field,
+        Message defaultInstance)
+        throws IOException {
+      mergeMessage(input, extensionRegistry, field, defaultInstance, /* lazy= */ false);
+    }
 
     /** Returns the UTF8 validation level for the field. */
     WireFormat.Utf8Validation getUtf8Validation(Descriptors.FieldDescriptor descriptor);
@@ -564,7 +574,8 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException {
       if (!field.isRepeated()) {
         Message.Builder subBuilder;
@@ -796,13 +807,25 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException {
       if (!field.isRepeated()) {
         if (hasField(field)) {
+          // If the field is present and lazy, merge the bytes into the lazy field.
+          LazyField lazyField = extensions.getLazyField(field);
+          if (lazy && lazyField != null) {
+            lazyField.mergeFrom(input, extensionRegistry);
+            return;
+          }
           MessageLite.Builder current = ((MessageLite) getField(field)).toBuilder();
           input.readMessage(current, extensionRegistry);
           Object unused = setField(field, current.buildPartial());
+          return;
+        }
+        if (lazy) {
+          extensions.setField(
+              field, new LazyField(defaultInstance, extensionRegistry, input.readBytes()));
           return;
         }
         Message.Builder subBuilder = defaultInstance.newBuilderForType();
@@ -1017,10 +1040,17 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException {
       if (!field.isRepeated()) {
         if (hasField(field)) {
+          // If the field is present and lazy, merge the bytes into the lazy field.
+          LazyField lazyField = extensions.getLazyField(field);
+          if (lazy && lazyField != null) {
+            lazyField.mergeFrom(input, extensionRegistry);
+            return;
+          }
           Object fieldOrBuilder = extensions.getFieldAllowBuilders(field);
           MessageLite.Builder subBuilder;
           if (fieldOrBuilder instanceof MessageLite.Builder) {
@@ -1030,6 +1060,12 @@ class MessageReflection {
             extensions.setField(field, subBuilder);
           }
           input.readMessage(subBuilder, extensionRegistry);
+          return;
+        }
+
+        if (lazy) {
+          extensions.setField(
+              field, new LazyField(defaultInstance, extensionRegistry, input.readBytes()));
           return;
         }
         Message.Builder subBuilder = defaultInstance.newBuilderForType();
@@ -1210,7 +1246,13 @@ class MessageReflection {
           }
         case MESSAGE:
           {
-            target.mergeMessage(input, extensionRegistry, field, defaultInstance);
+            target.mergeMessage(
+                input,
+                extensionRegistry,
+                field,
+                defaultInstance,
+                !ExtensionRegistryLite.isEagerlyParseExtensionFields()
+                    && type.isExtensionNumber(fieldNumber));
             return true;
           }
         case ENUM:
