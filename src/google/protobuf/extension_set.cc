@@ -88,17 +88,24 @@ struct ExtensionHasher {
   }
 };
 
+// TODO: This should really be a node hash set as pointers to value
+// objects (that might move) are returned...
 using ExtensionRegistry =
     absl::flat_hash_set<ExtensionInfo, ExtensionHasher, ExtensionEq>;
 
-static const ExtensionRegistry* global_registry = nullptr;
+static ExtensionRegistry* global_mutable_registry() {
+  static auto static_registry = OnShutdownDelete(new ExtensionRegistry);
+  return static_registry;
+}
+
+static const ExtensionRegistry* global_registry() {
+  return global_mutable_registry();
+}
 
 // This function is only called at startup, so there is no need for thread-
 // safety.
 void Register(const ExtensionInfo& info) {
-  static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
-  global_registry = local_static_registry;
-  if (!local_static_registry->insert(info).second) {
+  if (!global_mutable_registry()->insert(info).second) {
     ABSL_LOG(FATAL) << "Multiple extension registrations for type \""
                     << info.message->GetTypeName() << "\", field number "
                     << info.number << ".";
@@ -107,14 +114,12 @@ void Register(const ExtensionInfo& info) {
 
 const ExtensionInfo* FindRegisteredExtension(const MessageLite* extendee,
                                              int number) {
-  if (!global_registry) return nullptr;
-
   ExtensionInfoKey info;
   info.message = extendee;
   info.number = number;
 
-  auto it = global_registry->find(info);
-  if (it == global_registry->end()) {
+  auto it = global_registry()->find(info);
+  if (it == global_registry()->end()) {
     return nullptr;
   } else {
     return &*it;
