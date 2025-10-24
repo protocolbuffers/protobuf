@@ -52,7 +52,13 @@ Timestamp CreateNormalized(int64_t seconds, int32_t nanos) {
 
   // Make sure nanos is in the range.
   if (nanos <= -kNanosPerSecond || nanos >= kNanosPerSecond) {
-    seconds += nanos / kNanosPerSecond;
+    int64_t seconds_offset = nanos / kNanosPerSecond;
+    ABSL_DCHECK(!((seconds_offset > 0 &&
+                   seconds > TimeUtil::kTimestampMaxSeconds - seconds_offset) ||
+                  (seconds_offset < 0 &&
+                   seconds < TimeUtil::kTimestampMinSeconds - seconds_offset)))
+        << "Timestamp seconds overflow when normalizing nanos.";
+    seconds += seconds_offset;
     nanos = nanos % kNanosPerSecond;
   }
   // For Timestamp nanos should be in the range [0, 999999999]
@@ -80,7 +86,13 @@ Duration CreateNormalized(int64_t seconds, int32_t nanos) {
 
   // Make sure nanos is in the range.
   if (nanos <= -kNanosPerSecond || nanos >= kNanosPerSecond) {
-    seconds += nanos / kNanosPerSecond;
+    int64_t seconds_offset = nanos / kNanosPerSecond;
+    ABSL_DCHECK(!((seconds_offset > 0 &&
+                   seconds > TimeUtil::kDurationMaxSeconds - seconds_offset) ||
+                  (seconds_offset < 0 &&
+                   seconds < TimeUtil::kDurationMinSeconds - seconds_offset)))
+        << "Duration seconds overflow when normalizing nanos.";
+    seconds += seconds_offset;
     nanos = nanos % kNanosPerSecond;
   }
   // nanos should have the same sign as seconds.
