@@ -95,7 +95,7 @@ public class JsonFormat {
     ALWAYS_PRINT_SPECIFIED_FIELDS
   }
 
-  /** A Printer converts a protobuf message to the proto3 JSON format. */
+  /** A Printer converts a protobuf message to the ProtoJSON format. */
   public static class Printer {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
@@ -345,7 +345,7 @@ public class JsonFormat {
     }
 
     /**
-     * Converts a protobuf message to the proto3 JSON format.
+     * Converts a protobuf message to the ProtoJSON format.
      *
      * @throws InvalidProtocolBufferException if the message contains Any types that can't be
      *     resolved
@@ -368,8 +368,8 @@ public class JsonFormat {
     }
 
     /**
-     * Converts a protobuf message to the proto3 JSON format. Throws exceptions if there
-     * are unknown Any types in the message.
+     * Converts a protobuf message to the ProtoJSON format. Throws exceptions if there are unknown
+     * Any types in the message.
      */
     public String print(MessageOrBuilder message) throws InvalidProtocolBufferException {
       try {
@@ -396,9 +396,7 @@ public class JsonFormat {
         Parser.DEFAULT_RECURSION_LIMIT);
   }
 
-  /**
-   * A Parser parses the proto3 JSON format into a protobuf message.
-   */
+  /** A Parser parses the ProtoJSON format into a protobuf message. */
   public static class Parser {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
@@ -460,10 +458,10 @@ public class JsonFormat {
     }
 
     /**
-     * Parses from the proto3 JSON format into a protobuf message.
+     * Parses from the ProtoJSON format into a protobuf message.
      *
-     * @throws InvalidProtocolBufferException if the input is not valid JSON
-     *         proto3 format or there are unknown fields in the input.
+     * @throws InvalidProtocolBufferException if the input is not valid JSON proto3 format or there
+     *     are unknown fields in the input.
      */
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO: Investigate the allocation overhead and optimize for
@@ -473,10 +471,10 @@ public class JsonFormat {
     }
 
     /**
-     * Parses from the proto3 JSON encoding into a protobuf message.
+     * Parses from the ProtoJSON encoding into a protobuf message.
      *
-     * @throws InvalidProtocolBufferException if the input is not valid proto3 JSON
-     *         format or there are unknown fields in the input
+     * @throws InvalidProtocolBufferException if the input is not valid ProtoJSON format or there
+     *     are unknown fields in the input
      * @throws IOException if reading from the input throws
      */
     public void merge(Reader json, Message.Builder builder) throws IOException {
@@ -702,9 +700,7 @@ public class JsonFormat {
     }
   }
 
-  /**
-   * A Printer converts protobuf messages to the proto3 JSON format.
-   */
+  /** A Printer converts protobuf messages to the ProtoJSON format. */
   private static final class PrinterImpl {
     private final com.google.protobuf.TypeRegistry registry;
     private final TypeRegistry oldRegistry;
@@ -1145,10 +1141,9 @@ public class JsonFormat {
     }
 
     /**
-     * Prints a field's value in the proto3 JSON format.
+     * Prints a field's value in the ProtoJSON format.
      *
-     * @param alwaysWithQuotes whether to always add double-quotes to primitive
-     *        types
+     * @param alwaysWithQuotes whether to always add double-quotes to primitive types
      */
     private void printSingleFieldValue(
         final FieldDescriptor field, final Object value, boolean alwaysWithQuotes)

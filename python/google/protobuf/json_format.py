@@ -135,7 +135,7 @@ def MessageToDict(
 ):
   """Converts protobuf message to a dictionary.
 
-  When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
+  When the dictionary is encoded to JSON, it conforms to ProtoJSON spec.
 
   Args:
     message: The protocol buffers message instance to serialize.
@@ -208,7 +208,7 @@ class _Printer(object):
     )
 
   def _MessageToJsonObject(self, message):
-    """Converts message to an object according to Proto3 JSON Specification."""
+    """Converts message to an object according to ProtoJSON Specification."""
     message_descriptor = message.DESCRIPTOR
     full_name = message_descriptor.full_name
     if _IsWrapperMessage(message_descriptor):
@@ -219,7 +219,7 @@ class _Printer(object):
     return self._RegularMessageToJsonObject(message, js)
 
   def _RegularMessageToJsonObject(self, message, js):
-    """Converts normal message according to Proto3 JSON Specification."""
+    """Converts normal message according to ProtoJSON Specification."""
     fields = message.ListFields()
 
     try:
@@ -285,7 +285,7 @@ class _Printer(object):
     return js
 
   def _FieldToJsonObject(self, field, value):
-    """Converts field value according to Proto3 JSON Specification."""
+    """Converts field value according to ProtoJSON Specification."""
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
       return self._MessageToJsonObject(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
@@ -330,7 +330,7 @@ class _Printer(object):
     return value
 
   def _AnyMessageToJsonObject(self, message):
-    """Converts Any message according to Proto3 JSON Specification."""
+    """Converts Any message according to ProtoJSON Specification."""
     if not message.ListFields():
       return {}
     # Must print @type first, use OrderedDict instead of {}
@@ -352,13 +352,13 @@ class _Printer(object):
     return self._RegularMessageToJsonObject(sub_message, js)
 
   def _GenericMessageToJsonObject(self, message):
-    """Converts message according to Proto3 JSON Specification."""
+    """Converts message according to ProtoJSON Specification."""
     # Duration, Timestamp and FieldMask have ToJsonString method to do the
     # convert. Users can also call the method directly.
     return message.ToJsonString()
 
   def _ValueMessageToJsonObject(self, message):
-    """Converts Value message according to Proto3 JSON Specification."""
+    """Converts Value message according to ProtoJSON Specification."""
     which = message.WhichOneof('kind')
     # If the Value message is not set treat as null_value when serialize
     # to JSON. The parse back result will be different from original message.
@@ -384,11 +384,11 @@ class _Printer(object):
     return self._FieldToJsonObject(oneof_descriptor, value)
 
   def _ListValueMessageToJsonObject(self, message):
-    """Converts ListValue message according to Proto3 JSON Specification."""
+    """Converts ListValue message according to ProtoJSON Specification."""
     return [self._ValueMessageToJsonObject(value) for value in message.values]
 
   def _StructMessageToJsonObject(self, message):
-    """Converts Struct message according to Proto3 JSON Specification."""
+    """Converts Struct message according to ProtoJSON Specification."""
     fields = message.fields
     ret = {}
     for key in fields:
