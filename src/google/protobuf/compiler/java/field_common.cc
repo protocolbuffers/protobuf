@@ -101,6 +101,8 @@ void SetCommonOneofVariables(
       absl::StrCat(info->name, "Case_ = 0");
   (*variables)["has_oneof_case_message"] =
       absl::StrCat(info->name, "Case_ == ", descriptor->number());
+  (*variables)["negated_has_oneof_case_message"] =
+      absl::StrCat(info->name, "Case_ != ", descriptor->number());
 }
 
 void PrintExtraFieldInfo(
