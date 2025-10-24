@@ -1599,6 +1599,23 @@ TEST_F(CommandLineInterfaceTest, ImportOptions) {
   ExpectNoErrors();
 }
 
+TEST_F(CommandLineInterfaceTest, ImportOptions_MissingImport) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("foo.proto",
+                 R"schema(
+                    edition = "2024";
+                    import option "options.proto";
+
+                    option (test.opt).a = 1;
+                    option (.test.opt).a = 2;
+                 )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto "
+      "--experimental_editions");
+  ExpectErrorSubstring("options.proto: File not found");
+}
+
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -3141,6 +3158,38 @@ TEST_F(CommandLineInterfaceTest,
             pb::CppFeatures::VIEW);
 }
 
+TEST_F(
+    CommandLineInterfaceTest,
+    ImportOption_DescriptorSetIn_UninterpretedOptions_MissingOptionDependency) {
+  FileDescriptorSet file_descriptor_set;
+
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_syntax("editions");
+  file->set_edition(Edition::EDITION_2024);
+  file->add_option_dependency(pb::CppFeatures::descriptor()->file()->name());
+  file->set_name("foo.proto");
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_field();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_name("a");
+  field->set_number(1);
+  UninterpretedOption* opt =
+      field->mutable_options()->add_uninterpreted_option();
+  opt->add_name()->set_name_part("features");
+  opt->mutable_name(0)->set_is_extension(false);
+  opt->set_aggregate_value(R"pb([pb.cpp] { string_type: VIEW })pb");
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin foo.proto");
+
+  ExpectErrorSubstring(
+      "foo.proto: Import \"google/protobuf/cpp_features.proto\" was not "
+      "found or had errors");
+}
+
 TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetIn_MissingImport) {
   FileDescriptorSet file_descriptor_set;
 
@@ -3160,7 +3209,11 @@ TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetIn_MissingImport) {
   ExpectErrorSubstring("bar.proto: File not found");
   ExpectErrorSubstring(
       "google/protobuf/cpp_features.proto: File not found");
-  ExpectErrorSubstring("foo.proto:5:14: Option \"features.(pb.cpp)\" unknown");
+  ExpectErrorSubstring(
+      "foo.proto:3:7: Import \"bar.proto\" was not found or had errors");
+  ExpectErrorSubstring(
+      "foo.proto:4:7: Import \"google/protobuf/cpp_features.proto\" was "
+      "not found or had errors");
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {

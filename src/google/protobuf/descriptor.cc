@@ -6427,6 +6427,8 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     weak_deps.insert(proto.weak_dependency(i));
   }
 
+  std::vector<std::string> unknown_option_dependencies;
+
   bool need_lazy_deps = false;
   for (int i = 0; i < proto.dependency_size() + proto.option_dependency_size();
        i++) {
@@ -6453,14 +6455,18 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     if (dependency == nullptr) {
       if (!pool_->lazily_build_dependencies_) {
         if (pool_->allow_unknown_ ||
-            (!pool_->enforce_weak_ && weak_deps.contains(i)) ||
-            (!pool_->enforce_option_ && is_option_dep)) {
+            (!pool_->enforce_weak_ && weak_deps.contains(i)) || is_option_dep) {
           internal::FlatAllocator lazy_dep_alloc;
           lazy_dep_alloc.PlanArray<FileDescriptor>(1);
           lazy_dep_alloc.PlanArray<std::string>(1);
           lazy_dep_alloc.FinalizePlanning(tables_);
           dependency =
               pool_->NewPlaceholderFileWithMutexHeld(name, lazy_dep_alloc);
+          if (is_option_dep) {
+            // Store unknown option dependencies for deferred error checking
+            // before option interpretation.
+            unknown_option_dependencies.emplace_back(name);
+          }
         } else {
           AddImportError(proto, name);
         }
@@ -6580,6 +6586,14 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
 
   if (!message_hints_.empty()) {
     SuggestFieldNumbers(result, proto);
+  }
+
+  if (!unknown_option_dependencies.empty() && !options_to_interpret_.empty()) {
+    // If there are unknown option dependencies, we should report an error
+    // if there are any uninterpreted options.
+    for (const std::string& name : unknown_option_dependencies) {
+      AddImportError(proto, name);
+    }
   }
 
   // Interpret only the non-extension options first, including features and

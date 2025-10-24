@@ -2375,11 +2375,6 @@ class PROTOBUF_EXPORT DescriptorPool {
     enforce_symbol_visibility_ = enforce;
   }
 
-  // By default, option imports are allowed to be missing.
-  // If you call EnforceOptionDependencies(true), however, the DescriptorPool
-  // will report a import not found error.
-  void EnforceOptionDependencies(bool enforce) { enforce_option_ = enforce; }
-
   // Sets the default feature mappings used during the build. If this function
   // isn't called, the C++ feature set defaults are used.  If this function is
   // called, these defaults will be used instead.
@@ -2685,7 +2680,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
-  bool enforce_option_ = false;
   ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;

@@ -1364,7 +1364,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
-  descriptor_pool->EnforceOptionDependencies(descriptor_set_in_names_.empty());
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
 
