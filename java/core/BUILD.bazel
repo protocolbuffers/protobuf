@@ -1,6 +1,5 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:java_library.bzl", "java_library")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
@@ -563,6 +562,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/LegacyUnredactedTextFormatTest.java",
     "src/test/java/com/google/protobuf/MapForProto2Test.java",
     "src/test/java/com/google/protobuf/MapTest.java",
+    "src/test/java/com/google/protobuf/LazyExtensionFieldsTest.java",
     "src/test/java/com/google/protobuf/MessageTest.java",
     "src/test/java/com/google/protobuf/NestedBuildersTest.java",
     "src/test/java/com/google/protobuf/PackedFieldTest.java",
@@ -654,6 +654,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+            "src/test/java/com/google/protobuf/LazyExtensionFieldsTest.java",
         ],
     ),
     test_prefix = "v25SrcJar",
@@ -708,6 +709,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+            "src/test/java/com/google/protobuf/LazyExtensionFieldsTest.java",
         ],
     ),
     test_prefix = "v25Jar",

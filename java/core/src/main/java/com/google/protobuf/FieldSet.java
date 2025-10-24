@@ -273,6 +273,15 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return o;
   }
 
+  @SuppressWarnings({"ReturnMissingNullable", "PatternMatchingInstanceof"})
+  LazyField getLazyField(final T descriptor) {
+    Object o = fields.get(descriptor);
+    if (o instanceof LazyField) {
+      return (LazyField) o;
+    }
+    return null;
+  }
+
   /** Returns true if the field is a lazy field and it is corrupted. */
   boolean lazyFieldCorrupted(final T descriptor) {
     Object o = fields.get(descriptor);
@@ -493,6 +502,9 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       // this method is used by FieldSet.Builder.isInitialized.
       return ((MessageLiteOrBuilder) value).isInitialized();
     } else if (value instanceof LazyField) {
+      if (ExtensionRegistryLite.lazyExtensionFieldValidationEnabled()) {
+        return !((LazyField) value).containsMissingRequiredFields();
+      }
       return true;
     } else {
       throw new IllegalArgumentException(
@@ -1135,6 +1147,15 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     public Object getField(final T descriptor) {
       Object value = getFieldAllowBuilders(descriptor);
       return replaceBuilders(descriptor, value, true);
+    }
+
+    @SuppressWarnings({"ReturnMissingNullable", "PatternMatchingInstanceof"})
+    public LazyField getLazyField(final T descriptor) {
+      Object value = fields.get(descriptor);
+      if (value instanceof LazyField) {
+        return (LazyField) value;
+      }
+      return null;
     }
 
     /** Same as {@link #getField(F)}, but allow a {@link MessageLite.Builder} to be returned. */

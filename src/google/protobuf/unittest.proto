@@ -864,6 +864,11 @@ message TestRecursiveMessage {
   int32 i = 2;
 }
 
+message TestRecursiveMessageWithRequiredFields {
+  TestRecursiveMessageWithRequiredFields a = 1;
+  int32 i = 2 [features.field_presence = LEGACY_REQUIRED];
+}
+
 // Test that mutual recursion works.
 message TestMutualRecursionA {
   message SubMessage {
@@ -1697,6 +1702,11 @@ message TestParsingMerge {
   extend TestParsingMerge {
     TestAllTypes optional_ext = 1000;
     repeated TestAllTypes repeated_ext = 1001;
+    TestRecursiveMessage recursive_message = 1002;
+    TestHugeFieldNumbers huge_field_numbers = 1003;
+    TestAllExtensions all_extensions = 1004;
+    TestRecursiveMessageWithRequiredFields
+        recursive_message_with_required_fields = 1005;
   }
 }
 
