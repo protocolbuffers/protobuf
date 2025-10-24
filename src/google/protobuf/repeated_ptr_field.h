@@ -132,7 +132,7 @@ PROTOBUF_EXPORT inline void RuntimeAssertInBoundsLE(int64_t value,
                                                     int64_t limit) {
   if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
     if (ABSL_PREDICT_FALSE(value > limit)) {
-      LogIndexOutOfBoundsAndAbort(value, limit);
+      PROTOBUF_NO_MERGE LogIndexOutOfBoundsAndAbort(value, limit);
     }
   }
 
