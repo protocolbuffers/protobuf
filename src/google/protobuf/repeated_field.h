@@ -149,6 +149,8 @@ struct HeapRep {
 
   void* elements() { return this + 1; }
 
+  static constexpr size_t SizeOf() { return sizeof(HeapRep); }
+
   // Align to 8 as sanitizers are picky on the alignment of containers to start
   // at 8 byte offsets even when compiling for 32 bit platforms.
   union {
