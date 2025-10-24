@@ -1530,6 +1530,10 @@ public final class Descriptors {
 
     /** Is this field declared required? */
     public boolean isRequired() {
+      if (getFeatures() == null) {
+        throw new IllegalStateException(
+            "mmp " + this.getFullName() + " | " + getMessageType().getFullName());
+      }
       return getFeatures().getFieldPresence()
           == DescriptorProtos.FeatureSet.FieldPresence.LEGACY_REQUIRED;
     }
@@ -3219,10 +3223,10 @@ public final class Descriptors {
               || getFile().getEdition() == Edition.EDITION_PROTO3)) {
         getFile().resolveAllFeaturesImmutable();
       }
-      if (this.features == null) {
-        throw new NullPointerException(
-            String.format("Features not yet loaded for %s.", getFullName()));
-      }
+      // if (this.features == null) {
+      //   throw new NullPointerException(
+      //       String.format("Features not yet loaded for %s.", getFullName()));
+      // }
       return this.features;
     }
 

@@ -1697,6 +1697,9 @@ message TestParsingMerge {
   extend TestParsingMerge {
     TestAllTypes optional_ext = 1000;
     repeated TestAllTypes repeated_ext = 1001;
+    TestRecursiveMessage recursive_message = 1002;
+    TestHugeFieldNumbers huge_field_numbers = 1003;
+    TestAllExtensions all_extensions = 1004;
   }
 }
 

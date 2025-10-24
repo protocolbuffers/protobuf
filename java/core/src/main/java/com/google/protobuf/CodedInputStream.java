@@ -189,6 +189,12 @@ public abstract class CodedInputStream {
    */
   public abstract boolean skipField(final int tag) throws IOException;
 
+  abstract void skipRawVarint() throws IOException;
+
+  void skipUtf8String(int length) throws IOException {
+    skipRawBytes(length);
+  }
+
   /**
    * Reads a single field and writes it to output in wire format, given its tag value.
    *
@@ -1058,12 +1064,29 @@ public abstract class CodedInputStream {
       return (int) readRawVarint64SlowPath();
     }
 
-    private void skipRawVarint() throws IOException {
+    @Override
+    void skipRawVarint() throws IOException {
       if (limit - pos >= MAX_VARINT_SIZE) {
         skipRawVarintFastPath();
       } else {
         skipRawVarintSlowPath();
       }
+    }
+
+    @Override
+    void skipUtf8String(int length) throws IOException {
+      if (length >= 0 && length <= (limit - pos)) {
+        if (!Utf8.isValidUtf8(buffer, pos, pos + length)) {
+          throw InvalidProtocolBufferException.invalidUtf8();
+        }
+        pos += length;
+        return;
+      }
+
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
     }
 
     private void skipRawVarintFastPath() throws IOException {
@@ -1830,7 +1853,8 @@ public abstract class CodedInputStream {
       return (int) readRawVarint64SlowPath();
     }
 
-    private void skipRawVarint() throws IOException {
+    @Override
+    void skipRawVarint() throws IOException {
       if (bufferSize - pos >= MAX_VARINT_SIZE) {
         skipRawVarintFastPath();
       } else {

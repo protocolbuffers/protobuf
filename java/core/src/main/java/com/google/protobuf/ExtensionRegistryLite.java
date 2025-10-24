@@ -52,6 +52,7 @@ public class ExtensionRegistryLite {
   // parsing feature for MessageSet, which may be too crude for some
   // applications. Need to support this feature on smaller granularity.
   private static volatile boolean eagerlyParseMessageSets = false;
+  private static volatile boolean eagerlyParseExtensionFields = false;
 
   // Visible for testing.
   static final String EXTENSION_CLASS_NAME = "com.google.protobuf.Extension";
@@ -75,6 +76,14 @@ public class ExtensionRegistryLite {
 
   public static void setEagerlyParseMessageSets(boolean isEagerlyParse) {
     eagerlyParseMessageSets = isEagerlyParse;
+  }
+
+  public static boolean isEagerlyParseExtensionFields() {
+    return eagerlyParseExtensionFields;
+  }
+
+  public static void setEagerlyParseExtensionFields(boolean isEagerlyParse) {
+    eagerlyParseExtensionFields = isEagerlyParse;
   }
 
   /**

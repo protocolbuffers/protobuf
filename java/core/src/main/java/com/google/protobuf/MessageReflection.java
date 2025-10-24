@@ -7,12 +7,17 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.WireFormat.FIXED32_SIZE;
+import static com.google.protobuf.WireFormat.FIXED64_SIZE;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -186,6 +191,130 @@ class MessageReflection {
     return results;
   }
 
+  private static ByteString verifyLazyMessageExtensionField(
+      CodedInputStream input, FieldDescriptor field, ExtensionRegistry extensionRegistry)
+      throws IOException {
+    if (!field.getType().equals(FieldDescriptor.Type.MESSAGE)) {
+      throw new IllegalArgumentException("Not a message field: " + field.getFullName());
+    }
+    ByteString result = input.readBytes();
+    CodedInputStream verificationInput = result.newCodedInput();
+    verifyMessageField(verificationInput, field.getMessageType(), extensionRegistry);
+    return result;
+  }
+
+  private static FieldDescriptor findFieldByNumber(
+      Descriptor message, int fieldNumber, ExtensionRegistry extensionRegistry) {
+    FieldDescriptor field = message.findFieldByNumber(fieldNumber);
+    if (field == null) {
+      if (message.isExtensionNumber(fieldNumber)) {
+        ExtensionRegistry.ExtensionInfo extensionInfo =
+            extensionRegistry.findImmutableExtensionByNumber(message, fieldNumber);
+        if (extensionInfo != null) {
+          field = extensionInfo.descriptor;
+        }
+      }
+    }
+    return field;
+  }
+
+  public static void verifyMessageField(
+      CodedInputStream input, final Descriptor message, ExtensionRegistry extensionRegistry)
+      throws IOException {
+    if (message == null) {
+      throw new IllegalStateException("message is null");
+    }
+    // We cannot check required fields for Feature messages e.g. JavaFeatures, as getFeatures() will
+    // return null at this step.
+    Set<Integer> requiredFields = null;
+    if (!message.getFile().getPackage().equals("pb")) {
+      requiredFields = new HashSet<>(message.getFields().size());
+      for (FieldDescriptor fTemp : message.getFields()) {
+        if (fTemp.isRequired()) {
+          requiredFields.add(fTemp.getNumber());
+        }
+      }
+    }
+
+    boolean done = false;
+    while (!done && !input.isAtEnd()) {
+      final int tag = input.readTag();
+      if (tag == 0) {
+        break;
+      }
+      int fieldNumber = WireFormat.getTagFieldNumber(tag);
+
+      if (requiredFields != null) {
+        requiredFields.remove(fieldNumber);
+      }
+
+      int wireType = WireFormat.getTagWireType(tag);
+      FieldDescriptor field = null;
+      if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED
+          || wireType == WireFormat.WIRETYPE_START_GROUP) {
+        field = findFieldByNumber(message, fieldNumber, extensionRegistry);
+      }
+      switch (wireType) {
+        case WireFormat.WIRETYPE_VARINT:
+          input.skipRawVarint();
+          break;
+        case WireFormat.WIRETYPE_FIXED64:
+          input.skipRawBytes(FIXED64_SIZE);
+          break;
+        case WireFormat.WIRETYPE_FIXED32:
+          input.skipRawBytes(FIXED32_SIZE);
+          break;
+        case WireFormat.WIRETYPE_LENGTH_DELIMITED:
+          if (field == null) {
+            input.skipRawBytes(input.readRawVarint32());
+            break;
+          }
+          switch (field.getType()) {
+            case STRING:
+              if (field.needsUtf8Check()) {
+                input.skipUtf8String(input.readRawVarint32());
+              } else {
+                input.skipRawBytes(input.readRawVarint32());
+              }
+              break;
+            case MESSAGE:
+              int limit = input.readRawVarint32();
+              int oldLimit = input.pushLimit(limit);
+              input.checkRecursionLimit();
+              input.messageDepth++;
+              verifyMessageField(input, field.getMessageType(), extensionRegistry);
+              input.messageDepth--;
+              input.popLimit(oldLimit);
+              break;
+            default:
+              input.skipRawBytes(input.readRawVarint32());
+          }
+          break;
+        case WireFormat.WIRETYPE_START_GROUP:
+          if (field == null) {
+            input.skipMessage();
+          } else {
+            input.checkRecursionLimit();
+            input.groupDepth++;
+            verifyMessageField(input, field.getMessageType(), extensionRegistry);
+            input.groupDepth--;
+          }
+          input.checkLastTagWas(
+              WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WireFormat.WIRETYPE_END_GROUP));
+          break;
+        case WireFormat.WIRETYPE_END_GROUP:
+          input.checkValidEndTag();
+          done = true;
+          break;
+        default:
+          throw InvalidProtocolBufferException.invalidWireType();
+      }
+    }
+    if (requiredFields != null && !requiredFields.isEmpty()) {
+      throw new InvalidProtocolBufferException("lazy Missing required field: " + requiredFields);
+    }
+  }
+
   static interface MergeTarget {
     enum ContainerType {
       MESSAGE,
@@ -326,8 +455,18 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException;
+
+    default void mergeMessage(
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry,
+        FieldDescriptor field,
+        Message defaultInstance)
+        throws IOException {
+      mergeMessage(input, extensionRegistry, field, defaultInstance, /* lazy= */ false);
+    }
 
     /** Returns the UTF8 validation level for the field. */
     WireFormat.Utf8Validation getUtf8Validation(Descriptors.FieldDescriptor descriptor);
@@ -564,7 +703,8 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         Descriptors.FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException {
       if (!field.isRepeated()) {
         Message.Builder subBuilder;
@@ -796,13 +936,30 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException {
       if (!field.isRepeated()) {
         if (hasField(field)) {
+          // If the field is present and lazy, merge the bytes into the lazy field.
+          // TODO: maybe also combine the extension registries?
+          LazyField lazyField = extensions.getLazyField(field);
+          if (lazy && lazyField != null) {
+            ByteString bytes =
+                verifyLazyMessageExtensionField(
+                    input, field, (ExtensionRegistry) extensionRegistry);
+            lazyField.mergeFrom(bytes, extensionRegistry);
+            return;
+          }
           MessageLite.Builder current = ((MessageLite) getField(field)).toBuilder();
           input.readMessage(current, extensionRegistry);
           Object unused = setField(field, current.buildPartial());
+          return;
+        }
+        if (lazy) {
+          ByteString bytes =
+              verifyLazyMessageExtensionField(input, field, (ExtensionRegistry) extensionRegistry);
+          extensions.setField(field, new LazyField(defaultInstance, extensionRegistry, bytes));
           return;
         }
         Message.Builder subBuilder = defaultInstance.newBuilderForType();
@@ -1017,10 +1174,20 @@ class MessageReflection {
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         FieldDescriptor field,
-        Message defaultInstance)
+        Message defaultInstance,
+        boolean lazy)
         throws IOException {
       if (!field.isRepeated()) {
         if (hasField(field)) {
+          // If the field is present and lazy, merge the bytes into the lazy field.
+          LazyField lazyField = extensions.getLazyField(field);
+          if (lazy && lazyField != null) {
+            ByteString bytes =
+                verifyLazyMessageExtensionField(
+                    input, field, (ExtensionRegistry) extensionRegistry);
+            lazyField.mergeFrom(bytes, extensionRegistry);
+            return;
+          }
           Object fieldOrBuilder = extensions.getFieldAllowBuilders(field);
           MessageLite.Builder subBuilder;
           if (fieldOrBuilder instanceof MessageLite.Builder) {
@@ -1030,6 +1197,13 @@ class MessageReflection {
             extensions.setField(field, subBuilder);
           }
           input.readMessage(subBuilder, extensionRegistry);
+          return;
+        }
+
+        if (lazy) {
+          ByteString bytes =
+              verifyLazyMessageExtensionField(input, field, (ExtensionRegistry) extensionRegistry);
+          extensions.setField(field, new LazyField(defaultInstance, extensionRegistry, bytes));
           return;
         }
         Message.Builder subBuilder = defaultInstance.newBuilderForType();
@@ -1210,7 +1384,10 @@ class MessageReflection {
           }
         case MESSAGE:
           {
-            target.mergeMessage(input, extensionRegistry, field, defaultInstance);
+            boolean lazy =
+                !ExtensionRegistryLite.isEagerlyParseExtensionFields()
+                    && type.isExtensionNumber(fieldNumber);
+            target.mergeMessage(input, extensionRegistry, field, defaultInstance, lazy);
             return true;
           }
         case ENUM:
