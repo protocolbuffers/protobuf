@@ -1644,12 +1644,6 @@ typedef union {
   const struct upb_Message* msg_val;
   upb_StringView str_val;
 
-  // EXPERIMENTAL: A tagged upb_Message*.  Users must use this instead of
-  // msg_val if unlinked sub-messages may possibly be in use.  See the
-  // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
-  // information.
-  uintptr_t tagged_msg_val;  // upb_TaggedMessagePtr
-
   // For an extension field, we are essentially treating ext->data (a
   // upb_MessageValue) as if it were a message with one field that lives at
   // offset 0. This works because upb_MessageValue is precisely one value that
@@ -2233,12 +2227,6 @@ UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
   return mt;
 }
 
-UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(_upb_MiniTable_Empty)(void) {
-  extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
-
-  return &UPB_PRIVATE(_kUpb_MiniTable_Empty);
-}
-
 UPB_API_INLINE int upb_MiniTable_FieldCount(const struct upb_MiniTable* m) {
   return m->UPB_ONLYBITS(field_count);
 }
@@ -2291,13 +2279,6 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
   return NULL;
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_MiniTable_IsEmpty)(
-    const struct upb_MiniTable* m) {
-  extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_Empty);
-
-  return m == &UPB_PRIVATE(_kUpb_MiniTable_Empty);
-}
-
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
     const struct upb_MiniTable* m, uint32_t i) {
   return &m->UPB_ONLYBITS(fields)[i];
@@ -2321,9 +2302,7 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const struct upb_MiniTable* m, const struct upb_MiniTableField* f) {
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  const struct upb_MiniTable* ret = upb_MiniTable_SubMessage(m, f);
-  UPB_ASSUME(ret);
-  return UPB_PRIVATE(_upb_MiniTable_IsEmpty)(ret) ? NULL : ret;
+  return upb_MiniTable_SubMessage(m, f);
 }
 
 UPB_API_INLINE bool upb_MiniTable_FieldIsLinked(
@@ -2417,13 +2396,8 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const upb_MiniTable* m);
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* m, const upb_MiniTableField* f);
 
-// Returns the MiniTable for a message field if it is a submessage, otherwise
-// returns NULL.
-//
-// WARNING: if dynamic tree shaking is in use, the return value may be the
-// "empty", zero-field placeholder message instead of the real message type.
-// If the message is later linked, this function will begin returning the real
-// message type.
+// Returns the MiniTable for a message field if it is a submessage and the field
+// is linked, otherwise returns NULL.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
     const upb_MiniTable* m, const upb_MiniTableField* f);
 
@@ -3682,53 +3656,6 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
 
 #endif /* UPB_MESSAGE_INTERNAL_MESSAGE_H_ */
 
-#ifndef UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_
-#define UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_
-
-#include <stdint.h>
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Internal-only because empty messages cannot be created by the user.
-UPB_INLINE uintptr_t
-UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(struct upb_Message* ptr, bool empty) {
-  UPB_ASSERT(((uintptr_t)ptr & 1) == 0);
-  return (uintptr_t)ptr | (empty ? 1 : 0);
-}
-
-UPB_API_INLINE bool upb_TaggedMessagePtr_IsEmpty(uintptr_t ptr) {
-  return ptr & 1;
-}
-
-UPB_INLINE struct upb_Message* UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(
-    uintptr_t ptr) {
-  return (struct upb_Message*)(ptr & ~(uintptr_t)1);
-}
-
-UPB_API_INLINE struct upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
-    uintptr_t ptr) {
-  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(ptr));
-  return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
-}
-
-UPB_INLINE struct upb_Message* UPB_PRIVATE(
-    _upb_TaggedMessagePtr_GetEmptyMessage)(uintptr_t ptr) {
-  UPB_ASSERT(upb_TaggedMessagePtr_IsEmpty(ptr));
-  return UPB_PRIVATE(_upb_TaggedMessagePtr_GetMessage)(ptr);
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_INTERNAL_TAGGED_PTR_H_ */
-
 // Must be last.
 
 #if defined(__GNUC__) && !defined(__clang__)
@@ -4116,57 +4043,24 @@ UPB_API_INLINE int64_t upb_Message_GetInt64(const struct upb_Message* msg,
   return upb_Message_GetField(msg, f, def).int64_val;
 }
 
-UPB_INLINE void UPB_PRIVATE(_upb_Message_AssertMapIsUntagged)(
-    const struct upb_Message* msg, const upb_MiniTableField* field) {
-  UPB_UNUSED(msg);
-  UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
-#ifndef NDEBUG
-  uintptr_t default_val = 0;
-  uintptr_t tagged;
-  _upb_Message_GetNonExtensionField(msg, field, &default_val, &tagged);
-  UPB_ASSERT(!upb_TaggedMessagePtr_IsEmpty(tagged));
-#endif
-}
-
 UPB_API_INLINE const struct upb_Map* upb_Message_GetMap(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(f);
-  UPB_PRIVATE(_upb_Message_AssertMapIsUntagged)(msg, f);
   struct upb_Map* ret;
   const struct upb_Map* default_val = NULL;
   _upb_Message_GetNonExtensionField(msg, f, &default_val, &ret);
   return ret;
 }
 
-UPB_API_INLINE uintptr_t upb_Message_GetTaggedMessagePtr(
-    const struct upb_Message* msg, const upb_MiniTableField* f,
-    struct upb_Message* default_val) {
-  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
-             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
-  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
-  uintptr_t tagged;
-  _upb_Message_GetNonExtensionField(msg, f, &default_val, &tagged);
-  return tagged;
-}
-
-// For internal use only; users cannot set tagged messages because only the
-// parser and the message copier are allowed to directly create an empty
-// message.
-UPB_INLINE void UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)(
-    struct upb_Message* msg, const upb_MiniTableField* f,
-    uintptr_t sub_message) {
-  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
-             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
-  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
-  upb_Message_SetBaseField(msg, f, &sub_message);
-}
-
 UPB_API_INLINE const struct upb_Message* upb_Message_GetMessage(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
-  uintptr_t tagged = upb_Message_GetTaggedMessagePtr(msg, f, NULL);
-  return upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
+  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  UPB_ASSUME(upb_MiniTableField_IsScalar(f));
+  upb_MessageValue def;
+  def.msg_val = NULL;
+  return upb_Message_GetField(msg, f, def).msg_val;
 }
 
 UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
@@ -4206,7 +4100,6 @@ UPB_INLINE struct upb_Map* _upb_Message_GetOrCreateMutableMap(
     struct upb_Message* msg, const upb_MiniTableField* field, size_t key_size,
     size_t val_size, upb_Arena* arena) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsMap)(field);
-  UPB_PRIVATE(_upb_Message_AssertMapIsUntagged)(msg, field);
   struct upb_Map* map = NULL;
   struct upb_Map* default_map_value = NULL;
   _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
@@ -4341,8 +4234,12 @@ UPB_API_INLINE void upb_Message_SetBaseFieldInt64(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_SetBaseFieldMessage(struct upb_Message* msg,
                                                     const upb_MiniTableField* f,
                                                     struct upb_Message* value) {
-  UPB_PRIVATE(_upb_Message_SetTaggedMessagePtr)
-  (msg, f, UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(value, false));
+  // TODO - Re-enable this assertion.
+  // UPB_ASSERT(value);
+  UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) ==
+             UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte));
+  upb_Message_SetBaseField(msg, f, &value);
 }
 
 UPB_API_INLINE void upb_Message_SetBaseFieldString(struct upb_Message* msg,
@@ -4992,44 +4889,6 @@ UPB_API void upb_Message_SetNewMessageTraceHandler(
 
 #endif /* UPB_MESSAGE_MESSAGE_H_ */
 
-#ifndef UPB_MINI_TABLE_TAGGED_PTR_H_
-#define UPB_MINI_TABLE_TAGGED_PTR_H_
-
-#include <stdint.h>
-
-
-// Must be last.
-
-// When a upb_Message* is stored in a message, array, or map, it is stored in a
-// tagged form. If the tag bit is set, the referenced upb_Message is of type
-// _kUpb_MiniTable_Empty (a sentinel message type with no fields) instead of
-// that field's true message type. This forms the basis of what we call
-// "dynamic tree shaking."
-//
-// See the documentation for kUpb_DecodeOption_ExperimentalAllowUnlinked for
-// more information.
-
-typedef uintptr_t upb_TaggedMessagePtr;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Users who enable unlinked sub-messages must use this to test whether a
-// message is empty before accessing it. If a message is empty, it must be
-// first promoted using the interfaces in message/promote.h.
-UPB_API_INLINE bool upb_TaggedMessagePtr_IsEmpty(upb_TaggedMessagePtr ptr);
-
-UPB_API_INLINE upb_Message* upb_TaggedMessagePtr_GetNonEmptyMessage(
-    upb_TaggedMessagePtr ptr);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_TAGGED_PTR_H_ */
-
 // Must be last.
 
 #ifdef __cplusplus
@@ -5063,10 +4922,6 @@ UPB_API_INLINE bool upb_Message_HasExtension(const upb_Message* msg,
 UPB_API_INLINE upb_MessageValue
 upb_Message_GetField(const upb_Message* msg, const upb_MiniTableField* f,
                      upb_MessageValue default_val);
-
-UPB_API_INLINE upb_TaggedMessagePtr upb_Message_GetTaggedMessagePtr(
-    const upb_Message* msg, const upb_MiniTableField* field,
-    upb_Message* default_val);
 
 UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const upb_Message* msg, const upb_MiniTableField* f);
@@ -5838,41 +5693,6 @@ enum {
 
   /* EXPERIMENTAL:
    *
-   * If set, the parser will allow parsing of sub-message fields that were not
-   * previously linked using upb_MiniTable_SetSubMessage().  The data will be
-   * parsed into an internal "empty" message type that cannot be accessed
-   * directly, but can be later promoted into the true message type if the
-   * sub-message fields are linked at a later time.
-   *
-   * Users should set this option if they intend to perform dynamic tree shaking
-   * and promoting using the interfaces in message/promote.h.  If this option is
-   * enabled, it is important that the resulting messages are only accessed by
-   * code that is aware of promotion rules:
-   *
-   * 1. Message pointers in upb_Message, upb_Array, and upb_Map are represented
-   *    by a tagged pointer upb_TaggedMessagePointer.  The tag indicates whether
-   *    the message uses the internal "empty" type.
-   *
-   * 2. Any code *reading* these message pointers must test whether the "empty"
-   *    tag bit is set, using the interfaces in mini_table/types.h.  However
-   *    writing of message pointers should always use plain upb_Message*, since
-   *    users are not allowed to create "empty" messages.
-   *
-   * 3. It is always safe to test whether a field is present or test the array
-   *    length; these interfaces will reflect that empty messages are present,
-   *    even though their data cannot be accessed without promoting first.
-   *
-   * 4. If a message pointer is indeed tagged as empty, the message may not be
-   *    accessed directly, only promoted through the interfaces in
-   *    message/promote.h.
-   *
-   * 5. Tagged/empty messages may never be created by the user.  They may only
-   *    be created by the parser or the message-copying logic in message/copy.h.
-   */
-  kUpb_DecodeOption_ExperimentalAllowUnlinked = 4,
-
-  /* EXPERIMENTAL:
-   *
    * If set, decoding will enforce UTF-8 validation for string fields, even for
    * proto2 or fields with `features.utf8_validation = NONE`. Normally, only
    * proto3 string fields will be validated for UTF-8. Decoding will return
@@ -5913,13 +5733,8 @@ typedef enum {
   // kUpb_DecodeOption_CheckRequired failed (see above), but the parse otherwise
   // succeeded.
   kUpb_DecodeStatus_MissingRequired = 5,
-
-  // Unlinked sub-message field was present, but
-  // kUpb_DecodeOptions_ExperimentalAllowUnlinked was not specified in the list
-  // of options.
-  kUpb_DecodeStatus_UnlinkedSubMessage = 6,
 } upb_DecodeStatus;
-// LINT.ThenChange(//depot/google3/third_party/protobuf/rust/upb.rs:decode_status)
+// LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:decode_status)
 
 UPB_API upb_DecodeStatus upb_Decode(const char* buf, size_t size,
                                     upb_Message* msg, const upb_MiniTable* mt,

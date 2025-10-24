@@ -750,13 +750,11 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_entry.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_sorter.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/message.h
-  ${protobuf_SOURCE_DIR}/upb/message/internal/tagged_ptr.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/types.h
   ${protobuf_SOURCE_DIR}/upb/message/map.h
   ${protobuf_SOURCE_DIR}/upb/message/map_gencode_util.h
   ${protobuf_SOURCE_DIR}/upb/message/merge.h
   ${protobuf_SOURCE_DIR}/upb/message/message.h
-  ${protobuf_SOURCE_DIR}/upb/message/tagged_ptr.h
   ${protobuf_SOURCE_DIR}/upb/message/value.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.h
