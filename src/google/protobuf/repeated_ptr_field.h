@@ -352,6 +352,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     }
   }
 
+  template <typename T, typename CopyElementFn, typename CreateAndMergeFn>
+  void MergeFromInternal(const RepeatedPtrFieldBase& from, Arena* arena,
+                         CopyElementFn&& copy_fn,
+                         CreateAndMergeFn&& create_and_merge_fn);
+  template <typename T, typename CopyElementFn>
+  void MergeFromInternal(const RepeatedPtrFieldBase& from, Arena* arena,
+                         CopyElementFn&& copy_fn);
+
   // Appends all message values from `from` to this instance.
   template <typename T>
   void MergeFrom(const RepeatedPtrFieldBase& from, Arena* arena) {
