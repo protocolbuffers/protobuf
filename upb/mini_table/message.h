@@ -38,13 +38,8 @@ UPB_API_INLINE bool upb_MiniTable_IsMessageSet(const upb_MiniTable* m);
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* m, const upb_MiniTableField* f);
 
-// Returns the MiniTable for a message field if it is a submessage, otherwise
-// returns NULL.
-//
-// WARNING: if dynamic tree shaking is in use, the return value may be the
-// "empty", zero-field placeholder message instead of the real message type.
-// If the message is later linked, this function will begin returning the real
-// message type.
+// Returns the MiniTable for a message field if it is a submessage and the field
+// is linked, otherwise returns NULL.
 UPB_API_INLINE const upb_MiniTable* upb_MiniTable_SubMessage(
     const upb_MiniTable* m, const upb_MiniTableField* f);
 

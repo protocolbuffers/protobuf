@@ -181,7 +181,6 @@ upb/message/map.h
 upb/message/map_gencode_util.h
 upb/message/merge.h
 upb/message/message.h
-upb/message/tagged_ptr.h
 upb/message/value.h
 upb/mini_descriptor/build_enum.h
 upb/mini_descriptor/decode.h

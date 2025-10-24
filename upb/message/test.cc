@@ -733,7 +733,7 @@ TEST(MessageTest, MapFieldDeterministicEncoding) {
 }
 
 TEST(MessageTest, AdjacentAliasedUnknown) {
-  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  const upb_MiniTable* table = &upb_0test__EmptyMessage_msg_init;
   upb::Arena arena;
   upb_Message* msg = upb_Message_New(table, arena.ptr());
   char region[900];
@@ -955,20 +955,17 @@ TEST(MessageTest, MessageTooBig) {
 }
 
 TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
-  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
-  upb::Arena arena(table->UPB_PRIVATE(size));
-
+  upb::Arena arena;
   uintptr_t space_allocated_before =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
-  upb_Message* msg = upb_Message_New(table, arena.ptr());
   char region[300];
   memset(region, 0, sizeof(region));
   region[0] = 0x0A;  // Tag number 1
   region[1] = 0xA9;
   region[2] = 0x02;
-  upb_DecodeStatus status =
-      upb_Decode(region, sizeof(region), msg, table, nullptr, 0, arena.ptr());
-  EXPECT_EQ(status, kUpb_DecodeStatus_Ok);
+  upb_test_EmptyMessage* msg =
+      upb_test_EmptyMessage_parse(region, sizeof(region), arena.ptr());
+  EXPECT_NE(msg, nullptr);
   uintptr_t space_allocated_after =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
   EXPECT_GT(space_allocated_after, space_allocated_before + 297);

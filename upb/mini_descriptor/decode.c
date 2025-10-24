@@ -451,7 +451,7 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
       ptrs_bytes ? upb_MtDecoder_CheckedMalloc(d, ptrs_bytes) : NULL;
   uint32_t i = 0;
   for (; i < sub_counts.submsg_count; i++) {
-    subs_ptrs[i] = UPB_PRIVATE(_upb_MiniTable_Empty)();
+    subs_ptrs[i] = NULL;
     subs[i].UPB_PRIVATE(submsg) = &subs_ptrs[i];
   }
   if (sub_counts.subenum_count) {
