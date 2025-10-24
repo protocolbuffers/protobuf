@@ -190,6 +190,22 @@ public abstract class CodedInputStream {
   public abstract boolean skipField(final int tag) throws IOException;
 
   /**
+   * Reads and discards a single varint field.
+   *
+   * @throws InvalidProtocolBufferException if the varint is malformed.
+   */
+  abstract void skipRawVarint() throws IOException;
+
+  /**
+   * Reads and discards a single UTF-8 string field.
+   *
+   * @throws InvalidProtocolBufferException if the string is not valid UTF-8.
+   */
+  void skipUtf8String(int length) throws IOException {
+    throw new UnsupportedOperationException("Utf8 string skipping is not implemented.");
+  }
+
+  /**
    * Reads a single field and writes it to output in wire format, given its tag value.
    *
    * @return {@code false} if the tag is an endgroup tag, in which case nothing is skipped.
@@ -1061,12 +1077,29 @@ public abstract class CodedInputStream {
       return (int) readRawVarint64SlowPath();
     }
 
-    private void skipRawVarint() throws IOException {
+    @Override
+    void skipRawVarint() throws IOException {
       if (limit - pos >= MAX_VARINT_SIZE) {
         skipRawVarintFastPath();
       } else {
         skipRawVarintSlowPath();
       }
+    }
+
+    @Override
+    void skipUtf8String(int length) throws IOException {
+      if (length >= 0 && length <= (limit - pos)) {
+        if (!Utf8.isValidUtf8(buffer, pos, pos + length)) {
+          throw InvalidProtocolBufferException.invalidUtf8();
+        }
+        pos += length;
+        return;
+      }
+
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      throw InvalidProtocolBufferException.truncatedMessage();
     }
 
     private void skipRawVarintFastPath() throws IOException {
@@ -1834,7 +1867,8 @@ public abstract class CodedInputStream {
       return (int) readRawVarint64SlowPath();
     }
 
-    private void skipRawVarint() throws IOException {
+    @Override
+    void skipRawVarint() throws IOException {
       if (bufferSize - pos >= MAX_VARINT_SIZE) {
         skipRawVarintFastPath();
       } else {
