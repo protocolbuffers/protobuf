@@ -89,6 +89,7 @@ static void Dealloc(PyObject* pself) {
   delete self->classes_by_descriptor;
   delete self->message_factory;
   Py_CLEAR(self->pool);
+  PyObject_GC_UnTrack(pself);
   Py_TYPE(self)->tp_free(pself);
 }
 
