@@ -1062,9 +1062,15 @@ void WriteMessageMiniDescriptorInitializer(upb::MessageDefPtr msg,
           static upb_MiniTable* mini_table = NULL;
           static const char* mini_descriptor = "$1";
           if (mini_table) return mini_table;
+          upb_Status status;
           mini_table =
               upb_MiniTable_Build(mini_descriptor, strlen(mini_descriptor),
-                                  upb_BootstrapArena(), NULL);
+                                  upb_BootstrapArena(), &status);
+          if (!mini_table) {
+            fprintf(stderr, "Failed to build mini_table for $0: %s\n",
+                    upb_Status_ErrorMessage(&status));
+            abort();
+          }
           $2return mini_table;
         }
       )cc",
