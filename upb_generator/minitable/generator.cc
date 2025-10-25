@@ -47,10 +47,6 @@ std::string MessageVarName(upb::MessageDefPtr message) {
   return MiniTableMessageVarName(message.full_name());
 }
 
-std::string MessagePtrVarName(upb::MessageDefPtr message) {
-  return MiniTableMessagePtrVarName(message.full_name());
-}
-
 std::string EnumVarName(upb::EnumDefPtr e) {
   return MiniTableEnumVarName(e.full_name());
 }
@@ -87,8 +83,7 @@ void WriteMessageField(upb::FieldDefPtr field,
 std::string GetSub(upb::FieldDefPtr field, bool is_extension) {
   if (auto message_def = field.message_type()) {
     return absl::Substitute("{.UPB_PRIVATE(submsg) = &$0}",
-                            is_extension ? MessageVarName(message_def)
-                                         : MessagePtrVarName(message_def));
+                            MessageVarName(message_def));
   }
 
   if (auto enum_def = field.enum_subdef()) {
@@ -128,10 +123,19 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
       if (options.one_output_per_message && field.IsSubMessage() &&
           IsCrossFile(field) && !upb_MiniTableField_IsMap(f)) {
         if (seen.insert(pools.GetMiniTable64(field.message_type())).second) {
-          output(
-              "__attribute__((weak)) const upb_MiniTable* const $0 ="
-              " &UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken);\n",
-              MessagePtrVarName(field.message_type()));
+          output(R"cc(
+                   __attribute__((weak)) const upb_MiniTable $0 = {
+                       .UPB_PRIVATE(subs) = NULL,
+                       .UPB_PRIVATE(fields) = NULL,
+                       .UPB_PRIVATE(size) = sizeof(struct upb_Message),
+                       .UPB_PRIVATE(field_count) = 0,
+                       .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,
+                       .UPB_PRIVATE(dense_below) = 0,
+                       .UPB_PRIVATE(table_mask) = -1,
+                       .UPB_PRIVATE(required_count) = 0,
+                   };
+                 )cc",
+                 MessageVarName(field.message_type()));
         }
       }
     }
@@ -205,8 +209,9 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("  })\n");
   }
   output("};\n\n");
-  output("const upb_MiniTable* const $0 = &$1;\n", MessagePtrVarName(message),
-         MessageVarName(message));
+  // output("const upb_MiniTable* const $0 = &$1;\n",
+  // MessagePtrVarName(message),
+  //        MessageVarName(message));
 }
 
 void WriteEnum(upb::EnumDefPtr e, Output& output) {
@@ -281,8 +286,6 @@ void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
 
   for (auto message : this_file_messages) {
     output("extern const upb_MiniTable $0;\n", MessageVarName(message));
-    output("extern const upb_MiniTable* const $0;\n",
-           MessagePtrVarName(message));
   }
   for (auto ext : this_file_exts) {
     output("extern const upb_MiniTableExtension $0;\n", ExtensionVarName(ext));
@@ -351,10 +354,10 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
   std::vector<upb::EnumDefPtr> enums = SortedEnums(file, kClosedEnums);
 
   if (options.one_output_per_message) {
-    for (auto message : messages) {
-      output("extern const upb_MiniTable* const $0;\n",
-             MessagePtrVarName(message));
-    }
+    // for (auto message : messages) {
+    //   output("extern const upb_MiniTable* const $0;\n",
+    //          MessagePtrVarName(message));
+    // }
     for (const auto e : enums) {
       output("extern const upb_MiniTableEnum $0;\n", EnumVarName(e));
     }

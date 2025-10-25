@@ -444,15 +444,11 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
                                        upb_SubCounts sub_counts) {
   uint32_t total_count = sub_counts.submsg_count + sub_counts.subenum_count;
   size_t subs_bytes = sizeof(*d->table.UPB_PRIVATE(subs)) * total_count;
-  size_t ptrs_bytes = sizeof(upb_MiniTable*) * sub_counts.submsg_count;
   upb_MiniTableSubInternal* subs =
       subs_bytes ? upb_MtDecoder_CheckedMalloc(d, subs_bytes) : NULL;
-  const upb_MiniTable** subs_ptrs =
-      ptrs_bytes ? upb_MtDecoder_CheckedMalloc(d, ptrs_bytes) : NULL;
   uint32_t i = 0;
   for (; i < sub_counts.submsg_count; i++) {
-    subs_ptrs[i] = NULL;
-    subs[i].UPB_PRIVATE(submsg) = &subs_ptrs[i];
+    subs[i].UPB_PRIVATE(submsg) = NULL;
   }
   if (sub_counts.subenum_count) {
     upb_MiniTableField* f = d->fields;
