@@ -679,6 +679,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/base92.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/message.c
@@ -765,6 +766,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/modifiers.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/wire_constants.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.h
