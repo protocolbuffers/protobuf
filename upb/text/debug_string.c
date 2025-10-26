@@ -59,7 +59,7 @@ static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
     UPB_PRIVATE(_upb_TextEncode_EndField)(e);
     e->indent_depth++;
     const upb_MiniTable* subm = ext ? upb_MiniTableExtension_GetSubMessage(ext)
-                                    : upb_MiniTable_SubMessage(mt, f);
+                                    : upb_MiniTable_SubMessage(f);
     _upb_MessageDebugString(e, val.msg_val, subm);
     e->indent_depth--;
     UPB_PRIVATE(_upb_TextEncode_Indent)(e);
@@ -101,7 +101,7 @@ static void _upb_MapEntryDebugString(txtenc* e, upb_MessageValue key,
                                      upb_MessageValue val,
                                      const upb_MiniTableField* f,
                                      const upb_MiniTable* mt) {
-  const upb_MiniTable* entry = upb_MiniTable_SubMessage(mt, f);
+  const upb_MiniTable* entry = upb_MiniTable_SubMessage(f);
   const upb_MiniTableField* key_f = upb_MiniTable_MapKey(entry);
   const upb_MiniTableField* val_f = upb_MiniTable_MapValue(entry);
 
@@ -143,7 +143,7 @@ static void _upb_MapDebugString(txtenc* e, const upb_Map* map,
   } else {
     if (upb_Map_Size(map) == 0) return;
 
-    const upb_MiniTable* entry = upb_MiniTable_SubMessage(mt, f);
+    const upb_MiniTable* entry = upb_MiniTable_SubMessage(f);
     const upb_MiniTableField* key_f = upb_MiniTable_GetFieldByIndex(entry, 0);
     _upb_sortedmap sorted;
     upb_MapEntry ent;

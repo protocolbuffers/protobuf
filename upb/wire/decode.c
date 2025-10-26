@@ -95,27 +95,6 @@ typedef union {
   uint32_t size;
 } wireval;
 
-// Ideally these two functions should take the owning MiniTable pointer as a
-// first argument, then we could just put them in mini_table/message.h as nice
-// clean getters. But we don't have that so instead we gotta write these
-// Frankenfunctions that take an array of subtables.
-// TODO: Move these to mini_table/ anyway since there are other places
-// that could use them.
-
-// Returns the MiniTable corresponding to a given MiniTableField
-// from an array of MiniTableSubs.
-static const upb_MiniTable* _upb_MiniTableSubs_MessageByField(
-    const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field) {
-  return subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
-}
-
-// Returns the MiniTableEnum corresponding to a given MiniTableField
-// from an array of MiniTableSub.
-static const upb_MiniTableEnum* _upb_MiniTableSubs_EnumByField(
-    const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field) {
-  return subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(subenum);
-}
-
 static void _upb_Decoder_VerifyUtf8(upb_Decoder* d, const char* buf, int len) {
   if (!_upb_Decoder_VerifyUtf8Inline(buf, len)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_BadUtf8);
@@ -256,10 +235,10 @@ static upb_Message* _upb_Decoder_NewSubMessage2(upb_Decoder* d,
   return msg;
 }
 
-static upb_Message* _upb_Decoder_NewSubMessage(
-    upb_Decoder* d, const upb_MiniTableSubInternal* subs,
-    const upb_MiniTableField* field, upb_Message** target) {
-  const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
+static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
+                                               const upb_MiniTableField* field,
+                                               upb_Message** target) {
+  const upb_MiniTable* subl = upb_MiniTable_GetSubMessageTable(field);
   return _upb_Decoder_NewSubMessage2(d, subl, field, target);
 }
 
@@ -292,11 +271,10 @@ const char* _upb_Decoder_RecurseSubMessage(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeSubMessage(upb_Decoder* d, const char* ptr,
                                           upb_Message* submsg,
-                                          const upb_MiniTableSubInternal* subs,
                                           const upb_MiniTableField* field,
                                           int size) {
   int saved_delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, size);
-  const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
+  const upb_MiniTable* subl = upb_MiniTable_GetSubMessageTable(field);
   UPB_ASSERT(subl);
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
   upb_EpsCopyInputStream_PopLimit(&d->input, ptr, saved_delta);
@@ -325,9 +303,8 @@ const char* _upb_Decoder_DecodeUnknownGroup(upb_Decoder* d, const char* ptr,
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeKnownGroup(upb_Decoder* d, const char* ptr,
                                           upb_Message* submsg,
-                                          const upb_MiniTableSubInternal* subs,
                                           const upb_MiniTableField* field) {
-  const upb_MiniTable* subl = _upb_MiniTableSubs_MessageByField(subs, field);
+  const upb_MiniTable* subl = upb_MiniTable_GetSubMessageTable(field);
   UPB_ASSERT(subl);
   return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl,
                                   field->UPB_PRIVATE(number));
@@ -434,9 +411,8 @@ const char* _upb_Decoder_DecodeVarintPacked(upb_Decoder* d, const char* ptr,
 UPB_NOINLINE
 static const char* _upb_Decoder_DecodeEnumPacked(
     upb_Decoder* d, const char* ptr, upb_Message* msg, upb_Array* arr,
-    const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field,
-    wireval* val) {
-  const upb_MiniTableEnum* e = _upb_MiniTableSubs_EnumByField(subs, field);
+    const upb_MiniTableField* field, wireval* val) {
+  const upb_MiniTableEnum* e = upb_MiniTable_GetSubEnumTable(field);
   int saved_limit = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
   char* out = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
                          arr->UPB_PRIVATE(size) * 4, void);
@@ -468,10 +444,10 @@ static upb_Array* _upb_Decoder_CreateArray(upb_Decoder* d,
   return ret;
 }
 
-static const char* _upb_Decoder_DecodeToArray(
-    upb_Decoder* d, const char* ptr, upb_Message* msg,
-    const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field,
-    wireval* val, int op) {
+static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
+                                              upb_Message* msg,
+                                              const upb_MiniTableField* field,
+                                              wireval* val, int op) {
   upb_Array** arrp = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
   upb_Array* arr = *arrp;
   void* mem;
@@ -508,14 +484,13 @@ static const char* _upb_Decoder_DecodeToArray(
       upb_Message** target =
           UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
                      arr->UPB_PRIVATE(size) * sizeof(void*), upb_Message*);
-      upb_Message* submsg = _upb_Decoder_NewSubMessage(d, subs, field, target);
+      upb_Message* submsg = _upb_Decoder_NewSubMessage(d, field, target);
       arr->UPB_PRIVATE(size)++;
       if (UPB_UNLIKELY(field->UPB_PRIVATE(descriptortype) ==
                        kUpb_FieldType_Group)) {
-        return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, subs, field);
+        return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
       } else {
-        return _upb_Decoder_DecodeSubMessage(d, ptr, submsg, subs, field,
-                                             val->size);
+        return _upb_Decoder_DecodeSubMessage(d, ptr, submsg, field, val->size);
       }
     }
     case OP_FIXPCK_LG2(2):
@@ -528,7 +503,7 @@ static const char* _upb_Decoder_DecodeToArray(
       return _upb_Decoder_DecodeVarintPacked(d, ptr, arr, val, field,
                                              op - OP_VARPCK_LG2(0));
     case kUpb_DecodeOp_PackedEnum:
-      return _upb_Decoder_DecodeEnumPacked(d, ptr, msg, arr, subs, field, val);
+      return _upb_Decoder_DecodeEnumPacked(d, ptr, msg, arr, field, val);
     default:
       UPB_UNREACHABLE();
   }
@@ -596,15 +571,15 @@ UPB_NOINLINE static void _upb_Decoder_AddMapEntryUnknown(
   }
 }
 
-static const char* _upb_Decoder_DecodeToMap(
-    upb_Decoder* d, const char* ptr, upb_Message* msg,
-    const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field,
-    wireval* val) {
+static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
+                                            upb_Message* msg,
+                                            const upb_MiniTableField* field,
+                                            wireval* val) {
   upb_Map** map_p = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), upb_Map*);
   upb_Map* map = *map_p;
   upb_MapEntry ent;
   UPB_ASSERT(upb_MiniTableField_Type(field) == kUpb_FieldType_Message);
-  const upb_MiniTable* entry = _upb_MiniTableSubs_MessageByField(subs, field);
+  const upb_MiniTable* entry = upb_MiniTable_GetSubMessageTable(field);
 
   UPB_ASSERT(entry);
   UPB_ASSERT(entry->UPB_PRIVATE(field_count) == 2);
@@ -625,13 +600,11 @@ static const char* _upb_Decoder_DecodeToMap(
           kUpb_FieldType_Group) {
     // Create proactively to handle the case where it doesn't appear.
     upb_Message* msg;
-    _upb_Decoder_NewSubMessage(d, entry->UPB_PRIVATE(subs),
-                               &entry->UPB_PRIVATE(fields)[1], &msg);
+    _upb_Decoder_NewSubMessage(d, &entry->UPB_PRIVATE(fields)[1], &msg);
     ent.v.val = upb_value_ptr(msg);
   }
 
-  ptr = _upb_Decoder_DecodeSubMessage(d, ptr, &ent.message, subs, field,
-                                      val->size);
+  ptr = _upb_Decoder_DecodeSubMessage(d, ptr, &ent.message, field, val->size);
   if (upb_Message_HasUnknown(&ent.message)) {
     _upb_Decoder_AddMapEntryUnknown(d, msg, field, &ent.message, entry);
   } else {
@@ -645,8 +618,7 @@ static const char* _upb_Decoder_DecodeToMap(
 
 static const char* _upb_Decoder_DecodeToSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* msg,
-    const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field,
-    wireval* val, int op) {
+    const upb_MiniTableField* field, wireval* val, int op) {
   void* mem = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
   int type = field->UPB_PRIVATE(descriptortype);
 
@@ -668,12 +640,11 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     case kUpb_DecodeOp_SubMessage: {
       upb_Message** submsgp = mem;
       upb_Message* submsg = *submsgp;
-      if (!submsg) submsg = _upb_Decoder_NewSubMessage(d, subs, field, submsgp);
+      if (!submsg) submsg = _upb_Decoder_NewSubMessage(d, field, submsgp);
       if (UPB_UNLIKELY(type == kUpb_FieldType_Group)) {
-        ptr = _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, subs, field);
+        ptr = _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
       } else {
-        ptr = _upb_Decoder_DecodeSubMessage(d, ptr, submsg, subs, field,
-                                            val->size);
+        ptr = _upb_Decoder_DecodeSubMessage(d, ptr, submsg, field, val->size);
       }
       break;
     }
@@ -915,8 +886,7 @@ void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
                                 const upb_MiniTableField* field, int* op) {
   // If sub-message is not linked, treat as unknown.
   if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
-  const upb_MiniTable* mt_sub =
-      _upb_MiniTableSubs_MessageByField(mt->UPB_PRIVATE(subs), field);
+  const upb_MiniTable* mt_sub = upb_MiniTable_GetSubMessageTable(field);
   if (mt_sub != NULL) return;  // Normal case, sub-message is linked.
 #ifndef NDEBUG
   const upb_MiniTableField* oneof = upb_MiniTable_GetOneof(mt, field);
@@ -925,9 +895,7 @@ void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
     // unlinked.
     do {
       UPB_ASSERT(upb_MiniTableField_CType(oneof) == kUpb_CType_Message);
-      const upb_MiniTable* oneof_sub =
-          mt->UPB_PRIVATE(subs)[oneof->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(
-              submsg);
+      const upb_MiniTable* oneof_sub = upb_MiniTable_GetSubMessageTable(oneof);
       UPB_ASSERT(!oneof_sub);
     } while (upb_MiniTable_NextOneofField(mt, &oneof));
   }
@@ -1023,11 +991,7 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
     case kUpb_WireType_Varint:
       ptr = _upb_Decoder_DecodeVarint(d, ptr, &val->uint64_val);
       if (upb_MiniTableField_IsClosedEnum(field)) {
-        const upb_MiniTableEnum* e =
-            upb_MiniTableField_IsExtension(field)
-                ? upb_MiniTableExtension_GetSubEnum(
-                      (const upb_MiniTableExtension*)field)
-                : upb_MiniTable_GetSubEnumTable(mt, field);
+        const upb_MiniTableEnum* e = upb_MiniTable_GetSubEnumTable(field);
         if (!upb_MiniTableEnum_CheckValue(e, val->uint64_val)) {
           *op = kUpb_DecodeOp_UnknownField;
           return ptr;
@@ -1077,7 +1041,6 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           const upb_MiniTable* layout,
                                           const upb_MiniTableField* field,
                                           int op, wireval* val) {
-  const upb_MiniTableSubInternal* subs = layout->UPB_PRIVATE(subs);
   uint8_t mode = field->UPB_PRIVATE(mode);
 
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
@@ -1090,16 +1053,15 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
     }
     d->original_msg = msg;
     msg = &ext->data.UPB_PRIVATE(ext_msg_val);
-    subs = &ext->ext->UPB_PRIVATE(sub);
   }
 
   switch (mode & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Array:
-      return _upb_Decoder_DecodeToArray(d, ptr, msg, subs, field, val, op);
+      return _upb_Decoder_DecodeToArray(d, ptr, msg, field, val, op);
     case kUpb_FieldMode_Map:
-      return _upb_Decoder_DecodeToMap(d, ptr, msg, subs, field, val);
+      return _upb_Decoder_DecodeToMap(d, ptr, msg, field, val);
     case kUpb_FieldMode_Scalar:
-      return _upb_Decoder_DecodeToSubMessage(d, ptr, msg, subs, field, val, op);
+      return _upb_Decoder_DecodeToSubMessage(d, ptr, msg, field, val, op);
     default:
       UPB_UNREACHABLE();
   }
