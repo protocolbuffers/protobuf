@@ -492,9 +492,6 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
     upb_MiniTableField* mt_f =
         (upb_MiniTableField*)&m->layout->UPB_PRIVATE(fields)[layout_index];
     if (sub_m) {
-      if (!mt->UPB_PRIVATE(subs)) {
-        _upb_DefBuilder_Errf(ctx, "unexpected submsg for (%s)", m->full_name);
-      }
       UPB_ASSERT(mt_f);
       UPB_ASSERT(sub_m->layout);
       if (UPB_UNLIKELY(!upb_MiniTable_SetSubMessage(mt, mt_f, sub_m->layout))) {

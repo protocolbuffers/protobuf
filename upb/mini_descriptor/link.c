@@ -54,12 +54,12 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       return false;
   }
 
-  int idx = field->UPB_PRIVATE(submsg_index);
-  upb_MiniTableSubInternal* table_subs = (void*)table->UPB_PRIVATE(subs);
+  upb_MiniTableSubInternal* table_sub = UPB_PTR_AT(
+      field, field->UPB_PRIVATE(submsg_ofs) * 4, upb_MiniTableSubInternal);
   // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
   // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
-  memcpy((void*)table_subs[idx].UPB_PRIVATE(submsg), &sub, sizeof(void*));
+  table_sub->UPB_PRIVATE(submsg) = sub;
   return true;
 }
 
@@ -85,8 +85,8 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
     return false;
   }
 
-  upb_MiniTableSub* table_sub =
-      (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];
+  upb_MiniTableSubInternal* table_sub = UPB_PTR_AT(
+      field, field->UPB_PRIVATE(submsg_ofs) * 4, upb_MiniTableSubInternal);
   *table_sub = upb_MiniTableSub_FromEnum(sub);
   return true;
 }

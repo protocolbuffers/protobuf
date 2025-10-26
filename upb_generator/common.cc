@@ -33,9 +33,10 @@ std::string FieldInitializer(upb::FieldDefPtr field,
       ArchDependentSize(field32->UPB_PRIVATE(offset),
                         field64->UPB_PRIVATE(offset)),
       ArchDependentSize(field32->presence, field64->presence),
-      field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
+      field64->UPB_PRIVATE(submsg_ofs) == kUpb_NoSub
           ? "kUpb_NoSub"
-          : absl::StrCat(field64->UPB_PRIVATE(submsg_index)).c_str(),
+          : ArchDependentSize(field32->UPB_PRIVATE(submsg_ofs),
+                              field64->UPB_PRIVATE(submsg_ofs)),
       field64->UPB_PRIVATE(descriptortype), GetModeInit(field32, field64));
 }
 

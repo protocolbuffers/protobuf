@@ -239,10 +239,10 @@ TEST_P(MiniTableTest, SubsInitializedToNull) {
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(upb_MiniTable_FieldCount(table), 2);
-  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
-      table, upb_MiniTable_GetFieldByIndex(table, 0)));
-  EXPECT_FALSE(upb_MiniTable_FieldIsLinked(
-      table, upb_MiniTable_GetFieldByIndex(table, 1)));
+  EXPECT_FALSE(
+      upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 0)));
+  EXPECT_FALSE(
+      upb_MiniTable_FieldIsLinked(upb_MiniTable_GetFieldByIndex(table, 1)));
 }
 
 TEST(MiniTableEnumTest, PositiveAndNegative) {
