@@ -843,8 +843,21 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
     // TODO: Remove this in a future PBJ breaking release.
     printer->Print("private byte memoizedIsInitialized = -1;\n");
   } else {
+    // If the message transitively has no required fields or extensions,
+    // isInitialized() is always true.
+    if (!HasRequiredFields(descriptor_)) {
+      printer->Print(
+          "@java.lang.Override\n"
+          "public final boolean isInitialized() {\n"
+          "  return true;\n"
+          "}\n"
+          "\n");
+      return;
+    }
+
     printer->Print("private transient byte memoizedIsInitialized = -1;\n");
   }
+
   printer->Print(
       "@java.lang.Override\n"
       "public final boolean isInitialized() {\n");
