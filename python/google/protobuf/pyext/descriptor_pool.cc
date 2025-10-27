@@ -210,6 +210,7 @@ static void Dealloc(PyObject* pself) {
     delete self->pool;
   }
   delete self->error_collector;
+  PyObject_GC_UnTrack(pself);
   Py_TYPE(self)->tp_free(pself);
 }
 
