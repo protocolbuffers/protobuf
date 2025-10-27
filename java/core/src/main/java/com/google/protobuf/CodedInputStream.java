@@ -1166,8 +1166,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 35)
                   ^ (~0L << 42)
                   ^ (~0L << 49);
-        } else {
-          x ^= ((long) buffer[tempPos++] << 56);
+        } else if ((x ^= ((long) buffer[tempPos++] << 56)) >= 0L) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)
@@ -1177,11 +1176,19 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-          if (x < 0L) {
-            if (buffer[tempPos++] < 0L) {
-              break fastpath; // Will throw malformedVarint()
-            }
-          }
+        } else if ((x ^= ((long) buffer[tempPos++] << 63)) >= 0L) {
+          x ^=
+              (~0L << 7)
+                  ^ (~0L << 14)
+                  ^ (~0L << 21)
+                  ^ (~0L << 28)
+                  ^ (~0L << 35)
+                  ^ (~0L << 42)
+                  ^ (~0L << 49)
+                  ^ (~0L << 56)
+                  ^ (~0L << 63);
+        } else {
+          break fastpath; // Will throw malformedVarint()
         }
         pos = tempPos;
         return x;
@@ -1877,8 +1884,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 35)
                   ^ (~0L << 42)
                   ^ (~0L << 49);
-        } else {
-          x ^= ((long) UnsafeUtil.getByte(tempPos++) << 56);
+        } else if ((x ^= ((long) UnsafeUtil.getByte(tempPos++) << 56)) >= 0L) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)
@@ -1888,11 +1894,19 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-          if (x < 0L) {
-            if (UnsafeUtil.getByte(tempPos++) < 0L) {
-              break fastpath; // Will throw malformedVarint()
-            }
-          }
+        } else if ((x ^= ((long) UnsafeUtil.getByte(tempPos++) << 63)) >= 0L) {
+          x ^=
+              (~0L << 7)
+                  ^ (~0L << 14)
+                  ^ (~0L << 21)
+                  ^ (~0L << 28)
+                  ^ (~0L << 35)
+                  ^ (~0L << 42)
+                  ^ (~0L << 49)
+                  ^ (~0L << 56)
+                  ^ (~0L << 63);
+        } else {
+          break fastpath; // Will throw malformedVarint()
         }
         pos = tempPos;
         return x;
@@ -2666,8 +2680,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 35)
                   ^ (~0L << 42)
                   ^ (~0L << 49);
-        } else {
-          x ^= ((long) buffer[tempPos++] << 56);
+        } else if ((x ^= ((long) buffer[tempPos++] << 56)) >= 0L) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)
@@ -2677,11 +2690,19 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-          if (x < 0L) {
-            if (buffer[tempPos++] < 0L) {
-              break fastpath; // Will throw malformedVarint()
-            }
-          }
+        } else if ((x ^= ((long) buffer[tempPos++] << 63)) >= 0L) {
+          x ^=
+              (~0L << 7)
+                  ^ (~0L << 14)
+                  ^ (~0L << 21)
+                  ^ (~0L << 28)
+                  ^ (~0L << 35)
+                  ^ (~0L << 42)
+                  ^ (~0L << 49)
+                  ^ (~0L << 56)
+                  ^ (~0L << 63);
+        } else {
+          break fastpath; // Will throw malformedVarint()
         }
         pos = tempPos;
         return x;
@@ -3756,8 +3777,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 35)
                   ^ (~0L << 42)
                   ^ (~0L << 49);
-        } else {
-          x ^= ((long) UnsafeUtil.getByte(tempPos++) << 56);
+        } else if ((x ^= ((long) UnsafeUtil.getByte(tempPos++) << 56)) >= 0L) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)
@@ -3767,11 +3787,19 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-          if (x < 0L) {
-            if (UnsafeUtil.getByte(tempPos++) < 0L) {
-              break fastpath; // Will throw malformedVarint()
-            }
-          }
+        } else if ((x ^= ((long) UnsafeUtil.getByte(tempPos++) << 63)) >= 0L) {
+          x ^=
+              (~0L << 7)
+                  ^ (~0L << 14)
+                  ^ (~0L << 21)
+                  ^ (~0L << 28)
+                  ^ (~0L << 35)
+                  ^ (~0L << 42)
+                  ^ (~0L << 49)
+                  ^ (~0L << 56)
+                  ^ (~0L << 63);
+        } else {
+          break fastpath; // Will throw malformedVarint()
         }
         currentByteBufferPos = tempPos;
         return x;
