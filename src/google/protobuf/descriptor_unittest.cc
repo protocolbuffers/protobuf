@@ -12293,6 +12293,46 @@ TEST_F(FeaturesTest, RemovedFeature) {
       "Custom feature removal error\n");
 }
 
+TEST_F(FeaturesTest, RemovedFileOption) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        options { java_multiple_files: true }
+      )pb",
+      "foo.proto: foo.proto: NAME: "
+      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
+      "2024: The `java_multiple_files` behavior is enabled by default in "
+      "editions 2024 and above. To disable it, you can set "
+      "`features.(pb.java).nest_in_file_class = YES` on individual messages, "
+      "enums, or services.\n");
+}
+
+TEST_F(FeaturesTest, RemovedFieldOption) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field {
+            name: "bar"
+            number: 1
+            options { cc_open_enum: true }
+          }
+        }
+      )pb",
+      "foo.proto: Foo.bar: NAME: google.protobuf.FieldOptions.cc_open_enum has been "
+      "removed in edition 2023: The `cc_open_enum` behavior is enabled by "
+      "default in edition 2023 and above. To disable it, you can set "
+      "`features.enum_type = CLOSED` to disable this behavior for all "
+      "languages.\n");
+}
+
 TEST_F(FeaturesTest, RemovedFeatureDefault) {
   BuildDescriptorMessagesInTestPool();
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());

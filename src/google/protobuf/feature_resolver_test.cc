@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
@@ -602,12 +603,15 @@ TEST(FeatureResolverTest, GetEditionFeatureSetDefaultsNotFound) {
   EXPECT_THAT(edition_2023_feature, HasError(HasSubstr("No valid default")));
 }
 
-TEST(FeatureResolverLifetimesTest, Valid) {
+TEST(FeatureResolverLifetimesTest, ValidFeatureAndOption) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { file_feature: VALUE1 }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FileOptions options = ParseTextOrDie(R"pb(
+    java_multiple_files: true
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
   EXPECT_THAT(results.warnings, IsEmpty());
 }
@@ -616,8 +620,9 @@ TEST(FeatureResolverLifetimesTest, DeprecatedFeature) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { removed_feature: VALUE1 }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FileOptions options;
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
   EXPECT_THAT(
       results.warnings,
@@ -630,8 +635,9 @@ TEST(FeatureResolverLifetimesTest, RemovedFeature) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { removed_feature: VALUE1 }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2024,
-                                                           features, nullptr);
+  FieldOptions options;
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2024, features, options, nullptr);
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_feature"),
                                 HasSubstr("removed in edition 2024:"),
@@ -639,12 +645,30 @@ TEST(FeatureResolverLifetimesTest, RemovedFeature) {
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
+TEST(FeatureResolverLifetimesTest, RemovedOption) {
+  FeatureSet features;
+  FileOptions options = ParseTextOrDie(R"pb(
+    java_multiple_files: true
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2024, features, options, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(
+          HasSubstr("google.protobuf.FileOptions.java_multiple_files"),
+          HasSubstr("removed in edition 2024:"),
+          HasSubstr(
+              "you can set `features.(pb.java).nest_in_file_class = YES`"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
 TEST(FeatureResolverLifetimesTest, RemovedFeatureWithNoRemovalError) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { same_edition_removed_feature: VALUE1 }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FileOptions options;
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(
                   HasSubstr("pb.TestFeatures.same_edition_removed_feature"),
@@ -652,12 +676,13 @@ TEST(FeatureResolverLifetimesTest, RemovedFeatureWithNoRemovalError) {
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
-TEST(FeatureResolverLifetimesTest, NotIntroduced) {
+TEST(FeatureResolverLifetimesTest, NotIntroducedFeature) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { future_feature: VALUE1 }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FileOptions options;
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(
       results.errors,
       ElementsAre(AllOf(HasSubstr("pb.TestFeatures.future_feature"),
@@ -666,31 +691,57 @@ TEST(FeatureResolverLifetimesTest, NotIntroduced) {
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
+TEST(FeatureResolverLifetimesTest, NotIntroducedOption) {
+  FeatureSet features;
+  FieldOptions options = ParseTextOrDie(R"pb(
+    cc_open_enum: true
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_LEGACY, features, options, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("google.protobuf.FieldOptions.cc_open_enum"),
+                        HasSubstr("wasn't introduced until edition PROTO2"),
+                        HasSubstr("can't be used in edition LEGACY"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
 TEST(FeatureResolverLifetimesTest, WarningsAndErrors) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { future_feature: VALUE1 removed_feature: VALUE1 }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FieldOptions options = ParseTextOrDie(R"pb(
+    cc_open_enum: true
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(results.errors,
-              ElementsAre(HasSubstr("pb.TestFeatures.future_feature")));
-  EXPECT_THAT(results.warnings,
-              ElementsAre(HasSubstr("pb.TestFeatures.removed_feature")));
+              ElementsAre(HasSubstr("pb.TestFeatures.future_feature"),
+                          HasSubstr("google.protobuf.FieldOptions.cc_open_enum")));
+  EXPECT_THAT(
+      results.warnings,
+      ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_feature"),
+                        HasSubstr("Custom feature deprecation warning"))));
 }
 
 TEST(FeatureResolverLifetimesTest, MultipleErrors) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { future_feature: VALUE1 legacy_feature: VALUE1 }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
-  EXPECT_THAT(results.errors, UnorderedElementsAre(
-                                  HasSubstr("pb.TestFeatures.future_feature"),
-                                  HasSubstr("pb.TestFeatures.legacy_feature")));
+  FieldOptions options = ParseTextOrDie(R"pb(
+    cc_open_enum: true
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      UnorderedElementsAre(HasSubstr("pb.TestFeatures.future_feature"),
+                           HasSubstr("pb.TestFeatures.legacy_feature"),
+                           HasSubstr("google.protobuf.FieldOptions.cc_open_enum")));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
-TEST(FeatureResolverLifetimesTest, DynamicPool) {
+TEST(FeatureResolverLifetimesTest, FeatureDynamicPool) {
   DescriptorPool pool;
   {
     FileDescriptorProto file;
@@ -709,8 +760,9 @@ TEST(FeatureResolverLifetimesTest, DynamicPool) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { future_feature: VALUE1 removed_feature: VALUE1 }
   )pb");
+  FieldOptions options;
   auto results = FeatureResolver::ValidateFeatureLifetimes(
-      EDITION_2023, features, feature_set);
+      EDITION_2023, features, options, feature_set);
   EXPECT_THAT(results.errors,
               ElementsAre(HasSubstr("pb.TestFeatures.future_feature")));
   EXPECT_THAT(results.warnings,
@@ -721,8 +773,9 @@ TEST(FeatureResolverLifetimesTest, EmptyValueSupportValid) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { value_lifetime_feature: VALUE_LIFETIME_EMPTY_SUPPORT }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FieldOptions options;
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
   EXPECT_THAT(results.warnings, IsEmpty());
 }
@@ -731,8 +784,9 @@ TEST(FeatureResolverLifetimesTest, ValueSupportValid) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { value_lifetime_feature: VALUE_LIFETIME_SUPPORT }
   )pb");
+  FieldOptions options;
   auto results = FeatureResolver::ValidateFeatureLifetimes(
-      EDITION_99997_TEST_ONLY, features, nullptr);
+      EDITION_99997_TEST_ONLY, features, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
   EXPECT_THAT(results.warnings, IsEmpty());
 }
@@ -741,8 +795,9 @@ TEST(FeatureResolverLifetimesTest, ValueSupportBeforeIntroduced) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { value_lifetime_feature: VALUE_LIFETIME_FUTURE }
   )pb");
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FieldOptions options;
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(
                   HasSubstr("pb.VALUE_LIFETIME_FUTURE"),
@@ -755,8 +810,9 @@ TEST(FeatureResolverLifetimesTest, ValueSupportAfterRemoved) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { value_lifetime_feature: VALUE_LIFETIME_REMOVED }
   )pb");
+  FieldOptions options;
   auto results = FeatureResolver::ValidateFeatureLifetimes(
-      EDITION_99997_TEST_ONLY, features, nullptr);
+      EDITION_99997_TEST_ONLY, features, options, nullptr);
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(HasSubstr("pb.VALUE_LIFETIME_REMOVED"),
                                 HasSubstr("removed in edition 99997_TEST_ONLY"),
@@ -768,8 +824,9 @@ TEST(FeatureResolverLifetimesTest, ValueSupportDeprecated) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { value_lifetime_feature: VALUE_LIFETIME_DEPRECATED }
   )pb");
+  FieldOptions options;
   auto results = FeatureResolver::ValidateFeatureLifetimes(
-      EDITION_99997_TEST_ONLY, features, nullptr);
+      EDITION_99997_TEST_ONLY, features, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
   EXPECT_THAT(
       results.warnings,
@@ -782,8 +839,9 @@ TEST(FeatureResolverLifetimesTest, ValueAndFeatureSupportDeprecated) {
   FeatureSet features = ParseTextOrDie(R"pb(
     [pb.test] { value_lifetime_feature: VALUE_LIFETIME_DEPRECATED }
   )pb");
+  FieldOptions options;
   auto results = FeatureResolver::ValidateFeatureLifetimes(
-      EDITION_99998_TEST_ONLY, features, nullptr);
+      EDITION_99998_TEST_ONLY, features, options, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
   EXPECT_THAT(results.warnings,
               UnorderedElementsAre(
@@ -799,8 +857,9 @@ TEST(FeatureResolverLifetimesTest, ValueSupportInvalidNumber) {
   FeatureSet features;
   features.MutableExtension(pb::test)->set_value_lifetime_feature(
       static_cast<pb::ValueLifetimeFeature>(1234));
-  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
-                                                           features, nullptr);
+  FieldOptions options;
+  auto results = FeatureResolver::ValidateFeatureLifetimes(
+      EDITION_2023, features, options, nullptr);
   EXPECT_THAT(
       results.errors,
       ElementsAre(AllOf(HasSubstr("pb.TestFeatures.value_lifetime_feature"),

@@ -1612,6 +1612,7 @@ class DescriptorPool::DeferredValidation {
 
   struct LifetimesInfo {
     const FeatureSet* proto_features;
+    const Message* options;
     const Message* proto;
     absl::string_view full_name;
     absl::string_view filename;
@@ -1649,7 +1650,7 @@ class DescriptorPool::DeferredValidation {
 
       for (const auto& info : it.second) {
         auto results = FeatureResolver::ValidateFeatureLifetimes(
-            file->edition(), *info.proto_features, feature_set);
+            file->edition(), *info.proto_features, *info.options, feature_set);
         for (const auto& error : results.errors) {
           has_errors = true;
           if (error_collector_ == nullptr) {
@@ -6695,11 +6696,10 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   if (!had_errors_ && !pool_->lazily_build_dependencies_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
-          if (descriptor.proto_features_ != &FeatureSet::default_instance()) {
-            deferred_validation_.ValidateFeatureLifetimes(
-                GetFile(descriptor), {descriptor.proto_features_, &desc_proto,
-                                      GetFullName(descriptor), proto.name()});
-          }
+          deferred_validation_.ValidateFeatureLifetimes(
+              GetFile(descriptor),
+              {descriptor.proto_features_, descriptor.options_, &desc_proto,
+               GetFullName(descriptor), proto.name()});
         });
   }
 
@@ -8404,13 +8404,6 @@ void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
   }
 
   if (file->edition() >= Edition::EDITION_2024) {
-    if (file->options().has_java_multiple_files()) {
-      AddError(file->name(), proto, DescriptorPool::ErrorCollector::OPTION_NAME,
-               "The `java_multiple_files` behavior is enabled by default in "
-               "editions 2024 and above.  To disable it, you can set "
-               "`features.(pb.java).nest_in_file_class = YES` on individual "
-               "messages, enums, or services.");
-    }
     if (file->weak_dependency_count() > 0) {
       AddError("weak", proto, DescriptorPool::ErrorCollector::IMPORT,
                "weak imports are not allowed under edition 2024 and beyond.");

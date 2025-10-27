@@ -399,30 +399,36 @@ void ValidateSingleFeatureLifetimes(
 }
 
 void ValidateFeatureLifetimesImpl(Edition edition, const Message& message,
-                                  FeatureResolver::ValidationResults& results) {
+                                  FeatureResolver::ValidationResults& results,
+                                  bool is_feature) {
   std::vector<const FieldDescriptor*> fields;
   message.GetReflection()->ListFields(message, &fields);
   for (const FieldDescriptor* field : fields) {
-    // Recurse into message extension.
-    if (field->is_extension() &&
-        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      ValidateFeatureLifetimesImpl(
-          edition, message.GetReflection()->GetMessage(message, field),
-          results);
-      continue;
-    }
-
-    if (field->enum_type() != nullptr) {
-      int number = message.GetReflection()->GetEnumValue(message, field);
-      auto value = field->enum_type()->FindValueByNumber(number);
-      if (value == nullptr) {
-        results.errors.emplace_back(absl::StrCat(
-            "Feature ", field->full_name(), " has no known value ", number));
+    // TODO: Support repeated option enum values and custom options
+    // feature support
+    if (is_feature) {
+      // Recurse into message extension.
+      if (field->is_extension() &&
+          field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        ValidateFeatureLifetimesImpl(
+            edition, message.GetReflection()->GetMessage(message, field),
+            results,
+            /*is_feature=*/true);
         continue;
       }
-      ValidateSingleFeatureLifetimes(edition, value->full_name(),
-                                     value->options().feature_support(),
-                                     results);
+
+      if (field->enum_type() != nullptr) {
+        int number = message.GetReflection()->GetEnumValue(message, field);
+        auto value = field->enum_type()->FindValueByNumber(number);
+        if (value == nullptr) {
+          results.errors.emplace_back(absl::StrCat(
+              "Feature ", field->full_name(), " has no known value ", number));
+          continue;
+        }
+        ValidateSingleFeatureLifetimes(edition, value->full_name(),
+                                       value->options().feature_support(),
+                                       results);
+      }
     }
 
     ValidateSingleFeatureLifetimes(edition, field->full_name(),
@@ -555,9 +561,10 @@ absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
 }
 
 FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
-    Edition edition, const FeatureSet& features,
+    Edition edition, const FeatureSet& features, const Message& options,
     const Descriptor* pool_descriptor) {
   const Message* pool_features = nullptr;
+  const Message* pool_options = nullptr;
   DynamicMessageFactory factory;
   std::unique_ptr<Message> features_storage;
   if (pool_descriptor == nullptr) {
@@ -576,8 +583,18 @@ FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
   }
   ABSL_CHECK(pool_features != nullptr);
 
+  pool_options = &options;
+  // TODO: Support custom options
+  ABSL_CHECK(pool_options != nullptr);
+
   ValidationResults results;
-  ValidateFeatureLifetimesImpl(edition, *pool_features, results);
+  // Validate Feature feature support
+  ValidateFeatureLifetimesImpl(edition, *pool_features, results,
+                               /*is_feature=*/true);
+  // Validate Option feature support
+  ValidateFeatureLifetimesImpl(edition, *pool_options, results,
+                               /*is_feature=*/false);
+
   return results;
 }
 
