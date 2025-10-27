@@ -932,7 +932,7 @@ public class JsonFormat {
     /** Prints google.protobuf.FieldMask */
     private void printFieldMask(MessageOrBuilder message) throws IOException {
       FieldMask value = FieldMask.parseFrom(toByteString(message));
-      generator.print("\"" + FieldMaskUtil.toJsonString(value) + "\"");
+      generator.print(gson.toJson(FieldMaskUtil.toJsonString(value)));
     }
 
     /** Prints google.protobuf.Struct */
