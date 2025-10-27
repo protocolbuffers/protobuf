@@ -441,6 +441,7 @@ static void Dealloc(PyObject* pself) {
   // Remove from interned dictionary
   interned_descriptors->erase(self->descriptor);
   Py_CLEAR(self->pool);
+  PyObject_GC_UnTrack(pself);
   Py_TYPE(self)->tp_free(pself);
 }
 
