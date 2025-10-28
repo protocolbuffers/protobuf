@@ -1059,12 +1059,26 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
       "}\n"
       "int hash = 41;\n");
 
-  // If we output a getDescriptor() method, use that as it is more efficient.
-  if (descriptor_->options().no_standard_descriptor_accessor()) {
-    printer->Print("hash = (19 * hash) + getDescriptorForType().hashCode();\n");
-  } else {
-    printer->Print("hash = (19 * hash) + getDescriptor().hashCode();\n");
+  // Avoid static init of the descriptor just for the hashcode.
+  std::vector<int> indexes;
+  const Descriptor* parent = descriptor_;
+  while (parent != nullptr) {
+    indexes.insert(indexes.begin(), parent->index());
+    parent = parent->containing_type();
   }
+  printer->Print(
+      "hash = (19 * hash) + "
+      "$classname$.descriptor",
+      "classname", name_resolver_->GetDescriptorClassName(descriptor_->file()));
+  for (int i = 0; i < indexes.size(); i++) {
+    int index = indexes[i];
+    if (i == 0) {
+      printer->Print(".getMessageType($index$)", "index", absl::StrCat(index));
+    } else {
+      printer->Print(".getNestedType($index$)", "index", absl::StrCat(index));
+    }
+  }
+  printer->Print(".hashCode();\n");
 
   // hashCode non-oneofs.
   for (int i = 0; i < descriptor_->field_count(); i++) {
