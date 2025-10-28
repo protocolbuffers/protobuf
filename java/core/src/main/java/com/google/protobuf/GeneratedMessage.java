@@ -69,7 +69,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    *
    * <p>TODO: mark this private and final (breaking change)
    */
-  protected UnknownFieldSet unknownFields;
+  protected
+  UnknownFieldSet unknownFields;
 
   protected GeneratedMessage() {
     unknownFields = UnknownFieldSet.getDefaultInstance();
