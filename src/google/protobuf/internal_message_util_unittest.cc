@@ -12,7 +12,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/message.h"

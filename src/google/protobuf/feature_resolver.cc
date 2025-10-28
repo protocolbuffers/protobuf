@@ -19,7 +19,6 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
@@ -465,7 +464,7 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
   FeatureSetDefaults defaults;
   defaults.set_minimum_edition(minimum_edition);
   defaults.set_maximum_edition(maximum_edition);
-  auto message_factory = absl::make_unique<DynamicMessageFactory>();
+  auto message_factory = std::make_unique<DynamicMessageFactory>();
   for (const auto& edition : editions) {
     auto fixed_defaults_dynamic =
         absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
