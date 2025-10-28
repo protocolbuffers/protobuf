@@ -800,7 +800,7 @@ module BasicTest
 
       assert_equal :a, msg.my_oneof
       assert_equal :a, msg.method_missing(:my_oneof)
-      assert_equal nil, msg["my_oneof"]
+      assert_equal :a, msg["my_oneof"]
     end
 
     def test_string_subclass
