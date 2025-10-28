@@ -264,6 +264,11 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
         deps = depset(deps)
         proc_macro_deps = depset()
 
+    if _rust_version_ge("0.67"):
+        srcs = [src] + extra_srcs
+    else:
+        srcs = depset([src] + extra_srcs)
+
     # TODO: Use higher level rules_rust API once available.
     providers = rustc_compile_action(
         ctx = ctx,
@@ -273,7 +278,7 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
             name = crate_name,
             type = "rlib",
             root = src,
-            srcs = depset([src] + extra_srcs),
+            srcs = srcs,
             deps = deps,
             proc_macro_deps = proc_macro_deps,
             # Make "protobuf" into an alias for the runtime. This allows the
