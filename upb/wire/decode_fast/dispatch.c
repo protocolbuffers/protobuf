@@ -46,6 +46,16 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
   }
 }
 
+UPB_PRESERVE_MOST
+const char* upb_DecodeFast_IsDoneFallback(upb_Decoder* d, const char* ptr) {
+  int overrun;
+  upb_IsDoneStatus status =
+      upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun);
+  UPB_ASSERT(status == kUpb_IsDoneStatus_NeedFallback);
+  return _upb_EpsCopyInputStream_IsDoneFallbackInline(
+      &d->input, ptr, overrun, _upb_Decoder_BufferFlipCallback);
+}
+
 const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
   UPB_LONGJMP(d->err, 1);
   return NULL;

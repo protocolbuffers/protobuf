@@ -29,7 +29,7 @@ typedef struct {
 
 UPB_FORCEINLINE
 const char* fastdecode_tosubmsg(upb_EpsCopyInputStream* e, const char* ptr,
-                                void* ctx) {
+                                int size, void* ctx) {
   upb_Decoder* d = (upb_Decoder*)e;
   fastdecode_submsgdata* submsg = ctx;
   ptr = upb_DecodeFast_Dispatch(d, ptr, submsg->msg, submsg->table, 0, 0);
