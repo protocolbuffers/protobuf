@@ -188,70 +188,13 @@ final class Utf8 {
   }
 
   /**
-   * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}. For a string, this
-   * method is equivalent to {@code string.getBytes(UTF_8).length}, but is more efficient in both
-   * time and space.
+   * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}.
+   *
+   * <p>This method is will always return the same value as {@code string.getBytes(UTF_8).length},
+   * but it may be implemented more efficiently for the current platform.
    */
   static int encodedLength(String string) {
-    // Warning to maintainers: this implementation is highly optimized.
-    int utf16Length = string.length();
-    int utf8Length = utf16Length;
-    int i = 0;
-
-    // This loop optimizes for pure ASCII.
-    while (i < utf16Length && string.charAt(i) < 0x80) {
-      i++;
-    }
-
-    // This loop optimizes for chars less than 0x800.
-    for (; i < utf16Length; i++) {
-      char c = string.charAt(i);
-      if (c < 0x800) {
-        utf8Length += ((0x7f - c) >>> 31); // branch free!
-      } else {
-        try {
-          utf8Length += encodedLengthGeneral(string, i);
-        } catch (UnpairedSurrogateException e) {
-          // Our hand rolled loops don't handle unpaired surrogates here. This should be
-          // exceptionally rare, so we fallback to the naive implementation to find out the
-          // length that the Java internal implementation will return for this string after
-          // replacement characters.
-          return string.getBytes(Internal.UTF_8).length;
-        }
-        break;
-      }
-    }
-
-    if (utf8Length < utf16Length) {
-      // Necessary and sufficient condition for overflow because of maximum 3x expansion
-      throw new IllegalArgumentException(
-          "UTF-8 length does not fit in int: " + (utf8Length + (1L << 32)));
-    }
-    return utf8Length;
-  }
-
-  private static int encodedLengthGeneral(String string, int start)
-      throws UnpairedSurrogateException {
-    int utf16Length = string.length();
-    int utf8Length = 0;
-    for (int i = start; i < utf16Length; i++) {
-      char c = string.charAt(i);
-      if (c < 0x800) {
-        utf8Length += (0x7f - c) >>> 31; // branch free!
-      } else {
-        utf8Length += 2;
-        // jdk7+: if (Character.isSurrogate(c)) {
-        if (Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE) {
-          // Check that we have a well-formed surrogate pair.
-          int cp = Character.codePointAt(string, i);
-          if (cp < MIN_SUPPLEMENTARY_CODE_POINT) {
-            throw new UnpairedSurrogateException(i, utf16Length);
-          }
-          i++;
-        }
-      }
-    }
-    return utf8Length;
+    return processor.encodedLength(string);
   }
 
   static int encode(String in, byte[] out, int offset, int length) {
@@ -719,6 +662,15 @@ final class Utf8 {
     abstract int encodeUtf8(String in, byte[] out, int offset, int length);
 
     /**
+     * Returns the number of bytes required to encode the given input character sequence ({@code
+     * in}) to UTF-8.
+     *
+     * @param in the input character sequence to be encoded
+     * @return the number of bytes required to encode the input character sequence
+     */
+    abstract int encodedLength(String in);
+
+    /**
      * Encodes an input character sequence ({@code in}) to UTF-8 in the target buffer ({@code out}).
      * Upon returning from this method, the {@code out} position will point to the position after
      * the last encoded byte. This method requires paired surrogates, and therefore does not support
@@ -976,6 +928,69 @@ final class Utf8 {
         }
       }
       return j;
+    }
+
+    @Override
+    int encodedLength(String string) {
+      // Warning to maintainers: this implementation is highly optimized.
+      int utf16Length = string.length();
+      int utf8Length = utf16Length;
+      int i = 0;
+
+      // This loop optimizes for pure ASCII.
+      while (i < utf16Length && string.charAt(i) < 0x80) {
+        i++;
+      }
+
+      // This loop optimizes for chars less than 0x800.
+      for (; i < utf16Length; i++) {
+        char c = string.charAt(i);
+        if (c < 0x800) {
+          utf8Length += ((0x7f - c) >>> 31); // branch free!
+        } else {
+          try {
+            utf8Length += encodedLengthGeneral(string, i);
+          } catch (UnpairedSurrogateException e) {
+            // Our hand rolled loops don't handle unpaired surrogates here. This should be
+            // exceptionally rare, so we fallback to the naive implementation to find out the
+            // length that the Java internal implementation will return for this string after
+            // replacement characters.
+            return string.getBytes(Internal.UTF_8).length;
+          }
+          break;
+        }
+      }
+
+      if (utf8Length < utf16Length) {
+        // Necessary and sufficient condition for overflow because of maximum 3x expansion
+        throw new IllegalArgumentException(
+            "UTF-8 length does not fit in int: " + (utf8Length + (1L << 32)));
+      }
+      return utf8Length;
+    }
+
+    private static int encodedLengthGeneral(String string, int start)
+        throws UnpairedSurrogateException {
+      int utf16Length = string.length();
+      int utf8Length = 0;
+      for (int i = start; i < utf16Length; i++) {
+        char c = string.charAt(i);
+        if (c < 0x800) {
+          utf8Length += (0x7f - c) >>> 31; // branch free!
+        } else {
+          utf8Length += 2;
+          // jdk7+: if (Character.isSurrogate(c)) {
+          if (Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE) {
+            // Check that we have a well-formed surrogate pair.
+            int cp = Character.codePointAt(string, i);
+            if (cp < MIN_SUPPLEMENTARY_CODE_POINT) {
+              throw new UnpairedSurrogateException(i, utf16Length);
+            }
+            i++;
+          }
+        }
+      }
+      return utf8Length;
     }
 
     @Override
@@ -1422,15 +1437,23 @@ final class Utf8 {
 
     @Override
     int encodeUtf8(String in, byte[] out, int offset, int length) {
-      // On our servers with strings that have optimized internals, empirically doing the naive
-      // thing is faster than our best fancy loops.
+      // On our servers with strings that have optimized internals, doing the naive
+      // thing has been empirically measured as faster than our best fancy loops (as of 2025).
       return encodeUtf8Naive(in, out, offset, length);
     }
 
     @Override
+    int encodedLength(final String in) {
+      // On our servers with strings that have optimized internals, doing the naive
+      // thing has been empirically measured as faster than our best fancy loops (as of 2025).
+      final byte[] bytes = in.getBytes(Internal.UTF_8);
+      return bytes.length;
+    }
+
+    @Override
     protected void encodeUtf8Internal(String in, ByteBuffer out) {
-      // On our servers with strings that have optimized internals, empirically doing the naive
-      // thing is faster than our best fancy loops.
+      // On our servers with strings that have optimized internals, doing the naive
+      // thing has been empirically measured as faster than our best fancy loops (as of 2025).
       encodeUtf8Naive(in, out);
     }
 
