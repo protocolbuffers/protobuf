@@ -43,6 +43,7 @@ cc_library(
     ],
     deps = [
         "//hpb:ptr",
+        "//hpb/backend:types",
         "//hpb/internal",
         "//upb/base",
         "//upb/mem",
@@ -50,6 +51,16 @@ cc_library(
         "//upb/mini_table",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_library(
+    name = "internal",
+    hdrs = ["internal.h"],
+    visibility = ["//hpb:__subpackages__"],
+    deps = [
+        "//upb/mem",
+        "//upb/message",
     ],
 )
 
