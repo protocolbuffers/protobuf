@@ -19,6 +19,9 @@ import static java.lang.Character.isSurrogatePair;
 import static java.lang.Character.toCodePoint;
 
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.util.Arrays;
 
 /**
@@ -207,64 +210,20 @@ final class Utf8 {
   }
 
   /**
-   * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}. For a string, this
-   * method is equivalent to {@code string.getBytes(UTF_8).length}, but is more efficient in both
-   * time and space.
+   * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}.
    *
-   * @throws IllegalArgumentException if {@code sequence} contains ill-formed UTF-16 (unpaired
-   *     surrogates)
+   * <p>Today this method is simply {@code string.getBytes(UTF_8).length}; historically it had a
+   * tuned loop to try to implement faster and without allocations, but today java.lang.String
+   * supports alternate byte representations under the hood as an implementation detail, and those
+   * .getBytes() is able to take advantage of that directly in a way that we are not. Today, it is
+   * not possible for us to implement this logic any faster than the naive implementation.
+   *
+   * <p>Library code within Protobuf should continue to use this helper instead of reproducing the
+   * one liner, so that in the future when things change in the future we can move to a better
+   * implementation that may be faster and avoid allocations.
    */
-  static int encodedLength(String string) {
-    // Warning to maintainers: this implementation is highly optimized.
-    int utf16Length = string.length();
-    int utf8Length = utf16Length;
-    int i = 0;
-
-    // This loop optimizes for pure ASCII.
-    while (i < utf16Length && string.charAt(i) < 0x80) {
-      i++;
-    }
-
-    // This loop optimizes for chars less than 0x800.
-    for (; i < utf16Length; i++) {
-      char c = string.charAt(i);
-      if (c < 0x800) {
-        utf8Length += ((0x7f - c) >>> 31); // branch free!
-      } else {
-        utf8Length += encodedLengthGeneral(string, i);
-        break;
-      }
-    }
-
-    if (utf8Length < utf16Length) {
-      // Necessary and sufficient condition for overflow because of maximum 3x expansion
-      throw new IllegalArgumentException(
-          "UTF-8 length does not fit in int: " + (utf8Length + (1L << 32)));
-    }
-    return utf8Length;
-  }
-
-  private static int encodedLengthGeneral(String string, int start) {
-    int utf16Length = string.length();
-    int utf8Length = 0;
-    for (int i = start; i < utf16Length; i++) {
-      char c = string.charAt(i);
-      if (c < 0x800) {
-        utf8Length += (0x7f - c) >>> 31; // branch free!
-      } else {
-        utf8Length += 2;
-        // jdk7+: if (Character.isSurrogate(c)) {
-        if (Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE) {
-          // Check that we have a well-formed surrogate pair.
-          int cp = Character.codePointAt(string, i);
-          if (cp < MIN_SUPPLEMENTARY_CODE_POINT) {
-            throw new UnpairedSurrogateException(i, utf16Length);
-          }
-          i++;
-        }
-      }
-    }
-    return utf8Length;
+  static int encodedLength(String s) {
+    return s.getBytes(Internal.UTF_8).length;
   }
 
   static int encode(String in, byte[] out, int offset, int length) {
