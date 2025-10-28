@@ -162,8 +162,12 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="message">The message to write.</param>
         /// <param name="output">The buffer writer.</param>
+        /// <remarks>
+        /// This is similar as <see cref="WriteDelimitedTo"/>. This format is referred as "Delimited" format in
+        /// JavaProto and C++Proto.
+        /// </remarks>
         [SecuritySafeCritical]
-        public static void WriteDelimitedTo(this IMessage message, IBufferWriter<byte> output)
+        public static void WriteLengthPrefixedTo(this IMessage message, IBufferWriter<byte> output)
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(output, nameof(output));
