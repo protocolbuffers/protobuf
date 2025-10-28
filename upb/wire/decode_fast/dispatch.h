@@ -43,9 +43,14 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
-UPB_INLINE UPB_PRESERVE_NONE const char* _upb_FastDecoder_TagDispatch(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t tag) {
+// We have to disable HWASAN for this function because we steal the high byte
+// of the `table` pointer for our own purposes (the table mask). This overwrites
+// the tag that HWASAN depends on for its own checks.
+__attribute__((no_sanitize("hwaddress"))) UPB_INLINE
+    UPB_PRESERVE_NONE const char*
+    _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
+                                 upb_Message* msg, intptr_t table,
+                                 uint64_t hasbits, uint64_t tag) {
   const upb_MiniTable* table_p = decode_totablep(table);
   uint8_t mask = table;
   size_t ofs = tag & mask;
@@ -83,6 +88,30 @@ UPB_FORCEINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_Dispatch(
   data = _upb_FastDecoder_LoadTag(ptr);
   _upb_Decoder_Trace(d, 'D');
   UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);
+}
+
+// Workaround for b/177688959. We need to ensure that this function never goes
+// through PLT lookup. It follows that this function may not be called by
+// any other cc_library().
+__attribute__((visibility("hidden"))) UPB_PRESERVE_MOST const char*
+upb_DecodeFast_IsDoneFallback(upb_Decoder* d, const char* ptr);
+
+UPB_FORCEINLINE
+bool upb_DecodeFast_IsDone(upb_Decoder* d, const char** ptr) {
+  int overrun;
+  upb_IsDoneStatus status =
+      upb_EpsCopyInputStream_IsDoneStatus(&d->input, *ptr, &overrun);
+  switch (status) {
+    case kUpb_IsDoneStatus_Done:
+      return true;
+    case kUpb_IsDoneStatus_NotDone:
+      return false;
+    case kUpb_IsDoneStatus_NeedFallback:
+      *ptr = upb_DecodeFast_IsDoneFallback(d, *ptr);
+      return false;
+    default:
+      UPB_UNREACHABLE();
+  }
 }
 
 UPB_FORCEINLINE
@@ -142,7 +171,7 @@ const char* fastdecode_delimited(
       return NULL;
     }
     int delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, len);
-    ptr = func(&d->input, ptr, ctx);
+    ptr = func(&d->input, ptr, len, ctx);
     upb_EpsCopyInputStream_PopLimit(&d->input, ptr, delta);
   }
   return ptr;
@@ -160,20 +189,17 @@ void upb_DecodeFast_SetHasbits(upb_Message* msg, uint64_t hasbits) {
 }
 
 typedef enum {
-  // Call the dispatch function using musttail.
-  kUpb_DecodeFastNext_TailCallDispatch = 0,
+  kUpb_DecodeFastNext_Dispatch = 0,
 
-  // Return from the function with no tail call. This is used either to signal
-  // a fallback to the mini table or the end of the message if
-  // d->message_is_done is true.
-  kUpb_DecodeFastNext_Return = 1,
+  // Fallback to the MiniTable decoder. This is used either to signal a fallback
+  // to the mini table or the end of the message if d->message_is_done is true.
+  kUpb_DecodeFastNext_FallbackToMiniTable = 1,
 
+  // Signal an error.
   kUpb_DecodeFastNext_Error = 2,
 
-  // Alias for clarity in the code.
-  kUpb_DecodeFastNext_FallbackToMiniTable = kUpb_DecodeFastNext_Return,
-
-  // Tail call to the function to parse the current field.
+  // Handle the case where ptr >= limit, which is either end-of-message or
+  // end-of-buffer.
   kUpb_DecodeFastNext_MessageIsDoneFallback = 3,
 
   // Tail call to the function to parse the current field, except parse it as
@@ -184,8 +210,6 @@ typedef enum {
   // unpacked instead of packed.
   kUpb_DecodeFastNext_TailCallUnpacked = 5,
 } upb_DecodeFastNext;
-
-const char* upb_DecodeFast_IsDoneFallback(UPB_PARSE_PARAMS);
 
 /* Error function that will abort decoding with longjmp(). We can't declare this
  * UPB_NORETURN, even though it is appropriate, because if we do then compilers
@@ -202,34 +226,30 @@ const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
   return _upb_FastDecoder_ErrorJmp2(d);
 }
 
-#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)    \
-  if (UPB_UNLIKELY(next != kUpb_DecodeFastNext_TailCallDispatch)) {         \
-    switch (next) {                                                         \
-      case kUpb_DecodeFastNext_Return:                                      \
-        UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
-      case kUpb_DecodeFastNext_Error:                                       \
-        UPB_ASSERT(d->status != kUpb_DecodeStatus_Ok);                      \
-        return _upb_FastDecoder_ErrorJmp2(d);                               \
-      case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
-        UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
-            UPB_PARSE_ARGS);                                                \
-      case kUpb_DecodeFastNext_TailCallPacked:                              \
-        UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
-      case kUpb_DecodeFastNext_TailCallUnpacked:                            \
-        UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
-      default:                                                              \
-        UPB_UNREACHABLE();                                                  \
-    }                                                                       \
-  }                                                                         \
-  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
-
-// Uncomment this to see the exit points from the fast decoder.
-// #define UPB_LOG_EXITS
+#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)  \
+  switch (next) {                                                         \
+    case kUpb_DecodeFastNext_Dispatch:                                    \
+      UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);        \
+    case kUpb_DecodeFastNext_FallbackToMiniTable:                         \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
+    case kUpb_DecodeFastNext_Error:                                       \
+      UPB_ASSERT(d->status != kUpb_DecodeStatus_Ok);                      \
+      return _upb_FastDecoder_ErrorJmp2(d);                               \
+    case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
+      UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_TailCallPacked:                              \
+      UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
+    case kUpb_DecodeFastNext_TailCallUnpacked:                            \
+      UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
+    default:                                                              \
+      UPB_UNREACHABLE();                                                  \
+  }
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
                                        upb_DecodeFastNext val, const char* sym,
                                        const char* file, int line) {
-#ifdef UPB_LOG_EXITS
+#ifdef UPB_TRACE_FASTDECODER
   fprintf(stderr, "Fasttable fallback @ %s:%d -> %s (%d)\n", file, line, sym,
           val);
 #endif
@@ -241,7 +261,7 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
                                         upb_DecodeFastNext* next,
                                         upb_DecodeStatus val, const char* sym,
                                         const char* file, int line) {
-#ifdef UPB_LOG_EXITS
+#ifdef UPB_TRACE_FASTDECODER
   fprintf(stderr, "Fasttable error @ %s:%d -> %s (%d)\n", file, line, sym, val);
 #endif
   d->status = val;

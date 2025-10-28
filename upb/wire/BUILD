@@ -72,7 +72,7 @@ cc_library(
         "//upb/port",
     ] + select({
         "//upb:fasttable_enabled_setting": [
-            "//upb/wire/decode_fast:dispatch",
+            "//upb/wire/decode_fast:field_parsers",
         ],
         "//conditions:default": [],
     }),
