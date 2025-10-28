@@ -895,16 +895,16 @@ VALUE Message_freeze(VALUE _self) {
  */
 static VALUE Message_index(VALUE _self, VALUE field_name) {
   Message* self = ruby_to_Message(_self);
-  const upb_FieldDef* field;
+  const upb_FieldDef* f;
 
   Check_Type(field_name, T_STRING);
-  field = upb_MessageDef_FindFieldByName(self->msgdef, RSTRING_PTR(field_name));
+  f = upb_MessageDef_FindFieldByName(self->msgdef, RSTRING_PTR(field_name));
 
-  if (field == NULL) {
+  if (f == NULL) {
     return Qnil;
   }
 
-  return Message_getfield(_self, field);
+  return Message_getfield(_self, f);
 }
 
 /*
