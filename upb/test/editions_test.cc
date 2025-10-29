@@ -5,10 +5,16 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <stdint.h>
+
 #include <gtest/gtest.h>
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/upcast.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/message.h"
+#include "upb/port/def.inc"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/test/editions_test.upb.h"
 #include "upb/test/editions_test.upbdefs.h"
 
@@ -52,6 +58,18 @@ TEST(EditionsTest, PackedField) {
   upb::MessageDefPtr md(upb_test_2023_EditionsMessage_getmsgdef(defpool.ptr()));
   upb::FieldDefPtr f(md.FindFieldByName("unpacked_field"));
   ASSERT_FALSE(f.packed());
+}
+
+TEST(EditionsTest, ImportOptionUnlinked) {
+  // Test that unlinked option dependencies show up in unknown fields.  These
+  // are optional dependencies that may or may not be present in the binary.
+
+  upb::Arena arena;
+  upb::DefPool defpool;
+  upb::MessageDefPtr md(upb_test_2023_EditionsMessage_getmsgdef(defpool.ptr()));
+  const google_protobuf_MessageOptions* options = md.options();
+
+  EXPECT_TRUE(upb_Message_HasUnknown(UPB_UPCAST(options)));
 }
 
 TEST(EditionsTest, ConstructProto) {
