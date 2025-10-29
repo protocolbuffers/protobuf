@@ -6588,9 +6588,9 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     SuggestFieldNumbers(result, proto);
   }
 
-  if (!unknown_option_dependencies.empty() && !options_to_interpret_.empty()) {
-    // If there are unknown option dependencies, we should report an error
-    // if there are any uninterpreted options.
+  if (!options_to_interpret_.empty()) {
+    // If there are options to interpret, report an error on any unknown option
+    // dependencies.
     for (const std::string& name : unknown_option_dependencies) {
       AddImportError(proto, name);
     }
