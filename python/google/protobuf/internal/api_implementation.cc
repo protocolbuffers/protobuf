@@ -86,6 +86,13 @@ extern "C" {
       return INITFUNC_ERRORVAL;
     }
 
+#ifdef Py_GIL_DISABLED
+    if (PyUnstable_Module_SetGIL(module, Py_MOD_GIL_NOT_USED) != 0) {
+      Py_DECREF(module);
+      return NULL;
+    }
+#endif  // Py_GIL_DISABLED
+
     // Adds the module variable "api_version".
     if (PyModule_AddIntConstant(
         module,
