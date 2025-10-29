@@ -57,7 +57,7 @@ static_assert(alignof(GlobalEmptyString) >= 4, "");
 
 const std::string& LazyString::Init() const {
   static absl::Mutex mu{absl::kConstInit};
-  mu.Lock();
+  mu.lock();
   const std::string* res = inited_.load(std::memory_order_acquire);
   if (res == nullptr) {
     auto init_value = init_value_;
@@ -65,7 +65,7 @@ const std::string& LazyString::Init() const {
         std::string(init_value.ptr, init_value.size);
     inited_.store(res, std::memory_order_release);
   }
-  mu.Unlock();
+  mu.unlock();
   return *res;
 }
 
