@@ -49,7 +49,7 @@ jobs:
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '7.6.1' }}-12e21b8dda91028bc14212a3ab582c7c4d149fac
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:${{ matrix.config.bazel_version || '8.0.1' }}-12e21b8dda91028bc14212a3ab582c7c4d149fac
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           bazel: test //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
@@ -68,7 +68,7 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:7.6.1-12.2-12e21b8dda91028bc14212a3ab582c7c4d149fac"
+          image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-12.2-12e21b8dda91028bc14212a3ab582c7c4d149fac"
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-gcc"
           bazel: >-
@@ -93,7 +93,7 @@ jobs:
           bazel-cache: "upb-bazel-windows"
           # TODO: Enable python tests here once rules_python supports Windows better.
           bazel: test //upb/... //upb_generator/...
-          version: 7.6.1
+          version: 8.0.1
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
   macos:
@@ -122,7 +122,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
           bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //bazel/... //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
-          version: 7.6.1
+          version: 8.0.1
 
   build_wheels:
     name: Build Wheels
