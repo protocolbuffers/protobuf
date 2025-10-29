@@ -160,20 +160,17 @@ void upb_DecodeFast_SetHasbits(upb_Message* msg, uint64_t hasbits) {
 }
 
 typedef enum {
-  // Call the dispatch function using musttail.
-  kUpb_DecodeFastNext_TailCallDispatch = 0,
+  kUpb_DecodeFastNext_Dispatch = 0,
 
-  // Return from the function with no tail call. This is used either to signal
-  // a fallback to the mini table or the end of the message if
-  // d->message_is_done is true.
-  kUpb_DecodeFastNext_Return = 1,
+  // Fallback to the MiniTable decoder. This is used either to signal a fallback
+  // to the mini table or the end of the message if d->message_is_done is true.
+  kUpb_DecodeFastNext_FallbackToMiniTable = 1,
 
+  // Signal an error.
   kUpb_DecodeFastNext_Error = 2,
 
-  // Alias for clarity in the code.
-  kUpb_DecodeFastNext_FallbackToMiniTable = kUpb_DecodeFastNext_Return,
-
-  // Tail call to the function to parse the current field.
+  // Handle the case where ptr >= limit, which is either end-of-message or
+  // end-of-buffer.
   kUpb_DecodeFastNext_MessageIsDoneFallback = 3,
 
   // Tail call to the function to parse the current field, except parse it as
@@ -202,26 +199,25 @@ const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
   return _upb_FastDecoder_ErrorJmp2(d);
 }
 
-#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)    \
-  if (UPB_UNLIKELY(next != kUpb_DecodeFastNext_TailCallDispatch)) {         \
-    switch (next) {                                                         \
-      case kUpb_DecodeFastNext_Return:                                      \
-        UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
-      case kUpb_DecodeFastNext_Error:                                       \
-        UPB_ASSERT(d->status != kUpb_DecodeStatus_Ok);                      \
-        return _upb_FastDecoder_ErrorJmp2(d);                               \
-      case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
-        UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
-            UPB_PARSE_ARGS);                                                \
-      case kUpb_DecodeFastNext_TailCallPacked:                              \
-        UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
-      case kUpb_DecodeFastNext_TailCallUnpacked:                            \
-        UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
-      default:                                                              \
-        UPB_UNREACHABLE();                                                  \
-    }                                                                       \
-  }                                                                         \
-  UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
+#define UPB_DECODEFAST_NEXTMAYBEPACKED(next, func_unpacked, func_packed)  \
+  switch (next) {                                                         \
+    case kUpb_DecodeFastNext_Dispatch:                                    \
+      UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);        \
+    case kUpb_DecodeFastNext_FallbackToMiniTable:                         \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
+    case kUpb_DecodeFastNext_Error:                                       \
+      UPB_ASSERT(d->status != kUpb_DecodeStatus_Ok);                      \
+      return _upb_FastDecoder_ErrorJmp2(d);                               \
+    case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
+      UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
+          UPB_PARSE_ARGS);                                                \
+    case kUpb_DecodeFastNext_TailCallPacked:                              \
+      UPB_MUSTTAIL return func_packed(UPB_PARSE_ARGS);                    \
+    case kUpb_DecodeFastNext_TailCallUnpacked:                            \
+      UPB_MUSTTAIL return func_unpacked(UPB_PARSE_ARGS);                  \
+    default:                                                              \
+      UPB_UNREACHABLE();                                                  \
+  }
 
 // Uncomment this to see the exit points from the fast decoder.
 // #define UPB_LOG_EXITS

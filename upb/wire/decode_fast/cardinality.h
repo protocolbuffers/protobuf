@@ -371,14 +371,14 @@ bool upb_DecodeFast_DoNextRepeated(upb_Decoder* d, const char** ptr,
 
   if (!upb_DecodeFast_TagMatches(field->expected_tag, tag, tagsize)) {
     // A different tag is encountered; perform regular dispatch.
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_TailCallDispatch, next);
+    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_Dispatch, next);
   }
 
   field->dst = UPB_PTR_AT(field->dst, upb_DecodeFast_ValueBytes(type), char);
 
   if (field->dst == field->end) {
     // Out of arena memory; fall back to MiniTable decoder which will realloc.
-    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_Return, next);
+    return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
   }
 
   // Parse another instance of the repeated field.
@@ -394,7 +394,7 @@ bool upb_DecodeFast_NextRepeated(upb_Decoder* d, const char** ptr,
                                  upb_DecodeFast_TagSize tagsize) {
   if (!upb_DecodeFast_IsRepeated(card)) {
     // No repetition is possible; perform regular dispatch.
-    *next = kUpb_DecodeFastNext_TailCallDispatch;
+    *next = kUpb_DecodeFastNext_Dispatch;
     return false;
   }
 

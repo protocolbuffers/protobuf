@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for this project
 title: ''
-labels: feature request, untriaged
+labels: 'untriaged'
 assignees: ''
 
 ---
@@ -15,8 +15,8 @@ NOTE: this form is for feature requests (including cleanup requests) only. For q
 
 
 **What language does this apply to?**
-If it's proto syntax specific, is it proto2, proto3, or an edition?
-If it's a generated code change, what programming language?
+If it's a proto syntax change, is it for proto2 or proto3?
+If it's about generated code change, what programming language?
 
 **Describe the problem you are trying to solve.**
 
