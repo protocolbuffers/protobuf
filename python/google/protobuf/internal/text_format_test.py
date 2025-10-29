@@ -342,56 +342,42 @@ class TextFormatMessageToStringTests(TextFormatBase):
          parsed_message.repeated_string[0]))
 
   def testPrintFloatFormat(self, message_module):
-    # Check that float_format argument is passed to sub-message formatting.
     message = message_module.NestedTestAllTypes()
     message.payload.optional_float = 1.25
-    # Check rounding at 15 significant digits
     message.payload.optional_double = -.000003456789012345678
     # Check no decimal point.
     message.payload.repeated_float.append(-5642)
     # Check no trailing zeros.
     message.payload.repeated_double.append(.000078900)
-    formatted_fields = ['optional_float: 1.25',
-                        'optional_double: -3.45678901234568e-6',
-                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
-    text_message = text_format.MessageToString(message, float_format='.15g')
+    formatted_fields = [
+        'optional_float: 1.25',
+        'optional_double: -3.456789012345678e-6',
+        'repeated_float: -5642',
+        'repeated_double: 7.89e-5',
+    ]
+    text_message = text_format.MessageToString(message)
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_message),
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
-    # as_one_line=True is a separate code branch where float_format is passed.
-    text_message = text_format.MessageToString(message,
-                                               as_one_line=True,
-                                               float_format='.15g')
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_message),
-        'payload {{ {0} {1} {2} {3} }}'.format(*formatted_fields))
 
     # 32-bit 1.2 is noisy when extended to 64-bit:
     #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
     #  1.2000000476837158
     message.payload.optional_float = 1.2
-    formatted_fields = ['optional_float: 1.2',
-                        'optional_double: -3.45678901234568e-6',
-                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
-    text_message = text_format.MessageToString(message, float_format='.7g',
-                                               double_format='.15g')
+    formatted_fields = [
+        'optional_float: 1.2',
+        'optional_double: -3.456789012345678e-6',
+        'repeated_float: -5642',
+        'repeated_double: 7.89e-5',
+    ]
+    text_message = text_format.MessageToString(message)
     self.CompareToGoldenText(
         self.RemoveRedundantZeros(text_message),
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
 
-    # Test only set float_format affect both float and double fields.
-    formatted_fields = ['optional_float: 1.2',
-                        'optional_double: -3.456789e-6',
-                        'repeated_float: -5642', 'repeated_double: 7.89e-5']
-    text_message = text_format.MessageToString(message, float_format='.7g')
-    self.CompareToGoldenText(
-        self.RemoveRedundantZeros(text_message),
-        'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
-            *formatted_fields))
-
-    # Test default float_format will automatic print shortest float.
+    # Test print shortest float.
     message.payload.optional_float = 1.2345678912
     message.payload.optional_double = 1.2345678912
     formatted_fields = ['optional_float: 1.2345679',
