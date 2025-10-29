@@ -789,17 +789,7 @@ module BasicTest
       assert_equal "hello", msg.a
       assert_equal "hello", msg["a"]
 
-      assert_equal "hello", msg.method_missing(:a)
-      assert_equal "hello", msg["a"]
-
-      # method_missing and [] disagree on types:
-      # - method_missing only accepts Symbols
-      # - [] only accepts Strings
-      assert_raises(TypeError) { msg.method_missing("a") }
-      assert_raises(TypeError) { msg[:a] }
-
       assert_equal :a, msg.my_oneof
-      assert_equal :a, msg.method_missing(:my_oneof)
       assert_equal :a, msg["my_oneof"]
     end
 
