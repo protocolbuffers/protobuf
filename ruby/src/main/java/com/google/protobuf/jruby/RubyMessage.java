@@ -176,7 +176,12 @@ public class RubyMessage extends RubyObject {
   @JRubyMethod(name = "[]")
   public IRubyObject index(ThreadContext context, IRubyObject fieldName) {
     FieldDescriptor fieldDescriptor = findField(context, fieldName);
-    return getFieldInternal(context, fieldDescriptor);
+    IRubyObject result = getFieldInternal(context, fieldDescriptor);
+    if (!result.isNil()) {
+      return result;
+    }
+
+    return getWhichOneof(context, fieldName);
   }
 
   /*
@@ -387,30 +392,9 @@ public class RubyMessage extends RubyObject {
     RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
 
     if (args.length == 1) {
-      // If we find a Oneof return it's name (use lookupOneof because it has an index)
-      IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
-
-      if (!oneofDescriptor.isNil()) {
-        RubyOneofDescriptor rubyOneofDescriptor = (RubyOneofDescriptor) oneofDescriptor;
-        OneofDescriptor ood = rubyOneofDescriptor.getDescriptor();
-
-        // Check to see if we set this through ruby
-        FieldDescriptor fieldDescriptor = oneofCases.get(ood);
-
-        if (fieldDescriptor == null) {
-          // See if we set this from decoding a message
-          fieldDescriptor = builder.getOneofFieldDescriptor(ood);
-
-          if (fieldDescriptor == null) {
-            return context.nil;
-          } else {
-            // Cache it so we don't need to do multiple checks next time
-            oneofCases.put(ood, fieldDescriptor);
-            return runtime.newSymbol(fieldDescriptor.getName());
-          }
-        } else {
-          return runtime.newSymbol(fieldDescriptor.getName());
-        }
+      IRubyObject whichOneof = getWhichOneof(context, args[0]);
+      if (!whichOneof.isNil()) {
+        return whichOneof;
       }
 
       // If we find a field return its value
@@ -1377,6 +1361,36 @@ public class RubyMessage extends RubyObject {
         (RubyFieldDescriptor)
             thisRbDescriptor.lookup(context, context.runtime.newString(fieldDescriptor.getName()));
     return fd.getSubtype(context);
+  }
+
+  private IRubyObject getWhichOneof(ThreadContext contetx, IRubyObject fieldName) {
+      // If we find a Oneof return it's name (use lookupOneof because it has an index)
+      IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
+
+      if (oneofDescriptor.isNil()) {
+        return context.nil;
+      }
+
+      RubyOneofDescriptor rubyOneofDescriptor = (RubyOneofDescriptor) oneofDescriptor;
+      OneofDescriptor ood = rubyOneofDescriptor.getDescriptor();
+
+      // Check to see if we set this through ruby
+      FieldDescriptor fieldDescriptor = oneofCases.get(ood);
+
+      if (fieldDescriptor == null) {
+        // See if we set this from decoding a message
+        fieldDescriptor = builder.getOneofFieldDescriptor(ood);
+
+        if (fieldDescriptor == null) {
+          return context.nil;
+        } else {
+          // Cache it so we don't need to do multiple checks next time
+          oneofCases.put(ood, fieldDescriptor);
+          return runtime.newSymbol(fieldDescriptor.getName());
+        }
+      } else {
+        return runtime.newSymbol(fieldDescriptor.getName());
+      }
   }
 
   private IRubyObject enumToSymbol(
