@@ -4859,12 +4859,12 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
       $uint8$* $nonnull$ $classname$::_InternalSerialize(
           const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
           $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
-        const $classname$& this_ = static_cast<const $classname$&>(base);
+        const class $classname$& this_ = static_cast<const class $classname$&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
       $uint8$* $nonnull$ $classname$::_InternalSerialize(
           $uint8$* $nonnull$ target,
           $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
-        const $classname$& this_ = *this;
+        const class $classname$& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
         $annotate_serialize$ target =
             this_.$extensions$
@@ -4904,12 +4904,12 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
         $uint8$* $nonnull$ $classname$::_InternalSerialize(
             const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
             $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
-          const $classname$& this_ = static_cast<const $classname$&>(base);
+          const class $classname$& this_ = static_cast<const class $classname$&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
         $uint8$* $nonnull$ $classname$::_InternalSerialize(
             $uint8$* $nonnull$ target,
             $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
-          const $classname$& this_ = *this;
+          const class $classname$& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
           $annotate_serialize$;
           $has_bit_consistency$;
@@ -5288,10 +5288,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           ::size_t $classname$::ByteSizeLong(const MessageLite& base) {
-            const $classname$& this_ = static_cast<const $classname$&>(base);
+            const class $classname$& this_ = static_cast<const class $classname$&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
           ::size_t $classname$::ByteSizeLong() const {
-            const $classname$& this_ = *this;
+            const class $classname$& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
             $WeakDescriptorSelfPin$;
             $annotate_bytesize$;
@@ -5568,10 +5568,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
         ::size_t $classname$::ByteSizeLong(const MessageLite& base) {
-          const $classname$& this_ = static_cast<const $classname$&>(base);
+          const class $classname$& this_ = static_cast<const class $classname$&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
         ::size_t $classname$::ByteSizeLong() const {
-          const $classname$& this_ = *this;
+          const class $classname$& this_ = *this;
 #endif  // PROTOBUF_CUSTOM_VTABLE
           $WeakDescriptorSelfPin$;
           $annotate_bytesize$;
