@@ -28,6 +28,7 @@ cc_library(
     name = "mini_table",
     srcs = [
         "extension_registry.c",
+        "generated_registry.c",
         "message.c",
     ],
     hdrs = [
@@ -36,6 +37,7 @@ cc_library(
         "extension_registry.h",
         "field.h",
         "file.h",
+        "generated_registry.h",
         "message.h",
         "sub.h",
     ],
@@ -77,6 +79,7 @@ cc_library(
 cc_library(
     name = "internal",
     srcs = [
+        "internal/generated_registry.c",
         "internal/message.c",
     ],
     hdrs = [
@@ -84,6 +87,7 @@ cc_library(
         "internal/extension.h",
         "internal/field.h",
         "internal/file.h",
+        "internal/generated_registry.h",
         "internal/message.h",
         "internal/size_log2.h",
         "internal/sub.h",
@@ -92,7 +96,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//upb/base",
-        "//upb/hash",
         "//upb/mem",
         "//upb/message:types",
         "//upb/port",
@@ -126,6 +129,21 @@ cc_test(
         "//upb/test:test_messages_proto2_upb_minitable",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_upb_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_registry_test",
+    srcs = ["generated_registry_test.cc"],
+    deps = [
+        ":mini_table",
+        "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//upb/test:custom_options_upb_minitable_proto",
+        "//upb/test:editions_test_upb_minitable_proto",
+        "//upb/test:test_multiple_files_upb_minitable_proto",
+        "@abseil-cpp//absl/synchronization",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
