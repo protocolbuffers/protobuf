@@ -204,8 +204,8 @@ static void upb_MiniTablePrinter_PrintField(upb_MiniTablePrinter* p,
   if (field->UPB_PRIVATE(submsg_index) != kUpb_NoSub) {
     if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
       int id = upb_MiniTablePrinter_GetIdForRef(
-          p, *mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
-                  .UPB_PRIVATE(submsg));
+          p, mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
+                 .UPB_PRIVATE(submsg));
       upb_MiniTablePrinter_Printf(p, "      .submsg = MiniTable#%d\n", id);
     } else {
       int id = upb_MiniTablePrinter_GetIdForRef(
@@ -292,8 +292,8 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
     if (field->UPB_PRIVATE(submsg_index) == kUpb_NoSub) continue;
     if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
       upb_MiniTablePrinter_PrintMessage(
-          p, *mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
-                  .UPB_PRIVATE(submsg));
+          p, mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
+                 .UPB_PRIVATE(submsg));
     } else {
       upb_MiniTablePrinter_PrintEnum(
           p, mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]

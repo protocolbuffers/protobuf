@@ -36,10 +36,6 @@ std::string MiniTableMessageVarName(absl::string_view full_name) {
   return MangleName(full_name) + "_msg_init";
 }
 
-std::string MiniTableMessagePtrVarName(absl::string_view full_name) {
-  return MiniTableMessageVarName(full_name) + "_ptr";
-}
-
 std::string MiniTableEnumVarName(absl::string_view full_name) {
   return MangleName(full_name) + "_enum_init";
 }

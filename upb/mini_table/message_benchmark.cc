@@ -17,7 +17,7 @@ static void BM_FindFieldByNumber(benchmark::State& state) {
     max = 552;
   }
   const upb_MiniTable* ptr =
-      third_0party_0upb_0upb_0mini_0table__TestManyFields_msg_init_ptr;
+      &third_0party_0upb_0upb_0mini_0table__TestManyFields_msg_init;
   absl::BitGen bitgen;
   uint32_t search[1024];
   for (auto& s : search) {

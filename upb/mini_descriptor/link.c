@@ -59,7 +59,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
   // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
-  memcpy((void*)table_subs[idx].UPB_PRIVATE(submsg), &sub, sizeof(void*));
+  table_subs[idx].UPB_PRIVATE(submsg) = sub;
   return true;
 }
 

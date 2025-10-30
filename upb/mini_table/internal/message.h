@@ -160,7 +160,7 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
 UPB_INLINE const struct upb_MiniTable* UPB_PRIVATE(
     _upb_MiniTable_GetSubTableByIndex)(const struct upb_MiniTable* m,
                                        uint32_t i) {
-  return *m->UPB_PRIVATE(subs)[i].UPB_PRIVATE(submsg);
+  return m->UPB_PRIVATE(subs)[i].UPB_PRIVATE(submsg);
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
