@@ -8,7 +8,6 @@
 // Implements the DescriptorPool, which collects all descriptors.
 
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -19,7 +18,6 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_database.h"
@@ -45,7 +43,7 @@ namespace python {
 
 // A map to cache Python Pools per C++ pointer.
 // Pointers are not owned here, and belong to the PyDescriptorPool.
-static std::unordered_map<const DescriptorPool*, PyDescriptorPool*>*
+static absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>*
     descriptor_pool_map;
 
 namespace cdescriptor_pool {
@@ -684,7 +682,7 @@ bool InitDescriptorPool() {
   // generated_pool() contains all messages already linked in C++ libraries, and
   // is used as underlay.
   descriptor_pool_map =
-      new std::unordered_map<const DescriptorPool*, PyDescriptorPool*>;
+      new absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>;
   python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewWithUnderlay(
       DescriptorPool::generated_pool());
   if (python_generated_pool == nullptr) {
@@ -714,8 +712,7 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
       pool == DescriptorPool::generated_pool()) {
     return python_generated_pool;
   }
-  std::unordered_map<const DescriptorPool*, PyDescriptorPool*>::iterator it =
-      descriptor_pool_map->find(pool);
+  auto it = descriptor_pool_map->find(pool);
   if (it == descriptor_pool_map->end()) {
     PyErr_SetString(PyExc_KeyError, "Unknown descriptor pool");
     return nullptr;
