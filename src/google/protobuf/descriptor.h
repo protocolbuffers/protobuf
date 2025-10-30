@@ -2676,17 +2676,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   class Tables;
   std::unique_ptr<Tables> tables_;
 
-  bool enforce_dependencies_;
-  bool lazily_build_dependencies_;
-  bool allow_unknown_;
-  bool enforce_weak_;
-  ExtDeclEnforcementLevel enforce_extension_declarations_;
-  bool disallow_enforce_utf8_;
-  bool deprecated_legacy_json_field_conflicts_;
-  bool enforce_naming_style_;
-  bool enforce_symbol_visibility_ = false;
-  mutable bool build_started_ = false;
-
   // Set of files to track for additional validation. The bool value when true
   // means unused imports are treated as errors (and as warnings when false).
   absl::flat_hash_map<std::string, bool> direct_input_files_;
@@ -2694,6 +2683,18 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Specification of defaults to use for feature resolution.  This defaults to
   // just the global and C++ features, but can be overridden for other runtimes.
   std::unique_ptr<FeatureSetDefaults> feature_set_defaults_spec_;
+
+  ExtDeclEnforcementLevel enforce_extension_declarations_;
+
+  bool enforce_dependencies_ : 1;
+  bool lazily_build_dependencies_ : 1;
+  bool allow_unknown_ : 1;
+  bool enforce_weak_ : 1;
+  bool disallow_enforce_utf8_ : 1;
+  bool deprecated_legacy_json_field_conflicts_ : 1;
+  bool enforce_naming_style_ : 1;
+  bool enforce_symbol_visibility_ : 1 = false;
+  mutable bool build_started_ : 1 = false;
 
   // Returns true if the field extends an option message of descriptor.proto.
   bool IsReadyForCheckingDescriptorExtDecl(

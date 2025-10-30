@@ -2376,11 +2376,11 @@ DescriptorPool::DescriptorPool()
       default_error_collector_(nullptr),
       underlay_(nullptr),
       tables_(new Tables),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       enforce_dependencies_(true),
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false),
       enforce_naming_style_(false) {}
@@ -2392,11 +2392,11 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       default_error_collector_(error_collector),
       underlay_(nullptr),
       tables_(new Tables),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       enforce_dependencies_(true),
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false),
       enforce_naming_style_(false) {}
@@ -2407,11 +2407,11 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       default_error_collector_(nullptr),
       underlay_(underlay),
       tables_(new Tables),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       enforce_dependencies_(true),
       lazily_build_dependencies_(false),
       allow_unknown_(false),
       enforce_weak_(false),
-      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false),
       enforce_naming_style_(false) {}
@@ -7608,12 +7608,14 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   AllocateOptions(proto, result, EnumValueDescriptorProto::kOptionsFieldNumber,
                   "google.protobuf.EnumValueOptions", alloc);
 
-  // Again, enum values are weird because we makes them appear as siblings
-  // of the enum type instead of children of it.  So, we use
-  // parent->containing_type() as the value's parent.
-  bool added_to_outer_scope =
-      AddSymbol(result->full_name(), parent->containing_type(), result->name(),
-                proto, Symbol::EnumValue(result, 0));
+  bool added_to_outer_scope;
+
+    // Again, enum values are weird because we makes them appear as siblings
+    // of the enum type instead of children of it.  So, we use
+    // parent->containing_type() as the value's parent.
+    added_to_outer_scope =
+        AddSymbol(result->full_name(), parent->containing_type(),
+                  result->name(), proto, Symbol::EnumValue(result, 0));
 
   // However, we also want to be able to search for values within a single
   // enum type, so we add it as a child of the enum type itself, too.
@@ -8086,8 +8088,10 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
           // because that locks the pool's mutex, which we have already locked
           // at this point.
           const EnumValueDescriptor* default_value =
-              LookupSymbolNoPlaceholder(proto.default_value(),
-                                        field->enum_type()->full_name())
+              field->enum_type()
+                  ->file()
+                  ->tables_
+                  ->FindNestedSymbol(field->enum_type(), proto.default_value())
                   .enum_value_descriptor();
 
           if (default_value != nullptr &&
