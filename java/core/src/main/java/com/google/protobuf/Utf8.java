@@ -18,6 +18,7 @@ import static java.lang.Character.MIN_SURROGATE;
 import static java.lang.Character.isSurrogatePair;
 import static java.lang.Character.toCodePoint;
 
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -748,86 +749,13 @@ final class Utf8 {
         final int offset = out.arrayOffset();
         int endIndex = Utf8.encode(in, out.array(), offset + out.position(), out.remaining());
         Java8Compatibility.position(out, endIndex - offset);
-      } else if (out.isDirect()) {
-        encodeUtf8Direct(in, out);
       } else {
-        encodeUtf8Default(in, out);
+        encodeUtf8Internal(in, out);
       }
     }
 
     /** Encodes the input character sequence to a direct {@link ByteBuffer} instance. */
-    abstract void encodeUtf8Direct(String in, ByteBuffer out);
-
-    /**
-     * Encodes the input character sequence to a {@link ByteBuffer} instance using the {@link
-     * ByteBuffer} API, rather than potentially faster approaches.
-     */
-    final void encodeUtf8Default(String in, ByteBuffer out) {
-      final int inLength = in.length();
-      int outIx = out.position();
-      int inIx = 0;
-
-      // Since ByteBuffer.putXXX() already checks boundaries for us, no need to explicitly check
-      // access. Assume the buffer is big enough and let it handle the out of bounds exception
-      // if it occurs.
-      try {
-        // Designed to take advantage of
-        // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
-        for (char c; inIx < inLength && (c = in.charAt(inIx)) < 0x80; ++inIx) {
-          out.put(outIx + inIx, (byte) c);
-        }
-        if (inIx == inLength) {
-          // Successfully encoded the entire string.
-          Java8Compatibility.position(out, outIx + inIx);
-          return;
-        }
-
-        outIx += inIx;
-        for (char c; inIx < inLength; ++inIx, ++outIx) {
-          c = in.charAt(inIx);
-          if (c < 0x80) {
-            // One byte (0xxx xxxx)
-            out.put(outIx, (byte) c);
-          } else if (c < 0x800) {
-            // Two bytes (110x xxxx 10xx xxxx)
-
-            // Benchmarks show put performs better than putShort here (for HotSpot).
-            out.put(outIx++, (byte) (0xC0 | (c >>> 6)));
-            out.put(outIx, (byte) (0x80 | (0x3F & c)));
-          } else if (c < MIN_SURROGATE || MAX_SURROGATE < c) {
-            // Three bytes (1110 xxxx 10xx xxxx 10xx xxxx)
-            // Maximum single-char code point is 0xFFFF, 16 bits.
-
-            // Benchmarks show put performs better than putShort here (for HotSpot).
-            out.put(outIx++, (byte) (0xE0 | (c >>> 12)));
-            out.put(outIx++, (byte) (0x80 | (0x3F & (c >>> 6))));
-            out.put(outIx, (byte) (0x80 | (0x3F & c)));
-          } else {
-            // Four bytes (1111 xxxx 10xx xxxx 10xx xxxx 10xx xxxx)
-
-            // Minimum code point represented by a surrogate pair is 0x10000, 17 bits, four UTF-8
-            // bytes
-            final char low;
-            if (inIx + 1 == inLength || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
-              throw new UnpairedSurrogateException(inIx, inLength);
-            }
-            // TODO: Consider using putInt() to improve performance.
-            int codePoint = toCodePoint(c, low);
-            out.put(outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
-            out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
-            out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 6))));
-            out.put(outIx, (byte) (0x80 | (0x3F & codePoint)));
-          }
-        }
-
-        // Successfully encoded the entire string.
-        Java8Compatibility.position(out, outIx);
-      } catch (IndexOutOfBoundsException e) {
-        // TODO: Consider making the API throw IndexOutOfBoundsException instead.
-        throw new ArrayIndexOutOfBoundsException(
-            "Not enough space in output buffer to encode UTF-8 string");
-      }
-    }
+    protected abstract void encodeUtf8Internal(String in, ByteBuffer out);
   }
 
   /** {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods. */
@@ -1062,9 +990,71 @@ final class Utf8 {
     }
 
     @Override
-    void encodeUtf8Direct(String in, ByteBuffer out) {
-      // For safe processing, we have to use the ByteBuffer API.
-      encodeUtf8Default(in, out);
+    protected void encodeUtf8Internal(String in, ByteBuffer out) {
+      final int inLength = in.length();
+      int outIx = out.position();
+      int inIx = 0;
+
+      // Since ByteBuffer.putXXX() already checks boundaries for us, no need to explicitly check
+      // access. Assume the buffer is big enough and let it handle the out of bounds exception
+      // if it occurs.
+      try {
+        // Designed to take advantage of
+        // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
+        for (char c; inIx < inLength && (c = in.charAt(inIx)) < 0x80; ++inIx) {
+          out.put(outIx + inIx, (byte) c);
+        }
+        if (inIx == inLength) {
+          // Successfully encoded the entire string.
+          Java8Compatibility.position(out, outIx + inIx);
+          return;
+        }
+
+        outIx += inIx;
+        for (char c; inIx < inLength; ++inIx, ++outIx) {
+          c = in.charAt(inIx);
+          if (c < 0x80) {
+            // One byte (0xxx xxxx)
+            out.put(outIx, (byte) c);
+          } else if (c < 0x800) {
+            // Two bytes (110x xxxx 10xx xxxx)
+
+            // Benchmarks show put performs better than putShort here (for HotSpot).
+            out.put(outIx++, (byte) (0xC0 | (c >>> 6)));
+            out.put(outIx, (byte) (0x80 | (0x3F & c)));
+          } else if (c < MIN_SURROGATE || MAX_SURROGATE < c) {
+            // Three bytes (1110 xxxx 10xx xxxx 10xx xxxx)
+            // Maximum single-char code point is 0xFFFF, 16 bits.
+
+            // Benchmarks show put performs better than putShort here (for HotSpot).
+            out.put(outIx++, (byte) (0xE0 | (c >>> 12)));
+            out.put(outIx++, (byte) (0x80 | (0x3F & (c >>> 6))));
+            out.put(outIx, (byte) (0x80 | (0x3F & c)));
+          } else {
+            // Four bytes (1111 xxxx 10xx xxxx 10xx xxxx 10xx xxxx)
+
+            // Minimum code point represented by a surrogate pair is 0x10000, 17 bits, four UTF-8
+            // bytes
+            final char low;
+            if (inIx + 1 == inLength || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
+              throw new UnpairedSurrogateException(inIx, inLength);
+            }
+            // TODO: Consider using putInt() to improve performance.
+            int codePoint = toCodePoint(c, low);
+            out.put(outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
+            out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
+            out.put(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 6))));
+            out.put(outIx, (byte) (0x80 | (0x3F & codePoint)));
+          }
+        }
+
+        // Successfully encoded the entire string.
+        Java8Compatibility.position(out, outIx);
+      } catch (IndexOutOfBoundsException unused) {
+        // TODO: Consider making the API throw IndexOutOfBoundsException instead.
+        throw new ArrayIndexOutOfBoundsException(
+            "Not enough space in output buffer to encode UTF-8 string");
+      }
     }
 
     private static int partialIsValidUtf8(byte[] bytes, int index, int limit) {
@@ -1450,67 +1440,14 @@ final class Utf8 {
     }
 
     @Override
-    void encodeUtf8Direct(String in, ByteBuffer out) {
-      final long address = addressOffset(out);
-      long outIx = address + out.position();
-      final long outLimit = address + out.limit();
-      final int inLimit = in.length();
-      if (inLimit > outLimit - outIx) {
-        // Not even enough room for an ASCII-encoded string.
+    protected void encodeUtf8Internal(String in, ByteBuffer out) {
+      byte[] bytes = in.getBytes(Internal.UTF_8);
+      try {
+        out.put(bytes);
+      } catch (BufferOverflowException unused) {
         throw new ArrayIndexOutOfBoundsException(
             "Not enough space in output buffer to encode UTF-8 string");
       }
-
-      // Designed to take advantage of
-      // https://wiki.openjdk.java.net/display/HotSpotInternals/RangeCheckElimination
-      int inIx = 0;
-      for (char c; inIx < inLimit && (c = in.charAt(inIx)) < 0x80; ++inIx) {
-        UnsafeUtil.putByte(outIx++, (byte) c);
-      }
-      if (inIx == inLimit) {
-        // We're done, it was ASCII encoded.
-        Java8Compatibility.position(out, (int) (outIx - address));
-        return;
-      }
-
-      for (char c; inIx < inLimit; ++inIx) {
-        c = in.charAt(inIx);
-        if (c < 0x80 && outIx < outLimit) {
-          UnsafeUtil.putByte(outIx++, (byte) c);
-        } else if (c < 0x800 && outIx <= outLimit - 2L) { // 11 bits, two UTF-8 bytes
-          UnsafeUtil.putByte(outIx++, (byte) ((0xF << 6) | (c >>> 6)));
-          UnsafeUtil.putByte(outIx++, (byte) (0x80 | (0x3F & c)));
-        } else if ((c < MIN_SURROGATE || MAX_SURROGATE < c) && outIx <= outLimit - 3L) {
-          // Maximum single-char code point is 0xFFFF, 16 bits, three UTF-8 bytes
-          UnsafeUtil.putByte(outIx++, (byte) ((0xF << 5) | (c >>> 12)));
-          UnsafeUtil.putByte(outIx++, (byte) (0x80 | (0x3F & (c >>> 6))));
-          UnsafeUtil.putByte(outIx++, (byte) (0x80 | (0x3F & c)));
-        } else if (outIx <= outLimit - 4L) {
-          // Minimum code point represented by a surrogate pair is 0x10000, 17 bits, four UTF-8
-          // bytes
-          final char low;
-          if (inIx + 1 == inLimit || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
-            throw new UnpairedSurrogateException((inIx - 1), inLimit);
-          }
-          int codePoint = toCodePoint(c, low);
-          UnsafeUtil.putByte(outIx++, (byte) ((0xF << 4) | (codePoint >>> 18)));
-          UnsafeUtil.putByte(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 12))));
-          UnsafeUtil.putByte(outIx++, (byte) (0x80 | (0x3F & (codePoint >>> 6))));
-          UnsafeUtil.putByte(outIx++, (byte) (0x80 | (0x3F & codePoint)));
-        } else {
-          if ((MIN_SURROGATE <= c && c <= MAX_SURROGATE)
-              && (inIx + 1 == inLimit || !isSurrogatePair(c, in.charAt(inIx + 1)))) {
-            // We are surrogates and we're not a surrogate pair.
-            throw new UnpairedSurrogateException(inIx, inLimit);
-          }
-          // Not enough space in the output buffer.
-          throw new ArrayIndexOutOfBoundsException(
-              "Not enough space in output buffer to encode UTF-8 string");
-        }
-      }
-
-      // All bytes have been encoded.
-      Java8Compatibility.position(out, (int) (outIx - address));
     }
 
     /**
