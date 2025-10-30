@@ -13,7 +13,9 @@ using NUnit.Framework;
 using ProtobufUnittest;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using UnitTest.Issues.TestProtos;
 using static Google.Protobuf.Reflection.FeatureSet.Types;
 using proto2 = Google.Protobuf.TestProtos.Proto2;
@@ -33,6 +35,67 @@ namespace Google.Protobuf.Reflection
                 UnittestProto3Reflection.Descriptor,
                 UnittestImportProto3Reflection.Descriptor,
                 UnittestImportPublicProto3Reflection.Descriptor);
+        }
+
+        /// <summary>
+        /// Performance test comparing descriptor loading WITH vs WITHOUT extension caching.
+        /// 
+        /// This test uses TWO separate proto sets to measure both scenarios in a single execution:
+        /// - unittest_deep_dependencies_cached: Example message (WITH caching - default)
+        /// - unittest_deep_dependencies_nocache: ExampleNoCache message (WITHOUT caching)
+        /// 
+        /// Both proto sets have identical structure (WIDTH=6, DEPTH=6, 33 files total) but different
+        /// package names, allowing accurate measurement of caching performance in one test run.
+        /// </summary>
+        [Test]
+        public void FileDescriptor_ExtensionCachingPerformance()
+        {
+            // ========== Part 1: Test WITH caching (default behavior) ==========
+#if DEBUG
+            FileDescriptor.ResetCounters();
+#endif
+
+            var stopwatchWithCache = Stopwatch.StartNew();
+            // Access the Descriptor property to trigger static initialization if not already done.
+            // The first access to any member of the generated Reflection class triggers the static
+            // constructor which calls FileDescriptor.FromGeneratedCode(), and that's when traversal happens.
+            var descriptor = UnittestDeepDependenciesCached.Example.Descriptor;
+            var exampleWithCache = new UnittestDeepDependenciesCached.Example();
+            stopwatchWithCache.Stop();
+
+#if DEBUG
+            var traversalsWithCache = FileDescriptor.GetAllDependedExtensionsCount;
+
+            // Verify caching is working: should have minimal redundant traversals
+            Assert.Less(traversalsWithCache, 100, 
+                $"Should have very few redundant traversals with cache, but got {traversalsWithCache}");
+#endif
+
+            // ========== Part 2: Test WITHOUT caching ==========
+            FileDescriptor.DisableExtensionCaching();
+#if DEBUG
+            FileDescriptor.ResetCounters();
+#endif
+
+            var stopwatchNoCache = Stopwatch.StartNew();
+            // Force descriptor initialization by accessing it - this is when extension traversal happens
+            var descriptorNoCache = UnittestDeepDependenciesNocache.ExampleNoCache.Descriptor;
+            var exampleNoCache = new UnittestDeepDependenciesNocache.ExampleNoCache();
+            stopwatchNoCache.Stop();
+
+#if DEBUG
+            var traversalsWithoutCache = FileDescriptor.GetAllDependedExtensionsCount;
+            
+            // Verify the problem: massive redundant traversals
+            Assert.Greater(traversalsWithoutCache, 8000, 
+                $"Should have thousands of redundant traversals without cache, but got {traversalsWithoutCache}");
+
+            var improvement = (double) traversalsWithoutCache / Math.Max(1, traversalsWithCache);
+ 
+            Assert.Greater(improvement, 1000, $"Traversals Improvement = WITHOUT cache: {traversalsWithoutCache:N0} / WITH cache: {traversalsWithCache:N0} = {improvement:F0}x should be > 1000x !");
+#endif
+            Assert.Greater(stopwatchNoCache.Elapsed, stopwatchWithCache.Elapsed, $"Traversals time: WITHOUT cache: {stopwatchNoCache.Elapsed} should be > WITH cache: {stopwatchWithCache.Elapsed} !");
+
         }
 
         [Test]
