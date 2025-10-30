@@ -286,7 +286,7 @@ bool CopyToOwnedMsg(google::protobuf::Message** copy, const google::protobuf::Me
   *copy = message.New();
   std::string wire;
   message.SerializePartialToString(&wire);
-  (*copy)->ParsePartialFromArray(wire.data(), wire.size());
+  (*copy)->ParsePartialFromString(wire);
   return true;
 }
 
@@ -334,7 +334,7 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
       return absl::InternalError(
           "Fail to get bytes from py_msg serialized data");
     }
-    if (!(*msg)->ParsePartialFromArray(data, len)) {
+    if (!(*msg)->ParsePartialFromString(absl::string_view(data, len))) {
       Py_DECREF(serialized_pb);
       return absl::InternalError(
           "Couldn't parse py_message to google::protobuf::Message*!");

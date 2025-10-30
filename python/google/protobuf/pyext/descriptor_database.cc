@@ -81,7 +81,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
       return false;
     }
     FileDescriptorProto file_proto;
-    if (!file_proto.ParseFromArray(str, len)) {
+    if (!file_proto.ParseFromString(absl::string_view(str, len))) {
       ABSL_LOG(ERROR)
           << "DescriptorDatabase method did not return a FileDescriptorProto";
       return false;
