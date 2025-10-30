@@ -631,7 +631,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   // FieldWithArena needs to call our protected internal metadata offset
   // constructors.
-  friend class internal::FieldWithArena<RepeatedPtrFieldBase>;
+  friend class internal::FieldWithArena<RepeatedPtrFieldBase>;/*  */
 
   friend google::protobuf::Arena;
 

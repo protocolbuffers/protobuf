@@ -2294,6 +2294,35 @@ cc_test(
 )
 
 cc_test(
+    name = "repeated_ptr_field_unittest",
+    srcs = ["repeated_ptr_field_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":internal_visibility_for_testing",
+        ":lite_test_util",
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/base:config",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/numeric:bits",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "text_format_unittest",
     srcs = ["text_format_unittest.cc"],
     copts = COPTS + select({
