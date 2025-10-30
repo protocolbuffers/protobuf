@@ -11,6 +11,8 @@ package pb;
 
 import "google/protobuf/descriptor.proto";
 
+option go_package = "google.golang.org/protobuf/types/cppfeaturespb";
+
 extend google.protobuf.FeatureSet {
   optional CppFeatures cpp = 1000;
 }
