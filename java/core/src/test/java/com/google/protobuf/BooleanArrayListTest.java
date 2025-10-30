@@ -63,7 +63,7 @@ public class BooleanArrayListTest {
     assertThat((boolean) list.get(0)).isEqualTo(true);
     assertThat((boolean) iterator.next()).isEqualTo(true);
     list.set(0, true);
-    assertThat((boolean) iterator.next()).isEqualTo(false);
+    assertThat((boolean) iterator.next()).isFalse();
 
     list.remove(0);
     try {
