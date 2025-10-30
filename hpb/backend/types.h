@@ -11,10 +11,12 @@
 #include "hpb/multibackend.h"
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 #include "hpb/backend/upb/error.h"
+#include "hpb/backend/upb/internal.h"
 #include "upb/mem/arena.hpp"
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
 #include "google/protobuf/arena.h"
 #include "hpb/backend/cpp/error.h"
+#include "hpb/backend/cpp/internal.h"
 #endif
 
 namespace hpb {

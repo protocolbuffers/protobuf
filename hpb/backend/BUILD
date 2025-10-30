@@ -18,10 +18,12 @@ cc_library(
     ] + select({
         "//hpb:hpb_backend_cpp": [
             "//hpb/backend/cpp:error",
+            "//hpb/backend/cpp:internal",
             "//src/google/protobuf:arena",
         ],
         "//hpb:hpb_backend_upb": [
             "//hpb/backend/upb:error",
+            "//hpb/backend/upb:internal",
             "//upb/mem",
         ],
     }),

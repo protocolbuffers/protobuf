@@ -44,6 +44,12 @@ cc_library(
     visibility = ["//hpb:__subpackages__"],
 )
 
+cc_library(
+    name = "internal",
+    hdrs = ["internal.h"],
+    visibility = ["//hpb:__subpackages__"],
+)
+
 cc_test(
     name = "cpp_test",
     srcs = ["cpp_test.cc"],
