@@ -501,9 +501,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (size != -1) {
       return size;
     }
-
-    memoizedSize = MessageReflection.getSerializedSize(
-        this, getAllFieldsRaw());
+    memoizedSize = MessageReflection.getSerializedSize(this, getAllFieldsRaw());
     return memoizedSize;
   }
 
