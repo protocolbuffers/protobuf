@@ -123,6 +123,11 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     return new MapField<K, V>(defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
 
+  public static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry, int entries) {
+    int mapCapacity = calculateInitialCapacity(entries);
+    return new MapField<K, V>(defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>(mapCapacity));
+  }
+
   private Message convertKeyAndValueToMessage(K key, V value) {
     return converter.convertKeyAndValueToMessage(key, value);
   }
@@ -132,15 +137,21 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   }
 
   private List<Message> convertMapToList(MutabilityAwareMap<K, V> mapData) {
-    List<Message> listData = new ArrayList<Message>();
+    List<Message> listData = new ArrayList<Message>(mapData.size());
     for (Map.Entry<K, V> entry : mapData.entrySet()) {
       listData.add(convertKeyAndValueToMessage(entry.getKey(), entry.getValue()));
     }
     return listData;
   }
 
+  private static int calculateInitialCapacity(int entries) {
+    // Map's default load factor is 0.75. Add 1 to round up.
+    return (int) Math.ceil(entries / (double) 0.75) + 1;
+  }
+
   private MutabilityAwareMap<K, V> convertListToMap(List<Message> listData) {
-    Map<K, V> mapData = new LinkedHashMap<K, V>();
+    int mapCapacity = calculateInitialCapacity(listData.size());
+    Map<K, V> mapData = new LinkedHashMap<K, V>(mapCapacity);
     for (Message item : listData) {
       convertMessageToKeyAndValue(item, mapData);
     }
