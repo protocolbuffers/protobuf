@@ -32,7 +32,6 @@ const char* const kReservedNames[] = {
     "unset",        "use",        "var",          "while",      "xor",
     "yield",        "int",        "float",        "bool",       "string",
     "true",         "false",      "null",         "void",       "iterable"};
-const int kReservedNamesSize = 80;
 
 namespace google {
 namespace protobuf {
@@ -41,8 +40,8 @@ namespace php {
 
 bool IsReservedName(absl::string_view name) {
   std::string lower = absl::AsciiStrToLower(name);
-  for (int i = 0; i < kReservedNamesSize; i++) {
-    if (lower == kReservedNames[i]) {
+  for (auto kReservedName : kReservedNames) {
+    if (lower == kReservedName) {
       return true;
     }
   }

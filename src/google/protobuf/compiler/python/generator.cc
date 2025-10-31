@@ -887,9 +887,9 @@ void Generator::PrintMessages() const {
   for (int i = 0; i < file_->message_type_count(); ++i) {
     std::vector<std::string> to_register;
     PrintMessage(*file_->message_type(i), "", &to_register, false);
-    for (int j = 0; j < to_register.size(); ++j) {
+    for (const auto & j : to_register) {
       printer_->Print("_sym_db.RegisterMessage($name$)\n", "name",
-                      ResolveKeyword(to_register[j]));
+                      ResolveKeyword(j));
     }
     printer_->Print("\n");
   }

@@ -50,8 +50,8 @@ TEST(RepeatedVarint, Int32) {
 
   // Check consistency with the scalar Int32Size.
   size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::Int32Size(v[i]);
+  for (int i : v) {
+    expected += WireFormatLite::Int32Size(i);
   }
 
   EXPECT_EQ(expected, WireFormatLite::Int32Size(v));
@@ -69,8 +69,8 @@ TEST(RepeatedVarint, Int64) {
 
   // Check consistency with the scalar Int64Size.
   size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::Int64Size(v[i]);
+  for (long i : v) {
+    expected += WireFormatLite::Int64Size(i);
   }
 
   EXPECT_EQ(expected, WireFormatLite::Int64Size(v));
@@ -88,8 +88,8 @@ TEST(RepeatedVarint, SInt32) {
 
   // Check consistency with the scalar SInt32Size.
   size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::SInt32Size(v[i]);
+  for (int i : v) {
+    expected += WireFormatLite::SInt32Size(i);
   }
 
   EXPECT_EQ(expected, WireFormatLite::SInt32Size(v));
@@ -107,8 +107,8 @@ TEST(RepeatedVarint, SInt64) {
 
   // Check consistency with the scalar SInt64Size.
   size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::SInt64Size(v[i]);
+  for (long i : v) {
+    expected += WireFormatLite::SInt64Size(i);
   }
 
   EXPECT_EQ(expected, WireFormatLite::SInt64Size(v));
@@ -125,8 +125,8 @@ TEST(RepeatedVarint, UInt32) {
 
   // Check consistency with the scalar UInt32Size.
   size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::UInt32Size(v[i]);
+  for (unsigned int i : v) {
+    expected += WireFormatLite::UInt32Size(i);
   }
 
   EXPECT_EQ(expected, WireFormatLite::UInt32Size(v));
@@ -143,8 +143,8 @@ TEST(RepeatedVarint, UInt64) {
 
   // Check consistency with the scalar UInt64Size.
   size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::UInt64Size(v[i]);
+  for (unsigned long i : v) {
+    expected += WireFormatLite::UInt64Size(i);
   }
 
   EXPECT_EQ(expected, WireFormatLite::UInt64Size(v));
@@ -161,8 +161,8 @@ TEST(RepeatedVarint, Enum) {
 
   // Check consistency with the scalar EnumSize.
   size_t expected = 0;
-  for (int i = 0; i < v.size(); i++) {
-    expected += WireFormatLite::EnumSize(v[i]);
+  for (int i : v) {
+    expected += WireFormatLite::EnumSize(i);
   }
 
   EXPECT_EQ(expected, WireFormatLite::EnumSize(v));
