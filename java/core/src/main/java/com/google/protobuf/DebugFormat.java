@@ -11,7 +11,7 @@ public final class DebugFormat {
   private final boolean isSingleLine;
 
   private TextFormat.Printer getPrinter() {
-    // This assumes that `debugFormatPrinter()` is multi-line by default.
+    // This assumes that ` FormatPrinter()` is multi-line by default.
     TextFormat.Printer printer = TextFormat.debugFormatPrinter();
     if (isSingleLine) {
       return printer.emittingSingleLine(true);
