@@ -625,6 +625,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
 #endif
 
+  LazyField* TryGetLazyField(Arena* arena, int number, FieldType type);
+
  private:
   template <typename Type>
   friend class PrimitiveTypeTraits;
@@ -727,6 +729,8 @@ class PROTOBUF_EXPORT ExtensionSet {
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
 
+
+    virtual LazyField* GetUnderlyingField() = 0;
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
@@ -1853,6 +1857,19 @@ class ExtensionIdentifier {
   const int number_;
   typename TypeTraits::InitType default_value_;
 };
+
+template <typename ExtendeeType, typename TypeTraitsType,
+          internal::FieldType field_type, bool is_packed>
+auto TryGetLazyMessageFromExtensionSet(
+    Arena* arena,
+    const google::protobuf::internal::ExtensionIdentifier<
+        ExtendeeType, TypeTraitsType, field_type, is_packed>& extension,
+    ExtensionSet& set) {
+  static_assert(std::is_base_of_v<
+                MessageLite,
+                std::decay_t<typename TypeTraitsType::Singular::ConstType>>);
+  return set.TryGetLazyField(arena, extension.number(), field_type);
+}
 
 // -------------------------------------------------------------------
 // Generated accessors
