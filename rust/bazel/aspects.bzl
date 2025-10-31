@@ -14,7 +14,7 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
 
-visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/..."])
+visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/...", "//net/proto2/compiler/stubby/cc/build_defs/..."])
 
 CrateMappingInfo = provider(
     doc = "Struct mapping crate name to the .proto import paths",
