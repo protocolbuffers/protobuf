@@ -1085,8 +1085,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   ~CodedOutputStream();
 
   // Returns true if there was an underlying I/O error since this object was
-  // created. On should call Trim before this function in order to catch all
-  // errors.
+  // created. As a side effect, the underlying buffer is flushed.
   bool HadError() {
     cur_ = impl_.FlushAndResetBuffer(cur_);
     ABSL_DCHECK(cur_);
