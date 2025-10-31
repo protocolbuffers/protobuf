@@ -78,6 +78,11 @@ inline std::string PrintUnsignedLiteral(T value) {
   return absl::StrCat(value, "u");
 }
 
+inline size_t DivideRoundUp(size_t a, size_t b) {
+  ABSL_DCHECK_GT(b, 0u);
+  return (a + b - 1) / b;
+}
+
 // Create an expression that evaluates to
 //  "for all i, (_has_bits_[i] & masks[i]) == masks[i]"
 // masks is allowed to be shorter than _has_bits_, but at least one element of
