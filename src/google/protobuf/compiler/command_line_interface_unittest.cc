@@ -2562,7 +2562,7 @@ TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "`java_multiple_files` is not supported in editions 2024 and above");
+      "The `java_multiple_files` behavior is enabled by default");
 }
 
 
@@ -2576,7 +2576,7 @@ TEST_F(CommandLineInterfaceTest, JavaNestInFileClassFor) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "`java_multiple_files` is not supported in editions 2024 and above");
+      "The `java_multiple_files` behavior is enabled by default");
 }
 
 
