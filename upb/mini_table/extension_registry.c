@@ -15,6 +15,8 @@
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/generated_registry.h"
+#include "upb/mini_table/internal/generated_registry.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -89,25 +91,29 @@ failure:
   return status;
 }
 
-#ifdef UPB_LINKARR_DECLARE
-
-UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension);
-
 bool upb_ExtensionRegistry_AddAllLinkedExtensions(upb_ExtensionRegistry* r) {
-  const upb_MiniTableExtension* start = UPB_LINKARR_START(upb_AllExts);
-  const upb_MiniTableExtension* stop = UPB_LINKARR_STOP(upb_AllExts);
-  for (const upb_MiniTableExtension* p = start; p < stop; p++) {
-    // Windows can introduce zero padding, so we have to skip zeroes.
-    if (upb_MiniTableExtension_Number(p) != 0) {
-      if (upb_ExtensionRegistry_Add(r, p) != kUpb_ExtensionRegistryStatus_Ok) {
-        return false;
+  const upb_GeneratedExtensionListEntry* entry =
+      UPB_PRIVATE(upb_generated_extension_list);
+  while (entry != NULL) {
+    for (const upb_MiniTableExtension* p = entry->start; p < entry->stop; p++) {
+      // Windows can introduce zero padding, so we have to skip zeroes.
+      if (upb_MiniTableExtension_Number(p) != 0) {
+        if (upb_ExtensionRegistry_Add(r, p) !=
+            kUpb_ExtensionRegistryStatus_Ok) {
+          return false;
+        }
       }
     }
+    entry = entry->next;
   }
   return true;
 }
 
-#endif  // UPB_LINKARR_DECLARE
+const upb_ExtensionRegistry* upb_ExtensionRegistry_GetGenerated(
+    const upb_GeneratedRegistryRef* genreg) {
+  if (genreg == NULL) return NULL;
+  return genreg->registry;
+}
 
 const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num) {

@@ -89,7 +89,7 @@ Error, UINTPTR_MAX is undefined
 /* If we always read/write as a consistent type to each address, this shouldn't
  * violate aliasing.
  */
-#define UPB_PTR_AT(msg, ofs, type) ((type *)((char *)(msg) + (ofs)))
+#define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
 // A flexible array member may have lower alignment requirements than the struct
 // overall - in that case, it can overlap with the trailing padding of the rest
@@ -527,7 +527,10 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_DECLARE(name, type) \
   extern type __start_linkarr_##name;   \
   extern type __stop_linkarr_##name;    \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
+  UPB_LINKARR_APPEND(name)              \
+  __attribute__((weak)) type UPB_linkarr_internal_empty_##name[1]
+// TODO: Does the sentinel need to be retained?  It breaks on
+// sandbazel_ppc
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
@@ -542,34 +545,64 @@ Error, UINTPTR_MAX is undefined
   extern type __stop_linkarr_##name __asm(  \
       "section$end$__DATA$"                 \
       "__la_" #name);                       \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1]
+  UPB_LINKARR_APPEND(name)                  \
+  __attribute__((weak)) type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
-#elif defined(_MSC_VER) && defined(__clang__)
+#elif defined(_MSC_VER)
 
 /* See:
  *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
  *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
  *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
 
-// Usage of __attribute__ here probably means this is Clang-specific, and would
-// not work on MSVC.
 #define UPB_LINKARR_APPEND(name) \
   __declspec(allocate("la_" #name "$j")) UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type)                               \
-  __declspec(allocate("la_" #name "$a")) type __start_linkarr_##name; \
-  __declspec(allocate("la_" #name "$z")) type __stop_linkarr_##name;  \
-  UPB_LINKARR_APPEND(name) type UPB_linkarr_internal_empty_##name[1] = {0}
+#define UPB_LINKARR_DECLARE(name, type)              \
+  __declspec(allocate("la_" #name "$a"),             \
+             selectany) type __start_linkarr_##name; \
+  __declspec(allocate("la_" #name "$z"),             \
+             selectany) type __stop_linkarr_##name;  \
+  UPB_LINKARR_APPEND(name)                           \
+  __declspec(selectany) type UPB_linkarr_internal_empty_##name[1] = {0}
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #else
 
-// Linker arrays are not supported on this platform.  Make appends a no-op but
-// don't define the other macros.
+// Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
+#define UPB_LINKARR_DECLARE(name, type)
+#define UPB_LINKARR_START(name) (NULL)
+#define UPB_LINKARR_STOP(name) (NULL)
 
+#endif
+
+#if defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
+#define UPB_CONSTRUCTOR(name)                                                \
+  __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
+      name)(void)
+#elif defined(_MSC_VER)
+/*
+ * See: https://stackoverflow.com/questions/1113409
+ *
+ * The /include pragma doesn't work here to prevent optimizers from removing the
+ * constructor, because it forces globally unique names.  Instead, we create a
+ * dummy exported weak symbol that prevent this stripping.
+ */
+#pragma section(".CRT$XCU", long, read)
+#define UPB_CONSTRUCTOR(name)                                                \
+  static void __cdecl UPB_PRIVATE(name)(void);                               \
+  __declspec(allocate(".CRT$XCU"), selectany) void(                          \
+      __cdecl * UPB_PRIVATE(name##_))(void) = UPB_PRIVATE(name);             \
+  __declspec(selectany, dllexport) void* UPB_PRIVATE(name##_force_linkage) = \
+      &UPB_PRIVATE(name##_);                                                 \
+  static void __cdecl UPB_PRIVATE(name)(void)
+
+#else
+// No constructor support, nothing we can do except not break builds.
+#define UPB_CONSTRUCTOR(name) static void UPB_PRIVATE(name)(void)
 #endif
 
 // Future versions of upb will include breaking changes to some APIs.

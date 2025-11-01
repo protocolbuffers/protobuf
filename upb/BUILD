@@ -98,6 +98,7 @@ cc_library(
         "//upb/message:internal",
         "//upb/mini_descriptor",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/wire",
     ] + select({
         ":fasttable_enabled_setting": [
