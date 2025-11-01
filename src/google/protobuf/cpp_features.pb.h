@@ -90,8 +90,8 @@ inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor();
 template <typename T>
 const ::std::string& CppFeatures_StringType_Name(T value) {
-  static_assert(::std::is_same<T, CppFeatures_StringType>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, CppFeatures_StringType> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to StringType_Name().");
   return CppFeatures_StringType_Name(static_cast<CppFeatures_StringType>(value));
 }

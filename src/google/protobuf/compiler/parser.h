@@ -152,12 +152,12 @@ class PROTOBUF_EXPORT Parser final {
 
    public:
     template <typename F,
-              typename = std::enable_if_t<std::is_same<
-                  std::string, decltype(std::declval<F>()())>::value>>
+              typename = std::enable_if_t<std::is_same_v<
+                  std::string, decltype(std::declval<F>()())>>>
     ErrorMaker(F f) {
       static_assert(sizeof(F) <= sizeof(StorageT), "");
       static_assert(alignof(F) <= alignof(StorageT), "");
-      static_assert(std::is_trivially_destructible<F>::value, "");
+      static_assert(std::is_trivially_destructible_v<F>, "");
       ::new (static_cast<void*>(storage_)) F(f);
       func_ = [](const void* p) { return (*reinterpret_cast<const F*>(p))(); };
     }
