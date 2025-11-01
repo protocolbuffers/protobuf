@@ -8086,8 +8086,10 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
           // because that locks the pool's mutex, which we have already locked
           // at this point.
           const EnumValueDescriptor* default_value =
-              LookupSymbolNoPlaceholder(proto.default_value(),
-                                        field->enum_type()->full_name())
+              field->enum_type()
+                  ->file()
+                  ->tables_
+                  ->FindNestedSymbol(field->enum_type(), proto.default_value())
                   .enum_value_descriptor();
 
           if (default_value != nullptr &&
