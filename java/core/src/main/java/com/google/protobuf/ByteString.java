@@ -12,6 +12,8 @@ import static com.google.protobuf.TextFormatEscaper.escapeBytes;
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
 
+import com.google.common.flags.Flag;
+import com.google.common.flags.FlagSpec;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
