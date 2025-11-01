@@ -19,7 +19,9 @@
 #include <string>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/base/attributes.h"
 #include "absl/base/const_init.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
@@ -78,7 +80,7 @@ namespace python {
 
 // Zero-cost mutex wrapper that compiles away to nothing in GIL-enabled builds.
 // Similar to nanobind's ft_mutex pattern.
-class FreeThreadingMutex {
+class ABSL_LOCKABLE ABSL_ATTRIBUTE_WARN_UNUSED FreeThreadingMutex {
  public:
   FreeThreadingMutex() = default;
   explicit constexpr FreeThreadingMutex(absl::ConstInitType)
@@ -96,8 +98,8 @@ class FreeThreadingMutex {
   void Unlock() {}
 #else
   // Free-threaded build: real mutex
-  void Lock() { mutex_.Lock(); }
-  void Unlock() { mutex_.Unlock(); }
+  void Lock() ABSL_EXCLUSIVE_LOCK_FUNCTION() { mutex_.Lock(); }
+  void Unlock() ABSL_UNLOCK_FUNCTION() { mutex_.Unlock(); }
 
  private:
   absl::Mutex mutex_;
@@ -105,12 +107,14 @@ class FreeThreadingMutex {
 };
 
 // RAII lock guard for FreeThreadingMutex
-class FreeThreadingLockGuard {
+class ABSL_SCOPED_LOCKABLE FreeThreadingLockGuard {
  public:
-  explicit FreeThreadingLockGuard(FreeThreadingMutex& mutex) : mutex_(mutex) {
+  explicit FreeThreadingLockGuard(FreeThreadingMutex& mutex)
+      ABSL_EXCLUSIVE_LOCK_FUNCTION(mutex)
+      : mutex_(mutex) {
     mutex_.Lock();
   }
-  ~FreeThreadingLockGuard() { mutex_.Unlock(); }
+  ~FreeThreadingLockGuard() ABSL_UNLOCK_FUNCTION() { mutex_.Unlock(); }
 
   FreeThreadingLockGuard(const FreeThreadingLockGuard&) = delete;
   FreeThreadingLockGuard& operator=(const FreeThreadingLockGuard&) = delete;
@@ -119,18 +123,19 @@ class FreeThreadingLockGuard {
   FreeThreadingMutex& mutex_;
 };
 
+// Mutex to protect interned_descriptors from concurrent access in
+// free-threading Python builds. Zero-cost in GIL-enabled builds.
+// NOTE: Free-threading support is still experimental.
+FreeThreadingMutex interned_descriptors_mutex(absl::kConstInit);
+
 // Store interned descriptors, so that the same C++ descriptor yields the same
 // Python object. Objects are not immortal: this map does not own the
 // references, and items are deleted when the last reference to the object is
 // released.
 // This is enough to support the "is" operator on live objects.
 // All descriptors are stored here.
-absl::flat_hash_map<const void*, PyObject*>* interned_descriptors;
-
-// Mutex to protect interned_descriptors from concurrent access in
-// free-threading Python builds. Zero-cost in GIL-enabled builds.
-// NOTE: Free-threading support is still experimental.
-FreeThreadingMutex interned_descriptors_mutex(absl::kConstInit);
+absl::flat_hash_map<const void*, PyObject*>* interned_descriptors
+    ABSL_PT_GUARDED_BY(interned_descriptors_mutex);
 
 PyObject* PyString_FromCppString(absl::string_view str) {
   return PyUnicode_FromStringAndSize(str.data(),
