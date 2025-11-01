@@ -193,64 +193,50 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
         java::GetJavaType(field) != java::JAVATYPE_MESSAGE) {
       continue;
     }
+    auto cleanup = printer->WithVars(
+        {{"full_classname",
+          java::EscapeKotlinKeywords(
+              name_resolver_->GetClassName(descriptor_, true))},
+         {"camelcase_name", context_->GetFieldGeneratorInfo(field)->name},
+         {"full_name",
+          java::EscapeKotlinKeywords(
+              name_resolver_->GetImmutableClassName(field->message_type()))},
+         {"capitalized_name",
+          context_->GetFieldGeneratorInfo(field)->capitalized_name},
+         {"name",
+          java::EscapeKotlinKeywords(java::GetKotlinPropertyName(
+              context_->GetFieldGeneratorInfo(field)->capitalized_name))}});
     if (field->options().deprecated()) {
-      printer->Print(
-          "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
-          "name", context_->GetFieldGeneratorInfo(field)->name);
+      printer->Emit(R"kt(
+          @kotlin.Deprecated(message = "Field $camelcase_name$ is deprecated")
+      )kt");
     }
     if (!dsl_use_concrete_types_) {
       // We can use `FooOrBuilder`, and it saves code size to generate only one
       // method instead of two.
-      printer->Print(
-          "public val $full_classname$OrBuilder.$camelcase_name$OrNull: "
-          "$full_name$?\n"
-          "  get() = if (has$name$()) get$name$() else null\n\n",
-          "full_classname",
-          java::EscapeKotlinKeywords(
-              name_resolver_->GetClassName(descriptor_, true)),
-          "camelcase_name", context_->GetFieldGeneratorInfo(field)->name,
-          "full_name",
-          java::EscapeKotlinKeywords(
-              name_resolver_->GetImmutableClassName(field->message_type())),
-          "name", context_->GetFieldGeneratorInfo(field)->capitalized_name);
+      printer->Emit(R"kt(
+        public val $full_classname$OrBuilder.$camelcase_name$OrNull: $full_name$?
+          get() = if (has$capitalized_name$()) get$capitalized_name$() else null
+      )kt");
+      printer->Print("\n");
     } else {
       // We don't have `FooOrBuilder`, so we generate `Foo` and `Foo.Builder`
       // methods.
-      printer->Print(
-          "public val $full_classname$.$camelcase_name$OrNull: "
-          "$full_name$?\n"
-          "  get() = if (has$capitalized_name$()) this.$name$ else null\n\n",
-          "full_classname",
-          java::EscapeKotlinKeywords(
-              name_resolver_->GetClassName(descriptor_, true)),
-          "camelcase_name", context_->GetFieldGeneratorInfo(field)->name,
-          "full_name",
-          java::EscapeKotlinKeywords(
-              name_resolver_->GetImmutableClassName(field->message_type())),
-          "capitalized_name",
-          context_->GetFieldGeneratorInfo(field)->capitalized_name, "name",
-          java::EscapeKotlinKeywords(java::GetKotlinPropertyName(
-              context_->GetFieldGeneratorInfo(field)->capitalized_name)));
+      printer->Emit(R"kt(
+        public val $full_classname$.$camelcase_name$OrNull: $full_name$?
+          get() = if (has$capitalized_name$()) this.$name$ else null
+      )kt");
+      printer->Print("\n");
       if (field->options().deprecated()) {
-        printer->Print(
-            "@kotlin.Deprecated(message = \"Field $name$ is deprecated\")\n",
-            "name", context_->GetFieldGeneratorInfo(field)->name);
+        printer->Emit(R"kt(
+          @kotlin.Deprecated(message = "Field $camelcase_name$ is deprecated")
+        )kt");
       }
-      printer->Print(
-          "public val $full_classname$.Builder.$camelcase_name$OrNull: "
-          "$full_name$?\n"
-          "  get() = if (has$capitalized_name$()) this.$name$ else null\n\n",
-          "full_classname",
-          java::EscapeKotlinKeywords(
-              name_resolver_->GetClassName(descriptor_, true)),
-          "camelcase_name", context_->GetFieldGeneratorInfo(field)->name,
-          "full_name",
-          java::EscapeKotlinKeywords(
-              name_resolver_->GetImmutableClassName(field->message_type())),
-          "capitalized_name",
-          context_->GetFieldGeneratorInfo(field)->capitalized_name, "name",
-          java::EscapeKotlinKeywords(java::GetKotlinPropertyName(
-              context_->GetFieldGeneratorInfo(field)->capitalized_name)));
+      printer->Emit(R"kt(
+        public val $full_classname$.Builder.$camelcase_name$OrNull: $full_name$?
+          get() = if (has$capitalized_name$()) this.$name$ else null
+      )kt");
+      printer->Print("\n");
     }
   }
 }
