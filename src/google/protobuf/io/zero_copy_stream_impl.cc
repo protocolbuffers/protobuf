@@ -17,11 +17,9 @@
 #endif
 #include <errno.h>
 
-#include <algorithm>
 #include <istream>
 #include <ostream>
 
-#include "google/protobuf/stubs/common.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/io/io_win32.h"

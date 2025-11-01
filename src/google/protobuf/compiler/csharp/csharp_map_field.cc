@@ -9,7 +9,6 @@
 
 #include <sstream>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"

@@ -8,13 +8,10 @@
 #include <cstdlib>
 #include <string>
 
-#include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/any.h"
-#include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 
 // Must be included last.

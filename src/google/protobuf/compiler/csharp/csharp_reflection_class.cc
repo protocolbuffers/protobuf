@@ -7,8 +7,6 @@
 
 #include "google/protobuf/compiler/csharp/csharp_reflection_class.h"
 
-#include <sstream>
-
 #include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"

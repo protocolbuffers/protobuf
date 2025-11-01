@@ -52,14 +52,12 @@
 
 #include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
-#include "absl/base/log_severity.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/log/globals.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/match.h"
@@ -75,7 +73,6 @@
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/compiler/retention.h"
 #include "google/protobuf/compiler/subprocess.h"
-#include "google/protobuf/compiler/versions.h"
 #include "google/protobuf/compiler/zip_writer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -94,7 +91,6 @@
 #include "google/protobuf/io/io_win32.h"
 #endif
 
-#include "google/protobuf/stubs/platform_macros.h"
 #include "google/protobuf/compiler/notices.h"
 
 // Must be included last.
