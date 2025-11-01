@@ -361,9 +361,9 @@ bool upb_DecodeFast_DoNextRepeated(upb_Decoder* d, const char** ptr,
                                    upb_DecodeFast_Cardinality card,
                                    upb_DecodeFast_TagSize tagsize) {
   int overrun;
-  if (UPB_UNLIKELY(
-          upb_EpsCopyInputStream_IsDoneStatus(&d->input, *ptr, &overrun) !=
-          kUpb_IsDoneStatus_NotDone)) {
+  if (UPB_UNLIKELY(UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
+                       &d->input, *ptr, &overrun) !=
+                   kUpb_IsDoneStatus_NotDone)) {
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_MessageIsDoneFallback, next);
   }
 

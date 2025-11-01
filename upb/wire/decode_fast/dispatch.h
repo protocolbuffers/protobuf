@@ -71,8 +71,8 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
 UPB_FORCEINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_Dispatch(
     UPB_PARSE_PARAMS) {
   int overrun;
-  upb_IsDoneStatus status =
-      upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun);
+  upb_IsDoneStatus status = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
+      &d->input, ptr, &overrun);
 
   if (UPB_UNLIKELY(status != kUpb_IsDoneStatus_NotDone)) {
     // End-of-message or end-of-buffer.

@@ -19,7 +19,8 @@
 UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     UPB_PARSE_PARAMS) {
   int overrun;
-  switch (upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun)) {
+  switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(&d->input, ptr,
+                                                           &overrun)) {
     case kUpb_IsDoneStatus_Done: {
       // We've reach end-of-message.  Sync hasbits and maybe check required
       // fields.
@@ -32,7 +33,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     }
     case kUpb_IsDoneStatus_NeedFallback:
       // We've reached end-of-buffer.  Refresh the buffer.
-      ptr = _upb_EpsCopyInputStream_IsDoneFallbackInline(
+      ptr = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
           &d->input, ptr, overrun, _upb_Decoder_BufferFlipCallback);
 
       // We successfully refreshed the buffer (otherwise the function above
