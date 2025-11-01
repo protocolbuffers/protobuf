@@ -2708,3 +2708,10 @@ message TestMessageForMove_Large {
   repeated string s118 = 118;
   repeated string s119 = 119;
 }
+
+message TestAllTypesAsExtension {
+  extensions 10 to max;
+  extend TestAllTypesAsExtension {
+    TestAllTypes ext = 10;
+  }
+}

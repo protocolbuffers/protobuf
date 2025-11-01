@@ -2395,6 +2395,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           friend class $pb$::MessageLite;
           friend class $pb$::Arena;
+          friend $pbi$::PrivateAccess;
           template <typename T>
           friend class $pb$::Arena::InternalHelper;
           using InternalArenaConstructable_ = void;

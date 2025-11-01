@@ -397,6 +397,13 @@ constexpr std::optional<uintptr_t> EncodePlacementArenaOffsets(
   return arena_bits;
 }
 
+struct PrivateAccess {
+  template <typename T>
+  static auto& GetExtensionSet(T& msg) {
+    return msg._impl_._extensions_;
+  }
+};
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
