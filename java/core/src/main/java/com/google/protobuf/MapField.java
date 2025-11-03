@@ -109,6 +109,18 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     this.listData = null;
   }
 
+  private MapField(Converter<K, V> converter, List<Message> listData) {
+    this.converter = converter;
+    this.isMutable = true;
+    this.mode = StorageMode.LIST;
+    this.mapData = null;
+    this.listData = listData;
+  }
+
+  private MapField(MapEntry<K, V> defaultEntry, List<Message> listData) {
+    this(new ImmutableMessageConverter<K, V>(defaultEntry), listData);
+  }
+
   private MapField(MapEntry<K, V> defaultEntry, StorageMode mode, Map<K, V> mapData) {
     this(new ImmutableMessageConverter<K, V>(defaultEntry), mode, mapData);
   }
@@ -119,11 +131,15 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   }
 
   /** Creates a new mutable empty MapField. */
+  public static <K, V> MapField<K, V> newListMapField(MapEntry<K, V> defaultEntry, int capacity) {
+    return new MapField<K, V>(defaultEntry, new ArrayList<>(capacity));
+  }
+
   public static <K, V> MapField<K, V> newMapField(MapEntry<K, V> defaultEntry) {
     return new MapField<K, V>(defaultEntry, StorageMode.MAP, new LinkedHashMap<K, V>());
   }
 
-  private Message convertKeyAndValueToMessage(K key, V value) {
+  Message convertKeyAndValueToMessage(K key, V value) {
     return converter.convertKeyAndValueToMessage(key, value);
   }
 
