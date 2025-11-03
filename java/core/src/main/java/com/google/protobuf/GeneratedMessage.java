@@ -118,27 +118,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   }
 
   /**
-   * TODO: This method should be removed. It enables parsing directly into an
-   * "immutable" message. Have to leave it for now to support old gencode.
-   *
-   * @deprecated use newBuilder().mergeFrom() instead
-   */
-  @Deprecated
-  protected void mergeFromAndMakeImmutableInternal(
-      CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-      throws InvalidProtocolBufferException {
-    Schema<GeneratedMessage> schema = Protobuf.getInstance().schemaFor(this);
-    try {
-      schema.mergeFrom(this, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
-    } catch (InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (IOException e) {
-      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    }
-    schema.makeImmutable(this);
-  }
-
-  /**
    * Internal helper to return a modifiable map containing all the fields. The returned Map is
    * modifiable so that the caller can add additional extension fields to implement {@link
    * #getAllFields()}.
