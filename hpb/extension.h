@@ -21,6 +21,7 @@
 #include "hpb/ptr.h"
 #include "upb/message/accessors.h"
 #include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/generated_registry.h"
 
 namespace hpb {
 // upb has a notion of an ExtensionRegistry. We expect most callers to use
@@ -66,6 +67,9 @@ class ExtensionRegistry {
 
  private:
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
+  explicit ExtensionRegistry(upb_ExtensionRegistry* registry)
+      : registry_(registry) {}
+
   friend upb_ExtensionRegistry* ::hpb::internal::GetUpbExtensions(
       const ExtensionRegistry& extension_registry);
   upb_ExtensionRegistry* registry_;
@@ -73,10 +77,11 @@ class ExtensionRegistry {
   // TODO: b/379100963 - Introduce ShutdownHpbLibrary
   static const ExtensionRegistry* NewGeneratedRegistry() {
 #if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
-    static hpb::Arena* global_arena = new hpb::Arena();
-    ExtensionRegistry* registry = new ExtensionRegistry(*global_arena);
-    upb_ExtensionRegistry_AddAllLinkedExtensions(registry->registry_);
-    return registry;
+    static const upb_GeneratedRegistryRef* registry_ref =
+        upb_GeneratedRegistry_Load();
+    // Const cast is safe because we're returning a const wrapper.
+    return new ExtensionRegistry(const_cast<upb_ExtensionRegistry*>(
+        upb_GeneratedRegistry_Get(registry_ref)));
 #elif HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
     ExtensionRegistry* registry = new ExtensionRegistry();
     return registry;

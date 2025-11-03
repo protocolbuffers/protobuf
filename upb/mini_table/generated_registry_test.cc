@@ -28,7 +28,7 @@ class GeneratedRegistryTest : public ::testing::Test {
   void SetUp() override {
     ref_ = upb_GeneratedRegistry_Load();
     ASSERT_NE(ref_, nullptr);
-    reg_ = upb_ExtensionRegistry_GetGenerated(ref_);
+    reg_ = upb_GeneratedRegistry_Get(ref_);
     ASSERT_NE(reg_, nullptr);
   }
 
@@ -92,6 +92,10 @@ TEST_F(GeneratedRegistryTest, ReleaseOnError) {
   upb_GeneratedRegistry_Release(nullptr);
 }
 
+TEST_F(GeneratedRegistryTest, GetOnError) {
+  EXPECT_EQ(upb_GeneratedRegistry_Get(nullptr), nullptr);
+}
+
 // On 32-bit systems, the stack size is smaller, so we can't run too many
 // concurrent threads without overflowing the stack.
 constexpr int kRaceIterations = sizeof(void*) < 8 ? 100 : 2000;
@@ -104,7 +108,7 @@ TEST(GeneratedRegistryRaceTest, Load) {
     threads.push_back(std::thread([&, i]() {
       barrier.Block();
       const upb_GeneratedRegistryRef* ref = upb_GeneratedRegistry_Load();
-      EXPECT_NE(upb_ExtensionRegistry_GetGenerated(ref), nullptr);
+      EXPECT_NE(upb_GeneratedRegistry_Get(ref), nullptr);
       refs[i] = ref;
     }));
   }
@@ -129,7 +133,7 @@ TEST(GeneratedRegistryRaceTest, Release) {
 
   for (int i = 0; i < kRaceIterations; ++i) {
     threads.push_back(std::thread([&, i]() {
-      EXPECT_NE(upb_ExtensionRegistry_GetGenerated(refs[i]), nullptr);
+      EXPECT_NE(upb_GeneratedRegistry_Get(refs[i]), nullptr);
       barrier.Block();
       upb_GeneratedRegistry_Release(refs[i]);
     }));
@@ -146,7 +150,7 @@ TEST(GeneratedRegistryRaceTest, LoadRelease) {
     threads.push_back(std::thread([&]() {
       barrier.Block();
       const upb_GeneratedRegistryRef* ref = upb_GeneratedRegistry_Load();
-      EXPECT_NE(upb_ExtensionRegistry_GetGenerated(ref), nullptr);
+      EXPECT_NE(upb_GeneratedRegistry_Get(ref), nullptr);
       upb_GeneratedRegistry_Release(ref);
     }));
   }
@@ -174,7 +178,7 @@ TEST(GeneratedRegistryRaceTest, ReleaseLastAndLoadMultiple) {
       threads.push_back(std::thread([&]() {
         barrier.Block();
         const upb_GeneratedRegistryRef* ref2 = upb_GeneratedRegistry_Load();
-        EXPECT_NE(upb_ExtensionRegistry_GetGenerated(ref2), nullptr);
+        EXPECT_NE(upb_GeneratedRegistry_Get(ref2), nullptr);
         upb_GeneratedRegistry_Release(ref2);
       }));
     }

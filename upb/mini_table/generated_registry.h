@@ -8,6 +8,8 @@
 #ifndef UPB_MINI_TABLE_GENERATED_REGISTRY_H_
 #define UPB_MINI_TABLE_GENERATED_REGISTRY_H_
 
+#include "upb/mini_table/extension_registry.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -46,6 +48,13 @@ UPB_API const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void);
 // NULL is a valid argument and is simply ignored for easier error handling in
 // callers.
 UPB_API void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r);
+
+// Returns the extension registry contained by a reference to the generated
+// registry.
+//
+// The reference must be held for the lifetime of the registry.
+UPB_API const upb_ExtensionRegistry* upb_GeneratedRegistry_Get(
+    const upb_GeneratedRegistryRef* r);
 
 #ifdef __cplusplus
 } /* extern "C" */
