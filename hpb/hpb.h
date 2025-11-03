@@ -31,6 +31,7 @@
 
 namespace hpb {
 
+// trivial change
 template <typename T>
 typename T::Proxy CreateMessage(Arena& arena) {
   return backend::CreateMessage<T>(arena);
