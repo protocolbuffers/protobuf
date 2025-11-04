@@ -1439,8 +1439,8 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
   // Testing every single failure mode would be too much work.  Let's just
   // check a few.
   EXPECT_DEATH(
-      reflection->GetInt32(message,
-                           descriptor->FindFieldByName("optional_int64")),
+      (void)reflection->GetInt32(message,
+                                 descriptor->FindFieldByName("optional_int64")),
       "Protocol Buffer reflection usage error:\n"
       "  Method      : google::protobuf::Reflection::GetInt32\n"
       "  Message type: proto2_unittest\\.TestAllTypes\n"
@@ -1448,7 +1448,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Problem     : Field is not the right type for this message:\n"
       "    Expected  : CPPTYPE_INT32\n"
       "    Field type: CPPTYPE_INT64");
-  EXPECT_DEATH(reflection->GetInt32(
+  EXPECT_DEATH((void)reflection->GetInt32(
                    message, descriptor->FindFieldByName("repeated_int32")),
                "Protocol Buffer reflection usage error:\n"
                "  Method      : google::protobuf::Reflection::GetInt32\n"
@@ -1458,8 +1458,8 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
                "singular field.");
 #ifndef NDEBUG
   EXPECT_DEATH(
-      reflection->GetInt32(foreign,
-                           descriptor->FindFieldByName("optional_int32")),
+      (void)reflection->GetInt32(foreign,
+                                 descriptor->FindFieldByName("optional_int32")),
       "Protocol Buffer reflection usage error:\n"
       "  Method       : google::protobuf::Reflection::GetInt32\n"
       "  Expected type: proto2_unittest.TestAllTypes\n"
@@ -1468,7 +1468,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Problem      : Message is not the right object for reflection");
 #endif
   EXPECT_DEATH(
-      reflection->GetInt32(
+      (void)reflection->GetInt32(
           message,
           unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
       "Protocol Buffer reflection usage error:\n"
@@ -1477,7 +1477,7 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Field       : proto2_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
   EXPECT_DEATH(
-      reflection->HasField(
+      (void)reflection->HasField(
           message,
           unittest::ForeignMessage::descriptor()->FindFieldByName("c")),
       "Protocol Buffer reflection usage error:\n"
