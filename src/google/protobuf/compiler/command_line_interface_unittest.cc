@@ -1762,8 +1762,9 @@ TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedFeature) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto");
   ExpectWarningSubstring(
-      "foo.proto:4:5: warning: Feature pb.TestFeatures.removed_feature has "
-      "been deprecated in edition 2023: Custom feature deprecation warning\n");
+      "foo.proto:4:5: warning: pb.TestFeatures.removed_feature has "
+      "been deprecated in edition 2023: Custom feature "
+      "deprecation warning\n");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_TransitiveDeprecatedFeature) {
@@ -2031,8 +2032,8 @@ TEST_F(CommandLineInterfaceTest, GeneratorFeatureLifetimeError) {
   Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
       "--test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "foo.proto:6:13: Feature pb.TestFeatures.removed_feature has been "
-      "removed in edition 2024");
+      "foo.proto:6:13: pb.TestFeatures.removed_feature has been "
+      "removed in edition 2024:");
 }
 
 TEST_F(CommandLineInterfaceTest, PluginFeatureLifetimeError) {
@@ -2064,8 +2065,8 @@ TEST_F(CommandLineInterfaceTest, PluginFeatureLifetimeError) {
       "foo.proto --plugin=prefix-gen-fake_plugin=",
       plugin_path));
   ExpectErrorSubstring(
-      "foo.proto:6:13: Feature pb.TestFeatures.future_feature wasn't "
-      "introduced until edition 2024");
+      "foo.proto:6:13: pb.TestFeatures.future_feature wasn't introduced "
+      "until edition 2024 and can't be used in edition 2023");
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorNoEditionsSupport) {

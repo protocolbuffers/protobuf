@@ -634,7 +634,21 @@ TEST(FeatureResolverLifetimesTest, RemovedFeature) {
                                                            features, nullptr);
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_feature"),
-                                HasSubstr("removed in edition 2024"))));
+                                HasSubstr("removed in edition 2024:"),
+                                HasSubstr("Custom feature removal error"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, RemovedFeatureWithNoRemovalError) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { same_edition_removed_feature: VALUE1 }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(results.errors,
+              ElementsAre(AllOf(
+                  HasSubstr("pb.TestFeatures.same_edition_removed_feature"),
+                  HasSubstr("removed in edition 2023"), Not(HasSubstr(":")))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
@@ -644,9 +658,11 @@ TEST(FeatureResolverLifetimesTest, NotIntroduced) {
   )pb");
   auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
                                                            features, nullptr);
-  EXPECT_THAT(results.errors,
-              ElementsAre(AllOf(HasSubstr("pb.TestFeatures.future_feature"),
-                                HasSubstr("introduced until edition 2024"))));
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("pb.TestFeatures.future_feature"),
+                        HasSubstr("wasn't introduced until edition 2024"),
+                        HasSubstr("can't be used in edition 2023"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
@@ -730,7 +746,8 @@ TEST(FeatureResolverLifetimesTest, ValueSupportBeforeIntroduced) {
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(
                   HasSubstr("pb.VALUE_LIFETIME_FUTURE"),
-                  HasSubstr("introduced until edition 99997_TEST_ONLY"))));
+                  HasSubstr("wasn't introduced until edition 99997_TEST_ONLY"),
+                  HasSubstr("can't be used in edition 2023"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
@@ -740,10 +757,10 @@ TEST(FeatureResolverLifetimesTest, ValueSupportAfterRemoved) {
   )pb");
   auto results = FeatureResolver::ValidateFeatureLifetimes(
       EDITION_99997_TEST_ONLY, features, nullptr);
-  EXPECT_THAT(
-      results.errors,
-      ElementsAre(AllOf(HasSubstr("pb.VALUE_LIFETIME_REMOVED"),
-                        HasSubstr("removed in edition 99997_TEST_ONLY"))));
+  EXPECT_THAT(results.errors,
+              ElementsAre(AllOf(HasSubstr("pb.VALUE_LIFETIME_REMOVED"),
+                                HasSubstr("removed in edition 99997_TEST_ONLY"),
+                                HasSubstr("Custom feature removal error"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
