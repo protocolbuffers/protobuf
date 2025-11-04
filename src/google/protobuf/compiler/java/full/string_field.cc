@@ -352,8 +352,8 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
   printer->Print(variables_,
-                 "  $name$_ = value;\n"
                  "  $set_has_field_bit_builder$\n"
+                 "  $name$_ = value;\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
