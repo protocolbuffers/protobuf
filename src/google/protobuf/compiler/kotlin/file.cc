@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/context.h"
@@ -68,10 +69,9 @@ void FileGenerator::Generate(io::Printer* printer) {
   }
 }
 
-void FileGenerator::GenerateSiblings(
-    const std::string& package_dir, GeneratorContext* context,
-    std::vector<std::string>* file_list,
-    std::vector<std::string>* annotation_list) {
+void FileGenerator::GenerateSiblings(const std::string& package_dir,
+                                     GeneratorContext* context,
+                                     std::vector<std::string>* file_list) {
   for (int i = 0; i < file_->message_type_count(); i++) {
     const Descriptor* descriptor = file_->message_type(i);
     MessageGenerator* generator = message_generators_[i].get();
@@ -81,7 +81,6 @@ void FileGenerator::GenerateSiblings(
     std::string filename =
         absl::StrCat(package_dir, descriptor->name(), "Kt.kt");
     file_list->push_back(filename);
-    std::string info_full_path = absl::StrCat(filename, ".pb.meta");
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
@@ -113,9 +112,10 @@ void FileGenerator::GenerateSiblings(
     generator->GenerateTopLevelMembers(&printer);
 
     if (options_.annotate_code) {
-      auto info_output = open_file(info_full_path);
-      annotations.SerializeToZeroCopyStream(info_output.get());
-      annotation_list->push_back(info_full_path);
+      std::string annotations_base64;
+      absl::Base64Escape(annotations.SerializeAsString(), &annotations_base64);
+      printer.Emit({{"annotations_base64", annotations_base64}},
+                   "// kotlin-proto-inline-metadata: $annotations_base64$\n");
     }
   }
 }

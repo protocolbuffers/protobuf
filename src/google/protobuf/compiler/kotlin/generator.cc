@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -80,7 +81,6 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
   file_options.generate_shared_code = true;
 
   std::vector<std::string> all_files;
-  std::vector<std::string> all_annotations;
 
   std::unique_ptr<FileGenerator> file_generator =
       std::make_unique<FileGenerator>(file, file_options);
@@ -94,11 +94,8 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       java::JavaPackageToDir(file_generator->java_package());
   std::string kotlin_filename = absl::StrCat(
       package_dir, file_generator->GetKotlinClassname(), ".proto.kt");
+
   all_files.push_back(kotlin_filename);
-  std::string info_full_path = absl::StrCat(kotlin_filename, ".pb.meta");
-  if (file_options.annotate_code) {
-    all_annotations.push_back(info_full_path);
-  }
 
   // Generate main kotlin file.
   auto output = open_file(kotlin_filename);
@@ -110,12 +107,13 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       file_options.annotate_code ? &annotation_collector : nullptr);
 
   file_generator->Generate(&printer);
-  file_generator->GenerateSiblings(package_dir, context, &all_files,
-                                   &all_annotations);
+  file_generator->GenerateSiblings(package_dir, context, &all_files);
 
   if (file_options.annotate_code) {
-    auto info_output = open_file(info_full_path);
-    annotations.SerializeToZeroCopyStream(info_output.get());
+    std::string annotations_base64;
+    absl::Base64Escape(annotations.SerializeAsString(), &annotations_base64);
+    printer.Emit({{"annotations_base64", annotations_base64}},
+                 "// kotlin-proto-inline-metadata: $annotations_base64$\n");
   }
 
   // Generate output list if requested.
@@ -128,18 +126,6 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       srclist_printer.Print("$filename$\n", "filename", all_file);
     }
   }
-
-  if (!file_options.annotation_list_file.empty()) {
-    // Generate output list.  This is just a simple text file placed in a
-    // deterministic location which lists the .kt files being generated.
-    auto annotation_list_raw_output =
-        open_file(file_options.annotation_list_file);
-    io::Printer annotation_list_printer(annotation_list_raw_output.get(), '$');
-    for (auto& all_annotation : all_annotations) {
-      annotation_list_printer.Print("$filename$\n", "filename", all_annotation);
-    }
-  }
-
   return true;
 }
 
