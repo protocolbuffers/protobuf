@@ -1799,15 +1799,14 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                 R"cc(
                   bool PackFrom(const $pb$::Message& message) {
                     $DCHK$_NE(&message, this);
-                    return $pbi$::InternalPackFrom(message, mutable_type_url(),
-                                                   _internal_mutable_value());
+                    return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
                   }
                   bool PackFrom(const $pb$::Message& message,
                                 ::absl::string_view type_url_prefix) {
                     $DCHK$_NE(&message, this);
                     return $pbi$::InternalPackFrom(message, type_url_prefix,
                                                    mutable_type_url(),
-                                                   _internal_mutable_value());
+                                                   mutable_value());
                   }
                   bool UnpackTo($pb$::Message* $nonnull$ message) const {
                     return $pbi$::InternalUnpackTo(_internal_type_url(),
@@ -1825,7 +1824,7 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                           T, const $pb$::Message&>::value>::type>
                   bool PackFrom(const T& message) {
                     return $pbi$::InternalPackFrom<T>(
-                        message, mutable_type_url(), _internal_mutable_value());
+                        message, mutable_type_url(), mutable_value());
                   }
                   template <
                       typename T,
@@ -1833,9 +1832,9 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                           T, const $pb$::Message&>::value>::type>
                   bool PackFrom(const T& message,
                                 ::absl::string_view type_url_prefix) {
-                    return $pbi$::InternalPackFrom<T>(
-                        message, type_url_prefix, mutable_type_url(),
-                        _internal_mutable_value());
+                    return $pbi$::InternalPackFrom<T>(message, type_url_prefix,
+                                                      mutable_type_url(),
+                                                      mutable_value());
                   }
                   template <
                       typename T,
@@ -1851,15 +1850,14 @@ void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
                 R"cc(
                   template <typename T>
                   bool PackFrom(const T& message) {
-                    return $pbi$::InternalPackFrom(message, mutable_type_url(),
-                                                   _internal_mutable_value());
+                    return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
                   }
                   template <typename T>
                   bool PackFrom(const T& message,
                                 ::absl::string_view type_url_prefix) {
                     return $pbi$::InternalPackFrom(message, type_url_prefix,
                                                    mutable_type_url(),
-                                                   _internal_mutable_value());
+                                                   mutable_value());
                   }
                   template <typename T>
                   bool UnpackTo(T* $nonnull$ message) const {
