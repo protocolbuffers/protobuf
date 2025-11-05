@@ -96,14 +96,22 @@ bool has_longpath_prefix(const char_type* path) {
 }
 
 template <typename char_type>
+bool has_unc_prefix(const char_type* path) {
+  return path && path[0] == '\\' && path[1] == '\\' &&
+         path[2] != 0 && path[2] != '?' && path[2] != '.';
+}
+
+template <typename char_type>
 bool is_separator(char_type c) {
   return c == '/' || c == '\\';
 }
 
-// Returns true if the path starts with a drive specifier (e.g. "c:\").
+// Returns true if the path starts with a drive specifier (e.g. "c:\")
+// or if the path is a unc path.
 template <typename char_type>
 bool is_path_absolute(const char_type* path) {
-  return has_drive_letter(path) && is_separator(path[2]);
+  return (has_drive_letter(path) && is_separator(path[2])) ||
+         has_unc_prefix(path);
 }
 
 template <typename char_type>
@@ -204,7 +212,7 @@ bool as_windows_path(const char* path, wstring* result) {
     *result = wpath;
     return true;
   }
-  if (is_separator(path[0]) || is_drive_relative(path)) {
+  if ((is_separator(path[0]) && !has_unc_prefix(path)) || is_drive_relative(path)) {
     return false;
   }
 
@@ -218,13 +226,34 @@ bool as_windows_path(const char* path, wstring* result) {
     ::GetCurrentDirectoryW(size, wcwd.get());
     wpath = join_paths(wcwd.get(), wpath);
   }
-  wpath = normalize(wpath);
+
+  // For UNC paths, prefer WinAPI canonicalization to preserve the UNC prefix and
+  // resolve "." / ".." safely;
+  bool is_unc = has_unc_prefix(wpath.c_str());
+  if (is_unc) {
+    DWORD need = ::GetFullPathNameW(wpath.c_str(), 0, nullptr, nullptr);
+    if (need != 0) {
+      std::unique_ptr<WCHAR[]> buf(new WCHAR[need]);
+      DWORD written = ::GetFullPathNameW(wpath.c_str(), need, buf.get(), nullptr);
+      if (written != 0 && written < need) {
+        wpath.assign(buf.get());
+      }
+    }
+  } else {
+    wpath = normalize(wpath);
+  }
+
   if (!has_longpath_prefix(wpath.c_str())) {
     // Add the "\\?\" prefix unconditionally. This way we prevent the Win32 API
     // from processing the path and "helpfully" removing trailing dots from the
     // path, for example.
     // See https://github.com/bazelbuild/bazel/issues/2935
-    wpath = wstring(L"\\\\?\\") + wpath;
+    if (is_unc) {
+      // Use "\\?\UNC\" for UNC paths.
+      wpath = wstring(L"\\\\?\\UNC\\") + wpath.substr(2);  // strip leading "\\"
+    } else {
+      wpath = wstring(L"\\\\?\\") + wpath;
+    }
   }
   *result = wpath;
   return true;
@@ -428,7 +457,7 @@ bool mbs_to_wcs(const char* s, wstring* out, bool inUtf8) {
   }
   std::unique_ptr<WCHAR[]> wstr(new WCHAR[size]);
   MultiByteToWideChar(
-      inUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, wstr.get(), size + 1);
+      inUtf8 ? CP_UTF8 : CP_ACP, 0, s, -1, wstr.get(), size);
   out->assign(wstr.get());
   return true;
 }

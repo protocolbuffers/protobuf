@@ -2906,12 +2906,46 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     io::FileOutputStream out(fd);
     io::Printer printer(&out, '$');
 
+    // Make/Ninja-safe escaping for target and dependency paths.
+    // - On Windows, normalize backslashes to forward slashes for stability.
+    // - Escape space, tab, '#', and ':' by prefixing with backslash.
+    // - Escape '$' as '$$' (critical for paths like "\\wsl$").
+    // Use PrintRaw to avoid io::Printer format-time "$" processing.
+    auto makefile_escape = [](std::string path) {
+#if defined(_WIN32)
+      for (char& ch : path) {
+        if (ch == '\\') ch = '/';
+      }
+#endif
+      std::string result;
+      result.reserve(path.size() * 2);
+      for (char ch : path) {
+        switch (ch) {
+          case ' ':
+          case '\t':
+          case '#':
+          case ':':
+            result.push_back('\\');
+            result.push_back(ch);
+            break;
+          case '$':
+            result.push_back('$');  // Make requires "$" to be doubled
+            result.push_back('$');
+            break;
+          default:
+            result.push_back(ch);
+        }
+      }
+      return result;
+    };
+
     for (size_t i = 0; i < output_filenames.size(); ++i) {
-      printer.Print(output_filenames[i]);
+      const std::string escaped = makefile_escape(output_filenames[i]);
+      printer.PrintRaw(escaped);
       if (i == output_filenames.size() - 1) {
-        printer.Print(":");
+        printer.PrintRaw(":");
       } else {
-        printer.Print(" \\\n");
+        printer.PrintRaw(" \\\n");
       }
     }
 
@@ -2921,8 +2955,10 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
       std::string disk_file;
       if (source_tree &&
           source_tree->VirtualFileToDiskFile(virtual_file, &disk_file)) {
-        printer.Print(" $disk_file$", "disk_file", disk_file);
-        if (i < file_set.file_size() - 1) printer.Print("\\\n");
+        const std::string escaped = makefile_escape(disk_file);
+        printer.PrintRaw(" ");
+        printer.PrintRaw(escaped);
+        if (i < file_set.file_size() - 1) printer.PrintRaw("\\\n");
       } else {
         std::cerr << "Unable to identify path for file " << virtual_file
                   << std::endl;
