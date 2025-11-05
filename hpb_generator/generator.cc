@@ -54,6 +54,44 @@ void WriteForwardDecls(const google::protobuf::FileDescriptor* file, Context& ct
   WriteTypedefForwardingHeader(file, this_file_messages, ctx);
 }
 
+void SketchClassDecls(const google::protobuf::Descriptor* message,
+                      const google::protobuf::FileDescriptor* file, Context& ctx) {
+  const auto msgs = SortedMessages(file);
+  for (auto message : msgs) {
+    ctx.Emit({{"type", QualifiedClassName(message)},
+              {"class_name", ClassName(message)},
+              {"namespace",
+               absl::StrCat(absl::StrReplaceAll(file->package(), {{".", "::"}}),
+                            "::protos")}},
+             R"cc(
+               // message stubs
+               namespace internal {
+               class $class_name$Access {};
+               class $class_name$Proxy {};
+               class $class_name$CProxy {};
+               }  // namespace internal
+
+               class $class_name$ {
+                public:
+                 using CProxy = internal::$class_name$CProxy;
+                 using Proxy = internal::$class_name$Proxy;
+                 using Access = internal::$class_name$Access;
+
+                 $class_name$() = default;
+
+                private:
+                 $class_name$($type$* msg) : msg_(msg) {}
+
+                 $type$* msg_;
+
+                 $type$* msg() const { return msg_; }
+
+                 // friend struct ::hpb::internal::PrivateAccess;
+               };
+             )cc");
+  }
+}
+
 void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
     EmitFileWarning(file, ctx);
@@ -98,43 +136,18 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
       // Write Class and Enums.
       WriteEnumDeclarations(this_file_enums, ctx);
       ctx.Emit("\n");
-      // TODO: class decls
+
+      for (auto message : this_file_messages) {
+        // Too upb specific.
+        /*WriteMessageClassDeclarations(message, this_file_exts,
+           this_file_enums, ctx);*/
+        SketchClassDecls(message, file, ctx);
+      }
+      ctx.Emit("\n");
+
       // TODO: extension identifiers
     });
 
-    const auto msgs = SortedMessages(file);
-    for (auto message : msgs) {
-      ctx.Emit({{"type", QualifiedClassName(message)},
-                {"class_name", ClassName(message)},
-                {"namespace", absl::StrCat(absl::StrReplaceAll(file->package(),
-                                                               {{".", "::"}}),
-                                           "::protos")}},
-               R"cc(
-#include "hpb/internal/internal.h"
-
-                 // message stubs
-                 namespace $namespace$ {
-
-                 class $class_name$ {
-                  public:
-                   using CProxy = bool;
-                   using Proxy = bool;
-                   using Access = bool;
-
-                   $class_name$() = default;
-
-                  private:
-                   $class_name$($type$* msg) : msg_(msg) {}
-
-                   $type$* msg_;
-
-                   $type$* msg() const { return msg_; }
-
-                   friend struct ::hpb::internal::PrivateAccess;
-                 };
-                 }  // namespace $namespace$
-               )cc");
-    }
     ctx.Emit(
         "#include "
         "\"hpb/internal/os_macros_restore.inc\"\n");
@@ -307,6 +320,9 @@ void WriteHeaderMessageForwardDecls(const google::protobuf::FileDescriptor* file
   if (ctx.options().backend == Backend::UPB) {
     ctx.Emit({{"upb_filename", UpbCFilename(file)}},
              "#include \"$upb_filename$\"\n");
+  } else if (ctx.options().backend == Backend::CPP) {
+    ctx.Emit({{"cpp_header", ProtoFilename(file)}},
+             "#include \"$cpp_header$\"\n");
   }
   WriteForwardDecls(file, ctx);
   // Import forward-declaration of types in dependencies.

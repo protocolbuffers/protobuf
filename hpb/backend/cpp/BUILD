@@ -48,11 +48,12 @@ cc_test(
     name = "cpp_test",
     srcs = ["cpp_test.cc"],
     deps = [
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        #  "//hpb_generator/tests:test_model_hpb_proto",
+        "//hpb_generator/tests:trivial_hpb_proto",
         "//hpb",
         "//hpb:arena",
         "//hpb:ptr",
-        "//hpb_generator/tests:test_model_hpb_proto",
-        "@googletest//:gtest",
-        "@googletest//:gtest_main",
     ],
 )
