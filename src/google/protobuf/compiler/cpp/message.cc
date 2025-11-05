@@ -1374,7 +1374,7 @@ class AccessorVerifier {
 
 template <bool kIsV2>
 void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
-    const FieldDescriptor* field, io::Printer* p) const {
+    const FieldDescriptor* field, io::Printer* p, bool try_batch) const {
   absl::AnyInvocable<void()> emit_body = [&] {
     const auto& gen = field_generators_.get(field);
     if constexpr (!kIsV2) {
@@ -1443,7 +1443,8 @@ void MessageGenerator::EmitUpdateByteSizeForField(
         [&] { MaybeEmitUpdateCachedHasbits(field, p, cached_has_word_index); }},
        {"check_and_update_byte_size_for_field",
         [&]() {
-          EmitCheckAndUpdateByteSizeForField</*kIsV2=*/false>(field, p);
+          EmitCheckAndUpdateByteSizeForField</*kIsV2=*/false>(
+              field, p, /*try_batch=*/false);
         }}},
       R"cc(
         $comment$;
@@ -5627,7 +5628,8 @@ void MessageGenerator::GenerateByteSizeV2(io::Printer* p) {
 }
 
 void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
-                                                  io::Printer* p) const {
+                                                  io::Printer* p,
+                                                  bool try_batch) const {
   absl::AnyInvocable<void()> emit_body = [&] {
   };
   if (!HasHasbit(field, options_)) {
