@@ -1,6 +1,6 @@
 "Repository rule that downloads a pre-compiled protoc from our official release for a single platform."
 
-load(":prebuilt_tool_integrity.bzl", "RELEASED_BINARY_INTEGRITY")
+load(":prebuilt_tool_integrity.bzl", "RELEASED_BINARY_INTEGRITY", "RELEASE_VERSION")
 load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 
 def release_version_to_artifact_name(release_version, platform):
@@ -18,14 +18,13 @@ def release_version_to_artifact_name(release_version, platform):
     )
 
 def _prebuilt_protoc_repo_impl(rctx):
-    release_version = rctx.attr.version
     filename = release_version_to_artifact_name(
-        release_version,
+        RELEASE_VERSION,
         rctx.attr.platform,
     )
     rctx.download_and_extract(
         url = "https://github.com/protocolbuffers/protobuf/releases/download/{}/{}".format(
-            release_version,
+            RELEASE_VERSION,
             filename,
         ),
         sha256 = RELEASED_BINARY_INTEGRITY[filename],
@@ -53,10 +52,6 @@ prebuilt_protoc_repo = repository_rule(
             doc = "A platform that protobuf ships a release for",
             mandatory = True,
             values = PROTOBUF_PLATFORMS.keys(),
-        ),
-        "version": attr.string(
-            doc = "Release tag from protocolbuffers/protobuf repo, e.g. 'v25.3'",
-            mandatory = True,
         ),
     },
 )
