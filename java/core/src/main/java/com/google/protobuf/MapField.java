@@ -193,6 +193,14 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     mode = StorageMode.MAP;
   }
 
+  public int size() {
+    if (mode == StorageMode.MAP) {
+      return mapData.size();
+    } else {
+      return listData.size();
+    }
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public boolean equals(
