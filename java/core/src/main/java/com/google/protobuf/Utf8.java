@@ -201,7 +201,7 @@ final class Utf8 {
   // a protocol buffer local exception. This exception is then caught in CodedOutputStream so it can
   // fallback to more lenient behavior.
 
-  static class UnpairedSurrogateException extends IllegalArgumentException {
+  private static class UnpairedSurrogateException extends Exception {
     UnpairedSurrogateException(int index, int length) {
       super("Unpaired surrogate at index " + index + " of " + length);
     }
@@ -211,9 +211,6 @@ final class Utf8 {
    * Returns the number of bytes in the UTF-8-encoded form of {@code sequence}. For a string, this
    * method is equivalent to {@code string.getBytes(UTF_8).length}, but is more efficient in both
    * time and space.
-   *
-   * @throws IllegalArgumentException if {@code sequence} contains ill-formed UTF-16 (unpaired
-   *     surrogates)
    */
   static int encodedLength(String string) {
     // Warning to maintainers: this implementation is highly optimized.
@@ -232,7 +229,15 @@ final class Utf8 {
       if (c < 0x800) {
         utf8Length += ((0x7f - c) >>> 31); // branch free!
       } else {
-        utf8Length += encodedLengthGeneral(string, i);
+        try {
+          utf8Length += encodedLengthGeneral(string, i);
+        } catch (UnpairedSurrogateException e) {
+          // Our hand rolled loops don't handle unpaired surrogates here. This should be
+          // exceptionally rare, so we fallback to the naive implementation to find out the
+          // length that the Java internal implementation will return for this string after
+          // replacement characters.
+          return string.getBytes(Internal.UTF_8).length;
+        }
         break;
       }
     }
@@ -245,7 +250,8 @@ final class Utf8 {
     return utf8Length;
   }
 
-  private static int encodedLengthGeneral(String string, int start) {
+  private static int encodedLengthGeneral(String string, int start)
+      throws UnpairedSurrogateException {
     int utf16Length = string.length();
     int utf8Length = 0;
     for (int i = start; i < utf16Length; i++) {
@@ -695,9 +701,29 @@ final class Utf8 {
       return new String(resultArr, 0, resultPos);
     }
 
+    protected int encodeUtf8Naive(String in, byte[] out, int offset, int length) {
+      byte[] bytes = in.getBytes(Internal.UTF_8);
+      if (bytes.length - offset > length) {
+        throw new ArrayIndexOutOfBoundsException(
+            "Not enough space in output buffer to encode UTF-8 string");
+      }
+      System.arraycopy(bytes, 0, out, offset, bytes.length);
+      return offset + bytes.length;
+    }
+
+    protected void encodeUtf8Naive(String in, ByteBuffer out) {
+      final byte[] bytes = in.getBytes(Internal.UTF_8);
+      try {
+        out.put(bytes);
+      } catch (BufferOverflowException unused) {
+        throw new ArrayIndexOutOfBoundsException(
+            "Not enough space in output buffer to encode UTF-8 string");
+      }
+    }
+
     /**
      * Encodes an input character sequence ({@code in}) to UTF-8 in the target array ({@code out}).
-     * For a string, this method is similar to
+     * For a string, this method is functionally identical to
      *
      * <pre>{@code
      * byte[] a = string.getBytes(UTF_8);
@@ -705,10 +731,10 @@ final class Utf8 {
      * return offset + a.length;
      * }</pre>
      *
-     * but is more efficient in both time and space. One key difference is that this method requires
-     * paired surrogates, and therefore does not support chunking. While {@code
-     * String.getBytes(UTF_8)} replaces unpaired surrogates with the default replacement character,
-     * this method throws {@link UnpairedSurrogateException}.
+     * but may be implemented differently for efficiency purposes.
+     *
+     * <p>Matching {@code String.getBytes(UTF_8)} this replaces unpaired surrogates with a
+     * replacement character.
      *
      * <p>To ensure sufficient space in the output buffer, either call {@link #encodedLength} to
      * compute the exact amount needed, or leave room for {@code Utf8.MAX_BYTES_PER_CHAR *
@@ -719,8 +745,6 @@ final class Utf8 {
      * @param out the target array
      * @param offset the starting offset in {@code bytes} to start writing at
      * @param length the length of the {@code bytes}, starting from {@code offset}
-     * @throws UnpairedSurrogateException if {@code sequence} contains ill-formed UTF-16 (unpaired
-     *     surrogates)
      * @throws ArrayIndexOutOfBoundsException if {@code sequence} encoded in UTF-8 is longer than
      *     {@code bytes.length - offset}
      * @return the new offset, equivalent to {@code offset + Utf8.encodedLength(sequence)}
@@ -739,8 +763,6 @@ final class Utf8 {
      *
      * @param in the source character sequence to be encoded
      * @param out the target buffer
-     * @throws UnpairedSurrogateException if {@code in} contains ill-formed UTF-16 (unpaired
-     *     surrogates)
      * @throws ArrayIndexOutOfBoundsException if {@code in} encoded in UTF-8 is longer than {@code
      *     out.remaining()}
      */
@@ -968,7 +990,7 @@ final class Utf8 {
           // four UTF-8 bytes
           final char low;
           if (i + 1 == in.length() || !Character.isSurrogatePair(c, (low = in.charAt(++i)))) {
-            throw new UnpairedSurrogateException((i - 1), utf16Length);
+            return encodeUtf8Naive(in, out, offset, length);
           }
           int codePoint = Character.toCodePoint(c, low);
           out[j++] = (byte) ((0xF << 4) | (codePoint >>> 18));
@@ -976,11 +998,11 @@ final class Utf8 {
           out[j++] = (byte) (0x80 | (0x3F & (codePoint >>> 6)));
           out[j++] = (byte) (0x80 | (0x3F & codePoint));
         } else {
-          // If we are surrogates and we're not a surrogate pair, always throw an
-          // UnpairedSurrogateException instead of an ArrayOutOfBoundsException.
+          // If we are surrogates and we're not a surrogate pair, retry with the replacement
+          // characters encoder instead of an ArrayOutOfBoundsException.
           if ((Character.MIN_SURROGATE <= c && c <= Character.MAX_SURROGATE)
               && (i + 1 == in.length() || !Character.isSurrogatePair(c, in.charAt(i + 1)))) {
-            throw new UnpairedSurrogateException(i, utf16Length);
+            return encodeUtf8Naive(in, out, offset, length);
           }
           throw new ArrayIndexOutOfBoundsException(
               "Not enough space in output buffer to encode UTF-8 string");
@@ -1037,7 +1059,10 @@ final class Utf8 {
             // bytes
             final char low;
             if (inIx + 1 == inLength || !isSurrogatePair(c, (low = in.charAt(++inIx)))) {
-              throw new UnpairedSurrogateException(inIx, inLength);
+              // Unpaired surrogate, fall back to the naive encoder that will do replacement
+              // characters.
+              encodeUtf8Naive(in, out);
+              return;
             }
             // TODO: Consider using putInt() to improve performance.
             int codePoint = toCodePoint(c, low);
@@ -1429,25 +1454,17 @@ final class Utf8 {
     }
 
     @Override
-    int encodeUtf8(final String in, final byte[] out, final int offset, final int length) {
-      byte[] bytes = in.getBytes(Internal.UTF_8);
-      if (bytes.length - offset > length) {
-        throw new ArrayIndexOutOfBoundsException(
-            "Not enough space in output buffer to encode UTF-8 string");
-      }
-      System.arraycopy(bytes, 0, out, offset, bytes.length);
-      return offset + bytes.length;
+    int encodeUtf8(String in, byte[] out, int offset, int length) {
+      // On our servers with strings that have optimized internals, empirically doing the naive
+      // thing is faster than our best fancy loops.
+      return encodeUtf8Naive(in, out, offset, length);
     }
 
     @Override
     protected void encodeUtf8Internal(String in, ByteBuffer out) {
-      byte[] bytes = in.getBytes(Internal.UTF_8);
-      try {
-        out.put(bytes);
-      } catch (BufferOverflowException unused) {
-        throw new ArrayIndexOutOfBoundsException(
-            "Not enough space in output buffer to encode UTF-8 string");
-      }
+      // On our servers with strings that have optimized internals, empirically doing the naive
+      // thing is faster than our best fancy loops.
+      encodeUtf8Naive(in, out);
     }
 
     /**
