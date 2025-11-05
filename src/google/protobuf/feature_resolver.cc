@@ -254,7 +254,7 @@ absl::Status ValidateExtension(const Descriptor& feature_set,
 
 void MaybeInsertEdition(Edition edition, Edition maximum_edition,
                         absl::btree_set<Edition>& editions) {
-  if (edition <= maximum_edition) {
+  if (edition <= maximum_edition || edition == EDITION_UNSTABLE) {
     editions.insert(edition);
   }
 }
@@ -504,12 +504,14 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
 
 absl::StatusOr<FeatureResolver> FeatureResolver::Create(
     Edition edition, const FeatureSetDefaults& compiled_defaults) {
-  if (edition < compiled_defaults.minimum_edition()) {
+  if (edition < compiled_defaults.minimum_edition() &&
+      edition != EDITION_UNSTABLE) {
     return Error("Edition ", edition,
                  " is earlier than the minimum supported edition ",
                  compiled_defaults.minimum_edition());
   }
-  if (compiled_defaults.maximum_edition() < edition) {
+  if (compiled_defaults.maximum_edition() < edition &&
+      edition != EDITION_UNSTABLE) {
     return Error("Edition ", edition,
                  " is later than the maximum supported edition ",
                  compiled_defaults.maximum_edition());
