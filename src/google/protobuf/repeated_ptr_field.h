@@ -71,9 +71,9 @@ class MapFieldBase;
 
 class MapFieldBase;
 
-template <typename Element>
+template <typename It>
 class RepeatedPtrIterator;
-template <typename Element>
+template <typename It, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator;
 template <typename T>
 class RepeatedPtrFieldBackInsertIterator;
@@ -1131,9 +1131,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   // Custom STL-like iterator that iterates over and returns the underlying
   // pointers to Element rather than Element itself.
-  using pointer_iterator = internal::RepeatedPtrOverPtrsIterator<Element>;
+  using pointer_iterator =
+      internal::RepeatedPtrOverPtrsIterator<Element*, void*>;
   using const_pointer_iterator =
-      internal::RepeatedPtrOverPtrsIterator<const Element>;
+      internal::RepeatedPtrOverPtrsIterator<const Element* const,
+                                            const void* const>;
 
   constexpr RepeatedPtrField();
 
@@ -2193,41 +2195,42 @@ struct IteratorConceptSupport<Traits,
 // The VoidPtr template parameter holds the type-agnostic pointer value
 // referenced by the iterator.  It should either be "void *" for a mutable
 // iterator, or "const void* const" for a constant iterator.
-template <typename Element>
+template <typename Element, typename VoidPtr>
 class RepeatedPtrOverPtrsIterator {
  private:
-  using traits = std::iterator_traits<Element**>;
-
-  using ElementPtr =
-      std::conditional_t<std::is_const_v<Element>, Element* const, Element*>;
-  using VoidPtr =
-      std::conditional_t<std::is_const_v<Element>, const void* const, void*>;
+  using traits =
+      std::iterator_traits<typename std::remove_const<Element>::type*>;
 
  public:
   using value_type = typename traits::value_type;
   using difference_type = typename traits::difference_type;
-  using pointer = ElementPtr*;
-  using reference = ElementPtr&;
+  using pointer = Element*;
+  using reference = Element&;
   using iterator_category = typename traits::iterator_category;
   using iterator_concept = typename IteratorConceptSupport<traits>::tag;
 
-  using iterator = RepeatedPtrOverPtrsIterator<Element>;
+  using iterator = RepeatedPtrOverPtrsIterator<Element, VoidPtr>;
 
   RepeatedPtrOverPtrsIterator() : it_(nullptr) {}
   explicit RepeatedPtrOverPtrsIterator(VoidPtr* it) : it_(it) {}
 
-  // Allow "upcasting" from RepeatedPtrOverPtrsIterator<T> to
-  // RepeatedPtrOverPtrsIterator<const T>.
+  // Allows "upcasting" from RepeatedPtrOverPtrsIterator<T**> to
+  // RepeatedPtrOverPtrsIterator<const T*const*>.
+  template <
+      typename OtherElement, typename OtherVoidPtr,
+      typename std::enable_if<
+          std::is_convertible<OtherElement*, pointer>::value &&
+          std::is_convertible<OtherVoidPtr, VoidPtr>::value>::type* = nullptr>
   RepeatedPtrOverPtrsIterator(
-      const RepeatedPtrOverPtrsIterator<std::remove_const_t<Element>>& other)
+      const RepeatedPtrOverPtrsIterator<OtherElement, OtherVoidPtr>& other)
       : it_(other.it_) {}
 
   // dereferenceable
   PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
-    return *reinterpret_cast<pointer>(it_);
+    return *reinterpret_cast<Element*>(it_);
   }
   PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
-    return reinterpret_cast<pointer>(it_);
+    return reinterpret_cast<Element*>(it_);
   }
 
   // {inc,dec}rementable
@@ -2297,7 +2300,7 @@ class RepeatedPtrOverPtrsIterator {
   }
 
  private:
-  template <typename OtherElement>
+  template <typename OtherElement, typename OtherVoidPtr>
   friend class RepeatedPtrOverPtrsIterator;
 
   // The internal iterator.

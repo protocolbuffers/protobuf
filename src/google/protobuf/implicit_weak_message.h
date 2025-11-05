@@ -182,8 +182,10 @@ struct WeakRepeatedPtrField {
 
   typedef internal::RepeatedPtrIterator<MessageLite> iterator;
   typedef internal::RepeatedPtrIterator<const MessageLite> const_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<MessageLite> pointer_iterator;
-  typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite>
+  typedef internal::RepeatedPtrOverPtrsIterator<MessageLite*, void*>
+      pointer_iterator;
+  typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite* const,
+                                                const void* const>
       const_pointer_iterator;
 
   bool empty() const { return base().empty(); }
