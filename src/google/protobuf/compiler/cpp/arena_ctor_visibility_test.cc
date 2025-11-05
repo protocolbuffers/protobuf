@@ -18,22 +18,22 @@ using proto2_unittest::TestAllTypes;
 
 TEST(MessageConstructorTest, RegularCtor) {
   using T = proto2_unittest::TestAllTypes;
-  EXPECT_TRUE((std::is_constructible<T>::value));
+  EXPECT_TRUE((std::is_constructible_v<T>));
 }
 
 TEST(MessageConstructorTest, RegularCopyCtor) {
   using T = proto2_unittest::TestAllTypes;
-  EXPECT_TRUE((std::is_constructible<T, const T&>::value));
+  EXPECT_TRUE((std::is_constructible_v<T, const T&>));
 }
 
 TEST(MessageConstructorTest, ArenaCtor) {
   using T = proto2_unittest::TestAllTypes;
-  EXPECT_FALSE((std::is_constructible<T, Arena*>::value));
+  EXPECT_FALSE((std::is_constructible_v<T, Arena*>));
 }
 
 TEST(MessageConstructorTest, ArenaCopyCtor) {
   using T = proto2_unittest::TestAllTypes;
-  EXPECT_FALSE((std::is_constructible<T, Arena*, const T&>::value));
+  EXPECT_FALSE((std::is_constructible_v<T, Arena*, const T&>));
 }
 
 }  // namespace

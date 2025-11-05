@@ -38,7 +38,7 @@ class MapWireFieldTypeTraits {};
                                WireFormatLite::TYPE_MESSAGE,             \
                            Type*, CType>;                                \
     using MapEntryAccessorType =                                         \
-        std::conditional_t<std::is_enum<Type>::value, int, Type>;        \
+        std::conditional_t<std::is_enum_v<Type>, int, Type>;             \
     static const WireFormatLite::WireType kWireType =                    \
         WireFormatLite::WIRETYPE_##WireFormatType;                       \
   };

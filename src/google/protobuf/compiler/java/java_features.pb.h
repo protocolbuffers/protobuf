@@ -100,8 +100,8 @@ inline constexpr int JavaFeatures_NestInFileClassFeature_NestInFileClass_NestInF
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor();
 template <typename T>
 const ::std::string& JavaFeatures_NestInFileClassFeature_NestInFileClass_Name(T value) {
-  static_assert(::std::is_same<T, JavaFeatures_NestInFileClassFeature_NestInFileClass>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, JavaFeatures_NestInFileClassFeature_NestInFileClass> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to NestInFileClass_Name().");
   return JavaFeatures_NestInFileClassFeature_NestInFileClass_Name(static_cast<JavaFeatures_NestInFileClassFeature_NestInFileClass>(value));
 }
@@ -133,8 +133,8 @@ inline constexpr int JavaFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 
 PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_Utf8Validation_descriptor();
 template <typename T>
 const ::std::string& JavaFeatures_Utf8Validation_Name(T value) {
-  static_assert(::std::is_same<T, JavaFeatures_Utf8Validation>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, JavaFeatures_Utf8Validation> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Utf8Validation_Name().");
   return JavaFeatures_Utf8Validation_Name(static_cast<JavaFeatures_Utf8Validation>(value));
 }
