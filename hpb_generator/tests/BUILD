@@ -22,6 +22,7 @@ load(
 load(
     "//hpb/bazel:hpb_proto_library.bzl",
     "hpb_proto_library",
+    "hpb_proto_library_cpp",
 )
 
 package(default_applicable_licenses = ["//:license"])
@@ -133,6 +134,29 @@ hpb_proto_library(
     name = "basic_test_editions_proto",
     visibility = ["//visibility:private"],
     deps = [":basic_editions_proto"],
+)
+
+proto_library(
+    name = "trivial_proto",
+    srcs = [
+        "trivial.proto",
+    ],
+)
+
+hpb_proto_library(
+    name = "trivial_hpb_proto",
+    visibility = [
+        "//hpb:__subpackages__",
+    ],
+    deps = [":trivial_proto"],
+)
+
+hpb_proto_library_cpp(
+    name = "trivial_hpb_cpp_proto",
+    visibility = [
+        "//hpb:__subpackages__",
+    ],
+    deps = [":trivial_proto"],
 )
 
 proto_library(

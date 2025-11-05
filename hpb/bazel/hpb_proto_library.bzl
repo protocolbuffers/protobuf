@@ -15,6 +15,7 @@ load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:google_cc_proto_library.bzl", "CCWrappedCcInfo", "cc_proto_aspect")
 load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
 def upb_use_cpp_toolchain():
@@ -70,11 +71,21 @@ def _hpb_proto_rule_impl(ctx):
 
     if _HpbWrappedCcInfo in dep:
         cc_info = dep[_HpbWrappedCcInfo].cc_info
-    elif UpbWrappedCcInfo in dep:
+    elif UpbWrappedCcInfo in dep:  # prob ded
         cc_info = dep[UpbWrappedCcInfo].cc_info
     else:
         fail("proto_library rule must generate UpbWrappedCcInfo or " +
              "_HpbWrappedCcInfo (aspect should have handled this).")
+
+    if CCWrappedCcInfo in dep:
+        cc_info = cc_common.merge_cc_infos(direct_cc_infos = [cc_info, dep[CCWrappedCcInfo].cc_info])
+
+    #if CCWrappedCcInfo in dep:
+    #    cc_info += dep[CCWrappedCcInfo].cc_info
+
+    #for dep in ctx.attr.proto_deps:
+    #    if CcInfo in dep:
+    #        cc_info = cc_common.merge_cc_infos(direct_cc_infos = [cc_info, dep[CcInfo]])
 
     lib = cc_info.linking_context.linker_inputs.to_list()[0].libraries[0]
     files = _filter_none([
@@ -93,12 +104,22 @@ def _get_proto_deps(ctx):
 
 def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
     deps = _get_proto_deps(ctx) + ctx.attr._upbprotos
+
+    # transitive deps
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
     dep_ccinfos += [dep[_HpbWrappedCcInfo].cc_info for dep in deps if _HpbWrappedCcInfo in dep]
-    if UpbWrappedCcInfo not in target:
-        fail("Target should have UpbWrappedCcInfo provider")
-    dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+    dep_ccinfos += [dep[CCWrappedCcInfo].cc_info for dep in deps if CCWrappedCcInfo in dep]
+
+    #if UpbWrappedCcInfo not in target and CCWrappedCcInfo not in target:
+    #    fail("Target should have UpbWrappedCcInfo provider or _CCWrappedCcInfo provider.")
+    #fail(UpbWrappedCcInfo in target)
+    if UpbWrappedCcInfo in target:
+        dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+
+    if CCWrappedCcInfo in target:
+        dep_ccinfos.append(target[CCWrappedCcInfo].cc_info)
+
     proto_info = target[ProtoInfo]
 
     if not getattr(ctx.rule.attr, "srcs", []):
@@ -125,6 +146,10 @@ def _upb_cc_proto_library_aspect_impl(target, ctx):
 
 _hpb_proto_library_aspect = aspect(
     attrs = {
+        #"proto_deps": attr.label_list(
+        #    aspects = [cc_proto_aspect],
+        #    providers = [ProtoInfo],
+        #),
         "_hpb_lang_toolchain": attr.label(
             default = "//hpb_generator:toolchain",
         ),
@@ -140,18 +165,32 @@ _hpb_proto_library_aspect = aspect(
                 "//hpb:repeated_field",
             ],
         ),
+        "_cppprotos": attr.label_list(
+            default = [
+                "@abseil-cpp//absl/log:absl_check",
+                "@abseil-cpp//absl/strings",
+                "@abseil-cpp//absl/status:statusor",
+            ],
+        ),
+        "_hpb_backend": attr.label(
+            default = "//hpb:hpb_backend",
+        ),
     },
     exec_groups = {
         "proto_compiler": exec_group(),
     },
     implementation = _upb_cc_proto_library_aspect_impl,
+    # provide = hpb
     provides = [
         _HpbWrappedCcInfo,
         _WrappedCcGeneratedSrcsInfo,
     ],
+    # required = upb, so keep upb name
     required_aspect_providers = [
         UpbWrappedCcInfo,
+        #CCWrappedCcInfo,
     ],
+    #requires = [cc_proto_aspect],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = upb_use_cpp_toolchain(),
@@ -165,7 +204,23 @@ hpb_proto_library = rule(
             aspects = [
                 upb_proto_library_aspect,
                 _hpb_proto_library_aspect,
+                #    cc_proto_aspect,
             ],
+            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
+        ),
+        #"proto_deps": attr.label_list(
+        #    aspects = [cc_proto_aspect],
+        #    providers = [ProtoInfo],
+        #),
+    },
+)
+
+hpb_proto_library_cpp = rule(
+    implementation = _hpb_proto_rule_impl,
+    attrs = {
+        "deps": attr.label_list(
+            aspects = [cc_proto_aspect, _hpb_proto_library_aspect],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],
         ),
