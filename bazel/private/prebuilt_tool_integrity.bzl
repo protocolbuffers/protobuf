@@ -6,6 +6,8 @@ so that the integrity of the prebuilt tools is included in the release artifact.
 The checked in content is only here to allow load() statements in the sources to resolve.
 """
 
+RELEASE_VERSION = "v33.0"
+
 # Fetched from the last release of protobuf, so the example can work
 RELEASED_BINARY_INTEGRITY = {
   "MODULE.bazel.intoto.jsonl": "32ee438bf7e3a210a6b7d5e2d272900a2e7f4a1b4f0992fdf0490281771cac3e",
