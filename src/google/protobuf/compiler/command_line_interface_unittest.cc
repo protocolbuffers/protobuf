@@ -3565,7 +3565,77 @@ TEST_F(CommandLineInterfaceTest, DescriptorSetOptionRetentionOverride) {
 }
 
 #ifdef _WIN32
-// TODO: Figure out how to write test on windows.
+
+TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile_Windows_NormalizeAndEscape) {
+  // Arrange: place protos under a path containing a '$' to exercise Make/Ninja escaping
+  // and use backslashes in --proto_path/--test_out to ensure normalization to '/'.
+  CreateTempFile("wsl$/src/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("wsl$/src/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
+      "--test_out=$tmpdir\\wsl$\\out --proto_path=$tmpdir\\wsl$\\src bar.proto");
+
+  ExpectNoErrors();
+
+  const std::string content = ReadFile("manifest");
+
+  // Dollar signs are doubled (e.g. //wsl$$/...), and path separators are '/'.
+  EXPECT_NE(content.find("wsl$$/out/bar.proto.MockCodeGenerator.test_generator:"),
+            std::string::npos);
+  EXPECT_NE(content.find(" wsl$$/src/foo.proto"), std::string::npos);
+  EXPECT_NE(content.find(" wsl$$/src/bar.proto"), std::string::npos);
+  EXPECT_NE(content.find("$$"), std::string::npos);  // '$' escaped
+  EXPECT_EQ(content.find('\\'), std::string::npos); // no backslashes remain
+}
+
+TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile_Windows_EmptyWhenNoTargets) {
+  // Arrange
+  CreateTempFile("wsl$/src/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("wsl$/src/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar { optional Foo foo = 1; }\n");
+
+  // No --*_out specified -> no targets; depfile should exist but be empty.
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest "
+      "--proto_path=$tmpdir\\wsl$\\src bar.proto");
+
+  ExpectNoErrors();
+
+  const std::string content = ReadFile("manifest");
+  EXPECT_TRUE(content.empty());
+}
+
+TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFile_Windows_RelativeDotProtoPath) {
+  // Verify that --proto_path=. with CWD set works and reports no
+  // "directory does not exist" / "Could not make proto path relative" errors.
+  SwitchToTempDirectory();
+  CreateTempFile("wsl$/foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("wsl$/bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar { optional Foo foo = 1; }\n");
+
+  File::CreateDir(absl::StrCat(temp_directory(), "/wsl$"), 0777);
+  File::ChangeWorkingDirectory(absl::StrCat(temp_directory(), "/wsl$"));
+
+  Run("protocol_compiler --dependency_out=manifest --proto_path=. --test_out=. "
+      "bar.proto");
+
+  ExpectNoErrors();
+}
+
 #else
 TEST_F(CommandLineInterfaceTest, WriteDependencyManifestFileGivenTwoInputs) {
   CreateTempFile("foo.proto",

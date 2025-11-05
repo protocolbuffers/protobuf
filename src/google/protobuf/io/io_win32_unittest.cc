@@ -581,8 +581,11 @@ TEST_F(IoWin32Test, AsWindowsPathTest) {
   // do too. Neither can be converted to a drive-specifying absolute Windows
   // path.
   ASSERT_EQ(testonly_utf8_to_winpath("/absolute/unix/path"), L"");
-  // Though valid on Windows, we also don't support UNC paths (\\UNC\\blah).
-  ASSERT_EQ(testonly_utf8_to_winpath("\\driveless\\absolute"), L"");
+  // UNC paths are supported: expect a long-path UNC prefix (\\?\UNC\...).
+  ASSERT_EQ(testonly_utf8_to_winpath("\\\\server\\share\\folder"),
+            L"\\\\?\\UNC\\server\\share\\folder");
+  ASSERT_EQ(testonly_utf8_to_winpath("\\\\wsl$\\Ubuntu-22.04\\home"),
+            L"\\\\?\\UNC\\wsl$\\Ubuntu-22.04\\home");
   // Though valid in cmd.exe, drive-relative paths are not supported.
   ASSERT_EQ(testonly_utf8_to_winpath("c:foo"), L"");
   ASSERT_EQ(testonly_utf8_to_winpath("c:/foo"), L"\\\\?\\c:\\foo");
