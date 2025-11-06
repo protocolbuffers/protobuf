@@ -214,7 +214,8 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
     kPathsFieldNumber = 1,
   };
   // repeated string paths = 1;
-  int paths_size() const;
+  [[nodiscard]] int paths_size()
+      const;
   private:
   int _internal_paths_size() const;
 

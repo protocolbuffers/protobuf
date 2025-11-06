@@ -392,7 +392,8 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 
   public:
   // .google.protobuf.Any value = 2;
-  bool has_value() const;
+  [[nodiscard]] bool has_value()
+      const;
   void clear_value() ;
   const ::google::protobuf::Any& value() const;
   [[nodiscard]] ::google::protobuf::Any* PROTOBUF_NULLABLE release_value();
@@ -657,7 +658,8 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
     kPackedFieldNumber = 8,
   };
   // repeated .google.protobuf.Option options = 9;
-  int options_size() const;
+  [[nodiscard]] int options_size()
+      const;
   private:
   int _internal_options_size() const;
 
@@ -976,7 +978,8 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
     kNumberFieldNumber = 2,
   };
   // repeated .google.protobuf.Option options = 3;
-  int options_size() const;
+  [[nodiscard]] int options_size()
+      const;
   private:
   int _internal_options_size() const;
 
@@ -1207,7 +1210,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
     kSyntaxFieldNumber = 6,
   };
   // repeated .google.protobuf.Field fields = 2;
-  int fields_size() const;
+  [[nodiscard]] int fields_size()
+      const;
   private:
   int _internal_fields_size() const;
 
@@ -1224,7 +1228,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
   ::google::protobuf::Field* PROTOBUF_NONNULL add_fields();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& fields() const;
   // repeated string oneofs = 3;
-  int oneofs_size() const;
+  [[nodiscard]] int oneofs_size()
+      const;
   private:
   int _internal_oneofs_size() const;
 
@@ -1246,7 +1251,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 
   public:
   // repeated .google.protobuf.Option options = 4;
-  int options_size() const;
+  [[nodiscard]] int options_size()
+      const;
   private:
   int _internal_options_size() const;
 
@@ -1293,7 +1299,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 
   public:
   // .google.protobuf.SourceContext source_context = 5;
-  bool has_source_context() const;
+  [[nodiscard]] bool has_source_context()
+      const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
   [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();
@@ -1510,7 +1517,8 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
     kSyntaxFieldNumber = 5,
   };
   // repeated .google.protobuf.EnumValue enumvalue = 2;
-  int enumvalue_size() const;
+  [[nodiscard]] int enumvalue_size()
+      const;
   private:
   int _internal_enumvalue_size() const;
 
@@ -1527,7 +1535,8 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
   ::google::protobuf::EnumValue* PROTOBUF_NONNULL add_enumvalue();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& enumvalue() const;
   // repeated .google.protobuf.Option options = 3;
-  int options_size() const;
+  [[nodiscard]] int options_size()
+      const;
   private:
   int _internal_options_size() const;
 
@@ -1574,7 +1583,8 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 
   public:
   // .google.protobuf.SourceContext source_context = 4;
-  bool has_source_context() const;
+  [[nodiscard]] bool has_source_context()
+      const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
   [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();

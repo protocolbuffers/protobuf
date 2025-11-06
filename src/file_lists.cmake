@@ -1189,6 +1189,8 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/message/test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test_proto2.proto
+  ${protobuf_SOURCE_DIR}/upb/test/custom_options.proto
+  ${protobuf_SOURCE_DIR}/upb/test/custom_options_unlinked.proto
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/empty.proto
   ${protobuf_SOURCE_DIR}/upb/test/proto3_test.proto

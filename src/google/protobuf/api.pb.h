@@ -444,7 +444,8 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
     kSyntaxFieldNumber = 7,
   };
   // repeated .google.protobuf.Option options = 6;
-  int options_size() const;
+  [[nodiscard]] int options_size()
+      const;
   private:
   int _internal_options_size() const;
 
@@ -746,7 +747,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
     kSyntaxFieldNumber = 7,
   };
   // repeated .google.protobuf.Method methods = 2;
-  int methods_size() const;
+  [[nodiscard]] int methods_size()
+      const;
   private:
   int _internal_methods_size() const;
 
@@ -763,7 +765,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   ::google::protobuf::Method* PROTOBUF_NONNULL add_methods();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& methods() const;
   // repeated .google.protobuf.Option options = 3;
-  int options_size() const;
+  [[nodiscard]] int options_size()
+      const;
   private:
   int _internal_options_size() const;
 
@@ -780,7 +783,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options() const;
   // repeated .google.protobuf.Mixin mixins = 6;
-  int mixins_size() const;
+  [[nodiscard]] int mixins_size()
+      const;
   private:
   int _internal_mixins_size() const;
 
@@ -842,7 +846,8 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 
   public:
   // .google.protobuf.SourceContext source_context = 5;
-  bool has_source_context() const;
+  [[nodiscard]] bool has_source_context()
+      const;
   void clear_source_context() ;
   const ::google::protobuf::SourceContext& source_context() const;
   [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();

@@ -271,7 +271,8 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
     kValuesFieldNumber = 1,
   };
   // repeated .google.protobuf.Value values = 1;
-  int values_size() const;
+  [[nodiscard]] int values_size()
+      const;
   private:
   int _internal_values_size() const;
 
@@ -469,7 +470,8 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
     kFieldsFieldNumber = 1,
   };
   // map<string, .google.protobuf.Value> fields = 1;
-  int fields_size() const;
+  [[nodiscard]] int fields_size()
+      const;
   private:
   int _internal_fields_size() const;
 
@@ -718,7 +720,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
     kListValueFieldNumber = 6,
   };
   // .google.protobuf.NullValue null_value = 1;
-  bool has_null_value() const;
+  [[nodiscard]] bool has_null_value()
+      const;
   void clear_null_value() ;
   ::google::protobuf::NullValue null_value() const;
   void set_null_value(::google::protobuf::NullValue value);
@@ -729,7 +732,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   public:
   // double number_value = 2;
-  bool has_number_value() const;
+  [[nodiscard]] bool has_number_value()
+      const;
   void clear_number_value() ;
   double number_value() const;
   void set_number_value(double value);
@@ -740,7 +744,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   public:
   // string string_value = 3;
-  bool has_string_value() const;
+  [[nodiscard]] bool has_string_value()
+      const;
   void clear_string_value() ;
   const ::std::string& string_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -756,7 +761,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   public:
   // bool bool_value = 4;
-  bool has_bool_value() const;
+  [[nodiscard]] bool has_bool_value()
+      const;
   void clear_bool_value() ;
   bool bool_value() const;
   void set_bool_value(bool value);
@@ -767,7 +773,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   public:
   // .google.protobuf.Struct struct_value = 5;
-  bool has_struct_value() const;
+  [[nodiscard]] bool has_struct_value()
+      const;
   private:
   bool _internal_has_struct_value() const;
 
@@ -786,7 +793,8 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   public:
   // .google.protobuf.ListValue list_value = 6;
-  bool has_list_value() const;
+  [[nodiscard]] bool has_list_value()
+      const;
   private:
   bool _internal_has_list_value() const;
 
@@ -815,7 +823,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   void set_has_bool_value();
   void set_has_struct_value();
   void set_has_list_value();
-  inline bool has_kind() const;
+  [[nodiscard]] inline bool has_kind() const;
   inline void clear_has_kind();
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<0, 6,
