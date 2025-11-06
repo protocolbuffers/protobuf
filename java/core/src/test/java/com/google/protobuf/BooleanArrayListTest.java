@@ -391,7 +391,7 @@ public class BooleanArrayListTest {
     toRemove.addBoolean(false);
     toRemove.remove(0);
     assertThat(toRemove).hasSize(1);
-    assertThat((boolean) toRemove.get(0)).isEqualTo(false);
+    assertThat((boolean) toRemove.get(0)).isFalse();
   }
 
   @Test
