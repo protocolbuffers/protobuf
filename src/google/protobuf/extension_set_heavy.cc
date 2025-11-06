@@ -436,7 +436,6 @@ bool ExtensionSet::ShouldRegisterAtThisTime(
 }
 #endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
