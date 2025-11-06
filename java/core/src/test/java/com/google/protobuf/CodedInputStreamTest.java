@@ -1363,9 +1363,8 @@ public class CodedInputStreamTest {
     for (InputType inputType : InputType.values()) {
       if (inputType == InputType.STREAM
           || inputType == InputType.STREAM_ITER_DIRECT
-          || inputType == InputType.ITER_DIRECT
-          || inputType == InputType.NIO_DIRECT) {
-        // Aliasing doesn't apply to stream-backed or direct-backed CIS.
+          || inputType == InputType.ITER_DIRECT) {
+        // Aliasing doesn't apply to stream-backed CIS.
         continue;
       }
 
