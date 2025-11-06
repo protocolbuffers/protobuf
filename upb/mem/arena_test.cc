@@ -446,7 +446,7 @@ class Environment {
   }
 
   std::shared_ptr<const upb::Arena> IndexedNonNullArena(size_t index) {
-    absl::MutexLock lock(&mutex_);
+    absl::MutexLock lock(mutex_);
     std::shared_ptr<const upb::Arena>& ret = arenas_[index];
     if (!ret) ret = std::make_shared<const upb::Arena>();
     return ret;
@@ -475,7 +475,7 @@ class Environment {
   void SwapRandomArena(absl::BitGen& gen, std::shared_ptr<const upb::Arena>& a,
                        size_t min_index) {
     size_t i = RandomIndex(gen, min_index);
-    absl::MutexLock lock(&mutex_);
+    absl::MutexLock lock(mutex_);
     arenas_[i].swap(a);
   }
 
