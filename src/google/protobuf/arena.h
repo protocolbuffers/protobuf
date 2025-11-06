@@ -293,7 +293,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   // again.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static void Destroy(T* PROTOBUF_NONNULL obj) {
-    if (InternalGetArena(obj) == nullptr) delete obj;
+    if (obj->GetArena() == nullptr) delete obj;
   }
 
   // Allocates memory with the specific size and alignment.
@@ -414,21 +414,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       a->InternalSwap(b);
     }
 
-    static Arena* PROTOBUF_NULLABLE GetArena(T* PROTOBUF_NONNULL p) {
-      return GetArena(Rank1{}, p);
-    }
-
-    template <typename U>
-    static auto GetArena(Rank1, U* PROTOBUF_NONNULL p)
-        -> EnableIfArena<decltype(p->GetArena())> {
-      return p->GetArena();
-    }
-
-    template <typename U>
-    static Arena* PROTOBUF_NULLABLE GetArena(Rank0, U* PROTOBUF_NULLABLE) {
-      return nullptr;
-    }
-
     // If an object type T satisfies the appropriate protocol, it is deemed
     // "arena compatible" and handled more efficiently because this interface
     // (i) passes the arena pointer to the created object so that its
@@ -538,13 +523,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     friend class TestUtil::ReflectionTester;
   };
 
-
-  // Provides access to protected GetArena to generated messages.
-  // For internal use only.
-  template <typename T>
-  static Arena* PROTOBUF_NULLABLE InternalGetArena(T* PROTOBUF_NONNULL p) {
-    return InternalHelper<T>::GetArena(p);
-  }
 
   // Helper typetraits that indicates support for arenas in a type T at compile
   // time. This is public only to allow construction of higher-level templated

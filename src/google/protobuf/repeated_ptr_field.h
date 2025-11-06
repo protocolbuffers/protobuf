@@ -1023,9 +1023,7 @@ class GenericTypeHandler {
     };
   }
 
-  static inline Arena* GetArena(Type* value) {
-    return Arena::InternalGetArena(value);
-  }
+  static inline Arena* GetArena(Type* value) { return value->GetArena(); }
 
   static inline void Delete(Type* value, Arena* arena) {
     static_assert(std::is_base_of_v<MessageLite, Type>);
