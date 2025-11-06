@@ -53,7 +53,7 @@ MiniTable#0 {
       .number = 7
       .offset = 24
       .presence = 66 (hasbit=66)
-      .submsg_index = 2
+      .submsg_index = 1
       .type = 14
       .mode = 42 (Scalar | 4Byte)
       .subenum = MiniTableEnum#2
@@ -83,7 +83,7 @@ MiniTable#0 {
       .number = 11
       .offset = 88
       .presence = 70 (hasbit=70)
-      .submsg_index = 1
+      .submsg_index = 2
       .type = 11
       .mode = c2 (Scalar | 8Byte)
       .submsg = MiniTable#3

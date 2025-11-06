@@ -106,7 +106,7 @@ typedef union {
 // from an array of MiniTableSubs.
 static const upb_MiniTable* _upb_MiniTableSubs_MessageByField(
     const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field) {
-  return *subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
+  return subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
 }
 
 // Returns the MiniTableEnum corresponding to a given MiniTableField
@@ -926,7 +926,7 @@ void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
     do {
       UPB_ASSERT(upb_MiniTableField_CType(oneof) == kUpb_CType_Message);
       const upb_MiniTable* oneof_sub =
-          *mt->UPB_PRIVATE(subs)[oneof->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(
+          mt->UPB_PRIVATE(subs)[oneof->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(
               submsg);
       UPB_ASSERT(!oneof_sub);
     } while (upb_MiniTable_NextOneofField(mt, &oneof));
@@ -1079,7 +1079,6 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           int op, wireval* val) {
   const upb_MiniTableSubInternal* subs = layout->UPB_PRIVATE(subs);
   uint8_t mode = field->UPB_PRIVATE(mode);
-  upb_MiniTableSubInternal ext_sub;
 
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTableExtension* ext_layout =
@@ -1091,14 +1090,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
     }
     d->original_msg = msg;
     msg = &ext->data.UPB_PRIVATE(ext_msg_val);
-    if (upb_MiniTableField_IsSubMessage(&ext->ext->UPB_PRIVATE(field))) {
-      ext_sub.UPB_PRIVATE(submsg) =
-          &ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
-    } else {
-      ext_sub.UPB_PRIVATE(subenum) =
-          ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(subenum);
-    }
-    subs = &ext_sub;
+    subs = &ext->ext->UPB_PRIVATE(sub);
   }
 
   switch (mode & kUpb_FieldMode_Mask) {
