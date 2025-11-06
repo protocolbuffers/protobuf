@@ -67,6 +67,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
