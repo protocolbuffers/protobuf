@@ -1157,20 +1157,40 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   }
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
-  Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
+  // Count the number of varint (same as number of bytes with 0 in top bit)
+  // and preallocte space in repeated field.
+  int len = 0;
+  auto ptr2 = ptr;
   do {
+    ptr2 += sizeof(TagType);
+    // Defend against overflowing available data due to malformed input of
+    // infinite number of bytes with top bit set. Longest legal varint is 10
+    // bytes, which is also < 16 bytes of slop.
+    int limit = 10;
+    while ((*ptr2 & 0x80) && limit--) ptr2++;
+    len++;
+    ptr2++;
+  } while (ctx->DataAvailable(ptr2) &&
+           UnalignedLoad<TagType>(ptr2) == expected_tag);
+  int added = 0;
+  field.Reserve(field.size() + len);
+  // Allows us to skip SOO checks.
+  FieldType* x = field.AddNAlreadyReserved(len);
+  do {
+    ABSL_DCHECK(ctx->DataAvailable(ptr));
+    ABSL_DCHECK_EQ(UnalignedLoad<TagType>(ptr), expected_tag);
     ptr += sizeof(TagType);
     FieldType tmp;
     ptr = ParseVarint(ptr, &tmp);
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+      field.Truncate(x - field.data());
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
-    field.AddWithArena(arena, ZigZagDecodeHelper<FieldType, zigzag>(tmp));
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+    added++;
+    *x = ZigZagDecodeHelper<FieldType, zigzag>(tmp);
+    x++;
+  } while (added < len);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
