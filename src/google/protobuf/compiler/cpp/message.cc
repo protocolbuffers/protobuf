@@ -835,7 +835,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                 p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
                              .AnnotatedAs(field)},
                         R"cc(
-                          $deprecated_attr $int $name_size$() $const_impl$;
+                          [[nodiscard]] $deprecated_attr $int $name_size$()
+                              $const_impl$;
                         )cc");
 
                 p->Emit({Sub("_internal_name_size",
@@ -854,7 +855,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                 p->Emit({Sub("has_name", absl::StrCat("has_", name))
                              .AnnotatedAs(field)},
                         R"cc(
-                          $deprecated_attr $bool $has_name$() $const_impl$;
+                          [[nodiscard]] $deprecated_attr $bool $has_name$()
+                              $const_impl$;
                         )cc");
               }},
              {"internal_hazzer",
@@ -2224,7 +2226,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           // Generate oneof function declarations
           for (auto oneof : OneOfRange(descriptor_)) {
             p->Emit({{"oneof_name", oneof->name()}}, R"cc(
-              inline bool has_$oneof_name$() const;
+              [[nodiscard]] inline bool has_$oneof_name$() const;
               inline void clear_has_$oneof_name$();
             )cc");
           }

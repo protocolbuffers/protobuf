@@ -1146,7 +1146,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
     kIsExtensionFieldNumber = 2,
   };
   // required string name_part = 1;
-  bool has_name_part() const;
+  [[nodiscard]] bool has_name_part()
+      const;
   void clear_name_part() ;
   const ::std::string& name_part() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1162,7 +1163,8 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
 
   public:
   // required bool is_extension = 2;
-  bool has_is_extension() const;
+  [[nodiscard]] bool has_is_extension()
+      const;
   void clear_is_extension() ;
   bool is_extension() const;
   void set_is_extension(bool value);
@@ -1359,7 +1361,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
     kTrailingCommentsFieldNumber = 4,
   };
   // repeated int32 path = 1 [packed = true];
-  int path_size() const;
+  [[nodiscard]] int path_size()
+      const;
   private:
   int _internal_path_size() const;
 
@@ -1377,7 +1380,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   public:
   // repeated int32 span = 2 [packed = true];
-  int span_size() const;
+  [[nodiscard]] int span_size()
+      const;
   private:
   int _internal_span_size() const;
 
@@ -1395,7 +1399,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   public:
   // repeated string leading_detached_comments = 6;
-  int leading_detached_comments_size() const;
+  [[nodiscard]] int leading_detached_comments_size()
+      const;
   private:
   int _internal_leading_detached_comments_size() const;
 
@@ -1417,7 +1422,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   public:
   // optional string leading_comments = 3;
-  bool has_leading_comments() const;
+  [[nodiscard]] bool has_leading_comments()
+      const;
   void clear_leading_comments() ;
   const ::std::string& leading_comments() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1433,7 +1439,8 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   public:
   // optional string trailing_comments = 4;
-  bool has_trailing_comments() const;
+  [[nodiscard]] bool has_trailing_comments()
+      const;
   void clear_trailing_comments() ;
   const ::std::string& trailing_comments() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1661,7 +1668,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
     kSemanticFieldNumber = 5,
   };
   // repeated int32 path = 1 [packed = true];
-  int path_size() const;
+  [[nodiscard]] int path_size()
+      const;
   private:
   int _internal_path_size() const;
 
@@ -1679,7 +1687,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   public:
   // optional string source_file = 2;
-  bool has_source_file() const;
+  [[nodiscard]] bool has_source_file()
+      const;
   void clear_source_file() ;
   const ::std::string& source_file() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1695,7 +1704,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   public:
   // optional int32 begin = 3;
-  bool has_begin() const;
+  [[nodiscard]] bool has_begin()
+      const;
   void clear_begin() ;
   ::int32_t begin() const;
   void set_begin(::int32_t value);
@@ -1706,7 +1716,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   public:
   // optional int32 end = 4;
-  bool has_end() const;
+  [[nodiscard]] bool has_end()
+      const;
   void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
@@ -1717,7 +1728,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   public:
   // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
-  bool has_semantic() const;
+  [[nodiscard]] bool has_semantic()
+      const;
   void clear_semantic() ;
   ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic semantic() const;
   void set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value);
@@ -1918,7 +1930,8 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
     kEditionRemovedFieldNumber = 4,
   };
   // optional string deprecation_warning = 3;
-  bool has_deprecation_warning() const;
+  [[nodiscard]] bool has_deprecation_warning()
+      const;
   void clear_deprecation_warning() ;
   const ::std::string& deprecation_warning() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1934,7 +1947,8 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   public:
   // optional string removal_error = 5;
-  bool has_removal_error() const;
+  [[nodiscard]] bool has_removal_error()
+      const;
   void clear_removal_error() ;
   const ::std::string& removal_error() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -1950,7 +1964,8 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   public:
   // optional .google.protobuf.Edition edition_introduced = 1;
-  bool has_edition_introduced() const;
+  [[nodiscard]] bool has_edition_introduced()
+      const;
   void clear_edition_introduced() ;
   ::google::protobuf::Edition edition_introduced() const;
   void set_edition_introduced(::google::protobuf::Edition value);
@@ -1961,7 +1976,8 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   public:
   // optional .google.protobuf.Edition edition_deprecated = 2;
-  bool has_edition_deprecated() const;
+  [[nodiscard]] bool has_edition_deprecated()
+      const;
   void clear_edition_deprecated() ;
   ::google::protobuf::Edition edition_deprecated() const;
   void set_edition_deprecated(::google::protobuf::Edition value);
@@ -1972,7 +1988,8 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   public:
   // optional .google.protobuf.Edition edition_removed = 4;
-  bool has_edition_removed() const;
+  [[nodiscard]] bool has_edition_removed()
+      const;
   void clear_edition_removed() ;
   ::google::protobuf::Edition edition_removed() const;
   void set_edition_removed(::google::protobuf::Edition value);
@@ -2169,7 +2186,8 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
     kEditionFieldNumber = 3,
   };
   // optional string value = 2;
-  bool has_value() const;
+  [[nodiscard]] bool has_value()
+      const;
   void clear_value() ;
   const ::std::string& value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -2185,7 +2203,8 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
 
   public:
   // optional .google.protobuf.Edition edition = 3;
-  bool has_edition() const;
+  [[nodiscard]] bool has_edition()
+      const;
   void clear_edition() ;
   ::google::protobuf::Edition edition() const;
   void set_edition(::google::protobuf::Edition value);
@@ -2696,7 +2715,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     kDefaultSymbolVisibilityFieldNumber = 8,
   };
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_field_presence() const;
+  [[nodiscard]] bool has_field_presence()
+      const;
   void clear_field_presence() ;
   ::google::protobuf::FeatureSet_FieldPresence field_presence() const;
   void set_field_presence(::google::protobuf::FeatureSet_FieldPresence value);
@@ -2707,7 +2727,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_enum_type() const;
+  [[nodiscard]] bool has_enum_type()
+      const;
   void clear_enum_type() ;
   ::google::protobuf::FeatureSet_EnumType enum_type() const;
   void set_enum_type(::google::protobuf::FeatureSet_EnumType value);
@@ -2718,7 +2739,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_repeated_field_encoding() const;
+  [[nodiscard]] bool has_repeated_field_encoding()
+      const;
   void clear_repeated_field_encoding() ;
   ::google::protobuf::FeatureSet_RepeatedFieldEncoding repeated_field_encoding() const;
   void set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value);
@@ -2729,7 +2751,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_utf8_validation() const;
+  [[nodiscard]] bool has_utf8_validation()
+      const;
   void clear_utf8_validation() ;
   ::google::protobuf::FeatureSet_Utf8Validation utf8_validation() const;
   void set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value);
@@ -2740,7 +2763,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_message_encoding() const;
+  [[nodiscard]] bool has_message_encoding()
+      const;
   void clear_message_encoding() ;
   ::google::protobuf::FeatureSet_MessageEncoding message_encoding() const;
   void set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value);
@@ -2751,7 +2775,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_json_format() const;
+  [[nodiscard]] bool has_json_format()
+      const;
   void clear_json_format() ;
   ::google::protobuf::FeatureSet_JsonFormat json_format() const;
   void set_json_format(::google::protobuf::FeatureSet_JsonFormat value);
@@ -2762,7 +2787,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {
-  bool has_enforce_naming_style() const;
+  [[nodiscard]] bool has_enforce_naming_style()
+      const;
   void clear_enforce_naming_style() ;
   ::google::protobuf::FeatureSet_EnforceNamingStyle enforce_naming_style() const;
   void set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value);
@@ -2773,7 +2799,8 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool has_default_symbol_visibility() const;
+  [[nodiscard]] bool has_default_symbol_visibility()
+      const;
   void clear_default_symbol_visibility() ;
   ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility default_symbol_visibility() const;
   void set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
@@ -3167,7 +3194,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
     kRepeatedFieldNumber = 6,
   };
   // optional string full_name = 2;
-  bool has_full_name() const;
+  [[nodiscard]] bool has_full_name()
+      const;
   void clear_full_name() ;
   const ::std::string& full_name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -3183,7 +3211,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   public:
   // optional string type = 3;
-  bool has_type() const;
+  [[nodiscard]] bool has_type()
+      const;
   void clear_type() ;
   const ::std::string& type() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -3199,7 +3228,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   public:
   // optional int32 number = 1;
-  bool has_number() const;
+  [[nodiscard]] bool has_number()
+      const;
   void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
@@ -3210,7 +3240,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   public:
   // optional bool reserved = 5;
-  bool has_reserved() const;
+  [[nodiscard]] bool has_reserved()
+      const;
   void clear_reserved() ;
   bool reserved() const;
   void set_reserved(bool value);
@@ -3221,7 +3252,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   public:
   // optional bool repeated = 6;
-  bool has_repeated() const;
+  [[nodiscard]] bool has_repeated()
+      const;
   void clear_repeated() ;
   bool repeated() const;
   void set_repeated(bool value);
@@ -3418,7 +3450,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
     kEndFieldNumber = 2,
   };
   // optional int32 start = 1;
-  bool has_start() const;
+  [[nodiscard]] bool has_start()
+      const;
   void clear_start() ;
   ::int32_t start() const;
   void set_start(::int32_t value);
@@ -3429,7 +3462,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
 
   public:
   // optional int32 end = 2;
-  bool has_end() const;
+  [[nodiscard]] bool has_end()
+      const;
   void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
@@ -3623,7 +3657,8 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
     kEndFieldNumber = 2,
   };
   // optional int32 start = 1;
-  bool has_start() const;
+  [[nodiscard]] bool has_start()
+      const;
   void clear_start() ;
   ::int32_t start() const;
   void set_start(::int32_t value);
@@ -3634,7 +3669,8 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
 
   public:
   // optional int32 end = 2;
-  bool has_end() const;
+  [[nodiscard]] bool has_end()
+      const;
   void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
@@ -3839,7 +3875,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
     kDoubleValueFieldNumber = 6,
   };
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
-  int name_size() const;
+  [[nodiscard]] int name_size()
+      const;
   private:
   int _internal_name_size() const;
 
@@ -3856,7 +3893,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL add_name();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& name() const;
   // optional string identifier_value = 3;
-  bool has_identifier_value() const;
+  [[nodiscard]] bool has_identifier_value()
+      const;
   void clear_identifier_value() ;
   const ::std::string& identifier_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -3872,7 +3910,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   public:
   // optional bytes string_value = 7;
-  bool has_string_value() const;
+  [[nodiscard]] bool has_string_value()
+      const;
   void clear_string_value() ;
   const ::std::string& string_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -3888,7 +3927,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   public:
   // optional string aggregate_value = 8;
-  bool has_aggregate_value() const;
+  [[nodiscard]] bool has_aggregate_value()
+      const;
   void clear_aggregate_value() ;
   const ::std::string& aggregate_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -3904,7 +3944,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   public:
   // optional uint64 positive_int_value = 4;
-  bool has_positive_int_value() const;
+  [[nodiscard]] bool has_positive_int_value()
+      const;
   void clear_positive_int_value() ;
   ::uint64_t positive_int_value() const;
   void set_positive_int_value(::uint64_t value);
@@ -3915,7 +3956,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   public:
   // optional int64 negative_int_value = 5;
-  bool has_negative_int_value() const;
+  [[nodiscard]] bool has_negative_int_value()
+      const;
   void clear_negative_int_value() ;
   ::int64_t negative_int_value() const;
   void set_negative_int_value(::int64_t value);
@@ -3926,7 +3968,8 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   public:
   // optional double double_value = 6;
-  bool has_double_value() const;
+  [[nodiscard]] bool has_double_value()
+      const;
   void clear_double_value() ;
   double double_value() const;
   void set_double_value(double value);
@@ -4130,7 +4173,8 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
     kLocationFieldNumber = 1,
   };
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
-  int location_size() const;
+  [[nodiscard]] int location_size()
+      const;
   private:
   int _internal_location_size() const;
 
@@ -4520,7 +4564,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
     kAnnotationFieldNumber = 1,
   };
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
-  int annotation_size() const;
+  [[nodiscard]] int annotation_size()
+      const;
   private:
   int _internal_annotation_size() const;
 
@@ -4725,7 +4770,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
     kEditionFieldNumber = 3,
   };
   // optional .google.protobuf.FeatureSet overridable_features = 4;
-  bool has_overridable_features() const;
+  [[nodiscard]] bool has_overridable_features()
+      const;
   void clear_overridable_features() ;
   const ::google::protobuf::FeatureSet& overridable_features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_overridable_features();
@@ -4740,7 +4786,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
 
   public:
   // optional .google.protobuf.FeatureSet fixed_features = 5;
-  bool has_fixed_features() const;
+  [[nodiscard]] bool has_fixed_features()
+      const;
   void clear_fixed_features() ;
   const ::google::protobuf::FeatureSet& fixed_features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_fixed_features();
@@ -4755,7 +4802,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
 
   public:
   // optional .google.protobuf.Edition edition = 3;
-  bool has_edition() const;
+  [[nodiscard]] bool has_edition()
+      const;
   void clear_edition() ;
   ::google::protobuf::Edition edition() const;
   void set_edition(::google::protobuf::Edition value);
@@ -4956,7 +5004,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
     kDeprecatedFieldNumber = 33,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -4973,7 +5022,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 34;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -4988,7 +5038,8 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated = 33 [default = false];
-  bool has_deprecated() const;
+  [[nodiscard]] bool has_deprecated()
+      const;
   void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
@@ -5379,7 +5430,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
     kFeaturesFieldNumber = 1,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -5396,7 +5448,8 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 1;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -5813,7 +5866,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
     kIdempotencyLevelFieldNumber = 34,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -5830,7 +5884,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 35;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -5845,7 +5900,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated = 33 [default = false];
-  bool has_deprecated() const;
+  [[nodiscard]] bool has_deprecated()
+      const;
   void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
@@ -5856,7 +5912,8 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
-  bool has_idempotency_level() const;
+  [[nodiscard]] bool has_idempotency_level()
+      const;
   void clear_idempotency_level() ;
   ::google::protobuf::MethodOptions_IdempotencyLevel idempotency_level() const;
   void set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value);
@@ -6253,7 +6310,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
     kUninterpretedOptionFieldNumber = 999,
   };
   // optional .google.protobuf.FeatureSet features = 12;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -6268,7 +6326,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool message_set_wire_format = 1 [default = false];
-  bool has_message_set_wire_format() const;
+  [[nodiscard]] bool has_message_set_wire_format()
+      const;
   void clear_message_set_wire_format() ;
   bool message_set_wire_format() const;
   void set_message_set_wire_format(bool value);
@@ -6279,7 +6338,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool no_standard_descriptor_accessor = 2 [default = false];
-  bool has_no_standard_descriptor_accessor() const;
+  [[nodiscard]] bool has_no_standard_descriptor_accessor()
+      const;
   void clear_no_standard_descriptor_accessor() ;
   bool no_standard_descriptor_accessor() const;
   void set_no_standard_descriptor_accessor(bool value);
@@ -6290,7 +6350,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated = 3 [default = false];
-  bool has_deprecated() const;
+  [[nodiscard]] bool has_deprecated()
+      const;
   void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
@@ -6301,7 +6362,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool map_entry = 7;
-  bool has_map_entry() const;
+  [[nodiscard]] bool has_map_entry()
+      const;
   void clear_map_entry() ;
   bool map_entry() const;
   void set_map_entry(bool value);
@@ -6312,7 +6374,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
-  [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
+  [[nodiscard]] [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts()
+      const;
   [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
   [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
   [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
@@ -6323,7 +6386,8 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -6764,7 +6828,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     kUninterpretedOptionFieldNumber = 999,
   };
   // optional string java_package = 1;
-  bool has_java_package() const;
+  [[nodiscard]] bool has_java_package()
+      const;
   void clear_java_package() ;
   const ::std::string& java_package() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6780,7 +6845,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string java_outer_classname = 8;
-  bool has_java_outer_classname() const;
+  [[nodiscard]] bool has_java_outer_classname()
+      const;
   void clear_java_outer_classname() ;
   const ::std::string& java_outer_classname() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6796,7 +6862,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string go_package = 11;
-  bool has_go_package() const;
+  [[nodiscard]] bool has_go_package()
+      const;
   void clear_go_package() ;
   const ::std::string& go_package() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6812,7 +6879,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string objc_class_prefix = 36;
-  bool has_objc_class_prefix() const;
+  [[nodiscard]] bool has_objc_class_prefix()
+      const;
   void clear_objc_class_prefix() ;
   const ::std::string& objc_class_prefix() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6828,7 +6896,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string csharp_namespace = 37;
-  bool has_csharp_namespace() const;
+  [[nodiscard]] bool has_csharp_namespace()
+      const;
   void clear_csharp_namespace() ;
   const ::std::string& csharp_namespace() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6844,7 +6913,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string swift_prefix = 39;
-  bool has_swift_prefix() const;
+  [[nodiscard]] bool has_swift_prefix()
+      const;
   void clear_swift_prefix() ;
   const ::std::string& swift_prefix() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6860,7 +6930,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string php_class_prefix = 40;
-  bool has_php_class_prefix() const;
+  [[nodiscard]] bool has_php_class_prefix()
+      const;
   void clear_php_class_prefix() ;
   const ::std::string& php_class_prefix() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6876,7 +6947,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string php_namespace = 41;
-  bool has_php_namespace() const;
+  [[nodiscard]] bool has_php_namespace()
+      const;
   void clear_php_namespace() ;
   const ::std::string& php_namespace() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6892,7 +6964,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string php_metadata_namespace = 44;
-  bool has_php_metadata_namespace() const;
+  [[nodiscard]] bool has_php_metadata_namespace()
+      const;
   void clear_php_metadata_namespace() ;
   const ::std::string& php_metadata_namespace() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6908,7 +6981,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional string ruby_package = 45;
-  bool has_ruby_package() const;
+  [[nodiscard]] bool has_ruby_package()
+      const;
   void clear_ruby_package() ;
   const ::std::string& ruby_package() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -6924,7 +6998,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FeatureSet features = 50;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -6939,7 +7014,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool java_multiple_files = 10 [default = false];
-  bool has_java_multiple_files() const;
+  [[nodiscard]] bool has_java_multiple_files()
+      const;
   void clear_java_multiple_files() ;
   bool java_multiple_files() const;
   void set_java_multiple_files(bool value);
@@ -6950,7 +7026,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool cc_generic_services = 16 [default = false];
-  bool has_cc_generic_services() const;
+  [[nodiscard]] bool has_cc_generic_services()
+      const;
   void clear_cc_generic_services() ;
   bool cc_generic_services() const;
   void set_cc_generic_services(bool value);
@@ -6961,7 +7038,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool java_generic_services = 17 [default = false];
-  bool has_java_generic_services() const;
+  [[nodiscard]] bool has_java_generic_services()
+      const;
   void clear_java_generic_services() ;
   bool java_generic_services() const;
   void set_java_generic_services(bool value);
@@ -6972,7 +7050,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool py_generic_services = 18 [default = false];
-  bool has_py_generic_services() const;
+  [[nodiscard]] bool has_py_generic_services()
+      const;
   void clear_py_generic_services() ;
   bool py_generic_services() const;
   void set_py_generic_services(bool value);
@@ -6983,7 +7062,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  [[deprecated]]  bool has_java_generate_equals_and_hash() const;
+  [[nodiscard]] [[deprecated]]  bool has_java_generate_equals_and_hash()
+      const;
   [[deprecated]]  void clear_java_generate_equals_and_hash() ;
   [[deprecated]] bool java_generate_equals_and_hash() const;
   [[deprecated]] void set_java_generate_equals_and_hash(bool value);
@@ -6994,7 +7074,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated = 23 [default = false];
-  bool has_deprecated() const;
+  [[nodiscard]] bool has_deprecated()
+      const;
   void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
@@ -7005,7 +7086,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool java_string_check_utf8 = 27 [default = false];
-  bool has_java_string_check_utf8() const;
+  [[nodiscard]] bool has_java_string_check_utf8()
+      const;
   void clear_java_string_check_utf8() ;
   bool java_string_check_utf8() const;
   void set_java_string_check_utf8(bool value);
@@ -7016,7 +7098,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-  bool has_optimize_for() const;
+  [[nodiscard]] bool has_optimize_for()
+      const;
   void clear_optimize_for() ;
   ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
   void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
@@ -7027,7 +7110,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool cc_enable_arenas = 31 [default = true];
-  bool has_cc_enable_arenas() const;
+  [[nodiscard]] bool has_cc_enable_arenas()
+      const;
   void clear_cc_enable_arenas() ;
   bool cc_enable_arenas() const;
   void set_cc_enable_arenas(bool value);
@@ -7038,7 +7122,8 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -7558,7 +7643,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     kTargetsFieldNumber = 19,
   };
   // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
-  int edition_defaults_size() const;
+  [[nodiscard]] int edition_defaults_size()
+      const;
   private:
   int _internal_edition_defaults_size() const;
 
@@ -7575,7 +7661,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL add_edition_defaults();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& edition_defaults() const;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -7592,7 +7679,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 21;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -7607,7 +7695,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
-  bool has_feature_support() const;
+  [[nodiscard]] bool has_feature_support()
+      const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
   [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE release_feature_support();
@@ -7622,7 +7711,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
-  bool has_ctype() const;
+  [[nodiscard]] bool has_ctype()
+      const;
   void clear_ctype() ;
   ::google::protobuf::FieldOptions_CType ctype() const;
   void set_ctype(::google::protobuf::FieldOptions_CType value);
@@ -7633,7 +7723,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool packed = 2;
-  bool has_packed() const;
+  [[nodiscard]] bool has_packed()
+      const;
   void clear_packed() ;
   bool packed() const;
   void set_packed(bool value);
@@ -7644,7 +7735,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated = 3 [default = false];
-  bool has_deprecated() const;
+  [[nodiscard]] bool has_deprecated()
+      const;
   void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
@@ -7655,7 +7747,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool lazy = 5 [default = false];
-  bool has_lazy() const;
+  [[nodiscard]] bool has_lazy()
+      const;
   void clear_lazy() ;
   bool lazy() const;
   void set_lazy(bool value);
@@ -7666,7 +7759,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool weak = 10 [default = false, deprecated = true];
-  [[deprecated]]  bool has_weak() const;
+  [[nodiscard]] [[deprecated]]  bool has_weak()
+      const;
   [[deprecated]]  void clear_weak() ;
   [[deprecated]] bool weak() const;
   [[deprecated]] void set_weak(bool value);
@@ -7677,7 +7771,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  bool has_jstype() const;
+  [[nodiscard]] bool has_jstype()
+      const;
   void clear_jstype() ;
   ::google::protobuf::FieldOptions_JSType jstype() const;
   void set_jstype(::google::protobuf::FieldOptions_JSType value);
@@ -7688,7 +7783,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool unverified_lazy = 15 [default = false];
-  bool has_unverified_lazy() const;
+  [[nodiscard]] bool has_unverified_lazy()
+      const;
   void clear_unverified_lazy() ;
   bool unverified_lazy() const;
   void set_unverified_lazy(bool value);
@@ -7699,7 +7795,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool debug_redact = 16 [default = false];
-  bool has_debug_redact() const;
+  [[nodiscard]] bool has_debug_redact()
+      const;
   void clear_debug_redact() ;
   bool debug_redact() const;
   void set_debug_redact(bool value);
@@ -7710,7 +7807,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
-  bool has_retention() const;
+  [[nodiscard]] bool has_retention()
+      const;
   void clear_retention() ;
   ::google::protobuf::FieldOptions_OptionRetention retention() const;
   void set_retention(::google::protobuf::FieldOptions_OptionRetention value);
@@ -7721,7 +7819,8 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   public:
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
-  int targets_size() const;
+  [[nodiscard]] int targets_size()
+      const;
   private:
   int _internal_targets_size() const;
 
@@ -8133,7 +8232,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
     kMaximumEditionFieldNumber = 5,
   };
   // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
-  int defaults_size() const;
+  [[nodiscard]] int defaults_size()
+      const;
   private:
   int _internal_defaults_size() const;
 
@@ -8150,7 +8250,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL add_defaults();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& defaults() const;
   // optional .google.protobuf.Edition minimum_edition = 4;
-  bool has_minimum_edition() const;
+  [[nodiscard]] bool has_minimum_edition()
+      const;
   void clear_minimum_edition() ;
   ::google::protobuf::Edition minimum_edition() const;
   void set_minimum_edition(::google::protobuf::Edition value);
@@ -8161,7 +8262,8 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
 
   public:
   // optional .google.protobuf.Edition maximum_edition = 5;
-  bool has_maximum_edition() const;
+  [[nodiscard]] bool has_maximum_edition()
+      const;
   void clear_maximum_edition() ;
   ::google::protobuf::Edition maximum_edition() const;
   void set_maximum_edition(::google::protobuf::Edition value);
@@ -8384,7 +8486,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
     kVerificationFieldNumber = 3,
   };
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
-  int declaration_size() const;
+  [[nodiscard]] int declaration_size()
+      const;
   private:
   int _internal_declaration_size() const;
 
@@ -8401,7 +8504,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   ::google::protobuf::ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL add_declaration();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& declaration() const;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -8418,7 +8522,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 50;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -8433,7 +8538,8 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   public:
   // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
-  bool has_verification() const;
+  [[nodiscard]] bool has_verification()
+      const;
   void clear_verification() ;
   ::google::protobuf::ExtensionRangeOptions_VerificationState verification() const;
   void set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
@@ -8828,7 +8934,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
     kDebugRedactFieldNumber = 3,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -8845,7 +8952,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
   // optional .google.protobuf.FeatureSet features = 2;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -8860,7 +8968,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   public:
   // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 4;
-  bool has_feature_support() const;
+  [[nodiscard]] bool has_feature_support()
+      const;
   void clear_feature_support() ;
   const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
   [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE release_feature_support();
@@ -8875,7 +8984,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   public:
   // optional bool deprecated = 1 [default = false];
-  bool has_deprecated() const;
+  [[nodiscard]] bool has_deprecated()
+      const;
   void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
@@ -8886,7 +8996,8 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   public:
   // optional bool debug_redact = 3 [default = false];
-  bool has_debug_redact() const;
+  [[nodiscard]] bool has_debug_redact()
+      const;
   void clear_debug_redact() ;
   bool debug_redact() const;
   void set_debug_redact(bool value);
@@ -9282,7 +9393,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
     kUninterpretedOptionFieldNumber = 999,
   };
   // optional .google.protobuf.FeatureSet features = 7;
-  bool has_features() const;
+  [[nodiscard]] bool has_features()
+      const;
   void clear_features() ;
   const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
@@ -9297,7 +9409,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool allow_alias = 2;
-  bool has_allow_alias() const;
+  [[nodiscard]] bool has_allow_alias()
+      const;
   void clear_allow_alias() ;
   bool allow_alias() const;
   void set_allow_alias(bool value);
@@ -9308,7 +9421,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated = 3 [default = false];
-  bool has_deprecated() const;
+  [[nodiscard]] bool has_deprecated()
+      const;
   void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
@@ -9319,7 +9433,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   public:
   // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
-  [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
+  [[nodiscard]] [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts()
+      const;
   [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
   [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
   [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
@@ -9330,7 +9445,8 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
-  int uninterpreted_option_size() const;
+  [[nodiscard]] int uninterpreted_option_size()
+      const;
   private:
   int _internal_uninterpreted_option_size() const;
 
@@ -9729,7 +9845,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
     kOptionsFieldNumber = 2,
   };
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -9745,7 +9862,8 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional .google.protobuf.OneofOptions options = 2;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::OneofOptions& options() const;
   [[nodiscard]] ::google::protobuf::OneofOptions* PROTOBUF_NULLABLE release_options();
@@ -9952,7 +10070,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
     kServerStreamingFieldNumber = 6,
   };
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -9968,7 +10087,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   public:
   // optional string input_type = 2;
-  bool has_input_type() const;
+  [[nodiscard]] bool has_input_type()
+      const;
   void clear_input_type() ;
   const ::std::string& input_type() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -9984,7 +10104,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   public:
   // optional string output_type = 3;
-  bool has_output_type() const;
+  [[nodiscard]] bool has_output_type()
+      const;
   void clear_output_type() ;
   const ::std::string& output_type() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -10000,7 +10121,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   public:
   // optional .google.protobuf.MethodOptions options = 4;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::MethodOptions& options() const;
   [[nodiscard]] ::google::protobuf::MethodOptions* PROTOBUF_NULLABLE release_options();
@@ -10015,7 +10137,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   public:
   // optional bool client_streaming = 5 [default = false];
-  bool has_client_streaming() const;
+  [[nodiscard]] bool has_client_streaming()
+      const;
   void clear_client_streaming() ;
   bool client_streaming() const;
   void set_client_streaming(bool value);
@@ -10026,7 +10149,8 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   public:
   // optional bool server_streaming = 6 [default = false];
-  bool has_server_streaming() const;
+  [[nodiscard]] bool has_server_streaming()
+      const;
   void clear_server_streaming() ;
   bool server_streaming() const;
   void set_server_streaming(bool value);
@@ -10295,7 +10419,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
     kTypeFieldNumber = 5,
   };
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -10311,7 +10436,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional string extendee = 2;
-  bool has_extendee() const;
+  [[nodiscard]] bool has_extendee()
+      const;
   void clear_extendee() ;
   const ::std::string& extendee() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -10327,7 +10453,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional string type_name = 6;
-  bool has_type_name() const;
+  [[nodiscard]] bool has_type_name()
+      const;
   void clear_type_name() ;
   const ::std::string& type_name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -10343,7 +10470,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional string default_value = 7;
-  bool has_default_value() const;
+  [[nodiscard]] bool has_default_value()
+      const;
   void clear_default_value() ;
   const ::std::string& default_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -10359,7 +10487,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional string json_name = 10;
-  bool has_json_name() const;
+  [[nodiscard]] bool has_json_name()
+      const;
   void clear_json_name() ;
   const ::std::string& json_name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -10375,7 +10504,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional .google.protobuf.FieldOptions options = 8;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::FieldOptions& options() const;
   [[nodiscard]] ::google::protobuf::FieldOptions* PROTOBUF_NULLABLE release_options();
@@ -10390,7 +10520,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional int32 number = 3;
-  bool has_number() const;
+  [[nodiscard]] bool has_number()
+      const;
   void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
@@ -10401,7 +10532,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional int32 oneof_index = 9;
-  bool has_oneof_index() const;
+  [[nodiscard]] bool has_oneof_index()
+      const;
   void clear_oneof_index() ;
   ::int32_t oneof_index() const;
   void set_oneof_index(::int32_t value);
@@ -10412,7 +10544,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional bool proto3_optional = 17;
-  bool has_proto3_optional() const;
+  [[nodiscard]] bool has_proto3_optional()
+      const;
   void clear_proto3_optional() ;
   bool proto3_optional() const;
   void set_proto3_optional(bool value);
@@ -10423,7 +10556,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
-  bool has_label() const;
+  [[nodiscard]] bool has_label()
+      const;
   void clear_label() ;
   ::google::protobuf::FieldDescriptorProto_Label label() const;
   void set_label(::google::protobuf::FieldDescriptorProto_Label value);
@@ -10434,7 +10568,8 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   public:
   // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
-  bool has_type() const;
+  [[nodiscard]] bool has_type()
+      const;
   void clear_type() ;
   ::google::protobuf::FieldDescriptorProto_Type type() const;
   void set_type(::google::protobuf::FieldDescriptorProto_Type value);
@@ -10643,7 +10778,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
     kNumberFieldNumber = 2,
   };
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -10659,7 +10795,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
 
   public:
   // optional .google.protobuf.EnumValueOptions options = 3;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::EnumValueOptions& options() const;
   [[nodiscard]] ::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE release_options();
@@ -10674,7 +10811,8 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
 
   public:
   // optional int32 number = 2;
-  bool has_number() const;
+  [[nodiscard]] bool has_number()
+      const;
   void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
@@ -10875,7 +11013,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
     kEndFieldNumber = 2,
   };
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::ExtensionRangeOptions& options() const;
   [[nodiscard]] ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE release_options();
@@ -10890,7 +11029,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
 
   public:
   // optional int32 start = 1;
-  bool has_start() const;
+  [[nodiscard]] bool has_start()
+      const;
   void clear_start() ;
   ::int32_t start() const;
   void set_start(::int32_t value);
@@ -10901,7 +11041,8 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
 
   public:
   // optional int32 end = 2;
-  bool has_end() const;
+  [[nodiscard]] bool has_end()
+      const;
   void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
@@ -11102,7 +11243,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
     kOptionsFieldNumber = 3,
   };
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
-  int method_size() const;
+  [[nodiscard]] int method_size()
+      const;
   private:
   int _internal_method_size() const;
 
@@ -11119,7 +11261,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL add_method();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& method() const;
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -11135,7 +11278,8 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
 
   public:
   // optional .google.protobuf.ServiceOptions options = 3;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::ServiceOptions& options() const;
   [[nodiscard]] ::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE release_options();
@@ -11344,7 +11488,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
     kVisibilityFieldNumber = 6,
   };
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
-  int value_size() const;
+  [[nodiscard]] int value_size()
+      const;
   private:
   int _internal_value_size() const;
 
@@ -11361,7 +11506,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::EnumValueDescriptorProto* PROTOBUF_NONNULL add_value();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& value() const;
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
-  int reserved_range_size() const;
+  [[nodiscard]] int reserved_range_size()
+      const;
   private:
   int _internal_reserved_range_size() const;
 
@@ -11378,7 +11524,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL add_reserved_range();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& reserved_range() const;
   // repeated string reserved_name = 5;
-  int reserved_name_size() const;
+  [[nodiscard]] int reserved_name_size()
+      const;
   private:
   int _internal_reserved_name_size() const;
 
@@ -11400,7 +11547,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -11416,7 +11564,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional .google.protobuf.EnumOptions options = 3;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::EnumOptions& options() const;
   [[nodiscard]] ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE release_options();
@@ -11431,7 +11580,8 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional .google.protobuf.SymbolVisibility visibility = 6;
-  bool has_visibility() const;
+  [[nodiscard]] bool has_visibility()
+      const;
   void clear_visibility() ;
   ::google::protobuf::SymbolVisibility visibility() const;
   void set_visibility(::google::protobuf::SymbolVisibility value);
@@ -11645,7 +11795,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     kVisibilityFieldNumber = 11,
   };
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
-  int field_size() const;
+  [[nodiscard]] int field_size()
+      const;
   private:
   int _internal_field_size() const;
 
@@ -11662,7 +11813,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL add_field();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& field() const;
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
-  int nested_type_size() const;
+  [[nodiscard]] int nested_type_size()
+      const;
   private:
   int _internal_nested_type_size() const;
 
@@ -11679,7 +11831,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL add_nested_type();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& nested_type() const;
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
-  int enum_type_size() const;
+  [[nodiscard]] int enum_type_size()
+      const;
   private:
   int _internal_enum_type_size() const;
 
@@ -11696,7 +11849,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL add_enum_type();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type() const;
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
-  int extension_range_size() const;
+  [[nodiscard]] int extension_range_size()
+      const;
   private:
   int _internal_extension_range_size() const;
 
@@ -11713,7 +11867,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::DescriptorProto_ExtensionRange* PROTOBUF_NONNULL add_extension_range();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& extension_range() const;
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  int extension_size() const;
+  [[nodiscard]] int extension_size()
+      const;
   private:
   int _internal_extension_size() const;
 
@@ -11730,7 +11885,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL add_extension();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension() const;
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
-  int oneof_decl_size() const;
+  [[nodiscard]] int oneof_decl_size()
+      const;
   private:
   int _internal_oneof_decl_size() const;
 
@@ -11747,7 +11903,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::OneofDescriptorProto* PROTOBUF_NONNULL add_oneof_decl();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& oneof_decl() const;
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
-  int reserved_range_size() const;
+  [[nodiscard]] int reserved_range_size()
+      const;
   private:
   int _internal_reserved_range_size() const;
 
@@ -11764,7 +11921,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   ::google::protobuf::DescriptorProto_ReservedRange* PROTOBUF_NONNULL add_reserved_range();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& reserved_range() const;
   // repeated string reserved_name = 10;
-  int reserved_name_size() const;
+  [[nodiscard]] int reserved_name_size()
+      const;
   private:
   int _internal_reserved_name_size() const;
 
@@ -11786,7 +11944,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   public:
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -11802,7 +11961,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.MessageOptions options = 7;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::MessageOptions& options() const;
   [[nodiscard]] ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE release_options();
@@ -11817,7 +11977,8 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   public:
   // optional .google.protobuf.SymbolVisibility visibility = 11;
-  bool has_visibility() const;
+  [[nodiscard]] bool has_visibility()
+      const;
   void clear_visibility() ;
   ::google::protobuf::SymbolVisibility visibility() const;
   void set_visibility(::google::protobuf::SymbolVisibility value);
@@ -12037,7 +12198,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     kEditionFieldNumber = 14,
   };
   // repeated string dependency = 3;
-  int dependency_size() const;
+  [[nodiscard]] int dependency_size()
+      const;
   private:
   int _internal_dependency_size() const;
 
@@ -12059,7 +12221,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // repeated .google.protobuf.DescriptorProto message_type = 4;
-  int message_type_size() const;
+  [[nodiscard]] int message_type_size()
+      const;
   private:
   int _internal_message_type_size() const;
 
@@ -12076,7 +12239,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL add_message_type();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& message_type() const;
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
-  int enum_type_size() const;
+  [[nodiscard]] int enum_type_size()
+      const;
   private:
   int _internal_enum_type_size() const;
 
@@ -12093,7 +12257,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL add_enum_type();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type() const;
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
-  int service_size() const;
+  [[nodiscard]] int service_size()
+      const;
   private:
   int _internal_service_size() const;
 
@@ -12110,7 +12275,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::ServiceDescriptorProto* PROTOBUF_NONNULL add_service();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& service() const;
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
-  int extension_size() const;
+  [[nodiscard]] int extension_size()
+      const;
   private:
   int _internal_extension_size() const;
 
@@ -12127,7 +12293,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL add_extension();
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension() const;
   // repeated int32 public_dependency = 10;
-  int public_dependency_size() const;
+  [[nodiscard]] int public_dependency_size()
+      const;
   private:
   int _internal_public_dependency_size() const;
 
@@ -12145,7 +12312,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // repeated int32 weak_dependency = 11;
-  int weak_dependency_size() const;
+  [[nodiscard]] int weak_dependency_size()
+      const;
   private:
   int _internal_weak_dependency_size() const;
 
@@ -12163,7 +12331,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // repeated string option_dependency = 15;
-  int option_dependency_size() const;
+  [[nodiscard]] int option_dependency_size()
+      const;
   private:
   int _internal_option_dependency_size() const;
 
@@ -12185,7 +12354,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional string name = 1;
-  bool has_name() const;
+  [[nodiscard]] bool has_name()
+      const;
   void clear_name() ;
   const ::std::string& name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -12201,7 +12371,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional string package = 2;
-  bool has_package() const;
+  [[nodiscard]] bool has_package()
+      const;
   void clear_package() ;
   const ::std::string& package() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -12217,7 +12388,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional string syntax = 12;
-  bool has_syntax() const;
+  [[nodiscard]] bool has_syntax()
+      const;
   void clear_syntax() ;
   const ::std::string& syntax() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
@@ -12233,7 +12405,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional .google.protobuf.FileOptions options = 8;
-  bool has_options() const;
+  [[nodiscard]] bool has_options()
+      const;
   void clear_options() ;
   const ::google::protobuf::FileOptions& options() const;
   [[nodiscard]] ::google::protobuf::FileOptions* PROTOBUF_NULLABLE release_options();
@@ -12248,7 +12421,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
-  bool has_source_code_info() const;
+  [[nodiscard]] bool has_source_code_info()
+      const;
   void clear_source_code_info() ;
   const ::google::protobuf::SourceCodeInfo& source_code_info() const;
   [[nodiscard]] ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE release_source_code_info();
@@ -12263,7 +12437,8 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   public:
   // optional .google.protobuf.Edition edition = 14;
-  bool has_edition() const;
+  [[nodiscard]] bool has_edition()
+      const;
   void clear_edition() ;
   ::google::protobuf::Edition edition() const;
   void set_edition(::google::protobuf::Edition value);
@@ -12473,7 +12648,8 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
     kFileFieldNumber = 1,
   };
   // repeated .google.protobuf.FileDescriptorProto file = 1;
-  int file_size() const;
+  [[nodiscard]] int file_size()
+      const;
   private:
   int _internal_file_size() const;
 
