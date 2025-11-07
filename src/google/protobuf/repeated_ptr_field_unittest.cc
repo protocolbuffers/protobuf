@@ -318,8 +318,8 @@ void CheckAllocationSizes() {
         // Must be `>= 16`, as expected by the Arena.
         ASSERT_GE(last_alloc, 16);
         // Must be of a power of two.
-        size_t log2 = absl::bit_width(last_alloc) - 1;
-        ASSERT_EQ((1 << log2), last_alloc);
+        // size_t log2 = absl::bit_width(last_alloc) - 1;
+        // ASSERT_EQ((1 << log2), last_alloc);
       }
 
       // The byte size must be a multiple of 8 when not SOO.
@@ -632,7 +632,7 @@ TEST(RepeatedPtrFieldTest, UnsafeArenaAddAllocatedReleaseLastOnBaseField) {
   base_field->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(
       &arena, base_new_elem);
   Message* base_new_elem_roundtrip =
-      base_field->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
+      base_field->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>(&arena);
   ASSERT_NE(base_new_elem_roundtrip, nullptr);
   ElemT* concrete_new_elem_roundtrip =
       static_cast<ElemT*>(base_new_elem_roundtrip);

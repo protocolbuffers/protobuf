@@ -609,6 +609,7 @@ where
 {
     fn extend<I: IntoIterator<Item = ViewT>>(&mut self, iter: I) {
         let iter = iter.into_iter();
+        todo!("How to infer size? Maybe pass first element of iterator as a prototype");
         T::repeated_reserve(self.as_mut(), iter.size_hint().0);
         for item in iter {
             self.push(item);
