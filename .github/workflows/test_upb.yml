@@ -111,7 +111,7 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Setup Python
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: 3.12
           cache: pip
@@ -169,6 +169,8 @@ jobs:
           - { os: macos-13, python-version: "3.9", architecture: x64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'source'}
           - { os: macos-13, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
+          - { os: ubuntu-latest, python-version: "3.14", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-13, python-version: "3.14", architecture: x64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
           - { os: windows-2022, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
@@ -176,11 +178,13 @@ jobs:
           - { os: windows-2022, python-version: "3.11", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.12", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.13", architecture: x86, type: 'binary', continuous-only: true }
+          - { os: windows-2022, python-version: "3.14", architecture: x86, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: windows-2022, python-version: "3.10", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.11", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.12", architecture: x64, type: 'binary', continuous-only: true }
           - { os: windows-2022, python-version: "3.13", architecture: x64, type: 'binary' }
+          - { os: windows-2022, python-version: "3.14", architecture: x64, type: 'binary' }
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Test Wheels Python ${{ matrix.python-version }} ${{ matrix.os }} ${{ matrix.architecture }} ${{ matrix.type }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
@@ -191,18 +195,18 @@ jobs:
     steps:
       - name: Download Wheels
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
         with:
           name: python-wheels
           path: wheels
       - name: Download Requirements
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
         with:
           name: requirements
           path: requirements
       - name: Setup Python
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           python-version: ${{ matrix.python-version }}
@@ -252,19 +256,19 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        python-version: ["3.9", "3.13"]
+        python-version: ["3.9", "3.13", "3.14"]
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
         with:
           name: python-wheels
           path: wheels
       - name: Delete Binary Wheels
         run: find wheels -type f | grep -v none-any | xargs rm
       - name: Setup Python
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: ${{ matrix.python-version }}
       - name: Setup Python venv
@@ -274,7 +278,7 @@ jobs:
           source env/bin/activate
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
       - name: Download Requirements
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
         with:
           name: requirements
           path: requirements
@@ -314,7 +318,7 @@ jobs:
           ref: ${{ inputs.safe-checkout }}
       - name: Download Wheels
         if: ${{ inputs.continuous-run }}
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
         with:
           name: python-wheels
           path: wheels
@@ -323,9 +327,9 @@ jobs:
         run: find wheels -type f | grep -v none-any | xargs rm
       - name: Setup Python
         if: ${{ inputs.continuous-run }}
-        uses: actions/setup-python@61a6322f88396a6271a6ee3565807d608ecaddd1 # v4.7.0
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
-          python-version: 3.13
+          python-version: 3.14
       - name: Setup Python venv
         if: ${{ inputs.continuous-run }}
         run: |
@@ -335,7 +339,7 @@ jobs:
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
       - name: Download Requirements
         if: ${{ inputs.continuous-run }}
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 #4.1.8
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 #6.0.0
         with:
           name: requirements
           path: requirements
