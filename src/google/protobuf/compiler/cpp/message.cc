@@ -1794,97 +1794,96 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
   ABSL_DCHECK(IsAnyMessage(descriptor_));
 
-  p->Emit(
-      {{"any_methods",
-        [&] {
-          if (HasDescriptorMethods(descriptor_->file(), options_)) {
-            p->Emit(
-                R"cc(
-                  bool PackFrom(const $pb$::Message& message) {
-                    $DCHK$_NE(&message, this);
-                    return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
-                  }
-                  bool PackFrom(const $pb$::Message& message,
-                                ::absl::string_view type_url_prefix) {
-                    $DCHK$_NE(&message, this);
-                    return $pbi$::InternalPackFrom(message, type_url_prefix,
-                                                   mutable_type_url(),
-                                                   mutable_value());
-                  }
-                  bool UnpackTo($pb$::Message* $nonnull$ message) const {
-                    return $pbi$::InternalUnpackTo(_internal_type_url(),
-                                                   _internal_value(), message);
-                  }
-                  static bool GetAnyFieldDescriptors(
-                      const $pb$::Message& message,
-                      const $pb$::FieldDescriptor * $nullable$ *
-                          $nonnull$ type_url_field,
-                      const $pb$::FieldDescriptor * $nullable$ *
-                          $nonnull$ value_field);
-                  template <
-                      typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
-                  bool PackFrom(const T& message) {
-                    return $pbi$::InternalPackFrom<T>(
-                        message, mutable_type_url(), mutable_value());
-                  }
-                  template <
-                      typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
-                  bool PackFrom(const T& message,
-                                ::absl::string_view type_url_prefix) {
-                    return $pbi$::InternalPackFrom<T>(message, type_url_prefix,
-                                                      mutable_type_url(),
-                                                      mutable_value());
-                  }
-                  template <
-                      typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
-                  bool UnpackTo(T* $nonnull$ message) const {
-                    return $pbi$::InternalUnpackTo<T>(
-                        _internal_type_url(), _internal_value(), message);
-                  }
-                )cc");
-          } else {
-            p->Emit(
-                R"cc(
-                  template <typename T>
-                  bool PackFrom(const T& message) {
-                    return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
-                  }
-                  template <typename T>
-                  bool PackFrom(const T& message,
-                                ::absl::string_view type_url_prefix) {
-                    return $pbi$::InternalPackFrom(message, type_url_prefix,
-                                                   mutable_type_url(),
-                                                   mutable_value());
-                  }
-                  template <typename T>
-                  bool UnpackTo(T* $nonnull$ message) const {
-                    return $pbi$::InternalUnpackTo(_internal_type_url(),
-                                                   _internal_value(), message);
-                  }
-                )cc");
-          }
-        }}},
-      R"cc(
-        // implements Any
-        // -----------------------------------------------
+  p->Emit({{"any_methods",
+            [&] {
+              if (HasDescriptorMethods(descriptor_->file(), options_)) {
+                p->Emit(
+                    R"cc(
+                      bool PackFrom(const $pb$::Message& message) {
+                        $DCHK$_NE(&message, this);
+                        return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
+                      }
+                      bool PackFrom(const $pb$::Message& message,
+                                    ::absl::string_view type_url_prefix) {
+                        $DCHK$_NE(&message, this);
+                        return $pbi$::InternalPackFrom(message, type_url_prefix,
+                                                       mutable_type_url(),
+                                                       mutable_value());
+                      }
+                      bool UnpackTo($pb$::Message* $nonnull$ message) const {
+                        return $pbi$::InternalUnpackTo(
+                            _internal_type_url(), _internal_value(), message);
+                      }
+                      static bool GetAnyFieldDescriptors(
+                          const $pb$::Message& message,
+                          const $pb$::FieldDescriptor * $nullable$ *
+                              $nonnull$ type_url_field,
+                          const $pb$::FieldDescriptor * $nullable$ *
+                              $nonnull$ value_field);
+                      template <
+                          typename T,
+                          class = typename std::enable_if<!std::is_convertible<
+                              T, const $pb$::Message&>::value>::type>
+                      bool PackFrom(const T& message) {
+                        return $pbi$::InternalPackFrom<T>(
+                            message, mutable_type_url(), mutable_value());
+                      }
+                      template <
+                          typename T,
+                          class = typename std::enable_if<!std::is_convertible<
+                              T, const $pb$::Message&>::value>::type>
+                      bool PackFrom(const T& message,
+                                    ::absl::string_view type_url_prefix) {
+                        return $pbi$::InternalPackFrom<T>(
+                            message, type_url_prefix, mutable_type_url(),
+                            mutable_value());
+                      }
+                      template <
+                          typename T,
+                          class = typename std::enable_if<!std::is_convertible<
+                              T, const $pb$::Message&>::value>::type>
+                      bool UnpackTo(T* $nonnull$ message) const {
+                        return $pbi$::InternalUnpackTo<T>(
+                            _internal_type_url(), _internal_value(), message);
+                      }
+                    )cc");
+              } else {
+                p->Emit(
+                    R"cc(
+                      template <typename T>
+                      bool PackFrom(const T& message) {
+                        return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
+                      }
+                      template <typename T>
+                      bool PackFrom(const T& message,
+                                    ::absl::string_view type_url_prefix) {
+                        return $pbi$::InternalPackFrom(message, type_url_prefix,
+                                                       mutable_type_url(),
+                                                       mutable_value());
+                      }
+                      template <typename T>
+                      bool UnpackTo(T* $nonnull$ message) const {
+                        return $pbi$::InternalUnpackTo(
+                            _internal_type_url(), _internal_value(), message);
+                      }
+                    )cc");
+              }
+            }}},
+          R"cc(
+            // implements Any
+            // -----------------------------------------------
 
-        $any_methods$;
+            $any_methods$;
 
-        template <typename T>
-        bool Is() const {
-          return $pbi$::InternalIs<T>(_internal_type_url());
-        }
-        static bool ParseAnyTypeUrl(
-            //~
-            ::absl::string_view type_url,
-            std::string* $nonnull$ full_type_name);
-      )cc");
+            template <typename T>
+            bool Is() const {
+              return $pbi$::InternalIs<T>(_internal_type_url());
+            }
+            static bool ParseAnyTypeUrl(
+                //~
+                ::absl::string_view type_url,
+                std::string* $nonnull$ full_type_name);
+          )cc");
 }
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {

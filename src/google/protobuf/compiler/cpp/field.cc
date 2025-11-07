@@ -61,6 +61,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
+      {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
       Sub("PrepareSplitMessageForWrite",
           split ? "PrepareSplitMessageForWrite();" : "")
@@ -362,6 +363,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   if (!idx.has_value()) {
     vars.emplace_back(Sub("set_hasbit", "").WithSuffix(";"));
     vars.emplace_back(Sub("clear_hasbit", "").WithSuffix(";"));
+    vars.emplace_back("exclude_mask", "0xFFFFFFFFU");
     return;
   }
 
@@ -388,6 +390,8 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   vars.emplace_back("has_hasbit", has);
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
+  vars.emplace_back("exclude_mask",
+                    absl::StrFormat("0x%08xU", ~(1u << (*idx % 32))));
 }
 
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
