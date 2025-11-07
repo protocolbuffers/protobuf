@@ -140,8 +140,8 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
                                    mutable_value());
   }
   bool UnpackTo(::google::protobuf::Message* PROTOBUF_NONNULL message) const {
-    return ::google::protobuf::internal::InternalUnpackTo(_internal_type_url(),
-                                   _internal_value(), message);
+    return ::google::protobuf::internal::InternalUnpackTo(
+        _internal_type_url(), _internal_value(), message);
   }
   static bool GetAnyFieldDescriptors(
       const ::google::protobuf::Message& message,
@@ -163,9 +163,9 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
           T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message,
                 ::absl::string_view type_url_prefix) {
-    return ::google::protobuf::internal::InternalPackFrom<T>(message, type_url_prefix,
-                                      mutable_type_url(),
-                                      mutable_value());
+    return ::google::protobuf::internal::InternalPackFrom<T>(
+        message, type_url_prefix, mutable_type_url(),
+        mutable_value());
   }
   template <
       typename T,
