@@ -2218,6 +2218,8 @@ class RepeatedPtrOverPtrsIterator {
 
   // Allow "upcasting" from RepeatedPtrOverPtrsIterator<T> to
   // RepeatedPtrOverPtrsIterator<const T>.
+  template <typename E = Element,
+            typename = std::enable_if_t<std::is_const_v<E>>>
   RepeatedPtrOverPtrsIterator(
       const RepeatedPtrOverPtrsIterator<std::remove_const_t<Element>>& other)
       : it_(other.it_) {}
