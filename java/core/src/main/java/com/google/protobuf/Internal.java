@@ -36,6 +36,7 @@ public final class Internal {
   static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   /** Throws an appropriate {@link NullPointerException} if the given objects is {@code null}. */
+  @CanIgnoreReturnValue
   static <T> T checkNotNull(T obj) {
     if (obj == null) {
       throw new NullPointerException();
@@ -44,11 +45,31 @@ public final class Internal {
   }
 
   /** Throws an appropriate {@link NullPointerException} if the given objects is {@code null}. */
+  @CanIgnoreReturnValue
   static <T> T checkNotNull(T obj, String message) {
     if (obj == null) {
       throw new NullPointerException(message);
     }
     return obj;
+  }
+
+  /**
+   * Throws an appropriate {@link IllegalStateException} if the given condition is {@code false}.
+   */
+  static void checkState(boolean condition) {
+    if (!condition) {
+      throw new IllegalStateException();
+    }
+  }
+
+  /** Find the next index non-null entry in the array starting at {@code startIndex + 1}. */
+  static <T> int findNextNonNull(T[] entries, int startIndex) {
+    for (int i = startIndex + 1; i < entries.length; ++i) {
+      if (entries[i] != null) {
+        return i;
+      }
+    }
+    return entries.length;
   }
 
   /**

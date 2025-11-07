@@ -26,6 +26,8 @@ import com.google.protobuf.DescriptorProtos.MethodDescriptorProto;
 import com.google.protobuf.DescriptorProtos.OneofDescriptorProto;
 import com.google.protobuf.DescriptorProtos.ServiceDescriptorProto;
 import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.DescriptorNameMap;
+import com.google.protobuf.Descriptors.DescriptorPool;
 import com.google.protobuf.Descriptors.DescriptorValidationException;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -37,6 +39,8 @@ import com.google.protobuf.Descriptors.ServiceDescriptor;
 import com.google.protobuf.test.UnittestImport;
 import com.google.protobuf.test.UnittestImport.ImportEnum;
 import com.google.protobuf.test.UnittestImport.ImportEnumForMap;
+import com.google.protobuf.test.UnittestImport.ImportMessage;
+import com.google.protobuf.test.UnittestImportPublic.PublicImportMessage;
 import legacy_features_unittest.UnittestLegacyFeatures;
 import pb.EnumFeature;
 import pb.UnittestFeatures;
@@ -56,8 +60,10 @@ import proto2_unittest.UnittestProto.TestReservedFields;
 import proto2_unittest.UnittestProto.TestService;
 import proto2_unittest.UnittestRetention;
 import protobuf_unittest.UnittestProto3Extensions.Proto3FileExtensions;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -1372,7 +1378,7 @@ public class DescriptorsTest {
 
     @Test
     public void testDefaultDescriptorExtensionRange() throws Exception {
-      assertThat(new Descriptor("default").isExtensionNumber(1)).isTrue();
+      assertThat(new Descriptor(null, "default").isExtensionNumber(1)).isTrue();
     }
 
     @Test
@@ -1923,6 +1929,421 @@ public class DescriptorsTest {
       FileDescriptor descriptor = buildFrom(fileProto.build());
       assertThat(getTestFeature(descriptor.getServices().get(0).getMethods().get(0).features))
           .isEqualTo(5);
+    }
+  }
+
+  public static class DynamicDynamicDescriptorPoolTest {
+
+    private DescriptorPool pool;
+
+    @Before
+    public void before() throws Exception {
+      pool = DescriptorPool.newInstance();
+    }
+
+    private void addDescriptorsToPool() throws Exception {
+      pool.buildFile(PublicImportMessage.getDescriptor().getFile().toProto());
+      pool.buildFile(ImportMessage.getDescriptor().getFile().toProto());
+      pool.buildFile(TestAllTypes.getDescriptor().getFile().toProto());
+    }
+
+    @After
+    public void after() {
+      pool = null;
+    }
+
+    private void assertFindFileByName(String name) {
+      FileDescriptor descriptor = pool.findFileByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(name);
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getPool()).isSameInstanceAs(pool);
+    }
+
+    @Test
+    public void testFindFileByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindFileByName("google/protobuf/unittest_import_public.proto");
+      assertFindFileByName("google/protobuf/unittest_import.proto");
+      assertFindFileByName("google/protobuf/unittest.proto");
+      assertThat(
+              pool.findFileByName("google/protobuf/unittest_import_that_does_not_exist.proto"))
+          .isNull();
+    }
+
+    private void assertFindMessageTypeByName(String name) {
+      Descriptor descriptor = pool.findMessageTypeByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+      assertThat(pool.findFileContainingSymbol(name)).isEqualTo(descriptor.getFile());
+    }
+
+    private static String getName(String fullName) {
+      int pos = fullName.lastIndexOf('.');
+      if (pos == -1) {
+        return fullName;
+      }
+      return fullName.substring(pos + 1);
+    }
+
+    @Test
+    public void testFindMessageByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindMessageTypeByName("proto2_unittest_import.PublicImportMessage");
+      assertFindMessageTypeByName("proto2_unittest_import.ImportMessage");
+      assertFindMessageTypeByName("proto2_unittest.TestAllTypes");
+      assertFindMessageTypeByName("proto2_unittest.TestAllTypes.NestedMessage");
+      assertThat(pool.findMessageTypeByName("")).isNull();
+      assertThat(pool.findMessageTypeByName(".proto2_unittest.TestAllTypes.NestedMessage"))
+          .isNull();
+      assertThat(pool.findMessageTypeByName("proto2_unittest.MessageThatDoesNotExist")).isNull();
+    }
+
+    private void assertFindEnumTypeByName(String name) {
+      EnumDescriptor descriptor = pool.findEnumTypeByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+      assertThat(pool.findFileContainingSymbol(name)).isEqualTo(descriptor.getFile());
+    }
+
+    @Test
+    public void testFindEnumTypeByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindEnumTypeByName("proto2_unittest_import.ImportEnum");
+      assertFindEnumTypeByName("proto2_unittest.ForeignEnum");
+      assertFindEnumTypeByName("proto2_unittest.TestAllTypes.NestedEnum");
+      assertThat(pool.findEnumTypeByName("")).isNull();
+      assertThat(pool.findEnumTypeByName(".proto2_unittest.TestAllTypes.NestedEnum")).isNull();
+      assertThat(pool.findEnumTypeByName("proto2_unittest.EnumThatDoesNotExist")).isNull();
+    }
+
+    private void assertFindEnumValueByName(String name) {
+      EnumValueDescriptor descriptor = pool.findEnumValueByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+      assertThat(pool.findFileContainingSymbol(name)).isEqualTo(descriptor.getFile());
+    }
+
+    @Test
+    public void testFindEnumValueByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindEnumValueByName("proto2_unittest_import.IMPORT_FOO");
+      assertFindEnumValueByName("proto2_unittest.FOREIGN_FOO");
+      assertFindEnumValueByName("proto2_unittest.TestAllTypes.FOO");
+      assertThat(pool.findEnumTypeByName("")).isNull();
+      assertThat(pool.findEnumTypeByName(".proto2_unittest.FOREIGN_FOO")).isNull();
+      assertThat(pool.findEnumTypeByName("proto2_unittest.ENUM_VALUE_THAT_DOES_NOT_EXIST"))
+          .isNull();
+    }
+
+    private void assertFindFieldByName(String name) {
+      FieldDescriptor descriptor = pool.findFieldByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+      assertThat(pool.findFileContainingSymbol(name)).isEqualTo(descriptor.getFile());
+    }
+
+    @Test
+    public void testFindFieldByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindFieldByName("proto2_unittest_import.PublicImportMessage.e");
+      assertFindFieldByName("proto2_unittest_import.ImportMessage.d");
+      assertFindFieldByName("proto2_unittest.TestAllTypes.optional_int32");
+      assertFindFieldByName("proto2_unittest.TestAllTypes.NestedMessage.bb");
+      assertThat(pool.findFieldByName("")).isNull();
+      assertThat(pool.findFieldByName(".proto2_unittest.TestAllTypes.NestedMessage.bb")).isNull();
+      assertThat(pool.findFieldByName("proto2_unittest.TestAllTypes.field_that_does_not_exist"))
+          .isNull();
+    }
+
+    private void assertFindOneofByName(String name) {
+      OneofDescriptor descriptor = pool.findOneofByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+      assertThat(pool.findFileContainingSymbol(name)).isEqualTo(descriptor.getFile());
+    }
+
+    @Test
+    public void testFindOneofByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindOneofByName("proto2_unittest.TestOneof.foo");
+      assertThat(pool.findOneofByName("")).isNull();
+      assertThat(pool.findOneofByName(".proto2_unittest.TestOneof.foo")).isNull();
+      assertThat(pool.findOneofByName("proto2_unittest.TestAllTypes.oneof_that_does_not_exist"))
+          .isNull();
+    }
+
+    private void assertFindServiceByName(String name) {
+      ServiceDescriptor descriptor = pool.findServiceByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+      assertThat(pool.findFileContainingSymbol(name)).isEqualTo(descriptor.getFile());
+    }
+
+    @Test
+    public void testFindServiceByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindServiceByName("proto2_unittest.TestService");
+      assertThat(pool.findServiceByName("")).isNull();
+      assertThat(pool.findServiceByName(".proto2_unittest.TestService")).isNull();
+      assertThat(pool.findServiceByName("proto2_unittest.ServiceThatDoesNotExist")).isNull();
+    }
+
+    private void assertFindMethodByName(String name) {
+      MethodDescriptor descriptor = pool.findMethodByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+      assertThat(pool.findFileContainingSymbol(name)).isEqualTo(descriptor.getFile());
+    }
+
+    @Test
+    public void testFindMethodByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindMethodByName("proto2_unittest.TestService.Foo");
+      assertThat(pool.findMethodByName("")).isNull();
+      assertThat(pool.findMethodByName(".proto2_unittest.TestService.Foo")).isNull();
+      assertThat(pool.findMethodByName("proto2_unittest.TestService.MethodThatDoesNotExist"))
+          .isNull();
+    }
+
+    private void assertFindExtensionByName(String name) {
+      FieldDescriptor descriptor = pool.findExtensionByName(name);
+      assertWithMessage(name).that(descriptor).isNotNull();
+      assertThat(descriptor.getName()).isEqualTo(getName(name));
+      assertThat(descriptor.getFullName()).isEqualTo(name);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+    }
+
+    @Test
+    public void testFindExtensionByName() throws Exception {
+      addDescriptorsToPool();
+      assertFindExtensionByName("proto2_unittest.packed_int32_extension");
+      assertFindExtensionByName("proto2_unittest.TestParsingMerge.optional_ext");
+      assertThat(pool.findExtensionByName("proto2_unittest.extension_that_does_not_exist"))
+          .isNull();
+    }
+
+    private void assertFindExtensionByNumber(String extendeeName, int number) {
+      Descriptor extendee = pool.findMessageTypeByName(extendeeName);
+      assertWithMessage(extendeeName).that(extendee).isNotNull();
+      FieldDescriptor descriptor = pool.findExtensionByNumber(extendee, number);
+      assertWithMessage("%s.%s", extendeeName, number).that(descriptor).isNotNull();
+      assertThat(descriptor.getContainingType()).isEqualTo(extendee);
+      assertThat(descriptor.getNumber()).isEqualTo(number);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+    }
+
+    @Test
+    public void testFindExtensionByNumber() throws Exception {
+      addDescriptorsToPool();
+      assertFindExtensionByNumber("proto2_unittest.TestPackedExtensions", 90);
+      assertFindExtensionByNumber("proto2_unittest.TestParsingMerge", 1000);
+      assertThat(
+              pool.findExtensionByNumber(
+                  pool.findMessageTypeByName("proto2_unittest.TestAllTypes"), 1))
+          .isNull();
+      assertThat(
+              pool.findExtensionByNumber(
+                  pool.findMessageTypeByName("proto2_unittest.TestParsingMerge"), 0))
+          .isNull();
+      assertThat(
+              pool.findExtensionByNumber(
+                  pool.findMessageTypeByName("proto2_unittest.TestParsingMerge"), 1))
+          .isNull();
+    }
+
+    private void assertFindExtensionByPrintableName(String extendeeName, String printableName) {
+      Descriptor extendee = pool.findMessageTypeByName(extendeeName);
+      assertWithMessage(extendeeName).that(extendee).isNotNull();
+      FieldDescriptor descriptor = pool.findExtensionByPrintableName(extendee, printableName);
+      assertWithMessage("%s.%s", extendeeName, printableName).that(descriptor).isNotNull();
+      assertThat(descriptor.getContainingType()).isEqualTo(extendee);
+      assertThat(descriptor.getFullName()).isEqualTo(printableName);
+      assertThat(descriptor.getFile().getPool()).isSameInstanceAs(pool);
+    }
+
+    @Test
+    public void testFindExtensionByPrintableName() throws Exception {
+      addDescriptorsToPool();
+      assertFindExtensionByPrintableName(
+          "proto2_unittest.TestPackedExtensions", "proto2_unittest.packed_int32_extension");
+      assertFindExtensionByPrintableName(
+          "proto2_unittest.TestParsingMerge", "proto2_unittest.TestParsingMerge.optional_ext");
+      assertFindExtensionByPrintableName(
+          "proto2_unittest.TestAllExtensions", "proto2_unittest.TestNestedExtension.test");
+      assertThat(
+              pool.findExtensionByPrintableName(
+                  pool.findMessageTypeByName("proto2_unittest.TestAllTypes"), ""))
+          .isNull();
+      assertThat(
+              pool.findExtensionByPrintableName(
+                  pool.findMessageTypeByName("proto2_unittest.TestParsingMerge"),
+                  ".proto2_unittest.extension_that_does_not_exist"))
+          .isNull();
+      assertThat(
+              pool.findExtensionByPrintableName(
+                  pool.findMessageTypeByName("proto2_unittest.TestParsingMerge"),
+                  "proto2_unittest.extension_that_does_not_exist"))
+          .isNull();
+    }
+
+    @Test
+    public void allowUnknownDependencies_throwsWhenBuildAlreadyStarted() throws Exception {
+      addDescriptorsToPool();
+      IllegalStateException exception =
+          assertThrows(IllegalStateException.class, () -> pool.allowUnknownDependencies());
+      assertThat(exception.getMessage())
+          .contains("Allowing unknown dependencies can only be done before building any files.");
+    }
+
+    @Test
+    public void setFeatureSetDefaults_throwsWhenBuildAlreadyStarted() throws Exception {
+      addDescriptorsToPool();
+      IllegalStateException exception =
+          assertThrows(
+              IllegalStateException.class,
+              () -> pool.setFeatureSetDefaults(Descriptors.getJavaEditionDefaults()));
+      assertThat(exception.getMessage())
+          .contains(
+              "Changing the feature set defaults can only be done before building any files.");
+    }
+
+    @Test
+    public void setFeatureSetDefaults_throwsWhenMinimumMaximumInvalid() throws Exception {
+      IllegalArgumentException exception =
+          assertThrows(
+              IllegalArgumentException.class,
+              () ->
+                  pool.setFeatureSetDefaults(
+                      FeatureSetDefaults.newBuilder()
+                          .setMinimumEdition(Edition.EDITION_2024)
+                          .setMaximumEdition(Edition.EDITION_2023)
+                          .build()));
+      assertThat(exception.getMessage())
+          .contains("Invalid edition range EDITION_2024 to EDITION_2023.");
+    }
+
+    @Test
+    public void setFeatureSetDefaults_throwsWhenUnknownDefault() throws Exception {
+      IllegalArgumentException exception =
+          assertThrows(
+              IllegalArgumentException.class,
+              () ->
+                  pool.setFeatureSetDefaults(
+                      FeatureSetDefaults.newBuilder()
+                          .setMinimumEdition(Edition.EDITION_2023)
+                          .setMaximumEdition(Edition.EDITION_2024)
+                          .addDefaults(
+                              FeatureSetEditionDefault.newBuilder()
+                                  .setEdition(Edition.EDITION_UNKNOWN)
+                                  .build())
+                          .build()));
+      assertThat(exception.getMessage()).contains("Invalid edition EDITION_UNKNOWN specified.");
+    }
+
+    @Test
+    public void setFeatureSetDefaults_throwsWhenNotStrictlyIncreasing() throws Exception {
+      IllegalArgumentException exception =
+          assertThrows(
+              IllegalArgumentException.class,
+              () ->
+                  pool.setFeatureSetDefaults(
+                      FeatureSetDefaults.newBuilder()
+                          .setMinimumEdition(Edition.EDITION_2023)
+                          .setMaximumEdition(Edition.EDITION_2024)
+                          .addDefaults(
+                              FeatureSetEditionDefault.newBuilder()
+                                  .setEdition(Edition.EDITION_2024)
+                                  .build())
+                          .addDefaults(
+                              FeatureSetEditionDefault.newBuilder()
+                                  .setEdition(Edition.EDITION_2024)
+                                  .build())
+                          .build()));
+      assertThat(exception.getMessage())
+          .contains(
+              "Feature set defaults not strictly increasing. Edition EDITION_2024 is greater than"
+                  + " or equal to edition EDITION_2024.");
+    }
+  }
+
+  public static class DescriptorNameMapTest {
+
+    private static FileDescriptor newFileDescriptor(int number)
+        throws DescriptorValidationException {
+      return FileDescriptor.buildFrom(
+          FileDescriptorProto.newBuilder()
+              .setName("foo/bar" + number + ".proto")
+              .setPackage("foo.bar" + number)
+              .setSyntax("proto2")
+              .addMessageType(DescriptorProto.newBuilder().setName("Message").build())
+              .build(),
+          new FileDescriptor[0]);
+    }
+
+    @Test
+    public void empty() {
+      DescriptorNameMap<FileDescriptor> map = new DescriptorNameMap<>(FileDescriptor::getFullName);
+      assertThat(map).isEmpty();
+      assertThat(map).hasSize(0);
+      assertThat(map.get("foo/bar1.proto")).isNull();
+      assertThat(map.remove("foo/bar1.proto")).isNull();
+    }
+
+    @Test
+    public void addRemove() throws Exception {
+      DescriptorNameMap<FileDescriptor> map = new DescriptorNameMap<>(FileDescriptor::getFullName);
+      FileDescriptor entry = newFileDescriptor(1);
+      assertThat(map.put(entry)).isNull();
+      assertThat(map).isNotEmpty();
+      assertThat(map).hasSize(1);
+      assertThat(map.get("foo/bar1.proto")).isEqualTo(entry);
+      assertThat(map).containsExactly(entry);
+      assertThat(map.remove("foo/bar1.proto")).isEqualTo(entry);
+      assertThat(map).isEmpty();
+      assertThat(map).hasSize(0);
+    }
+
+    @Test
+    public void stress() throws Exception {
+      DescriptorNameMap<FileDescriptor> map = new DescriptorNameMap<>(FileDescriptor::getFullName);
+      FileDescriptor[] entries = new FileDescriptor[64];
+      for (int i = 0; i < entries.length; ++i) {
+        entries[i] = newFileDescriptor(i + 1);
+      }
+      // Add.
+      for (int i = 0; i < entries.length; ++i) {
+        FileDescriptor entry = entries[i];
+        assertThat(map.put(entry)).isNull();
+        assertThat(map).isNotEmpty();
+        assertThat(map).hasSize(i + 1);
+        for (int j = 0; j <= i; ++j) {
+          FileDescriptor prevEntry = entries[j];
+          assertThat(map.get(prevEntry.getFullName())).isEqualTo(prevEntry);
+        }
+        assertThat(map).containsExactlyElementsIn(Arrays.copyOfRange(entries, 0, i + 1));
+      }
+      // Remove.
+      for (int i = entries.length; i > 0; --i) {
+        FileDescriptor entry = entries[i - 1];
+        assertThat(map).isNotEmpty();
+        assertThat(map).hasSize(i);
+        assertThat(map.remove(entry.getFullName())).isEqualTo(entry);
+        assertThat(map).containsExactlyElementsIn(Arrays.copyOfRange(entries, 0, i - 1));
+      }
     }
   }
 }
