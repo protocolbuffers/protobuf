@@ -35,6 +35,7 @@
 #include "google/protobuf/compiler/java/full/message_builder.h"
 #include "google/protobuf/compiler/java/message_serialization.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -100,7 +101,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   if (descriptor_->containing_type() != nullptr) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
   }
-  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_)) {
     vars["private"] = "private ";
   } else {
     // We can only make these package-private since the classes that use them
@@ -175,7 +176,7 @@ void ImmutableMessageGenerator::GenerateFieldAccessorTable(
     io::Printer* printer, int* bytecode_estimate) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  if (NestedInFileClass(*descriptor_, /* immutable = */ true)) {
+  if (NestedInFileClass(*descriptor_)) {
     vars["private"] = "private ";
   } else {
     // We can only make these package-private since the classes that use them
