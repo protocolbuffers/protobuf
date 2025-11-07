@@ -10,7 +10,6 @@
 #include <gtest/gtest.h>
 #include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb_generator/tests/test_model.upb.h"
-#include "hpb_generator/tests/test_model.upb_minitable.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 
@@ -56,7 +55,7 @@ TEST(CppGeneratedCode, CanCreateProxyWithoutCasting) {
 TEST(CppGeneratedCode, CanCreateCProxyWithMiniTable) {
   upb_Arena* arena = upb_Arena_New();
   hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
-  auto minitable = &hpb_0unittest__TestModel_msg_init;
+  auto minitable = hpb_0unittest__TestModel_msg_init_ptr;
   hpb_unittest::protos::TestModel::CProxy const_handle =
       hpb::interop::upb::MakeCHandle<TestModel>((upb_Message*)msg, minitable,
                                                 arena);
@@ -67,7 +66,7 @@ TEST(CppGeneratedCode, CanCreateCProxyWithMiniTable) {
 TEST(CppGeneratedCode, CanCreateProxyWithMiniTable) {
   upb_Arena* arena = upb_Arena_New();
   hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
-  auto minitable = &hpb_0unittest__TestModel_msg_init;
+  auto minitable = hpb_0unittest__TestModel_msg_init_ptr;
   hpb_unittest::protos::TestModel::Proxy handle =
       hpb::interop::upb::MakeHandle<TestModel>((upb_Message*)msg, minitable,
                                                arena);
@@ -78,7 +77,7 @@ TEST(CppGeneratedCode, CanCreateProxyWithMiniTable) {
 TEST(CppGeneratedCode, NonmatchingMinitablesExplode) {
   upb_Arena* arena = upb_Arena_New();
   hpb_unittest_TestModel* msg = hpb_unittest_TestModel_new(arena);
-  auto different_minitable = &hpb_0unittest__TestModel__NestedChild_msg_init;
+  auto different_minitable = hpb_0unittest__TestModel__NestedChild_msg_init_ptr;
   EXPECT_DEATH(
       {
         hpb::interop::upb::MakeHandle<TestModel>((upb_Message*)msg,

@@ -34,6 +34,12 @@ UPBC_API std::string MiniTableEnumVarName(absl::string_view full_name);
 UPBC_API std::string MiniTableExtensionVarName(absl::string_view full_name);
 UPBC_API std::string MiniTableFileVarName(absl::string_view proto_filename);
 
+// This is used for weak linking and tree shaking. Other translation units may
+// define weak versions of this symbol that point to a dummy message, to
+// gracefully degrade the behavior of the generated code when the message is not
+// linked into the current binary.
+UPBC_API std::string MiniTableMessagePtrVarName(absl::string_view full_name);
+
 }  // namespace generator
 }  // namespace upb
 
