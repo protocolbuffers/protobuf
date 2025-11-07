@@ -22,8 +22,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.InvalidMarkException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
@@ -957,23 +955,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public abstract boolean isValidUtf8();
 
-  /**
-   * Tells whether the given byte sequence is a well-formed, malformed, or incomplete UTF-8 byte
-   * sequence. This method accepts and returns a partial state result, allowing the bytes for a
-   * complete UTF-8 byte sequence to be composed from multiple {@code ByteString} segments.
-   *
-   * @param state either {@code 0} (if this is the initial decoding operation) or the value returned
-   *     from a call to a partial decoding method for the previous bytes
-   * @param offset offset of the first byte to check
-   * @param length number of bytes to check
-   * @return {@code -1} if the partial byte sequence is definitely malformed, {@code 0} if it is
-   *     well-formed (no additional input needed), or, if the byte sequence is "incomplete", i.e.
-   *     apparently terminated in the middle of a character, an opaque integer "state" value
-   *     containing enough information to decode the character when passed to a subsequent
-   *     invocation of a partial decoding method.
-   */
-  protected abstract int partialIsValidUtf8(int state, int offset, int length);
-
   // =================================================================
   // equals() and hashCode()
 
@@ -1563,11 +1544,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return Utf8.isValidUtf8(bytes);
     }
 
-    @Override
-    protected int partialIsValidUtf8(int state, int offset, int length) {
-      return Utf8.partialIsValidUtf8(state, bytes, offset, offset + length);
-    }
-
     // =================================================================
     // equals() and hashCode()
 
@@ -1752,12 +1728,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     @Override
     public boolean isValidUtf8() {
       return Utf8.isValidUtf8(bytes, offset, offset + length);
-    }
-
-    @Override
-    protected int partialIsValidUtf8(int state, int offset, int length) {
-      int index = this.offset + offset;
-      return Utf8.partialIsValidUtf8(state, bytes, index, index + length);
     }
 
     @Override

@@ -130,29 +130,9 @@ final class Utf8 {
    * Returns {@code true} if the given byte array slice is a well-formed UTF-8 byte sequence. The
    * range of bytes to be checked extends from index {@code index}, inclusive, to {@code limit},
    * exclusive.
-   *
-   * <p>This is a convenience method, equivalent to {@code partialIsValidUtf8(bytes, index, limit)
-   * == Utf8.COMPLETE}.
    */
   static boolean isValidUtf8(byte[] bytes, int index, int limit) {
     return processor.isValidUtf8(bytes, index, limit);
-  }
-
-  /**
-   * Tells whether the given byte array slice is a well-formed, malformed, or incomplete UTF-8 byte
-   * sequence. The range of bytes to be checked extends from index {@code index}, inclusive, to
-   * {@code limit}, exclusive.
-   *
-   * @param state either {@link Utf8#COMPLETE} (if this is the initial decoding operation) or the
-   *     value returned from a call to a partial decoding method for the previous bytes
-   * @return {@link #MALFORMED} if the partial byte sequence is definitely not well-formed, {@link
-   *     #COMPLETE} if it is well-formed (no additional input needed), or if the byte sequence is
-   *     "incomplete", i.e. apparently terminated in the middle of a character, an opaque integer
-   *     "state" value containing enough information to decode the character when passed to a
-   *     subsequent invocation of a partial decoding method.
-   */
-  static int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
-    return processor.partialIsValidUtf8(state, bytes, index, limit);
   }
 
   private static int incompleteStateFor(int byte1) {
@@ -293,19 +273,6 @@ final class Utf8 {
   }
 
   /**
-   * Determines if the given {@link ByteBuffer} is a partially valid UTF-8 string.
-   *
-   * <p>Selects an optimal algorithm based on the type of {@link ByteBuffer} (i.e. heap or direct)
-   * and the capabilities of the platform.
-   *
-   * @param buffer the buffer to check.
-   * @see Utf8#partialIsValidUtf8(int, byte[], int, int)
-   */
-  static int partialIsValidUtf8(int state, ByteBuffer buffer, int index, int limit) {
-    return processor.partialIsValidUtf8(state, buffer, index, limit);
-  }
-
-  /**
    * Decodes the given UTF-8 portion of the {@link ByteBuffer} into a {@link String}.
    *
    * @throws InvalidProtocolBufferException if the input is not valid UTF-8.
@@ -388,7 +355,7 @@ final class Utf8 {
      *     "state" value containing enough information to decode the character when passed to a
      *     subsequent invocation of a partial decoding method.
      */
-    abstract int partialIsValidUtf8(int state, byte[] bytes, int index, int limit);
+    protected abstract int partialIsValidUtf8(int state, byte[] bytes, int index, int limit);
 
     /**
      * Returns {@code true} if the given portion of the {@link ByteBuffer} is a well-formed UTF-8
@@ -420,7 +387,7 @@ final class Utf8 {
     }
 
     /** Performs validation for direct {@link ByteBuffer} instances. */
-    abstract int partialIsValidUtf8Direct(
+    protected abstract int partialIsValidUtf8Direct(
         final int state, final ByteBuffer buffer, int index, final int limit);
 
     /**
@@ -428,7 +395,7 @@ final class Utf8 {
      * than potentially faster approaches. This first completes validation for the current character
      * (provided by {@code state}) and then finishes validation for the sequence.
      */
-    final int partialIsValidUtf8Default(
+    protected final int partialIsValidUtf8Default(
         final int state, final ByteBuffer buffer, int index, final int limit) {
       if (state != COMPLETE) {
         // The previous decoding operation was incomplete (or malformed).
@@ -783,7 +750,7 @@ final class Utf8 {
   /** {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods. */
   static final class SafeProcessor extends Processor {
     @Override
-    int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
+    protected int partialIsValidUtf8(int state, byte[] bytes, int index, int limit) {
       if (state != COMPLETE) {
         // The previous decoding operation was incomplete (or malformed).
         // We look for a well-formed sequence consisting of bytes from
@@ -871,7 +838,7 @@ final class Utf8 {
     }
 
     @Override
-    int partialIsValidUtf8Direct(int state, ByteBuffer buffer, int index, int limit) {
+    protected int partialIsValidUtf8Direct(int state, ByteBuffer buffer, int index, int limit) {
       // For safe processing, we have to use the ByteBuffer API.
       return partialIsValidUtf8Default(state, buffer, index, limit);
     }
@@ -1163,7 +1130,7 @@ final class Utf8 {
     }
 
     @Override
-    int partialIsValidUtf8(int state, byte[] bytes, final int index, final int limit) {
+    protected int partialIsValidUtf8(int state, byte[] bytes, final int index, final int limit) {
       // Bitwise OR combines the sign bits so any negative value fails the check.
       if ((index | limit | bytes.length - limit) < 0) {
         throw new ArrayIndexOutOfBoundsException(
@@ -1258,7 +1225,7 @@ final class Utf8 {
     }
 
     @Override
-    int partialIsValidUtf8Direct(
+    protected int partialIsValidUtf8Direct(
         final int state, ByteBuffer buffer, final int index, final int limit) {
       // Bitwise OR combines the sign bits so any negative value fails the check.
       if ((index | limit | buffer.limit() - limit) < 0) {
