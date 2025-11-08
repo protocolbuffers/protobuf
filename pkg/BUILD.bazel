@@ -249,6 +249,7 @@ cc_dist_library(
         "//upb/json",
         "//upb/message:compare",
         "//upb/message:copy",
+        "//upb/mini_table:compat",
         "//upb/mini_table:debug_string",
         "//upb/text",
         "//upb/text:debug",
