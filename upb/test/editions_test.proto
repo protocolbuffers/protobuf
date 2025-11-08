@@ -9,8 +9,6 @@ edition = "2024";
 
 package upb.test_2023;
 
-import "google/protobuf/descriptor.proto";
-
 import option "upb/test/custom_options.proto";
 import option "upb/test/custom_options_unlinked.proto";
 
@@ -27,16 +25,10 @@ message EditionsMessage {
   EditionsEnum enum_field = 5;
   repeated int32 unpacked_field = 6
       [features.repeated_field_encoding = EXPANDED];
-
-  extensions 100 to 199;
 }
 
 enum EditionsEnum {
   option features.enum_type = CLOSED;
 
   ONE = 1;
-}
-
-extend EditionsMessage {
-  int32 ext = 100;
 }

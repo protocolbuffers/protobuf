@@ -94,7 +94,6 @@ proto_library(
         ":custom_options_proto",
         ":custom_options_unlinked_proto",
     ],
-    deps = ["//:descriptor_proto"],
 )
 
 upb_c_proto_library(
@@ -103,39 +102,10 @@ upb_c_proto_library(
     deps = [":editions_test_proto"],
 )
 
-upb_minitable_proto_library(
-    name = "editions_test_upb_minitable_proto",
-    testonly = 1,
-    visibility = ["//upb:__subpackages__"],
-    deps = [":editions_test_proto"],
-)
-
 upb_proto_reflection_library(
     name = "editions_test_upb_proto_reflection",
     testonly = 1,
     deps = [":editions_test_proto"],
-)
-
-proto_library(
-    name = "test_multiple_files_proto",
-    testonly = 1,
-    srcs = [
-        "test_multiple_files.proto",
-        "test_multiple_files2.proto",
-    ],
-)
-
-upb_c_proto_library(
-    name = "test_multiple_files_upb_c_proto",
-    testonly = 1,
-    deps = [":test_multiple_files_proto"],
-)
-
-upb_minitable_proto_library(
-    name = "test_multiple_files_upb_minitable_proto",
-    testonly = 1,
-    visibility = ["//upb:__subpackages__"],
-    deps = [":test_multiple_files_proto"],
 )
 
 proto_library(
@@ -227,6 +197,8 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":custom_options_upb_c_proto",
+        ":custom_options_upb_minitable_proto",
+        ":custom_options_upb_proto_reflection",
         ":editions_test_upb_c_proto",
         ":editions_test_upb_proto_reflection",
         "//upb/base",
@@ -367,7 +339,6 @@ upb_c_proto_library(
 upb_minitable_proto_library(
     name = "custom_options_upb_minitable_proto",
     testonly = 1,
-    visibility = ["//upb:__subpackages__"],
     deps = [":custom_options_proto"],
 )
 
@@ -426,9 +397,6 @@ filegroup(
     srcs = glob(
         [
             "**/*.proto",
-        ],
-        exclude = [
-            "custom_options_unlinked.proto",
         ],
     ),
     visibility = ["//upb:__pkg__"],
