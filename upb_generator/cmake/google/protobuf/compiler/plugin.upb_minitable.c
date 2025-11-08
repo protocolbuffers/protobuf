@@ -15,7 +15,6 @@
 #include "upb/port/def.inc"
 
 extern const struct upb_MiniTable UPB_PRIVATE(_kUpb_MiniTable_StaticallyTreeShaken);
-extern const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* UPB_PRIVATE(upb_generated_extension_list);
 static const upb_MiniTableField google_protobuf_compiler_Version__fields[4] = {
   {1, 12, 64, kUpb_NoSub, 5, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {2, 16, 65, kUpb_NoSub, 5, (int)kUpb_FieldMode_Scalar | ((int)kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
