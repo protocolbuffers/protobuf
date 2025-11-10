@@ -431,6 +431,7 @@ class Descriptor
             ->value("EDITION_PROTO3", 999)
             ->value("EDITION_2023", 1000)
             ->value("EDITION_2024", 1001)
+            ->value("EDITION_UNSTABLE", 9999)
             ->value("EDITION_1_TEST_ONLY", 1)
             ->value("EDITION_2_TEST_ONLY", 2)
             ->value("EDITION_99997_TEST_ONLY", 99997)
