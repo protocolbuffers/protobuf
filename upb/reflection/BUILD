@@ -149,8 +149,8 @@ cc_library(
     ],
     deps = [
         ":internal",
-        "//upb/mem",
         "//upb/mini_descriptor",
+        "//upb/mini_table",
     ],
 )
 
