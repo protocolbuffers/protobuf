@@ -959,7 +959,7 @@ const upb_MiniTable* google__protobuf__GeneratedCodeInfo__Annotation_msg_init() 
 
 const upb_MiniTableEnum* google__protobuf__Edition_enum_init() {
   static const upb_MiniTableEnum* mini_table = NULL;
-  static const char* mini_descriptor = "!)~z!|a1qt_b)|i}{~~`!";
+  static const char* mini_descriptor = "!)~z!|a1cxg!h{va)|i}{~~`!";
   if (mini_table) return mini_table;
   mini_table = upb_MiniTableEnum_Build(mini_descriptor,
                                        strlen(mini_descriptor),
