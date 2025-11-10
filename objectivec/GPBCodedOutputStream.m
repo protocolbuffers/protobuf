@@ -1094,12 +1094,22 @@ size_t GPBComputeWireFormatTagSize(int field_number, GPBDataType dataType) {
 }
 
 size_t GPBComputeRawVarint32Size(int32_t value) {
+#if __has_builtin(__builtin_clz) && !(defined(__x86__) || defined(__x86_64__) || defined(__i386__))
+  // This logic comes from the C++ for CodedOutputStream::VarintSize32(uint32_t), it provides a
+  // branchless calculation of the size. ObjC/C doesn't have some of the nicer C++ things do this so
+  // model it simply. Also don't bother with the Intel specific version since that likely won't be
+  // needed for Apple platforms for much longer.
+  int clz = __builtin_clz((uint32_t)value);
+  const int uint32_digits = 32;  // std::numeric_limits<uint32_t>::digits
+  return (size_t)(((uint32_digits * 9 + 64) - (clz * 9)) / 64);
+#else
   // value is treated as unsigned, so it won't be sign-extended if negative.
   if ((value & (0xffffffff << 7)) == 0) return 1;
   if ((value & (0xffffffff << 14)) == 0) return 2;
   if ((value & (0xffffffff << 21)) == 0) return 3;
   if ((value & (0xffffffff << 28)) == 0) return 4;
   return 5;
+#endif
 }
 
 size_t GPBComputeRawVarint32SizeForInteger(NSInteger value) {
@@ -1108,6 +1118,15 @@ size_t GPBComputeRawVarint32SizeForInteger(NSInteger value) {
 }
 
 size_t GPBComputeRawVarint64Size(int64_t value) {
+#if __has_builtin(__builtin_clzl) && !(defined(__x86__) || defined(__x86_64__) || defined(__i386__))
+  // This logic comes from the C++ for CodedOutputStream::VarintSize64(uint64_t), it provides a
+  // branchless calculation of the size. ObjC/C doesn't have some of the nicer C++ things do this so
+  // model it simply. Also don't bother with the Intel specific version since that likely won't be
+  // needed for Apple platforms for much longer.
+  int clz = __builtin_clzl((uint64_t)value);
+  const int uint64_digits = 64;  // std::numeric_limits<uint64_t>::digits
+  return (size_t)(((uint64_digits * 9 + 64) - (clz * 9)) / 64);
+#else
   if ((value & (0xffffffffffffffffL << 7)) == 0) return 1;
   if ((value & (0xffffffffffffffffL << 14)) == 0) return 2;
   if ((value & (0xffffffffffffffffL << 21)) == 0) return 3;
@@ -1118,4 +1137,5 @@ size_t GPBComputeRawVarint64Size(int64_t value) {
   if ((value & (0xffffffffffffffffL << 56)) == 0) return 8;
   if ((value & (0xffffffffffffffffL << 63)) == 0) return 9;
   return 10;
+#endif
 }
