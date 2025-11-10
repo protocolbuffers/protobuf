@@ -9,8 +9,7 @@
 #define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
 #include "upb/mini_descriptor/decode.h"
-#include "upb/mini_table/extension_registry.h"
-#include "upb/reflection/def.h"
+#include "upb/reflection/def_pool.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -48,9 +47,6 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
 // the use of compiled-in tables, forcing a rebuild of the tables at runtime.
 bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
                                 bool rebuild_minitable);
-
-const upb_ExtensionRegistry* _upb_DefPool_GeneratedExtensionRegistry(
-    const upb_DefPool* s);
 
 #ifdef __cplusplus
 } /* extern "C" */

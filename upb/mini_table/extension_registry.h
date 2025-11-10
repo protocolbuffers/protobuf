@@ -13,7 +13,6 @@
 
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
-#include "upb/mini_table/generated_registry.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -80,6 +79,8 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count);
 
+#ifdef UPB_LINKARR_DECLARE
+
 // Adds all extensions linked into the binary into the registry.  The set of
 // linked extensions is assembled by the linker using linker arrays.  This
 // will likely not work properly if the extensions are split across multiple
@@ -93,14 +94,7 @@ upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
 UPB_API bool upb_ExtensionRegistry_AddAllLinkedExtensions(
     upb_ExtensionRegistry* r);
 
-// Returns the extension registry contained by a reference to the generated
-// registry.  The reference must be held for the lifetime of the registry.
-//
-// TODO This should actually be moved to generated_registry.h, but
-// can't because of the current location of
-// upb_ExtensionRegistry_AddAllLinkedExtensions.
-UPB_API const upb_ExtensionRegistry* upb_ExtensionRegistry_GetGenerated(
-    const upb_GeneratedRegistryRef* genreg);
+#endif  // UPB_LINKARR_DECLARE
 
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.
