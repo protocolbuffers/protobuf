@@ -268,78 +268,100 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter) {
 // ObjCache
 // -----------------------------------------------------------------------------
 
-PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+PyUpb_WeakMap* PyUpb_ObjCache_FromModule(PyObject *module) {
+  if (!module) {
+    return NULL;
+  }
+  PyUpb_ModuleState *state = PyModule_GetState(module);
+  if (!state) {
+    return NULL;
+  }
   return state->obj_cache;
+}
+
+PyUpb_WeakMap* PyUpb_ObjCache_FromState(PyUpb_ModuleState *state) {
+  if (!state) {
+    return NULL;
+  }
+  return state->obj_cache;
+}
+
+PyUpb_WeakMap* PyUpb_ObjCache_Instance(void) {
+#if defined(Py_GIL_DISABLED) || defined(Py_DEBUG)
+  // This is a work-around for a CPython bug in _get_module_index_from_def().
+  // If the EXTENSIONS.hashtable has already been set to null then
+  // PyState_FindModule() will crash.  I'm not sure it's possible to trigger
+  // this bug for the GIL-enabled build.
+  if (Py_IsFinalizing()) {
+    return NULL;
+  }
+#endif
+  PyObject* module = PyState_FindModule(&module_def);
+  return PyUpb_ObjCache_FromModule(module);
 }
 
 // Return true if ObjCache is locked by the current thread.  This always returns
 // true if free-threading is disabled.
-bool PyUpb_ObjCache_IsLocked(void) {
+bool PyUpb_ObjCache_IsLocked(PyUpb_WeakMap *obj_cache) {
 #ifdef Py_GIL_DISABLED
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  return PyUpb_MutexIsLockedByCurrentThread(&state->obj_cache->mutex);
+  return PyUpb_MutexIsLockedByCurrentThread(&obj_cache->mutex);
 #else
   return true;
 #endif
 }
 
-void PyUpb_ObjCache_Lock(void) {
+void PyUpb_ObjCache_Lock(PyUpb_WeakMap *obj_cache) {
 #ifdef Py_GIL_DISABLED
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (state != NULL) {
-    PyUpb_MutexLock(&state->obj_cache->mutex);
+  if (obj_cache != NULL) {
+    PyUpb_MutexLock(&obj_cache->mutex);
   }
 #endif
 }
 
-void PyUpb_ObjCache_Unlock(void) {
+void PyUpb_ObjCache_Unlock(PyUpb_WeakMap *obj_cache) {
 #ifdef Py_GIL_DISABLED
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (state != NULL) {
-    PyUpb_MutexUnlock(&state->obj_cache->mutex);
+  if (obj_cache != NULL) {
+    PyUpb_MutexUnlock(&obj_cache->mutex);
   }
 #endif
 }
 
-void PyUpb_ObjCache_AddLockHeld(const void* key, PyObject* py_obj) {
-  assert(PyUpb_ObjCache_IsLocked());
-  PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
+void PyUpb_ObjCache_AddLockHeld(PyUpb_WeakMap* obj_cache, const void* key,
+                                PyObject* py_obj) {
+  assert(PyUpb_ObjCache_IsLocked(obj_cache));
+  PyUpb_WeakMap_Add(obj_cache, key, py_obj);
 }
 
-void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj) {
-  PyUpb_ObjCache_Lock();
-  PyUpb_WeakMap_Add(PyUpb_ObjCache_Instance(), key, py_obj);
-  PyUpb_ObjCache_Unlock();
+void PyUpb_ObjCache_Add(PyUpb_WeakMap* obj_cache, const void* key,
+                        PyObject* py_obj) {
+  PyUpb_ObjCache_Lock(obj_cache);
+  PyUpb_WeakMap_Add(obj_cache, key, py_obj);
+  PyUpb_ObjCache_Unlock(obj_cache);
 }
 
-void PyUpb_ObjCache_DeleteLockHeld(const void* key) {
-  assert(PyUpb_ObjCache_IsLocked());
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (state != NULL) {
-    // During the shutdown sequence, our object's Dealloc() methods can be
-    // called *after* our module Dealloc() method has been called.  At that
-    // point our state will be NULL and there is nothing to delete out of the
-    // map.
-    PyUpb_WeakMap_Delete(state->obj_cache, key);
+void PyUpb_ObjCache_DeleteLockHeld(PyUpb_WeakMap* obj_cache, const void* key) {
+  if (obj_cache != NULL) {
+    assert(PyUpb_ObjCache_IsLocked(obj_cache));
+    PyUpb_WeakMap_Delete(obj_cache, key);
   }
 }
 
-void PyUpb_ObjCache_Delete(const void* key) {
-  PyUpb_ObjCache_Lock();
-  PyUpb_ObjCache_DeleteLockHeld(key);
-  PyUpb_ObjCache_Unlock();
+void PyUpb_ObjCache_Delete(PyUpb_WeakMap* obj_cache, const void* key) {
+  PyUpb_ObjCache_Lock(obj_cache);
+  PyUpb_ObjCache_DeleteLockHeld(obj_cache, key);
+  PyUpb_ObjCache_Unlock(obj_cache);
 }
 
-PyObject* PyUpb_ObjCache_GetLockHeld(const void* key) {
-  assert(PyUpb_ObjCache_IsLocked());
-  return PyUpb_WeakMap_Get(PyUpb_ObjCache_Instance(), key);
+PyObject* PyUpb_ObjCache_GetLockHeld(PyUpb_WeakMap* obj_cache,
+                                     const void* key) {
+  assert(PyUpb_ObjCache_IsLocked(obj_cache));
+  return PyUpb_WeakMap_Get(obj_cache, key);
 }
 
-PyObject* PyUpb_ObjCache_Get(const void* key) {
-  PyUpb_ObjCache_Lock();
-  PyObject *ret = PyUpb_ObjCache_GetLockHeld(key);
-  PyUpb_ObjCache_Unlock();
+PyObject* PyUpb_ObjCache_Get(PyUpb_WeakMap *obj_cache, const void* key) {
+  PyUpb_ObjCache_Lock(obj_cache);
+  PyObject *ret = PyUpb_ObjCache_GetLockHeld(obj_cache, key);
+  PyUpb_ObjCache_Unlock(obj_cache);
   return ret;
 }
 

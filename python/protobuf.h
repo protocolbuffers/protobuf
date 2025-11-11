@@ -147,16 +147,17 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
 
 // The object cache is a global WeakMap for mapping upb objects to the
 // corresponding wrapper.
-void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
-void PyUpb_ObjCache_AddLockHeld(const void* key, PyObject* py_obj);
-void PyUpb_ObjCache_Delete(const void* key);
-void PyUpb_ObjCache_DeleteLockHeld(const void* key);
-PyObject* PyUpb_ObjCache_Get(const void* key);  // returns NULL if not present.
-PyObject* PyUpb_ObjCache_GetLockHeld(const void* key);  // returns NULL if not present.
+void PyUpb_ObjCache_Add(PyUpb_WeakMap *obj_cache, const void* key, PyObject* py_obj);
+void PyUpb_ObjCache_AddLockHeld(PyUpb_WeakMap *obj_cache, const void* key, PyObject* py_obj);
+void PyUpb_ObjCache_Delete(PyUpb_WeakMap *obj_cache, const void* key);
+void PyUpb_ObjCache_DeleteLockHeld(PyUpb_WeakMap *obj_cache, const void* key);
+PyObject* PyUpb_ObjCache_Get(PyUpb_WeakMap *obj_cache, const void* key);  // returns NULL if not present.
+PyObject* PyUpb_ObjCache_GetLockHeld(PyUpb_WeakMap *obj_cache, const void* key);  // returns NULL if not present.
+PyUpb_WeakMap* PyUpb_ObjCache_FromModule(PyObject *module);
 PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
-bool PyUpb_ObjCache_IsLocked(void);
-void PyUpb_ObjCache_Lock(void);
-void PyUpb_ObjCache_Unlock(void);
+bool PyUpb_ObjCache_IsLocked(PyUpb_WeakMap *obj_cache);
+void PyUpb_ObjCache_Lock(PyUpb_WeakMap *obj_cache);
+void PyUpb_ObjCache_Unlock(PyUpb_WeakMap *obj_cache);
 
 // -----------------------------------------------------------------------------
 // Arena

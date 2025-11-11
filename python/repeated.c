@@ -58,7 +58,8 @@ static upb_Array* PyUpb_RepeatedContainer_GetIfReified(
 upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
                                          PyUpb_WeakMap* subobj_map,
                                          intptr_t iter) {
-  assert(PyUpb_ObjCache_IsLocked());
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  assert(PyUpb_ObjCache_IsLocked(state->obj_cache));
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   assert(PyUpb_RepeatedContainer_IsStub(self));
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
@@ -72,7 +73,7 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
     PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f,
                                     (upb_MessageValue){.array_val = arr});
   }
-  PyUpb_ObjCache_AddLockHeld(arr, &self->ob_base);
+  PyUpb_ObjCache_AddLockHeld(state->obj_cache, arr, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.arr = arr;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
@@ -81,7 +82,8 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
 }
 
 upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
-  PyUpb_ObjCache_Lock();
+  PyUpb_WeakMap *obj_cache = PyUpb_ObjCache_Instance();
+  PyUpb_ObjCache_Lock(obj_cache);
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   if (arr) goto out;  // Already writable.
@@ -89,23 +91,24 @@ upb_Array* PyUpb_RepeatedContainer_EnsureReified(PyObject* _self) {
   arr = PyUpb_RepeatedContainer_Reify((PyObject*)self, NULL, NULL, 0);
 
 out:
-  PyUpb_ObjCache_Unlock();
+  PyUpb_ObjCache_Unlock(obj_cache);
   return arr;
 }
 
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   Py_DECREF(self->arena);
-  PyUpb_ObjCache_Lock();
+  PyUpb_WeakMap *obj_cache = PyUpb_ObjCache_Instance();
+  PyUpb_ObjCache_Lock(obj_cache);
   if (PyUpb_RepeatedContainer_IsStub(self)) {
     PyUpb_Message_CacheDelete(self->ptr.parent,
                               PyUpb_RepeatedContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
   } else {
-    PyUpb_ObjCache_DeleteLockHeld(self->ptr.arr);
+    PyUpb_ObjCache_DeleteLockHeld(obj_cache, self->ptr.arr);
   }
   Py_DECREF(PyUpb_RepeatedContainer_GetFieldDescriptor(self));
-  PyUpb_ObjCache_Unlock();
+  PyUpb_ObjCache_Unlock(obj_cache);
   PyUpb_Dealloc(self);
 }
 
@@ -141,8 +144,9 @@ PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
 PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
                                                      const upb_FieldDef* f,
                                                      PyObject* arena) {
-  PyUpb_ObjCache_Lock();
-  PyObject* ret = PyUpb_ObjCache_GetLockHeld(arr);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ObjCache_Lock(state->obj_cache);
+  PyObject* ret = PyUpb_ObjCache_GetLockHeld(state->obj_cache, arr);
   if (ret) goto out;
 
   PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
@@ -152,10 +156,10 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
   repeated->ptr.arr = arr;
   ret = &repeated->ob_base;
   Py_INCREF(arena);
-  PyUpb_ObjCache_AddLockHeld(arr, ret);
+  PyUpb_ObjCache_AddLockHeld(state->obj_cache, arr, ret);
 
 out:
-  PyUpb_ObjCache_Unlock();
+  PyUpb_ObjCache_Unlock(state->obj_cache);
   return ret;
 }
 
@@ -172,7 +176,7 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
   clone->field = (uintptr_t)PyUpb_FieldDescriptor_Get(f);
   clone->ptr.arr =
       upb_Array_New(PyUpb_Arena_Get(clone->arena), upb_FieldDef_CType(f));
-  PyUpb_ObjCache_Add(clone->ptr.arr, (PyObject*)clone);
+  PyUpb_ObjCache_Add(PyUpb_ObjCache_Instance(), clone->ptr.arr, (PyObject*)clone);
   PyObject* result = PyUpb_RepeatedContainer_MergeFrom((PyObject*)clone, _self);
   if (!result) {
     Py_DECREF(clone);

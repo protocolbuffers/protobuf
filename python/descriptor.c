@@ -56,7 +56,7 @@ static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
   base->features = NULL;
   base->message_meta = NULL;
 
-  PyUpb_ObjCache_Add(def, &base->ob_base);
+  PyUpb_ObjCache_Add(state->obj_cache, def, &base->ob_base);
   return base;
 }
 
@@ -66,14 +66,16 @@ static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
 static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
                                           const void* def,
                                           const upb_FileDef* file) {
-  PyUpb_ObjCache_Lock();
-  PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)PyUpb_ObjCache_GetLockHeld(def);
+  PyUpb_WeakMap *obj_cache = PyUpb_ObjCache_Instance();
+  PyUpb_ObjCache_Lock(obj_cache);
+  PyUpb_DescriptorBase* base =
+      (PyUpb_DescriptorBase*)PyUpb_ObjCache_GetLockHeld(obj_cache, def);
 
   if (!base) {
     base = PyUpb_DescriptorBase_DoCreate(type, def, file);
   }
 
-  PyUpb_ObjCache_Unlock();
+  PyUpb_ObjCache_Unlock(obj_cache);
   return &base->ob_base;
 }
 
@@ -214,7 +216,7 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   if (PyType_HasFeature(Py_TYPE(base), Py_TPFLAGS_HAVE_GC)) {
     PyObject_GC_UnTrack(base);
   }
-  PyUpb_ObjCache_Delete(base->def);
+  PyUpb_ObjCache_Delete(PyUpb_ObjCache_Instance(), base->def);
   // In addition to being visited by GC, instances can also (potentially) be
   // accessed whenever arbitrary code is executed. Destructors can execute
   // arbitrary code, so any struct members we DECREF should be set to NULL
@@ -254,7 +256,8 @@ PyObject* PyUpb_Descriptor_Get(const upb_MessageDef* m) {
 }
 
 static PyObject* PyUpb_Descriptor_GetClassLockHeld(const upb_MessageDef* m) {
-  PyObject* ret = PyUpb_ObjCache_GetLockHeld(upb_MessageDef_MiniTable(m));
+  PyObject* ret = PyUpb_ObjCache_GetLockHeld(PyUpb_ObjCache_Instance(),
+                                             upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
   // On demand create the clss if not exist. However, if users repeatedly
@@ -289,9 +292,10 @@ void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta) {
 }
 
 PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
-  PyUpb_ObjCache_Lock();
+  PyUpb_WeakMap *obj_cache = PyUpb_ObjCache_Instance();
+  PyUpb_ObjCache_Lock(obj_cache);
   PyObject *ret = PyUpb_Descriptor_GetClassLockHeld(m);
-  PyUpb_ObjCache_Unlock();
+  PyUpb_ObjCache_Unlock(obj_cache);
   return ret;
 }
 
@@ -563,7 +567,8 @@ static PyObject* PyUpb_Descriptor_GetFullName(PyObject* self, void* closure) {
 static PyObject* PyUpb_Descriptor_GetConcreteClass(PyObject* self,
                                                    void* closure) {
   const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(self);
-  return PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(msgdef));
+  return PyUpb_ObjCache_Get(PyUpb_ObjCache_Instance(),
+                            upb_MessageDef_MiniTable(msgdef));
 }
 
 static PyObject* PyUpb_Descriptor_GetFile(PyObject* self, void* closure) {
