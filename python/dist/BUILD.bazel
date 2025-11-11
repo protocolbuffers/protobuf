@@ -11,7 +11,7 @@ load("@protobuf_pip_deps//:requirements.bzl", "requirement")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION", "SYSTEM_PYTHON_ABI_THREAD")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load(":py_proto_library.bzl", "py_proto_library")
@@ -326,11 +326,19 @@ genrule(
     tools = [":setup_wrapper"],
 )
 
+# Free-threaded builds (e.g., "3.14t") don't have a stable ABI ("abi3"),
+# so we use a tag based on the CPython version (e.g., "cp314t") instead.
+default_abi = (
+    "cp" + SYSTEM_PYTHON_VERSION + "t"
+    if SYSTEM_PYTHON_ABI_THREAD == "t"
+    else "abi3"
+)
+
 py_wheel(
     name = "binary_wheel",
     abi = select({
         "//python:full_api_3.9": "cp39",
-        "//conditions:default": "cp314t",
+        "//conditions:default": default_abi,
     }),
     author = "protobuf@googlegroups.com",
     author_email = "protobuf@googlegroups.com",

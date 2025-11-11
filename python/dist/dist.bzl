@@ -1,7 +1,7 @@
 """Rules to create python distribution files and properly name them"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION", "SYSTEM_PYTHON_ABI_THREAD")
 
 def _get_suffix(limited_api, python_version, cpu):
     """Computes an ABI version tag for an extension module per PEP 3149."""
@@ -20,6 +20,8 @@ def _get_suffix(limited_api, python_version, cpu):
         python_version = SYSTEM_PYTHON_VERSION
         if int(python_version) < 38:
             python_version += "m"
+        if SYSTEM_PYTHON_ABI_THREAD == "t":
+            python_version += "t"
         abis = {
             "darwin_arm64": "darwin",
             "darwin_x86_64": "darwin",
@@ -33,7 +35,7 @@ def _get_suffix(limited_api, python_version, cpu):
         }
 
         return ".cpython-{}-{}.{}".format(
-            '314t', # python_version,
+            python_version,
             abis[cpu],
             "so" if limited_api else "abi3.so",
         )

@@ -159,6 +159,13 @@ def _get_python_version(repository_ctx):
     result = repository_ctx.execute(["python3", "-c", py_program])
     return (result.stdout).strip().split(".")
 
+def _get_python_abi_thread(repository_ctx):
+    py_program = "import sysconfig; print(sysconfig.get_config_var('%s'), end='')"
+    result = repository_ctx.execute(["python3", "-c", py_program % ("ABI_THREAD")])
+    if result.return_code != 0:
+        return None
+    return result.stdout
+
 def _get_python_path(repository_ctx):
     py_program = "import sysconfig; print(sysconfig.get_config_var('%s'), end='')"
     result = repository_ctx.execute(["python3", "-c", py_program % ("INCLUDEPY")])
@@ -166,7 +173,12 @@ def _get_python_path(repository_ctx):
         return None
     return result.stdout
 
-def _populate_package(ctx, path, python3, python_version):
+_version = """
+SYSTEM_PYTHON_VERSION = '{}{}'
+SYSTEM_PYTHON_ABI_THREAD = '{}'
+"""
+
+def _populate_package(ctx, path, python3, python_version, abi_thread):
     ctx.symlink(path, "python")
     supported = True
     for idx, v in enumerate(ctx.attr.minimum_python_version.split(".")):
@@ -185,7 +197,7 @@ def _populate_package(ctx, path, python3, python_version):
 
     ctx.file("interpreter", "#!/bin/sh\nexec {} \"$@\"".format(python3))
     ctx.file("BUILD.bazel", build_file)
-    ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = '{}{}'".format(python_version[0], python_version[1]))
+    ctx.file("version.bzl", _version.format(python_version[0], python_version[1], abi_thread))
     ctx.file("register.bzl", _register.format(ctx.attr.name))
     if supported:
         ctx.file("pip.bzl", _alias_pip.format(
@@ -218,9 +230,10 @@ def _system_python_impl(repository_ctx):
     path = _get_python_path(repository_ctx)
     python3 = repository_ctx.which("python3")
     python_version = _get_python_version(repository_ctx)
+    abi_thread = _get_python_abi_thread(repository_ctx)
 
     if path and python_version[0] == "3":
-        _populate_package(repository_ctx, path, python3, python_version)
+        _populate_package(repository_ctx, path, python3, python_version, abi_thread)
     else:
         # buildifier: disable=print
         print("WARNING: no system python available, builds against system python will fail")
