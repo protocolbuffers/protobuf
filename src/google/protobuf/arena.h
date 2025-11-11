@@ -661,6 +661,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename T>
   static void* PROTOBUF_NONNULL
   DefaultConstruct(Arena* PROTOBUF_NULLABLE arena);
+#ifdef PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
+  template <typename T, typename... Args>
+  static void* PROTOBUF_NONNULL
+  PlacementConstruct(Arena* PROTOBUF_NULLABLE arena, void* PROTOBUF_NONNULL mem,
+                     Args&&... args);
+#endif
   template <typename T>
   static void* PROTOBUF_NONNULL CopyConstruct(
       Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from);
@@ -684,6 +690,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   static void CreateInArenaStorage(T* PROTOBUF_NONNULL ptr,
                                    Arena* PROTOBUF_NULLABLE arena,
                                    Args&&... args) {
+    static_assert(!internal::FieldHasArenaOffset<T>());
     if constexpr (is_arena_constructable<T>::value) {
       InternalHelper<T>::Construct(ptr, arena, std::forward<Args>(args)...);
     } else {
@@ -785,6 +792,45 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
     }
   }
 }
+
+#ifdef PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
+template <typename T, typename... Args>
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
+Arena::PlacementConstruct(Arena* PROTOBUF_NULLABLE arena,
+                          void* PROTOBUF_NONNULL mem, Args&&... args) {
+  // static_assert(!internal::FieldHasArenaOffset<T>());
+  if constexpr (!is_arena_constructable<T>::value) {
+    return new (mem) T(std::forward<Args>(args)...);
+  } else if constexpr (internal::FieldHasArenaOffset<T>()) {
+    if (arena != nullptr) {
+      using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
+      static_assert(is_destructor_skippable<ArenaRepT>::value);
+
+      ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
+      return internal::FieldArenaRep<T>::Get(arena_rep);
+    } else {
+      static_assert(is_destructor_skippable<T>::value);
+      // Fields which use arena offsets don't have constructors that take an
+      // arena pointer. Since the arena is nullptr, it is safe to default
+      // construct the object.
+      return new (mem) T(std::forward<Args>(args)...);
+    }
+  } else if constexpr (is_destructor_skippable<T>::value) {
+    if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
+      return new (mem)
+          T(internal::InternalVisibility(), arena, std::forward<Args>(args)...);
+    } else {
+      return new (mem) T(arena, std::forward<Args>(args)...);
+    }
+  } else {
+    auto* t = new (mem) T(arena, std::forward<Args>(args)...);
+    if (arena != nullptr) {
+      arena->OwnDestructor(t);
+    }
+    return t;
+  }
+}
+#endif  // PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
 
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(

@@ -3639,6 +3639,9 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
       ShouldGenerateClass(descriptor_, options_)) {
     p->Emit(R"(
       template void* $nonnull$ Arena::DefaultConstruct<$classtype$>(Arena* $nullable$);
+      #ifdef PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
+      template void* $nonnull$ Arena::PlacementConstruct<$classtype$>(Arena* $nullable$, void* $nonnull$);
+      #endif
     )");
     if (!IsMapEntryMessage(descriptor_)) {
       p->Emit(R"(

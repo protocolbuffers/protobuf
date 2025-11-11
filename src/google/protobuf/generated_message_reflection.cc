@@ -1670,18 +1670,19 @@ Message* Reflection::UnsafeArenaReleaseLast(
     Message* message, const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(UnsafeArenaReleaseLast, REPEATED, MESSAGE);
 
+  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     return static_cast<Message*>(
-        MutableExtensionSet(message)->UnsafeArenaReleaseLast(
-            message->GetArena(), field->number()));
+        MutableExtensionSet(message)->UnsafeArenaReleaseLast(arena,
+                                                             field->number()));
   } else {
     if (IsMapFieldInApi(field)) {
       return MutableRaw<MapFieldBase>(message, field)
           ->MutableRepeatedField()
-          ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
+          ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>(arena);
     } else {
       return MutableRaw<RepeatedPtrFieldBase>(message, field)
-          ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
+          ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>(arena);
     }
   }
 }

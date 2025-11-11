@@ -1026,6 +1026,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
   type_info->weak_field_map_offset = -1;
 
+  size = AlignOffset(size);
   type_info->class_data.message_creator =
       internal::MessageCreator(DynamicMessage::NewImpl, size, kSafeAlignment);
 
