@@ -49,6 +49,8 @@ class MessageLite;
 
 namespace internal {
 
+static constexpr size_t kDefaultArenaAlignment = 8;
+
 PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 
 struct MessageTraitsImpl;
@@ -139,7 +141,12 @@ inline void* Allocate(size_t size) {
 #if ABSL_HAVE_BUILTIN(__builtin_operator_new)
   // Allows the compiler to merge or optimize away the allocation even if it
   // would violate the observability guarantees of ::operator new.
-  return __builtin_operator_new(size);
+  if constexpr (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < kDefaultArenaAlignment) {
+    return __builtin_operator_new(size,
+                                  std::align_val_t{kDefaultArenaAlignment});
+  } else {
+    return __builtin_operator_new(size);
+  }
 #else
   return ::operator new(size);
 #endif

@@ -348,10 +348,13 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
 
   Arena* arena = this->arena();
   for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
-    Message* new_entry = reinterpret_cast<Message*>(
-        rep.AddInternal(arena, [prototype](Arena* arena, void*& ptr) {
-          ptr = prototype->New(arena);
-        }));
+    using Handler = GenericTypeHandler<Message>;
+    Message* new_entry = reinterpret_cast<Message*>(rep.AddInternal(
+        arena,
+#ifdef PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
+        AllocTraits::FromValue(*prototype), Handler::UseContiguousLayout(),
+#endif
+        Handler::GetNewFromPrototypeFunc(prototype)));
 
     const MapKey& map_key = it.GetKey();
     switch (key_des->cpp_type()) {
