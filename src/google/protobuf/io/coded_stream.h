@@ -88,6 +88,7 @@
 
 #include <assert.h>
 
+#include <algorithm>
 #include <atomic>
 #include <climits>
 #include <cstddef>
@@ -1148,8 +1149,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // copy loops. Since this gets called by every field with string or bytes
   // type, inlining may lead to a significant amount of code bloat, with only a
   // minor performance gain.
-  static uint8_t* WriteRawToArray(const void* buffer, int size,
-                                  uint8_t* target);
+  static uint8_t* WriteRawToArray(const void* data, int size, uint8_t* target);
 
   // Equivalent to WriteRaw(str.data(), str.size()).
   void WriteString(absl::string_view str);
