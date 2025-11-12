@@ -46,6 +46,23 @@ typedef struct upb_TaggedAuxPtr {
   // 00 - non-aliased unknown data
   // 10 - aliased unknown data
   // 01 - extension
+  //
+  // The main semantic difference between aliased and non-aliased unknown data
+  // is that non-aliased unknown data can be assumed to have the following
+  // layout:
+  //
+  //   [upb_StringView] [data]
+  //
+  // where the StringView points to the data buffer and the data buffer is
+  // immediately following the StringView.
+  //
+  // The string view does not necessarily point to the start of the data buffer;
+  // if the initial part of the buffer is removed from the message, the string
+  // view will point to the beginning of the remaining buffer.
+  //
+  // For aliased unknown data, this layout is _not_ guaranteed, since the
+  // pointer to the StringView can be anywhere in the allocation, and the
+  // StringView may point to non-data memory.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
@@ -147,6 +164,18 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
     struct upb_Message* msg, const char* data, size_t len, upb_Arena* arena,
     bool alias);
 
+typedef enum {
+  // Provided buffer is copied into the message.
+  kUpb_AddUnknown_Copy = 0,
+
+  // The message will alias the provided buffer.
+  kUpb_AddUnknown_Alias = 1,
+
+  // The message will alias the provided buffer, and we may merge the data with
+  // the immediately preceding unknown field if possible.
+  kUpb_AddUnknown_AliasAllowMerge = 2,
+} upb_AddUnknownMode;
+
 // Adds unknown data (serialized protobuf data) to the given message. The data
 // must represent one or more complete and well formed proto fields.
 //
@@ -161,9 +190,9 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
                                                      const char* data,
                                                      size_t len,
                                                      upb_Arena* arena,
-                                                     const char* alias_base) {
+                                                     upb_AddUnknownMode mode) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  if (alias_base) {
+  if (mode == kUpb_AddUnknown_AliasAllowMerge) {
     // Aliasing parse of a message with sequential unknown fields is a simple
     // pointer bump, so inline it.
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
@@ -177,15 +206,15 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_AddUnknown)(struct upb_Message* msg,
         // immediately after the previous merged unknown field; this is
         // considered out-of-bounds and thus UB. Ensure it's in-bounds by
         // comparing with the original input pointer for our buffer.
-        if (data != alias_base && existing->data + existing->size == data) {
+        if (existing->data + existing->size == data) {
           existing->size += len;
           return true;
         }
       }
     }
   }
-  return UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(msg, data, len, arena,
-                                                      alias_base != NULL);
+  return UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(
+      msg, data, len, arena, mode != kUpb_AddUnknown_Copy);
 }
 
 // Adds unknown data (serialized protobuf data) to the given message.

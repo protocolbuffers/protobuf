@@ -97,6 +97,7 @@ static int upb_MiniTablePrinter_GetIdForRef(upb_MiniTablePrinter* p,
 // visited. This is used for printing the object itself.
 static int upb_MiniTablePrinter_GetIdForEmit(upb_MiniTablePrinter* p,
                                              const void* key) {
+  UPB_ASSERT(key);
   upb_value v;
   if (upb_inttable_lookup(&p->inttable, (intptr_t)key, &v)) {
     uint64_t val = upb_value_getuint64(v);

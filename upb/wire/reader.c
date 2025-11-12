@@ -63,5 +63,5 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
     ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, stream);
     if (!ptr) return NULL;
   }
-  return ptr;
+  return NULL;  // Encountered limit end before end group tag.
 }

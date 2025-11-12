@@ -19,6 +19,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
 
@@ -158,6 +159,7 @@ bool Builder::LinkMessages() {
           // We don't have any sub-enums.  Override the field type so that it is
           // not needed.
           field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
+          field->UPB_PRIVATE(submsg_index) = kUpb_NoSub;
         }
       }
     }

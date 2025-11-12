@@ -171,9 +171,9 @@ cc_library(
     deps = [
         "//upb/base",
         "//upb/mem",
-        "//upb/message",
         "//upb/mini_descriptor",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
     ],
 )
