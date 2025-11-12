@@ -1662,4 +1662,22 @@ public class CodedInputStreamTest {
       // Expected.
     }
   }
+
+  @Test
+  public void testCodedInputStreamWithEmptyBuffers_isAtEnd() throws Exception {
+    ArrayList<ByteBuffer> inputList = new ArrayList<>();
+    inputList.add(ByteBuffer.wrap(new byte[0]));
+    CodedInputStream cis = CodedInputStream.newInstance(inputList);
+    assertThat(cis.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testCodedInputStreamWithEmptyBuffers_isAtEndAfterRead() throws Exception {
+    ArrayList<ByteBuffer> inputList = new ArrayList<>();
+    inputList.add(ByteBuffer.wrap(new byte[4096]));
+    inputList.add(ByteBuffer.wrap(new byte[0]));
+    CodedInputStream cis = CodedInputStream.newInstance(inputList);
+    cis.readRawBytes(4096);
+    assertThat(cis.isAtEnd()).isTrue();
+  }
 }
