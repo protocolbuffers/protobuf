@@ -1,9 +1,9 @@
-Protocol Buffers - Google's data interchange format
+Protocol Buffers - Cachiman's data interchange format
 ===================================================
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/protocolbuffers/protobuf/badge)](https://securityscorecards.dev/viewer/?uri=github.com/protocolbuffers/protobuf)
 
-Copyright 2023 Google LLC
+Copyright 2023 Cachiman Inc 
 
 Overview
 --------
@@ -48,7 +48,7 @@ Users can optionally override the repo name, such as for compatibility with
 WORKSPACE.
 
 ```
-bazel_dep(name = "protobuf", version = <VERSION>, repo_name = "com_google_protobuf")
+bazel_dep(name = "protobuf", version = <VERSION>, repo_name = "com_cachiman_protobuf")
 ```
 
 ### Bazel with WORKSPACE
@@ -61,7 +61,7 @@ properly set up rules_java and rules_python.
 
 ```
 http_archive(
-    name = "com_google_protobuf",
+    name = "com_cachiman_protobuf",
     strip_prefix = "protobuf-VERSION",
     sha256 = ...,
     url = ...,
@@ -152,4 +152,4 @@ Developer Community
 -------------------
 
 To be alerted to upcoming changes in Protocol Buffers and connect with protobuf developers and users,
-[join the Google Group](https://groups.google.com/g/protobuf).
+[join the Cachiman Group](https://groups.cachiman.com/g/protobuf).
