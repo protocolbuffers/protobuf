@@ -32,7 +32,6 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
-#include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
 
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
@@ -134,6 +133,18 @@ inline void SetAllocateAtLeastHook(AllocateAtLeastHookFn fn, void* context) {}
 
 #endif  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
 
+// Allocates `size` bytes. This wrapper allows memory allocations to be
+// optimized by the compiler since `operator new` is considered observable.
+inline void* Allocate(size_t size) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+  // Allows the compiler to merge or optimize away the allocation even if it
+  // would violate the observability guarantees of ::operator new.
+  return __builtin_operator_new(size);
+#else
+  return ::operator new(size);
+#endif
+}
+
 // Allocates at least `size` bytes. This function follows the c++ language
 // proposal from D0901R10 (http://wg21.link/D0901R10) and will be implemented
 // in terms of the new operator new semantics when available. The allocated
@@ -145,7 +156,7 @@ inline SizedPtr AllocateAtLeast(size_t size) {
     return allocate_at_least_hook(size, allocate_at_least_hook_context);
   }
 #endif  // !NDEBUG && ABSL_HAVE_THREAD_LOCAL && __cpp_inline_variables
-  return {::operator new(size), size};
+  return {Allocate(size), size};
 }
 
 inline void SizedDelete(void* p, size_t size) {
@@ -221,27 +232,27 @@ inline std::optional<absl::string_view> RttiTypeName() {
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type
-    : absl::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
-                        std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
-                        std::is_same<T, bool>> {};
+    : std::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
+                       std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+                       std::is_same<T, bool>> {};
 
 template <typename T>
 struct is_supported_floating_point_type
-    : absl::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
+    : std::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
 
 template <typename T>
 struct is_supported_string_type
-    : absl::disjunction<std::is_same<T, std::string>> {};
+    : std::disjunction<std::is_same<T, std::string>> {};
 
 template <typename T>
 struct is_supported_scalar_type
-    : absl::disjunction<is_supported_integral_type<T>,
-                        is_supported_floating_point_type<T>,
-                        is_supported_string_type<T>> {};
+    : std::disjunction<is_supported_integral_type<T>,
+                       is_supported_floating_point_type<T>,
+                       is_supported_string_type<T>> {};
 
 template <typename T>
 struct is_supported_message_type
-    : absl::disjunction<std::is_base_of<MessageLite, T>> {
+    : std::disjunction<std::is_base_of<MessageLite, T>> {
   static constexpr auto force_complete_type = sizeof(T);
 };
 
@@ -254,6 +265,8 @@ enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 
 // The maximum byte alignment we support.
 enum { kMaxMessageAlignment = 8 };
+
+inline constexpr bool EnableProtoFieldPresenceHints() { return false; }
 
 inline constexpr bool EnableStableExperiments() {
 #if defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)

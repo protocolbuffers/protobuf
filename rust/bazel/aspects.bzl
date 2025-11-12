@@ -1,8 +1,16 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2023 Google LLC.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """This file implements rust_proto_library aspect."""
 
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_rust//:version.bzl", RUST_VERSION = "VERSION")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//rust/private:providers.bzl", "CrateInfo", "DepInfo", "DepVariantInfo")
@@ -32,6 +40,14 @@ RustProtoInfo = provider(
                          "dependencies of the current proto_library.",
     },
 )
+
+def _version_parts(version):
+    major, minor = version.split(".")[0:2]
+    return (int(major), int(minor))
+
+def _rust_version_ge(version):
+    """Checks if the rust version as at least the given major.minor version."""
+    return _version_parts(RUST_VERSION) >= _version_parts(version)
 
 def label_to_crate_name(ctx, label, toolchain):
     return label.name.replace("-", "_")
@@ -85,6 +101,7 @@ def _generate_rust_gencode(
         proto_info,
         proto_lang_toolchain,
         crate_mapping,
+        feature_configuration,
         is_upb):
     """Generates Rust gencode
 
@@ -97,6 +114,7 @@ def _generate_rust_gencode(
         proto_lang_toolchain (ProtoLangToolchainInfo): proto lang toolchain for Rust
         crate_mapping (File): File containing the mapping from .proto file import path to its
                       corresponding containing Rust crate name.
+        feature_configuration (FeatureConfiguration): A feature configuration.
         is_upb (Bool): True when generating gencode for UPB, False otherwise.
     Returns:
         rs_outputs (([File], [File]): tuple(generated Rust files, generated C++ thunks).
@@ -121,13 +139,16 @@ def _generate_rust_gencode(
             proto_info = proto_info,
             extension = ".pb.thunks.cc",
         )
+    forced_lite_runtime = cc_common.is_enabled(feature_configuration = feature_configuration, feature_name = "proto_force_lite_runtime")
+
     additional_args = ctx.actions.args()
 
     additional_args.add(
-        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={}".format(
+        "--rust_opt=experimental-codegen=enabled,kernel={},crate_mapping={},generated_entry_point_rs_file_name={},forced_lite_runtime={}".format(
             "upb" if is_upb else "cpp",
             crate_mapping.path,
             entry_point_rs_output.basename,
+            "true" if forced_lite_runtime else "false",
         ),
     )
 
@@ -243,6 +264,18 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
     lib = ctx.actions.declare_file(lib_name)
     rmeta = ctx.actions.declare_file(rmeta_name)
 
+    if _rust_version_ge("0.66"):
+        deps = deps
+        proc_macro_deps = []
+    else:
+        deps = depset(deps)
+        proc_macro_deps = depset()
+
+    if _rust_version_ge("0.67"):
+        srcs = [src] + extra_srcs
+    else:
+        srcs = depset([src] + extra_srcs)
+
     # TODO: Use higher level rules_rust API once available.
     providers = rustc_compile_action(
         ctx = ctx,
@@ -252,9 +285,9 @@ def _compile_rust(ctx, attr, src, extra_srcs, deps, runtime):
             name = crate_name,
             type = "rlib",
             root = src,
-            srcs = depset([src] + extra_srcs),
-            deps = depset(deps),
-            proc_macro_deps = depset([]),
+            srcs = srcs,
+            deps = deps,
+            proc_macro_deps = proc_macro_deps,
             # Make "protobuf" into an alias for the runtime. This allows the
             # generated code to use a consistent name, even though the actual
             # name of the runtime crate varies depending on the protobuf kernel
@@ -345,6 +378,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         target[ProtoInfo],
         proto_lang_toolchain,
         crate_mapping_file,
+        feature_configuration,
         is_upb,
     )
 

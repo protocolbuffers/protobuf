@@ -149,7 +149,9 @@ class MessageGenerator {
     // Some field has logic that needs to run.
     bool needs_to_run_constructor = false;
   };
-  NewOpRequirements GetNewOp(io::Printer* arena_emitter) const;
+  NewOpRequirements GetNewOp(io::Printer* arena_emitter,
+                             bool use_arena_offset) const;
+  void GenerateNewOp(io::Printer* p, bool use_arena_offset) const;
 
 
   // Helpers for GenerateSerializeWithCachedSizes().
@@ -212,7 +214,7 @@ class MessageGenerator {
   // Helper functions to reduce nesting levels of deep Emit calls.
   template <bool kIsV2 = false>
   void EmitCheckAndUpdateByteSizeForField(const FieldDescriptor* field,
-                                          io::Printer* p) const;
+                                          io::Printer* p, bool try_batch) const;
   void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
                                   int& cached_has_word_index) const;
 
@@ -223,8 +225,8 @@ class MessageGenerator {
   void EmitUpdateByteSizeV2ForNumerics(
       size_t field_size, io::Printer* p, int& cached_has_word_index,
       std::vector<const FieldDescriptor*>&& fields) const;
-  void EmitCheckAndSerializeField(const FieldDescriptor* field,
-                                  io::Printer* p) const;
+  void EmitCheckAndSerializeField(const FieldDescriptor* field, io::Printer* p,
+                                  bool try_batch) const;
   template <typename T>
   void EmitOneofFields(io::Printer* p, const T& emitter) const;
 

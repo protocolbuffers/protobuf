@@ -37,12 +37,6 @@ typedef union {
   const struct upb_Message* msg_val;
   upb_StringView str_val;
 
-  // EXPERIMENTAL: A tagged upb_Message*.  Users must use this instead of
-  // msg_val if unlinked sub-messages may possibly be in use.  See the
-  // documentation in kUpb_DecodeOption_ExperimentalAllowUnlinked for more
-  // information.
-  uintptr_t tagged_msg_val;  // upb_TaggedMessagePtr
-
   // For an extension field, we are essentially treating ext->data (a
   // upb_MessageValue) as if it were a message with one field that lives at
   // offset 0. This works because upb_MessageValue is precisely one value that

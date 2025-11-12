@@ -12,6 +12,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
+#include <cstddef>
 #include <cstdint>
 #include <iterator>
 #include <optional>

@@ -1405,6 +1405,9 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
     }
   }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  ABSL_DCHECK_EQ(arena_bits(), uintptr_t{0});
+#else
   if (arena_bits() != 0) {
     if (as_tag == kZeroInit) {
       PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroArena").Inc();
@@ -1432,6 +1435,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
       } while (offsets != 0);
     }
   }
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
   // The second memcpy overwrites part of the first, but the compiler should
   // avoid the double-write. It's easier than trying to avoid the overlap.
@@ -1450,13 +1454,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
   if (arena != nullptr) {
     mem = arena->AllocateAligned(allocation_size_);
   } else {
-#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
-    // Allows the compiler to merge or optimize away the allocation even if it
-    // would violate the observability guarantees of ::operator new.
-    mem = __builtin_operator_new(allocation_size_);
-#else
-    mem = ::operator new(allocation_size_);
-#endif
+    mem = Allocate(allocation_size_);
   }
   return PlacementNew(prototype_for_func, prototype_for_copy, mem, arena);
 }

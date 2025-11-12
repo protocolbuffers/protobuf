@@ -245,7 +245,7 @@ bootstrap_cc_library(
         "//src/google/protobuf/compiler/java",
         "//src/google/protobuf/compiler/kotlin",
         "//src/google/protobuf/compiler/objectivec",
-        "//src/google/protobuf/compiler/php",
+        "//src/google/protobuf/compiler/php:php_generator",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
         "@abseil-cpp//absl/log:initialize",

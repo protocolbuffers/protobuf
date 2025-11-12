@@ -104,11 +104,11 @@ class FindExtensionTest : public ::testing::TestWithParam<ExtensionFinderType> {
     ExtensionSet es;
     switch (GetParam()) {
       case ExtensionFinderType::kGeneratedExtensionFinder:
-        return es.FindExtensionInfoFromFieldNumber(
+        return ExtensionSet::FindExtensionInfoFromFieldNumber(
             wire_type, field_number, GetFinder<GeneratedExtensionFinder>(),
             extension, was_packed_on_wire);
       case ExtensionFinderType::kDescriptorPoolExtensionFinder:
-        return es.FindExtensionInfoFromFieldNumber(
+        return ExtensionSet::FindExtensionInfoFromFieldNumber(
             wire_type, field_number, GetFinder<DescriptorPoolExtensionFinder>(),
             extension, was_packed_on_wire);
     }
@@ -119,19 +119,18 @@ class FindExtensionTest : public ::testing::TestWithParam<ExtensionFinderType> {
                          ExtensionInfo* extension, bool* was_packed_on_wire) {
     const char* ptr;
     internal::ParseContext ctx(100, false, &ptr, "");
-    ExtensionSet es;
     switch (GetParam()) {
       case ExtensionFinderType::kGeneratedExtensionFinder: {
-        return es.FindExtension(wire_type, field_number, extendee_, &ctx,
-                                extension, was_packed_on_wire);
+        return ExtensionSet::FindExtension(wire_type, field_number, extendee_,
+                                           &ctx, extension, was_packed_on_wire);
       }
       case ExtensionFinderType::kDescriptorPoolExtensionFinder: {
         // We need to contrive a ParseContext that will cause the
         // DescriptorPoolExtensionFinder to be used.
         ctx.data().pool = &dynamic_pool_;
         ctx.data().factory = dynamic_factory_.get();
-        return es.FindExtension(wire_type, field_number, extendee_, &ctx,
-                                extension, was_packed_on_wire);
+        return ExtensionSet::FindExtension(wire_type, field_number, extendee_,
+                                           &ctx, extension, was_packed_on_wire);
       }
     }
     return false;
@@ -1517,8 +1516,8 @@ TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
       unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
           "repeated_int32_extension");
   ASSERT_NE(desc, nullptr);
-  set.MutableRawRepeatedField(desc->number(), WireFormatLite::TYPE_INT32, false,
-                              desc);
+  set.MutableRawRepeatedField(/*arena=*/nullptr, desc->number(),
+                              WireFormatLite::TYPE_INT32, false, desc);
   EXPECT_EQ(set.NumExtensions(), 1);
 }
 

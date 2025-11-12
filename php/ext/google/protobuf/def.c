@@ -501,6 +501,24 @@ PHP_METHOD(FieldDescriptor, getRealContainingOneof) {
 }
 
 /*
+ * FieldDescriptor::hasPresence()
+ *
+ * Returns true if this field tracks presence, ie. does the field
+ * distinguish between "unset" and "present with default value."
+ *
+ * This includes required, optional, and oneof fields. It excludes maps,
+ * repeated fields, and singular proto3 fields without "optional".
+ *
+ * For fields where hasPresence() == true, the return value of
+ * msg.hasField() is semantically meaningful.
+ *
+ */
+PHP_METHOD(FieldDescriptor, hasPresence) {
+  FieldDescriptor* intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  RETURN_BOOL(upb_FieldDef_HasPresence(intern->fielddef));
+}
+
+/*
  * FieldDescriptor::getMessageType()
  *
  * Returns the Descriptor for this field, which must be a message.
@@ -531,6 +549,7 @@ static zend_function_entry FieldDescriptor_methods[] = {
   PHP_ME(FieldDescriptor, getEnumType, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(FieldDescriptor, getContainingOneof, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(FieldDescriptor, getRealContainingOneof, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, hasPresence, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(FieldDescriptor, getMessageType, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };

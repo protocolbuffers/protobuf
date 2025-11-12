@@ -1,6 +1,7 @@
 # We use abbreviated target names in this directory to work around:
 #     https://github.com/bazelbuild/bazel/issues/18683
 
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(

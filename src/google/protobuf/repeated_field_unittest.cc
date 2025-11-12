@@ -35,7 +35,6 @@
 #include "absl/strings/cord.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
-#include "google/protobuf/internal_visibility_for_testing.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -733,72 +732,67 @@ TEST(RepeatedField, AddAndAssignRanges) {
 }
 
 TEST(RepeatedField, CopyConstructIntegers) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<int>;
   RepeatedType original;
   original.Add(1);
   original.Add(2);
 
   RepeatedType fields1(original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ(1, fields1.Get(0));
-  EXPECT_EQ(2, fields1.Get(1));
+  ASSERT_EQ(fields1.size(), 2);
+  EXPECT_EQ(fields1.Get(0), 1);
+  EXPECT_EQ(fields1.Get(1), 2);
 
-  RepeatedType fields2(token, nullptr, original);
-  ASSERT_EQ(2, fields2.size());
-  EXPECT_EQ(1, fields2.Get(0));
-  EXPECT_EQ(2, fields2.Get(1));
+  auto* fields2 = Arena::Create<RepeatedType>(nullptr, original);
+  ASSERT_EQ(fields2->size(), 2);
+  EXPECT_EQ(fields2->Get(0), 1);
+  EXPECT_EQ(fields2->Get(1), 2);
+
+  delete fields2;
 }
 
 TEST(RepeatedField, CopyConstructCords) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<absl::Cord>;
   RepeatedType original;
   original.Add(absl::Cord("hello"));
   original.Add(absl::Cord("world and text to avoid SSO"));
 
   RepeatedType fields1(original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ("hello", fields1.Get(0));
-  EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
+  ASSERT_EQ(fields1.size(), 2);
+  EXPECT_EQ(fields1.Get(0), "hello");
+  EXPECT_EQ(fields1.Get(1), "world and text to avoid SSO");
 
-  RepeatedType fields2(token, nullptr, original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ("hello", fields1.Get(0));
-  EXPECT_EQ("world and text to avoid SSO", fields2.Get(1));
+  auto* fields2 = Arena::Create<RepeatedType>(nullptr, original);
+  ASSERT_EQ(fields2->size(), 2);
+  EXPECT_EQ(fields2->Get(0), "hello");
+  EXPECT_EQ(fields2->Get(1), "world and text to avoid SSO");
+
+  delete fields2;
 }
 
 TEST(RepeatedField, CopyConstructIntegersWithArena) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<int>;
   RepeatedType original;
   original.Add(1);
   original.Add(2);
 
   Arena arena;
-  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
-  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ(1, fields1.Get(0));
-  EXPECT_EQ(2, fields1.Get(1));
+  auto* fields1 = Arena::Create<RepeatedType>(&arena, original);
+  ASSERT_EQ(fields1->size(), 2);
+  EXPECT_EQ(fields1->Get(0), 1);
+  EXPECT_EQ(fields1->Get(1), 2);
 }
 
 TEST(RepeatedField, CopyConstructCordsWithArena) {
-  auto token = internal::InternalVisibilityForTesting{};
   using RepeatedType = RepeatedField<absl::Cord>;
   RepeatedType original;
   original.Add(absl::Cord("hello"));
   original.Add(absl::Cord("world and text to avoid SSO"));
 
   Arena arena;
-  alignas(RepeatedType) char mem[sizeof(RepeatedType)];
-  RepeatedType& fields1 = *new (mem) RepeatedType(token, &arena, original);
-  ASSERT_EQ(2, fields1.size());
-  EXPECT_EQ("hello", fields1.Get(0));
-  EXPECT_EQ("world and text to avoid SSO", fields1.Get(1));
-
-  // Contract requires dtor to be invoked for absl::Cord
-  fields1.~RepeatedType();
+  auto* fields1 = Arena::Create<RepeatedType>(&arena, original);
+  ASSERT_EQ(fields1->size(), 2);
+  EXPECT_EQ(fields1->Get(0), "hello");
+  EXPECT_EQ(fields1->Get(1), "world and text to avoid SSO");
 }
 
 TEST(RepeatedField, IteratorConstruct) {
@@ -1247,7 +1241,11 @@ TEST(RepeatedField, Cleanups) {
 
 TEST(RepeatedField, InitialSooCapacity) {
   if (sizeof(void*) == 8) {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+    EXPECT_EQ(RepeatedField<bool>().Capacity(), 8);
+#else
     EXPECT_EQ(RepeatedField<bool>().Capacity(), 3);
+#endif
     EXPECT_EQ(RepeatedField<int32_t>().Capacity(), 2);
     EXPECT_EQ(RepeatedField<int64_t>().Capacity(), 1);
     EXPECT_EQ(RepeatedField<absl::Cord>().Capacity(), 0);

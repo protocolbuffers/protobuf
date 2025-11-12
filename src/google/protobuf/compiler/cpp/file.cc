@@ -492,6 +492,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
 
   IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
+  IncludeFile("third_party/protobuf/internal_visibility.h", p);
   // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
@@ -1057,6 +1058,20 @@ static void GatherAllCustomOptionTypes(
     return;
   }
 
+  const auto is_import_option = [file](const FieldDescriptor* field) {
+    if (!field->is_extension() || field->message_type() == nullptr) {
+      return false;
+    }
+
+    for (int i = 0; i < file->option_dependency_count(); ++i) {
+      if (field->file()->name() == file->option_dependency_name(i)) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   // It's easier to inspect file as a proto, because we can use reflection on
   // the proto to iterate over all content.
   // However, we can't use the generated proto linked into the proto compiler
@@ -1085,6 +1100,11 @@ static void GatherAllCustomOptionTypes(
     reflection.ListFields(msg, &fields);
 
     for (auto* field : fields) {
+      if (is_import_option(field)) {
+        // If it is an `import option` dependency we can skip it.
+        continue;
+      }
+
       if (field->is_extension()) {
         // Always add the extended.
         const Descriptor* desc = msg.GetDescriptor();

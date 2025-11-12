@@ -1,10 +1,14 @@
-################################################################################
-# Protocol Buffers Compiler - Generation of accessors for individual fields.
-################################################################################
+# Copyright (c) 2024, Google LLC
+# All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+# Generation of accessors for individual fields.
 cc_library(
     name = "accessors",
     srcs = [

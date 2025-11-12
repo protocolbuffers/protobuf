@@ -36,10 +36,6 @@ std::string MiniTableMessageVarName(absl::string_view full_name) {
   return MangleName(full_name) + "_msg_init";
 }
 
-std::string MiniTableMessagePtrVarName(absl::string_view full_name) {
-  return MiniTableMessageVarName(full_name) + "_ptr";
-}
-
 std::string MiniTableEnumVarName(absl::string_view full_name) {
   return MangleName(full_name) + "_enum_init";
 }
@@ -50,6 +46,10 @@ std::string MiniTableExtensionVarName(absl::string_view full_name) {
 
 std::string MiniTableFileVarName(absl::string_view proto_filename) {
   return ToCIdent(proto_filename) + "_upb_file_layout";
+}
+
+std::string WeakMiniTableMessageVarName(absl::string_view msg_full_name) {
+  return MangleName(msg_full_name) + "_weak_msg_init";
 }
 
 }  // namespace generator

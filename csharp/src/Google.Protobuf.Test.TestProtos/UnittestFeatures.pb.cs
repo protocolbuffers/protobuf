@@ -29,7 +29,7 @@ namespace Pb {
             "c3NhZ2UaTQoGTmVzdGVkMkMKC3Rlc3RfbmVzdGVkEhsuZ29vZ2xlLnByb3Rv",
             "YnVmLkZlYXR1cmVTZXQYjU4gASgLMhAucGIuVGVzdEZlYXR1cmVzMkQKDHRl",
             "c3RfbWVzc2FnZRIbLmdvb2dsZS5wcm90b2J1Zi5GZWF0dXJlU2V0GI5OIAEo",
-            "CzIQLnBiLlRlc3RGZWF0dXJlcyKsDAoMVGVzdEZlYXR1cmVzEnsKDGZpbGVf",
+            "CzIQLnBiLlRlc3RGZWF0dXJlcyLgDQoMVGVzdEZlYXR1cmVzEnsKDGZpbGVf",
             "ZmVhdHVyZRgBIAEoDjIPLnBiLkVudW1GZWF0dXJlQlSIAQGYAQGiAQsSBlZB",
             "TFVFMRiEB6IBCxIGVkFMVUUyGOcHogELEgZWQUxVRTMY6AeiAQwSBlZBTFVF",
             "NBidjQaiAQwSBlZBTFVFNRiejQayAQMI6AcSTAoXZXh0ZW5zaW9uX3Jhbmdl",
@@ -52,39 +52,44 @@ namespace Pb {
             "YXR1cmUYDyABKA4yDy5wYi5FbnVtRmVhdHVyZUIyiAECmAEBmAEEmAEDmAEG",
             "mAEHmAEImAEJmAEFmAECogELEgZWQUxVRTEYhAeyAQMI6AcSXAoPc291cmNl",
             "X2ZlYXR1cmUyGBAgASgOMg8ucGIuRW51bUZlYXR1cmVCMogBApgBAZgBBJgB",
-            "A5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUxGIQHsgEDCOgHEo0BCg9y",
-            "ZW1vdmVkX2ZlYXR1cmUYESABKA4yDy5wYi5FbnVtRmVhdHVyZUJjiAEBmAEB",
-            "mAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB6IBCxIGVkFMVUUzGOkH",
-            "sgEtCOgHEOgHGiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5n",
-            "IOkHElQKDmZ1dHVyZV9mZWF0dXJlGBIgASgOMg8ucGIuRW51bUZlYXR1cmVC",
-            "K4gBAZgBAZgBBKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6QeyAQMI6QcS",
-            "VwoObGVnYWN5X2ZlYXR1cmUYEyABKA4yDy5wYi5FbnVtRmVhdHVyZUIuiAEB",
-            "mAEBmAEEogELEgZWQUxVRTEYhAeiAQsSBlZBTFVFMhjoB7IBBgjnByDoBxLO",
-            "AQoWdmFsdWVfbGlmZXRpbWVfZmVhdHVyZRgUIAEoDjIYLnBiLlZhbHVlTGlm",
-            "ZXRpbWVGZWF0dXJlQpMBiAEBmAEBogEdEhhWQUxVRV9MSUZFVElNRV9JTkhF",
-            "UklURUQYhAeiARoSFVZBTFVFX0xJRkVUSU1FX0ZVVFVSRRjoB6IBGxIVVkFM",
-            "VUVfTElGRVRJTUVfRlVUVVJFGJ+NBrIBLwjoBxCejQYaIkN1c3RvbSBmZWF0",
-            "dXJlIGRlcHJlY2F0aW9uIHdhcm5pbmcgn40GKuYBCgtFbnVtRmVhdHVyZRId",
+            "A5gBBpgBB5gBCJgBCZgBBZgBAqIBCxIGVkFMVUUxGIQHsgEDCOgHEqwBCg9y",
+            "ZW1vdmVkX2ZlYXR1cmUYESABKA4yDy5wYi5FbnVtRmVhdHVyZUKBAYgBAZgB",
+            "AZgBBKIBCxIGVkFMVUUxGIQHogELEgZWQUxVRTIY6AeiAQsSBlZBTFVFMxjp",
+            "B7IBSwjoBxDoBxoiQ3VzdG9tIGZlYXR1cmUgZGVwcmVjYXRpb24gd2Fybmlu",
+            "ZyDpByocQ3VzdG9tIGZlYXR1cmUgcmVtb3ZhbCBlcnJvchJXChxzYW1lX2Vk",
+            "aXRpb25fcmVtb3ZlZF9mZWF0dXJlGBUgASgOMg8ucGIuRW51bUZlYXR1cmVC",
+            "IIgBAZgBAZgBBKIBCxIGVkFMVUUxGIQHsgEGCOgHIOgHElQKDmZ1dHVyZV9m",
+            "ZWF0dXJlGBIgASgOMg8ucGIuRW51bUZlYXR1cmVCK4gBAZgBAZgBBKIBCxIG",
+            "VkFMVUUxGIQHogELEgZWQUxVRTIY6QeyAQMI6QcSdQoObGVnYWN5X2ZlYXR1",
+            "cmUYEyABKA4yDy5wYi5FbnVtRmVhdHVyZUJMiAEBmAEBmAEEogELEgZWQUxV",
+            "RTEYhAeiAQsSBlZBTFVFMhjoB7IBJAjnByDoByocQ3VzdG9tIGZlYXR1cmUg",
+            "cmVtb3ZhbCBlcnJvchLsAQoWdmFsdWVfbGlmZXRpbWVfZmVhdHVyZRgUIAEo",
+            "DjIYLnBiLlZhbHVlTGlmZXRpbWVGZWF0dXJlQrEBiAEBmAEBogEdEhhWQUxV",
+            "RV9MSUZFVElNRV9JTkhFUklURUQYhAeiARoSFVZBTFVFX0xJRkVUSU1FX0ZV",
+            "VFVSRRjoB6IBGxIVVkFMVUVfTElGRVRJTUVfRlVUVVJFGJ+NBrIBTQjoBxCe",
+            "jQYaIkN1c3RvbSBmZWF0dXJlIGRlcHJlY2F0aW9uIHdhcm5pbmcgn40GKhxD",
+            "dXN0b20gZmVhdHVyZSByZW1vdmFsIGVycm9yKuYBCgtFbnVtRmVhdHVyZRId",
             "ChlURVNUX0VOVU1fRkVBVFVSRV9VTktOT1dOEAASCgoGVkFMVUUxEAESCgoG",
             "VkFMVUUyEAISCgoGVkFMVUUzEAMSCgoGVkFMVUU0EAQSCgoGVkFMVUU1EAUS",
             "CgoGVkFMVUU2EAYSCgoGVkFMVUU3EAcSCgoGVkFMVUU4EAgSCgoGVkFMVUU5",
             "EAkSCwoHVkFMVUUxMBAKEgsKB1ZBTFVFMTEQCxILCgdWQUxVRTEyEAwSCwoH",
-            "VkFMVUUxMxANEgsKB1ZBTFVFMTQQDhILCgdWQUxVRTE1EA8q4AIKFFZhbHVl",
+            "VkFMVUUxMxANEgsKB1ZBTFVFMTQQDhILCgdWQUxVRTE1EA8q/gIKFFZhbHVl",
             "TGlmZXRpbWVGZWF0dXJlEh8KG1RFU1RfVkFMVUVfTElGRVRJTUVfVU5LTk9X",
             "ThAAEhwKGFZBTFVFX0xJRkVUSU1FX0lOSEVSSVRFRBABEk4KFlZBTFVFX0xJ",
             "RkVUSU1FX1NVUFBPUlQQAhoyIjAInY0GEJ6NBhoiQ3VzdG9tIGZlYXR1cmUg",
             "ZGVwcmVjYXRpb24gd2FybmluZyCfjQYSJAocVkFMVUVfTElGRVRJTUVfRU1Q",
             "VFlfU1VQUE9SVBADGgIiABIhChVWQUxVRV9MSUZFVElNRV9GVVRVUkUQBBoG",
             "IgQInY0GEkkKGVZBTFVFX0xJRkVUSU1FX0RFUFJFQ0FURUQQBRoqIigQnY0G",
-            "GiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5nEiUKFlZBTFVF",
-            "X0xJRkVUSU1FX1JFTU9WRUQQBhoJIgcQ6AcgnY0GOjwKBHRlc3QSGy5nb29n",
-            "bGUucHJvdG9idWYuRmVhdHVyZVNldBiPTiABKAsyEC5wYi5UZXN0RmVhdHVy",
-            "ZXNCEkIQVW5pdHRlc3RGZWF0dXJlc2IIZWRpdGlvbnNw6Qc="));
+            "GiJDdXN0b20gZmVhdHVyZSBkZXByZWNhdGlvbiB3YXJuaW5nEkMKFlZBTFVF",
+            "X0xJRkVUSU1FX1JFTU9WRUQQBhonIiUQ6AcgnY0GKhxDdXN0b20gZmVhdHVy",
+            "ZSByZW1vdmFsIGVycm9yOjwKBHRlc3QSGy5nb29nbGUucHJvdG9idWYuRmVh",
+            "dHVyZVNldBiPTiABKAsyEC5wYi5UZXN0RmVhdHVyZXNCEkIQVW5pdHRlc3RG",
+            "ZWF0dXJlc2IIZWRpdGlvbnNw6Qc="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Pb.EnumFeature), typeof(global::Pb.ValueLifetimeFeature), }, new pb::Extension[] { UnittestFeaturesExtensions.Test }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage), global::Pb.TestMessage.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Extensions.TestMessage }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestMessage.Types.Nested), global::Pb.TestMessage.Types.Nested.Parser, null, null, null, new pb::Extension[] { global::Pb.TestMessage.Types.Nested.Extensions.TestNested }, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2", "RemovedFeature", "FutureFeature", "LegacyFeature", "ValueLifetimeFeature" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Pb.TestFeatures), global::Pb.TestFeatures.Parser, new[]{ "FileFeature", "ExtensionRangeFeature", "MessageFeature", "FieldFeature", "OneofFeature", "EnumFeature", "EnumEntryFeature", "ServiceFeature", "MethodFeature", "MultipleFeature", "BoolFieldFeature", "SourceFeature", "SourceFeature2", "RemovedFeature", "SameEditionRemovedFeature", "FutureFeature", "LegacyFeature", "ValueLifetimeFeature" }, null, null, null, null)
           }));
     }
     #endregion
@@ -530,6 +535,7 @@ namespace Pb {
       sourceFeature_ = other.sourceFeature_;
       sourceFeature2_ = other.sourceFeature2_;
       removedFeature_ = other.removedFeature_;
+      sameEditionRemovedFeature_ = other.sameEditionRemovedFeature_;
       futureFeature_ = other.futureFeature_;
       legacyFeature_ = other.legacyFeature_;
       valueLifetimeFeature_ = other.valueLifetimeFeature_;
@@ -920,6 +926,33 @@ namespace Pb {
       _hasBits0 &= ~8192;
     }
 
+    /// <summary>Field number for the "same_edition_removed_feature" field.</summary>
+    public const int SameEditionRemovedFeatureFieldNumber = 21;
+    private readonly static global::Pb.EnumFeature SameEditionRemovedFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
+
+    private global::Pb.EnumFeature sameEditionRemovedFeature_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public global::Pb.EnumFeature SameEditionRemovedFeature {
+      get { if ((_hasBits0 & 131072) != 0) { return sameEditionRemovedFeature_; } else { return SameEditionRemovedFeatureDefaultValue; } }
+      set {
+        _hasBits0 |= 131072;
+        sameEditionRemovedFeature_ = value;
+      }
+    }
+    /// <summary>Gets whether the "same_edition_removed_feature" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasSameEditionRemovedFeature {
+      get { return (_hasBits0 & 131072) != 0; }
+    }
+    /// <summary>Clears the value of the "same_edition_removed_feature" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearSameEditionRemovedFeature() {
+      _hasBits0 &= ~131072;
+    }
+
     /// <summary>Field number for the "future_feature" field.</summary>
     public const int FutureFeatureFieldNumber = 18;
     private readonly static global::Pb.EnumFeature FutureFeatureDefaultValue = global::Pb.EnumFeature.TestEnumFeatureUnknown;
@@ -1030,6 +1063,7 @@ namespace Pb {
       if (SourceFeature != other.SourceFeature) return false;
       if (SourceFeature2 != other.SourceFeature2) return false;
       if (RemovedFeature != other.RemovedFeature) return false;
+      if (SameEditionRemovedFeature != other.SameEditionRemovedFeature) return false;
       if (FutureFeature != other.FutureFeature) return false;
       if (LegacyFeature != other.LegacyFeature) return false;
       if (ValueLifetimeFeature != other.ValueLifetimeFeature) return false;
@@ -1054,6 +1088,7 @@ namespace Pb {
       if (HasSourceFeature) hash ^= SourceFeature.GetHashCode();
       if (HasSourceFeature2) hash ^= SourceFeature2.GetHashCode();
       if (HasRemovedFeature) hash ^= RemovedFeature.GetHashCode();
+      if (HasSameEditionRemovedFeature) hash ^= SameEditionRemovedFeature.GetHashCode();
       if (HasFutureFeature) hash ^= FutureFeature.GetHashCode();
       if (HasLegacyFeature) hash ^= LegacyFeature.GetHashCode();
       if (HasValueLifetimeFeature) hash ^= ValueLifetimeFeature.GetHashCode();
@@ -1143,6 +1178,10 @@ namespace Pb {
         output.WriteRawTag(160, 1);
         output.WriteEnum((int) ValueLifetimeFeature);
       }
+      if (HasSameEditionRemovedFeature) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) SameEditionRemovedFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1221,6 +1260,10 @@ namespace Pb {
         output.WriteRawTag(160, 1);
         output.WriteEnum((int) ValueLifetimeFeature);
       }
+      if (HasSameEditionRemovedFeature) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) SameEditionRemovedFeature);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
       }
@@ -1272,6 +1315,9 @@ namespace Pb {
       }
       if (HasRemovedFeature) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) RemovedFeature);
+      }
+      if (HasSameEditionRemovedFeature) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SameEditionRemovedFeature);
       }
       if (HasFutureFeature) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) FutureFeature);
@@ -1335,6 +1381,9 @@ namespace Pb {
       }
       if (other.HasRemovedFeature) {
         RemovedFeature = other.RemovedFeature;
+      }
+      if (other.HasSameEditionRemovedFeature) {
+        SameEditionRemovedFeature = other.SameEditionRemovedFeature;
       }
       if (other.HasFutureFeature) {
         FutureFeature = other.FutureFeature;
@@ -1432,6 +1481,10 @@ namespace Pb {
             ValueLifetimeFeature = (global::Pb.ValueLifetimeFeature) input.ReadEnum();
             break;
           }
+          case 168: {
+            SameEditionRemovedFeature = (global::Pb.EnumFeature) input.ReadEnum();
+            break;
+          }
         }
       }
     #endif
@@ -1517,6 +1570,10 @@ namespace Pb {
           }
           case 160: {
             ValueLifetimeFeature = (global::Pb.ValueLifetimeFeature) input.ReadEnum();
+            break;
+          }
+          case 168: {
+            SameEditionRemovedFeature = (global::Pb.EnumFeature) input.ReadEnum();
             break;
           }
         }

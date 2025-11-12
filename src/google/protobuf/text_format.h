@@ -676,7 +676,7 @@ class PROTOBUF_EXPORT TextFormat {
   class PROTOBUF_EXPORT Parser {
    public:
     Parser();
-    ~Parser();
+    ~Parser() = default;
 
     // Like TextFormat::Parse().
     bool Parse(io::ZeroCopyInputStream* input, Message* output);

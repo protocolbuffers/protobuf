@@ -44,16 +44,12 @@ struct MapFieldTestPeer {
 };
 
 using TestMapField = ::google::protobuf::internal::MapField<
-    proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t,
-    ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
-    ::google::protobuf::internal::WireFormatLite::TYPE_INT32>;
+    proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse, ::int32_t, ::int32_t>;
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
  protected:
   typedef proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
-  typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
-                   WireFormatLite::TYPE_INT32>
-      MapFieldType;
+  typedef MapField<EntryType, int32_t, int32_t> MapFieldType;
 
   MapFieldBasePrimitiveTest()
       : arena_(GetParam() ? new Arena() : nullptr),
@@ -170,9 +166,7 @@ class MapFieldStateTest
     : public testing::TestWithParam<std::tuple<State, bool>> {
  protected:
   typedef proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
-  typedef MapField<EntryType, int32_t, int32_t, WireFormatLite::TYPE_INT32,
-                   WireFormatLite::TYPE_INT32>
-      MapFieldType;
+  typedef MapField<EntryType, int32_t, int32_t> MapFieldType;
   MapFieldStateTest()
       : arena_(std::get<1>(GetParam()) ? new Arena() : nullptr),
         map_field_(arena_.get()),
@@ -329,7 +323,8 @@ TEST_P(MapFieldStateTest, SwapClean) {
   ArenaHolder<MapFieldType> other(arena_.get());
   AddOneStillClean(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(/*arena=*/arena_.get(), other.get(),
+                   /*other_arena=*/arena_.get());
 
   Expect(map_field_.get(), CLEAN, 1, 1);
 
@@ -352,7 +347,8 @@ TEST_P(MapFieldStateTest, SwapMapDirty) {
   ArenaHolder<MapFieldType> other(arena_.get());
   MakeMapDirty(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(/*arena=*/arena_.get(), other.get(),
+                   /*other_arena=*/arena_.get());
 
   Expect(map_field_.get(), MAP_DIRTY, 1, 0);
 
@@ -375,7 +371,8 @@ TEST_P(MapFieldStateTest, SwapRepeatedDirty) {
   ArenaHolder<MapFieldType> other(arena_.get());
   MakeRepeatedDirty(other.get());
 
-  map_field_->Swap(other.get());
+  map_field_->Swap(/*arena=*/arena_.get(), other.get(),
+                   /*other_arena=*/arena_.get());
 
   Expect(map_field_.get(), REPEATED_DIRTY, 0, 1);
 
@@ -440,8 +437,7 @@ TEST_P(MapFieldStateTest, MutableMapField) {
 
 using MyMapField =
     MapField<proto2_unittest::TestMap_MapInt32Int32Entry_DoNotUse, int32_t,
-             int32_t, internal::WireFormatLite::TYPE_INT32,
-             internal::WireFormatLite::TYPE_INT32>;
+             int32_t>;
 
 TEST(MapFieldTest, ConstInit) {
   // This tests that `MapField` and all its base classes can be constant

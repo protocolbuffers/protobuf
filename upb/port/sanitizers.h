@@ -20,6 +20,10 @@
 #include <sanitizer/hwasan_interface.h>
 #endif
 
+#if UPB_MSAN
+#include <sanitizer/msan_interface.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,6 +64,14 @@ UPB_INLINE uint8_t UPB_PRIVATE(_upb_Xsan_GetTag)(const void *addr) {
 UPB_INLINE void UPB_PRIVATE(upb_Xsan_Init)(upb_Xsan *xsan) {
 #if UPB_HWASAN || UPB_TSAN
   xsan->state = 0;
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(upb_Xsan_MarkInitialized)(void* addr, size_t size) {
+#if UPB_HAS_FEATURE(memory_sanitizer)
+  if (size) {
+    __msan_unpoison(addr, size);
+  }
 #endif
 }
 

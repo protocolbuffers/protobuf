@@ -322,7 +322,6 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
 }
 
 void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
-  TestAllTypesEdition2023 prototype;
   SetTypeUrl(GetTypeUrl(TestAllTypesEdition2023::GetDescriptor()));
 
   RunValidProtobufTest<TestAllTypesEdition2023>(

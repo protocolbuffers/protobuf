@@ -19,25 +19,23 @@ def serialize(
     preserving_proto_field_name: bool=False,
     use_integers_for_enums: bool=False,
     descriptor_pool: Optional[DescriptorPool]=None,
-    float_precision: int=None,
 ) -> dict:
   """Converts protobuf message to a dictionary.
 
-  When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
+  When the dictionary is encoded to JSON, it conforms to ProtoJSON spec.
 
   Args:
     message: The protocol buffers message instance to serialize.
-    always_print_fields_with_no_presence: If True, fields without
-      presence (implicit presence scalars, repeated fields, and map fields) will
-      always be serialized. Any field that supports presence is not affected by
-      this option (including singular message fields and oneof fields).
+    always_print_fields_with_no_presence: If True, fields without presence
+      (implicit presence scalars, repeated fields, and map fields) will always
+      be serialized. Any field that supports presence is not affected by this
+      option (including singular message fields and oneof fields).
     preserving_proto_field_name: If True, use the original proto field names as
       defined in the .proto file. If False, convert the field names to
       lowerCamelCase.
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: If set, use this to specify float field valid digits.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -47,7 +45,6 @@ def serialize(
       always_print_fields_with_no_presence=always_print_fields_with_no_presence,
       preserving_proto_field_name=preserving_proto_field_name,
       use_integers_for_enums=use_integers_for_enums,
-      float_precision=float_precision,
   )
 
 def parse(

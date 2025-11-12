@@ -13,6 +13,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_bases.h"
+#include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
@@ -48,12 +49,18 @@ struct MockZeroFieldsBase : public MockMessageBase {
 ABSL_CHECK_MESSAGE_SIZE(MockZeroFieldsBase, 24);
 
 struct MockExtensionSet {
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
   void* arena;       // 8 bytes
+#endif
   int16_t capacity;  // 4 bytes
   int16_t size;      // 4 bytes
   void* data;        // 8 bytes
 };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+ABSL_CHECK_MESSAGE_SIZE(MockExtensionSet, 16);
+#else
 ABSL_CHECK_MESSAGE_SIZE(MockExtensionSet, 24);
+#endif
 
 struct MockRepeatedPtrField {
 #ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
@@ -70,9 +77,18 @@ ABSL_CHECK_MESSAGE_SIZE(MockRepeatedPtrField, 24);
 #endif
 
 struct MockRepeatedField {
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+  internal::InternalMetadataResolver resolver;  // 4 bytes
+  int size;                                     // 4 bytes
+  union {                                       // 8 bytes
+    void* heap_rep;
+    uint8_t soo_capacity[internal::kSooCapacityBytes];
+  };
+#else
   int current_size;  // 4 bytes
   int total_size;    // 4 bytes
   void* data;        // 8 bytes
+#endif
 };
 ABSL_CHECK_MESSAGE_SIZE(MockRepeatedField, 16);
 
@@ -104,7 +120,11 @@ TEST(GeneratedMessageTest, EmptyMessageWithExtensionsSize) {
     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes of padding
   };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 40);
+#else
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 48);
+#endif
   EXPECT_EQ(sizeof(proto2_unittest::TestEmptyMessageWithExtensions),
             sizeof(MockGenerated));
 }
@@ -312,7 +332,11 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
     PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
     // + 0-4 bytes padding
   };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+  ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 72);
+#else
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 80);
+#endif
 
   struct MockGeneratedExperiments : public MockMessageBase {  // 16 bytes
     int has_bits[1];                                          // 4 bytes
@@ -327,7 +351,11 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
     PROTOBUF_TSAN_DECLARE_MEMBER;      // 0-4 bytes
     // + 0-4 bytes padding
   };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+  ABSL_CHECK_MESSAGE_SIZE(MockGeneratedExperiments, 104);
+#else
   ABSL_CHECK_MESSAGE_SIZE(MockGeneratedExperiments, 112);
+#endif
 
   struct MockGeneratedSplit : public MockMessageBase {  // 16 bytes
     int has_bits[1];                                    // 4 bytes
@@ -337,7 +365,11 @@ TEST(GeneratedMessageTest, FieldOrderingsSize) {
     PROTOBUF_TSAN_DECLARE_MEMBER;                       // 0-4 bytes
     // + 0-4 bytes padding
   };
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET
+  ABSL_CHECK_MESSAGE_SIZE(MockGeneratedSplit, 48);
+#else
   ABSL_CHECK_MESSAGE_SIZE(MockGeneratedSplit, 56);
+#endif
 
 #ifndef PROTOBUF_FORCE_SPLIT
   // Make sure both or none are on for this test.

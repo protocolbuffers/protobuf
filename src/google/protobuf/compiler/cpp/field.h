@@ -203,6 +203,8 @@ class FieldGeneratorBase {
 
   pb::CppFeatures::StringType GetDeclaredStringType() const;
 
+  static io::Printer::Sub InternalMetadataOffsetSub(io::Printer* p);
+
 
  private:
   bool should_split_ = false;

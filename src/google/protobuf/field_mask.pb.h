@@ -214,7 +214,8 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
     kPathsFieldNumber = 1,
   };
   // repeated string paths = 1;
-  int paths_size() const;
+  [[nodiscard]] int paths_size()
+      const;
   private:
   int _internal_paths_size() const;
 
@@ -246,12 +247,14 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   struct Impl_ {
-    inline explicit constexpr Impl_(::google::protobuf::internal::ConstantInitialized) noexcept;
+    inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
+                                    ::google::protobuf::internal::ConstantInitialized) noexcept;
     inline explicit Impl_(
         ::google::protobuf::internal::InternalVisibility visibility,
         ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);

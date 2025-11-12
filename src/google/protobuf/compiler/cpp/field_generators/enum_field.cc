@@ -301,9 +301,14 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){arena},
-    )cc");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              decltype($field_$){$internal_metadata_offset$},
+#else
+              decltype($field_$){arena},
+#endif
+            )cc");
     if (has_cached_size_) {
       // std::atomic has no copy constructor, which prevents explicit aggregate
       // initialization pre-C++17.
@@ -326,21 +331,41 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{}");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, $internal_metadata_offset$}
+#else
+              $name$_ {}
+#endif
+            )cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{visibility, arena}");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, $internal_metadata_offset$}
+#else
+              $name$_ { visibility, arena }
+#endif
+            )cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{visibility, arena, from.$name$_}");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
+#else
+              $name$_ { visibility, arena, from.$name$_ }
+#endif)cc");
     if (has_cached_size_) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
@@ -420,7 +445,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
-      _internal_mutable_$name_internal$()->Add(value);
+      _internal_mutable_$name_internal$()->InternalAddWithArena(
+          internal_visibility(), GetArena(), value);
       $set_hasbit$;
       $annotate_add$
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)

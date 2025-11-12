@@ -227,7 +227,7 @@ TEST(MiniTableEnumTest, Enum) {
   }
 }
 
-TEST_P(MiniTableTest, SubsInitializedToEmpty) {
+TEST_P(MiniTableTest, SubsInitializedToNull) {
   upb::Arena arena;
   upb::MtDataEncoder e;
   // Create mini table with 2 message fields.

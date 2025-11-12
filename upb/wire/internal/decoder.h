@@ -139,7 +139,7 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        const upb_MiniTable* layout);
 
 UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return upb_EpsCopyInputStream_IsDoneWithCallback(
+  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
       &d->input, ptr, &_upb_Decoder_IsDoneFallback);
 }
 

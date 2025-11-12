@@ -18,7 +18,7 @@ package protobuf_editions_test;
 import "net/proto/proto1_features.proto";
 import "google/protobuf/java_features.proto";
 import "google/protobuf/cpp_features.proto";
-import "editions/proto/editions_transform_proto3.proto";
+import "editions/input/edition2023_transform/proto3.proto";
 
 option features.repeated_field_encoding = EXPANDED;
 option features.utf8_validation = NONE;

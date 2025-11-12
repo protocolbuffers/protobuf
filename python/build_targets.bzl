@@ -9,7 +9,7 @@ Most users should depend upon public aliases in the root:
 """
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "internal_py_proto_library")
@@ -145,12 +145,14 @@ def build_targets(name):
             "//src/google/protobuf/io:tokenizer",
             "//src/google/protobuf/stubs:lite",
             "//src/google/protobuf/util:differencer",
+            "@abseil-cpp//absl/base:core_headers",
             "@abseil-cpp//absl/container:flat_hash_map",
             "@abseil-cpp//absl/log:absl_check",
             "@abseil-cpp//absl/log:absl_log",
             "@abseil-cpp//absl/status",
             "@abseil-cpp//absl/status:statusor",
             "@abseil-cpp//absl/strings",
+            "@abseil-cpp//absl/synchronization",
         ] + select({
             "//conditions:default": [],
             ":use_fast_cpp_protos": ["@system_python//:python_headers"],

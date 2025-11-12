@@ -112,7 +112,8 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
   bool validate_utf8 = type == kUpb_DecodeFast_String;                         \
   int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                         \
                                                                                \
-  UPB_ASSERT(!upb_EpsCopyInputStream_AliasingAvailable(&d->input, ptr, 0));    \
+  UPB_ASSERT(!UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(&d->input, \
+                                                                    ptr, 0));  \
   UPB_ASSERT(fastdecode_checktag(data, tagbytes));                             \
                                                                                \
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr,               \
@@ -129,8 +130,9 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
                                                                                \
   buf = d->arena.UPB_PRIVATE(ptr);                                             \
   arena_has = UPB_PRIVATE(_upb_ArenaHas)(&d->arena);                           \
-  common_has = UPB_MIN(arena_has,                                              \
-                       upb_EpsCopyInputStream_BytesAvailable(&d->input, ptr)); \
+  common_has = UPB_MIN(                                                        \
+      arena_has,                                                               \
+      UPB_PRIVATE(upb_EpsCopyInputStream_BytesAvailable)(&d->input, ptr));     \
                                                                                \
   if (UPB_LIKELY(size <= 15 - tagbytes)) {                                     \
     if (arena_has < 16) goto longstr;                                          \
@@ -190,75 +192,75 @@ void fastdecode_docopy(upb_Decoder* d, const char* ptr, uint32_t size, int copy,
                                                      hasbits, (uint64_t)dst);  \
   }
 
-#define FASTDECODE_STRING(d, ptr, msg, table, hasbits, data, type, card,      \
-                          tagsize, copyfunc)                                  \
-  upb_StringView* dst;                                                        \
-  fastdecode_arr farr;                                                        \
-  int64_t size;                                                               \
-  bool validate_utf8 = type == kUpb_DecodeFast_String;                        \
-  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                        \
-                                                                              \
-  if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {                   \
-    RETURN_GENERIC("string field tag mismatch\n");                            \
-  }                                                                           \
-                                                                              \
-  if (UPB_UNLIKELY(                                                           \
-          !upb_EpsCopyInputStream_AliasingAvailable(&d->input, ptr, 0))) {    \
-    UPB_MUSTTAIL return copyfunc(UPB_PARSE_ARGS);                             \
-  }                                                                           \
-                                                                              \
-  dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr,              \
-                            sizeof(upb_StringView), card);                    \
-                                                                              \
-  again:                                                                      \
-  if (card == kUpb_DecodeFast_Repeated) {                                     \
-    dst = fastdecode_resizearr(d, dst, &farr, sizeof(upb_StringView));        \
-  }                                                                           \
-                                                                              \
-  size = (int8_t)ptr[tagbytes];                                               \
-  ptr += tagbytes + 1;                                                        \
-                                                                              \
-  if (UPB_UNLIKELY(                                                           \
-          !upb_EpsCopyInputStream_AliasingAvailable(&d->input, ptr, size))) { \
-    ptr--;                                                                    \
-    if (validate_utf8) {                                                      \
-      return fastdecode_longstring_utf8(d, ptr, msg, table, hasbits,          \
-                                        (uint64_t)dst);                       \
-    } else {                                                                  \
-      return fastdecode_longstring_noutf8(d, ptr, msg, table, hasbits,        \
-                                          (uint64_t)dst);                     \
-    }                                                                         \
-  }                                                                           \
-                                                                              \
-  dst->data = ptr;                                                            \
-  dst->size = size;                                                           \
-  ptr = upb_EpsCopyInputStream_ReadStringAliased(&d->input, &dst->data,       \
-                                                 dst->size);                  \
-                                                                              \
-  if (card == kUpb_DecodeFast_Repeated) {                                     \
-    if (validate_utf8 &&                                                      \
-        !_upb_Decoder_VerifyUtf8Inline(dst->data, dst->size)) {               \
-      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_BadUtf8);                \
-    }                                                                         \
-    fastdecode_nextret ret = fastdecode_nextrepeated(                         \
-        d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_StringView));         \
-    switch (ret.next) {                                                       \
-      case FD_NEXT_SAMEFIELD:                                                 \
-        dst = ret.dst;                                                        \
-        goto again;                                                           \
-      case FD_NEXT_OTHERFIELD:                                                \
-        data = ret.tag;                                                       \
-        UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);     \
-      case FD_NEXT_ATLIMIT:                                                   \
-        return ptr;                                                           \
-    }                                                                         \
-  }                                                                           \
-                                                                              \
-  if (card != kUpb_DecodeFast_Repeated && validate_utf8) {                    \
-    data = (uint64_t)dst;                                                     \
-    UPB_MUSTTAIL return fastdecode_verifyutf8(UPB_PARSE_ARGS);                \
-  }                                                                           \
-                                                                              \
+#define FASTDECODE_STRING(d, ptr, msg, table, hasbits, data, type, card,   \
+                          tagsize, copyfunc)                               \
+  upb_StringView* dst;                                                     \
+  fastdecode_arr farr;                                                     \
+  int64_t size;                                                            \
+  bool validate_utf8 = type == kUpb_DecodeFast_String;                     \
+  int tagbytes = upb_DecodeFast_TagSizeBytes(tagsize);                     \
+                                                                           \
+  if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {                \
+    RETURN_GENERIC("string field tag mismatch\n");                         \
+  }                                                                        \
+                                                                           \
+  if (UPB_UNLIKELY(!UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)( \
+          &d->input, ptr, 0))) {                                           \
+    UPB_MUSTTAIL return copyfunc(UPB_PARSE_ARGS);                          \
+  }                                                                        \
+                                                                           \
+  dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, &farr,           \
+                            sizeof(upb_StringView), card);                 \
+                                                                           \
+  again:                                                                   \
+  if (card == kUpb_DecodeFast_Repeated) {                                  \
+    dst = fastdecode_resizearr(d, dst, &farr, sizeof(upb_StringView));     \
+  }                                                                        \
+                                                                           \
+  size = (int8_t)ptr[tagbytes];                                            \
+  ptr += tagbytes + 1;                                                     \
+                                                                           \
+  if (UPB_UNLIKELY(!UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)( \
+          &d->input, ptr, size))) {                                        \
+    ptr--;                                                                 \
+    if (validate_utf8) {                                                   \
+      return fastdecode_longstring_utf8(d, ptr, msg, table, hasbits,       \
+                                        (uint64_t)dst);                    \
+    } else {                                                               \
+      return fastdecode_longstring_noutf8(d, ptr, msg, table, hasbits,     \
+                                          (uint64_t)dst);                  \
+    }                                                                      \
+  }                                                                        \
+                                                                           \
+  dst->data = ptr;                                                         \
+  dst->size = size;                                                        \
+  ptr = upb_EpsCopyInputStream_ReadStringAliased(&d->input, &dst->data,    \
+                                                 dst->size);               \
+                                                                           \
+  if (card == kUpb_DecodeFast_Repeated) {                                  \
+    if (validate_utf8 &&                                                   \
+        !_upb_Decoder_VerifyUtf8Inline(dst->data, dst->size)) {            \
+      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_BadUtf8);             \
+    }                                                                      \
+    fastdecode_nextret ret = fastdecode_nextrepeated(                      \
+        d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_StringView));      \
+    switch (ret.next) {                                                    \
+      case FD_NEXT_SAMEFIELD:                                              \
+        dst = ret.dst;                                                     \
+        goto again;                                                        \
+      case FD_NEXT_OTHERFIELD:                                             \
+        data = ret.tag;                                                    \
+        UPB_MUSTTAIL return _upb_FastDecoder_TagDispatch(UPB_PARSE_ARGS);  \
+      case FD_NEXT_ATLIMIT:                                                \
+        return ptr;                                                        \
+    }                                                                      \
+  }                                                                        \
+                                                                           \
+  if (card != kUpb_DecodeFast_Repeated && validate_utf8) {                 \
+    data = (uint64_t)dst;                                                  \
+    UPB_MUSTTAIL return fastdecode_verifyutf8(UPB_PARSE_ARGS);             \
+  }                                                                        \
+                                                                           \
   UPB_MUSTTAIL return upb_DecodeFast_Dispatch(UPB_PARSE_ARGS);
 
 /* Generate all combinations:

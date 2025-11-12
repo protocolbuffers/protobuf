@@ -90,4 +90,5 @@ jobs:
           stale-pr-label: 'wait for user action'
           labels-to-add-when-unstale: 'untriaged'
           operations-per-run: 20
+          exempt-pr-labels: 'safe for tests'
 

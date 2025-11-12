@@ -89,21 +89,25 @@ TEST(FastVarints, NameHere) {
   constexpr uint8_t kHasBitIndex = 0;
   constexpr uint8_t kFieldOffset = 24;
 
-  // clang-format on
+  const ClassData class_data(
+      nullptr, nullptr, nullptr, nullptr, nullptr, MessageCreator(), nullptr,
+      nullptr, nullptr, nullptr, /*cached_size_offset=*/16, /*is_lite*/ true);
+
   const TcParseTable<0, 1, 0, 0, 2> parse_table = {
       {
           kHasBitsOffset,  //
           0,               // no _extensions_
-          1, 0,            // max_field_number, fast_idx_mask
+          1,
+          0,  // max_field_number, fast_idx_mask
           offsetof(decltype(parse_table), field_lookup_table),
           0xFFFFFFFF - 1,  // skipmap
           offsetof(decltype(parse_table), field_entries),
           1,                                             // num_field_entries
           0,                                             // num_aux_entries
           offsetof(decltype(parse_table), field_names),  // no aux_entries
-          nullptr,                                       // default instance
-          nullptr,                                       // post_loop_handler
-          FastParserGaveUp,                              // fallback
+          &class_data,
+          nullptr,           // post_loop_handler
+          FastParserGaveUp,  // fallback
 #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
           nullptr,  // to_prefetch
 #endif              // PROTOBUF_PREFETCH_PARSE_TABLE
@@ -125,7 +129,6 @@ TEST(FastVarints, NameHere) {
       // no aux_entries
       {{}},
   };
-  // clang-format on
   uint8_t serialize_buffer[64];
 
   for (int size : {8, 32, 64}) {

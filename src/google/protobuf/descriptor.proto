@@ -86,6 +86,9 @@ enum Edition {
   EDITION_2023 = 1000;
   EDITION_2024 = 1001;
 
+  // A placeholder edition for developing and testing unscheduled features.
+  EDITION_UNSTABLE = 9999;
+
   // Placeholder editions for testing feature resolution.  These should not be
   // used or relied on outside of tests.
   EDITION_1_TEST_ONLY = 1;
@@ -822,6 +825,10 @@ message FieldOptions {
     // this one, the last default assigned will be used, and proto files will
     // not be able to override it.
     optional Edition edition_removed = 4;
+
+    // The removal error text if this feature is used after the edition it was
+    // removed in.
+    optional string removal_error = 5;
   }
   optional FeatureSupport feature_support = 22;
 

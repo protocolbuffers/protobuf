@@ -600,7 +600,7 @@ bool EncodedDescriptorDatabase::Add(
 
 bool EncodedDescriptorDatabase::AddCopy(
     const void* PROTOBUF_NONNULL encoded_file_descriptor, int size) {
-  void* copy = operator new(size);
+  void* copy = internal::Allocate(size);
   memcpy(copy, encoded_file_descriptor, size);
   files_to_delete_.push_back(copy);
   return Add(copy, size);

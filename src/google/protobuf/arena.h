@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "absl/base/macros.h"
-#include "absl/meta/type_traits.h"
 #include "google/protobuf/internal_visibility.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
@@ -760,14 +759,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
-  auto operator_new = [](size_t size) -> void* {
-#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
-    return __builtin_operator_new(size);
-#else
-    return ::operator new(size);
-#endif
-  };
-
   if constexpr (internal::FieldHasArenaOffset<T>()) {
     if (arena != nullptr) {
       using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
@@ -781,12 +772,12 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
       // Fields which use arena offsets don't have constructors that take an
       // arena pointer. Since the arena is nullptr, it is safe to default
       // construct the object.
-      return new (operator_new(sizeof(T))) T();
+      return new (internal::Allocate(sizeof(T))) T();
     }
   } else {
     static_assert(is_destructor_skippable<T>::value);
     void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                 : operator_new(sizeof(T));
+                                 : internal::Allocate(sizeof(T));
     if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
       return new (mem) T(internal::InternalVisibility(), arena);
     } else {
@@ -818,11 +809,7 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
   if (arena != nullptr) {
     mem = arena->AllocateAligned(sizeof(T));
   } else {
-#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
-    mem = __builtin_operator_new(sizeof(T));
-#else
-    mem = ::operator new(sizeof(T));
-#endif
+    mem = internal::Allocate(sizeof(T));
   }
   return new (mem) T(arena, *typed_from);
 }
@@ -831,6 +818,21 @@ template <>
 inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string, false>() {
   return impl_.AllocateFromStringBlock();
 }
+
+namespace internal {
+
+// This class is used to define `DestructorSkippable_` for some containing type
+// if and only if `T` is destructor-skippable.
+template <typename T,
+          bool kDestructorSkippable = Arena::is_destructor_skippable<T>::value>
+struct ContainerDestructorSkippableBase {};
+
+template <typename T>
+struct ContainerDestructorSkippableBase<T, /*kDestructorSkippable=*/true> {
+  using DestructorSkippable_ = void;
+};
+
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

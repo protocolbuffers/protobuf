@@ -10,6 +10,7 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import copy
+import timeit
 import unittest
 import warnings
 
@@ -43,8 +44,50 @@ from google.protobuf import unittest_pb2
 
 warnings.simplefilter('error', DeprecationWarning)
 
+# Enable this to run the benchmarks.
+ALSO_RUN_BENCHMARKS = False
+
 
 class DescriptorPoolTestBase(object):
+
+  @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
+  def testDescriptorPoolBenchmark(self):
+    if ALSO_RUN_BENCHMARKS:
+      n_trials = 100
+
+      # FindFileByName
+      name = 'google/protobuf/internal/factory_test1.proto'
+      duration = timeit.timeit(
+          lambda: self.pool.FindFileByName(name),
+          number=n_trials,
+      )
+      print(f'FindFileByName: {duration / n_trials * 1000}ms')
+
+      # FindEnumTypeByName
+      name = 'google.protobuf.python.internal.Factory1Enum'
+      duration = timeit.timeit(
+          lambda: self.pool.FindEnumTypeByName(name),
+          number=n_trials,
+      )
+      print(f'FindEnumTypeByName: {duration / n_trials * 1000}ms')
+
+      # FindOneofByName
+      name = 'google.protobuf.python.internal.Factory2Message.oneof_field'
+      duration = timeit.timeit(
+          lambda: self.pool.FindOneofByName(name),
+          number=n_trials,
+      )
+      print(f'FindOneofByName: {duration / n_trials * 1000}ms')
+
+      # FindExtensionByName
+      name = 'google.protobuf.python.internal.another_field'
+      duration = timeit.timeit(
+          lambda: self.pool.FindExtensionByName(name),
+          number=n_trials,
+      )
+      print(f'FindExtensionByName: {duration / n_trials * 1000}ms')
+    else:
+      print('Skipping benchmark in non-benchmark mode.')
 
   def testFindFileByName(self):
     name1 = 'google/protobuf/internal/factory_test1.proto'

@@ -451,7 +451,8 @@ TEST(MESSAGE_TEST_NAME, UnparsedEmpty) {
   const char encoded[] = {'\042', 100};
   UNITTEST::NestedTestAllTypes message;
 
-  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+  EXPECT_FALSE(
+      message.ParseFromString(absl::string_view(encoded, sizeof(encoded))));
   EXPECT_TRUE(message.has_lazy_child());
   EXPECT_EQ(message.lazy_child().ByteSizeLong(), 0);
 }
@@ -1091,16 +1092,16 @@ TEST(MESSAGE_TEST_NAME, ParseFailsOnInvalidMessageEnd) {
   UNITTEST::TestAllTypes message;
 
   // Control case.
-  EXPECT_TRUE(message.ParseFromArray("", 0));
+  EXPECT_TRUE(message.ParseFromString(""));
 
   // The byte is a valid varint, but not a valid tag (zero).
-  EXPECT_FALSE(message.ParseFromArray("\0", 1));
+  EXPECT_FALSE(message.ParseFromString(absl::string_view("\0", 1)));
 
   // The byte is a malformed varint.
-  EXPECT_FALSE(message.ParseFromArray("\200", 1));
+  EXPECT_FALSE(message.ParseFromString("\200"));
 
   // The byte is an endgroup tag, but we aren't parsing a group.
-  EXPECT_FALSE(message.ParseFromArray("\014", 1));
+  EXPECT_FALSE(message.ParseFromString("\014"));
 }
 
 // Regression test for b/23630858
@@ -1131,7 +1132,8 @@ TEST(MESSAGE_TEST_NAME, NonCanonicalTag) {
   UNITTEST::TestAllTypes message;
   // optional_lazy_message (27) LEN(3) with non canonical tag: (1).
   const char encoded[] = {'\332', 1, 3, '\210', 0, 0};
-  EXPECT_TRUE(message.ParseFromArray(encoded, sizeof(encoded)));
+  EXPECT_TRUE(
+      message.ParseFromString(absl::string_view(encoded, sizeof(encoded))));
 }
 
 TEST(MESSAGE_TEST_NAME, Zero5BTag) {
@@ -1139,7 +1141,8 @@ TEST(MESSAGE_TEST_NAME, Zero5BTag) {
   // optional_nested_message (18) LEN(6) with 5B but zero tag.
   const char encoded[] = {'\222', 1,      6,      '\200', '\200',
                           '\200', '\200', '\020', 0};
-  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+  EXPECT_FALSE(
+      message.ParseFromString(absl::string_view(encoded, sizeof(encoded))));
 }
 
 TEST(MESSAGE_TEST_NAME, Zero5BTagLazy) {
@@ -1147,7 +1150,8 @@ TEST(MESSAGE_TEST_NAME, Zero5BTagLazy) {
   // optional_lazy_message (27) LEN(6) with 5B but zero tag.
   const char encoded[] = {'\332', 1,      6,      '\200', '\200',
                           '\200', '\200', '\020', 0};
-  EXPECT_FALSE(message.ParseFromArray(encoded, sizeof(encoded)));
+  EXPECT_FALSE(
+      message.ParseFromString(absl::string_view(encoded, sizeof(encoded))));
 }
 
 namespace {

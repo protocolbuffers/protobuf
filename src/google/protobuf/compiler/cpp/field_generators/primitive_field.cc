@@ -12,6 +12,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
 
 #include "absl/log/absl_check.h"
@@ -351,9 +352,14 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateAggregateInitializer(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
-    p->Emit(R"cc(
-      decltype($field_$){arena},
-    )cc");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              decltype($field_$){$internal_metadata_offset$},
+#else
+              decltype($field_$){arena},
+#endif
+            )cc");
     GenerateCacheSizeInitializer(p);
   }
 
@@ -366,21 +372,41 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{}");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, $internal_metadata_offset$}
+#else
+              $name$_ {}
+#endif
+            )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
   }
 
   void GenerateMemberConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{visibility, arena}");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, $internal_metadata_offset$}
+#else
+              $name$_ { visibility, arena }
+#endif
+            )cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    p->Emit("$name$_{visibility, arena, from.$name$_}");
+    p->Emit({InternalMetadataOffsetSub(p)},
+            R"cc(
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
+#else
+              $name$_ { visibility, arena, from.$name$_ }
+#endif)cc");
     if (HasCachedSize()) {
       p->Emit(",\n_$name$_cached_byte_size_{0}");
     }
@@ -482,7 +508,8 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
     inline void $Msg$::add_$name$($Type$ value) {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      _internal_mutable_$name_internal$()->Add(value);
+      _internal_mutable_$name_internal$()->InternalAddWithArena(
+          internal_visibility(), GetArena(), value);
       $set_hasbit$;
       $annotate_add$;
       // @@protoc_insertion_point(field_add:$pkg.Msg.field$)

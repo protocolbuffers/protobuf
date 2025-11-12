@@ -5,11 +5,19 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-edition = "2023";
+edition = "2024";
 
 package upb.test_2023;
 
+import option "upb/test/custom_options.proto";
+import option "upb/test/custom_options_unlinked.proto";
+
+option features.enforce_naming_style = STYLE_LEGACY;
+
 message EditionsMessage {
+  option (upb.message_opt) = 87;
+  option (upb.message_opt_unlinked) = 9;
+
   int32 plain_field = 1;
   int32 implicit_presence_field = 2 [features.field_presence = IMPLICIT];
   int32 required_field = 3 [features.field_presence = LEGACY_REQUIRED];
