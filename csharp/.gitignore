@@ -34,6 +34,10 @@ lib/protoc.exe
 # Benchmark output
 BenchmarkDotNet.Artifacts/
 
+# Auto generated csharp classes
+UnittestDeepDependenciesCached/
+UnittestDeepDependenciesNocache/
+
 # Reinstate generated code for test files
 !any_test.pb.*
 !map*unittest.pb.*
