@@ -181,17 +181,6 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
 }
 
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) {
-#ifdef Py_GIL_DISABLED
-  // for the free-threaded build, the map is not weak and we need to decref
-  // all map entries
-  intptr_t iter = UPB_INTTABLE_BEGIN;
-  uintptr_t key;
-  upb_value val;
-  while (upb_inttable_next(&map->table, &key, &val, &iter)) {
-    PyObject* obj = upb_value_getptr(val);
-    Py_DECREF(obj);
-  }
-#endif
   upb_Arena_Free(map->arena);
 }
 
@@ -206,28 +195,12 @@ uintptr_t PyUpb_WeakMap_GetKey(const void* key) {
 }
 
 void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj) {
-#ifdef Py_GIL_DISABLED
-  // For the free-threaded build, this is a strong referenced mapping, despite
-  // the API name.  That avoids quite a bit of complexity (like the need to
-  // use PyUnstable_TryIncRef().
-  Py_INCREF(py_obj);
-#endif
+  PyUnstable_EnableTryIncRef(py_obj);
   upb_inttable_insert(&map->table, PyUpb_WeakMap_GetKey(key),
                       upb_value_ptr(py_obj), map->arena);
 }
 
-static void weakmap_maybe_decref(PyUpb_WeakMap* map, const void* key) {
-#ifdef Py_GIL_DISABLED
-  upb_value val;
-  if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
-    PyObject* obj = upb_value_getptr(val);
-    Py_DECREF(obj);
-  }
-#endif
-}
-
 void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
-  weakmap_maybe_decref(map, key);
   upb_value val;
   bool removed =
       upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
@@ -236,7 +209,6 @@ void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key) {
 }
 
 void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key) {
-  weakmap_maybe_decref(map, key);
   upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), NULL);
 }
 
@@ -244,8 +216,20 @@ PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key) {
   upb_value val;
   if (upb_inttable_lookup(&map->table, PyUpb_WeakMap_GetKey(key), &val)) {
     PyObject* ret = upb_value_getptr(val);
+#ifdef Py_GIL_DISABLED
+    // Other threads might race and decref this object.  Because we enabled
+    // TryIncRef above, we can use it here.  If it fails, the object reference
+    // count went to zero.  We remove the entry from the table in that case.
+    if (PyUnstable_TryIncRef(ret)) {
+      return ret;
+    } else {
+      upb_inttable_remove(&map->table, PyUpb_WeakMap_GetKey(key), &val);
+      return NULL;
+    }
+#else
     Py_INCREF(ret);
     return ret;
+#endif
   } else {
     return NULL;
   }
@@ -343,7 +327,20 @@ void PyUpb_ObjCache_Add(PyUpb_WeakMap* obj_cache, const void* key,
 void PyUpb_ObjCache_DeleteLockHeld(PyUpb_WeakMap* obj_cache, const void* key) {
   if (obj_cache != NULL) {
     assert(PyUpb_ObjCache_IsLocked(obj_cache));
+#ifdef Py_GIL_DISABLED
+    // need a strong reference to the Python object so it cannot be decref'ed
+    // to zero in another thread.  That can happen even if we are holding the
+    // cache mutex.
+    PyObject *py_obj = PyUpb_WeakMap_Get(obj_cache, key);
+    if (py_obj == NULL) {
+      return;
+    }
+#endif
     PyUpb_WeakMap_Delete(obj_cache, key);
+#ifdef Py_GIL_DISABLED
+    // now that it's safely removed from the map, we can drop the ref
+    Py_DECREF(py_obj);
+#endif
   }
 }
 
