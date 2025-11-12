@@ -209,7 +209,8 @@ bool PyUpb_DescriptorPool_CheckNoDatabase(PyObject* _self) { return true; }
 static bool PyUpb_DescriptorPool_LoadDependentFiles(
     PyUpb_DescriptorPool* self, google_protobuf_FileDescriptorProto* proto) {
   size_t n;
-  const upb_StringView* deps = google_protobuf_FileDescriptorProto_dependency(proto, &n);
+  const upb_StringView* deps =
+      google_protobuf_FileDescriptorProto_dependency(proto, &n);
   for (size_t i = 0; i < n; i++) {
     const upb_FileDef* dep = upb_DefPool_FindFileByNameWithSize(
         self->symtab, deps[i].data, deps[i].size);

@@ -182,7 +182,8 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
 
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) {
 #ifdef Py_GIL_DISABLED
-  // for the free-threaded build, the map is not weak and we need to decref all map entries
+  // for the free-threaded build, the map is not weak and we need to decref
+  // all map entries
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;
   upb_value val;

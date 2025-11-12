@@ -309,7 +309,8 @@ static bool PyUpb_Message_LookupName(PyUpb_Message* self, PyObject* py_name,
   return true;
 }
 
-static int _PyUpb_Message_InitAttributesCheckError_LockHeld(PyObject* self, PyObject* args,
+static int _PyUpb_Message_InitAttributesCheckError_LockHeld(PyObject* self,
+                                                            PyObject* args,
                                                             PyObject* kwargs);
 
 static bool PyUpb_Message_InitMessageMapEntry(PyObject* dst, PyObject* src) {
@@ -462,12 +463,14 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
           // Fall back to init as normal message field.
           PyErr_Clear();
           _PyUpb_Message_Clear_LockHeld((PyUpb_Message*)submsg);
-          ok = _PyUpb_Message_InitAttributesCheckError_LockHeld(submsg, NULL, value) >= 0;
+          ok = _PyUpb_Message_InitAttributesCheckError_LockHeld(submsg, NULL,
+                                                                value) >= 0;
         }
         Py_DECREF(fields_str);
       }
     } else {
-      ok = _PyUpb_Message_InitAttributesCheckError_LockHeld(submsg, NULL, value) >= 0;
+      ok = _PyUpb_Message_InitAttributesCheckError_LockHeld(submsg, NULL,
+                                                            value) >= 0;
     }
   } else {
     const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
@@ -535,7 +538,8 @@ static int _PyUpb_Message_InitAttributes_LockHeld(PyObject* _self, PyObject* arg
   return 0;
 }
 
-static int _PyUpb_Message_InitAttributesCheckError_LockHeld(PyObject* self, PyObject* args,
+static int _PyUpb_Message_InitAttributesCheckError_LockHeld(PyObject* self,
+                                                            PyObject* args,
                                                             PyObject* kwargs) {
   assert(!PyErr_Occurred());
 
@@ -1116,7 +1120,8 @@ static int PyUpb_Message_SetAttr(PyObject* self, PyObject* attr,
   return ret;
 }
 
-static PyObject* _PyUpb_Message_HasField_LockHeld(PyUpb_Message* self, PyObject* arg) {
+static PyObject* _PyUpb_Message_HasField_LockHeld(PyUpb_Message* self,
+                                                  PyObject* arg) {
   const upb_FieldDef* field;
   const upb_OneofDef* oneof;
 
@@ -1336,7 +1341,8 @@ static PyObject* _PyUpb_Message_SerializeInternal_LockHeld(PyObject* _self, PyOb
                                                            PyObject* kwargs,
                                                            bool check_required);
 
-static PyObject* _PyUpb_Message_MergeFromString_LockHeld(PyUpb_Message* self, PyObject* arg);
+static PyObject* _PyUpb_Message_MergeFromString_LockHeld(PyUpb_Message* self,
+                                                         PyObject* arg);
 
 static bool _PyUpb_Message_MergeFrom_LockHeld(PyObject* self, PyObject* arg) {
   // OPT: exit if src is empty.
@@ -1345,7 +1351,8 @@ static bool _PyUpb_Message_MergeFrom_LockHeld(PyObject* self, PyObject* arg) {
       _PyUpb_Message_SerializeInternal_LockHeld(arg, subargs, NULL, false);
   Py_DECREF(subargs);
   if (!serialized) return false;
-  PyObject* ret = _PyUpb_Message_MergeFromString_LockHeld((PyUpb_Message*) self, serialized);
+  PyObject* ret =
+      _PyUpb_Message_MergeFromString_LockHeld((PyUpb_Message*)self, serialized);
   Py_DECREF(serialized);
   Py_XDECREF(ret);
   return true;
@@ -1367,7 +1374,8 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
   Py_RETURN_NONE;
 }
 
-static void _PyUpb_Message_CopyFrom_LockHeld(PyUpb_Message* self, PyUpb_Message* other) {
+static void _PyUpb_Message_CopyFrom_LockHeld(PyUpb_Message* self,
+                                             PyUpb_Message* other) {
   PyUpb_Message_EnsureReified(self);
 
   const upb_Message* other_msg = PyUpb_Message_GetIfReified((PyObject*)other);
@@ -1414,7 +1422,8 @@ static PyObject* PyUpb_Message_UnknownFields(PyObject* _self, PyObject* arg) {
   return NULL;
 }
 
-static PyObject* _PyUpb_Message_MergeFromString_LockHeld(PyUpb_Message* self, PyObject* arg) {
+static PyObject* _PyUpb_Message_MergeFromString_LockHeld(PyUpb_Message* self,
+                                                         PyObject* arg) {
   char* buf;
   Py_ssize_t size;
   PyObject* bytes = NULL;
@@ -1477,7 +1486,8 @@ static PyObject* _PyUpb_Message_ByteSize_LockHeld(PyObject* self) {
   // moment upb does not have a "byte size" function, so we just serialize to
   // string and get the size of the string.
   PyObject* subargs = PyTuple_New(0);
-  PyObject* serialized = _PyUpb_Message_SerializeInternal_LockHeld(self, subargs, NULL, true);
+  PyObject* serialized =
+      _PyUpb_Message_SerializeInternal_LockHeld(self, subargs, NULL, true);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
   size_t size = PyBytes_Size(serialized);
@@ -1826,7 +1836,8 @@ PyObject* PyUpb_Message_SerializePartialToString(PyObject* _self,
   return ret;
 }
 
-static PyObject* _PyUpb_Message_WhichOneof_LockHeld(PyObject* _self, PyObject* name) {
+static PyObject* _PyUpb_Message_WhichOneof_LockHeld(PyObject* _self,
+                                                    PyObject* name) {
   PyUpb_Message* self = (void*)_self;
   const upb_OneofDef* o;
   if (!PyUpb_Message_LookupName(self, name, NULL, &o, PyExc_ValueError)) {
@@ -2050,7 +2061,8 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   PyObject* wkt_bases = PyUpb_GetWktBases(state);
 #ifdef Py_GIL_DISABLED
   PyObject* wkt_base;
-  status = PyDict_GetItemStringRef(wkt_bases, upb_MessageDef_FullName(msgdef), &wkt_base);
+  status = PyDict_GetItemStringRef(wkt_bases, upb_MessageDef_FullName(msgdef),
+                                   &wkt_base);
   if (status == -1) return NULL;
 #else
   PyObject* wkt_base =
