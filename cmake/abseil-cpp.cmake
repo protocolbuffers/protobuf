@@ -13,7 +13,7 @@ endif()
 if (NOT TARGET absl::strings)
   if (NOT protobuf_FORCE_FETCH_DEPENDENCIES)
     # Use "CONFIG" as there is no built-in cmake module for absl.
-    find_package(absl CONFIG)
+    find_package(absl 20240722.0 CONFIG)
   endif()
 
   # Fallback to fetching Abseil from github if it's not found locally.
