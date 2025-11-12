@@ -9,6 +9,7 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 cc_binary(
     name = "protoc-gen-python",
     srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":python",
         "//src/google/protobuf/compiler:plugin",
@@ -17,7 +18,8 @@ cc_binary(
 
 cc_binary(
     name = "protoc-gen-pyi",
-    srcs = ["pyi_main.cc"],
+    srcs = ["pyi_plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":python",
         "//src/google/protobuf/compiler:plugin",

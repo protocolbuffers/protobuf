@@ -3,7 +3,8 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_binary(
     name = "protoc-gen-kotlin",
-    srcs = ["main.cc"],
+    srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":kotlin",
         "//src/google/protobuf/compiler:plugin",

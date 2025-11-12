@@ -15,6 +15,7 @@ package(
 cc_binary(
     name = "protoc-gen-java",
     srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":java",
         "//src/google/protobuf/compiler:plugin",

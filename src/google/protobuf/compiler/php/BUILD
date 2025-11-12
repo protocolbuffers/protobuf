@@ -14,7 +14,8 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_binary(
     name = "protoc-gen-php",
-    srcs = ["main.cc"],
+    srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
     deps = [
         ":php",
         "//src/google/protobuf/compiler:plugin",
