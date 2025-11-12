@@ -214,7 +214,7 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
     }
     ctx.Emit({{"class_name", ClassName(desc)},
               {"minitable_name",
-               upb::generator::MiniTableMessagePtrVarName(desc->full_name())},
+               upb::generator::MiniTableMessageVarName(desc->full_name())},
               {"outer_namespace", outer_namespace},
               {"c_api_msg_type",
                upb::generator::CApiMessageType(desc->full_name())}},
@@ -222,7 +222,7 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
                template <>
                struct AssociatedUpbTypes<$outer_namespace$$class_name$> {
                  using CMessageType = $c_api_msg_type$;
-                 static inline const upb_MiniTable* kMiniTable = $minitable_name$;
+                 static inline const upb_MiniTable* kMiniTable = &$minitable_name$;
                };
              )cc");
   }

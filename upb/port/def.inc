@@ -572,6 +572,69 @@ Error, UINTPTR_MAX is undefined
 
 #endif
 
+//
+// Weak alias platform support. Theoretically this should be possible to do with
+// only C using attributes like __attribute__((weak, alias("foo"))), but
+// Clang doesn't support this properly on macOS.  So we have to use assembly.
+#if defined(__APPLE__)
+
+// TODO: once https://github.com/llvm/llvm-project/issues/167262 is fixed
+// in the LLVM linker, we should have all weak variables point to a single
+// "default" empty MiniTable instead of having each leaf define its own, like
+// we do with ELF below. This will reduce binary size if many messages are tree
+// shaken.
+#define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()
+#define UPB_WEAK_PLACEHOLDER_MINITABLE(name)           \
+  __attribute__((weak)) const upb_MiniTable name = {   \
+      .UPB_PRIVATE(subs) = NULL,                       \
+      .UPB_PRIVATE(fields) = NULL,                     \
+      .UPB_PRIVATE(size) = sizeof(struct upb_Message), \
+      .UPB_PRIVATE(field_count) = 0,                   \
+      .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,  \
+      .UPB_PRIVATE(dense_below) = 0,                   \
+      .UPB_PRIVATE(table_mask) = -1,                   \
+      .UPB_PRIVATE(required_count) = 0,                \
+  };
+#define UPB_WEAK_ALIAS(type, from, to) \
+  extern type to;                      \
+  __asm__(".globl _" #to);             \
+  __asm__(".set _" #to ", _" #from);   \
+  __asm__(".weak_definition _" #to);
+#define UPB_STRONG_ALIAS(type, from, to) \
+  __asm__(".globl _" #to);               \
+  __asm__(".set _" #to ", _" #from);
+
+#elif defined(__ELF__)
+
+// On ELF, weak aliases work properly, so we can have all weak MiniTables point
+// to the same empty singleton MiniTable. This reduces code size if many
+// MiniTables are tree shaken.
+#define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
+  __attribute__((weak))                                          \
+  const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \
+      .UPB_PRIVATE(subs) = NULL,                                 \
+      .UPB_PRIVATE(fields) = NULL,                               \
+      .UPB_PRIVATE(size) = sizeof(struct upb_Message),           \
+      .UPB_PRIVATE(field_count) = 0,                             \
+      .UPB_PRIVATE(ext) = kUpb_ExtMode_NonExtendable,            \
+      .UPB_PRIVATE(dense_below) = 0,                             \
+      .UPB_PRIVATE(table_mask) = -1,                             \
+      .UPB_PRIVATE(required_count) = 0,                          \
+  };
+#define UPB_WEAK_PLACEHOLDER_MINITABLE(name)
+#define UPB_WEAK_ALIAS(type, from, to) \
+  extern type to                       \
+      __attribute__((weak, alias("kUpb_WeakSingletonPlaceholderMiniTable")));
+#define UPB_STRONG_ALIAS(type, from, to) \
+  extern type to __attribute__((alias(#from)));
+
+#else
+#define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()
+#define UPB_WEAK_PLACEHOLDER_MINITABLE(name)
+#define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
+#define UPB_STRONG_ALIAS(type, from, to) strong_alias_not_supported_on_this_platform
+#endif
+
 // Future versions of upb will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.

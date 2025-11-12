@@ -49,7 +49,7 @@
 // from an array of MiniTableSubs.
 static const upb_MiniTable* _upb_Encoder_GetSubMiniTable(
     const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field) {
-  return *subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
+  return subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
 }
 
 static uint32_t encode_zz32(int32_t n) {
@@ -696,14 +696,8 @@ static char* encode_ext(char* ptr, upb_encstate* e,
   if (UPB_UNLIKELY(is_message_set)) {
     ptr = encode_msgset_item(ptr, e, ext, ext_val);
   } else {
-    upb_MiniTableSubInternal sub;
-    if (upb_MiniTableField_IsSubMessage(&ext->UPB_PRIVATE(field))) {
-      sub.UPB_PRIVATE(submsg) = &ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
-    } else {
-      sub.UPB_PRIVATE(subenum) = ext->UPB_PRIVATE(sub).UPB_PRIVATE(subenum);
-    }
-    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val), &sub,
-                       &ext->UPB_PRIVATE(field));
+    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val),
+                       &ext->UPB_PRIVATE(sub), &ext->UPB_PRIVATE(field));
   }
   return ptr;
 }
