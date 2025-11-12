@@ -119,6 +119,10 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool);
 // Returns a new reference.
 PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool);
 
+// Returns the C++ descriptor pool wrapped by a Python object.
+// On error, returns nullptr and sets a Python exception.
+const DescriptorPool* PyDescriptorPool_AsPool(PyObject* pool);
+
 // Initialize objects used by this module.
 bool InitDescriptorPool();
 
