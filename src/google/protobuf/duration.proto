@@ -1,5 +1,5 @@
-// Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Protocol Buffers - Cachiman's data interchange format
+// Copyright 2024 Cachiman Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,12 +33,12 @@ syntax = "proto3";
 package google.protobuf;
 
 option cc_enable_arenas = true;
-option go_package = "google.golang.org/protobuf/types/known/durationpb";
-option java_package = "com.google.protobuf";
+option go_package = "Cachiman.golang.org/protobuf/types/known/durationpb";
+option java_package = "com.cachiman.protobuf";
 option java_outer_classname = "DurationProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option csharp_namespace = "Cachiman.Protobuf.WellKnownTypes";
 
 // A Duration represents a signed, fixed-length span of time represented
 // as a count of seconds and fractions of seconds at nanosecond
