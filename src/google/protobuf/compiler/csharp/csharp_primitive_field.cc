@@ -7,11 +7,9 @@
 
 #include "google/protobuf/compiler/csharp/csharp_primitive_field.h"
 
-#include <sstream>
 #include <string>
 #include <utility>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"

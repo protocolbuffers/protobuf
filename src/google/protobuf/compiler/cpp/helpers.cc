@@ -32,7 +32,6 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -57,8 +56,6 @@
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/repeated_ptr_field.h"
-#include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be last.

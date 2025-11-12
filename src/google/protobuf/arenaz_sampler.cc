@@ -7,12 +7,9 @@
 
 #include "google/protobuf/arenaz_sampler.h"
 
-#include <atomic>
 #include <cstdint>
 #include <limits>
-#include <utility>
 
-#include "absl/base/optimization.h"
 
 
 // Must be included last.

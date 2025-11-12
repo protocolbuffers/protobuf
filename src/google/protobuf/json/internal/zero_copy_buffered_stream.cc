@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <iterator>
-#include <string>
-#include <utility>
 
 #include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
@@ -19,7 +17,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
