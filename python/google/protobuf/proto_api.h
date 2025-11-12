@@ -28,7 +28,7 @@
 #include <Python.h>
 
 #include "absl/status/status.h"
-#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 
 PyObject* pymessage_mutate_const(PyObject* self, PyObject* args);
@@ -144,6 +144,11 @@ struct PyProto_API {
   // can work and return their Python counterparts.
   virtual PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const = 0;
+
+  // Returns the C++ descriptor pool wrapped by a Python object.
+  // On error, returns nullptr and sets a Python exception.
+  virtual const google::protobuf::DescriptorPool* DescriptorPool_AsPool(
+      PyObject* pool) const = 0;
 
  protected:
   PythonMessageMutator CreatePythonMessageMutator(Message* owned_msg,

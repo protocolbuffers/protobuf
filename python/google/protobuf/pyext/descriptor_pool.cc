@@ -747,6 +747,15 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
   return reinterpret_cast<PyObject*>(cpool);
 }
 
+const DescriptorPool* PyDescriptorPool_AsPool(PyObject* pool) {
+  if (!PyObject_TypeCheck(pool, &PyDescriptorPool_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a DescriptorPool");
+    return nullptr;
+  }
+  PyDescriptorPool* cpool = reinterpret_cast<PyDescriptorPool*>(pool);
+  return cpool->pool;
+}
+
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
