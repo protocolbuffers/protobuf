@@ -11,8 +11,12 @@
 #include <cstdint>
 #include <utility>
 
+#include "hpb/multibackend.h"
+
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
+#endif  // HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 
 namespace hpb::internal {
 
@@ -25,6 +29,13 @@ struct PrivateAccess {
   static auto* GetInternalArena(T&& message) {
     return message->arena();
   }
+
+  template <typename T, typename... Args>
+  static constexpr auto InvokeConstructor(Args&&... args) {
+    return T(std::forward<Args>(args)...);
+  }
+
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
   template <typename T>
   static auto* GetInternalUPBArena(T&& arena) {
     return arena.arena_.ptr();
@@ -42,11 +53,6 @@ struct PrivateAccess {
     return typename T::Proxy(upb_Message_New(T::minitable(), arena), arena);
   }
 
-  template <typename T, typename... Args>
-  static constexpr auto InvokeConstructor(Args&&... args) {
-    return T(std::forward<Args>(args)...);
-  }
-
   template <typename ExtensionId>
   static constexpr uint32_t GetExtensionNumber(const ExtensionId& id) {
     return id.number();
@@ -56,10 +62,13 @@ struct PrivateAccess {
   static decltype(auto) GetDefaultValue(const ExtensionId& id) {
     return id.default_value();
   }
+#endif  // HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 };
 
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 template <typename T>
 struct AssociatedUpbTypes;
+#endif  // HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 
 }  // namespace hpb::internal
 
