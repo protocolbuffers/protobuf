@@ -418,6 +418,7 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -796,6 +797,7 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -1031,6 +1033,7 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -1335,6 +1338,7 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -1619,6 +1623,7 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;

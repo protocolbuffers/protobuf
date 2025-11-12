@@ -299,6 +299,7 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -496,6 +497,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
@@ -833,6 +835,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
