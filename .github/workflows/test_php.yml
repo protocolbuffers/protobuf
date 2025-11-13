@@ -150,8 +150,11 @@ jobs:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
-        version: ['8.2']
-    name: MacOS PHP ${{ matrix.version }}
+        include:
+          - version: 'pre-installed'
+
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS PHP ${{ matrix.version }}
+    # noop
     runs-on: macos-13
     steps:
       - name: Checkout pending changes
@@ -159,19 +162,14 @@ jobs:
         with:
           ref: ${{ inputs.safe-checkout }}
 
-      - name: Uninstall problematic libgd
-        run: brew uninstall --ignore-dependencies gd
-
       - name: Install dependencies
         run: brew install coreutils gd
 
       - name: Pin PHP version
-        uses: shivammathur/setup-php@8872c784b04a1420e81191df5d64fbd59d3d3033 # 2.30.2
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # 2.35.5
         with:
           php-version: ${{ matrix.version }}
-
-      - name: Check PHP version
-        run: php --version | grep ${{ matrix.version }} || (echo "Invalid PHP version - $(php --version)" && exit 1)
 
       - name: Setup composer
         uses: protocolbuffers/protobuf-ci/composer-setup@v2
