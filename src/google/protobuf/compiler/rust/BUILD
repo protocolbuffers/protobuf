@@ -5,10 +5,6 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
-################################################################################
-# Protocol Buffers Compiler - Rust code generator
-################################################################################
-
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
