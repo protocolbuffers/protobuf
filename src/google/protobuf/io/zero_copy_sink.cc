@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstring>
 
 namespace google {
 namespace protobuf {
