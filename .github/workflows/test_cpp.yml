@@ -146,10 +146,11 @@ jobs:
             -c "set -ex;
             sccache -z;
             cmake . -DWITH_PROTOC=/workspace/${{ steps.cross-compile.outputs.protoc }}
+            -Dprotobuf_BUILD_TESTS=ON
             -Dprotobuf_BUILD_CONFORMANCE=ON -DCMAKE_CXX_STANDARD=17
             -Dprotobuf_WITH_ZLIB=OFF ${{ env.SCCACHE_CMAKE_FLAGS }};
             cmake --build . --parallel 20;
-            ctest --parallel 20;
+            ctest --no-tests=error --parallel 20;
             sccache -s"
 
   linux-cmake:
@@ -191,7 +192,7 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-e0df73e51131ccaf53451355d22577f377357604
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-9626718698895971df3953d4aa2321d7425f3c5f
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -234,7 +235,7 @@ jobs:
         uses: protocolbuffers/protobuf-ci/docker@v5
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-e0df73e51131ccaf53451355d22577f377357604
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-9626718698895971df3953d4aa2321d7425f3c5f
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}
@@ -332,12 +333,12 @@ jobs:
         if: ${{ inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v5
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-e0df73e51131ccaf53451355d22577f377357604
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/cmake:3.16.9-9626718698895971df3953d4aa2321d7425f3c5f
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
             /install.sh -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_LOCAL_DEPENDENCIES_ONLY=OFF
-            -Dprotobuf_BUILD_EXAMPLES=OFF \&\&
+            -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_TESTS=ON \&\&
             mkdir examples/build \&\&
             cd examples/build \&\&
             cmake .. -DCMAKE_CXX_STANDARD=17 \&\&
@@ -381,9 +382,9 @@ jobs:
               -c 'set -ex;
               cd /workspace;
               sccache -z;
-              cmake . ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }};
+              cmake . -Dprotobuf_BUILD_TESTS=ON ${{ matrix.flags }} ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
-              ctest --verbose --parallel 20;
+              ctest --no-tests=error --verbose --parallel 20;
               sccache -s'
 
   linux-cmake-32-bit:
@@ -407,13 +408,14 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/32bit@sha256:d6028ab408c49932836cdc514116f06886d7f6868a4d430630aa52adc5aee2fc
           platform: linux/386
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          entrypoint: bash
           command: >-
-              /bin/bash -cex '
+              -c 'set -ex;
               cd /workspace;
               sccache -z;
-              cmake . -DCMAKE_CXX_STANDARD=17 ${{ env.SCCACHE_CMAKE_FLAGS }};
+              cmake . -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=ON ${{ env.SCCACHE_CMAKE_FLAGS }};
               cmake --build . --parallel 20;
-              ctest --verbose --parallel 20;
+              ctest --no-tests=error --verbose --parallel 20;
               sccache -s'
 
   non-linux:
@@ -530,7 +532,7 @@ jobs:
           bazel-version: 8.0.1
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: >-
-            cmake . -DCMAKE_CXX_STANDARD=17 ${{ matrix.install-flags }}
+            cmake . -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=ON ${{ matrix.install-flags }}
             ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
       - name: Build for install
         if: ${{ matrix.install-flags && (!matrix.continuous-only || inputs.continuous-run) }}
@@ -556,7 +558,7 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-version: 8.0.1
           command: >-
-            cmake . -DCMAKE_CXX_STANDARD=17 ${{ matrix.flags }}
+            cmake . -DCMAKE_CXX_STANDARD=17 -Dprotobuf_BUILD_TESTS=ON ${{ matrix.flags }}
             ${{ env.SCCACHE_CMAKE_FLAGS }} -Dprotobuf_ALLOW_CCACHE=ON
 
       - name: Build
@@ -567,7 +569,7 @@ jobs:
       - name: Test
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         shell: bash
-        run: ctest --verbose --parallel 20 -C Debug
+        run: ctest --no-tests=error --verbose --parallel 20 -C Debug
 
       - name: Report sccache stats
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
