@@ -409,9 +409,13 @@ class DescriptorPoolTestBase(object):
     factory_test2 = self.pool.FindFileByName(
         'google/protobuf/internal/factory_test2.proto')
     another_field = factory_test2.extensions_by_name['another_field']
+    message_field1 = factory_test2.extensions_by_name['message_field1']
+    message_field2 = factory_test2.extensions_by_name['message_field2']
 
     extensions = self.pool.FindAllExtensions(factory1_message)
-    expected_extension_numbers = set([one_more_field, another_field])
+    expected_extension_numbers = set(
+        [one_more_field, another_field, message_field1, message_field2]
+    )
     self.assertEqual(expected_extension_numbers, set(extensions))
     # Verify that mutating the returned list does not affect the pool.
     extensions.append('unexpected_element')
@@ -435,6 +439,49 @@ class DescriptorPoolTestBase(object):
     self.assertEqual(extension.name, 'another_field')
     with self.assertRaises(KeyError):
       extension = self.pool.FindExtensionByNumber(factory1_message, 1234567)
+
+  def testExtensionsLenFromParsed(self):
+    factory1_message = self.pool.FindMessageTypeByName(
+        'google.protobuf.python.internal.Factory1Message'
+    )
+    # Build factory_test2.proto which will put extensions to the pool
+    self.pool.FindFileByName(
+        'google/protobuf/internal/factory_test2.proto'
+    )
+
+    message_class = message_factory.GetMessageClass(factory1_message)
+    message = message_class()
+    self.assertEqual(len(message.Extensions), 0)
+    message.ParseFromString(b'\xda\x3e\000\xe2\x3e\000')
+
+    self.assertEqual(len(message.Extensions), 2)
+
+    # Verify consistency with related methods.
+    self.assertEqual(len(list(message.Extensions)), 2)
+    self.assertEqual(len(message.ListFields()), 2)
+
+  def testExtensionsLenFromSet(self):
+    factory1_message = self.pool.FindMessageTypeByName(
+        'google.protobuf.python.internal.Factory1Message'
+    )
+    # Build factory_test2.proto which will put extensions to the pool
+    self.pool.FindFileByName(
+        'google/protobuf/internal/factory_test2.proto'
+    )
+
+    message_class = message_factory.GetMessageClass(factory1_message)
+    message = message_class()
+    self.assertEqual(len(message.Extensions), 0)
+    extension1 = self.pool.FindExtensionByNumber(factory1_message, 1003)
+    extension2 = self.pool.FindExtensionByNumber(factory1_message, 1004)
+    message.Extensions[extension1].a = 1
+    message.Extensions[extension2].a = 2
+
+    self.assertEqual(len(message.Extensions), 2)
+
+    # Verify consistency with related methods.
+    self.assertEqual(len(list(message.Extensions)), 2)
+    self.assertEqual(len(message.ListFields()), 2)
 
   def testExtensionsAreNotFields(self):
     with self.assertRaises(KeyError):
@@ -1630,7 +1677,7 @@ class FallBackDBTest(unittest.TestCase):
 
   def testFindAllExtensions(self):
     extensions = self.pool.FindAllExtensions(self.message_desc)
-    self.assertEqual(len(extensions), 2)
+    self.assertEqual(len(extensions), 4)
 
   def testIgnoreBadFindExtensionByNumber(self):
     file_desc = self.bad_pool.FindFileByName(

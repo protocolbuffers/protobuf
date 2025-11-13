@@ -2091,11 +2091,11 @@ static PyObject* ListFields(CMessage* self) {
       if (extension_field == nullptr) {
         return nullptr;
       }
-      // With C++ descriptors, the field can always be retrieved, but for
-      // unknown extensions which have not been imported in Python code, there
-      // is no message class and we cannot retrieve the value.
-      // TODO: consider building the class on the fly!
-      if (fields[i]->message_type() != nullptr &&
+      // When using the default descriptor pool, avoid exposing extensions that
+      // happened to be linked in from C++ but not imported via Python.  This is
+      // for consistency with the pure Python implementation.
+      if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool &&
+          fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(GetFactoryForMessage(self),
                                            fields[i]->message_type()) ==
               nullptr) {
