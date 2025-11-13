@@ -232,7 +232,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
-      RuntimeAssertInBounds(index, current_size_);
+    RuntimeAssertInBounds(index, current_size_);
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -2475,7 +2475,6 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
  private:
   RepeatedPtrField<T>* field_;
 };
-
 
 template <typename T>
 const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {
