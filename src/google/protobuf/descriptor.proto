@@ -1052,6 +1052,7 @@ message FeatureSet {
     ENUM_TYPE_UNKNOWN = 0;
     OPEN = 1;
     CLOSED = 2;
+    SCOPED = 3 [feature_support = { edition_introduced: EDITION_UNSTABLE }];
   }
   optional EnumType enum_type = 2 [
     retention = RETENTION_RUNTIME,
@@ -1061,7 +1062,8 @@ message FeatureSet {
       edition_introduced: EDITION_2023,
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "CLOSED" },
-    edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" }
+    edition_defaults = { edition: EDITION_PROTO3, value: "OPEN" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "SCOPED" }
   ];
 
   enum RepeatedFieldEncoding {

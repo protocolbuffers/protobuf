@@ -466,6 +466,20 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                   }
                   fixed_features {}
                 }
+                defaults {
+                  edition: EDITION_UNSTABLE
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: SCOPED
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2024
               )pb")));

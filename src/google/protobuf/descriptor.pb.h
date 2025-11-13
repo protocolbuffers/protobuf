@@ -693,17 +693,18 @@ enum FeatureSet_EnumType : int {
   FeatureSet_EnumType_ENUM_TYPE_UNKNOWN = 0,
   FeatureSet_EnumType_OPEN = 1,
   FeatureSet_EnumType_CLOSED = 2,
+  FeatureSet_EnumType_SCOPED = 3,
 };
 
 PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
 inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MIN =
     static_cast<FeatureSet_EnumType>(0);
 inline constexpr FeatureSet_EnumType FeatureSet_EnumType_EnumType_MAX =
-    static_cast<FeatureSet_EnumType>(2);
+    static_cast<FeatureSet_EnumType>(3);
 inline bool FeatureSet_EnumType_IsValid(int value) {
-  return 0 <= value && value <= 2;
+  return 0 <= value && value <= 3;
 }
-inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
+inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnumType_descriptor();
 template <typename T>
 const ::std::string& FeatureSet_EnumType_Name(T value) {
@@ -714,7 +715,7 @@ const ::std::string& FeatureSet_EnumType_Name(T value) {
 }
 template <>
 inline const ::std::string& FeatureSet_EnumType_Name(FeatureSet_EnumType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnumType_descriptor, 0, 2>(
+  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnumType_descriptor, 0, 3>(
       static_cast<int>(value));
 }
 inline bool FeatureSet_EnumType_Parse(
@@ -2587,6 +2588,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
   static constexpr EnumType ENUM_TYPE_UNKNOWN = FeatureSet_EnumType_ENUM_TYPE_UNKNOWN;
   static constexpr EnumType OPEN = FeatureSet_EnumType_OPEN;
   static constexpr EnumType CLOSED = FeatureSet_EnumType_CLOSED;
+  static constexpr EnumType SCOPED = FeatureSet_EnumType_SCOPED;
   static inline bool EnumType_IsValid(int value) {
     return FeatureSet_EnumType_IsValid(value);
   }

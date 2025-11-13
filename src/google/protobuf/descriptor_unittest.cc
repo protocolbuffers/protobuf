@@ -9395,7 +9395,7 @@ TEST_F(FeaturesTest, FileFeaturesExtension) {
   )pb");
   EXPECT_THAT(file->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(file).field_presence(), FeatureSet::IMPLICIT);
-  EXPECT_EQ(GetFeatures(file).enum_type(), FeatureSet::OPEN);
+  EXPECT_EQ(GetFeatures(file).enum_type(), FeatureSet::SCOPED);
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
             pb::VALUE5);
   EXPECT_EQ(GetFeatures(file)
@@ -9427,7 +9427,7 @@ TEST_F(FeaturesTest, FileFeaturesExtensionOverride) {
   )pb");
   EXPECT_THAT(file->options(), EqualsProto(""));
   EXPECT_EQ(GetFeatures(file).field_presence(), FeatureSet::IMPLICIT);
-  EXPECT_EQ(GetFeatures(file).enum_type(), FeatureSet::OPEN);
+  EXPECT_EQ(GetFeatures(file).enum_type(), FeatureSet::SCOPED);
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).file_feature(),
             pb::VALUE7);
   EXPECT_EQ(GetFeatures(file)
@@ -12335,6 +12335,20 @@ TEST_F(FeaturesTest, FutureFeatureDefault) {
   ASSERT_THAT(file, NotNull());
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).future_feature(),
             pb::VALUE1);
+}
+
+TEST_F(FeaturesTest, FutureFeatureValueWithInlineIntroduction) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2023
+        options { features { enum_type: SCOPED } }
+      )pb",
+      "foo.proto: foo.proto: NAME: google.protobuf.FeatureSet.SCOPED wasn't "
+      "introduced until edition UNSTABLE and can't be used in edition 2023\n");
 }
 
 TEST_F(FeaturesTest, NewUnstableFeatureDefault) {
