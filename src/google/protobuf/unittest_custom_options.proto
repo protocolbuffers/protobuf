@@ -75,29 +75,67 @@ extend google.protobuf.MethodOptions {
 extend google.protobuf.MessageOptions {
   optional bool removed_option = 7733026 [feature_support = {
     edition_removed: EDITION_2023
-    removal_error: "Custom feature removal warning"
+    removal_error: "Custom removal warning"
   }];
   optional bool deprecated_option = 7737036 [feature_support = {
     edition_deprecated: EDITION_2023
-    deprecation_warning: "Custom feature deprecation warning"
+    deprecation_warning: "Custom deprecation warning"
   }];
   optional CustomOption custom_option = 7737026;
+  optional EnumCustomOption enum_custom_option = 7737022;
+  repeated RepeatedOption repeated_option = 7737021;
 }
 
 message CustomOption {
-  optional string removed_message_option = 7734026 [feature_support = {
+  optional string removed_message_option = 1 [feature_support = {
     edition_removed: EDITION_2023
-    removal_error: "Custom feature removal warning"
+    removal_error: "Custom removal warning"
   }];
-  optional string deprecated_message_option = 7734016 [feature_support = {
+  optional string deprecated_message_option = 2 [feature_support = {
     edition_deprecated: EDITION_2023
-    deprecation_warning: "Custom feature deprecation warning"
+    deprecation_warning: "Custom deprecation warning"
   }];
-  message Nested {
-    extend google.protobuf.MessageOptions {
-      optional CustomOption nested_custom_option = 7732016;
-    }
-  }
+
+  repeated EnumCustomOption repeated_enum_custom_option = 3;
+
+  optional NestedMessage nested_message = 4;
+
+  extensions 100 to 200;
+}
+
+enum EnumCustomOption {
+  DEFAULT = 0;
+  VALUE1 = 1 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "Custom removal error"
+  }];
+  VALUE2 = 2 [feature_support = {
+    edition_removed: EDITION_PROTO3
+    removal_error: "Custom removal error"
+  }];
+  VALUE3 = 3;
+  VALUE4 = 4;
+}
+
+message RepeatedOption {
+  optional string repeated_removed_message_option = 1 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "Custom removal error"
+  }];
+}
+
+message NestedMessage {
+  optional string nested_deprecated_message = 1 [feature_support = {
+    edition_deprecated: EDITION_2023
+    deprecation_warning: "Custom deprecation warning"
+  }];
+}
+
+extend proto2_unittest.CustomOption {
+  optional string custom_nested_option = 101 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "Custom removal warning"
+  }];
 }
 
 // A test message with custom options at all possible locations (and also some
