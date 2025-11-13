@@ -784,6 +784,15 @@ module BasicTest
       refute msg.has_d?
     end
 
+    def test_oneof_fields_index
+      msg = proto_module::OneofMessage.new(a: "hello")
+      assert_equal "hello", msg.a
+      assert_equal "hello", msg["a"]
+
+      assert_equal :a, msg.my_oneof
+      assert_equal :a, msg["my_oneof"]
+    end
+
     def test_string_subclass
       str = "hello"
       myString = Class.new(String)

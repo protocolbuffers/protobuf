@@ -526,12 +526,7 @@ module Google
             @oneof_field_names << field_name
             unless instance_methods(true).include?(field_name)
               define_method(field_name) do
-                field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
-                if field_descriptor.nil?
-                  return
-                else
-                  return field_descriptor.name.to_sym
-                end
+                get_which_oneof(oneof_descriptor)
               end
               define_method("clear_#{field_name}") do
                 field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
@@ -657,7 +652,10 @@ module Google
           # fields.
           def index_internal(name)
             field_descriptor = self.class.descriptor.lookup(name)
-            get_field field_descriptor unless field_descriptor.nil?
+            return get_field field_descriptor unless field_descriptor.nil?
+
+            oneof_descriptor = self.class.descriptor.lookup_oneof(name)
+            get_which_oneof(oneof_descriptor) unless oneof_descriptor.nil?
           end
 
           #TODO - well known types keeps us on our toes by overloading methods.
@@ -775,6 +773,11 @@ module Google
               map_field.freeze if frozen?
             end
             map_field
+          end
+
+          def get_which_oneof(oneof_descriptor)
+            field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
+            field_descriptor.name.to_sym unless field_descriptor.nil?
           end
         end
       end
