@@ -205,7 +205,7 @@ TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
           pool.FindMessageTypeByName("google.protobuf.FeatureSet"),
           {pool.FindExtensionByName("pb.test")}, EDITION_2023, EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 3);
+  ASSERT_EQ(defaults->defaults().size(), 4);
   ASSERT_EQ(defaults->defaults().at(2).edition(), EDITION_2023);
   FeatureSet merged = defaults->defaults().at(2).overridable_features();
 
@@ -221,7 +221,7 @@ TEST(FeatureResolverTest, DefaultsMergedFeatures) {
                                        {GetExtension(pb::test)}, EDITION_2023,
                                        EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
+  ASSERT_EQ(defaults->defaults_size(), 4);
 
   defaults->mutable_defaults(2)
       ->mutable_fixed_features()
@@ -287,7 +287,7 @@ TEST(FeatureResolverTest, CompileDefaultsFixedFutureFeature) {
                                        {GetExtension(pb::test)}, EDITION_PROTO2,
                                        EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
+  ASSERT_EQ(defaults->defaults_size(), 4);
 
   const auto& edition_defaults = defaults->defaults(2);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
@@ -309,7 +309,7 @@ TEST(FeatureResolverTest, CompileDefaultsFixedRemovedFeature) {
                                        {GetExtension(pb::test)}, EDITION_PROTO2,
                                        EDITION_2024);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 4);
+  ASSERT_EQ(defaults->defaults_size(), 5);
 
   const auto& edition_defaults = defaults->defaults(3);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2024);
@@ -332,7 +332,7 @@ TEST(FeatureResolverTest, CompileDefaultsOverridable) {
                                        {GetExtension(pb::test)}, EDITION_PROTO2,
                                        EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
+  ASSERT_EQ(defaults->defaults_size(), 4);
 
   const auto& edition_defaults = defaults->defaults(2);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
@@ -574,6 +574,8 @@ TEST(FeatureResolverTest, GetEditionFeatureSetDefaults) {
       internal::GetEditionFeatureSetDefaults(EDITION_PROTO3, *defaults);
   absl::StatusOr<FeatureSet> edition_proto2_feature =
       internal::GetEditionFeatureSetDefaults(EDITION_LEGACY, *defaults);
+  absl::StatusOr<FeatureSet> edition_unstable_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_UNSTABLE, *defaults);
   absl::StatusOr<FeatureSet> edition_test_feature =
       internal::GetEditionFeatureSetDefaults(EDITION_99998_TEST_ONLY,
                                              *defaults);
@@ -586,6 +588,9 @@ TEST(FeatureResolverTest, GetEditionFeatureSetDefaults) {
   EXPECT_OK(edition_proto2_feature);
   EXPECT_EQ(edition_proto2_feature->GetExtension(pb::test).file_feature(),
             pb::VALUE1);
+  EXPECT_OK(edition_unstable_feature);
+  EXPECT_EQ(edition_unstable_feature->GetExtension(pb::test).file_feature(),
+            pb::VALUE3);
   EXPECT_OK(edition_test_feature);
   EXPECT_EQ(edition_test_feature->GetExtension(pb::test).file_feature(),
             pb::VALUE4);
@@ -600,6 +605,20 @@ TEST(FeatureResolverTest, GetEditionFeatureSetDefaultsNotFound) {
   absl::StatusOr<FeatureSet> edition_2023_feature =
       internal::GetEditionFeatureSetDefaults(EDITION_1_TEST_ONLY, *defaults);
   EXPECT_THAT(edition_2023_feature, HasError(HasSubstr("No valid default")));
+}
+
+TEST(FeatureResolverTest, GetEditionFeatureSetDefaultsUnstableEnabled) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(),
+                                       {GetExtension(pb::test)}, EDITION_2023,
+                                       EDITION_2023);
+
+  absl::StatusOr<FeatureSet> edition_unstable_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_UNSTABLE, *defaults);
+  EXPECT_OK(edition_unstable_feature);
+  EXPECT_EQ(
+      edition_unstable_feature->GetExtension(pb::test).unstable_feature_new(),
+      pb::VALUE2);
 }
 
 TEST(FeatureResolverLifetimesTest, Valid) {
@@ -1960,10 +1979,27 @@ TEST_F(FeatureResolverPoolTest, CompileDefaultsMinimumCovered) {
       }
     }
     defaults {
+      edition: EDITION_UNSTABLE
+      overridable_features {
+        field_presence: EXPLICIT
+        enum_type: SCOPED
+        repeated_field_encoding: PACKED
+        utf8_validation: VERIFY
+        message_encoding: LENGTH_PREFIXED
+        json_format: ALLOW
+        enforce_naming_style: STYLE2024
+        default_symbol_visibility: EXPORT_TOP_LEVEL
+        [pb.test] { file_feature: VALUE2 }
+      }
+      fixed_features {
+        [pb.test] {}
+      }
+    }
+    defaults {
       edition: EDITION_99998_TEST_ONLY
       overridable_features {
         field_presence: EXPLICIT
-        enum_type: OPEN
+        enum_type: SCOPED
         repeated_field_encoding: PACKED
         utf8_validation: VERIFY
         message_encoding: LENGTH_PREFIXED

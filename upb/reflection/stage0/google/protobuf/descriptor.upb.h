@@ -238,7 +238,8 @@ typedef enum {
 typedef enum {
   google_protobuf_FeatureSet_ENUM_TYPE_UNKNOWN = 0,
   google_protobuf_FeatureSet_OPEN = 1,
-  google_protobuf_FeatureSet_CLOSED = 2
+  google_protobuf_FeatureSet_CLOSED = 2,
+  google_protobuf_FeatureSet_SCOPED = 3
 } google_protobuf_FeatureSet_EnumType;
 
 typedef enum {

@@ -465,9 +465,68 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                   }
                   fixed_features {}
                 }
+                defaults {
+                  edition: EDITION_UNSTABLE
+                  overridable_features {
+                    field_presence: EXPLICIT
+                    enum_type: SCOPED
+                    repeated_field_encoding: PACKED
+                    utf8_validation: VERIFY
+                    message_encoding: LENGTH_PREFIXED
+                    json_format: ALLOW
+                    enforce_naming_style: STYLE2024
+                    default_symbol_visibility: EXPORT_TOP_LEVEL
+                  }
+                  fixed_features {}
+                }
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2024
               )pb")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsWithUnstable) {
+  TestGenerator generator;
+  auto result = generator.BuildFeatureSetDefaults();
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  EXPECT_THAT(result->defaults(result->defaults_size() - 1), EqualsProto(R"pb(
+                edition: EDITION_UNSTABLE
+                overridable_features {
+                  field_presence: EXPLICIT
+                  enum_type: SCOPED
+                  repeated_field_encoding: PACKED
+                  utf8_validation: VERIFY
+                  message_encoding: LENGTH_PREFIXED
+                  json_format: ALLOW
+                  enforce_naming_style: STYLE2024
+                  default_symbol_visibility: EXPORT_TOP_LEVEL
+                  [pb.test] {
+                    file_feature: VALUE3
+                    extension_range_feature: VALUE1
+                    message_feature: VALUE1
+                    field_feature: VALUE1
+                    oneof_feature: VALUE1
+                    enum_feature: VALUE1
+                    enum_entry_feature: VALUE1
+                    service_feature: VALUE1
+                    method_feature: VALUE1
+                    multiple_feature: VALUE1
+                    bool_field_feature: false
+                    source_feature: VALUE1
+                    source_feature2: VALUE1
+                    future_feature: VALUE2
+                    value_lifetime_feature: VALUE_LIFETIME_FUTURE
+                    unstable_feature_new: VALUE2
+                    unstable_feature_existing: VALUE3
+                  }
+                }
+                fixed_features {
+                  [pb.test] {
+                    removed_feature: VALUE3
+                    legacy_feature: VALUE2
+                    same_edition_removed_feature: VALUE1
+                  }
+                }
+              )pb"));
 }
 
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {

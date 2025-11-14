@@ -2777,7 +2777,7 @@ bool CommandLineInterface::EnforceEditionsSupport(
           fd->name(), codegen_name, edition, minimum_edition);
       return false;
     }
-    if (edition > maximum_edition) {
+    if (edition > maximum_edition && edition != EDITION_UNSTABLE) {
       std::cerr << absl::Substitute(
           "$0: is a file using edition $2, which isn't supported by code "
           "generator $1.  Please ask the owner of this code generator to add "
@@ -2803,7 +2803,7 @@ bool CommandLineInterface::EnforceProtocEditionsSupport(
       continue;
     }
 
-    if (edition > ProtocMaximumEdition()) {
+    if (edition > ProtocMaximumEdition() && edition != EDITION_UNSTABLE) {
       std::cerr << absl::Substitute(
                        "$0: is a file using edition $1, which is later than "
                        "the protoc "
