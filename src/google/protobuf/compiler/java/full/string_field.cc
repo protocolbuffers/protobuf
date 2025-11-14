@@ -422,18 +422,21 @@ void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
 
 void ImmutableStringFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
-                 "  $writeString$(output, $number$, $name$_);\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "if ($is_field_present_message$) {\n"
+      "  $writeString$(output, $number$, get$capitalized_name$Bytes());\n"
+      "}\n");
 }
 
 void ImmutableStringFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if ($is_field_present_message$) {\n"
-                 "  size += $computeStringSize$($number$, $name$_);\n"
-                 "}\n");
+                 R"java(
+                 if ($is_field_present_message$) {
+                   size += $computeStringSize$($number$, get$capitalized_name$Bytes());
+                 }
+                 )java");
 }
 
 void ImmutableStringFieldGenerator::GenerateEqualsCode(
@@ -684,18 +687,20 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
 
 void ImmutableStringOneofFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($has_oneof_case_message$) {\n"
-                 "  $writeString$(output, $number$, $oneof_name$_);\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "if ($has_oneof_case_message$) {\n"
+      "  $writeString$(output, $number$, get$capitalized_name$Bytes());\n"
+      "}\n");
 }
 
 void ImmutableStringOneofFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($has_oneof_case_message$) {\n"
-                 "  size += $computeStringSize$($number$, $oneof_name$_);\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "if ($has_oneof_case_message$) {\n"
+      "  size += $computeStringSize$($number$, get$capitalized_name$Bytes());\n"
+      "}\n");
 }
 
 // ===================================================================
@@ -993,10 +998,11 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderParsingCode(
 
 void RepeatedImmutableStringFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "for (int i = 0; i < $name$_.size(); i++) {\n"
-                 "  $writeString$(output, $number$, $name$_.getRaw(i));\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "for (int i = 0; i < $name$_.size(); i++) {\n"
+      "  $writeString$(output, $number$, get$capitalized_name$Bytes(i));\n"
+      "}\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateSerializedSizeCode(
@@ -1006,10 +1012,11 @@ void RepeatedImmutableStringFieldGenerator::GenerateSerializedSizeCode(
                  "  int dataSize = 0;\n");
   printer->Indent();
 
-  printer->Print(variables_,
-                 "for (int i = 0; i < $name$_.size(); i++) {\n"
-                 "  dataSize += computeStringSizeNoTag($name$_.getRaw(i));\n"
-                 "}\n");
+  printer->Print(
+      variables_,
+      "for (int i = 0; i < $name$_.size(); i++) {\n"
+      "  dataSize += computeStringSizeNoTag($name$_.getByteString(i));\n"
+      "}\n");
 
   printer->Print("size += dataSize;\n");
 

@@ -88,13 +88,18 @@ public class LazyStringEndToEndTest {
     assertThat(proto.getRepeatedString(0)).isSameInstanceAs(b);
     assertThat(proto.getRepeatedString(1)).isSameInstanceAs(c);
 
-    // Ensure serialization keeps strings cached.
+    ByteString beforeAsBytes = proto.getOptionalStringBytes();
+
     ByteString unused = proto.toByteString();
 
-    // And now the string should stay cached.
-    assertThat(proto.getOptionalString()).isSameInstanceAs(a);
-    assertThat(proto.getRepeatedString(0)).isSameInstanceAs(b);
-    assertThat(proto.getRepeatedString(1)).isSameInstanceAs(c);
+    // If it was bytes already then it should be the same instance.
+    assertThat(proto.getOptionalStringBytes()).isSameInstanceAs(beforeAsBytes);
+
+    // If it was cached as a string, the serialize is allowed to switch to
+    // bytes representation, it should still be equal even if its not the same
+    // instance.
+    assertThat(proto.getRepeatedString(0)).isEqualTo(b);
+    assertThat(proto.getRepeatedString(1)).isEqualTo(c);
   }
 
   @Test
