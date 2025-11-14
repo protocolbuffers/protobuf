@@ -758,8 +758,9 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
                                            io::AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
-    $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $mutable_name$();
+    [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
+    [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
+    $mutable_name$();
 
     private:
     const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;

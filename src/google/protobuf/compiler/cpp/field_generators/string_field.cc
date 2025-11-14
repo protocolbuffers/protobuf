@@ -847,7 +847,8 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
     $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>& $name$() const;
-    $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>* $nonnull$ $mutable_name$();
+    [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>* $nonnull$
+    $mutable_name$();
 
     private:
     const $pb$::RepeatedPtrField<::std::string>& _internal_$name$() const;
