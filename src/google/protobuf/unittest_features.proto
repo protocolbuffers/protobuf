@@ -256,4 +256,23 @@ message TestFeatures {
       value: "VALUE_LIFETIME_FUTURE"
     }
   ];
+
+  EnumFeature unstable_feature_new = 22 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = { edition_introduced: EDITION_UNSTABLE },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "VALUE2" }
+  ];
+
+  EnumFeature unstable_feature_existing = 23 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = { edition_introduced: EDITION_2023 },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
+    edition_defaults = { edition: EDITION_2023, value: "VALUE2" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "VALUE3" }
+  ];
 }

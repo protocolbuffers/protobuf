@@ -12337,6 +12337,33 @@ TEST_F(FeaturesTest, FutureFeatureDefault) {
             pb::VALUE1);
 }
 
+TEST_F(FeaturesTest, NewUnstableFeatureDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_UNSTABLE
+  )pb");
+  ASSERT_THAT(file, NotNull());
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).unstable_feature_new(),
+            pb::VALUE2);
+}
+
+TEST_F(FeaturesTest, ExistingUnstableFeatureDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_UNSTABLE
+  )pb");
+  ASSERT_THAT(file, NotNull());
+  EXPECT_EQ(
+      GetFeatures(file).GetExtension(pb::test).unstable_feature_existing(),
+      pb::VALUE3);
+}
+
 // Test that the result of FileDescriptor::DebugString() can be used to create
 // the original descriptors.
 class FeaturesDebugStringTest
