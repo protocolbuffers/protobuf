@@ -646,7 +646,14 @@ where
     fn repeated_reserve(mut f: Mut<Repeated<Self>>, additional: usize) {
         // SAFETY:
         // - `f.as_raw()` is a valid `RepeatedPtrField*`.
-        unsafe { proto2_rust_RepeatedField_Message_reserve(f.as_raw(Private), additional) }
+        unsafe {
+            proto2_rust_RepeatedField_Message_reserve(
+                f.as_raw(Private),
+                std::mem::size_of::<Self>(),
+                std::mem::align_of::<Self>(),
+                additional,
+            )
+        }
     }
 }
 
@@ -769,7 +776,12 @@ unsafe extern "C" {
         dst: RawRepeatedField,
         src: RawRepeatedField,
     );
-    pub fn proto2_rust_RepeatedField_Message_reserve(field: RawRepeatedField, additional: usize);
+    pub fn proto2_rust_RepeatedField_Message_reserve(
+        field: RawRepeatedField,
+        element_size: usize,
+        element_align: usize,
+        additional: usize,
+    );
 }
 
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.

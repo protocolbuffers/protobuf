@@ -1515,6 +1515,9 @@ class FileGenerator::ForwardDeclarations {
         // is a tradeoff.
         p->Emit(R"(
           extern template void* $nonnull$ Arena::DefaultConstruct<$class$>(Arena* $nullable$);
+          #ifdef PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
+          extern template void* $nonnull$ Arena::PlacementConstruct<$class$>(Arena* $nullable$, void* $nonnull$);
+          #endif
         )");
         if (!IsMapEntryMessage(c.second)) {
           p->Emit(R"(

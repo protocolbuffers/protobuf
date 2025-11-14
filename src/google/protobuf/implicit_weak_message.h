@@ -176,7 +176,11 @@ struct WeakRepeatedPtrField {
 
   ~WeakRepeatedPtrField() {
     if (weak.NeedsDestroy()) {
-      weak.DestroyProtos();
+      weak.DestroyProtos(
+#ifdef PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
+          internal::AllocTraits::FromType<T>()
+#endif
+      );
     }
   }
 
@@ -210,12 +214,14 @@ struct WeakRepeatedPtrField {
   void Clear() { base().template Clear<TypeHandler>(); }
   void MergeFrom(const WeakRepeatedPtrField& other) {
     if (other.empty()) return;
-    base().template MergeFrom<MessageLite>(other.base(), base().GetArena());
+    base().template MergeFrom<internal::GenericTypeHandler<MessageLite>>(
+        other.base(), base().GetArena());
   }
   void InternalMergeFromWithArena(internal::InternalVisibility, Arena* arena,
                                   const WeakRepeatedPtrField& other) {
     if (other.empty()) return;
-    base().template MergeFrom<MessageLite>(other.base(), arena);
+    base().template MergeFrom<internal::GenericTypeHandler<MessageLite>>(
+        other.base(), arena);
   }
   void InternalSwap(WeakRepeatedPtrField* PROTOBUF_RESTRICT other) {
     base().InternalSwap(&other->base());

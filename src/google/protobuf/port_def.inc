@@ -627,6 +627,10 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 #define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_STRING_PIECE_FIELD 1
 #endif  // PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
 
+#ifndef NDEBUG
+#define PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT 1
+#endif
+
 #include "google/protobuf/os_macros_undef.inc"
 
 // Protobuf does not support building with a number of warnings that are noisy

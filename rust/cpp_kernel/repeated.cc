@@ -147,8 +147,15 @@ void proto2_rust_RepeatedField_Message_copy_from(
 }
 
 void proto2_rust_RepeatedField_Message_reserve(RepeatedPtrFieldBase* field,
+                                               size_t element_size,
+                                               size_t element_align,
                                                size_t additional) {
-  RustRepeatedMessageHelper::Reserve(*field, additional);
+  RustRepeatedMessageHelper::Reserve(
+      *field,
+#ifdef PROTOBUF_INTERNAL_CONTIGUOUS_REPEATED_PTR_FIELD_LAYOUT
+      google::protobuf::internal::AllocTraits(element_size, element_align),
+#endif
+      additional);
 }
 
 }  // extern "C"

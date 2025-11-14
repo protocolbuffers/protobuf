@@ -58,6 +58,7 @@
 #include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -67,7 +68,8 @@ namespace protobuf {
 namespace internal {
 
 struct ArenaAlignDefault {
-  PROTOBUF_EXPORT static constexpr size_t align = 8;  // NOLINT
+  // NOLINTNEXTLINE
+  PROTOBUF_EXPORT static constexpr size_t align = kDefaultArenaAlignment;
 
   static constexpr bool IsAligned(size_t n) { return (n & (align - 1)) == 0U; }
 
@@ -181,7 +183,7 @@ struct AlignFactory<true, align> {
 // `ArenaAlignDefault` implementations to no-ops.
 template <size_t align>
 inline constexpr auto ArenaAlignAs() {
-  return AlignFactory<align <= ArenaAlignDefault::align, align>::Create();
+  return AlignFactory<(align <= ArenaAlignDefault::align), align>::Create();
 }
 
 // Returns ArenaAlignAs<alignof(T)>
