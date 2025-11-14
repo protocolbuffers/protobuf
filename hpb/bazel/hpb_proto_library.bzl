@@ -17,6 +17,8 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
+# probably need to create UpbWrappedCCinfo equivalent for cpp
+
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
 
@@ -68,6 +70,7 @@ def _hpb_proto_rule_impl(ctx):
         fail("proto_library rule must generate _WrappedCcGeneratedSrcsInfo (aspect should have " +
              "handled this).")
 
+    # if we knew backend, this rule could report the proper one, no ODR
     if _HpbWrappedCcInfo in dep:
         cc_info = dep[_HpbWrappedCcInfo].cc_info
     elif UpbWrappedCcInfo in dep:
@@ -93,6 +96,8 @@ def _get_proto_deps(ctx):
 
 def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
     deps = _get_proto_deps(ctx) + ctx.attr._upbprotos
+
+    # transitive deps
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
     dep_ccinfos += [dep[_HpbWrappedCcInfo].cc_info for dep in deps if _HpbWrappedCcInfo in dep]
@@ -140,15 +145,27 @@ _hpb_proto_library_aspect = aspect(
                 "//hpb:repeated_field",
             ],
         ),
+        "_cppprotos": attr.label_list(
+            default = [
+                "@abseil-cpp//absl/log:absl_check",
+                "@abseil-cpp//absl/strings",
+                "@abseil-cpp//absl/status:statusor",
+            ],
+        ),
+        "_hpb_backend": attr.label(
+            default = "//hpb:hpb_backend",
+        ),
     },
     exec_groups = {
         "proto_compiler": exec_group(),
     },
     implementation = _upb_cc_proto_library_aspect_impl,
+    # provide = hpb
     provides = [
         _HpbWrappedCcInfo,
         _WrappedCcGeneratedSrcsInfo,
     ],
+    # required = upb, so keep upb name
     required_aspect_providers = [
         UpbWrappedCcInfo,
     ],
