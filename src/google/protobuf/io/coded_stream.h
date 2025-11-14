@@ -673,7 +673,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return end_ + kSlopBytes - ptr;
   }
 
-  uint8_t* WriteRaw(const void* data, int size, uint8_t* ptr) {
+  [[nodiscard]] uint8_t* WriteRaw(const void* data, int size, uint8_t* ptr) {
     if (ABSL_PREDICT_FALSE(end_ - ptr < size)) {
       return WriteRawFallback(data, size, ptr);
     }
@@ -684,10 +684,11 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // aliasing the buffer (ie. not copying the data). The caller is responsible
   // to make sure the buffer is alive for the duration of the
   // ZeroCopyOutputStream.
+  [[nodiscard]]
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
 #endif
-  uint8_t* WriteRawMaybeAliased(const void* data, int size, uint8_t* ptr) {
+      uint8_t* WriteRawMaybeAliased(const void* data, int size, uint8_t* ptr) {
     if (aliasing_enabled_) {
       return WriteAliasedRaw(data, size, ptr);
     } else {
@@ -695,13 +696,14 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     }
   }
 
-  uint8_t* WriteCord(const absl::Cord& cord, uint8_t* ptr);
+  [[nodiscard]] uint8_t* WriteCord(const absl::Cord& cord, uint8_t* ptr);
 
+  [[nodiscard]]
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
 #endif
-  uint8_t* WriteStringMaybeAliased(uint32_t num, absl::string_view s,
-                                   uint8_t* ptr) {
+      uint8_t* WriteStringMaybeAliased(uint32_t num, absl::string_view s,
+                                       uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
     if (ABSL_PREDICT_FALSE(size >= 128 ||
                            end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
@@ -712,14 +714,16 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     std::memcpy(ptr, s.data(), size);
     return ptr + size;
   }
-  uint8_t* WriteBytesMaybeAliased(uint32_t num, absl::string_view s,
-                                  uint8_t* ptr) {
+  [[nodiscard]] uint8_t* WriteBytesMaybeAliased(uint32_t num,
+                                                absl::string_view s,
+                                                uint8_t* ptr) {
     return WriteStringMaybeAliased(num, s, ptr);
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteString(uint32_t num, const T& s,
-                                              uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteString(uint32_t num,
+                                                            const T& s,
+                                                            uint8_t* ptr) {
     std::ptrdiff_t size = s.size();
     if (ABSL_PREDICT_FALSE(size >= 128 ||
                            end_ - ptr + 16 - TagSize(num << 3) - 1 < size)) {
@@ -731,59 +735,68 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return ptr + size;
   }
 
-  uint8_t* WriteString(uint32_t num, const absl::Cord& s, uint8_t* ptr) {
+  [[nodiscard]] uint8_t* WriteString(uint32_t num, const absl::Cord& s,
+                                     uint8_t* ptr) {
     ptr = EnsureSpace(ptr);
     ptr = WriteTag(num, 2, ptr);
     return WriteCordOutline(s, ptr);
   }
 
   template <typename T>
+  [[nodiscard]]
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
 #endif
-  uint8_t* WriteBytes(uint32_t num, const T& s, uint8_t* ptr) {
+      uint8_t* WriteBytes(uint32_t num, const T& s, uint8_t* ptr) {
     return WriteString(num, s, ptr);
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt32Packed(int num, const T& r,
-                                                   int size, uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt32Packed(int num,
+                                                                 const T& r,
+                                                                 int size,
+                                                                 uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt32Packed(int num, const T& r,
-                                                    int size, uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt32Packed(
+      int num, const T& r, int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode32);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt32Packed(int num, const T& r,
-                                                    int size, uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt32Packed(
+      int num, const T& r, int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, ZigZagEncode32);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt64Packed(int num, const T& r,
-                                                   int size, uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteInt64Packed(int num,
+                                                                 const T& r,
+                                                                 int size,
+                                                                 uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt64Packed(int num, const T& r,
-                                                    int size, uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteUInt64Packed(
+      int num, const T& r, int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt64Packed(int num, const T& r,
-                                                    int size, uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteSInt64Packed(
+      int num, const T& r, int size, uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, ZigZagEncode64);
   }
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteEnumPacked(int num, const T& r, int size,
-                                                  uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteEnumPacked(int num,
+                                                                const T& r,
+                                                                int size,
+                                                                uint8_t* ptr) {
     return WriteVarintPacked(num, r, size, ptr, Encode64);
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteFixedPacked(int num, const T& r,
-                                                   uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t* WriteFixedPacked(int num,
+                                                                 const T& r,
+                                                                 uint8_t* ptr) {
     ptr = EnsureSpace(ptr);
     constexpr auto element_size = sizeof(typename T::value_type);
     auto size = r.size() * element_size;
@@ -793,14 +806,14 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
   template <int kElementSize>
-  PROTOBUF_ALWAYS_INLINE uint8_t* WriteRawNumericArrayLittleEndian(
-      const void* data, int size, uint8_t* ptr) {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE uint8_t*
+  WriteRawNumericArrayLittleEndian(const void* data, int size, uint8_t* ptr) {
     return WriteRawLittleEndian<kElementSize>(data, size, ptr);
   }
 
   // Returns true if there was an underlying I/O error since this object was
   // created.
-  bool HadError() const { return had_error_; }
+  [[nodiscard]] bool HadError() const { return had_error_; }
 
   // Instructs the EpsCopyOutputStream to allow the underlying
   // ZeroCopyOutputStream to hold pointers to the original structure instead of
@@ -830,6 +843,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
 #ifdef PROTOBUF_INTERNAL_V2_EXPERIMENT
   template <typename ValT, typename CallbackT>
+  [[nodiscard]]
   uint8_t* WriteNumericArray(uint8_t* ptr, uint32_t count,
                              CallbackT&& callback) {
     static_assert(sizeof(ValT) > 1, "Use WriteRaw");
