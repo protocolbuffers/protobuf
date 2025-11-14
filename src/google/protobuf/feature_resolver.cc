@@ -411,8 +411,8 @@ void ValidateFeatureLifetimesImpl(Edition edition, const Message& message,
           results);
       continue;
     }
-
-    if (field->enum_type() != nullptr) {
+    // TODO: Support repeated option enum values
+    if (field->enum_type() != nullptr && !field->is_repeated()) {
       int number = message.GetReflection()->GetEnumValue(message, field);
       auto value = field->enum_type()->FindValueByNumber(number);
       if (value == nullptr) {
@@ -555,11 +555,13 @@ absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
 }
 
 FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
-    Edition edition, const FeatureSet& features,
+    Edition edition, const FeatureSet& features, const Message& options,
     const Descriptor* pool_descriptor) {
   const Message* pool_features = nullptr;
+  const Message* pool_options = nullptr;
   DynamicMessageFactory factory;
   std::unique_ptr<Message> features_storage;
+  std::unique_ptr<Message> options_storage;
   if (pool_descriptor == nullptr) {
     // The FeatureSet descriptor can be null if no custom extensions are defined
     // in any transitive dependency.  In this case, we can just use the
@@ -576,8 +578,16 @@ FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
   }
   ABSL_CHECK(pool_features != nullptr);
 
+  pool_options = &options;
+  // TODO: Support custom options
+  ABSL_CHECK(pool_options != nullptr);
+
   ValidationResults results;
+  // Validate Features feature support
   ValidateFeatureLifetimesImpl(edition, *pool_features, results);
+  // Validate Options feature support
+  ValidateFeatureLifetimesImpl(edition, *pool_options, results);
+
   return results;
 }
 
