@@ -156,7 +156,7 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ const $Submsg$& $name$() const;
+    $DEPRECATED$ [[nodiscard]] const $Submsg$& $name$() const;
     $DEPRECATED$ [[nodiscard]] $Submsg$* $nullable$ $release_name$();
     $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* $nullable$ value);
@@ -773,9 +773,10 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   }
   p->Emit(R"cc(
     public:
-    $DEPRECATED$ const $Submsg$& $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
     $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
-    $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$()
+        const;
   )cc");
 }
 
