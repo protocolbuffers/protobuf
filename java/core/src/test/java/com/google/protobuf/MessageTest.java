@@ -9,10 +9,13 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import proto2_unittest.UnittestProto.ForeignMessage;
 import proto2_unittest.UnittestProto.TestAllExtensions;
 import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestParsingMerge;
+import proto2_unittest.UnittestProto.TestRecursiveMessage;
 import proto2_unittest.UnittestProto.TestRequired;
 import proto2_unittest.UnittestProto.TestRequiredForeign;
 import java.util.List;
@@ -413,6 +416,274 @@ public class MessageTest {
             encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes))
         .that(contains(serializedMessage, expectedBytes))
         .isTrue();
+  }
+
+  private byte[] bytes(int... bytesAsInts) {
+    byte[] bytes = new byte[bytesAsInts.length];
+    for (int i = 0; i < bytesAsInts.length; i++) {
+      bytes[i] = (byte) bytesAsInts[i];
+    }
+    return bytes;
+  }
+
+  private byte[] createFieldData(int fieldNumber, int wireType, byte[] data) throws Exception {
+    ByteString.Output rawOutput = ByteString.newOutput();
+    CodedOutputStream outputStream = CodedOutputStream.newInstance(rawOutput);
+    outputStream.writeTag(fieldNumber, wireType);
+    if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+      outputStream.writeUInt32NoTag(data.length);
+    }
+    outputStream.writeRawBytes(data);
+    outputStream.flush();
+    return rawOutput.toByteString().toByteArray();
+  }
+
+  @Test
+  public void testLazyExtensionAllFieldsSet() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    TestAllTypes allTypes = TestUtil.getAllSet();
+    TestParsingMerge message =
+        TestParsingMerge.newBuilder()
+            .setRequiredAllTypes(allTypes)
+            .setExtension(TestParsingMerge.optionalExt, allTypes)
+            .build();
+    byte[] data = message.toByteArray();
+    TestParsingMerge proto =
+        TestParsingMerge.parseFrom(data, ExtensionRegistry.getGeneratedRegistry());
+
+    assertThat(proto.getUnknownFields().isEmpty()).isTrue();
+    assertThat(data).hasLength(proto.toByteArray().length);
+    assertThat(proto.getExtension(TestParsingMerge.optionalExt)).isEqualTo(allTypes);
+  }
+
+  @Test
+  public void testLazyExtensionMissingRequiredField() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    TestAllExtensions.Builder message = TestAllExtensions.newBuilder();
+    message.setExtension(TestRequired.single, TestRequired.newBuilder().buildPartial());
+    byte[] data = message.buildPartial().toByteArray();
+    TestAllExtensions.Builder proto = TestAllExtensions.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(data, ExtensionRegistry.getGeneratedRegistry()));
+
+    assertThat(throwable).hasMessageThat().contains("lazy Missing required field");
+  }
+
+  @Test
+  public void testLazyExtensionInvalidVarint() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    byte[] fieldData =
+        createFieldData(
+            1,
+            WireFormat.WIRETYPE_VARINT,
+            bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00));
+    byte[] extData = createFieldData(1000, WireFormat.WIRETYPE_LENGTH_DELIMITED, fieldData);
+
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(extData, ExtensionRegistry.getGeneratedRegistry()));
+    assertThat(throwable).hasMessageThat().contains("malformed varint");
+  }
+
+  @Test
+  public void skipUnkonwnLengthDelimitedField() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    // 7 is an invalid wire type.
+    byte[] fieldData = createFieldData(1, 7, bytes(0x01));
+    byte[] extData = createFieldData(1000, WireFormat.WIRETYPE_LENGTH_DELIMITED, fieldData);
+
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(extData, ExtensionRegistry.getGeneratedRegistry()));
+
+    assertThat(throwable).hasMessageThat().contains("invalid wire type");
+  }
+
+  // TODO: message extension field inside message extension field?
+
+  @Test
+  public void invalidWireTypeInNestedMessage() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    byte[] nestedFieldData =
+        createFieldData(
+            1,
+            WireFormat.WIRETYPE_VARINT,
+            bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00));
+    byte[] nestedData = createFieldData(18, WireFormat.WIRETYPE_LENGTH_DELIMITED, nestedFieldData);
+    byte[] data = createFieldData(1000, WireFormat.WIRETYPE_LENGTH_DELIMITED, nestedData);
+
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(data, ExtensionRegistry.getGeneratedRegistry()));
+
+    assertThat(throwable).hasMessageThat().contains("malformed varint");
+  }
+
+  @Test
+  public void missingEndGroupTag() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    ByteString.Output fieldRawOutput = ByteString.newOutput();
+    CodedOutputStream fieldOutput = CodedOutputStream.newInstance(fieldRawOutput);
+    fieldOutput.writeTag(16, WireFormat.WIRETYPE_START_GROUP);
+    fieldOutput.writeInt32(17, 123);
+    fieldOutput.flush();
+    byte[] fieldData = fieldRawOutput.toByteString().toByteArray();
+    byte[] data = createFieldData(1000, WireFormat.WIRETYPE_LENGTH_DELIMITED, fieldData);
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(data, ExtensionRegistry.getGeneratedRegistry()));
+    assertThat(throwable).hasMessageThat().contains("end-group tag did not match expected tag");
+  }
+
+  @Test
+  public void invalidWireTypeInNestedGroup() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    byte[] fieldData =
+        createFieldData(
+            17,
+            WireFormat.WIRETYPE_VARINT,
+            bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00));
+
+    ByteString.Output groupRawOutput = ByteString.newOutput();
+    CodedOutputStream groupOutput = CodedOutputStream.newInstance(groupRawOutput);
+    groupOutput.writeTag(16, WireFormat.WIRETYPE_START_GROUP);
+    groupOutput.writeRawBytes(fieldData);
+    groupOutput.writeTag(16, WireFormat.WIRETYPE_END_GROUP);
+    groupOutput.flush();
+    byte[] groupData = groupRawOutput.toByteString().toByteArray();
+    byte[] data = createFieldData(1000, WireFormat.WIRETYPE_LENGTH_DELIMITED, groupData);
+
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(data, ExtensionRegistry.getGeneratedRegistry()));
+
+    assertThat(throwable).hasMessageThat().contains("malformed varint");
+  }
+
+  private TestRecursiveMessage makeRecursiveMessage(int depth) {
+    if (depth == 0) {
+      return TestRecursiveMessage.newBuilder().setI(5).build();
+    } else {
+      return TestRecursiveMessage.newBuilder().setA(makeRecursiveMessage(depth - 1)).build();
+    }
+  }
+
+  @Test
+  public void testTooManyNestedMessages() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    byte[] recursiveMessageData = makeRecursiveMessage(101).toByteArray();
+    byte[] data = createFieldData(1002, WireFormat.WIRETYPE_LENGTH_DELIMITED, recursiveMessageData);
+
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(data, ExtensionRegistry.getGeneratedRegistry()));
+
+    assertThat(throwable).hasMessageThat().contains("message had too many levels of nesting");
+  }
+
+  @Test
+  public void testInvalidUtf8String() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    byte[] fieldData =
+        createFieldData(
+            536870019, WireFormat.WIRETYPE_LENGTH_DELIMITED, bytes(0xFF, 0xFF, 0xFF, 0xFF));
+    byte[] extDataTop = createFieldData(1003, WireFormat.WIRETYPE_LENGTH_DELIMITED, fieldData);
+
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(extDataTop, ExtensionRegistry.getGeneratedRegistry()));
+
+    assertThat(throwable).hasMessageThat().contains("invalid UTF-8");
+  }
+
+  @Test
+  public void testUnkonwnLengthDelimitedInMessageExtensionField() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    // We cannot validate this because we don't know whether the field is a string, bytes, or
+    // message.
+    byte[] bytes = bytes(0xFF, 0xFF, 0xFF, 0xFF);
+    byte[] fieldData = createFieldData(99999, WireFormat.WIRETYPE_LENGTH_DELIMITED, bytes);
+    byte[] extDataTop = createFieldData(1002, WireFormat.WIRETYPE_LENGTH_DELIMITED, fieldData);
+
+    TestParsingMerge proto =
+        TestParsingMerge.newBuilder()
+            .mergeFrom(extDataTop, ExtensionRegistry.getGeneratedRegistry())
+            .buildPartial();
+
+    assertThat(proto.hasExtension(TestParsingMerge.recursiveMessage)).isTrue();
+    assertThat(
+            proto
+                .getExtension(TestParsingMerge.recursiveMessage)
+                .getUnknownFields()
+                .getField(99999)
+                .getLengthDelimitedList()
+                .getFirst())
+        .isEqualTo(ByteString.copyFrom(bytes));
+  }
+
+  @Test
+  public void testMalfromedDataInMessageExtensionOfMessageExtension() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    byte[] fieldData =
+        createFieldData(
+            1,
+            WireFormat.WIRETYPE_VARINT,
+            bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00));
+    byte[] data = createFieldData(1004, WireFormat.WIRETYPE_LENGTH_DELIMITED, fieldData);
+
+    TestParsingMerge.Builder proto = TestParsingMerge.newBuilder();
+
+    var throwable =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> proto.mergeFrom(data, ExtensionRegistry.getGeneratedRegistry()));
+
+    assertThat(throwable).hasMessageThat().contains("malformed varint");
+  }
+
+  @Test
+  public void testUnknownMalfromedDataInMessageExtensionOfMessageExtension() throws Exception {
+    ExtensionRegistry.setEagerlyParseExtensionFields(/* isEagerlyParse= */ false);
+    byte[] bytes = bytes(0xFF, 0xFF, 0xFF, 0xFF);
+    byte[] fieldData = createFieldData(1, WireFormat.WIRETYPE_LENGTH_DELIMITED, bytes);
+    byte[] extDataTop = createFieldData(1004, WireFormat.WIRETYPE_LENGTH_DELIMITED, fieldData);
+
+    ExtensionRegistry extensionRegistry = ExtensionRegistry.newInstance();
+    extensionRegistry.add(TestParsingMerge.allExtensions);
+    TestParsingMerge proto =
+        TestParsingMerge.newBuilder().mergeFrom(extDataTop, extensionRegistry).buildPartial();
+    assertThat(
+            proto
+                .getExtension(TestParsingMerge.allExtensions)
+                .getUnknownFields()
+                .getField(1)
+                .getLengthDelimitedList()
+                .getFirst())
+        .isEqualTo(ByteString.copyFrom(bytes));
   }
 
   private static String encodeHex(ByteString bytes) {

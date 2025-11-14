@@ -272,6 +272,14 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     return o;
   }
 
+  public LazyField getLazyField(final T descriptor) {
+    Object o = fields.get(descriptor);
+    if (o instanceof LazyField lazyField) {
+      return lazyField;
+    }
+    return null;
+  }
+
   /** Returns true if the field is a lazy field and it is corrupted. */
   boolean lazyFieldCorrupted(final T descriptor) {
     Object o = fields.get(descriptor);
@@ -1134,6 +1142,14 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     public Object getField(final T descriptor) {
       Object value = getFieldAllowBuilders(descriptor);
       return replaceBuilders(descriptor, value, true);
+    }
+
+    public LazyField getLazyField(final T descriptor) {
+      Object value = fields.get(descriptor);
+      if (value instanceof LazyField lazyField) {
+        return lazyField;
+      }
+      return null;
     }
 
     /** Same as {@link #getField(F)}, but allow a {@link MessageLite.Builder} to be returned. */

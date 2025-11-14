@@ -271,10 +271,10 @@ public class LazyFieldLite {
    * <p>LazyField is not thread-safe for write access. Synchronizations are needed under read/write
    * situations.
    */
-  public void mergeFrom(CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+  public void mergeFrom(ByteString bytes, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     if (this.containsDefaultInstance()) {
-      setByteString(input.readBytes(), extensionRegistry);
+      setByteString(bytes, extensionRegistry);
       return;
     }
 
@@ -290,7 +290,7 @@ public class LazyFieldLite {
     // to outway the benefits of combining the extension registries, which is not normally done for
     // lite protos anyways.
     if (this.delayedBytes != null) {
-      setByteString(this.delayedBytes.concat(input.readBytes()), this.extensionRegistry);
+      setByteString(this.delayedBytes.concat(bytes), this.extensionRegistry);
       return;
     }
 
@@ -298,7 +298,7 @@ public class LazyFieldLite {
     // case that the extension registries are not the same then we might in the future if we
     // need to serialize and parse a message again.
     try {
-      setValue(value.toBuilder().mergeFrom(input, extensionRegistry).build());
+      setValue(value.toBuilder().mergeFrom(bytes, extensionRegistry).build());
     } catch (InvalidProtocolBufferException e) {
       // Nothing is logged and no exceptions are thrown. Clients will be unaware that a proto
       // was invalid.
