@@ -348,10 +348,8 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
 
   Arena* arena = this->arena();
   for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
-    Message* new_entry = reinterpret_cast<Message*>(
-        rep.AddInternal(arena, [prototype](Arena* arena, void*& ptr) {
-          ptr = prototype->New(arena);
-        }));
+    Message* new_entry = 
+        rep.AddFromPrototype<GenericTypeHandler<Message>>(arena, prototype);
 
     const MapKey& map_key = it.GetKey();
     switch (key_des->cpp_type()) {
