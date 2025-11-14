@@ -229,19 +229,17 @@ public final class UnredactedDebugFormatForTestTest {
             .build();
     assertThat(UnredactedDebugFormatForTest.unredactedToStringList(Arrays.asList(message, message)))
         .containsExactly(
-            new String[] {
-              "repeated_redacted_message {\n"
-                  + "  optional_redacted_nested_string: \"123\"\n"
-                  + "}\n"
-                  + "repeated_redacted_message {\n"
-                  + "  optional_unredacted_nested_string: \"456\"\n"
-                  + "}\n",
-              "repeated_redacted_message {\n"
-                  + "  optional_redacted_nested_string: \"123\"\n"
-                  + "}\n"
-                  + "repeated_redacted_message {\n"
-                  + "  optional_unredacted_nested_string: \"456\"\n"
-                  + "}\n"
-            });
+            "repeated_redacted_message {\n"
+                + "  optional_redacted_nested_string: \"123\"\n"
+                + "}\n"
+                + "repeated_redacted_message {\n"
+                + "  optional_unredacted_nested_string: \"456\"\n"
+                + "}\n",
+            "repeated_redacted_message {\n"
+                + "  optional_redacted_nested_string: \"123\"\n"
+                + "}\n"
+                + "repeated_redacted_message {\n"
+                + "  optional_unredacted_nested_string: \"456\"\n"
+                + "}\n");
   }
 }

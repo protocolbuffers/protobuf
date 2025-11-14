@@ -69,7 +69,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    *
    * <p>TODO: mark this private and final (breaking change)
    */
-  protected UnknownFieldSet unknownFields;
+  protected
+  UnknownFieldSet unknownFields;
 
   protected GeneratedMessage() {
     unknownFields = UnknownFieldSet.getDefaultInstance();
@@ -115,27 +116,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   @Override
   public Descriptor getDescriptorForType() {
     return internalGetFieldAccessorTable().descriptor;
-  }
-
-  /**
-   * TODO: This method should be removed. It enables parsing directly into an
-   * "immutable" message. Have to leave it for now to support old gencode.
-   *
-   * @deprecated use newBuilder().mergeFrom() instead
-   */
-  @Deprecated
-  protected void mergeFromAndMakeImmutableInternal(
-      CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-      throws InvalidProtocolBufferException {
-    Schema<GeneratedMessage> schema = Protobuf.getInstance().schemaFor(this);
-    try {
-      schema.mergeFrom(this, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
-    } catch (InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (IOException e) {
-      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(this);
-    }
-    schema.makeImmutable(this);
   }
 
   /**
@@ -501,9 +481,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (size != -1) {
       return size;
     }
-
-    memoizedSize = MessageReflection.getSerializedSize(
-        this, getAllFieldsRaw());
+    memoizedSize = MessageReflection.getSerializedSize(this, getAllFieldsRaw());
     return memoizedSize;
   }
 

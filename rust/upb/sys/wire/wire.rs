@@ -22,6 +22,7 @@ pub enum EncodeStatus {
     OutOfMemory = 1,
     MaxDepthExceeded = 2,
     MissingRequired = 3,
+    MaxSizeExceeded = 4,
 }
 // LINT.ThenChange()
 
@@ -35,7 +36,6 @@ pub enum DecodeStatus {
     BadUtf8 = 3,
     MaxDepthExceeded = 4,
     MissingRequired = 5,
-    UnlinkedSubMessage = 6,
 }
 // LINT.ThenChange()
 

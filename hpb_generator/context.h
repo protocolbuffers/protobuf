@@ -123,7 +123,7 @@ inline void EmitFileWarning(const google::protobuf::FileDescriptor* file, Contex
            )cc");
 }
 
-// TODO: b/346865271 append ::hpb instead of ::protos after namespace swap
+// TODO: b/457468323 append ::hpb instead of ::protos after namespace swap
 inline std::string NamespaceFromPackageName(absl::string_view package_name) {
   return absl::StrCat(absl::StrReplaceAll(package_name, {{".", "::"}}),
                       "::protos");

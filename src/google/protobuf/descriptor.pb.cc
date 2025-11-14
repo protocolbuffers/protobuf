@@ -2433,26 +2433,27 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] AB
     "le\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010"
     "semantic\030\005 \001(\01626.google.protobuf.Generat"
     "edCodeInfo.Annotation.Semantic\"(\n\010Semant"
-    "ic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005ALIAS\020\002*\247\002\n\007Edi"
+    "ic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005ALIAS\020\002*\276\002\n\007Edi"
     "tion\022\023\n\017EDITION_UNKNOWN\020\000\022\023\n\016EDITION_LEG"
     "ACY\020\204\007\022\023\n\016EDITION_PROTO2\020\346\007\022\023\n\016EDITION_P"
     "ROTO3\020\347\007\022\021\n\014EDITION_2023\020\350\007\022\021\n\014EDITION_2"
-    "024\020\351\007\022\027\n\023EDITION_1_TEST_ONLY\020\001\022\027\n\023EDITI"
-    "ON_2_TEST_ONLY\020\002\022\035\n\027EDITION_99997_TEST_O"
-    "NLY\020\235\215\006\022\035\n\027EDITION_99998_TEST_ONLY\020\236\215\006\022\035"
-    "\n\027EDITION_99999_TEST_ONLY\020\237\215\006\022\023\n\013EDITION"
-    "_MAX\020\377\377\377\377\007*U\n\020SymbolVisibility\022\024\n\020VISIBI"
-    "LITY_UNSET\020\000\022\024\n\020VISIBILITY_LOCAL\020\001\022\025\n\021VI"
-    "SIBILITY_EXPORT\020\002B~\n\023com.google.protobuf"
-    "B\020DescriptorProtosH\001Z-google.golang.org/"
-    "protobuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032G"
-    "oogle.Protobuf.Reflection"
+    "024\020\351\007\022\025\n\020EDITION_UNSTABLE\020\217N\022\027\n\023EDITION"
+    "_1_TEST_ONLY\020\001\022\027\n\023EDITION_2_TEST_ONLY\020\002\022"
+    "\035\n\027EDITION_99997_TEST_ONLY\020\235\215\006\022\035\n\027EDITIO"
+    "N_99998_TEST_ONLY\020\236\215\006\022\035\n\027EDITION_99999_T"
+    "EST_ONLY\020\237\215\006\022\023\n\013EDITION_MAX\020\377\377\377\377\007*U\n\020Sym"
+    "bolVisibility\022\024\n\020VISIBILITY_UNSET\020\000\022\024\n\020V"
+    "ISIBILITY_LOCAL\020\001\022\025\n\021VISIBILITY_EXPORT\020\002"
+    "B~\n\023com.google.protobufB\020DescriptorProto"
+    "sH\001Z-google.golang.org/protobuf/types/de"
+    "scriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobuf.Re"
+    "flection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    10945,
+    10968,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -2627,7 +2628,7 @@ const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Edition_descriptor() 
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[18];
 }
 PROTOBUF_CONSTINIT const uint32_t Edition_internal_data_[] = {
-    196608u, 589824u, 99997u, 1000u, 99999u, 998u, 1001u, 99998u, 2147483647u, 900u, 999u, };
+    196608u, 655360u, 99997u, 1000u, 99999u, 998u, 9999u, 99998u, 2147483647u, 900u, 999u, 1001u, };
 const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL SymbolVisibility_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[19];

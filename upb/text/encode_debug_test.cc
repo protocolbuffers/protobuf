@@ -32,7 +32,7 @@ std::string GetDebugString(const upb_Message* input,
 }
 
 TEST(TextNoReflection, ExtensionsString) {
-  const upb_MiniTable* mt_main = upb_0test__ModelWithExtensions_msg_init_ptr;
+  const upb_MiniTable* mt_main = &upb_0test__ModelWithExtensions_msg_init;
   upb_Arena* arena = upb_Arena_New();
 
   upb_test_ModelExtension1* extension1 = upb_test_ModelExtension1_new(arena);
@@ -53,7 +53,7 @@ TEST(TextNoReflection, ExtensionsString) {
 }
 
 TEST(TextNoReflection, ExtensionsInt) {
-  const upb_MiniTable* mt_main = upb_0test__ModelWithExtensions_msg_init_ptr;
+  const upb_MiniTable* mt_main = &upb_0test__ModelWithExtensions_msg_init;
   upb_Arena* arena = upb_Arena_New();
 
   upb_test_ModelExtension2* extension2 = upb_test_ModelExtension2_new(arena);

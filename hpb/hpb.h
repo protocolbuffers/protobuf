@@ -75,10 +75,9 @@ template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
                                 absl::string_view bytes,
                                 const ExtensionRegistry& extension_registry =
-                                    ExtensionRegistry::empty_registry()) {
+                                    ExtensionRegistry::generated_registry()) {
   return backend::Parse(message, bytes, extension_registry);
 }
-
 
 // Deprecated. Use the overload that returns hpb::StatusOr<T> instead.
 // Note that the default extension registry is the empty registry.

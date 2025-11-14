@@ -357,7 +357,7 @@ size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
 
 inline size_t ExtensionSet::RepeatedMessage_SpaceUsedExcludingSelfLong(
     RepeatedPtrFieldBase* field) {
-  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message> >();
+  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message>>();
 }
 
 size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
@@ -435,7 +435,6 @@ bool ExtensionSet::ShouldRegisterAtThisTime(
   return has_all == is_preregistration;
 }
 #endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
-
 
 }  // namespace internal
 }  // namespace protobuf

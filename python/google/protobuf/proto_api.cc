@@ -113,7 +113,8 @@ bool PythonConstMessagePointer::NotChanged() {
   // serialize result may still diff between languages. So parse to
   // another c++ message for compare.
   std::unique_ptr<google::protobuf::Message> parsed_msg(owned_msg_->New());
-  parsed_msg->ParsePartialFromArray(data, static_cast<int>(len));
+  parsed_msg->ParsePartialFromString(
+      absl::string_view(data, static_cast<int>(len)));
   std::string wire_other;
   google::protobuf::io::StringOutputStream stream_other(&wire_other);
   google::protobuf::io::CodedOutputStream output_other(&stream_other);

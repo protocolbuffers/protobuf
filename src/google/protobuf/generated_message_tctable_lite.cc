@@ -919,7 +919,7 @@ PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p, Type* value) {
                 "Only [u]int32_t and [u]int64_t please");
 #ifdef __aarch64__
   // The VarintParse parser has a faster implementation on ARM.
-  absl::conditional_t<sizeof(Type) == 4, uint32_t, uint64_t> tmp;
+  std::conditional_t<sizeof(Type) == 4, uint32_t, uint64_t> tmp;
   p = VarintParse(p, &tmp);
   if (p != nullptr) {
     *value = tmp;
@@ -1157,20 +1157,40 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   }
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
-  Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
+  // Count the number of varint (same as number of bytes with 0 in top bit)
+  // and preallocte space in repeated field.
+  int len = 0;
+  auto ptr2 = ptr;
   do {
+    ptr2 += sizeof(TagType);
+    // Defend against overflowing available data due to malformed input of
+    // infinite number of bytes with top bit set. Longest legal varint is 10
+    // bytes, which is also < 16 bytes of slop.
+    int limit = 10;
+    while ((*ptr2 & 0x80) && limit--) ptr2++;
+    len++;
+    ptr2++;
+  } while (ctx->DataAvailable(ptr2) &&
+           UnalignedLoad<TagType>(ptr2) == expected_tag);
+  int added = 0;
+  field.Reserve(field.size() + len);
+  // Allows us to skip SOO checks.
+  FieldType* x = field.AddNAlreadyReserved(len);
+  do {
+    ABSL_DCHECK(ctx->DataAvailable(ptr));
+    ABSL_DCHECK_EQ(UnalignedLoad<TagType>(ptr), expected_tag);
     ptr += sizeof(TagType);
     FieldType tmp;
     ptr = ParseVarint(ptr, &tmp);
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+      field.Truncate(x - field.data());
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
-    field.AddWithArena(arena, ZigZagDecodeHelper<FieldType, zigzag>(tmp));
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+    added++;
+    *x = ZigZagDecodeHelper<FieldType, zigzag>(tmp);
+    x++;
+  } while (added < len);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
@@ -1851,7 +1871,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   } else {
     do {
       ptr += sizeof(TagType);
-      std::string* str = field.Add();
+      std::string* str = field.AddWithArena(arena);
       ptr = InlineGreedyStringParser(str, ptr, ctx);
       if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
         PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2604,6 +2624,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
   const uint16_t rep = type_card & field_layout::kRepMask;
   const uint16_t xform_val = type_card & field_layout::kTvMask;
   void* const base = MaybeGetSplitBase(msg, is_split, table);
+  auto* arena = msg->GetArena();
   switch (rep) {
     case field_layout::kRepSString: {
       auto& field = MaybeCreateRepeatedPtrFieldRefAt<std::string, is_split>(
@@ -2611,7 +2632,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      auto* arena = msg->GetArena();
       SerialArena* serial_arena;
       if (ABSL_PREDICT_TRUE(arena != nullptr &&
                             arena->impl_.GetSerialArenaFast(&serial_arena) &&
@@ -2630,7 +2650,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       } else {
         do {
           ptr = ptr2;
-          std::string* str = field.Add();
+          std::string* str = field.AddWithArena(arena);
           ptr = InlineGreedyStringParser(str, ptr, ctx);
           if (ABSL_PREDICT_FALSE(
                   ptr == nullptr ||
@@ -2775,8 +2795,9 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
 
   const char* ptr2 = ptr;
   uint32_t next_tag;
+  Arena* arena = msg->GetArena();
   do {
-    MessageLite* value = AddMessage(inner_table, field, msg->GetArena());
+    MessageLite* value = AddMessage(inner_table, field, arena);
     const auto inner_loop = [&](const char* ptr) {
       return ParseLoopPreserveNone(value, ptr, ctx, inner_table);
     };

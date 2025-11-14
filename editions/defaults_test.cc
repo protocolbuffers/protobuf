@@ -147,8 +147,8 @@ TEST(DefaultsTest, CheckFarFuture) {
 
 TEST(DefaultsTest, Embedded) {
   FeatureSetDefaults defaults;
-  ASSERT_TRUE(defaults.ParseFromArray(DEFAULTS_TEST_EMBEDDED,
-                                      sizeof(DEFAULTS_TEST_EMBEDDED) - 1))
+  ASSERT_TRUE(defaults.ParseFromString(absl::string_view(
+      DEFAULTS_TEST_EMBEDDED, sizeof(DEFAULTS_TEST_EMBEDDED) - 1)))
       << "Could not parse embedded data";
   ASSERT_EQ(defaults.defaults().size(), 3);
   ASSERT_EQ(defaults.minimum_edition(), EDITION_2023);

@@ -17,6 +17,10 @@ load(
     "//upb/bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
 )
+load(
+    "//upb/cmake:build_defs.bzl",
+    "staleness_test",
+)
 
 package(default_applicable_licenses = ["//:license"])
 
@@ -39,6 +43,30 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        "//upb/base",
+        "//upb/hash",
+        "//upb/mem",
+        "//upb/port",
+    ],
+)
+
+cc_library(
+    name = "debug_string",
+    srcs = [
+        "debug_string.c",
+    ],
+    hdrs = [
+        "debug_string.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = [
+        "//rust/upb:__pkg__",
+        "//upb:__pkg__",
+        "//upb:friends",
+    ],
+    deps = [
+        ":internal",
+        ":mini_table",
         "//upb/base",
         "//upb/hash",
         "//upb/mem",
@@ -129,6 +157,39 @@ cc_binary(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
+)
+
+proto_library(
+    name = "debug_string_test_proto",
+    srcs = ["debug_string_test.proto"],
+)
+
+upb_minitable_proto_library(
+    name = "debug_string_test_upb_minitable_proto",
+    deps = [":debug_string_test_proto"],
+)
+
+cc_binary(
+    name = "debug_string_test_generate",
+    srcs = ["debug_string_test_generate.cc"],
+    deps = [
+        ":debug_string",
+        ":debug_string_test_upb_minitable_proto",
+    ],
+)
+
+genrule(
+    name = "debug_string_test_txt",
+    outs = ["generated/debug_string_test.txt"],
+    cmd = "$(location :debug_string_test_generate) > $@",
+    tools = [":debug_string_test_generate"],
+)
+
+staleness_test(
+    name = "debug_string_staleness_test",
+    outs = ["debug_string_test.txt"],
+    generated_pattern = "generated/%s",
+    target_files = ["debug_string_test.txt"],
 )
 
 filegroup(

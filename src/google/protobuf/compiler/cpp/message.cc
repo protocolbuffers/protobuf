@@ -617,6 +617,7 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
   return true;
 }
 
+
 using Sub = ::google::protobuf::io::Printer::Sub;
 std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
   std::vector<Sub> vars = {
@@ -834,7 +835,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                 p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
                              .AnnotatedAs(field)},
                         R"cc(
-                          $deprecated_attr $int $name_size$() $const_impl$;
+                          [[nodiscard]] $deprecated_attr $int $name_size$()
+                              $const_impl$;
                         )cc");
 
                 p->Emit({Sub("_internal_name_size",
@@ -853,7 +855,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                 p->Emit({Sub("has_name", absl::StrCat("has_", name))
                              .AnnotatedAs(field)},
                         R"cc(
-                          $deprecated_attr $bool $has_name$() $const_impl$;
+                          [[nodiscard]] $deprecated_attr $bool $has_name$()
+                              $const_impl$;
                         )cc");
               }},
              {"internal_hazzer",
@@ -1373,7 +1376,7 @@ class AccessorVerifier {
 
 template <bool kIsV2>
 void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
-    const FieldDescriptor* field, io::Printer* p) const {
+    const FieldDescriptor* field, io::Printer* p, bool try_batch) const {
   absl::AnyInvocable<void()> emit_body = [&] {
     const auto& gen = field_generators_.get(field);
     if constexpr (!kIsV2) {
@@ -1442,7 +1445,8 @@ void MessageGenerator::EmitUpdateByteSizeForField(
         [&] { MaybeEmitUpdateCachedHasbits(field, p, cached_has_word_index); }},
        {"check_and_update_byte_size_for_field",
         [&]() {
-          EmitCheckAndUpdateByteSizeForField</*kIsV2=*/false>(field, p);
+          EmitCheckAndUpdateByteSizeForField</*kIsV2=*/false>(
+              field, p, /*try_batch=*/false);
         }}},
       R"cc(
         $comment$;
@@ -1790,99 +1794,96 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
   ABSL_DCHECK(IsAnyMessage(descriptor_));
 
-  p->Emit(
-      {{"any_methods",
-        [&] {
-          if (HasDescriptorMethods(descriptor_->file(), options_)) {
-            p->Emit(
-                R"cc(
-                  bool PackFrom(const $pb$::Message& message) {
-                    $DCHK$_NE(&message, this);
-                    return $pbi$::InternalPackFrom(message, mutable_type_url(),
-                                                   _internal_mutable_value());
-                  }
-                  bool PackFrom(const $pb$::Message& message,
-                                ::absl::string_view type_url_prefix) {
-                    $DCHK$_NE(&message, this);
-                    return $pbi$::InternalPackFrom(message, type_url_prefix,
-                                                   mutable_type_url(),
-                                                   _internal_mutable_value());
-                  }
-                  bool UnpackTo($pb$::Message* $nonnull$ message) const {
-                    return $pbi$::InternalUnpackTo(_internal_type_url(),
-                                                   _internal_value(), message);
-                  }
-                  static bool GetAnyFieldDescriptors(
-                      const $pb$::Message& message,
-                      const $pb$::FieldDescriptor * $nullable$ *
-                          $nonnull$ type_url_field,
-                      const $pb$::FieldDescriptor * $nullable$ *
-                          $nonnull$ value_field);
-                  template <
-                      typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
-                  bool PackFrom(const T& message) {
-                    return $pbi$::InternalPackFrom<T>(
-                        message, mutable_type_url(), _internal_mutable_value());
-                  }
-                  template <
-                      typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
-                  bool PackFrom(const T& message,
-                                ::absl::string_view type_url_prefix) {
-                    return $pbi$::InternalPackFrom<T>(
-                        message, type_url_prefix, mutable_type_url(),
-                        _internal_mutable_value());
-                  }
-                  template <
-                      typename T,
-                      class = typename std::enable_if<!std::is_convertible<
-                          T, const $pb$::Message&>::value>::type>
-                  bool UnpackTo(T* $nonnull$ message) const {
-                    return $pbi$::InternalUnpackTo<T>(
-                        _internal_type_url(), _internal_value(), message);
-                  }
-                )cc");
-          } else {
-            p->Emit(
-                R"cc(
-                  template <typename T>
-                  bool PackFrom(const T& message) {
-                    return $pbi$::InternalPackFrom(message, mutable_type_url(),
-                                                   _internal_mutable_value());
-                  }
-                  template <typename T>
-                  bool PackFrom(const T& message,
-                                ::absl::string_view type_url_prefix) {
-                    return $pbi$::InternalPackFrom(message, type_url_prefix,
-                                                   mutable_type_url(),
-                                                   _internal_mutable_value());
-                  }
-                  template <typename T>
-                  bool UnpackTo(T* $nonnull$ message) const {
-                    return $pbi$::InternalUnpackTo(_internal_type_url(),
-                                                   _internal_value(), message);
-                  }
-                )cc");
-          }
-        }}},
-      R"cc(
-        // implements Any
-        // -----------------------------------------------
+  p->Emit({{"any_methods",
+            [&] {
+              if (HasDescriptorMethods(descriptor_->file(), options_)) {
+                p->Emit(
+                    R"cc(
+                      bool PackFrom(const $pb$::Message& message) {
+                        $DCHK$_NE(&message, this);
+                        return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
+                      }
+                      bool PackFrom(const $pb$::Message& message,
+                                    ::absl::string_view type_url_prefix) {
+                        $DCHK$_NE(&message, this);
+                        return $pbi$::InternalPackFrom(message, type_url_prefix,
+                                                       mutable_type_url(),
+                                                       mutable_value());
+                      }
+                      bool UnpackTo($pb$::Message* $nonnull$ message) const {
+                        return $pbi$::InternalUnpackTo(
+                            _internal_type_url(), _internal_value(), message);
+                      }
+                      static bool GetAnyFieldDescriptors(
+                          const $pb$::Message& message,
+                          const $pb$::FieldDescriptor * $nullable$ *
+                              $nonnull$ type_url_field,
+                          const $pb$::FieldDescriptor * $nullable$ *
+                              $nonnull$ value_field);
+                      template <
+                          typename T,
+                          class = typename std::enable_if<!std::is_convertible<
+                              T, const $pb$::Message&>::value>::type>
+                      bool PackFrom(const T& message) {
+                        return $pbi$::InternalPackFrom<T>(
+                            message, mutable_type_url(), mutable_value());
+                      }
+                      template <
+                          typename T,
+                          class = typename std::enable_if<!std::is_convertible<
+                              T, const $pb$::Message&>::value>::type>
+                      bool PackFrom(const T& message,
+                                    ::absl::string_view type_url_prefix) {
+                        return $pbi$::InternalPackFrom<T>(
+                            message, type_url_prefix, mutable_type_url(),
+                            mutable_value());
+                      }
+                      template <
+                          typename T,
+                          class = typename std::enable_if<!std::is_convertible<
+                              T, const $pb$::Message&>::value>::type>
+                      bool UnpackTo(T* $nonnull$ message) const {
+                        return $pbi$::InternalUnpackTo<T>(
+                            _internal_type_url(), _internal_value(), message);
+                      }
+                    )cc");
+              } else {
+                p->Emit(
+                    R"cc(
+                      template <typename T>
+                      bool PackFrom(const T& message) {
+                        return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
+                      }
+                      template <typename T>
+                      bool PackFrom(const T& message,
+                                    ::absl::string_view type_url_prefix) {
+                        return $pbi$::InternalPackFrom(message, type_url_prefix,
+                                                       mutable_type_url(),
+                                                       mutable_value());
+                      }
+                      template <typename T>
+                      bool UnpackTo(T* $nonnull$ message) const {
+                        return $pbi$::InternalUnpackTo(
+                            _internal_type_url(), _internal_value(), message);
+                      }
+                    )cc");
+              }
+            }}},
+          R"cc(
+            // implements Any
+            // -----------------------------------------------
 
-        $any_methods$;
+            $any_methods$;
 
-        template <typename T>
-        bool Is() const {
-          return $pbi$::InternalIs<T>(_internal_type_url());
-        }
-        static bool ParseAnyTypeUrl(
-            //~
-            ::absl::string_view type_url,
-            std::string* $nonnull$ full_type_name);
-      )cc");
+            template <typename T>
+            bool Is() const {
+              return $pbi$::InternalIs<T>(_internal_type_url());
+            }
+            static bool ParseAnyTypeUrl(
+                //~
+                ::absl::string_view type_url,
+                std::string* $nonnull$ full_type_name);
+          )cc");
 }
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
@@ -2224,7 +2225,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           // Generate oneof function declarations
           for (auto oneof : OneOfRange(descriptor_)) {
             p->Emit({{"oneof_name", oneof->name()}}, R"cc(
-              inline bool has_$oneof_name$() const;
+              [[nodiscard]] inline bool has_$oneof_name$() const;
               inline void clear_has_$oneof_name$();
             )cc");
           }
@@ -2394,6 +2395,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           friend class $pb$::MessageLite;
           friend class $pb$::Arena;
+          friend $pbi$::PrivateAccess;
           template <typename T>
           friend class $pb$::Arena::InternalHelper;
           using InternalArenaConstructable_ = void;
@@ -5628,7 +5630,8 @@ void MessageGenerator::GenerateByteSizeV2(io::Printer* p) {
 }
 
 void MessageGenerator::EmitCheckAndSerializeField(const FieldDescriptor* field,
-                                                  io::Printer* p) const {
+                                                  io::Printer* p,
+                                                  bool try_batch) const {
   absl::AnyInvocable<void()> emit_body = [&] {
   };
   if (!HasHasbit(field, options_)) {

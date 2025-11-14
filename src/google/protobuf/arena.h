@@ -21,7 +21,6 @@
 #include <vector>
 
 #include "absl/base/macros.h"
-#include "absl/meta/type_traits.h"
 #include "google/protobuf/internal_visibility.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.

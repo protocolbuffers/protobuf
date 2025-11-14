@@ -16,14 +16,14 @@ class FieldMask(object):
   __slots__ = ()
 
   def ToJsonString(self):
-    """Converts FieldMask to string according to proto3 JSON spec."""
+    """Converts FieldMask to string according to ProtoJSON spec."""
     camelcase_paths = []
     for path in self.paths:
       camelcase_paths.append(_SnakeCaseToCamelCase(path))
     return ','.join(camelcase_paths)
 
   def FromJsonString(self, value):
-    """Converts string to FieldMask according to proto3 JSON spec."""
+    """Converts string to FieldMask according to ProtoJSON spec."""
     if not isinstance(value, str):
       raise ValueError('FieldMask JSON value not a string: {!r}'.format(value))
     self.Clear()

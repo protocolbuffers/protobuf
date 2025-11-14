@@ -137,6 +137,14 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
   DeallocNode(node);
 }
 
+void UntypedMapBase::DeleteList(NodeBase* list) {
+  while (list != nullptr) {
+    NodeBase* n = list;
+    list = list->next;
+    DeleteNode(n);
+  }
+}
+
 void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
   ABSL_DCHECK_NE(num_buckets_, kGlobalEmptyTableSize);
   ABSL_DCHECK_EQ(arena, this->arena());

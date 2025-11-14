@@ -26,6 +26,7 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include "absl/types/span.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -364,26 +365,36 @@ absl::Status ValidateMergedFeatures(const FeatureSet& features) {
 
 void ValidateSingleFeatureLifetimes(
     Edition edition, absl::string_view full_name,
-    const FieldOptions::FeatureSupport& support,
+    const FieldOptions::FeatureSupport& feature_support,
     FeatureResolver::ValidationResults& results) {
   // Skip fields that don't have feature support specified.
-  if (&support == &FieldOptions::FeatureSupport::default_instance()) return;
-
-  if (edition < support.edition_introduced()) {
-    results.errors.emplace_back(
-        absl::StrCat("Feature ", full_name, " wasn't introduced until edition ",
-                     support.edition_introduced(),
-                     " and can't be used in edition ", edition));
+  if (&feature_support == &FieldOptions::FeatureSupport::default_instance())
+    return;
+  // safe guarding new features that aren't available yet
+  if (edition < feature_support.edition_introduced()) {
+    std::string error_message = absl::Substitute(
+        "$0 wasn't introduced until edition $1 and can't be used in "
+        "edition $2",
+        full_name, feature_support.edition_introduced(), edition);
+    results.errors.emplace_back(std::move(error_message));
   }
-  if (support.has_edition_removed() && edition >= support.edition_removed()) {
-    results.errors.emplace_back(absl::StrCat(
-        "Feature ", full_name, " has been removed in edition ",
-        support.edition_removed(), " and can't be used in edition ", edition));
-  } else if (support.has_edition_deprecated() &&
-             edition >= support.edition_deprecated()) {
-    results.warnings.emplace_back(absl::StrCat(
-        "Feature ", full_name, " has been deprecated in edition ",
-        support.edition_deprecated(), ": ", support.deprecation_warning()));
+  if (feature_support.has_edition_removed() &&
+      edition >= feature_support.edition_removed()) {
+    std::string error_message = absl::Substitute(
+        "$0 has been removed in edition $1$2", full_name,
+        feature_support.edition_removed(),
+        (feature_support.has_removal_error())
+            ? absl::StrCat(": ", feature_support.removal_error())
+            : "");
+    results.errors.emplace_back(std::move(error_message));
+  } else if (feature_support.has_edition_deprecated() &&
+             edition >= feature_support.edition_deprecated()) {
+    std::string error_message = absl::Substitute(
+        "$0 has been deprecated in edition "
+        "$1: $2",
+        full_name, feature_support.edition_deprecated(),
+        feature_support.deprecation_warning());
+    results.warnings.emplace_back(std::move(error_message));
   }
 }
 

@@ -13,15 +13,12 @@ import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
 
-import com.google.protobuf.Utf8.UnpairedSurrogateException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Encodes and writes protocol message fields.
@@ -35,7 +32,6 @@ import java.util.logging.Logger;
  * <p>This class is totally unsynchronized.
  */
 public abstract class CodedOutputStream extends ByteOutput {
-  private static final Logger logger = Logger.getLogger(CodedOutputStream.class.getName());
   private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS = UnsafeUtil.hasUnsafeArrayOperations();
 
   /** Used to adapt to the experimental {@link Writer} interface. */
@@ -805,16 +801,7 @@ public abstract class CodedOutputStream extends ByteOutput {
 
   /** Compute the number of bytes that would be needed to encode a {@code string} field. */
   public static int computeStringSizeNoTag(final String value) {
-    int length;
-    try {
-      length = Utf8.encodedLength(value);
-    } catch (UnpairedSurrogateException e) {
-      // TODO: Consider using nio Charset methods instead.
-      final byte[] bytes = value.getBytes(Internal.UTF_8);
-      length = bytes.length;
-    }
-
-    return computeLengthDelimitedFieldSize(length);
+    return computeLengthDelimitedFieldSize(Utf8.encodedLength(value));
   }
 
   /** Compute the number of bytes that would be needed to encode a {@code bytes} field. */
@@ -956,26 +943,6 @@ public abstract class CodedOutputStream extends ByteOutput {
   /** Write a {@code bytes} field to the stream. Visible for testing. */
   abstract void writeByteArrayNoTag(final byte[] value, final int offset, final int length)
       throws IOException;
-
-  final void inefficientWriteStringNoTag(String value, UnpairedSurrogateException cause)
-      throws IOException {
-    logger.log(
-        Level.WARNING,
-        "Converting ill-formed UTF-16. Your Protocol Buffer will not round trip correctly!",
-        cause);
-
-    // Unfortunately there does not appear to be any way to tell Java to encode
-    // UTF-8 directly into our buffer, so we have to let it create its own byte
-    // array and then copy.
-    // TODO: Consider using nio Charset methods instead.
-    final byte[] bytes = value.getBytes(Internal.UTF_8);
-    try {
-      writeUInt32NoTag(bytes.length);
-      writeLazy(bytes, 0, bytes.length);
-    } catch (IndexOutOfBoundsException e) {
-      throw new OutOfSpaceException(e);
-    }
-  }
 
   // =================================================================
 
@@ -1407,12 +1374,6 @@ public abstract class CodedOutputStream extends ByteOutput {
           writeUInt32NoTag(length);
           position = Utf8.encode(value, buffer, position, spaceLeft());
         }
-      } catch (UnpairedSurrogateException e) {
-        // Roll back the change - we fall back to inefficient path.
-        position = oldPosition;
-
-        // TODO: We should throw an IOException here instead.
-        inefficientWriteStringNoTag(value, e);
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);
       }
@@ -1730,12 +1691,6 @@ public abstract class CodedOutputStream extends ByteOutput {
           writeUInt32NoTag(length);
           encode(value);
         }
-      } catch (UnpairedSurrogateException e) {
-        // Roll back the change and convert to an IOException.
-        Java8Compatibility.position(buffer, startPos);
-
-        // TODO: We should throw an IOException here instead.
-        inefficientWriteStringNoTag(value, e);
       } catch (IllegalArgumentException e) {
         // Thrown by buffer.position() if out of range.
         throw new OutOfSpaceException(e);
@@ -2089,13 +2044,6 @@ public abstract class CodedOutputStream extends ByteOutput {
           Utf8.encodeUtf8(value, buffer);
           position += length;
         }
-      } catch (UnpairedSurrogateException e) {
-        // Roll back the change and convert to an IOException.
-        position = prevPos;
-        repositionBuffer(position);
-
-        // TODO: We should throw an IOException here instead.
-        inefficientWriteStringNoTag(value, e);
       } catch (IllegalArgumentException e) {
         // Thrown by buffer.position() if out of range.
         throw new OutOfSpaceException(e);
@@ -2532,13 +2480,6 @@ public abstract class CodedOutputStream extends ByteOutput {
           position = Utf8.encode(value, buffer, position, length);
           totalBytesWritten += length;
         }
-      } catch (UnpairedSurrogateException e) {
-        // Roll back the change and convert to an IOException.
-        totalBytesWritten -= position - oldPosition;
-        position = oldPosition;
-
-        // TODO: We should throw an IOException here instead.
-        inefficientWriteStringNoTag(value, e);
       } catch (IndexOutOfBoundsException e) {
         throw new OutOfSpaceException(e);
       }
@@ -2786,7 +2727,6 @@ public abstract class CodedOutputStream extends ByteOutput {
 
     @Override
     public void writeStringNoTag(String value) throws IOException {
-      try {
         // UTF-8 byte length of the string is at least its UTF-16 code unit length (value.length()),
         // and at most 3 times of it. We take advantage of this in both branches below.
         final int maxLength = value.length() * Utf8.MAX_BYTES_PER_CHAR;
@@ -2832,18 +2772,9 @@ public abstract class CodedOutputStream extends ByteOutput {
             bufferUInt32NoTag(length);
             position = Utf8.encode(value, buffer, position, length);
           }
-          totalBytesWritten += length;
-        } catch (UnpairedSurrogateException e) {
-          // Be extra careful and restore the original position for retrying the write with the
-          // less efficient path.
-          totalBytesWritten -= position - oldPosition;
-          position = oldPosition;
-          throw e;
+        totalBytesWritten += length;
         } catch (ArrayIndexOutOfBoundsException e) {
-          throw new OutOfSpaceException(e);
-        }
-      } catch (UnpairedSurrogateException e) {
-        inefficientWriteStringNoTag(value, e);
+        throw new OutOfSpaceException(e);
       }
     }
 

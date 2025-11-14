@@ -92,7 +92,7 @@ static void AddFile(google::protobuf::FileDescriptorProto& file, upb::DefPool* p
     const char* buf =
         google_protobuf_FileDescriptorProto_serialize(upb_proto, arena.ptr(), &size);
     google::protobuf::FileDescriptorProto google_proto;
-    bool ok = google_proto.ParseFromArray(buf, size);
+    bool ok = google_proto.ParseFromString(absl::string_view(buf, size));
     ASSERT_TRUE(ok);
     EXPECT_THAT(google_proto, EqualsProtoTreatNansAsEqual(normalized_file));
   } else {

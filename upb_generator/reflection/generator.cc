@@ -84,7 +84,7 @@ class ReflectionGenerator : public google::protobuf::compiler::CodeGenerator {
     return google::protobuf::Edition::EDITION_PROTO2;
   }
   google::protobuf::Edition GetMaximumEdition() const override {
-    return google::protobuf::Edition::EDITION_2023;
+    return google::protobuf::Edition::EDITION_2024;
   }
 };
 

@@ -7,13 +7,16 @@
 
 #include "upb/wire/eps_copy_input_stream.h"
 
+// Must be last.
+#include "upb/port/def.inc"
+
 static const char* _upb_EpsCopyInputStream_NoOpCallback(
     upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
   return new_start;
 }
 
-const char* _upb_EpsCopyInputStream_IsDoneFallbackNoCallback(
+const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback)(
     upb_EpsCopyInputStream* e, const char* ptr, int overrun) {
-  return _upb_EpsCopyInputStream_IsDoneFallbackInline(
+  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
       e, ptr, overrun, _upb_EpsCopyInputStream_NoOpCallback);
 }

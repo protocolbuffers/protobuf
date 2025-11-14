@@ -757,6 +757,9 @@ const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
   return ptr;
 }
 
+template const char* EpsCopyInputStream::NextBuffer<false>(int, int);
+template const char* EpsCopyInputStream::NextBuffer<true>(int, int);
+
 template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<false>(
     int, int);
 template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<true>(

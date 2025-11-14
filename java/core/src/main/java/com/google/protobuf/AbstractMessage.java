@@ -100,7 +100,8 @@ public abstract class AbstractMessage
     MessageReflection.writeMessageTo(this, getAllFields(), output, false);
   }
 
-  protected int memoizedSize = -1;
+  protected
+  int memoizedSize = -1;
 
   @Override
   int getMemoizedSerializedSize() {

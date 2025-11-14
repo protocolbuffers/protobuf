@@ -727,8 +727,6 @@ public final class Descriptors {
               .setPackage(packageName)
               .addMessageType(message.toProto())
               .build());
-
-      tables.addSymbol(message);
     }
 
     /** Create a placeholder FileDescriptor for an EnumDescriptor. */
@@ -743,8 +741,6 @@ public final class Descriptors {
               .setPackage(packageName)
               .addEnumType(enm.toProto())
               .build());
-
-      tables.addSymbol(enm);
     }
 
     public void resolveAllFeaturesImmutable() {
@@ -3725,7 +3721,8 @@ public final class Descriptors {
     }
 
     private OneofDescriptor(
-        final OneofDescriptorProto proto, final Descriptor parent, final int index) {
+        final OneofDescriptorProto proto, final Descriptor parent, final int index)
+        throws DescriptorValidationException {
       this.proto = proto;
       fullName = computeFullName(null, parent, proto.getName());
       this.index = index;
