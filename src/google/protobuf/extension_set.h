@@ -625,6 +625,21 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
 #endif
 
+  // Moves an extension from one ExtensionSet to another.
+  //
+  // If the source extension does not exist, then destination extension is
+  // freed (non-arena allocated) or cleared (arena allocated).
+  //
+  // If the destination extension already exists, it is overwritten.
+  // If the destination extension does not exist, it is created.
+  void MoveExtension(Arena* arena, int dst_number, ExtensionSet& src,
+                     int src_number);
+
+  bool IsLazy(int number) {
+    Extension* extension = FindOrNull(number);
+    return extension != nullptr && extension->is_lazy;
+  }
+
  private:
   template <typename Type>
   friend class PrimitiveTypeTraits;
