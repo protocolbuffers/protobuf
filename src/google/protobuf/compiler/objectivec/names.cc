@@ -267,8 +267,7 @@ std::string UnderscoresToCamelCase(absl::string_view input,
   bool last_char_was_number = false;
   bool last_char_was_lower = false;
   bool last_char_was_upper = false;
-  for (int i = 0; i < input.size(); i++) {
-    char c = input[i];
+  for (char c : input) {
     if (absl::ascii_isdigit(c)) {
       if (!last_char_was_number) {
         values.push_back(current);
@@ -1293,10 +1292,9 @@ bool ValidateObjCClassPrefix(
   if (!prefix.empty() && have_expected_prefix_file) {
     // For a non empty prefix, look for any other package that uses the prefix.
     std::string other_package_for_prefix;
-    for (auto i = expected_package_prefixes.begin();
-         i != expected_package_prefixes.end(); ++i) {
-      if (i->second == prefix) {
-        other_package_for_prefix = i->first;
+    for (const auto & expected_package_prefixe : expected_package_prefixes) {
+      if (expected_package_prefixe.second == prefix) {
+        other_package_for_prefix = expected_package_prefixe.first;
         // Stop on the first real package listing, if it was a no_package file
         // specific entry, keep looking to try and find a package one.
         if (!absl::StartsWith(other_package_for_prefix, kNoPackagePrefix)) {

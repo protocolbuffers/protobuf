@@ -239,18 +239,18 @@ class DiskSourceTreeTest : public testing::Test {
     dirnames_.push_back(
         absl::StrCat(TestTempDir(), "/test_proto2_import_path_2"));
 
-    for (int i = 0; i < dirnames_.size(); i++) {
-      if (FileExists(dirnames_[i])) {
-        File::DeleteRecursively(dirnames_[i], NULL, NULL);
+    for (const auto & dirname : dirnames_) {
+      if (FileExists(dirname)) {
+        File::DeleteRecursively(dirname, NULL, NULL);
       }
-      ABSL_CHECK_OK(File::CreateDir(dirnames_[i], 0777));
+      ABSL_CHECK_OK(File::CreateDir(dirname, 0777));
     }
   }
 
   void TearDown() override {
-    for (int i = 0; i < dirnames_.size(); i++) {
-      if (FileExists(dirnames_[i])) {
-        File::DeleteRecursively(dirnames_[i], NULL, NULL);
+    for (const auto & dirname : dirnames_) {
+      if (FileExists(dirname)) {
+        File::DeleteRecursively(dirname, NULL, NULL);
       }
     }
   }

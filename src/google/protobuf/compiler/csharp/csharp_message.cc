@@ -553,9 +553,9 @@ void MessageGenerator::GenerateMessageSerializationMethods(
 void MessageGenerator::GenerateWriteToBody(io::Printer* printer,
                                            bool use_write_context) {
   // Serialize all the fields
-  for (int i = 0; i < fields_by_number().size(); i++) {
+  for (auto i : fields_by_number()) {
     std::unique_ptr<FieldGeneratorBase> generator(
-        CreateFieldGeneratorInternal(fields_by_number()[i]));
+        CreateFieldGeneratorInternal(i));
     generator->GenerateSerializationCode(printer, use_write_context);
   }
 
@@ -699,8 +699,7 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer,
         "$maybe_ref_input$);\n"
         "  break;\n");
   }
-  for (int i = 0; i < fields_by_number().size(); i++) {
-    const FieldDescriptor* field = fields_by_number()[i];
+  for (auto field : fields_by_number()) {
     internal::WireFormatLite::WireType wt =
         internal::WireFormat::WireTypeForFieldType(field->type());
     uint32_t tag = internal::WireFormatLite::MakeTag(field->number(), wt);
@@ -739,8 +738,7 @@ int MessageGenerator::GetPresenceIndex(const FieldDescriptor* descriptor) {
   }
 
   int index = 0;
-  for (int i = 0; i < fields_by_number().size(); i++) {
-    const FieldDescriptor* field = fields_by_number()[i];
+  for (auto field : fields_by_number()) {
     if (field == descriptor) {
       return index;
     }

@@ -83,21 +83,21 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
 
-  for (int i = 0; i < fields.size(); i++) {
-    if (fields[i]->is_extension()) {
-      extensions->insert(fields[i]);
+  for (auto & field : fields) {
+    if (field->is_extension()) {
+      extensions->insert(field);
     }
 
-    if (GetJavaType(fields[i]) == JAVATYPE_MESSAGE) {
-      if (fields[i]->is_repeated()) {
-        int size = reflection->FieldSize(message, fields[i]);
+    if (GetJavaType(field) == JAVATYPE_MESSAGE) {
+      if (field->is_repeated()) {
+        int size = reflection->FieldSize(message, field);
         for (int j = 0; j < size; j++) {
           const Message& sub_message =
-              reflection->GetRepeatedMessage(message, fields[i], j);
+              reflection->GetRepeatedMessage(message, field, j);
           if (!CollectExtensions(sub_message, extensions)) return false;
         }
       } else {
-        const Message& sub_message = reflection->GetMessage(message, fields[i]);
+        const Message& sub_message = reflection->GetMessage(message, field);
         if (!CollectExtensions(sub_message, extensions)) return false;
       }
     }

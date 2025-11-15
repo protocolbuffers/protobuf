@@ -988,33 +988,33 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     }
 
     // Generate classes.
-    for (size_t i = 0; i < message_generators_.size(); ++i) {
+    for (const auto & message_generator : message_generators_) {
       p->Emit(R"(
         $hrule_thick$
       )");
-      message_generators_[i]->GenerateClassMethods(p);
+      message_generator->GenerateClassMethods(p);
     }
 
     if (HasGenericServices(file_, options_)) {
       // Generate services.
-      for (size_t i = 0; i < service_generators_.size(); ++i) {
+      for (const auto & service_generator : service_generators_) {
         p->Emit(R"(
           $hrule_thick$
         )");
-        service_generators_[i]->GenerateImplementation(p);
+        service_generator->GenerateImplementation(p);
       }
     }
 
     // Define extensions.
     const auto is_lazily_init = IsLazilyInitializedFile(file_->name());
-    for (size_t i = 0; i < extension_generators_.size(); ++i) {
-      extension_generators_[i]->GenerateDefinition(p);
+    for (const auto & extension_generator : extension_generators_) {
+      extension_generator->GenerateDefinition(p);
       if (!is_lazily_init) {
         for (auto priority : {kInitPriority101, kInitPriority102}) {
-          if (extension_generators_[i]->WillGenerateRegistration(priority)) {
+          if (extension_generator->WillGenerateRegistration(priority)) {
             static_initializers_[priority].push_back(
-                [this, i, priority](auto* p) {
-                  extension_generators_[i]->GenerateRegistration(p, priority);
+                [this, &extension_generator, priority](auto* p) {
+                  extension_generator->GenerateRegistration(p, priority);
                 });
           }
         }
@@ -1028,8 +1028,8 @@ void FileGenerator::GenerateSource(io::Printer* p) {
 
   {
     NamespaceOpener proto_ns(ProtobufNamespace(options_), p);
-    for (size_t i = 0; i < message_generators_.size(); ++i) {
-      message_generators_[i]->GenerateSourceInProto2Namespace(p);
+    for (const auto & message_generator : message_generators_) {
+      message_generator->GenerateSourceInProto2Namespace(p);
     }
   }
 
@@ -1196,8 +1196,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
         {
             {"offsets",
              [&] {
-               for (size_t i = 0; i < message_generators_.size(); ++i) {
-                 offsets.push_back(message_generators_[i]->GenerateOffsets(p));
+               for (const auto & message_generator : message_generators_) {
+                 offsets.push_back(message_generator->GenerateOffsets(p));
                }
              }},
             {"schemas",
@@ -1822,8 +1822,8 @@ void FileGenerator::GenerateMessageDefinitions(io::Printer* p) {
 }
 
 void FileGenerator::GenerateEnumDefinitions(io::Printer* p) {
-  for (size_t i = 0; i < enum_generators_.size(); ++i) {
-    enum_generators_[i]->GenerateDefinition(p);
+  for (const auto & enum_generator : enum_generators_) {
+    enum_generator->GenerateDefinition(p);
   }
 }
 
@@ -1832,11 +1832,11 @@ void FileGenerator::GenerateServiceDefinitions(io::Printer* p) {
     return;
   }
 
-  for (size_t i = 0; i < service_generators_.size(); ++i) {
+  for (const auto & service_generator : service_generators_) {
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
-    service_generators_[i]->GenerateDeclarations(p);
+    service_generator->GenerateDeclarations(p);
   }
 
   p->Emit(R"cc(
@@ -1865,11 +1865,11 @@ void FileGenerator::GenerateInlineFunctionDefinitions(io::Printer* p) {
       #endif  // __GNUC__
   )");
 
-  for (size_t i = 0; i < message_generators_.size(); ++i) {
+  for (const auto & message_generator : message_generators_) {
     p->Emit(R"cc(
       $hrule_thin$
     )cc");
-    message_generators_[i]->GenerateInlineMethods(p);
+    message_generator->GenerateInlineMethods(p);
   }
 
   p->Emit(R"(

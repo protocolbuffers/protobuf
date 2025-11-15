@@ -85,8 +85,7 @@ ParseFunctionGenerator::BuildFieldOptions(
     absl::Span<const int> inlined_string_indices) {
   std::vector<TailCallTableInfo::FieldOptions> fields;
   fields.reserve(ordered_fields.size());
-  for (size_t i = 0; i < ordered_fields.size(); ++i) {
-    auto* field = ordered_fields[i];
+  for (auto field : ordered_fields) {
     ABSL_CHECK_GE(field->index(), 0);
     size_t index = static_cast<size_t>(field->index());
     fields.push_back({
