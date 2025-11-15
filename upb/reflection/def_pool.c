@@ -7,25 +7,35 @@
 
 #include "upb/reflection/internal/def_pool.h"
 
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "upb/base/status.h"
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/file.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/file_def.h"
 #include "upb/reflection/internal/def_builder.h"
-#include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/internal/enum_value_def.h"
-#include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/internal/file_def.h"
 #include "upb/reflection/internal/message_def.h"
-#include "upb/reflection/internal/service_def.h"
 #include "upb/reflection/internal/upb_edition_defaults.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb/wire/decode.h"
 
 struct upb_DefPool {
   upb_Arena* arena;

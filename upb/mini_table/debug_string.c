@@ -154,9 +154,9 @@ static void upb_MiniTablePrinter_PrintField(upb_MiniTablePrinter* p,
     upb_MiniTablePrinter_Printf(p, " (no explicit presence)\n");
   }
 
-  if (field->UPB_PRIVATE(submsg_index) != kUpb_NoSub) {
-    upb_MiniTablePrinter_Printf(p, "      .submsg_index = %d\n",
-                                field->UPB_PRIVATE(submsg_index));
+  if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
+    upb_MiniTablePrinter_Printf(p, "      .submsg_ofs = %d\n",
+                                field->UPB_PRIVATE(submsg_ofs));
   }
   upb_MiniTablePrinter_Printf(p, "      .type = %d\n",
                               field->UPB_PRIVATE(descriptortype));
@@ -202,16 +202,14 @@ static void upb_MiniTablePrinter_PrintField(upb_MiniTablePrinter* p,
 
   upb_MiniTablePrinter_Printf(p, ")\n");
 
-  if (field->UPB_PRIVATE(submsg_index) != kUpb_NoSub) {
+  if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
     if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
-      int id = upb_MiniTablePrinter_GetIdForRef(
-          p, mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
-                 .UPB_PRIVATE(submsg));
+      int id =
+          upb_MiniTablePrinter_GetIdForRef(p, upb_MiniTable_SubMessage(field));
       upb_MiniTablePrinter_Printf(p, "      .submsg = MiniTable#%d\n", id);
     } else {
       int id = upb_MiniTablePrinter_GetIdForRef(
-          p, mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
-                 .UPB_PRIVATE(subenum));
+          p, upb_MiniTable_GetSubEnumTable(field));
       upb_MiniTablePrinter_Printf(p, "      .subenum = MiniTableEnum#%d\n", id);
     }
   }
@@ -290,15 +288,11 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
 
   for (int i = 0; i < mini_table->UPB_PRIVATE(field_count); i++) {
     const upb_MiniTableField* field = &mini_table->UPB_PRIVATE(fields)[i];
-    if (field->UPB_PRIVATE(submsg_index) == kUpb_NoSub) continue;
+    if (field->UPB_PRIVATE(submsg_ofs) == kUpb_NoSub) continue;
     if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
-      upb_MiniTablePrinter_PrintMessage(
-          p, mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
-                 .UPB_PRIVATE(submsg));
+      upb_MiniTablePrinter_PrintMessage(p, upb_MiniTable_SubMessage(field));
     } else {
-      upb_MiniTablePrinter_PrintEnum(
-          p, mini_table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)]
-                 .UPB_PRIVATE(subenum));
+      upb_MiniTablePrinter_PrintEnum(p, upb_MiniTable_GetSubEnumTable(field));
     }
   }
 }

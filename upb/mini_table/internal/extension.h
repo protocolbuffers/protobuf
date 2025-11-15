@@ -22,8 +22,8 @@ struct upb_MiniTableExtension {
   // Do not move this field. We need to be able to alias pointers.
   struct upb_MiniTableField UPB_PRIVATE(field);
 
-  const struct upb_MiniTable* UPB_PRIVATE(extendee);
   union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
+  const struct upb_MiniTable* UPB_PRIVATE(extendee);
 };
 
 #ifdef __cplusplus

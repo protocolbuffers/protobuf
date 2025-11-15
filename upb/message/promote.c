@@ -200,8 +200,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_Message* message = NULL;
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
-  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
-             sub_mini_table);
+  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(field) == sub_mini_table);
   bool is_oneof = upb_MiniTableField_IsInOneof(field);
   if (!is_oneof || UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, field) ==
                        upb_MiniTableField_Number(field)) {
@@ -298,7 +297,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
 
   const upb_MiniTable* map_entry_mini_table =
-      upb_MiniTable_MapEntrySubMessage(mini_table, field);
+      upb_MiniTable_MapEntrySubMessage(field);
   UPB_ASSERT(upb_MiniTable_FieldCount(map_entry_mini_table) == 2);
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
@@ -315,8 +314,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Map* map = upb_Message_GetOrCreateMutableMap(msg, map_entry_mini_table,
                                                      field, arena);
     upb_Message* map_entry_message = ret.message;
-    bool insert_success = upb_Message_SetMapEntry(map, mini_table, field,
-                                                  map_entry_message, arena);
+    bool insert_success =
+        upb_Message_SetMapEntry(map, field, map_entry_message, arena);
     if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
     upb_StringView del =
         upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);

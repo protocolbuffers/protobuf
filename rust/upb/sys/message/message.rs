@@ -127,7 +127,6 @@ unsafe extern "C" {
     /// - `f` must be a message-typed field associated with `m`
     pub fn upb_Message_GetOrCreateMutableMessage(
         m: RawMessage,
-        mini_table: RawMiniTable,
         f: RawMiniTableField,
         arena: RawArena,
     ) -> Option<RawMessage>;

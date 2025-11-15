@@ -75,7 +75,7 @@ unsafe extern "C" {
     /// # Safety
     /// - `m` and `f` must be valid to deref
     /// - `f` must be a mesage or map typed field associated with `m`
-    pub fn upb_MiniTable_SubMessage(m: RawMiniTable, f: RawMiniTableField) -> RawMiniTable;
+    pub fn upb_MiniTable_SubMessage(f: RawMiniTableField) -> RawMiniTable;
 
     /// Builds a mini table from the data encoded in the buffer [data, len]. If
     /// any errors occur, returns null and sets a status message if status is

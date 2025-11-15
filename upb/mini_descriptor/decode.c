@@ -8,6 +8,7 @@
 #include "upb/mini_descriptor/decode.h"
 
 #include <inttypes.h>
+#include <stdalign.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -141,11 +142,13 @@ static void upb_MiniTable_SetTypeAndSub(upb_MtDecoder* d,
     field->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsPacked;
   }
 
+  // We initially set `submsg_ofs` to the index of the sub in the list of subs.
+  // Later, we'll update it to be a relative byte offset.
   if (type == kUpb_FieldType_Message || type == kUpb_FieldType_Group ||
       type == kUpb_FieldType_Enum) {
-    field->UPB_PRIVATE(submsg_index) = d->sub_count++;
+    field->UPB_PRIVATE(submsg_ofs) = d->sub_count++;
   } else {
-    field->UPB_PRIVATE(submsg_index) = kUpb_NoSub;
+    field->UPB_PRIVATE(submsg_ofs) = kUpb_NoSub;
   }
 }
 
@@ -431,18 +434,33 @@ static const char* upb_MtDecoder_ParseModifier(upb_MtDecoder* d,
   return ptr;
 }
 
-static void* upb_MtDecoder_CheckedMalloc(upb_MtDecoder* d, size_t size) {
-  void* ptr = upb_Arena_Malloc(d->arena, size);
-  upb_MdDecoder_CheckOutOfMemory(&d->base, ptr);
-  return ptr;
+size_t upb_MtDecoder_PtrSize(upb_MtDecoder* d) {
+  return d->platform == kUpb_MiniTablePlatform_32Bit ? 4 : 8;
 }
 
-static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d) {
-  size_t subs_bytes = sizeof(*d->table.UPB_PRIVATE(subs)) * d->sub_count;
-  upb_MiniTableSubInternal* subs =
-      subs_bytes ? upb_MtDecoder_CheckedMalloc(d, subs_bytes) : NULL;
-  if (subs) memset(subs, 0, subs_bytes);
-  d->table.UPB_PRIVATE(subs) = subs;
+static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
+                                       upb_MiniTableSubInternal* subs) {
+  // The `ofs` variable tracks byte offset between the current field and the
+  // current entry in the `subs` array. Whenever we move to the next entry in
+  // the `fields` array, the offset decreases by the size of the field, but
+  // whenever we move to the next entry in the `subs` array, the offset
+  // *increases* by the size of the entry in the `subs` array.
+  UPB_ASSERT((char*)subs >= (char*)d->fields);
+  size_t ofs = (char*)subs - (char*)d->fields;
+  uintptr_t ptr_size = upb_MtDecoder_PtrSize(d);
+  for (int i = 0; i < d->table.UPB_PRIVATE(field_count);
+       i++, ofs -= sizeof(upb_MiniTableField)) {
+    upb_MiniTableField* f = &d->fields[i];
+    if (f->UPB_PRIVATE(submsg_ofs) == kUpb_NoSub) continue;
+    size_t u32_ofs = ofs / kUpb_SubmsgOffsetBytes;
+    UPB_ASSERT((ofs % 4) == 0);
+    UPB_ASSERT((i * sizeof(upb_MiniTableField) + ofs) % ptr_size == 0);
+    if (u32_ofs > UINT16_MAX) {
+      upb_MdDecoder_ErrorJmp(&d->base, "Submessage offset overflow");
+    }
+    f->UPB_PRIVATE(submsg_ofs) = u32_ofs;
+    ofs += ptr_size;
+  }
 }
 
 static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
@@ -511,23 +529,42 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
 
 static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
                                        size_t len) {
+  const size_t bytes_per_field =
+      sizeof(upb_MiniTableField) + sizeof(upb_MiniTableSubInternal);
   // Buffer length is an upper bound on the number of fields. We will return
   // what we don't use.
-  if (SIZE_MAX / sizeof(*d->fields) < len) {
-    upb_MdDecoder_ErrorJmp(&d->base, "Out of memory");
+  if ((SIZE_MAX - 4) / bytes_per_field < len) {
+    upb_MdDecoder_ErrorJmp(&d->base, "MiniDescriptor is too large");
   }
-  d->fields = upb_Arena_Malloc(d->arena, sizeof(*d->fields) * len);
+  // Max size used per field is a upb_MiniTableField and a
+  // upb_MiniTableSubInternal.  There could also be up to 4 bytes of padding,
+  // since sizeof(upb_MiniTableField) == 12 and
+  // alignof(upb_MiniTableSubInternal) == 8.
+  UPB_STATIC_ASSERT(UPB_ALIGN_OF(upb_MiniTableSubInternal) -
+                            UPB_ALIGN_OF(upb_MiniTableField) <=
+                        4,
+                    "alignment difference is too large");
+  const size_t initial_bytes = bytes_per_field * len + 4;
+  d->fields = upb_Arena_Malloc(d->arena, initial_bytes);
   upb_MdDecoder_CheckOutOfMemory(&d->base, d->fields);
 
   d->table.UPB_PRIVATE(field_count) = 0;
   d->table.UPB_PRIVATE(fields) = d->fields;
   upb_MtDecoder_Parse(d, data, len, d->fields, sizeof(*d->fields),
                       &d->table.UPB_PRIVATE(field_count));
+  size_t field_bytes =
+      UPB_ALIGN_UP(d->table.UPB_PRIVATE(field_count) * sizeof(*d->fields),
+                   upb_MtDecoder_PtrSize(d));
+  upb_MiniTableSubInternal* subs =
+      UPB_PTR_AT(d->fields, field_bytes, upb_MiniTableSubInternal);
+  memset(subs, 0, sizeof(upb_MiniTableSubInternal) * d->sub_count);
 
-  upb_Arena_ShrinkLast(d->arena, d->fields, sizeof(*d->fields) * len,
-                       sizeof(*d->fields) * d->table.UPB_PRIVATE(field_count));
-  d->table.UPB_PRIVATE(fields) = d->fields;
-  upb_MtDecoder_AllocateSubs(d);
+  // We now know how much space we actually used, so shrink the allocation to
+  // that size.
+  size_t final_bytes =
+      field_bytes + sizeof(upb_MiniTableSubInternal) * d->sub_count;
+  upb_Arena_ShrinkLast(d->arena, d->fields, initial_bytes, final_bytes);
+  upb_MtDecoder_AllocateSubs(d, subs);
 }
 
 static void upb_MtDecoder_CalculateAlignments(upb_MtDecoder* d) {
@@ -851,6 +888,12 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   f->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsExtension;
   f->UPB_PRIVATE(offset) = 0;
   f->presence = 0;
+
+  // In upb_MiniTableExtension, the `sub` member is a pointer-sized member that
+  // directly follows the `field` member.
+  f->UPB_PRIVATE(submsg_ofs) =
+      UPB_ALIGN_UP(sizeof(upb_MiniTableField), upb_MtDecoder_PtrSize(decoder)) /
+      kUpb_SubmsgOffsetBytes;
 
   if (extendee->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMessageSet) {
     // Extensions of MessageSet must be messages.
