@@ -185,12 +185,14 @@ upb/message/value.h
 upb/mini_descriptor/build_enum.h
 upb/mini_descriptor/decode.h
 upb/mini_descriptor/link.h
+upb/mini_table/compat.h
 upb/mini_table/debug_string.h
 upb/mini_table/enum.h
 upb/mini_table/extension.h
 upb/mini_table/extension_registry.h
 upb/mini_table/field.h
 upb/mini_table/file.h
+upb/mini_table/generated_registry.h
 upb/mini_table/message.h
 upb/mini_table/sub.h
 upb/port/atomic.h
