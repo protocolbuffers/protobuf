@@ -42,7 +42,7 @@ namespace Google.Protobuf.Reflection
         /// 
         /// This test uses TWO separate proto sets to measure both scenarios in a single execution:
         /// - unittest_deep_dependencies_cached: Example message (WITH caching - default)
-        /// - unittest_deep_dependencies_nocache: ExampleNoCache message (WITHOUT caching)
+        /// - unittest_deep_dependencies_notcached: ExampleNotcached message (WITHOUT caching)
         /// 
         /// Both proto sets have identical structure (WIDTH=6, DEPTH=6, 33 files total) but different
         /// package names, allowing accurate measurement of caching performance in one test run.
@@ -79,8 +79,8 @@ namespace Google.Protobuf.Reflection
 
             var stopwatchNoCache = Stopwatch.StartNew();
             // Force descriptor initialization by accessing it - this is when extension traversal happens
-            var descriptorNoCache = UnittestDeepDependenciesNocache.ExampleNoCache.Descriptor;
-            var exampleNoCache = new UnittestDeepDependenciesNocache.ExampleNoCache();
+            var descriptorNoCache = UnittestDeepDependenciesNotCached.ExampleNotCached.Descriptor;
+            var exampleNoCache = new UnittestDeepDependenciesNotCached.ExampleNotCached();
             stopwatchNoCache.Stop();
 
 #if DEBUG
