@@ -10,6 +10,11 @@ internal_ruby_proto_library(
     srcs = ["conformance.proto"],
 )
 
+internal_ruby_proto_library(
+    name = "test_messages_edition2023_ruby_proto",
+    srcs = ["test_messages_edition2023.proto"],
+)
+
 rb_binary(
     name = "conformance_ruby",
     testonly = True,
@@ -18,7 +23,7 @@ rb_binary(
     visibility = ["//ruby:__subpackages__"],
     deps = [
         ":conformance_ruby_proto",
-        "//conformance/test_protos:test_messages_edition2023_ruby_proto",
+        ":test_messages_edition2023_ruby_proto",
         "//ruby:conformance_editions_test_ruby_proto",
         "//ruby:conformance_test_ruby_proto",
         "//ruby:protobuf",
