@@ -36,7 +36,7 @@ BenchmarkDotNet.Artifacts/
 
 # Auto generated csharp classes
 UnittestDeepDependenciesCached/
-UnittestDeepDependenciesNocache/
+UnittestDeepDependenciesNotCached/
 
 # Reinstate generated code for test files
 !any_test.pb.*
