@@ -257,7 +257,7 @@ conformance_test(
         ":ruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 conformance_test(
@@ -271,7 +271,7 @@ conformance_test(
         ":ruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 conformance_test(
@@ -282,7 +282,7 @@ conformance_test(
         ":jruby_native": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 conformance_test(
@@ -296,7 +296,7 @@ conformance_test(
         ":jruby_ffi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    testee = "//conformance:conformance_ruby",
+    testee = "//conformance/ruby:conformance_ruby",
 )
 
 ################################################################################
