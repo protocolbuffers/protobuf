@@ -541,3 +541,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/aep-dev
     *   Extensions: 1264-1274
+
+1.  Thermo Fisher Scientific TEM Extensions
+
+    *   Website: https://www.thermofisher.com/
+    *   Extensions: 1275-1284
