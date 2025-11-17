@@ -163,7 +163,7 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTableField* field,
           ? UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(field)
           : 0;
   uint64_t submsg_index = upb_MiniTableField_IsSubMessage(field)
-                              ? field->UPB_PRIVATE(submsg_index)
+                              ? field->UPB_PRIVATE(submsg_ofs)
                               : 0;
 
   uint64_t presence;

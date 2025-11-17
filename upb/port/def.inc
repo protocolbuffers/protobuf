@@ -51,6 +51,24 @@
 #define UPB_HAS_ATTRIBUTE(x) 0
 #endif
 
+#if defined(__cplusplus) && defined(__has_cpp_attribute)
+// NOTE: requiring __cplusplus above should not be necessary, but
+// works around https://bugs.llvm.org/show_bug.cgi?id=23435.
+#define UPB_HAS_CPP_ATTRIBUTE(x) __has_cpp_attribute(x)
+#else
+#define UPB_HAS_CPP_ATTRIBUTE(x) 0
+#endif
+
+// Once in a while we want to use this macro in a C++-only portion of an
+// otherwise C-compatible header, so we copy and paste this from ABSL.
+#if UPB_HAS_CPP_ATTRIBUTE(deprecated) && UPB_HAS_CPP_ATTRIBUTE(clang::annotate)
+#define UPB_DEPRECATE_AND_INLINE() [[deprecated, clang::annotate("inline-me")]]
+#elif UPB_HAS_CPP_ATTRIBUTE(deprecated)
+#define UPB_DEPRECATE_AND_INLINE() [[deprecated]]
+#else
+#define UPB_DEPRECATE_AND_INLINE()
+#endif
+
 #ifdef __has_builtin
 #define UPB_HAS_BUILTIN(x) __has_builtin(x)
 #else
@@ -89,7 +107,7 @@ Error, UINTPTR_MAX is undefined
 /* If we always read/write as a consistent type to each address, this shouldn't
  * violate aliasing.
  */
-#define UPB_PTR_AT(msg, ofs, type) ((type *)((char *)(msg) + (ofs)))
+#define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
 // A flexible array member may have lower alignment requirements than the struct
 // overall - in that case, it can overlap with the trailing padding of the rest
@@ -586,7 +604,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()
 #define UPB_WEAK_PLACEHOLDER_MINITABLE(name)           \
   __attribute__((weak)) const upb_MiniTable name = {   \
-      .UPB_PRIVATE(subs) = NULL,                       \
       .UPB_PRIVATE(fields) = NULL,                     \
       .UPB_PRIVATE(size) = sizeof(struct upb_Message), \
       .UPB_PRIVATE(field_count) = 0,                   \
@@ -612,7 +629,6 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \
-      .UPB_PRIVATE(subs) = NULL,                                 \
       .UPB_PRIVATE(fields) = NULL,                               \
       .UPB_PRIVATE(size) = sizeof(struct upb_Message),           \
       .UPB_PRIVATE(field_count) = 0,                             \
@@ -632,7 +648,8 @@ Error, UINTPTR_MAX is undefined
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()
 #define UPB_WEAK_PLACEHOLDER_MINITABLE(name)
 #define UPB_WEAK_ALIAS(type, from, to) weak_alias_not_supported_on_this_platform
-#define UPB_STRONG_ALIAS(type, from, to) strong_alias_not_supported_on_this_platform
+#define UPB_STRONG_ALIAS(type, from, to) \
+  strong_alias_not_supported_on_this_platform
 #endif
 
 // Future versions of upb will include breaking changes to some APIs.
