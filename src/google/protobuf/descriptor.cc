@@ -78,8 +78,10 @@
 #include "google/protobuf/feature_resolver.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_feature_helper.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -6073,6 +6075,18 @@ void DescriptorBuilder::AddImportError(const FileDescriptorProto& proto,
            make_error);
 }
 
+static std::string SerializeToDeterministicString(const Message& message) {
+  std::string out;
+  {
+    // Extra block to ensure coded_stream gets closed before we return.
+    io::StringOutputStream string_stream(&out);
+    io::CodedOutputStream coded_stream(&string_stream);
+    coded_stream.SetSerializationDeterministic(true);
+    ABSL_CHECK(message.SerializeToCodedStream(&coded_stream));
+  }
+  return out;
+}
+
 PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
     Edition edition, const FileDescriptor* existing_file,
     const FileDescriptorProto& proto) {
@@ -6082,7 +6096,8 @@ PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
     existing_proto.set_syntax("proto2");
   }
 
-  return existing_proto.SerializeAsString() == proto.SerializeAsString();
+  return SerializeToDeterministicString(existing_proto) ==
+         SerializeToDeterministicString(proto);
 }
 
 // These PlanAllocationSize functions will gather into the FlatAllocator all the
