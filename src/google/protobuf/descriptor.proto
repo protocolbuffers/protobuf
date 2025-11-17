@@ -476,7 +476,18 @@ message FileOptions {
   // named by java_outer_classname.  However, the wrapper class will still be
   // generated to contain the file's getDescriptor() method as well as any
   // top-level extensions defined in the file.
-  optional bool java_multiple_files = 10 [default = false];
+  optional bool java_multiple_files = 10 [
+    default = false,
+    feature_support = {
+      edition_introduced: EDITION_PROTO2
+      edition_removed: EDITION_2024
+      removal_error: "The `java_multiple_files` behavior is enabled by "
+                     "default in editions 2024 and above. To disable it, "
+                     "you can set `features.(pb.java).nest_in_file_class = YES` "
+                     "on individual messages, enums, or services."
+
+    }
+  ];
 
   // This option does nothing.
   optional bool java_generate_equals_and_hash = 20 [deprecated=true];
