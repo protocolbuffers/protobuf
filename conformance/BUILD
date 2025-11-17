@@ -26,6 +26,7 @@ load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 
 exports_files([
     "bazel_conformance_test_runner.sh",
+    "conformance.proto",
     "failure_list_cpp.txt",
     "failure_list_csharp.txt",
     "failure_list_java.txt",

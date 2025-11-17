@@ -11,8 +11,10 @@ load("//bazel:proto_library.bzl", "proto_library")
 
 package(
     default_testonly = True,
-    default_visibility = ["//conformance:__pkg__"],
+    default_visibility = ["//conformance:__subpackages__"],
 )
+
+exports_files(["test_messages_edition2023.proto"])
 
 internal_csharp_proto_library(
     name = "test_messages_edition2023_csharp_proto",

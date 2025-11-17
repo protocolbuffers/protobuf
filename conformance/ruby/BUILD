@@ -3,16 +3,19 @@
 # which is meant to be externally accessible.
 
 load("@rules_ruby//ruby:defs.bzl", "rb_binary")
+load("//python:internal.bzl", "internal_copy_files")
 load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 internal_ruby_proto_library(
     name = "conformance_ruby_proto",
-    srcs = ["conformance.proto"],
+    testonly = True,
+    srcs = [":copied_conformance_proto"],
 )
 
 internal_ruby_proto_library(
     name = "test_messages_edition2023_ruby_proto",
-    srcs = ["test_messages_edition2023.proto"],
+    testonly = True,
+    srcs = [":copied_test_messages_edition2023_proto"],
 )
 
 rb_binary(
@@ -30,3 +33,19 @@ rb_binary(
     ],
 )
 
+# Source proto files need to be copied to the package directory
+# because `internal_ruby_proto_library` expects them to be there.
+
+internal_copy_files(
+    name = "copied_conformance_proto",
+    testonly = True,
+    srcs = ["//conformance:conformance.proto"],
+    strip_prefix = "conformance",
+)
+
+internal_copy_files(
+    name = "copied_test_messages_edition2023_proto",
+    testonly = True,
+    srcs = ["//conformance/test_protos:test_messages_edition2023.proto"],
+    strip_prefix = "conformance/test_protos",
+)
