@@ -16,6 +16,7 @@
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.hpp"
+#include "upb/message/internal/message.h"
 #include "upb/wire/test_util/wire_message.h"
 
 // Must be last.
@@ -48,9 +49,11 @@ upb_UnknownCompareResult CompareUnknownWithMaxDepth(
   std::string buf2 = ToBinaryPayloadWithLongVarints(uf2, min_tag_length,
                                                     min_val_varint_length);
   UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg1), buf1.data(),
-                                       buf1.size(), arena1.ptr(), nullptr);
+                                       buf1.size(), arena1.ptr(),
+                                       kUpb_AddUnknown_Copy);
   UPB_PRIVATE(_upb_Message_AddUnknown)(UPB_UPCAST(msg2), buf2.data(),
-                                       buf2.size(), arena2.ptr(), nullptr);
+                                       buf2.size(), arena2.ptr(),
+                                       kUpb_AddUnknown_Copy);
   return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
       UPB_UPCAST(msg1), UPB_UPCAST(msg2), max_depth);
 }

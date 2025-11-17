@@ -295,12 +295,6 @@ const char* _upb_Decoder_DecodeGroup(upb_Decoder* d, const char* ptr,
 }
 
 UPB_FORCEINLINE
-const char* _upb_Decoder_DecodeUnknownGroup(upb_Decoder* d, const char* ptr,
-                                            uint32_t number) {
-  return _upb_Decoder_DecodeGroup(d, ptr, NULL, NULL, number);
-}
-
-UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeKnownGroup(upb_Decoder* d, const char* ptr,
                                           upb_Message* submsg,
                                           const upb_MiniTableField* field) {
@@ -339,7 +333,7 @@ void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
   end = upb_Decoder_EncodeVarint32(val->uint64_val, end);
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(unknown_msg, buf, end - buf,
-                                            &d->arena, NULL)) {
+                                            &d->arena, kUpb_AddUnknown_Copy)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   }
 }
@@ -671,27 +665,9 @@ static const char* _upb_Decoder_DecodeToSubMessage(
 
 static const char* upb_Decoder_SkipField(upb_Decoder* d, const char* ptr,
                                          uint32_t tag) {
-  int field_number = tag >> 3;
-  int wire_type = tag & 7;
-  switch (wire_type) {
-    case kUpb_WireType_Varint: {
-      uint64_t val;
-      return _upb_Decoder_DecodeVarint(d, ptr, &val);
-    }
-    case kUpb_WireType_64Bit:
-      return ptr + 8;
-    case kUpb_WireType_32Bit:
-      return ptr + 4;
-    case kUpb_WireType_Delimited: {
-      uint32_t size;
-      ptr = upb_Decoder_DecodeSize(d, ptr, &size);
-      return ptr + size;
-    }
-    case kUpb_WireType_StartGroup:
-      return _upb_Decoder_DecodeUnknownGroup(d, ptr, field_number);
-    default:
-      _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  }
+  ptr = _upb_WireReader_SkipValue(ptr, tag, d->depth, &d->input);
+  if (!ptr) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  return ptr;
 }
 
 enum {
@@ -788,17 +764,19 @@ static const char* upb_Decoder_DecodeMessageSetItem(
       }
       case kMessageTag: {
         uint32_t size;
+        upb_StringView sv;
         ptr = upb_Decoder_DecodeSize(d, ptr, &size);
-        const char* data = upb_EpsCopyInputStream_GetInputPtr(&d->input, ptr);
-        ptr += size;
+        ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, ptr, size,
+                                                           &sv);
+        if (!ptr) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
         if (state_mask & kUpb_HavePayload) break;  // Ignore dup.
         state_mask |= kUpb_HavePayload;
         if (state_mask & kUpb_HaveId) {
-          upb_Decoder_AddMessageSetItem(d, msg, layout, type_id, data, size);
+          upb_Decoder_AddMessageSetItem(d, msg, layout, type_id, sv.data,
+                                        sv.size);
         } else {
           // Out of order, we must preserve the payload.
-          preserved.data = data;
-          preserved.size = size;
+          preserved = sv;
         }
         break;
       }
@@ -840,8 +818,7 @@ static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
                                                         const upb_MiniTable* t,
                                                         uint32_t field_number,
                                                         int wire_type) {
-  if (t == NULL) return &upb_Decoder_FieldNotFoundField;
-
+  UPB_ASSERT(t);
   const upb_MiniTableField* field =
       upb_MiniTable_FindFieldByNumber(t, field_number);
   if (field) return field;
@@ -1067,13 +1044,9 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   }
 }
 
-static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
-                                                   const char* ptr,
-                                                   upb_Message* msg,
-                                                   int field_number,
-                                                   int wire_type, wireval val) {
-  if (field_number == 0) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-
+static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
+                                               int field_number,
+                                               int wire_type) {
   // Since unknown fields are the uncommon case, we do a little extra work here
   // to walk backwards through the buffer to find the field start.  This frees
   // up a register in the fast paths (when the field is known), which leads to
@@ -1081,66 +1054,87 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
   // space, beyond the normal end of the input buffer.
   const char* start = ptr;
 
-  if (wire_type == kUpb_WireType_Delimited) ptr += val.size;
-  if (msg) {
-    switch (wire_type) {
-      case kUpb_WireType_Varint:
-      case kUpb_WireType_Delimited:
-        // Skip the last byte
-        start--;
-        // Skip bytes until we encounter the final byte of the tag varint.
-        while (start[-1] & 0x80) start--;
-        break;
-      case kUpb_WireType_32Bit:
-        start -= 4;
-        break;
-      case kUpb_WireType_64Bit:
-        start -= 8;
-        break;
-      default:
-        break;
-    }
-
-    assert(start == d->debug_valstart);
-    {
-      // The varint parser does not enforce that integers are encoded with their
-      // minimum size; for example the value 1 could be encoded with three
-      // bytes: 0x81, 0x80, 0x00. These unnecessary trailing zeroes mean that we
-      // cannot skip backwards by the minimum encoded size of the tag; and
-      // unlike the loop for delimited or varint fields, we can't stop at a
-      // sentinel value because anything can precede a tag. Instead, parse back
-      // one byte at a time until we read the same tag value that was parsed
-      // earlier.
-      uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
-      uint32_t seen = 0;
-      do {
-        start--;
-        seen <<= 7;
-        seen |= *start & 0x7f;
-      } while (seen != tag);
-    }
-    assert(start == d->debug_tagstart);
-
-    const char* input_start =
-        upb_EpsCopyInputStream_GetInputPtr(&d->input, start);
-    if (wire_type == kUpb_WireType_StartGroup) {
-      ptr = _upb_Decoder_DecodeUnknownGroup(d, ptr, field_number);
-    }
-    // Normally, bounds checks for fixed or varint fields are performed after
-    // the field is parsed; it's OK for the field to overrun the end of the
-    // buffer, because it'll just read into slop space. However, because this
-    // path reads bytes from the input buffer rather than the patch buffer,
-    // bounds checks are needed before adding the unknown field.
-    _upb_Decoder_IsDone(d, &ptr);
-    const char* input_ptr = upb_EpsCopyInputStream_GetInputPtr(&d->input, ptr);
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
-            msg, input_start, input_ptr - input_start, &d->arena,
-            d->input.aliasing ? d->input.buffer_start : NULL)) {
-      _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-    }
-  } else if (wire_type == kUpb_WireType_StartGroup) {
-    ptr = _upb_Decoder_DecodeUnknownGroup(d, ptr, field_number);
+  switch (wire_type) {
+    case kUpb_WireType_Varint:
+    case kUpb_WireType_Delimited:
+      // Skip the last byte
+      start--;
+      // Skip bytes until we encounter the final byte of the tag varint.
+      while (start[-1] & 0x80) start--;
+      break;
+    case kUpb_WireType_32Bit:
+      start -= 4;
+      break;
+    case kUpb_WireType_64Bit:
+      start -= 8;
+      break;
+    default:
+      break;
   }
+  assert(start == d->debug_valstart);
+
+  {
+    // The varint parser does not enforce that integers are encoded with their
+    // minimum size; for example the value 1 could be encoded with three
+    // bytes: 0x81, 0x80, 0x00. These unnecessary trailing zeroes mean that we
+    // cannot skip backwards by the minimum encoded size of the tag; and
+    // unlike the loop for delimited or varint fields, we can't stop at a
+    // sentinel value because anything can precede a tag. Instead, parse back
+    // one byte at a time until we read the same tag value that was parsed
+    // earlier.
+    uint32_t tag = ((uint32_t)field_number << 3) | wire_type;
+    uint32_t seen = 0;
+    do {
+      start--;
+      seen <<= 7;
+      seen |= *start & 0x7f;
+    } while (seen != tag);
+  }
+  assert(start == d->debug_tagstart);
+
+  return start;
+}
+
+static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
+                                                   const char* ptr,
+                                                   upb_Message* msg,
+                                                   int field_number,
+                                                   int wire_type, wireval val) {
+  if (field_number == 0) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+
+  const char* start =
+      _upb_Decoder_FindFieldStart(d, ptr, field_number, wire_type);
+
+  upb_EpsCopyInputStream_StartCapture(&d->input, start);
+
+  if (wire_type == kUpb_WireType_Delimited) {
+    ptr = upb_EpsCopyInputStream_Skip(&d->input, ptr, val.size);
+  } else if (wire_type == kUpb_WireType_StartGroup) {
+    ptr = UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, field_number << 3,
+                                                 d->depth, &d->input);
+  }
+
+  upb_StringView sv;
+  if (ptr == NULL || !upb_EpsCopyInputStream_EndCapture(&d->input, ptr, &sv)) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  }
+
+  upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
+  if (d->input.aliasing) {
+    if (sv.data != d->input.buffer_start) {
+      // If the data is not from the beginning of the input buffer, then we can
+      // safely attempt to coalesce this region with the previous one.
+      mode = kUpb_AddUnknown_AliasAllowMerge;
+    } else {
+      mode = kUpb_AddUnknown_Alias;
+    }
+  }
+
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, sv.data, sv.size, &d->arena,
+                                            mode)) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  }
+
   return ptr;
 }
 
@@ -1219,7 +1213,7 @@ const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
                                      upb_Message* msg, const upb_MiniTable* mt,
                                      uint64_t last_field_index, uint64_t data) {
 #ifdef UPB_ENABLE_FASTTABLE
-  if (mt && mt->UPB_PRIVATE(table_mask) != (unsigned char)-1 &&
+  if (mt->UPB_PRIVATE(table_mask) != (unsigned char)-1 &&
       !(d->options & kUpb_DecodeOption_DisableFastTable)) {
     intptr_t table = decode_totable(mt);
     ptr = upb_DecodeFast_Dispatch(d, ptr, msg, table, 0, 0);
@@ -1241,6 +1235,7 @@ UPB_NOINLINE
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* mt) {
+  UPB_ASSERT(mt);
   UPB_ASSERT(d->message_is_done == false);
 
   do {
