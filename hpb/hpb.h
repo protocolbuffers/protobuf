@@ -85,7 +85,7 @@ template <typename T>
 ABSL_DEPRECATED("Prefer the overload that returns hpb::StatusOr<T>")
 absl::StatusOr<T> Parse(absl::string_view bytes,
                         const ExtensionRegistry& extension_registry =
-                            ExtensionRegistry::empty_registry()) {
+                            ExtensionRegistry::generated_registry()) {
   return backend::Parse<T>(bytes, extension_registry);
 }
 #endif
