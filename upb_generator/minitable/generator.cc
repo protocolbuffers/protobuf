@@ -302,6 +302,28 @@ void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
   output("\n};\n");
 }
 
+void RegisterExtensions(Output& output, absl::string_view unique_name) {
+  output("UPB_LINKARR_DECLARE(upb_AllExts, const upb_MiniTableExtension);\n");
+  output("UPB_CONSTRUCTOR(upb_GeneratedRegistry_Constructor, $0) {\n",
+         unique_name);
+  // TODO Although we define this function as weak and only one
+  // copy will ever exist in any binary, every instance will get registered as a
+  // separate constructor call.  To avoid duplicate registrations, we use a
+  // static variable to ensure that the function is only executed once.
+  output("  static bool finished = false;\n");
+  output("  if (finished) return;\n");
+  output("  finished = true;\n");
+  output("  static UPB_PRIVATE(upb_GeneratedExtensionListEntry) entry = {\n");
+  output("    UPB_LINKARR_START(upb_AllExts),\n");
+  output("    UPB_LINKARR_STOP(upb_AllExts),\n");
+  output("    NULL\n");
+  output("  };\n");
+  output("  UPB_ASSERT(entry.next == NULL);\n");
+  output("  entry.next = UPB_PRIVATE(upb_generated_extension_list);\n");
+  output("  UPB_PRIVATE(upb_generated_extension_list) = &entry;\n");
+  output("}\n");
+}
+
 }  // namespace
 
 void WriteMiniTableHeader(const DefPoolPair& pools, upb::FileDefPtr file,
@@ -395,6 +417,10 @@ void WriteMiniTableSourceIncludes(upb::FileDefPtr file,
       "// Must be last.\n"
       "#include \"upb/port/def.inc\"\n"
       "\n");
+
+  output(
+      "extern const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* "
+      "UPB_PRIVATE(upb_generated_extension_list);\n");
 }
 
 void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
@@ -463,6 +489,12 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
         "\n");
   }
 
+  if (!extensions.empty()) {
+    RegisterExtensions(
+        output,
+        absl::StrCat(MiniTableExtensionVarName(file.name()), "_constructor"));
+  }
+
   output("const upb_MiniTableFile $0 = {\n", FileVarName(file));
   output("  $0,\n", messages.empty() ? "NULL" : kMessagesInit);
   output("  $0,\n", enums.empty() ? "NULL" : kEnumsInit);
@@ -508,12 +540,21 @@ void WriteMiniTableMultipleSources(
         context->Open(MultipleSourceFilename(file, e.full_name(), &i)));
     ABSL_CHECK(stream->WriteCord(absl::Cord(output.output())));
   }
-  for (const auto ext : extensions) {
+  if (!extensions.empty()) {
+    // All extensions can be written to a single file because none of the
+    // symbols are retain, and the only weak symbols exist for deduping.  It's
+    // most efficient to write them all together, especially with
+    // upb_RegisterExtensionList getting called once per weak definition.
     Output output;
     WriteMiniTableSourceIncludes(file, options, output, true);
-    WriteExtension(pools, ext, options, output);
+    for (const auto ext : extensions) {
+      WriteExtension(pools, ext, options, output);
+    }
+    RegisterExtensions(
+        output, absl::StrCat(MiniTableExtensionVarName(file.name()), "_", i + 1,
+                             "_constructor"));
     auto stream = absl::WrapUnique(
-        context->Open(MultipleSourceFilename(file, ext.full_name(), &i)));
+        context->Open(MultipleSourceFilename(file, "extensions", &i)));
     ABSL_CHECK(stream->WriteCord(absl::Cord(output.output())));
   }
 }
