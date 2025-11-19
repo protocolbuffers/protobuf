@@ -122,7 +122,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * The field type.
      *
      * Generated from protobuf field <code>.google.protobuf.Field.Kind kind = 1;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Field\Kind}
      */
     public function getKind()
     {
@@ -133,7 +133,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * The field type.
      *
      * Generated from protobuf field <code>.google.protobuf.Field.Kind kind = 1;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Field\Kind}
      * @return $this
      */
     public function setKind($var)
@@ -148,7 +148,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * The field cardinality.
      *
      * Generated from protobuf field <code>.google.protobuf.Field.Cardinality cardinality = 2;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Field\Cardinality}
      */
     public function getCardinality()
     {
@@ -159,7 +159,7 @@ class Field extends \Google\Protobuf\Internal\Message
      * The field cardinality.
      *
      * Generated from protobuf field <code>.google.protobuf.Field.Cardinality cardinality = 2;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Field\Cardinality}
      * @return $this
      */
     public function setCardinality($var)

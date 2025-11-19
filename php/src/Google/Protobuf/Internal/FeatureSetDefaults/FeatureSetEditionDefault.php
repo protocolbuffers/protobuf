@@ -58,7 +58,7 @@ class FeatureSetEditionDefault extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 3;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEdition()
     {
@@ -77,7 +77,7 @@ class FeatureSetEditionDefault extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 3;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
     public function setEdition($var)

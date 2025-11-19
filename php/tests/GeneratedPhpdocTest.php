@@ -1,7 +1,7 @@
 <?php
 
-require_once('test_base.php');
-require_once('test_util.php');
+require_once 'test_base.php';
+require_once 'test_util.php';
 
 use Foo\TestMessage;
 
@@ -20,6 +20,41 @@ class GeneratedPhpdocTest extends TestBase
         $doc = $class->getMethod('__construct')->getDocComment();
         $this->assertStringContains('@param array $data', $doc);
         $this->assertStringContains('@type int $optional_int32', $doc);
+    }
+
+    /**
+     * @dataProvider providePhpDocForEnum
+     */
+    public function testPhpDocForEnum($method, $enumClass)
+    {
+        $class = new ReflectionClass('Foo\TestMessage');
+        $doc = $class->getMethod($method)->getDocComment();
+        $this->assertStringContainsString(
+            sprintf('one of the values in {@see %s}', $enumClass), 
+            $doc
+        );
+    }
+
+    public function providePhpDocForEnum()
+    {
+        return [
+            ['getOptionalEnum', '\Foo\TestEnum'],
+            ['setOptionalEnum', '\Foo\TestEnum'],
+            ['getTrueOptionalEnum', '\Foo\TestEnum'],
+            ['setTrueOptionalEnum', '\Foo\TestEnum'],
+            ['getRepeatedEnum', '\Foo\TestEnum'],
+            ['setRepeatedEnum', '\Foo\TestEnum'],
+            ['getOneofEnum', '\Foo\TestEnum'],
+            ['setOneofEnum', '\Foo\TestEnum'],
+            ['getOptionalNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['setOptionalNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['getRepeatedNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['setRepeatedNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['getOptionalNestedEnum', '\Foo\TestMessage\NestedEnum'],
+            ['setOptionalNestedEnum', '\Foo\TestMessage\NestedEnum'],
+            ['getDeprecatedEnum', '\Foo\TestMessage\NestedEnum'],
+            ['setDeprecatedEnum', '\Foo\TestMessage\NestedEnum'],
+        ];
     }
 
     /**

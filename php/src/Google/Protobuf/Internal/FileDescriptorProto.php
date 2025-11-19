@@ -557,7 +557,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEdition()
     {
@@ -581,7 +581,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * developers should rely on the protoreflect APIs for their client language.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition = 14;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
     public function setEdition($var)

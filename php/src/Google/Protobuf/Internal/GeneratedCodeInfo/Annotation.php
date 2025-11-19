@@ -219,7 +219,7 @@ class Annotation extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\GeneratedCodeInfo\Annotation\Semantic}
      */
     public function getSemantic()
     {
@@ -238,7 +238,7 @@ class Annotation extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\GeneratedCodeInfo\Annotation\Semantic}
      * @return $this
      */
     public function setSemantic($var)

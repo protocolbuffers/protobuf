@@ -115,7 +115,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\MethodOptions\IdempotencyLevel}
      */
     public function getIdempotencyLevel()
     {
@@ -134,7 +134,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\MethodOptions\IdempotencyLevel}
      * @return $this
      */
     public function setIdempotencyLevel($var)
