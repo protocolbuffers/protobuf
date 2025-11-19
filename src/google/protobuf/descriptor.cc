@@ -5187,21 +5187,7 @@ DescriptorBuilder::DescriptorBuilder(
       error_collector_(error_collector),
       had_errors_(false),
       possible_undeclared_dependency_(nullptr),
-      undefine_resolved_name_("") {
-  // Ensure that any lazily loaded static initializers from the generated pool
-  // (e.g. from bootstrapped protos) are run before building any descriptors. We
-  // have to avoid registering these pre-main, because we need to ensure that
-  // the linker --gc-sections step can strip out the full runtime if it is
-  // unused.
-  [[maybe_unused]] static std::true_type lazy_register =
-      (internal::ExtensionSet::RegisterMessageExtension(
-           &FeatureSet::default_instance(), pb::cpp.number(),
-           FieldDescriptor::TYPE_MESSAGE, false, false,
-           &pb::CppFeatures::default_instance(),
-           nullptr,
-           internal::LazyAnnotation::kUndefined),
-       std::true_type{});
-}
+      undefine_resolved_name_("") {}
 
 DescriptorBuilder::~DescriptorBuilder() = default;
 
