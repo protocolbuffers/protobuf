@@ -1,0 +1,16 @@
+edition = "2023";
+
+package third_party_protobuf_util;
+
+option java_multiple_files = true;
+option java_outer_classname = "FieldMaskUtilTestProto";
+
+message TestTrimMessageRepeatedField {
+  message NestedMessage {
+    int32 f1 = 1;
+    int32 f2 = 2;
+  }
+  NestedMessage nested_message = 1;
+  repeated NestedMessage repeated_nested_message = 2;
+  NestedMessage nested_message2 = 3;
+}
