@@ -1585,7 +1585,7 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
           " * @param ^php_type^ $var one of the values in {@see "
           "^enum_class^}\n",
           "php_type", PhpSetterTypeName(field, options), "enum_class",
-          FullClassName(field->enum_type(), options));
+          absl::StrCat("\\", FullClassName(field->enum_type(), options)));
     } else {
       printer->Print(" * @param ^php_type^ $var\n", "php_type",
                      PhpSetterTypeName(field, options));
@@ -1601,7 +1601,7 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
           "^enum_class^}\n",
           "php_type", PhpGetterTypeName(field, options), "maybe_null",
           can_return_null ? "|null" : "", "enum_class",
-          FullClassName(field->enum_type(), options));
+          absl::StrCat("\\", FullClassName(field->enum_type(), options)));
     } else {
       printer->Print(" * @return ^php_type^^maybe_null^\n", "php_type",
                      PhpGetterTypeName(field, options), "maybe_null",
