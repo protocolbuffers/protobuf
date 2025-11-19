@@ -70,7 +70,6 @@ hpb::StatusOr<T> Parse(absl::string_view bytes, ParseOptions options) {
   return backend::Parse<T>(bytes, options);
 }
 
-#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_UPB
 template <typename T>
 ABSL_MUST_USE_RESULT bool Parse(internal::PtrOrRaw<T> message,
                                 absl::string_view bytes,
@@ -88,7 +87,6 @@ absl::StatusOr<T> Parse(absl::string_view bytes,
                             ExtensionRegistry::generated_registry()) {
   return backend::Parse<T>(bytes, extension_registry);
 }
-#endif
 
 template <typename T>
 absl::StatusOr<absl::string_view> Serialize(internal::PtrOrRaw<T> message,
