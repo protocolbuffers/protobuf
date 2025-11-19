@@ -205,7 +205,12 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
           context_->GetFieldGeneratorInfo(field)->capitalized_name},
          {"name",
           java::EscapeKotlinKeywords(java::GetKotlinPropertyName(
-              context_->GetFieldGeneratorInfo(field)->capitalized_name))}});
+              context_->GetFieldGeneratorInfo(field)->capitalized_name))},
+         io::Printer::Sub{
+             "getter_name",
+             absl::StrCat(context_->GetFieldGeneratorInfo(field)->name,
+                          "OrNull")}
+             .AnnotatedAs(field)});
     if (field->options().deprecated()) {
       printer->Emit(R"kt(
           @kotlin.Deprecated(message = "Field $camelcase_name$ is deprecated")
@@ -215,7 +220,7 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
       // We can use `FooOrBuilder`, and it saves code size to generate only one
       // method instead of two.
       printer->Emit(R"kt(
-        public val $full_classname$OrBuilder.$camelcase_name$OrNull: $full_name$?
+        public val $full_classname$OrBuilder.$getter_name$: $full_name$?
           get() = if (has$capitalized_name$()) get$capitalized_name$() else null
       )kt");
       printer->Print("\n");
@@ -223,7 +228,7 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
       // We don't have `FooOrBuilder`, so we generate `Foo` and `Foo.Builder`
       // methods.
       printer->Emit(R"kt(
-        public val $full_classname$.$camelcase_name$OrNull: $full_name$?
+        public val $full_classname$.$getter_name$: $full_name$?
           get() = if (has$capitalized_name$()) this.$name$ else null
       )kt");
       printer->Print("\n");
@@ -233,7 +238,7 @@ void MessageGenerator::GenerateOrNull(io::Printer* printer) const {
         )kt");
       }
       printer->Emit(R"kt(
-        public val $full_classname$.Builder.$camelcase_name$OrNull: $full_name$?
+        public val $full_classname$.Builder.$getter_name$: $full_name$?
           get() = if (has$capitalized_name$()) this.$name$ else null
       )kt");
       printer->Print("\n");
