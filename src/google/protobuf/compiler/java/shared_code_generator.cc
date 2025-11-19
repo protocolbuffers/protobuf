@@ -188,8 +188,8 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
     printer->Print(
         "    new com.google.protobuf.Descriptors.FileDescriptor[] {\n");
 
-    for (int i = 0; i < dependencies.size(); i++) {
-      const std::string& dependency = dependencies[i].second;
+    for (auto & dependencie : dependencies) {
+      const std::string& dependency = dependencie.second;
       printer->Print("      $dependency$.getDescriptor(),\n", "dependency",
                      dependency);
     }

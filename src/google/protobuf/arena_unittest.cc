@@ -1522,9 +1522,9 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     repeated_message->ExtractSubrange(0, 5, extracted_messages);
     EXPECT_EQ(nullptr, extracted_messages[0]->GetArena());
     // We need to free the heap-allocated messages to prevent a leak.
-    for (int i = 0; i < 5; i++) {
-      delete extracted_messages[i];
-      extracted_messages[i] = nullptr;
+    for (auto & extracted_message : extracted_messages) {
+      delete extracted_message;
+      extracted_message = nullptr;
     }
   }
 

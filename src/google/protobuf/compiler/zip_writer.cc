@@ -71,8 +71,7 @@ static const uint32_t kCRC32Table[256] = {
 
 static uint32_t ComputeCRC32(const std::string& buf) {
   uint32_t x = ~0U;
-  for (int i = 0; i < buf.size(); ++i) {
-    unsigned char c = buf[i];
+  for (unsigned char c : buf) {
     x = kCRC32Table[(x ^ c) & 0xff] ^ (x >> 8);
   }
   return ~x;
