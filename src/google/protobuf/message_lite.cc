@@ -548,13 +548,6 @@ bool MessageLite::SerializeToZeroCopyStream(
 
 bool MessageLite::SerializePartialToZeroCopyStream(
     io::ZeroCopyOutputStream* output) const {
-  const size_t size = ByteSizeLong();  // Force size to be cached.
-  if (size > INT_MAX) {
-    ABSL_LOG(ERROR) << GetTypeName()
-                    << " exceeded maximum protobuf size of 2GB: " << size;
-    return false;
-  }
-
   uint8_t* target;
   io::EpsCopyOutputStream stream(
       output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
