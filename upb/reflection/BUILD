@@ -143,10 +143,7 @@ cc_library(
     textual_hdrs = [
         "//upb/port:inc",
     ],
-    visibility = [
-        "//upb:__pkg__",
-        "//upb:friends",
-    ],
+    visibility = ["//upb:friends"],
     deps = [
         ":internal",
         "//upb/mini_descriptor",
