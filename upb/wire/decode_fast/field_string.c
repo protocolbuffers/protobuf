@@ -64,11 +64,9 @@ UPB_NOINLINE UPB_PRESERVE_NONE static const char* fastdecode_verifyutf8(
     _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);                 \
   }                                                                            \
                                                                                \
-  const char* s_ptr = ptr;                                                     \
-  ptr = upb_EpsCopyInputStream_ReadString(&d->input, &s_ptr, size, &d->arena); \
+  ptr =                                                                        \
+      upb_EpsCopyInputStream_ReadString(&d->input, ptr, size, dst, &d->arena); \
   if (!ptr) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);       \
-  dst->data = s_ptr;                                                           \
-  dst->size = size;                                                            \
                                                                                \
   if (validate_utf8) {                                                         \
     data = (uint64_t)dst;                                                      \

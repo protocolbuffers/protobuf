@@ -142,10 +142,9 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
     case kUpb_WireType_Delimited: {
       int size;
       ptr = upb_WireReader_ReadSize(ptr, &size, stream);
-      if (!ptr || !upb_EpsCopyInputStream_CheckSize(stream, ptr, size)) {
-        return NULL;
-      }
-      ptr += size;
+      if (!ptr) return NULL;
+      ptr = upb_EpsCopyInputStream_Skip(stream, ptr, size);
+      if (!ptr) return NULL;
       return ptr;
     }
     case kUpb_WireType_StartGroup:
