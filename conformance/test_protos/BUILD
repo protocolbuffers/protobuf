@@ -8,7 +8,6 @@ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//ruby:defs.bzl", "internal_ruby_proto_library")
 
 package(
     default_testonly = True,
@@ -50,9 +49,4 @@ internal_py_proto_library(
 internal_objc_proto_library(
     name = "test_messages_edition2023_objc_proto",
     srcs = [":test_messages_edition2023.proto"],
-)
-
-internal_ruby_proto_library(
-    name = "test_messages_edition2023_ruby_proto",
-    srcs = ["test_messages_edition2023.proto"],
 )
