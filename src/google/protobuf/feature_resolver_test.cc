@@ -187,7 +187,7 @@ TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
           pool.FindMessageTypeByName("google.protobuf.FeatureSet"),
           {pool.FindExtensionByName("pb.test")}, EDITION_2023, EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults().size(), 3);
+  ASSERT_EQ(defaults->defaults().size(), 4);
   ASSERT_EQ(defaults->defaults().at(2).edition(), EDITION_2023);
   FeatureSet merged = defaults->defaults().at(2).overridable_features();
 
@@ -203,7 +203,7 @@ TEST(FeatureResolverTest, DefaultsMergedFeatures) {
                                        {GetExtension(pb::test)}, EDITION_2023,
                                        EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
+  ASSERT_EQ(defaults->defaults_size(), 4);
 
   defaults->mutable_defaults(2)
       ->mutable_fixed_features()
@@ -269,7 +269,7 @@ TEST(FeatureResolverTest, CompileDefaultsFixedFutureFeature) {
                                        {GetExtension(pb::test)}, EDITION_PROTO2,
                                        EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
+  ASSERT_EQ(defaults->defaults_size(), 4);
 
   const auto& edition_defaults = defaults->defaults(2);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
@@ -291,7 +291,7 @@ TEST(FeatureResolverTest, CompileDefaultsFixedRemovedFeature) {
                                        {GetExtension(pb::test)}, EDITION_PROTO2,
                                        EDITION_2024);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 4);
+  ASSERT_EQ(defaults->defaults_size(), 5);
 
   const auto& edition_defaults = defaults->defaults(3);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2024);
@@ -314,7 +314,7 @@ TEST(FeatureResolverTest, CompileDefaultsOverridable) {
                                        {GetExtension(pb::test)}, EDITION_PROTO2,
                                        EDITION_2023);
   ASSERT_OK(defaults);
-  ASSERT_EQ(defaults->defaults_size(), 3);
+  ASSERT_EQ(defaults->defaults_size(), 4);
 
   const auto& edition_defaults = defaults->defaults(2);
   ASSERT_EQ(edition_defaults.edition(), EDITION_2023);
@@ -419,6 +419,14 @@ TEST(FeatureResolverTest, CompileDefaultsMinimumLaterThanMaximum) {
       HasError(AllOf(HasSubstr("Invalid edition range"),
                      HasSubstr("99999_TEST_ONLY is newer"),
                      HasSubstr("2023"))));
+}
+
+TEST(FeatureResolverTest, CompileDefaultsUnstableLaterThanMaximum) {
+  absl::StatusOr<FeatureSetDefaults> defaults =
+      FeatureResolver::CompileDefaults(FeatureSet::descriptor(), {},
+                                       EDITION_2023, EDITION_2024);
+  ASSERT_OK(defaults);
+  EXPECT_OK(FeatureResolver::Create(EDITION_UNSTABLE, *defaults));
 }
 
 TEST(FeatureResolverTest, MergeFeaturesChildOverrideCore) {
@@ -556,6 +564,8 @@ TEST(FeatureResolverTest, GetEditionFeatureSetDefaults) {
       internal::GetEditionFeatureSetDefaults(EDITION_PROTO3, *defaults);
   absl::StatusOr<FeatureSet> edition_proto2_feature =
       internal::GetEditionFeatureSetDefaults(EDITION_LEGACY, *defaults);
+  absl::StatusOr<FeatureSet> edition_unstable_feature =
+      internal::GetEditionFeatureSetDefaults(EDITION_UNSTABLE, *defaults);
   absl::StatusOr<FeatureSet> edition_test_feature =
       internal::GetEditionFeatureSetDefaults(EDITION_99998_TEST_ONLY,
                                              *defaults);
@@ -568,6 +578,10 @@ TEST(FeatureResolverTest, GetEditionFeatureSetDefaults) {
   EXPECT_OK(edition_proto2_feature);
   EXPECT_EQ(edition_proto2_feature->GetExtension(pb::test).file_feature(),
             pb::VALUE1);
+  EXPECT_OK(edition_unstable_feature);
+  EXPECT_EQ(
+      edition_unstable_feature->GetExtension(pb::test).new_unstable_feature(),
+      pb::UNSTABLE2);
   EXPECT_OK(edition_test_feature);
   EXPECT_EQ(edition_test_feature->GetExtension(pb::test).file_feature(),
             pb::VALUE4);
@@ -589,6 +603,16 @@ TEST(FeatureResolverLifetimesTest, Valid) {
     [pb.test] { file_feature: VALUE1 }
   )pb");
   auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(results.errors, IsEmpty());
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, ValidUnstableFeature) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { new_unstable_feature: UNSTABLE2 }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_UNSTABLE,
                                                            features, nullptr);
   EXPECT_THAT(results.errors, IsEmpty());
   EXPECT_THAT(results.warnings, IsEmpty());
@@ -616,7 +640,35 @@ TEST(FeatureResolverLifetimesTest, RemovedFeature) {
                                                            features, nullptr);
   EXPECT_THAT(results.errors,
               ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_feature"),
-                                HasSubstr("removed in edition 2024"))));
+                                HasSubstr("removed in edition 2024:"),
+                                HasSubstr("Custom feature removal error"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, RemovedUnstableFeature) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { removed_unstable_feature: UNSTABLE1 }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_UNSTABLE,
+                                                           features, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("pb.TestFeatures.removed_unstable_feature"),
+                        HasSubstr("removed in edition UNSTABLE:"),
+                        HasSubstr("Custom feature removal error"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, RemovedFeatureWithNoRemovalError) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { same_edition_removed_feature: VALUE1 }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(results.errors,
+              ElementsAre(AllOf(
+                  HasSubstr("pb.TestFeatures.same_edition_removed_feature"),
+                  HasSubstr("removed in edition 2023"), Not(HasSubstr(":")))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
@@ -713,6 +765,34 @@ TEST(FeatureResolverLifetimesTest, ValueSupportBeforeIntroduced) {
               ElementsAre(AllOf(
                   HasSubstr("pb.VALUE_LIFETIME_FUTURE"),
                   HasSubstr("introduced until edition 99997_TEST_ONLY"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, ValueSupportBeforeIntroducedUnstable) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { unstable_existing_feature: UNSTABLE3 }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("pb.UNSTABLE3"),
+                        HasSubstr("wasn't introduced until edition UNSTABLE"),
+                        HasSubstr("can't be used in edition 2023"))));
+  EXPECT_THAT(results.warnings, IsEmpty());
+}
+
+TEST(FeatureResolverLifetimesTest, FeatureSupportBeforeIntroducedUnstable) {
+  FeatureSet features = ParseTextOrDie(R"pb(
+    [pb.test] { new_unstable_feature: UNSTABLE2 }
+  )pb");
+  auto results = FeatureResolver::ValidateFeatureLifetimes(EDITION_2023,
+                                                           features, nullptr);
+  EXPECT_THAT(
+      results.errors,
+      ElementsAre(AllOf(HasSubstr("pb.TestFeatures.new_unstable_feature "),
+                        HasSubstr("wasn't introduced until edition UNSTABLE"),
+                        HasSubstr("can't be used in edition 2023"))));
   EXPECT_THAT(results.warnings, IsEmpty());
 }
 
