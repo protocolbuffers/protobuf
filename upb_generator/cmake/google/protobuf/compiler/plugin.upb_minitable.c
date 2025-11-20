@@ -28,10 +28,16 @@ static const google__protobuf__compiler__Version_msg_init_Fields google_protobuf
 
 const upb_MiniTable google__protobuf__compiler__Version_msg_init = {
   &google_protobuf_compiler_Version__fields.fields[0],
-  UPB_SIZE(32, 40), 4, kUpb_ExtMode_NonExtendable, 4, UPB_FASTTABLE_MASK(255), 0,
+  UPB_SIZE(32, 40), 4, kUpb_ExtMode_NonExtendable, 4, UPB_FASTTABLE_MASK(24), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.compiler.Version",
 #endif
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x000c000000000008, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
+    {0x0010000001000010, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
+    {0x0014000002000018, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
+  })
 };
 
 typedef struct {
@@ -78,10 +84,20 @@ static const google__protobuf__compiler__CodeGeneratorResponse_msg_init_Fields g
 
 const upb_MiniTable google__protobuf__compiler__CodeGeneratorResponse_msg_init = {
   &google_protobuf_compiler_CodeGeneratorResponse__fields.fields[0],
-  UPB_SIZE(40, 56), 5, kUpb_ExtMode_NonExtendable, 4, UPB_FASTTABLE_MASK(255), 0,
+  UPB_SIZE(40, 56), 5, kUpb_ExtMode_NonExtendable, 4, UPB_FASTTABLE_MASK(56), 0,
 #ifdef UPB_TRACING_ENABLED
   "google.protobuf.compiler.CodeGeneratorResponse",
 #endif
+  UPB_FASTTABLE_INIT({
+    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0028000001000010, &upb_DecodeFast_Varint64_Scalar_Tag1Byte},
+    {0x000c000002000018, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
+    {0x0010000003000020, &upb_DecodeFast_Varint32_Scalar_Tag1Byte},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+    {0x0000000000000000, &_upb_FastDecoder_DecodeGeneric},
+  })
 };
 
 typedef struct {

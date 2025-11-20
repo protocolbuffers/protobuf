@@ -407,6 +407,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_MUSTTAIL
 #endif
 
+#if UPB_HAS_ATTRIBUTE(preserve_most) && !defined(__i386__)
+#define UPB_PRESERVE_MOST __attribute__((preserve_most))
+#else
+#define UPB_PRESERVE_MOST
+#endif
+
 #if UPB_HAS_ATTRIBUTE(preserve_none)
 #define UPB_PRESERVE_NONE __attribute__((preserve_none))
 #else
@@ -16133,7 +16139,7 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
 }
 
 typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
-    upb_EpsCopyInputStream* e, const char* ptr, void* ctx);
+    upb_EpsCopyInputStream* e, const char* ptr, int size, void* ctx);
 
 // Tries to perform a fast-path handling of the given delimited message data.
 // If the sub-message beginning at `*ptr` and extending for `len` is short and
@@ -16155,7 +16161,7 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
   e->limit_ptr = *ptr + len;
   e->limit = e->limit_ptr - e->end;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
-  *ptr = func(e, *ptr, ctx);
+  *ptr = func(e, *ptr, len, ctx);
   e->limit_ptr = saved_limit_ptr;
   e->limit = saved_limit;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
@@ -17513,6 +17519,7 @@ typedef struct upb_Decoder {
 #ifndef NDEBUG
   const char* debug_tagstart;
   const char* debug_valstart;
+  char* trace_buf;
   char* trace_ptr;
   char* trace_end;
 #endif
@@ -17534,6 +17541,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->status = kUpb_DecodeStatus_Ok;
   d->message_is_done = false;
 #ifndef NDEBUG
+  d->trace_buf = trace_buf;
   d->trace_ptr = trace_buf;
   d->trace_end = UPB_PTRADD(trace_buf, trace_size);
 #endif
@@ -17554,6 +17562,32 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
   return d->status;
 }
 
+#ifndef NDEBUG
+UPB_INLINE bool _upb_Decoder_TraceBufferFull(upb_Decoder* d) {
+  return d->trace_ptr == d->trace_end - 1;
+}
+
+UPB_INLINE bool _upb_Decoder_TraceBufferAlmostFull(upb_Decoder* d) {
+  return d->trace_ptr == d->trace_end - 2;
+}
+#endif
+
+UPB_INLINE char* _upb_Decoder_TraceNext(upb_Decoder* d) {
+#ifndef NDEBUG
+  return _upb_Decoder_TraceBufferAlmostFull(d) ? NULL : d->trace_ptr + 1;
+#else
+  return NULL;
+#endif
+}
+
+UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
+#ifndef NDEBUG
+  return d->trace_ptr;
+#else
+  return NULL;
+#endif
+}
+
 // Trace events are used to trace the progress of the decoder.
 // Events:
 //   'D'  Fast dispatch
@@ -17564,7 +17598,7 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
   if (d->trace_ptr == NULL) return;
-  if (d->trace_ptr == d->trace_end - 1) {
+  if (_upb_Decoder_TraceBufferFull(d)) {
     d->trace_ptr[-1] = 'X';  // Truncated.
     return;
   }
@@ -17676,6 +17710,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_LONGJMP
 #undef UPB_PTRADD
 #undef UPB_MUSTTAIL
+#undef UPB_PRESERVE_MOST
 #undef UPB_PRESERVE_NONE
 #undef UPB_FASTTABLE_SUPPORTED
 #undef UPB_FASTTABLE_MASK
