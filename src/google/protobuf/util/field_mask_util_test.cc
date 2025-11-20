@@ -9,10 +9,13 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/field_mask.pb.h"
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/log_severity.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
 
@@ -95,6 +98,7 @@ using proto2_unittest::NestedTestAllTypes;
 using proto2_unittest::TestAllTypes;
 using proto2_unittest::TestRequired;
 using proto2_unittest::TestRequiredMessage;
+using testing::EqualsProto;
 
 TEST(FieldMaskUtilTest, StringFormat) {
   FieldMask mask;
@@ -733,6 +737,18 @@ TEST(FieldMaskUtilTest, TrimMessage) {
   FieldMaskUtil::FromString("oneof_uint32,oneof_nested_message.bb", &mask);
   FieldMaskUtil::TrimMessage(mask, &oneof_msg);
   EXPECT_EQ(11, oneof_msg.oneof_uint32());
+
+  {
+    TestAllTypes repeated_nested_msg;
+    repeated_nested_msg.add_repeated_nested_message()->set_bb(1234);
+    TestAllTypes trimmed_repeated_nested_msg(repeated_nested_msg);
+    *trimmed_repeated_nested_msg.mutable_repeated_nested_message() =
+        repeated_nested_msg.repeated_nested_message();
+    FieldMask mask;
+    FieldMaskUtil::FromString("repeated_nested_message.bb", &mask);
+    FieldMaskUtil::TrimMessage(mask, &repeated_nested_msg);
+    EXPECT_THAT(repeated_nested_msg, EqualsProto(trimmed_repeated_nested_msg));
+  }
 }
 
 TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
