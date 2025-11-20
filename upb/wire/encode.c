@@ -65,7 +65,6 @@ typedef struct {
 } upb_encstate;
 
 static size_t upb_roundup_pow2(size_t bytes) {
-  UPB_ASSERT(bytes < SIZE_MAX / 2);
   size_t ret = 128;
   while (ret < bytes) {
     ret *= 2;

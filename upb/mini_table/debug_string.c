@@ -208,7 +208,6 @@ static void upb_MiniTablePrinter_PrintField(upb_MiniTablePrinter* p,
           upb_MiniTablePrinter_GetIdForRef(p, upb_MiniTable_SubMessage(field));
       upb_MiniTablePrinter_Printf(p, "      .submsg = MiniTable#%d\n", id);
     } else {
-      UPB_ASSERT(upb_MiniTableField_IsClosedEnum(field));
       int id = upb_MiniTablePrinter_GetIdForRef(
           p, upb_MiniTable_GetSubEnumTable(field));
       upb_MiniTablePrinter_Printf(p, "      .subenum = MiniTableEnum#%d\n", id);
@@ -293,7 +292,6 @@ static void upb_MiniTablePrinter_PrintMessage(upb_MiniTablePrinter* p,
     if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
       upb_MiniTablePrinter_PrintMessage(p, upb_MiniTable_SubMessage(field));
     } else {
-      UPB_ASSERT(upb_MiniTableField_IsClosedEnum(field));
       upb_MiniTablePrinter_PrintEnum(p, upb_MiniTable_GetSubEnumTable(field));
     }
   }

@@ -58,7 +58,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag, stream);
-    if (!ptr || tag >> 3 == 0) return NULL;
+    if (!ptr) return NULL;
     if (tag == end_group_tag) return ptr;
     ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, stream);
     if (!ptr) return NULL;

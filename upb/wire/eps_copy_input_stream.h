@@ -36,7 +36,6 @@ typedef struct {
   const char* limit_ptr;  // For bounds checks, = end + UPB_MIN(limit, 0)
   uintptr_t input_delta;  // Diff between the original input pointer and patch
   const char* buffer_start;   // Pointer to the original input buffer
-  const char* buffer_end;     // Pointer to the end of the original input buffer
   const char* capture_start;  // If non-NULL, the start of the captured region.
   int limit;                  // Submessage limit relative to end
   bool error;                 // To distinguish between EOF and error.
@@ -96,7 +95,6 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
                                             const char** ptr, size_t size,
                                             bool enable_aliasing) {
   e->buffer_start = *ptr;
-  e->buffer_end = *ptr + size;
   e->capture_start = NULL;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
@@ -203,15 +201,6 @@ UPB_INLINE size_t UPB_PRIVATE(upb_EpsCopyInputStream_BytesAvailable)(
   return (e->end - ptr) + kUpb_EpsCopyInputStream_SlopBytes;
 }
 
-// Returns true if `ptr + size` does not extend beyond `end`.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_SizeIsInBounds)(
-    const char* ptr, int size, const char* end) {
-  return size <= end - ptr;
-}
-
 // Returns true if the given delimited field size is valid (it does not extend
 // beyond any previously-pushed limits).  `ptr` should point to the beginning
 // of the field data, after the delimited size.
@@ -224,14 +213,34 @@ UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
   return size <= e->limit - (ptr - e->end);
 }
 
+UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(
+    upb_EpsCopyInputStream* e, const char* ptr, int size, bool submessage) {
+  // This is one extra branch compared to the more normal:
+  //   return (size_t)(end - ptr) < size;
+  // However it is one less computation if we are just about to use "ptr + len":
+  //   https://godbolt.org/z/35YGPz
+  // In microbenchmarks this shows a small improvement.
+  uintptr_t uptr = (uintptr_t)ptr;
+  uintptr_t uend = (uintptr_t)e->limit_ptr;
+  uintptr_t res = uptr + (size_t)size;
+  if (!submessage) uend += kUpb_EpsCopyInputStream_SlopBytes;
+  // NOTE: this check depends on having a linear address space.  This is not
+  // technically guaranteed by uintptr_t.
+  bool ret = res >= uptr && res <= uend;
+  if (size < 0) UPB_ASSERT(!ret);
+  return ret;
+}
+
 // Returns true if the given delimited field size is valid (it does not extend
-// beyond any previously-pushed limit) *and* all of the data for this field is
+// beyond any previously-pushed limited) *and* all of the data for this field is
 // available to be read in the current buffer.
+//
+// If the size is negative, this function will always return false. This
+// property can be useful in some cases.
 UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
     upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return upb_EpsCopyInputStream_CheckSize(e, ptr, size) &&
-         (size_t)size <=
-             UPB_PRIVATE(upb_EpsCopyInputStream_BytesAvailable)(e, ptr);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
+                                                                false);
 }
 
 // Returns true if the given sub-message size is valid (it does not extend
@@ -242,16 +251,25 @@ UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
 // current buffer while maintaining the invariant that we always have at
 // least kUpb_EpsCopyInputStream_SlopBytes of data available past the
 // beginning of any individual field start.
+//
+// If the size is negative, this function will always return false. This
+// property can be useful in some cases.
 UPB_INLINE bool UPB_PRIVATE(
     upb_EpsCopyInputStream_CheckSubMessageSizeAvailable)(
     upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_SizeIsInBounds)(ptr, size,
-                                                            e->limit_ptr);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
+                                                                true);
 }
 
-UPB_INLINE size_t UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPosition)(
-    upb_EpsCopyInputStream* e, const char* ptr) {
-  return (uintptr_t)ptr + e->input_delta - (uintptr_t)e->buffer_start;
+// Returns true if aliasing_enabled=true was passed to
+// upb_EpsCopyInputStream_Init() when this stream was initialized *and* we can
+// alias into the region [ptr, size] in an input buffer.
+UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(
+    upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
+  // When EpsCopyInputStream supports streaming, this will need to become a
+  // runtime check.
+  return e->aliasing &&
+         upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size);
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing
@@ -263,23 +281,9 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(
   // from the original input buffer's pointer. After optimization it produces
   // the same assembly as just casting `(uintptr_t)ptr+input_delta`
   // https://godbolt.org/z/zosG88oPn
-  return e->buffer_start +
-         UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPosition)(e, ptr);
-}
-
-// Returns true if aliasing_enabled=true was passed to
-// upb_EpsCopyInputStream_Init() when this stream was initialized *and* we can
-// alias into the region [ptr, size] in an input buffer.
-//
-// Note that this does *not* check limits, so it may return true even if the
-// size extends beyond the current limit.
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(
-    upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
-  if (!e->aliasing) return false;
-  const char* input_ptr =
-      UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
-  return UPB_PRIVATE(upb_EpsCopyInputStream_SizeIsInBounds)(input_ptr, size,
-                                                            e->buffer_end);
+  size_t position =
+      (uintptr_t)ptr + e->input_delta - (uintptr_t)e->buffer_start;
+  return e->buffer_start + position;
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing
@@ -311,9 +315,7 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
                                                   const char* ptr,
                                                   upb_StringView* sv) {
   UPB_ASSERT(e->capture_start != NULL);
-  size_t position =
-      UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPosition)(e, ptr);
-  if ((size_t)(e->buffer_end - e->buffer_start) < position) return false;
+  if (ptr - e->end > e->limit) return false;
   const char* end = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   sv->data = e->capture_start;
   sv->size = end - sv->data;
@@ -346,6 +348,42 @@ UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
   return ptr + size;
 }
 
+// Copies `size` bytes of data from the input `ptr` into the buffer `to`, and
+// returns a pointer past the end. Returns NULL on end of stream or error.
+UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
+    upb_EpsCopyInputStream* e, const char* ptr, void* to, int size) {
+  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  memcpy(to, ptr, size);
+  return ptr + size;
+}
+
+// Reads string data from the stream and advances the pointer accordingly.
+// If aliasing was enabled when the stream was initialized, then the returned
+// pointer will point into the input buffer if possible, otherwise new data
+// will be allocated from arena and copied into. We may be forced to copy even
+// if aliasing was enabled if the input data spans input buffers.
+//
+// Returns NULL if memory allocation failed, or we reached a premature EOF.
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_Arena* arena) {
+  if (UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, *ptr, size)) {
+    return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
+  } else {
+    // We need to allocate and copy.
+    if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
+      return NULL;
+    }
+    UPB_ASSERT(arena);
+    char* data = (char*)upb_Arena_Malloc(arena, size);
+    if (!data) return NULL;
+    const char* ret =
+        UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(e, *ptr, data, size);
+    *ptr = data;
+    return ret;
+  }
+}
+
 // Reads a string from the stream and advances the pointer accordingly.
 //
 // Unlike upb_EpsCopyInputStream_ReadString(), this function will always alias
@@ -367,62 +405,7 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
   }
   const char* input = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   *sv = upb_StringView_FromDataAndSize(input, size);
-  ptr += size;
-  UPB_ASSUME(ptr != NULL);
-  return ptr;
-}
-
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringCopyTo(
-    upb_EpsCopyInputStream* e, const char* ptr, size_t size, char* dst) {
-  if (size > UPB_PRIVATE(upb_EpsCopyInputStream_BytesAvailable)(e, ptr)) {
-    return NULL;
-  }
-  memcpy(dst, ptr, size);
-  ptr += size;
-  UPB_ASSUME(ptr != NULL);
-  return ptr;
-}
-
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringCopyToNew(
-    upb_EpsCopyInputStream* e, const char* ptr, size_t size, upb_StringView* sv,
-    upb_Arena* arena) {
-  if (size > UPB_PRIVATE(upb_EpsCopyInputStream_BytesAvailable)(e, ptr)) {
-    return NULL;
-  }
-
-  // Wait to allocate until we know we know we've actually been sent this much
-  // data.
-  char* dst = (char*)upb_Arena_Malloc(arena, size);
-  if (!dst) return NULL;
-  memcpy(dst, ptr, size);
-  *sv = upb_StringView_FromDataAndSize(dst, size);
-  ptr += size;
-  UPB_ASSUME(ptr != NULL);
-  return ptr;
-}
-
-// Reads string data from the stream and advances the pointer accordingly.
-// If aliasing was enabled when the stream was initialized, then the returned
-// pointer will point into the input buffer if possible, otherwise new data
-// will be allocated from arena and copied into. We may be forced to copy even
-// if aliasing was enabled if the input data spans input buffers.
-//
-// Note that this function does not check limits, so it may return success
-// even if the size extends beyond the current limit, or even beyond the end
-// of the stream. However, any error will be reported by the next call to
-// upb_EpsCopyInputStream_IsDone().
-//
-// Returns NULL if memory allocation failed, or we reached a premature EOF.
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
-    upb_EpsCopyInputStream* e, const char* ptr, size_t size, upb_StringView* sv,
-    upb_Arena* arena) {
-  const char* ret;
-  if (e->aliasing && (ret = upb_EpsCopyInputStream_ReadStringAlwaysAlias(
-                          e, ptr, size, sv)) != NULL) {
-    return ret;
-  }
-
-  return upb_EpsCopyInputStream_ReadStringCopyToNew(e, ptr, size, sv, arena);
+  return ptr + size;
 }
 
 UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(
@@ -441,13 +424,10 @@ UPB_INLINE int upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
   int limit = size + (int)(ptr - e->end);
   int delta = e->limit - limit;
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
+  UPB_ASSERT(limit <= e->limit);
   e->limit = limit;
   e->limit_ptr = e->end + UPB_MIN(0, limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
-  // If delta is negative, then size is invalid because it extends beyond the
-  // previous limit. However, for efficiency we do not test for this error
-  // case here. It will be detected when the user pops the limit and then calls
-  // IsDone(), which will detect that outer scope is not ending at the limit.
   return delta;
 }
 
@@ -467,18 +447,18 @@ UPB_INLINE void upb_EpsCopyInputStream_PopLimit(upb_EpsCopyInputStream* e,
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
     upb_EpsCopyInputStream* e, const char* ptr, int overrun,
     upb_EpsCopyInputStream_BufferFlipCallback* callback) {
-  if (UPB_LIKELY(overrun < kUpb_EpsCopyInputStream_SlopBytes &&
-                 overrun < e->limit)) {
+  if (overrun < e->limit) {
     // Need to copy remaining data into patch buffer.
+    UPB_ASSERT(overrun < kUpb_EpsCopyInputStream_SlopBytes);
     const char* old_end = ptr;
     const char* new_start = &e->patch[0] + overrun;
     memset(e->patch + kUpb_EpsCopyInputStream_SlopBytes, 0,
            kUpb_EpsCopyInputStream_SlopBytes);
-    memmove(e->patch, e->end, kUpb_EpsCopyInputStream_SlopBytes);
+    memcpy(e->patch, e->end, kUpb_EpsCopyInputStream_SlopBytes);
     ptr = new_start;
     e->end = &e->patch[kUpb_EpsCopyInputStream_SlopBytes];
     e->limit -= kUpb_EpsCopyInputStream_SlopBytes;
-    e->limit_ptr = e->end + UPB_MIN(0, e->limit);
+    e->limit_ptr = e->end + e->limit;
     UPB_ASSERT(ptr < e->limit_ptr);
     e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
     const char* ret = callback(e, old_end, new_start);
@@ -487,15 +467,7 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
     }
     return ret;
   } else {
-    UPB_ASSERT(overrun > e->limit ||
-               overrun == kUpb_EpsCopyInputStream_SlopBytes);
-    // If the overrun is greater than the limit, then the wire format is corrupt
-    // because a sub-message did not end at the proper limit.
-    //
-    // If the overrun is exactly equal to the slop bytes *and* the limit is
-    // beyond the slop bytes, this also indicates corrupt wire format, because
-    // in our current single-buffer implementation, there is never real stream
-    // data beyond the slop bytes.
+    UPB_ASSERT(overrun > e->limit);
     e->error = true;
     return callback(e, NULL, NULL);
   }

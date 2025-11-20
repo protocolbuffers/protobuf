@@ -14,7 +14,6 @@
 #include <variant>
 
 #include <gtest/gtest.h>
-#include "upb/base/string_view.h"
 #include "upb/mem/arena.hpp"
 
 namespace {

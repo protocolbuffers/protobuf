@@ -107,10 +107,11 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
           e->indent_depth--;
           e->ptr = start;
           e->overflow = start_overflow;
-          upb_StringView sv;
-          ptr = upb_EpsCopyInputStream_ReadString(stream, ptr, size, &sv, NULL);
+          const char* str = ptr;
+          ptr = upb_EpsCopyInputStream_ReadString(stream, &str, size, NULL);
           UPB_ASSERT(ptr);
-          UPB_PRIVATE(_upb_TextEncode_Bytes)(e, sv);
+          UPB_PRIVATE(_upb_TextEncode_Bytes)
+          (e, (upb_StringView){.data = str, .size = size});
         }
         break;
       }
