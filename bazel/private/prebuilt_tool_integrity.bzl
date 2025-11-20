@@ -8,6 +8,7 @@ The checked in content is only here to allow load() statements in the sources to
 
 # An arbitrary version of protobuf that includes pre-built binaries.
 # See /examples/example_without_cc_toolchain which uses this for testing.
+# TODO(alexeagle): add some automation to update this version occasionally.
 _TEST_VERSION = "v33.0"
 _TEST_SHAS = dict()
 # Add a couple platforms which are commonly used for testing.

@@ -4,6 +4,7 @@ Ensures that Bazel only downloads required binaries for selected toolchains.
 In particular, see comment below on the toolchain#toolchain attribute.
 """
 
+load(":protoc_authenticity.bzl", "protoc_authenticity")
 load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 [
     toolchain(
@@ -18,3 +19,9 @@ load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
     )
     for platform, meta in PROTOBUF_PLATFORMS.items()
 ]
+
+# Support verification of user-registered toolchains
+protoc_authenticity(
+    name = "authenticity_validation",
+    visibility = ["//visibility:public"],
+)
