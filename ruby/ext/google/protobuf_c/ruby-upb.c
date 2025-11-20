@@ -15286,24 +15286,6 @@ static _upb_DecodeLongVarintReturn _upb_Decoder_DecodeLongTag(const char* ptr,
   _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
 }
 
-UPB_NOINLINE
-static _upb_DecodeLongVarintReturn _upb_Decoder_DecodeLongSize(const char* ptr,
-                                                               uint64_t val,
-                                                               upb_Decoder* d) {
-  uint64_t byte;
-  for (int i = 1; i < 5; i++) {
-    byte = (uint8_t)ptr[i];
-    val += (byte - 1) << (i * 7);
-    if (!(byte & 0x80)) {
-      if (UPB_UNLIKELY(val > INT32_MAX)) {
-        break;
-      }
-      return (_upb_DecodeLongVarintReturn){.ptr = ptr + i + 1, .val = val};
-    }
-  }
-  _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-}
-
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeVarint(upb_Decoder* d, const char* ptr,
                                       uint64_t* val) {
@@ -15335,21 +15317,17 @@ const char* _upb_Decoder_DecodeTag(upb_Decoder* d, const char* ptr,
   }
 }
 
-// This is identical to _upb_Decoder_DecodeTag() except that the maximum value
-// is INT32_MAX instead of UINT32_MAX.
 UPB_FORCEINLINE
 const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
                                    uint32_t* size) {
-  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(&d->input, 5);
-  uint64_t byte = (uint8_t)*ptr;
-  if (UPB_LIKELY((byte & 0x80) == 0)) {
-    *size = byte;
-    return ptr + 1;
-  } else {
-    _upb_DecodeLongVarintReturn res = _upb_Decoder_DecodeLongSize(ptr, byte, d);
-    *size = res.val;
-    return res.ptr;
+  uint64_t size64;
+  ptr = _upb_Decoder_DecodeVarint(d, ptr, &size64);
+  if (size64 >= INT32_MAX ||
+      !upb_EpsCopyInputStream_CheckSize(&d->input, ptr, (int)size64)) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   }
+  *size = size64;
+  return ptr;
 }
 
 static void _upb_Decoder_MungeInt32(wireval* val) {
@@ -15402,16 +15380,13 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
   return _upb_Decoder_NewSubMessage2(d, subl, field, target);
 }
 
-typedef enum {
-  kUpb_ValidateUtf8 = 1,
-} upb_Decoder_ReadStringOptions;
-
 static const char* _upb_Decoder_ReadString(upb_Decoder* d, const char* ptr,
-                                           int size, upb_StringView* str,
-                                           upb_Decoder_ReadStringOptions opts) {
-  ptr = upb_EpsCopyInputStream_ReadString(&d->input, ptr, size, str, &d->arena);
+                                           int size, upb_StringView* str) {
+  const char* str_ptr = ptr;
+  ptr = upb_EpsCopyInputStream_ReadString(&d->input, &str_ptr, size, &d->arena);
   if (!ptr) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-  if (opts & kUpb_ValidateUtf8) _upb_Decoder_VerifyUtf8(d, str->data, size);
+  str->data = str_ptr;
+  str->size = size;
   return ptr;
 }
 
@@ -15516,10 +15491,11 @@ const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
   void* mem = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
                          arr->UPB_PRIVATE(size) << lg2, void);
   arr->UPB_PRIVATE(size) += count;
+  // Note: if/when the decoder supports multi-buffer input, we will need to
+  // handle buffer seams here.
   if (upb_IsLittleEndian()) {
-    ptr =
-        upb_EpsCopyInputStream_ReadStringCopyTo(&d->input, ptr, val->size, mem);
-    if (!ptr) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+    ptr = UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(&d->input, ptr, mem,
+                                                   val->size);
   } else {
     int delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
     char* dst = mem;
@@ -15625,21 +15601,15 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
       arr->UPB_PRIVATE(size)++;
       memcpy(mem, val, 1 << op);
       return ptr;
-    case kUpb_DecodeOp_String: {
-      /* Append string. */
-      upb_StringView* str = (upb_StringView*)upb_Array_MutableDataPtr(arr) +
-                            arr->UPB_PRIVATE(size);
-      ptr = _upb_Decoder_ReadString(d, ptr, val->size, str, kUpb_ValidateUtf8);
-      arr->UPB_PRIVATE(size)++;
-      return ptr;
-    }
+    case kUpb_DecodeOp_String:
+      _upb_Decoder_VerifyUtf8(d, ptr, val->size);
+      /* Fallthrough. */
     case kUpb_DecodeOp_Bytes: {
       /* Append bytes. */
       upb_StringView* str = (upb_StringView*)upb_Array_MutableDataPtr(arr) +
                             arr->UPB_PRIVATE(size);
-      ptr = _upb_Decoder_ReadString(d, ptr, val->size, str, 0);
       arr->UPB_PRIVATE(size)++;
-      return ptr;
+      return _upb_Decoder_ReadString(d, ptr, val->size, str);
     }
     case kUpb_DecodeOp_SubMessage: {
       /* Append submessage / group. */
@@ -15811,9 +15781,10 @@ static const char* _upb_Decoder_DecodeToSubMessage(
       break;
     }
     case kUpb_DecodeOp_String:
-      return _upb_Decoder_ReadString(d, ptr, val->size, mem, kUpb_ValidateUtf8);
+      _upb_Decoder_VerifyUtf8(d, ptr, val->size);
+      /* Fallthrough. */
     case kUpb_DecodeOp_Bytes:
-      return _upb_Decoder_ReadString(d, ptr, val->size, mem, 0);
+      return _upb_Decoder_ReadString(d, ptr, val->size, mem);
     case kUpb_DecodeOp_Scalar8Byte:
       memcpy(mem, val, 8);
       break;
@@ -16238,8 +16209,8 @@ static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
     default:
       break;
   }
-
   assert(start == d->debug_valstart);
+
   {
     // The varint parser does not enforce that integers are encoded with their
     // minimum size; for example the value 1 could be encoded with three
@@ -16561,7 +16532,6 @@ typedef struct {
 } upb_encstate;
 
 static size_t upb_roundup_pow2(size_t bytes) {
-  UPB_ASSERT(bytes < SIZE_MAX / 2);
   size_t ret = 128;
   while (ret < bytes) {
     ret *= 2;
@@ -17509,7 +17479,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag, stream);
-    if (!ptr || tag >> 3 == 0) return NULL;
+    if (!ptr) return NULL;
     if (tag == end_group_tag) return ptr;
     ptr = _upb_WireReader_SkipValue(ptr, tag, depth_limit, stream);
     if (!ptr) return NULL;
