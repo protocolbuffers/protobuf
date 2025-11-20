@@ -450,6 +450,7 @@ bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
     *size = ((uint8_t)ptr[1] << 7) | (ptr[0] & 0x7f);
     return true;
   }
+
   // We don't know if this is valid wire format or not, we didn't look at
   // enough bytes to know if the varint is encoded overlong or the value
   // is too large for the current message.  So we let the MiniTable decoder

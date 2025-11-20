@@ -36,7 +36,6 @@ cc_library(
         "cardinality.c",
         "cardinality.h",
         "field_fixed.c",
-        "field_generic.c",
         "field_message.c",
         "field_string.c",
         "field_varint.c",

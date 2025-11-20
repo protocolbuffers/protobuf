@@ -95,7 +95,12 @@ static bool upb_DecodeFast_GetFieldCardinality(
 static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
                                         upb_DecodeFast_Type* out_type) {
-  upb_FieldType type = upb_MiniTableField_Type(field);
+  // We use descriptortype directly instead of upb_MiniTableField_Type because
+  // we want the munging of field->descriptortype:
+  //  - kUpb_FieldType_String -> kUpb_FieldType_Bytes if no UTF-8 validation is
+  //    required.
+  //  - kUpb_FieldType_Enum -> kUpb_FieldType_Int32 if the enum is open.
+  upb_FieldType type = field->UPB_PRIVATE(descriptortype);
 
   if (type == kUpb_FieldType_Group || upb_MiniTableField_IsClosedEnum(field)) {
     return false;  // Currently not supported.

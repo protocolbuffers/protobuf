@@ -37,6 +37,10 @@
   /*__builtin_trap(); */                                  \
   return _upb_FastDecoder_DecodeGeneric(d, ptr, msg, table, hasbits, 0);
 
+UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeGeneric(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data);
+
 UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   uint16_t tag;
   memcpy(&tag, ptr, 2);
@@ -221,6 +225,15 @@ const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
     default:                                                              \
       UPB_UNREACHABLE();                                                  \
   }
+
+UPB_INLINE const char* UPB_PRESERVE_NONE
+upb_DecodeFast_Unreachable(UPB_PARSE_PARAMS) {
+  UPB_UNREACHABLE();
+}
+
+#define UPB_DECODEFAST_NEXT(next)                                  \
+  UPB_DECODEFAST_NEXTMAYBEPACKED(next, upb_DecodeFast_Unreachable, \
+                                 upb_DecodeFast_Unreachable)
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
                                        upb_DecodeFastNext val, const char* sym,

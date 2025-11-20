@@ -29,6 +29,7 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         "//third_party/utf8_range",
+        "//upb/base",
         "//upb/mem",
         "//upb/mem:internal",
         "//upb/message",
