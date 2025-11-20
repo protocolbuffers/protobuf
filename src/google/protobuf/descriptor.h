@@ -935,6 +935,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   CppStringType cpp_string_type() const;  // The C++ string type of this field.
 #endif
 
+  FieldDescriptor::CppRepeatedType cpp_repeated_type() const;
+
   // Whether or not the field is required. For proto2 required fields and
   // Editions LEGACY_REQUIRED fields.
   bool is_required() const;
@@ -1171,6 +1173,8 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 
   CppStringType CalculateCppStringType() const;
 
+  CppRepeatedType CalculateCppRepeatedType() const;
+
   bool has_default_value_ : 1;
   bool proto3_optional_ : 1;
   // Whether the user has specified the json_name field option in the .proto
@@ -1184,15 +1188,18 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   uint8_t label_ : 2;
 
   // Actually a `Type`, but stored as uint8_t to save space.
-  uint8_t type_;
+  uint8_t type_ : 7;
+
+  // Can be calculated from containing_oneof(), but we cache it for performance.
+  // Located here for bitpacking.
+  bool in_real_oneof_ : 1;
 
   // Actually a `CppStringType`, but stored as uint8_t to save space.
   // We cache it because it's expensive to calculate.
   uint8_t cpp_string_type_ : 3;
 
-  // Can be calculated from containing_oneof(), but we cache it for performance.
-  // Located here for bitpacking.
-  bool in_real_oneof_ : 1;
+  // Actually a `CppRepeatedType`, but stored as uint8_t to save space.
+  uint8_t cpp_repeated_type_ : 2;
 
   // We could calculate as `message_type()->options().map_entry()`, but that is
   // way more expensive and can potentially force load extra lazy files.
@@ -2948,6 +2955,13 @@ inline FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
   ABSL_DCHECK_EQ(cpp_string_type_,
                  static_cast<uint8_t>(CalculateCppStringType()));
   return static_cast<FieldDescriptor::CppStringType>(cpp_string_type_);
+}
+
+inline FieldDescriptor::CppRepeatedType FieldDescriptor::cpp_repeated_type()
+    const {
+  ABSL_DCHECK_EQ(cpp_repeated_type_,
+                 static_cast<uint8_t>(CalculateCppRepeatedType()));
+  return static_cast<FieldDescriptor::CppRepeatedType>(cpp_repeated_type_);
 }
 
 inline bool FieldDescriptor::is_optional() const {

@@ -91,6 +91,13 @@ class FieldDescriptorLite {
     kString = 3,
   };
 #endif
+
+  // Identifies which repeated field API to use for a C++ repeated field. This
+  // corresponds to pb.CppFeatures.RepeatedType. 0 is reserved for errors.
+  enum class CppRepeatedType {
+    kRepeated = 1,
+    kProxy = 2,
+  };
 };
 
 }  // namespace internal

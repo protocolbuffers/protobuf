@@ -64,4 +64,25 @@ message CppFeatures {
     edition_defaults = { edition: EDITION_LEGACY, value: "false" },
     edition_defaults = { edition: EDITION_2024, value: "true" }
   ];
+
+  enum RepeatedType {
+    REPEATED_TYPE_UNKNOWN = 0;
+    // The repeated field will be backed by proto2::Repeated(Ptr)Field, and
+    // accessors will return a reference/pointer to this type.
+    LEGACY = 1;
+    // The repeated field has an opaque backing type, and accessors will return
+    // a RepeatedFieldProxy.
+    PROXY = 2;
+  }
+
+  optional RepeatedType repeated_type = 4 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FIELD,
+    targets = TARGET_TYPE_FILE,
+    feature_support = {
+      edition_introduced: EDITION_UNSTABLE,
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "LEGACY" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "PROXY" }
+  ];
 }

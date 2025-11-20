@@ -55,6 +55,8 @@ extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 }  // extern "C"
 namespace pb {
+enum CppFeatures_RepeatedType : int;
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_RepeatedType_internal_data_[];
 enum CppFeatures_StringType : int;
 PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
 class CppFeatures;
@@ -64,6 +66,9 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull CppFeat
 }  // namespace pb
 namespace google {
 namespace protobuf {
+template <>
+internal::EnumTraitsT<::pb::CppFeatures_RepeatedType_internal_data_>
+    internal::EnumTraitsImpl::value<::pb::CppFeatures_RepeatedType>;
 template <>
 internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
     internal::EnumTraitsImpl::value<::pb::CppFeatures_StringType>;
@@ -103,6 +108,39 @@ inline const ::std::string& CppFeatures_StringType_Name(CppFeatures_StringType v
 inline bool CppFeatures_StringType_Parse(
     ::absl::string_view name, CppFeatures_StringType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_StringType>(CppFeatures_StringType_descriptor(), name,
+                                           value);
+}
+enum CppFeatures_RepeatedType : int {
+  CppFeatures_RepeatedType_REPEATED_TYPE_UNKNOWN = 0,
+  CppFeatures_RepeatedType_LEGACY = 1,
+  CppFeatures_RepeatedType_PROXY = 2,
+};
+
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_RepeatedType_internal_data_[];
+inline constexpr CppFeatures_RepeatedType CppFeatures_RepeatedType_RepeatedType_MIN =
+    static_cast<CppFeatures_RepeatedType>(0);
+inline constexpr CppFeatures_RepeatedType CppFeatures_RepeatedType_RepeatedType_MAX =
+    static_cast<CppFeatures_RepeatedType>(2);
+inline bool CppFeatures_RepeatedType_IsValid(int value) {
+  return 0 <= value && value <= 2;
+}
+inline constexpr int CppFeatures_RepeatedType_RepeatedType_ARRAYSIZE = 2 + 1;
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_RepeatedType_descriptor();
+template <typename T>
+const ::std::string& CppFeatures_RepeatedType_Name(T value) {
+  static_assert(::std::is_same<T, CppFeatures_RepeatedType>::value ||
+                    ::std::is_integral<T>::value,
+                "Incorrect type passed to RepeatedType_Name().");
+  return CppFeatures_RepeatedType_Name(static_cast<CppFeatures_RepeatedType>(value));
+}
+template <>
+inline const ::std::string& CppFeatures_RepeatedType_Name(CppFeatures_RepeatedType value) {
+  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_RepeatedType_descriptor, 0, 2>(
+      static_cast<int>(value));
+}
+inline bool CppFeatures_RepeatedType_Parse(
+    ::absl::string_view name, CppFeatures_RepeatedType* PROTOBUF_NONNULL value) {
+  return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_RepeatedType>(CppFeatures_RepeatedType_descriptor(), name,
                                            value);
 }
 
@@ -272,12 +310,34 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
       ::absl::string_view name, StringType* PROTOBUF_NONNULL value) {
     return CppFeatures_StringType_Parse(name, value);
   }
+  using RepeatedType = CppFeatures_RepeatedType;
+  static constexpr RepeatedType REPEATED_TYPE_UNKNOWN = CppFeatures_RepeatedType_REPEATED_TYPE_UNKNOWN;
+  static constexpr RepeatedType LEGACY = CppFeatures_RepeatedType_LEGACY;
+  static constexpr RepeatedType PROXY = CppFeatures_RepeatedType_PROXY;
+  static inline bool RepeatedType_IsValid(int value) {
+    return CppFeatures_RepeatedType_IsValid(value);
+  }
+  static constexpr RepeatedType RepeatedType_MIN = CppFeatures_RepeatedType_RepeatedType_MIN;
+  static constexpr RepeatedType RepeatedType_MAX = CppFeatures_RepeatedType_RepeatedType_MAX;
+  static constexpr int RepeatedType_ARRAYSIZE = CppFeatures_RepeatedType_RepeatedType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL RepeatedType_descriptor() {
+    return CppFeatures_RepeatedType_descriptor();
+  }
+  template <typename T>
+  static inline const ::std::string& RepeatedType_Name(T value) {
+    return CppFeatures_RepeatedType_Name(value);
+  }
+  static inline bool RepeatedType_Parse(
+      ::absl::string_view name, RepeatedType* PROTOBUF_NONNULL value) {
+    return CppFeatures_RepeatedType_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
   enum : int {
     kStringTypeFieldNumber = 2,
     kLegacyClosedEnumFieldNumber = 1,
     kEnumNameUsesStringViewFieldNumber = 3,
+    kRepeatedTypeFieldNumber = 4,
   };
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_string_type()
@@ -315,12 +375,24 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   void _internal_set_enum_name_uses_string_view(bool value);
 
   public:
+  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  [[nodiscard]] bool has_repeated_type()
+      const;
+  void clear_repeated_type() ;
+  ::pb::CppFeatures_RepeatedType repeated_type() const;
+  void set_repeated_type(::pb::CppFeatures_RepeatedType value);
+
+  private:
+  ::pb::CppFeatures_RepeatedType _internal_repeated_type() const;
+  void _internal_set_repeated_type(::pb::CppFeatures_RepeatedType value);
+
+  public:
   // @@protoc_insertion_point(class_scope:pb.CppFeatures)
  private:
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
-  static const ::google::protobuf::internal::TcParseTable<2, 3,
-                                   1, 0,
+  static const ::google::protobuf::internal::TcParseTable<2, 4,
+                                   2, 0,
                                    2>
       _table_;
 
@@ -346,6 +418,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
     int string_type_;
     bool legacy_closed_enum_;
     bool enum_name_uses_string_view_;
+    int repeated_type_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -464,6 +537,38 @@ inline void CppFeatures::_internal_set_enum_name_uses_string_view(bool value) {
   _impl_.enum_name_uses_string_view_ = value;
 }
 
+// optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+inline bool CppFeatures::has_repeated_type() const {
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  return value;
+}
+inline void CppFeatures::clear_repeated_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.repeated_type_ = 0;
+  ClearHasBit(_impl_._has_bits_[0],
+                  0x00000008U);
+}
+inline ::pb::CppFeatures_RepeatedType CppFeatures::repeated_type() const {
+  // @@protoc_insertion_point(field_get:pb.CppFeatures.repeated_type)
+  return _internal_repeated_type();
+}
+inline void CppFeatures::set_repeated_type(::pb::CppFeatures_RepeatedType value) {
+  _internal_set_repeated_type(value);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  // @@protoc_insertion_point(field_set:pb.CppFeatures.repeated_type)
+}
+inline ::pb::CppFeatures_RepeatedType CppFeatures::_internal_repeated_type() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return static_cast<::pb::CppFeatures_RepeatedType>(_impl_.repeated_type_);
+}
+inline void CppFeatures::_internal_set_repeated_type(::pb::CppFeatures_RepeatedType value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+
+                                          assert(::google::protobuf::internal::ValidateEnum(
+                                              value, ::pb::CppFeatures_RepeatedType_internal_data_));
+                                          _impl_.repeated_type_ = value;
+}
+
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
@@ -480,6 +585,12 @@ struct is_proto_enum<::pb::CppFeatures_StringType> : std::true_type {};
 template <>
 inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::pb::CppFeatures_StringType>() {
   return ::pb::CppFeatures_StringType_descriptor();
+}
+template <>
+struct is_proto_enum<::pb::CppFeatures_RepeatedType> : std::true_type {};
+template <>
+inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::pb::CppFeatures_RepeatedType>() {
+  return ::pb::CppFeatures_RepeatedType_descriptor();
 }
 
 }  // namespace protobuf

@@ -64,6 +64,8 @@ class UnknownField;  // For the allowlist
 class UnknownFieldSet;
 class DynamicMessage;
 class Reflection;
+template <typename ElementType>
+class RepeatedFieldProxy;
 
 namespace internal {
 
@@ -611,7 +613,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   // Gets the Arena on which this RepeatedField stores its elements.
   // Note: this can be inaccurate for split default fields so we make this
   // function non-const.
-  PROTOBUF_FUTURE_ADD_NODISCARD inline Arena* GetArena() {
+  PROTOBUF_FUTURE_ADD_NODISCARD inline Arena* GetArena() const {
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD
     return soo_rep_.arena();
 #else
@@ -654,6 +656,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::TcParser;
   friend class internal::WireFormat;
   friend class internal::v2::TableDrivenParse;
+  friend class RepeatedFieldProxy<Element>;
 
   // For access to private arena constructor.
   friend class UnknownFieldSet;

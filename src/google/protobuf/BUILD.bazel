@@ -682,6 +682,7 @@ cc_library(
         "parse_context.h",
         "raw_ptr.h",
         "repeated_field.h",
+        "repeated_field_proxy.h",
         "repeated_ptr_field.h",
         "runtime_version.h",
         "serial_arena.h",
