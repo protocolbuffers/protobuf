@@ -17694,6 +17694,11 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   upb_EpsCopyInputStream_Init(&d->input, &buf, size,
                               options & kUpb_DecodeOption_AliasString);
 
+  if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
+    // Fasttable decoder does not support this option.
+    options |= kUpb_DecodeOption_DisableFastTable;
+  }
+
   d->extreg = extreg;
   d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
   d->end_group = DECODE_NOGROUP;
@@ -17808,6 +17813,19 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
   upb_Decoder* d = (upb_Decoder*)e;
   if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   return new_start;
+}
+
+UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
+    const upb_Decoder* d, const upb_MiniTableField* field) {
+  if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_String) return true;
+
+  if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bytes &&
+      (field->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate) &&
+      (d->options & kUpb_DecodeOption_AlwaysValidateUtf8)) {
+    return true;
+  }
+
+  return false;
 }
 
 
