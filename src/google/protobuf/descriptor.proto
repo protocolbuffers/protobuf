@@ -481,9 +481,8 @@ message FileOptions {
     feature_support = {
       edition_introduced: EDITION_PROTO2
       edition_removed: EDITION_2024
-      removal_error: "The `java_multiple_files` behavior is enabled by "
-                     "default in editions 2024 and above. To disable it, "
-                     "you can set `features.(pb.java).nest_in_file_class = YES` "
+      removal_error: "This behavior is enabled by default in editions 2024 and above. "
+                     "To disable it, you can set `features.(pb.java).nest_in_file_class = YES` "
                      "on individual messages, enums, or services."
 
     }
