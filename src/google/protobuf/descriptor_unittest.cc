@@ -5972,6 +5972,32 @@ TEST_F(ImportOptionValidationErrorTest, OptionDefinedInOptionDependency) {
 }
 
 TEST_F(ImportOptionValidationErrorTest,
+       OptionDefinedInOptionDependencyUnknownDependency) {
+  pool_.AllowUnknownDependencies();
+  BuildDescriptorMessagesInTestPool();
+  const FileDescriptor* bar = ParseAndBuildFile("bar.proto",
+                                                R"schema(
+    edition = "2024";
+    import option "baz.proto";
+    message Bar {
+      int32 bar = 1 [(baz) = {baz: 1}];
+    })schema");
+  ASSERT_NE(bar, nullptr);
+  const FileDescriptor* file = ParseAndBuildFile("foo.proto",
+                                                 R"schema(
+    edition = "2024";
+    import "bar.proto";
+    message Foo {
+      Bar bar = 1;
+    })schema");
+
+  ASSERT_NE(file, nullptr);
+  const Descriptor* bar_msg = pool_.FindMessageTypeByName("Bar");
+  ASSERT_NE(bar_msg, nullptr);
+  EXPECT_FALSE(bar_msg->is_placeholder());
+}
+
+TEST_F(ImportOptionValidationErrorTest,
        OptionDefinedInTransitivePublicOptionDependency) {
   BuildDescriptorMessagesInTestPool();
   ParseAndBuildFile("bar.proto",
