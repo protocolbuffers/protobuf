@@ -106,18 +106,15 @@ def _proto_library_impl(ctx):
         files = [proto_info.direct_descriptor_set],
         transitive_files = depset(transitive = [proto_info.transitive_sources]),
     )
-    providers = [
+    return [
         proto_info,
         DefaultInfo(
             files = depset([proto_info.direct_descriptor_set]),
             default_runfiles = ctx.runfiles(),  # empty
             data_runfiles = data_runfiles,
         ),
+        OutputGroupInfo(_validation = ctx.attr._authenticity_validation[OutputGroupInfo]._validation),
     ]
-    if ctx.attr._authenticity_validation:
-        # Forward the validation group so that it's triggered by proto_library rules.
-        providers.append(OutputGroupInfo(_validation = ctx.attr._authenticity_validation[OutputGroupInfo]._validation))
-    return providers
 
 def _process_srcs(ctx, srcs, import_prefix, strip_import_prefix):
     """Returns proto_path and sources, optionally symlinking them to _virtual_imports.

@@ -7,7 +7,7 @@ def _protoc_authenticity_impl(ctx):
     # When this flag is disabled, then users have no way to replace the protoc binary with their own toolchain registration.
     # Therefore there's no validation to perform.
     if not proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
-        return []
+        return [OutputGroupInfo(_validation = depset())]
     toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
     if not toolchain:
         fail("Protocol compiler toolchain could not be resolved.")
