@@ -79,7 +79,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
 
 UPB_FORCEINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_Dispatch(
     UPB_PARSE_PARAMS) {
-  int overrun;
+  ptrdiff_t overrun;
   upb_IsDoneStatus status = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
       &d->input, ptr, &overrun);
 

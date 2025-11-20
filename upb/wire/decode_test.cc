@@ -13,6 +13,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -34,6 +35,9 @@ namespace upb {
 namespace test {
 
 namespace {
+
+using ::testing::AnyOf;
+using ::testing::Eq;
 
 template <typename T>
 struct TestValues {
@@ -171,6 +175,23 @@ TYPED_TEST(FieldTypeTest, DecodeRepeated) {
                                 Value(TestValues<Value>::kMax)}));
   EXPECT_EQ(absl::string_view(trace_buf),
             ExpectedRepeatedFieldTrace(mt, field, 3));
+}
+
+TYPED_TEST(FieldTypeTest, DecodeTruncatedStringField) {
+  char trace_buf[64];
+  upb::Arena arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<TypeParam>(
+      1, kUpb_DecodeFast_Scalar, arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, arena.ptr());
+  // Malformed payload with the maximum allowed varint length but only one byte
+  // of data.
+  std::string payload = "\012\xff\xff\xff\xff\x07\001";
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          arena.ptr(), trace_buf, sizeof(trace_buf));
+  ASSERT_THAT(result, AnyOf(Eq(kUpb_DecodeStatus_OutOfMemory),
+                            Eq(kUpb_DecodeStatus_Malformed)))
+      << upb_DecodeStatus_String(result);
 }
 
 template <typename T>
@@ -317,6 +338,23 @@ TEST(RepeatedFieldTest, LongRepeatedField) {
 
   // We can't easily check the trace here because the large array size will
   // force reallocations that cause fallbacks to the MiniTable decoder.
+}
+
+TYPED_TEST(PackedTest, DecodeTruncatedPackedFieldMaxLen) {
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<TypeParam>(
+      1, kUpb_DecodeFast_Packed, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  // Malformed payload with the maximum allowed varint length but only one byte
+  // of data.
+  std::string payload = "\012\xff\xff\xff\xff\x07\000";
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+  ASSERT_EQ(result, kUpb_DecodeStatus_Malformed)
+      << upb_DecodeStatus_String(result);
 }
 
 }  // namespace

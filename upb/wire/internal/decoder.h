@@ -150,7 +150,7 @@ UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 };
 
 UPB_INLINE
-bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
+bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, size_t len) {
   return utf8_range_IsValid(ptr, len);
 }
 
@@ -169,7 +169,7 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
 }
 
 const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun);
+                                        const char* ptr, ptrdiff_t overrun);
 
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,

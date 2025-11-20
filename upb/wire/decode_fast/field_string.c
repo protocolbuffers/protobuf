@@ -29,10 +29,8 @@ static bool upb_DecodeFast_SingleString(upb_Decoder* d, const char** ptr,
 
   if (!upb_DecodeFast_DecodeSize(d, ptr, &size, next)) return false;
 
-  sv->data = *ptr;
-  sv->size = size;
   *ptr =
-      upb_EpsCopyInputStream_ReadString(&d->input, &sv->data, size, &d->arena);
+      upb_EpsCopyInputStream_ReadString(&d->input, *ptr, size, sv, &d->arena);
 
   if (!*ptr) {
     sv->size = 0;

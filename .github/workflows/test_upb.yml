@@ -33,7 +33,7 @@ jobs:
           - { name: "GCC Optimized", flags: "-c opt --force_pic --java_runtime_version=remotejdk_11 --copt=\"-Wno-error=maybe-uninitialized\"", image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-12.2-12e21b8dda91028bc14212a3ab582c7c4d149fac" }
           - { name: "GCC Static", flags: "-c opt --dynamic_mode=off --java_runtime_version=remotejdk_11 --copt=\"-Wno-error=maybe-uninitialized\"", image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-12.2-12e21b8dda91028bc14212a3ab582c7c4d149fac", continuous-only: true }
           - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-22-4core }
-          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/...", continuous-only: true }
+          - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/..." }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
           # TODO: Add 32-bit ASAN test
           # TODO: Restore the FastTable tests

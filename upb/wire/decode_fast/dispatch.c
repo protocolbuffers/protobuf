@@ -7,6 +7,7 @@
 
 #include "upb/wire/decode_fast/dispatch.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/message/message.h"
@@ -19,7 +20,7 @@
 
 UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     UPB_PARSE_PARAMS) {
-  int overrun;
+  ptrdiff_t overrun;
   switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(&d->input, ptr,
                                                            &overrun)) {
     case kUpb_IsDoneStatus_Done: {

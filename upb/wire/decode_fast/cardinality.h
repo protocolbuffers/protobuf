@@ -282,7 +282,7 @@ UPB_FORCEINLINE
 bool upb_DecodeFast_TryMatchTag(upb_Decoder* d, const char* ptr,
                                 uint16_t expected, upb_DecodeFastNext* next,
                                 upb_DecodeFast_TagSize tagsize) {
-  int overrun;
+  ptrdiff_t overrun;
   if (UPB_UNLIKELY(UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
                        &d->input, ptr, &overrun) !=
                    kUpb_IsDoneStatus_NotDone)) {
@@ -524,7 +524,7 @@ upb_DecodeFast_IsDoneFallback(upb_Decoder* d, const char* ptr);
 
 UPB_FORCEINLINE
 bool upb_DecodeFast_IsDone(upb_Decoder* d, const char** ptr) {
-  int overrun;
+  ptrdiff_t overrun;
   upb_IsDoneStatus status = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
       &d->input, *ptr, &overrun);
   switch (status) {

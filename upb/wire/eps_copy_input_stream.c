@@ -7,6 +7,8 @@
 
 #include "upb/wire/eps_copy_input_stream.h"
 
+#include <stddef.h>
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -16,7 +18,7 @@ static const char* _upb_EpsCopyInputStream_NoOpCallback(
 }
 
 const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback)(
-    upb_EpsCopyInputStream* e, const char* ptr, int overrun) {
+    upb_EpsCopyInputStream* e, const char* ptr, ptrdiff_t overrun) {
   return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
       e, ptr, overrun, _upb_EpsCopyInputStream_NoOpCallback);
 }
