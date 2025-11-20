@@ -34,7 +34,6 @@
 #include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
-#include "absl/meta/type_traits.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -78,9 +77,7 @@ template <typename Key, typename T>
 class MapFieldLite;
 class MapFieldBase;
 
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type>
+template <typename Derived, typename Key, typename T>
 class MapField;
 
 struct MapTestPeer;
@@ -471,6 +468,11 @@ class PROTOBUF_EXPORT UntypedMapBase {
 #endif
   }
 
+  // Insert all the nodes in the list. `count` must be the number of nodes in
+  // the list.
+  // Last-one-wins when there are duplicate keys.
+  void InsertOrReplaceNodes(Arena* arena, NodeBase* list, map_index_t count);
+
   // Alignment of the nodes is the same as alignment of NodeBase.
   NodeBase* AllocNode(Arena* arena) {
     return AllocNode(arena, type_info_.node_size);
@@ -512,6 +514,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   void DeleteNode(NodeBase* node);
+  void DeleteList(NodeBase* list);
 
   map_index_t num_elements_;
   map_index_t num_buckets_;
@@ -850,6 +853,52 @@ class KeyMapBase : public UntypedMapBase {
     return is_new;
   }
 
+  // Insert the given nodes.
+  // On duplicates we discard the previous values.
+  void InsertOrReplaceNodes(Arena* arena, KeyNode* list, map_index_t count) {
+    ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_elements_ + count);
+
+    map_index_t new_size = num_elements_;
+
+    Inserter inserter(this, table_, num_buckets_);
+    NodeBase* list_to_delete = nullptr;
+
+    for (map_index_t i = 0; i < count; ++i) {
+      ABSL_DCHECK_NE(list, nullptr);
+      auto* node_to_insert = list;
+      list = static_cast<KeyNode*>(list->next);
+
+      const map_index_t b = inserter.BucketNumber(node_to_insert);
+      for (NodeBase** node_prev = &table_[b];;
+           node_prev = &(*node_prev)->next) {
+        KeyNode* n = static_cast<KeyNode*>(*node_prev);
+
+        if (n == nullptr) {
+          // Reached the end without finding anything. Insert it.
+          inserter.InsertUnique(node_to_insert, b);
+          ++new_size;
+          break;
+        }
+
+        if (ABSL_PREDICT_FALSE(n->key() == node_to_insert->key())) {
+          // Let's just replace the node right there.
+          *node_prev = node_to_insert;
+          node_to_insert->next = n->next;
+          // And append this node to a list to delete later.
+          n->next = list_to_delete;
+          list_to_delete = n;
+          break;
+        }
+      }
+    }
+
+    num_elements_ = new_size;
+
+    if (ABSL_PREDICT_FALSE(arena == nullptr && list_to_delete != nullptr)) {
+      DeleteList(list_to_delete);
+    }
+  }
+
   // Insert the given Node in bucket b.  If that would make bucket b too big,
   // and bucket b is not a tree, create a tree for buckets b.
   // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
@@ -960,6 +1009,14 @@ class KeyMapBase : public UntypedMapBase {
     return false;
   }
 
+  void ResizeIfLoadIsOutOfRangeForMultiInsert(Arena* arena,
+                                              size_type new_size) {
+    if (const map_index_t needed_capacity = CalculateCapacityForSize(new_size);
+        needed_capacity != this->num_buckets_) {
+      Resize(arena, std::max(kMinTableSize, needed_capacity));
+    }
+  }
+
   // Interpret `head` as a linked list and insert all the nodes into `this`.
   // REQUIRES: this->empty()
   // REQUIRES: the input nodes have unique keys
@@ -969,17 +1026,16 @@ class KeyMapBase : public UntypedMapBase {
     ABSL_DCHECK_NE(num_nodes, size_t{0});
     ABSL_DCHECK_EQ(arena, this->arena());
 
-    if (const map_index_t needed_capacity = CalculateCapacityForSize(num_nodes);
-        needed_capacity != this->num_buckets_) {
-      Resize(arena, std::max(kMinTableSize, needed_capacity));
-    }
+    ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_nodes);
     num_elements_ = num_nodes;
     AssertLoadFactor();
-    while (head != nullptr) {
+    Inserter inserter(this, table_, num_buckets_);
+    for (size_t i = 0; i < num_nodes; ++i) {
       KeyNode* node = static_cast<KeyNode*>(head);
+      ABSL_DCHECK_NE(node, nullptr);
       head = head->next;
       absl::PrefetchToLocalCacheNta(head);
-      InsertUnique(BucketNumber(TS::ToView(node->key())), node);
+      inserter.InsertUnique(node);
     }
   }
 
@@ -1004,24 +1060,77 @@ class KeyMapBase : public UntypedMapBase {
     const auto old_table = table_;
     const map_index_t old_table_size = num_buckets_;
     num_buckets_ = new_num_buckets;
-    table_ = CreateEmptyTable(arena, num_buckets_);
+    NodeBase** table = table_ = CreateEmptyTable(arena, num_buckets_);
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
     const map_index_t start = 0;
 #else
     const map_index_t start = index_of_first_non_null_;
     index_of_first_non_null_ = num_buckets_;
 #endif
+    Inserter inserter(this, table, new_num_buckets);
     for (map_index_t i = start; i < old_table_size; ++i) {
       for (KeyNode* node = static_cast<KeyNode*>(old_table[i]);
            node != nullptr;) {
         auto* next = static_cast<KeyNode*>(node->next);
-        InsertUnique(BucketNumber(TS::ToView(node->key())), node);
+        inserter.InsertUnique(node);
         node = next;
       }
     }
     DeleteTable(arena, old_table, old_table_size);
     AssertLoadFactor();
   }
+
+  // Caches all the relevant values of `UntypedMapBase` to hold a copy on the
+  // stack and avoid reloads after every write.
+  // It allows inserting multiple nodes in a row with reduced cost.
+  class Inserter {
+   public:
+    explicit Inserter(KeyMapBase* map, NodeBase** table,
+                      map_index_t num_buckets)
+        : table_(table),
+          mask_(num_buckets - 1),
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+          index_of_first_non_null_(map->index_of_first_non_null_),
+#endif
+          map_(map) {
+    }
+
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+    ~Inserter() {
+      // Flush the value at the end.
+      map_->index_of_first_non_null_ = index_of_first_non_null_;
+    }
+#endif
+
+    map_index_t BucketNumber(KeyNode* node) const {
+      return Hash(node->key(), table_) & mask_;
+    }
+
+    void InsertUnique(KeyNode* node, map_index_t bucket) {
+      ABSL_DCHECK_EQ(bucket, BucketNumber(node));
+      auto*& head = table_[bucket];
+      if (head != nullptr && map_->ShouldInsertAfterHead(node)) {
+        node->next = head->next;
+        head->next = node;
+      } else {
+        node->next = head;
+        head = node;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+        index_of_first_non_null_ = (std::min)(index_of_first_non_null_, bucket);
+#endif
+      }
+    }
+
+    void InsertUnique(KeyNode* node) { InsertUnique(node, BucketNumber(node)); }
+
+   private:
+    NodeBase** const table_;
+    const map_index_t mask_;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+    map_index_t index_of_first_non_null_;
+#endif
+    KeyMapBase* const map_;
+  };
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
     return Hash(k, table_) & (num_buckets_ - 1);
@@ -1181,22 +1290,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     CopyFromImpl(arena(), other);
   }
 #else
-  // If PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR is defined, make the
-  // arena-enabled constructor private.
-#ifdef PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR
 
  private:
-#endif
   explicit Map(Arena* arena) : Base(arena, GetTypeInfo()) {
     StaticValidityCheck();
   }
 
-  // If PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR was not defined, we
-  // need to add the private tag here.
-#ifndef PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR
-
- private:
-#endif
   Map(Arena* arena, const Map& other) : Map(arena) {
     StaticValidityCheck();
     CopyFromImpl(arena, other);
@@ -1218,12 +1317,12 @@ class Map : private internal::KeyMapBase<internal::KeyForBase<Key>> {
     static_assert(alignof(internal::NodeBase) >= alignof(mapped_type),
                   "Alignment of mapped type is too high.");
     static_assert(
-        absl::disjunction<internal::is_supported_integral_type<key_type>,
-                          internal::is_supported_string_type<key_type>,
-                          internal::is_internal_map_key_type<key_type>>::value,
+        std::disjunction<internal::is_supported_integral_type<key_type>,
+                         internal::is_supported_string_type<key_type>,
+                         internal::is_internal_map_key_type<key_type>>::value,
         "We only support integer, string, or designated internal key "
         "types.");
-    static_assert(absl::disjunction<
+    static_assert(std::disjunction<
                       internal::is_supported_scalar_type<mapped_type>,
                       is_proto_enum<mapped_type>,
                       internal::is_supported_message_type<mapped_type>,

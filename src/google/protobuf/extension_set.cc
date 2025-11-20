@@ -1872,7 +1872,7 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
 }
 
 const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
-    const MessageLite* extendee, int number) const {
+    const MessageLite* extendee, int number) {
   GeneratedExtensionFinder finder(extendee);
   bool was_packed_on_wire = false;
   ExtensionInfo extension_info;

@@ -34,7 +34,8 @@ inline constexpr ListValue::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         values_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ListValue, PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
+            ::google::protobuf::ListValue,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
         }
         #else  // !PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         values_ {}
@@ -67,7 +68,8 @@ inline constexpr Struct::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
         fields_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::Struct, PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
+            ::google::protobuf::Struct,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
         }
         #else
         fields_ {}
@@ -357,9 +359,10 @@ PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-        fields_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::Struct, PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
-        ), from.fields_}
+        fields_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::Struct,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
+        , from.fields_}
         #else
         fields_ { visibility, arena, from.fields_ }
         #endif
@@ -387,7 +390,8 @@ PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
         fields_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::Struct, PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
+            ::google::protobuf::Struct,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::Struct, _impl_.fields_)>()
         }
         #else
         fields_ { visibility, arena }
@@ -860,7 +864,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 6, 2, 42, 2>
 Value::_table_ = {
   {
-    0,  // no _has_bits_
+    PROTOBUF_FIELD_OFFSET(Value,
+                          _impl_._cached_size_),  // no hasbits
     0, // no _extensions_
     6, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
@@ -1152,9 +1157,10 @@ PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-        values_{visibility, (::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ListValue, PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
-        ), from.values_}
+        values_{visibility, ::_pbi::InternalMetadataOffset::Build<
+            ::google::protobuf::ListValue,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
+        , from.values_}
         #else
         values_ { visibility, arena, from.values_ }
         #endif
@@ -1182,7 +1188,8 @@ PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
       : _cached_size_{0},
         #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
         values_{visibility, ::_pbi::InternalMetadataOffset::Build<
-            ::google::protobuf::ListValue, PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
+            ::google::protobuf::ListValue,
+            PROTOBUF_FIELD_OFFSET(::google::protobuf::ListValue, _impl_.values_)>()
         }
         #else
         values_ { visibility, arena }

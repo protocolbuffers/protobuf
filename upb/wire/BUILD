@@ -29,6 +29,7 @@ cc_library(
     deps = [
         ":eps_copy_input_stream",
         "//third_party/utf8_range",
+        "//upb/base",
         "//upb/mem",
         "//upb/mem:internal",
         "//upb/message",
@@ -201,6 +202,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        "//upb/base",
         "//upb/mem",
         "//upb/port",
     ],

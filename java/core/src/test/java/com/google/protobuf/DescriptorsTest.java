@@ -805,32 +805,6 @@ public class DescriptorsTest {
       }
     }
 
-    /** Tests that parsing an unknown enum throws an exception */
-    @Test
-    public void testParseUnknownEnum() {
-      FieldDescriptorProto.Builder field =
-          FieldDescriptorProto.newBuilder()
-              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
-              .setTypeName("UnknownEnum")
-              .setType(FieldDescriptorProto.Type.TYPE_ENUM)
-              .setName("bar")
-              .setNumber(1);
-      DescriptorProto.Builder messageType =
-          DescriptorProto.newBuilder().setName("Foo").addField(field);
-      FileDescriptorProto fooProto =
-          FileDescriptorProto.newBuilder()
-              .setName("foo.proto")
-              .addDependency("bar.proto")
-              .addMessageType(messageType)
-              .build();
-      try {
-        Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
-        assertWithMessage("DescriptorValidationException expected").fail();
-      } catch (DescriptorValidationException expected) {
-        assertThat(expected.getMessage()).contains("\"UnknownEnum\" is not an enum type.");
-      }
-    }
-
     /**
      * Tests the translate/crosslink for an example where a message field's name and type name are
      * the same.
@@ -986,6 +960,155 @@ public class DescriptorsTest {
                   .getFile()
                   .isPlaceholder())
           .isTrue();
+    }
+
+    @Test
+    public void testUnknownMessageSetExtension() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .addDependency("message_set.proto")
+              .addExtension(
+                  FieldDescriptorProto.newBuilder()
+                      .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                      .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                      .setExtendee("MessageSet")
+                      .setName("bar")
+                      .setNumber(2147476052))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor field = foo.findExtensionByName("bar");
+
+      assertThat(field.isExtension()).isTrue();
+      assertThat(field.getNumber()).isEqualTo(2147476052);
+      assertThat(field.getContainingType().isPlaceholder()).isTrue();
+      assertThat(field.getContainingType().getFullName()).isEqualTo("MessageSet");
+    }
+
+    @Test
+    public void testUnknownEnumFieldsAllowed() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .addDependency("bar.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Foo")
+                      // TYPE_ENUM signals that this is an enum field, not a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("bar")
+                              .setNumber(1)
+                              .setType(FieldDescriptorProto.Type.TYPE_ENUM))
+                      // Default values signal that this must be an enum field, not
+                      // a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Baz")
+                              .setName("baz")
+                              .setNumber(2)
+                              .setDefaultValue("BAZ_VALUE")))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor barField = foo.findMessageTypeByName("Foo").findFieldByName("bar");
+      FieldDescriptor bazField = foo.findMessageTypeByName("Foo").findFieldByName("baz");
+
+      assertThat(barField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(bazField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(barField.hasDefaultValue()).isFalse();
+      assertThat(bazField.hasDefaultValue()).isTrue();
+      assertThat(bazField.getDefaultValue()).isEqualTo(null);
+    }
+
+    @Test
+    public void testUnknownEnumFieldsConflictAllowed() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .addDependency("bar.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Foo")
+                      // Trick the parser into thinking these are a message field by not setting
+                      // the type or default value.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("bar")
+                              .setNumber(1))
+                      // TYPE_ENUM signals that this is an enum field, not a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("baz")
+                              .setNumber(2)
+                              .setType(FieldDescriptorProto.Type.TYPE_ENUM))
+                      // Default values signal that this must be an enum field, not
+                      // a message.
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Baz")
+                              .setName("bam")
+                              .setNumber(3)
+                              .setDefaultValue("BAZ_VALUE")))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor bazField = foo.findMessageTypeByName("Foo").findFieldByName("baz");
+      FieldDescriptor bamField = foo.findMessageTypeByName("Foo").findFieldByName("bam");
+
+      assertThat(bazField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(bamField.getEnumType().isPlaceholder()).isTrue();
+      assertThat(bazField.hasDefaultValue()).isFalse();
+      assertThat(bamField.hasDefaultValue()).isTrue();
+      assertThat(bamField.getDefaultValue()).isEqualTo(null);
+    }
+
+    @Test
+    public void testUnknownFieldWithUnknownNestedType() throws Exception {
+      FileDescriptorProto fooProto =
+          FileDescriptorProto.newBuilder()
+              .setName("foo.proto")
+              .setPackage("com.google.protobuf")
+              .addDependency("bar.proto")
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("FirstMessage")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("com.google.protobuf.Bar.Baz")
+                              .setName("baz")
+                              .setNumber(1)))
+              .addMessageType(
+                  DescriptorProto.newBuilder()
+                      .setName("Foo")
+                      .addField(
+                          FieldDescriptorProto.newBuilder()
+                              .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                              .setTypeName("Bar")
+                              .setName("bar")
+                              .setNumber(2)))
+              .build();
+
+      FileDescriptor foo =
+          Descriptors.FileDescriptor.buildFrom(fooProto, new FileDescriptor[0], true);
+      FieldDescriptor baz = foo.findMessageTypeByName("FirstMessage").findFieldByName("baz");
+      FieldDescriptor bar = foo.findMessageTypeByName("Foo").findFieldByName("bar");
+
+      assertThat(baz.getMessageType().isPlaceholder()).isTrue();
+      assertThat(bar.getMessageType().isPlaceholder()).isTrue();
     }
 
     @Test

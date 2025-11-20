@@ -294,7 +294,11 @@ void ParseFunctionGenerator::GenerateTailCallTable(io::Printer* p) {
               p->Emit(
                   "PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_),\n");
             } else {
-              p->Emit("0,  // no _has_bits_\n");
+              // Just put something safe here. _cached_size_ is fine.
+              p->Emit(R"cc(
+                PROTOBUF_FIELD_OFFSET($classname$,
+                                      _impl_._cached_size_),  // no hasbits
+              )cc");
             }
           }},
          {"extension_offset",

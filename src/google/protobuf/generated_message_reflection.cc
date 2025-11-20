@@ -37,6 +37,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
@@ -3550,7 +3551,8 @@ Type* Reflection::MutableRepeatedField(Message* message,
 template <typename Type>
 void Reflection::AddField(Message* message, const FieldDescriptor* field,
                           const Type& value) const {
-  MutableRaw<RepeatedField<Type>>(message, field)->Add(value);
+  MutableRaw<RepeatedField<Type>>(message, field)
+      ->AddWithArena(message->GetArena(), value);
   SetHasBitForRepeated(message, field);
 }
 
@@ -3560,7 +3562,7 @@ Type* Reflection::AddField(Message* message,
   RepeatedPtrField<Type>* repeated =
       MutableRaw<RepeatedPtrField<Type>>(message, field);
   SetHasBitForRepeated(message, field);
-  return repeated->Add();
+  return repeated->AddWithArena(message->GetArena());
 }
 
 MessageFactory* Reflection::GetMessageFactory() const {
@@ -3834,7 +3836,11 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
 
   void* p = internal::Allocate(byte_size);
   auto* res = ::new (p) TcParseTableBase{
-      static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
+      static_cast<uint16_t>(
+          schema_.HasHasbits()
+              ? schema_.HasBitsOffset()
+              // Just put something safe here. _cached_size_ is fine.
+              : schema_.default_instance_->GetClassData()->cached_size_offset),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
@@ -4071,6 +4077,21 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   // Register the descriptor of this file.
   DescriptorPool::InternalAddGeneratedFile(table->descriptor, table->size);
   MessageFactory::InternalRegisterGeneratedFile(table);
+
+  // Ensure that any lazily loaded static initializers from the generated pool
+  // (e.g. from bootstrapped protos) are run before building any descriptors. We
+  // have do it in reflection code like this, because we need to ensure that the
+  // linker --gc-sections step can strip out the full runtime if it is unused.
+  // If we try to avoid pre-main initialization (e.g. during DescriptorBuilder),
+  // we hit data races and would need to add locks.
+  [[maybe_unused]] static std::true_type lazy_register =
+      (internal::ExtensionSet::RegisterMessageExtension(
+           &FeatureSet::default_instance(), pb::cpp.number(),
+           FieldDescriptor::TYPE_MESSAGE, false, false,
+           &pb::CppFeatures::default_instance(),
+           nullptr,
+           internal::LazyAnnotation::kUndefined),
+       std::true_type{});
 }
 
 }  // namespace

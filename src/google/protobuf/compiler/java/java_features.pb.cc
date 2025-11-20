@@ -251,7 +251,8 @@ PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
 const ::_pbi::TcParseTable<0, 0, 0, 0, 2>
 JavaFeatures_NestInFileClassFeature::_table_ = {
   {
-    0,  // no _has_bits_
+    PROTOBUF_FIELD_OFFSET(JavaFeatures_NestInFileClassFeature,
+                          _impl_._cached_size_),  // no hasbits
     0, // no _extensions_
     0, 0,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),

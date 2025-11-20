@@ -52,7 +52,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "google/protobuf/descriptor_lite.h"
+#include "google/protobuf/descriptor_lite.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
 
@@ -125,6 +125,9 @@ class Symbol;
 
 // Defined in unknown_field_set.h.
 class UnknownField;
+
+// Defined in symbol_checker.h
+class SymbolChecker;
 
 // Defined in command_line_interface.cc
 namespace compiler {
@@ -582,6 +585,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
     friend class Descriptor;
     friend class DescriptorPool;
     friend class DescriptorBuilder;
+    friend class SymbolChecker;
   };
 
   // The number of extension ranges in this message type.
@@ -786,6 +790,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class OneofDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
+  friend class SymbolChecker;
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 160);
@@ -1488,6 +1493,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
  private:
   friend class Symbol;
   friend bool internal::IsEnumFullySequential(const EnumDescriptor* enum_desc);
+  friend class SymbolChecker;
   typedef EnumOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -2047,6 +2053,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
 
  private:
   friend class Symbol;
+  friend class SymbolChecker;
   friend class FileDescriptorLegacy;
   typedef FileOptions OptionsType;
 
@@ -2282,6 +2289,7 @@ class PROTOBUF_EXPORT DescriptorPool {
       OPTION_VALUE,   // value in option assignment
       IMPORT,         // import error
       EDITIONS,       // editions-related error
+      SYMBOL,         // Symbol visibility and co-location related error
       OTHER           // some other problem
     };
     static absl::string_view ErrorLocationName(ErrorLocation location);
@@ -2366,11 +2374,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   void EnforceSymbolVisibility(bool enforce) {
     enforce_symbol_visibility_ = enforce;
   }
-
-  // By default, option imports are allowed to be missing.
-  // If you call EnforceOptionDependencies(true), however, the DescriptorPool
-  // will report a import not found error.
-  void EnforceOptionDependencies(bool enforce) { enforce_option_ = enforce; }
 
   // Sets the default feature mappings used during the build. If this function
   // isn't called, the C++ feature set defaults are used.  If this function is
@@ -2677,7 +2680,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool lazily_build_dependencies_;
   bool allow_unknown_;
   bool enforce_weak_;
-  bool enforce_option_ = false;
   ExtDeclEnforcementLevel enforce_extension_declarations_;
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;

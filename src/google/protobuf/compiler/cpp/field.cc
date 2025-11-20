@@ -61,6 +61,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
+      {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
       Sub("PrepareSplitMessageForWrite",
           split ? "PrepareSplitMessageForWrite();" : "")
@@ -157,8 +158,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
     io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_map()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -167,8 +167,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 #endif
             )cc");
   } else if (field_->is_repeated()) {
-    p->Emit({{"internal_metadata_offset",
-              [&] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -185,8 +184,7 @@ void FieldGeneratorBase::GenerateMemberConstexprConstructor(
 void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_map()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
               $name$_{visibility, $internal_metadata_offset$}
@@ -198,8 +196,7 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
     if (ShouldSplit(field_, options_)) {
       p->Emit("$name$_{}");  // RawPtr<Repeated>
     } else {
-      p->Emit({{"internal_metadata_offset",
-                [p] { InternalMetadataOffsetFormatString(p); }}},
+      p->Emit({InternalMetadataOffsetSub(p)},
               R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
                 $name$_{visibility, $internal_metadata_offset$}
@@ -217,21 +214,19 @@ void FieldGeneratorBase::GenerateMemberConstructor(io::Printer* p) const {
 void FieldGeneratorBase::GenerateMemberCopyConstructor(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension());
   if (field_->is_map()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif
             )cc");
   } else if (field_->is_repeated()) {
-    p->Emit({{"internal_metadata_offset",
-              [p] { InternalMetadataOffsetFormatString(p); }}},
+    p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
-              $name$_{visibility, ($internal_metadata_offset$), from.$name$_}
+              $name$_{visibility, $internal_metadata_offset$, from.$name$_}
 #else
               $name$_ { visibility, arena, from.$name$_ }
 #endif
@@ -289,11 +284,16 @@ pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {
       .string_type();
 }
 
-void FieldGeneratorBase::InternalMetadataOffsetFormatString(io::Printer* p) {
-  p->Emit(R"cc(
-    ::_pbi::InternalMetadataOffset::Build<
-        $classtype$, PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$name$_)>()
-  )cc");
+Sub FieldGeneratorBase::InternalMetadataOffsetSub(io::Printer* p) {
+  return Sub("internal_metadata_offset",
+             [p] {
+               p->Emit(R"cc(
+                 ::_pbi::InternalMetadataOffset::Build<
+                     $classtype$,
+                     PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$name$_)>()
+               )cc");
+             })
+      .WithSuffix("");
 }
 
 namespace {
@@ -363,6 +363,7 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   if (!idx.has_value()) {
     vars.emplace_back(Sub("set_hasbit", "").WithSuffix(";"));
     vars.emplace_back(Sub("clear_hasbit", "").WithSuffix(";"));
+    vars.emplace_back("exclude_mask", "0xFFFFFFFFU");
     return;
   }
 
@@ -389,6 +390,8 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   vars.emplace_back("has_hasbit", has);
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
+  vars.emplace_back("exclude_mask",
+                    absl::StrFormat("0x%08xU", ~(1u << (*idx % 32))));
 }
 
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,

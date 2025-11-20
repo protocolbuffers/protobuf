@@ -5,11 +5,21 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-edition = "2023";
+edition = "2024";
 
 package upb.test_2023;
 
+import "google/protobuf/descriptor.proto";
+
+import option "upb/test/custom_options.proto";
+import option "upb/test/custom_options_unlinked.proto";
+
+option features.enforce_naming_style = STYLE_LEGACY;
+
 message EditionsMessage {
+  option (upb.message_opt) = 87;
+  option (upb.message_opt_unlinked) = 9;
+
   int32 plain_field = 1;
   int32 implicit_presence_field = 2 [features.field_presence = IMPLICIT];
   int32 required_field = 3 [features.field_presence = LEGACY_REQUIRED];
@@ -17,10 +27,16 @@ message EditionsMessage {
   EditionsEnum enum_field = 5;
   repeated int32 unpacked_field = 6
       [features.repeated_field_encoding = EXPANDED];
+
+  extensions 100 to 199;
 }
 
 enum EditionsEnum {
   option features.enum_type = CLOSED;
 
   ONE = 1;
+}
+
+extend EditionsMessage {
+  int32 ext = 100;
 }

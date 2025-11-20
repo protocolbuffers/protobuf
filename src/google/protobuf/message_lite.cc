@@ -730,7 +730,6 @@ absl::Cord MessageLite::SerializePartialAsCord() const {
   return output;
 }
 
-
 namespace internal {
 
 // Non-inline variants of std::string specializations for

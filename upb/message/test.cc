@@ -8,6 +8,7 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <optional>
 #include <string>
@@ -40,6 +41,7 @@
 #include "upb/message/test.upbdefs.h"
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/debug_string.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
@@ -732,7 +734,7 @@ TEST(MessageTest, MapFieldDeterministicEncoding) {
 }
 
 TEST(MessageTest, AdjacentAliasedUnknown) {
-  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  const upb_MiniTable* table = &upb_0test__EmptyMessage_msg_init;
   upb::Arena arena;
   upb_Message* msg = upb_Message_New(table, arena.ptr());
   char region[900];
@@ -844,7 +846,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fa = upb_MiniTable_FindFieldByNumber(m, 20);
-    const upb_MiniTable* ma = upb_MiniTable_SubMessage(m, fa);
+    const upb_MiniTable* ma = upb_MiniTable_SubMessage(fa);
     upb_Array_Freeze(arr, ma);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
@@ -852,7 +854,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fm = upb_MiniTable_FindFieldByNumber(m, 10);
-    const upb_MiniTable* mm = upb_MiniTable_SubMessage(m, fm);
+    const upb_MiniTable* mm = upb_MiniTable_SubMessage(fm);
     upb_Map_Freeze(map, mm);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
@@ -878,21 +880,93 @@ TEST(MessageTest, SkippedVarintSize) {
   }
 }
 
-TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
-  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
-  upb::Arena arena(table->UPB_PRIVATE(size));
+TEST(MessageTest, MessageTooBig) {
+  if (sizeof(size_t) <= 4) {
+    GTEST_SKIP() << "Skipping test because size_t is too small";
+  }
+  if (UPB_MSAN || UPB_ASAN) {
+    GTEST_SKIP() << "Skipping test because sanitizers that track shadow memory "
+                    "increase overhead and lead to OOMs";
+  }
+  upb::Arena arena;
+  size_t buf_size = 2 * 1024;
+  void* bytes = upb_Arena_Malloc(arena.ptr(), buf_size);
+  memset(bytes, 0, buf_size);
+  upb_StringView bytes_view;
+  bytes_view.data = (const char*)bytes;
+  bytes_view.size = buf_size;
+  upb_test_TestRepeatedMessageBig* msg =
+      upb_test_TestRepeatedMessageBig_new(arena.ptr());
 
+  {
+    size_t size;
+    upb_test_TestRepeatedMessageBig_resize_repeated_bytes(msg, 1024,
+                                                          arena.ptr());
+    upb_StringView* arr =
+        upb_test_TestRepeatedMessageBig_mutable_repeated_bytes(msg, &size);
+
+    for (size_t i = 0; i < size; i++) {
+      arr[i] = bytes_view;
+    }
+    // Message is slightly more than 2mb to serialize
+  }
+  {
+    upb_test_TestRepeatedMessageBig* parent =
+        upb_test_TestRepeatedMessageBig_new(arena.ptr());
+    upb_test_TestRepeatedMessageBig_resize_repeated_message(parent, 1024,
+                                                            arena.ptr());
+    size_t size;
+    upb_test_TestRepeatedMessageBig** arr =
+        upb_test_TestRepeatedMessageBig_mutable_repeated_message(parent, &size);
+
+    for (size_t i = 0; i < size; i++) {
+      arr[i] = msg;
+    }
+    // Message is slightly more than 2gb to serialize, but no individual length
+    // delimited message is larger
+    msg = parent;
+  }
+  char* ptr;
+  size_t size;
+  upb_EncodeStatus status;
+  {
+    upb::Arena out_arena;
+    status =
+        upb_Encode(UPB_UPCAST(msg), &upb_0test__TestRepeatedMessageBig_msg_init,
+                   0, out_arena.ptr(), &ptr, &size);
+    // If the top level message exceeds the limit, that's OK
+  }
+  if (status == kUpb_EncodeStatus_OutOfMemory) {
+    GTEST_SKIP()
+        << "Skipping test because we could not allocate a few gigabytes";
+  }
+  EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
+  {
+    upb::Arena out_arena;
+    status = upb_EncodeLengthPrefixed(
+        UPB_UPCAST(msg), &upb_0test__TestRepeatedMessageBig_msg_init, 0,
+        out_arena.ptr(), &ptr, &size);
+  }
+  if (status != kUpb_EncodeStatus_OutOfMemory &&
+      status != kUpb_EncodeStatus_MaxSizeExceeded) {
+    // If we ever try to length-delimit something larger than fits in 32 bits,
+    // it's an error
+    FAIL() << "Expected OutOfMemory or MaxSizeExceeded, got " << status;
+  }
+}
+
+TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
+  upb::Arena arena;
   uintptr_t space_allocated_before =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
-  upb_Message* msg = upb_Message_New(table, arena.ptr());
   char region[300];
   memset(region, 0, sizeof(region));
   region[0] = 0x0A;  // Tag number 1
   region[1] = 0xA9;
   region[2] = 0x02;
-  upb_DecodeStatus status =
-      upb_Decode(region, sizeof(region), msg, table, nullptr, 0, arena.ptr());
-  EXPECT_EQ(status, kUpb_DecodeStatus_Ok);
+  upb_test_EmptyMessage* msg =
+      upb_test_EmptyMessage_parse(region, sizeof(region), arena.ptr());
+  EXPECT_NE(msg, nullptr);
   uintptr_t space_allocated_after =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
   EXPECT_GT(space_allocated_after, space_allocated_before + 297);

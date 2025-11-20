@@ -35,7 +35,8 @@ public abstract class AbstractMessageLite<
         MessageType extends AbstractMessageLite<MessageType, BuilderType>,
         BuilderType extends AbstractMessageLite.Builder<MessageType, BuilderType>>
     implements MessageLite {
-  protected int memoizedHashCode = 0;
+  protected
+  int memoizedHashCode = 0;
 
   @Override
   public ByteString toByteString() {

@@ -72,5 +72,5 @@ filegroup(
             "**/*test.cc",
         ],
     ),
-    visibility = ["//pkg:__pkg__"],
+    visibility = ["//upb:__pkg__"],
 )

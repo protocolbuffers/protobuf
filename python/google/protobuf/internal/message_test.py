@@ -1937,6 +1937,14 @@ class Proto2Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       unittest_pb2.TestAllTypes(repeated_nested_enum='FOO')
 
+    m1 = unittest_pb2.TestAllTypes(
+        repeated_foreign_message=[{'c': 1}]
+    )
+    with self.assertRaises(TypeError):
+      unittest_pb2.TestAllTypes(
+          repeated_nested_message=m1.repeated_foreign_message
+      )
+
   def testPythonicInitWithDict(self):
     # Both string/unicode field name keys should work.
     kwargs = {

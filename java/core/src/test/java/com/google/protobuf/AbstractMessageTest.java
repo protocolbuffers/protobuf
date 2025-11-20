@@ -550,7 +550,7 @@ public class AbstractMessageTest {
     assertWithMessage(equalsError).that(m1.equals(m2)).isFalse();
     assertWithMessage(equalsError).that(m2.equals(m1)).isFalse();
 
-    assertWithMessage(String.format("%s should have a different hash code from %s", m1, m2))
+    assertWithMessage("%s should have a different hash code from %s", m1, m2)
         .that(m1.hashCode())
         .isNotEqualTo(m2.hashCode());
   }

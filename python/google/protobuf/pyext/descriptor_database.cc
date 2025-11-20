@@ -18,6 +18,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/pyext/message.h"
@@ -81,7 +82,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
       return false;
     }
     FileDescriptorProto file_proto;
-    if (!file_proto.ParseFromArray(str, len)) {
+    if (!file_proto.ParseFromString(absl::string_view(str, len))) {
       ABSL_LOG(ERROR)
           << "DescriptorDatabase method did not return a FileDescriptorProto";
       return false;
@@ -95,7 +96,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
 bool PyDescriptorDatabase::FindFileByName(StringViewArg filename,
                                           FileDescriptorProto* output) {
   ScopedPyObjectPtr py_descriptor(PyObject_CallMethod(
-      py_database_, "FindFileByName", "s#", filename.c_str(), filename.size()));
+      py_database_, "FindFileByName", "s#", filename.data(), filename.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
 }
 

@@ -26,7 +26,6 @@ import json
 import math
 from operator import methodcaller
 import re
-import warnings
 
 from google.protobuf import descriptor
 from google.protobuf import message_factory
@@ -85,7 +84,6 @@ def MessageToJson(
     sort_keys=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None,
     ensure_ascii=True,
     always_print_fields_with_no_presence=False,
 ):
@@ -107,8 +105,6 @@ def MessageToJson(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: Deprecated. If set, use this to specify float field valid
-      digits.
     ensure_ascii: If True, strings with non-ASCII characters are escaped. If
       False, Unicode strings are returned unchanged.
 
@@ -119,7 +115,6 @@ def MessageToJson(
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
-      float_precision,
       always_print_fields_with_no_presence,
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
@@ -131,11 +126,10 @@ def MessageToDict(
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None,
 ):
   """Converts protobuf message to a dictionary.
 
-  When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
+  When the dictionary is encoded to JSON, it conforms to ProtoJSON spec.
 
   Args:
     message: The protocol buffers message instance to serialize.
@@ -149,8 +143,6 @@ def MessageToDict(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: Deprecated. If set, use this to specify float field valid
-      digits.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -159,7 +151,6 @@ def MessageToDict(
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
-      float_precision,
       always_print_fields_with_no_presence,
   )
   # pylint: disable=protected-access
@@ -182,7 +173,6 @@ class _Printer(object):
       preserving_proto_field_name=False,
       use_integers_for_enums=False,
       descriptor_pool=None,
-      float_precision=None,
       always_print_fields_with_no_presence=False,
   ):
     self.always_print_fields_with_no_presence = (
@@ -191,15 +181,6 @@ class _Printer(object):
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
-    if float_precision:
-      warnings.warn(
-          'float_precision option is deprecated for json_format. '
-          'This will turn into error in 7.34.0, please remove it '
-          'before that.'
-      )
-      self.float_format = '.{}g'.format(float_precision)
-    else:
-      self.float_format = None
 
   def ToJsonString(self, message, indent, sort_keys, ensure_ascii):
     js = self._MessageToJsonObject(message)
@@ -208,7 +189,7 @@ class _Printer(object):
     )
 
   def _MessageToJsonObject(self, message):
-    """Converts message to an object according to Proto3 JSON Specification."""
+    """Converts message to an object according to ProtoJSON Specification."""
     message_descriptor = message.DESCRIPTOR
     full_name = message_descriptor.full_name
     if _IsWrapperMessage(message_descriptor):
@@ -219,7 +200,7 @@ class _Printer(object):
     return self._RegularMessageToJsonObject(message, js)
 
   def _RegularMessageToJsonObject(self, message, js):
-    """Converts normal message according to Proto3 JSON Specification."""
+    """Converts normal message according to ProtoJSON Specification."""
     fields = message.ListFields()
 
     try:
@@ -285,7 +266,7 @@ class _Printer(object):
     return js
 
   def _FieldToJsonObject(self, field, value):
-    """Converts field value according to Proto3 JSON Specification."""
+    """Converts field value according to ProtoJSON Specification."""
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
       return self._MessageToJsonObject(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
@@ -322,15 +303,13 @@ class _Printer(object):
           return _INFINITY
       if math.isnan(value):
         return _NAN
-      if self.float_format:
-        return float(format(value, self.float_format))
       elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
         return type_checkers.ToShortestFloat(value)
 
     return value
 
   def _AnyMessageToJsonObject(self, message):
-    """Converts Any message according to Proto3 JSON Specification."""
+    """Converts Any message according to ProtoJSON Specification."""
     if not message.ListFields():
       return {}
     # Must print @type first, use OrderedDict instead of {}
@@ -352,13 +331,13 @@ class _Printer(object):
     return self._RegularMessageToJsonObject(sub_message, js)
 
   def _GenericMessageToJsonObject(self, message):
-    """Converts message according to Proto3 JSON Specification."""
+    """Converts message according to ProtoJSON Specification."""
     # Duration, Timestamp and FieldMask have ToJsonString method to do the
     # convert. Users can also call the method directly.
     return message.ToJsonString()
 
   def _ValueMessageToJsonObject(self, message):
-    """Converts Value message according to Proto3 JSON Specification."""
+    """Converts Value message according to ProtoJSON Specification."""
     which = message.WhichOneof('kind')
     # If the Value message is not set treat as null_value when serialize
     # to JSON. The parse back result will be different from original message.
@@ -384,11 +363,11 @@ class _Printer(object):
     return self._FieldToJsonObject(oneof_descriptor, value)
 
   def _ListValueMessageToJsonObject(self, message):
-    """Converts ListValue message according to Proto3 JSON Specification."""
+    """Converts ListValue message according to ProtoJSON Specification."""
     return [self._ValueMessageToJsonObject(value) for value in message.values]
 
   def _StructMessageToJsonObject(self, message):
-    """Converts Struct message according to Proto3 JSON Specification."""
+    """Converts Struct message according to ProtoJSON Specification."""
     fields = message.fields
     ret = {}
     for key in fields:

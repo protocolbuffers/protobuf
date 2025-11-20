@@ -14,6 +14,7 @@
 #include <string>
 
 #include "absl/base/no_destructor.h"
+#include "absl/base/optimization.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
@@ -134,6 +135,14 @@ void UntypedMapBase::DeleteNode(NodeBase* node) {
   VisitKey(node, destroy);
   VisitValue(node, destroy);
   DeallocNode(node);
+}
+
+void UntypedMapBase::DeleteList(NodeBase* list) {
+  while (list != nullptr) {
+    NodeBase* n = list;
+    list = list->next;
+    DeleteNode(n);
+  }
 }
 
 void UntypedMapBase::ClearTableImpl(Arena* arena, bool reset) {
@@ -283,6 +292,16 @@ UntypedMapBase::TypeInfo UntypedMapBase::GetTypeInfoDynamic(
       Narrow<uint16_t>(AlignTo(value_offsets.end, max_align, max_align)),
       Narrow<uint8_t>(value_offsets.start), static_cast<uint8_t>(key_type),
       static_cast<uint8_t>(value_type)};
+}
+
+void UntypedMapBase::InsertOrReplaceNodes(Arena* arena, NodeBase* list,
+                                          map_index_t count) {
+  if (ABSL_PREDICT_FALSE(count == 0)) return;
+  VisitKeyType([=](auto key_type) {
+    using Key = typename decltype(key_type)::type;
+    static_cast<KeyMapBase<Key>&>(*this).InsertOrReplaceNodes(
+        arena, static_cast<typename KeyMapBase<Key>::KeyNode*>(list), count);
+  });
 }
 
 }  // namespace internal

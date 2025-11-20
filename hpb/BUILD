@@ -95,6 +95,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
     ] + select({
         ":hpb_backend_cpp": [
+            "//hpb/backend/cpp:repeated_field",
         ],
         ":hpb_backend_upb": [
             "//hpb/backend/upb:repeated_field",
@@ -186,14 +187,19 @@ cc_library(
         ":arena",
         ":multibackend",
         ":ptr",
-        "//hpb/backend/upb:extension",
-        "//hpb/backend/upb:interop",
         "//hpb/internal:message_lock",
         "//hpb/internal:template_help",
         "//upb/message",
         "//upb/mini_table",
         "@abseil-cpp//absl/base:core_headers",
-    ],
+    ] + select({
+        "//hpb:hpb_backend_cpp": [
+        ],
+        "//hpb:hpb_backend_upb": [
+            "//hpb/backend/upb:extension",
+            "//hpb/backend/upb:interop",
+        ],
+    }),
 )
 
 cc_library(

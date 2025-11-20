@@ -157,22 +157,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
-// Removes the ability to copy messages into themselves.
-// Owner: cknittel@, mkruskal@
-#define PROTOBUF_FUTURE_NO_RECURSIVE_MESSAGE_COPY 1
-
-// Removes the public RepeatedPtrField(Arena*) constructor.
-// Owner: cknittel@, mkruskal@
-#define PROTOBUF_FUTURE_REMOVE_REPEATED_PTR_FIELD_ARENA_CONSTRUCTOR 1
-
-// Removes the public Map(Arena*) constructor.
-// Owner: cknittel@, mkruskal@
-#define PROTOBUF_FUTURE_REMOVE_MAP_FIELD_ARENA_CONSTRUCTOR 1
-
-// Removes the public RepeatedField(Arena*) constructor.
-// Owner: cknittel@, mkruskal@
-#define PROTOBUF_FUTURE_REMOVE_REPEATED_FIELD_ARENA_CONSTRUCTOR 1
-
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
@@ -633,6 +617,15 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
+
+// TODO remove these flags once the feature is stable.
+#ifndef PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
+#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD 1
+#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD 1
+#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_EXTENSION_SET 1
+#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD 1
+#define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_STRING_PIECE_FIELD 1
+#endif  // PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
 
 #include "google/protobuf/os_macros_undef.inc"
 

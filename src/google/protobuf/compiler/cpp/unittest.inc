@@ -951,7 +951,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ParseFromTruncated) {
   const std::string msg = p.SerializeAsString();
   int successful_count = 0;
   for (int i = 0; i <= msg.size(); i++) {
-    if (p.ParseFromArray(msg.c_str(), i)) {
+    if (p.ParseFromString(absl::string_view(msg.c_str(), i))) {
       ++successful_count;
     }
   }

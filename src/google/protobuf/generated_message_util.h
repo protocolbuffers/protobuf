@@ -397,6 +397,11 @@ constexpr std::optional<uintptr_t> EncodePlacementArenaOffsets(
   return arena_bits;
 }
 
+// The struct PrivateAccess is used to provide access to private members of
+// message classes without making them public. This is useful for highly
+// optimized code paths that need to access internals.
+struct PrivateAccess {};
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

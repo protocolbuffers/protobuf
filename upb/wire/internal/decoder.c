@@ -38,6 +38,6 @@ UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
 UPB_NOINLINE
 const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
                                         const char* ptr, int overrun) {
-  return _upb_EpsCopyInputStream_IsDoneFallbackInline(
+  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
       e, ptr, overrun, _upb_Decoder_BufferFlipCallback);
 }

@@ -624,19 +624,10 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 // This class provides access to map field using generated api. It is used for
 // internal generated message implementation only. Users should never use this
 // directly.
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType_,
-          WireFormatLite::FieldType kValueFieldType_>
+template <typename Derived, typename Key, typename T>
 class MapField final : public TypeDefinedMapFieldBase<Key, T> {
-  // Provide utilities to parse/serialize key/value.  Provide utilities to
-  // manipulate internal stored type.
-  typedef MapTypeHandler<kKeyFieldType_, Key> KeyTypeHandler;
-  typedef MapTypeHandler<kValueFieldType_, T> ValueTypeHandler;
-
  public:
   typedef Map<Key, T> MapType;
-  static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
-  static constexpr WireFormatLite::FieldType kValueFieldType = kValueFieldType_;
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
   constexpr MapField() : MapField(InternalMetadataOffset()) {}
@@ -697,37 +688,23 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
 }
 
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType_,
-          WireFormatLite::FieldType kValueFieldType_>
-using MapFieldWithArena =
-    FieldWithArena<MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>>;
+template <typename Derived, typename Key, typename T>
+using MapFieldWithArena = FieldWithArena<MapField<Derived, Key, T>>;
 
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType_,
-          WireFormatLite::FieldType kValueFieldType_>
-struct FieldArenaRep<
-    MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>> {
-  using Type =
-      MapFieldWithArena<Derived, Key, T, kKeyFieldType_, kValueFieldType_>;
+template <typename Derived, typename Key, typename T>
+struct FieldArenaRep<MapField<Derived, Key, T>> {
+  using Type = MapFieldWithArena<Derived, Key, T>;
 
-  static inline MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>*
-  Get(Type* arena_rep) {
+  static inline MapField<Derived, Key, T>* Get(Type* arena_rep) {
     return &arena_rep->field();
   }
 };
 
-template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType_,
-          WireFormatLite::FieldType kValueFieldType_>
-struct FieldArenaRep<
-    const MapField<Derived, Key, T, kKeyFieldType_, kValueFieldType_>> {
-  using Type = const MapFieldWithArena<Derived, Key, T, kKeyFieldType_,
-                                       kValueFieldType_>;
+template <typename Derived, typename Key, typename T>
+struct FieldArenaRep<const MapField<Derived, Key, T>> {
+  using Type = const MapFieldWithArena<Derived, Key, T>;
 
-  static inline const MapField<Derived, Key, T, kKeyFieldType_,
-                               kValueFieldType_>*
-  Get(Type* arena_rep) {
+  static inline const MapField<Derived, Key, T>* Get(Type* arena_rep) {
     return &arena_rep->field();
   }
 };
@@ -809,9 +786,7 @@ class PROTOBUF_EXPORT MapValueConstRef {
   FieldDescriptor::CppType type_;
 
  private:
-  template <typename Derived, typename K, typename V,
-            internal::WireFormatLite::FieldType key_wire_type,
-            internal::WireFormatLite::FieldType value_wire_type>
+  template <typename Derived, typename K, typename V>
   friend class internal::MapField;
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
@@ -915,9 +890,7 @@ class PROTOBUF_EXPORT MapIteratorBase {
  protected:
   template <typename Key, typename T>
   friend class internal::TypeDefinedMapFieldBase;
-  template <typename Derived, typename Key, typename T,
-            internal::WireFormatLite::FieldType kKeyFieldType,
-            internal::WireFormatLite::FieldType kValueFieldType>
+  template <typename Derived, typename Key, typename T>
   friend class internal::MapField;
   friend class internal::MapFieldBase;
 

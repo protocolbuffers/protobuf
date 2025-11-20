@@ -5,6 +5,7 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -19,18 +20,32 @@ FASTTABLE_COPTS = UPB_DEFAULT_COPTS + select({
     "//conditions:default": [],
 })
 
+bool_flag(
+    name = "debug_trace",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "debug_trace_setting",
+    flag_values = {":debug_trace": "True"},
+)
+
 cc_library(
     name = "field_parsers",
     srcs = [
+        "cardinality.c",
         "cardinality.h",
         "field_fixed.c",
-        "field_generic.c",
         "field_message.c",
         "field_string.c",
         "field_varint.c",
     ],
     hdrs = ["field_parsers.h"],
     copts = FASTTABLE_COPTS,
+    defines = select({
+        ":debug_trace_setting": ["UPB_TRACE_FASTDECODER=1"],
+        "//conditions:default": [],
+    }),
     visibility = ["//upb:__pkg__"],
     deps = [
         ":combinations",

@@ -194,10 +194,7 @@ void Map::GeneratePrivateMembers(io::Printer* p) const {
              {"kValType",
               absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
             R"cc(
-              $pbi$::$MapField$<$Entry$, $Key$, $Val$,
-                                $pbi$::WireFormatLite::TYPE_$kKeyType$,
-                                $pbi$::WireFormatLite::TYPE_$kValType$>
-                  $name$_;
+              $pbi$::$MapField$<$Entry$, $Key$, $Val$> $name$_;
             )cc");
   }
 }

@@ -7,6 +7,7 @@
 
 #include "upb/wire/decode_fast/function_array.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/mini_table/internal/message.h"

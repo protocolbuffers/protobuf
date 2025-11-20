@@ -497,6 +497,47 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(false, $m->getOptionalBool());
     }
 
+    public function testBoolFromDoubleArrayConstructor()
+    {
+        $m = new TestMessage(['optional_bool' => -0.0]);
+        $this->assertFalse($m->getOptionalBool());
+
+        $m = new TestMessage(['optional_bool' => 0.0]);
+        $this->assertFalse($m->getOptionalBool());
+
+        $m = new TestMessage(['optional_bool' => 1.5]);
+        $this->assertTrue($m->getOptionalBool());
+
+        $m = new TestMessage(['optional_bool' => NAN]);
+        $this->assertTrue($m->getOptionalBool());
+
+        $m = new TestMessage(['optional_bool' => INF]);
+        $this->assertTrue($m->getOptionalBool());
+
+        $m = new TestMessage(['optional_bool' => -INF]);
+        $this->assertTrue($m->getOptionalBool());
+    }
+
+    public function testRepeatedBoolFromDouble()
+    {
+        $m  = new TestMessage();
+        $rf = $m->getRepeatedBool();
+
+        $rf[] = -0.0;
+        $rf[] = 0.0;
+        $rf[] = 1.5;
+        $rf[] = NAN;
+        $rf[] = INF;
+        $rf[] = -INF;
+
+        $this->assertFalse($rf[0]);
+        $this->assertFalse($rf[1]);
+        $this->assertTrue($rf[2]);
+        $this->assertTrue($rf[3]);
+        $this->assertTrue($rf[4]);
+        $this->assertTrue($rf[5]);
+    }
+
     #########################################################
     # Test string field.
     #########################################################

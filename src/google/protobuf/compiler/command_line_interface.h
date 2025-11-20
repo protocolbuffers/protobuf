@@ -58,6 +58,7 @@ struct TransitiveDependencyOptions {
   bool include_json_name = false;
   bool include_source_code_info = false;
   bool retain_options = false;
+  bool skip_dependencies = false;
 };
 
 // This class implements the command-line interface to the protocol compiler.

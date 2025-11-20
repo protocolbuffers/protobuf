@@ -20,12 +20,12 @@ namespace hpb::internal::backend::cpp {
 // hpb(cpp) backend stubs.
 
 template <typename T>
-typename T::Proxy CreateMessage(Arena& arena) {
+typename T::Proxy CreateMessage(hpb::Arena& arena) {
   return typename T::Proxy();
 }
 
 template <typename T>
-typename T::Proxy CloneMessage(Ptr<T> message, Arena& arena) {
+typename T::Proxy CloneMessage(Ptr<T> message, hpb::Arena& arena) {
   abort();
 }
 
@@ -40,7 +40,7 @@ void DeepCopy(Ptr<const T> source_message, Ptr<T> target_message) {
 }
 
 template <typename T>
-absl::string_view Serialize(PtrOrRaw<T> message, Arena& arena) {
+absl::string_view Serialize(PtrOrRaw<T> message, hpb::Arena& arena) {
   abort();
 }
 

@@ -79,6 +79,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.cc
@@ -197,6 +198,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/thread_safe_arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.h
@@ -677,7 +679,10 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/base92.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode.c
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/compat.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.c
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.c
   ${protobuf_SOURCE_DIR}/upb/mini_table/message.c
   ${protobuf_SOURCE_DIR}/upb/reflection/def_pool.c
@@ -748,13 +753,11 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_entry.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_sorter.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/message.h
-  ${protobuf_SOURCE_DIR}/upb/message/internal/tagged_ptr.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/types.h
   ${protobuf_SOURCE_DIR}/upb/message/map.h
   ${protobuf_SOURCE_DIR}/upb/message/map_gencode_util.h
   ${protobuf_SOURCE_DIR}/upb/message/merge.h
   ${protobuf_SOURCE_DIR}/upb/message/message.h
-  ${protobuf_SOURCE_DIR}/upb/message/tagged_ptr.h
   ${protobuf_SOURCE_DIR}/upb/message/value.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/build_enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/decode.h
@@ -765,15 +768,19 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/modifiers.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/wire_constants.h
   ${protobuf_SOURCE_DIR}/upb/mini_descriptor/link.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/compat.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/debug_string.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/extension_registry.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/field.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/file.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/enum.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/extension.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/field.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/file.h
+  ${protobuf_SOURCE_DIR}/upb/mini_table/internal/generated_registry.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/message.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/size_log2.h
   ${protobuf_SOURCE_DIR}/upb/mini_table/internal/sub.h
@@ -1094,6 +1101,7 @@ set(lite_test_util_hdrs
 # @//pkg:test_util
 set(test_util_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_test_utils.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
@@ -1105,6 +1113,7 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_test_utils.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/test_zero_copy_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest.inc
@@ -1185,12 +1194,15 @@ set(upb_test_protos_files
   ${protobuf_SOURCE_DIR}/upb/message/test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.proto
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test_proto2.proto
+  ${protobuf_SOURCE_DIR}/upb/test/custom_options.proto
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/empty.proto
   ${protobuf_SOURCE_DIR}/upb/test/proto3_test.proto
   ${protobuf_SOURCE_DIR}/upb/test/test.proto
   ${protobuf_SOURCE_DIR}/upb/test/test_cpp.proto
   ${protobuf_SOURCE_DIR}/upb/test/test_import_empty_srcs.proto
+  ${protobuf_SOURCE_DIR}/upb/test/test_multiple_files.proto
+  ${protobuf_SOURCE_DIR}/upb/test/test_multiple_files2.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_editions_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_public_import_test.proto
   ${protobuf_SOURCE_DIR}/upb/util/def_to_proto_regular_import_test.proto
@@ -1203,8 +1215,11 @@ set(upb_test_protos_files
 
 # @//upb:test_srcs
 set(upb_test_files
+  ${protobuf_SOURCE_DIR}/upb/hash/test.cc
   ${protobuf_SOURCE_DIR}/upb/json/decode_test.cc
   ${protobuf_SOURCE_DIR}/upb/json/encode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/lex/atoi_test.cc
+  ${protobuf_SOURCE_DIR}/upb/lex/round_trip_test.cc
   ${protobuf_SOURCE_DIR}/upb/mem/arena_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/accessors_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/array_test.cc
@@ -1214,6 +1229,9 @@ set(upb_test_files
   ${protobuf_SOURCE_DIR}/upb/message/merge_test.cc
   ${protobuf_SOURCE_DIR}/upb/message/test.cc
   ${protobuf_SOURCE_DIR}/upb/message/utf8_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_descriptor/internal/encode_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_table/compat_test.cc
+  ${protobuf_SOURCE_DIR}/upb/mini_table/generated_registry_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/editions_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/length_prefixed_test.cc
   ${protobuf_SOURCE_DIR}/upb/test/proto3_test.cc
@@ -1276,6 +1294,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_block_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_piece_field_support_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_view_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unredacted_debug_format_for_test.cc
