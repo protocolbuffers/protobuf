@@ -65,9 +65,13 @@ class UnknownField;  // For the allowlist
 class UnknownFieldSet;
 class DynamicMessage;
 class Reflection;
+template <typename ElementType>
+class RepeatedFieldProxy;
 
 namespace internal {
 
+template <typename ElementType>
+class RepeatedFieldProxyBase;
 class EpsCopyInputStream;
 class TcParser;
 class WireFormat;
@@ -510,6 +514,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::WireFormat;
   friend class internal::v2::TableDrivenParse;
 
+  friend class RepeatedFieldProxy<Element>;
+  template <typename ElementType>
+  friend class internal::RepeatedFieldProxyBase;
+
   // For access to private arena constructor.
   friend class UnknownFieldSet;
 
@@ -526,6 +534,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   template <typename Init>
   void ResizeImpl(int new_size, Init init);
+
+  // We have a private `GetArena()` which is `const`. It is the responsibility
+  // of the caller to not call this on uninitialized split repeated fields.
+  inline Arena* GetArena() const { return soo_rep_.arena(); }
 
   bool is_soo() const { return soo_rep_.is_soo(); }
   void set_size(int size) {
