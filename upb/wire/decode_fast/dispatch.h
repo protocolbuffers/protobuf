@@ -43,9 +43,14 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   return tag;
 }
 
-UPB_INLINE UPB_PRESERVE_NONE const char* _upb_FastDecoder_TagDispatch(
-    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
-    uint64_t hasbits, uint64_t tag) {
+// We have to disable HWASAN for this function because we steal the high byte
+// of the `table` pointer for our own purposes (the table mask). This overwrites
+// the tag that HWASAN depends on for its own checks.
+__attribute__((no_sanitize("hwaddress"))) UPB_INLINE
+    UPB_PRESERVE_NONE const char*
+    _upb_FastDecoder_TagDispatch(struct upb_Decoder* d, const char* ptr,
+                                 upb_Message* msg, intptr_t table,
+                                 uint64_t hasbits, uint64_t tag) {
   const upb_MiniTable* table_p = decode_totablep(table);
   uint8_t mask = table;
   size_t ofs = tag & mask;
@@ -142,7 +147,7 @@ const char* fastdecode_delimited(
       return NULL;
     }
     int delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, len);
-    ptr = func(&d->input, ptr, ctx);
+    ptr = func(&d->input, ptr, len, ctx);
     upb_EpsCopyInputStream_PopLimit(&d->input, ptr, delta);
   }
   return ptr;
@@ -182,8 +187,6 @@ typedef enum {
   kUpb_DecodeFastNext_TailCallUnpacked = 5,
 } upb_DecodeFastNext;
 
-const char* upb_DecodeFast_IsDoneFallback(UPB_PARSE_PARAMS);
-
 /* Error function that will abort decoding with longjmp(). We can't declare this
  * UPB_NORETURN, even though it is appropriate, because if we do then compilers
  * will "helpfully" refuse to tailcall to it
@@ -219,13 +222,10 @@ const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
       UPB_UNREACHABLE();                                                  \
   }
 
-// Uncomment this to see the exit points from the fast decoder.
-// #define UPB_LOG_EXITS
-
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
                                        upb_DecodeFastNext val, const char* sym,
                                        const char* file, int line) {
-#ifdef UPB_LOG_EXITS
+#ifdef UPB_TRACE_FASTDECODER
   fprintf(stderr, "Fasttable fallback @ %s:%d -> %s (%d)\n", file, line, sym,
           val);
 #endif
@@ -237,7 +237,7 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
                                         upb_DecodeFastNext* next,
                                         upb_DecodeStatus val, const char* sym,
                                         const char* file, int line) {
-#ifdef UPB_LOG_EXITS
+#ifdef UPB_TRACE_FASTDECODER
   fprintf(stderr, "Fasttable error @ %s:%d -> %s (%d)\n", file, line, sym, val);
 #endif
   d->status = val;

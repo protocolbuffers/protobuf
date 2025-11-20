@@ -474,7 +474,7 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
 }
 
 typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
-    upb_EpsCopyInputStream* e, const char* ptr, void* ctx);
+    upb_EpsCopyInputStream* e, const char* ptr, int size, void* ctx);
 
 // Tries to perform a fast-path handling of the given delimited message data.
 // If the sub-message beginning at `*ptr` and extending for `len` is short and
@@ -496,7 +496,7 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
   e->limit_ptr = *ptr + len;
   e->limit = e->limit_ptr - e->end;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
-  *ptr = func(e, *ptr, ctx);
+  *ptr = func(e, *ptr, len, ctx);
   e->limit_ptr = saved_limit_ptr;
   e->limit = saved_limit;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
