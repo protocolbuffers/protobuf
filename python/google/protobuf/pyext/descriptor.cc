@@ -25,16 +25,13 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#ifdef Py_GIL_DISABLED
-// Only include mutex for free-threaded builds
-#include "absl/synchronization/mutex.h"
-#endif
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/pyext/descriptor_containers.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -77,51 +74,6 @@ static PyObject* PyFrame_GetGlobals(PyFrameObject* frame) {
 namespace google {
 namespace protobuf {
 namespace python {
-
-// Zero-cost mutex wrapper that compiles away to nothing in GIL-enabled builds.
-// Similar to nanobind's ft_mutex pattern.
-class ABSL_LOCKABLE ABSL_ATTRIBUTE_WARN_UNUSED FreeThreadingMutex {
- public:
-  FreeThreadingMutex() = default;
-  explicit constexpr FreeThreadingMutex(absl::ConstInitType)
-#ifdef Py_GIL_DISABLED
-      : mutex_(absl::kConstInit)
-#endif
-  {
-  }
-  FreeThreadingMutex(const FreeThreadingMutex&) = delete;
-  FreeThreadingMutex& operator=(const FreeThreadingMutex&) = delete;
-
-#ifndef Py_GIL_DISABLED
-  // GIL-enabled build: no-op mutex (zero cost)
-  void Lock() {}
-  void Unlock() {}
-#else
-  // Free-threaded build: real mutex
-  void Lock() ABSL_EXCLUSIVE_LOCK_FUNCTION() { mutex_.Lock(); }
-  void Unlock() ABSL_UNLOCK_FUNCTION() { mutex_.Unlock(); }
-
- private:
-  absl::Mutex mutex_;
-#endif
-};
-
-// RAII lock guard for FreeThreadingMutex
-class ABSL_SCOPED_LOCKABLE FreeThreadingLockGuard {
- public:
-  explicit FreeThreadingLockGuard(FreeThreadingMutex& mutex)
-      ABSL_EXCLUSIVE_LOCK_FUNCTION(mutex)
-      : mutex_(mutex) {
-    mutex_.Lock();
-  }
-  ~FreeThreadingLockGuard() ABSL_UNLOCK_FUNCTION() { mutex_.Unlock(); }
-
-  FreeThreadingLockGuard(const FreeThreadingLockGuard&) = delete;
-  FreeThreadingLockGuard& operator=(const FreeThreadingLockGuard&) = delete;
-
- private:
-  FreeThreadingMutex& mutex_;
-};
 
 // Mutex to protect interned_descriptors from concurrent access in
 // free-threading Python builds. Zero-cost in GIL-enabled builds.

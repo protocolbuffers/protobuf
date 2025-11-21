@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/const_init.h"
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
@@ -22,6 +24,7 @@
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_database.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
@@ -45,6 +48,8 @@ namespace python {
 // Pointers are not owned here, and belong to the PyDescriptorPool.
 static absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>*
     descriptor_pool_map;
+
+static FreeThreadingMutex descriptor_pool_map_mutex(absl::kConstInit);
 
 namespace cdescriptor_pool {
 
@@ -127,11 +132,14 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
   cpool->is_mutable = true;
   cpool->underlay = underlay;
 
-  if (!descriptor_pool_map->insert(
-      std::make_pair(cpool->pool, cpool)).second) {
-    // Should never happen -- would indicate an internal error / bug.
-    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
-    return nullptr;
+  {
+    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
+             .second) {
+      // Should never happen -- would indicate an internal error / bug.
+      PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+      return nullptr;
+    }
   }
 
   return cpool;
@@ -162,10 +170,14 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   cpool->pool = pool;
   cpool->is_owned = true;
 
-  if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
-    // Should never happen -- would indicate an internal error / bug.
-    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
-    return nullptr;
+  {
+    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
+             .second) {
+      // Should never happen -- would indicate an internal error / bug.
+      PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+      return nullptr;
+    }
   }
 
   return cpool;
@@ -191,7 +203,10 @@ static PyObject* New(PyTypeObject* type,
 
 static void Dealloc(PyObject* pself) {
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
-  descriptor_pool_map->erase(self->pool);
+  {
+    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
+    descriptor_pool_map->erase(self->pool);
+  }
   Py_CLEAR(self->py_message_factory);
   for (auto it = self->descriptor_options->begin();
        it != self->descriptor_options->end(); ++it) {
@@ -692,9 +707,7 @@ bool InitDescriptorPool() {
 
   // Register this pool to be found for C++-generated descriptors.
   descriptor_pool_map->insert(
-      std::make_pair(DescriptorPool::generated_pool(),
-                     python_generated_pool));
-
+      std::make_pair(DescriptorPool::generated_pool(), python_generated_pool));
   return true;
 }
 
@@ -712,6 +725,7 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
       pool == DescriptorPool::generated_pool()) {
     return python_generated_pool;
   }
+  FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
   auto it = descriptor_pool_map->find(pool);
   if (it == descriptor_pool_map->end()) {
     PyErr_SetString(PyExc_KeyError, "Unknown descriptor pool");
@@ -737,11 +751,14 @@ PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
   cpool->is_owned = false;
   cpool->is_mutable = false;
   cpool->underlay = nullptr;
-
-  if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
-    // Should never happen -- We already checked the existence above.
-    PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
-    return nullptr;
+  {
+    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
+    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool))
+             .second) {
+      // Should never happen -- We already checked the existence above.
+      PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
+      return nullptr;
+    }
   }
 
   return reinterpret_cast<PyObject*>(cpool);
