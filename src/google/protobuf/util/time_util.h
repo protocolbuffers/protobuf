@@ -20,6 +20,7 @@
 #include "absl/strings/string_view.h"
 
 // Must be included last.
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port_def.inc"
 
 namespace google {
