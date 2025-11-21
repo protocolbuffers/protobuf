@@ -17,7 +17,6 @@
 #include <cstdint>
 #include <cstring>
 #include <istream>
-#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>

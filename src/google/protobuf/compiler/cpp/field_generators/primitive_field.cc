@@ -11,7 +11,6 @@
 
 #include <cstddef>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -19,6 +18,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -43,7 +43,7 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 using Semantic = ::google::protobuf::io::AnnotationCollector::Semantic;
 
 // For encodings with fixed sizes, returns that size in bytes.
-std::optional<size_t> FixedSize(FieldDescriptor::Type type) {
+absl::optional<size_t> FixedSize(FieldDescriptor::Type type) {
   switch (type) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_INT64:
@@ -56,7 +56,7 @@ std::optional<size_t> FixedSize(FieldDescriptor::Type type) {
     case FieldDescriptor::TYPE_BYTES:
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
-      return std::nullopt;
+      return absl::nullopt;
 
     case FieldDescriptor::TYPE_FIXED32:
       return WireFormatLite::kFixed32Size;
@@ -78,7 +78,7 @@ std::optional<size_t> FixedSize(FieldDescriptor::Type type) {
   }
 
   ABSL_LOG(FATAL) << "Can't get here.";
-  return std::nullopt;
+  return absl::nullopt;
 }
 
 std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {

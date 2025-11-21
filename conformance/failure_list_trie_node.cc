@@ -8,7 +8,6 @@
 #include "failure_list_trie_node.h"
 
 #include <memory>
-#include <optional>
 #include <string>
 
 #include "absl/status/status.h"
@@ -17,6 +16,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 namespace google {
 namespace protobuf {
@@ -72,7 +72,7 @@ void FailureListTrieNode::InsertImpl(absl::string_view test_name) {
   children_.back()->InsertImpl(test_name_rest);
 }
 
-std::optional<std::string> FailureListTrieNode::WalkDownMatch(
+absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
     absl::string_view test_name) {
   absl::string_view section = test_name.substr(0, test_name.find('.'));
   // test_name cannot be overwritten
@@ -99,7 +99,7 @@ std::optional<std::string> FailureListTrieNode::WalkDownMatch(
     }
   }
   // No match
-  return std::nullopt;
+  return absl::nullopt;
 }
 }  // namespace protobuf
 }  // namespace google

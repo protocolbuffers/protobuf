@@ -26,7 +26,6 @@
 #include <limits>
 #include <memory>
 #include <new>  // IWYU pragma: keep
-#include <optional>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -66,6 +65,7 @@
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/cpp_edition_defaults.h"
@@ -450,13 +450,13 @@ class FlatAllocatorImpl {
 
   // TODO: Remove the NULL terminators to save memory and simplify
   // the code.
-  std::optional<internal::DescriptorNames> CreateDescriptorNames(
+  absl::optional<internal::DescriptorNames> CreateDescriptorNames(
       std::initializer_list<absl::string_view> bytes,
       std::initializer_list<size_t> sizes) {
     for (size_t size : sizes) {
       // Name too long.
       if (size != static_cast<uint16_t>(size)) {
-        return std::nullopt;
+        return absl::nullopt;
       }
     }
 
@@ -481,7 +481,7 @@ class FlatAllocatorImpl {
     PlanArray<char>(internal::DescriptorNames::AllocationSizeForSimpleNames(
         full_name_size));
   }
-  std::optional<internal::DescriptorNames> AllocateEntityNames(
+  absl::optional<internal::DescriptorNames> AllocateEntityNames(
       absl::string_view scope, absl::string_view name) {
     static constexpr absl::string_view kNullChar("\0", 1);
     if (scope.empty()) {
@@ -562,7 +562,7 @@ class FlatAllocatorImpl {
     PlanArray<char>(total_bytes);
   }
 
-  std::optional<internal::DescriptorNames> AllocateFieldNames(
+  absl::optional<internal::DescriptorNames> AllocateFieldNames(
       const absl::string_view name, const absl::string_view scope,
       const std::string* opt_json_name) {
     ABSL_CHECK(has_allocated());
@@ -4506,7 +4506,7 @@ class DescriptorBuilder {
   DescriptorPool::DeferredValidation& deferred_validation_;
   DescriptorPool::ErrorCollector* error_collector_;
 
-  std::optional<FeatureResolver> feature_resolver_ = std::nullopt;
+  absl::optional<FeatureResolver> feature_resolver_ = absl::nullopt;
 
   // As we build descriptors we store copies of the options messages in
   // them. We put pointers to those copies in this vector, as we build, so we
@@ -8827,7 +8827,7 @@ void DescriptorBuilder::ValidateOptions(
 namespace {
 // Validates that a fully-qualified symbol for extension declaration must
 // have a leading dot and valid identifiers.
-std::optional<std::string> ValidateSymbolForDeclaration(
+absl::optional<std::string> ValidateSymbolForDeclaration(
     absl::string_view symbol) {
   if (!absl::StartsWith(symbol, ".")) {
     return absl::StrCat("\"", symbol,
@@ -8837,7 +8837,7 @@ std::optional<std::string> ValidateSymbolForDeclaration(
   if (!ValidateQualifiedName(symbol)) {
     return absl::StrCat("\"", symbol, "\" contains invalid identifiers.");
   }
-  return std::nullopt;
+  return absl::nullopt;
 }
 }  // namespace
 
@@ -8891,7 +8891,7 @@ void DescriptorBuilder::ValidateExtensionDeclaration(
             });
         return;
       }
-      std::optional<std::string> err =
+      absl::optional<std::string> err =
           ValidateSymbolForDeclaration(declaration.full_name());
       if (err.has_value()) {
         AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,

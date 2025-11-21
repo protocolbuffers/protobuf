@@ -19,7 +19,6 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -143,8 +142,8 @@ bool MessageHasFieldUsingArenaOffset(const Descriptor* descriptor) {
 // _has_bits_ array, with has_array_index indicating which element of the array
 // to use.
 std::string GenerateConditionMaybeWithProbability(
-    uint32_t mask, std::optional<float> probability, bool use_cached_has_bits,
-    std::optional<int> has_array_index, bool is_batch, bool is_repeated) {
+    uint32_t mask, absl::optional<float> probability, bool use_cached_has_bits,
+    absl::optional<int> has_array_index, bool is_batch, bool is_repeated) {
   ABSL_DCHECK(!is_batch || !is_repeated);
   std::string condition;
   if (use_cached_has_bits) {
@@ -175,21 +174,23 @@ std::string GenerateConditionMaybeWithProbabilityForField(
     int has_bit_index, const FieldDescriptor* field, const Options& options,
     bool is_repeated) {
   auto prob = GetPresenceProbability(field, options);
-  return GenerateConditionMaybeWithProbability(1u << (has_bit_index % 32), prob,
-                                               /*use_cached_has_bits*/ true,
-                                               /*has_array_index*/ std::nullopt,
-                                               /*is_batch=*/false, is_repeated);
+  return GenerateConditionMaybeWithProbability(
+      1u << (has_bit_index % 32), prob,
+      /*use_cached_has_bits*/ true,
+      /*has_array_index*/ absl::nullopt,
+      /*is_batch=*/false, is_repeated);
 }
 
 std::string GenerateConditionMaybeWithProbabilityForGroup(
     uint32_t mask, const std::vector<const FieldDescriptor*>& fields,
     const Options& options) {
   auto prob = GetFieldGroupPresenceProbability(fields, options);
-  return GenerateConditionMaybeWithProbability(mask, prob,
-                                               /*use_cached_has_bits*/ true,
-                                               /*has_array_index*/ std::nullopt,
-                                               /*is_batch*/ true,
-                                               /*is_repeated*/ false);
+  return GenerateConditionMaybeWithProbability(
+      mask, prob,
+      /*use_cached_has_bits*/ true,
+      /*has_array_index*/ absl::nullopt,
+      /*is_batch*/ true,
+      /*is_repeated*/ false);
 }
 
 void PrintPresenceCheck(const FieldDescriptor* field,
@@ -5252,10 +5253,10 @@ std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
   return masks;
 }
 
-static std::optional<int> FixedSize(const FieldDescriptor* field) {
+static absl::optional<int> FixedSize(const FieldDescriptor* field) {
   if (field->is_repeated() || field->real_containing_oneof() ||
       !field->has_presence()) {
-    return std::nullopt;
+    return absl::nullopt;
   }
 
   const size_t tag_size = WireFormat::TagSize(field->number(), field->type());
@@ -5276,7 +5277,7 @@ static std::optional<int> FixedSize(const FieldDescriptor* field) {
     case FieldDescriptor::TYPE_BOOL:
       return tag_size + WireFormatLite::kBoolSize;
     default:
-      return std::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -5411,7 +5412,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
 
               // If the chunk is a fixed size singular chunk, use a branchless
               // approach for it.
-              if (std::optional<int> fsize = FixedSize(fields[0])) {
+              if (absl::optional<int> fsize = FixedSize(fields[0])) {
                 update_cached_has_bits(fields);
                 uint32_t mask = GenChunkMask(fields, has_bit_indices_);
                 p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
@@ -5734,14 +5735,14 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
                // XXX REMOVE? XXX
                const auto needs_verifier =
                    !f.NeedsIsInitialized()
-                       ? std::make_optional(p->WithSubstitutionListener(
+                       ? absl::make_optional(p->WithSubstitutionListener(
                              [&](auto label, auto loc) {
                                ABSL_LOG(FATAL)
                                    << "Field generated output but is marked as "
                                       "!NeedsIsInitialized"
                                    << field->full_name();
                              }))
-                       : std::nullopt;
+                       : absl::nullopt;
                f.GenerateIsInitialized(p);
              }
            }},

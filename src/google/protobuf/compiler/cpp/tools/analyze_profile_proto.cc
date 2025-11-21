@@ -14,7 +14,6 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <optional>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -45,6 +44,7 @@
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/compiler/cpp/cpp_access_info_parse_helper.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -68,7 +68,7 @@ struct PDProtoAnalysis {
   uint64_t presence_count = 0;
   uint64_t usage_count = 0;
   float presence_probability = 0.0;
-  std::optional<AccessInfoMap::ElementStats> element_stats;
+  absl::optional<AccessInfoMap::ElementStats> element_stats;
 };
 
 std::ostream& operator<<(std::ostream& s, PDProtoScale scale) {
