@@ -64,7 +64,13 @@ class Reflection;
 template <typename T>
 struct WeakRepeatedPtrField;
 
+template <typename ElementType>
+class RepeatedFieldProxy;
+
 namespace internal {
+
+template <typename ElementType, typename RepeatedFieldType>
+class RepeatedFieldProxyBase;
 
 class MergePartialFromCodedStreamHelper;
 class SwapFieldHelper;
@@ -1502,6 +1508,12 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   friend class internal::MapFieldBase;
 
   friend class internal::TcParser;
+
+  template <typename ElementType>
+  friend class RepeatedFieldProxy;
+
+  template <typename ElementType, typename RepeatedFieldType>
+  friend class internal::RepeatedFieldProxyBase;
 
   template <typename T>
   friend struct WeakRepeatedPtrField;

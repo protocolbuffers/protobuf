@@ -53,6 +53,18 @@ void SetCordVariables(
           : absl::StrCat(
                 QualifiedClassName(descriptor->containing_type(), options),
                 "::", MakeDefaultFieldName(descriptor));
+  if (descriptor->is_repeated()) {
+    switch (descriptor->cpp_repeated_type()) {
+      case FieldDescriptor::CppRepeatedType::kRepeated:
+        (*variables)["repeated_type"] = absl::StrCat(
+            "::", ProtobufNamespace(options), "::RepeatedField<::absl::Cord>");
+        break;
+      case FieldDescriptor::CppRepeatedType::kProxy:
+        (*variables)["repeated_type"] =
+            absl::StrCat("::", ProtobufNamespace(options),
+                         "::RepeatedFieldProxy<::absl::Cord>");
+    }
+  }
 }
 
 class CordFieldGenerator : public FieldGeneratorBase {

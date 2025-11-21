@@ -776,12 +776,31 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ ::std::string* $nonnull$ $add_name$();
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
-    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>&
-    $name$() const;
-    [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>* $nonnull$
-    $mutable_name$();
+  )cc");
+  switch (field_->cpp_repeated_type()) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>&
+        $name$() const;
+        [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>*
+            $nonnull$
+            $mutable_name$();
 
-    private:
+        private:
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const ::std::string>
+        $name$() const;
+        [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<::std::string>
+        $mutable_name$();
+
+        private:
+      )cc");
+      break;
+  }
+  p->Emit(R"cc(
     const $pb$::RepeatedPtrField<::std::string>& _internal_$name$() const;
     $pb$::RepeatedPtrField<::std::string>* $nonnull$ _internal_mutable_$name$();
 
@@ -830,9 +849,9 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
           return _internal_mutable_$name_internal$()->Mutable(index);
         }
-        //~ Note: no need to set hasbit in set_$name$(int index). Hasbits
-        //~ only need to be updated if a new element is (potentially) added, not
-        //~ if an existing element is mutated.
+        //~ Note: no need to set hasbit in set_$name$(int index). Hasbits only
+        //~ need to be updated if a new element is (potentially) added, not if
+        //~ an existing element is mutated.
         template <typename Arg_, typename... Args_>
         inline void $Msg$::set_$name$(int index, Arg_&& value, Args_... args) {
           $WeakDescriptorSelfPin$;
@@ -853,24 +872,53 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           $set_hasbit$;
           $annotate_add$;
           // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
-        }
-        inline const $pb$::RepeatedPtrField<::std::string>& $Msg$::$name$()
-            const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-          $WeakDescriptorSelfPin$;
-          $annotate_list$;
-          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-          return _internal_$name_internal$();
-        }
-        inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
-        $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-          $WeakDescriptorSelfPin$;
-          $set_hasbit$;
-          $annotate_mutable_list$;
-          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-          $TsanDetectConcurrentMutation$;
-          return _internal_mutable_$name_internal$();
-        }
-      )cc");
+        })cc");
+  switch (field_->cpp_repeated_type()) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(
+          R"cc(
+            inline const $pb$::RepeatedPtrField<::std::string>& $Msg$::$name$()
+                const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+              $WeakDescriptorSelfPin$;
+              $annotate_list$;
+              // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+              return _internal_$name_internal$();
+            }
+            inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
+            $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+              $WeakDescriptorSelfPin$;
+              $set_hasbit$;
+              $annotate_mutable_list$;
+              // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+              $TsanDetectConcurrentMutation$;
+              return _internal_mutable_$name_internal$();
+            }
+          )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(
+          R"cc(
+            inline $pb$::RepeatedFieldProxy<const ::std::string> $Msg$::$name$()
+                const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+              $WeakDescriptorSelfPin$;
+              $annotate_list$;
+              // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+              return BuildRepeatedProxy<::std::string>(_internal_$name_internal$());
+            }
+            inline $pb$::RepeatedFieldProxy<::std::string>
+            $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+              $WeakDescriptorSelfPin$;
+              $set_hasbit$;
+              $annotate_mutable_list$;
+              // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+              $TsanDetectConcurrentMutation$;
+              return BuildRepeatedProxy<::std::string>(
+                  *_internal_mutable_$name_internal$());
+            }
+          )cc");
+      break;
+  }
+
   if (should_split()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedPtrField<::std::string>&

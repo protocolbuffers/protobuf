@@ -761,10 +761,27 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
 
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
-    [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
-    $mutable_name$();
+  )cc");
+  switch (field_->cpp_repeated_type()) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
+        $mutable_name$();
 
-    private:
+        private:
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Submsg$>
+        $mutable_name$();
+
+        private:
+      )cc");
+      break;
+  }
+
+  p->Emit(R"cc(
     const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
     $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $_internal_mutable_name$();
   )cc");
@@ -778,9 +795,20 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
     public:
     [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
     $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
-    [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>& $name$()
-        const;
   )cc");
+  switch (field_->cpp_repeated_type()) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>&
+        $name$() const;
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Submsg$> $name$() const;
+      )cc");
+      break;
+  }
 }
 
 void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
@@ -799,19 +827,37 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_mutable_$name_internal$()->Mutable(index);
     }
   )cc");
+  switch (field_->cpp_repeated_type()) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
+        $Msg$::mutable_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $StrongRef$;
+          $TsanDetectConcurrentMutation$;
+          return _internal_mutable_$name_internal$();
+        }
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<$Submsg$> $Msg$::mutable_$name$()
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $set_hasbit$;
+          $annotate_mutable_list$;
+          // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
+          $StrongRef$;
+          $TsanDetectConcurrentMutation$;
+          return BuildRepeatedProxy<$Submsg$>(*_internal_mutable_$name_internal$());
+        }
+      )cc");
+      break;
+  }
 
-  p->Emit(R"cc(
-    inline $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $Msg$::mutable_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $set_hasbit$;
-      $annotate_mutable_list$;
-      // @@protoc_insertion_point(field_mutable_list:$pkg.Msg.field$)
-      $StrongRef$;
-      $TsanDetectConcurrentMutation$;
-      return _internal_mutable_$name_internal$();
-    }
-  )cc");
   p->Emit(R"cc(
     inline const $Submsg$& $Msg$::$name$(int index) const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -836,16 +882,32 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _add;
     }
   )cc");
-  p->Emit(R"cc(
-    inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::$name$() const
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $annotate_list$;
-      // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
-      $StrongRef$;
-      return _internal_$name_internal$();
-    }
-  )cc");
+  switch (field_->cpp_repeated_type()) {
+    case FieldDescriptor::CppRepeatedType::kRepeated:
+      p->Emit(R"cc(
+        inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          $StrongRef$;
+          return _internal_$name_internal$();
+        }
+      )cc");
+      break;
+    case FieldDescriptor::CppRepeatedType::kProxy:
+      p->Emit(R"cc(
+        inline $pb$::RepeatedFieldProxy<const $Submsg$> $Msg$::$name$() const
+            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $WeakDescriptorSelfPin$;
+          $annotate_list$;
+          // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
+          $StrongRef$;
+          return BuildRepeatedProxy<$Submsg$>(_internal_$name_internal$());
+        }
+      )cc");
+      break;
+  }
 
   if (should_split()) {
     p->Emit(R"cc(

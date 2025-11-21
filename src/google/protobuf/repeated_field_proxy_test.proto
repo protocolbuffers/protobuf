@@ -1,0 +1,105 @@
+edition = "UNSTABLE";
+
+package proto2_unittest;
+
+import "google/protobuf/cpp_features.proto";
+import "google/protobuf/unittest_import.proto";
+
+message TestMessage {
+  int32 value = 1;
+}
+
+message TestRepeatedMessageProxy {
+  message NestedMessage {
+    int32 value = 1;
+  }
+
+  repeated NestedMessage nested_messages = 1
+      [features.(pb.cpp).repeated_type = LEGACY];
+
+  repeated NestedMessage nested_messages_proxy = 2
+      [features.(pb.cpp).repeated_type = PROXY];
+}
+
+message TestRepeatedImportMessageProxy {
+  repeated proto2_unittest_import.ImportMessage import_messages = 1
+      [features.(pb.cpp).repeated_type = LEGACY];
+
+  repeated proto2_unittest_import.ImportMessage import_messages_proxy = 2
+      [features.(pb.cpp).repeated_type = PROXY];
+}
+
+message TestRepeatedCordProxy {
+  repeated bytes cords = 1 [
+    features.(pb.cpp).string_type = CORD,
+    features.(pb.cpp).repeated_type = LEGACY
+  ];
+
+  repeated bytes cords_proxy = 2 [
+    features.(pb.cpp).string_type = CORD,
+    features.(pb.cpp).repeated_type = PROXY
+  ];
+}
+
+message TestRepeatedIntProxy {
+  repeated int32 ints = 1 [features.(pb.cpp).repeated_type = LEGACY];
+
+  repeated int32 ints_proxy = 2 [features.(pb.cpp).repeated_type = PROXY];
+}
+
+message TestRepeatedEnumProxy {
+  enum Enum {
+    UNKNOWN = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+  }
+
+  repeated Enum enums = 1 [features.(pb.cpp).repeated_type = LEGACY];
+
+  repeated Enum enums_proxy = 2 [features.(pb.cpp).repeated_type = PROXY];
+}
+
+message TestRepeatedImportEnumProxy {
+  repeated proto2_unittest_import.ImportEnum enums = 1
+      [features.(pb.cpp).repeated_type = LEGACY];
+
+  repeated proto2_unittest_import.ImportEnum enums_proxy = 2
+      [features.(pb.cpp).repeated_type = PROXY];
+}
+
+message TestRepeatedStdStringProxy {
+  repeated string strings = 1 [
+    features.(pb.cpp).string_type = STRING,
+    features.(pb.cpp).repeated_type = LEGACY
+  ];
+
+  repeated string strings_proxy = 2 [
+    features.(pb.cpp).string_type = STRING,
+    features.(pb.cpp).repeated_type = PROXY
+  ];
+}
+
+message TestRepeatedStringViewProxy {
+  repeated string string_views = 1 [
+    features.(pb.cpp).string_type = VIEW,
+    features.(pb.cpp).repeated_type = LEGACY
+  ];
+
+  repeated string string_views_proxy = 2 [
+    features.(pb.cpp).string_type = VIEW,
+    features.(pb.cpp).repeated_type = PROXY
+  ];
+}
+
+message TestRepeatedStringPieceProxy {
+  repeated string string_pieces = 1 [
+    features.(pb.cpp).string_type = STRING_PIECE,
+    features.(pb.cpp).repeated_type = LEGACY
+  ];
+
+  repeated string string_pieces_proxy = 2 [
+    features.(pb.cpp).string_type = STRING_PIECE,
+    features.(pb.cpp).repeated_type = PROXY
+  ];
+}

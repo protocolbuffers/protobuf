@@ -9023,6 +9023,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -9037,6 +9038,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(group), EqualsProto(R"pb(
                 field_presence: EXPLICIT
@@ -9051,6 +9053,7 @@ TEST_F(FeaturesTest, Proto2Features) {
                   legacy_closed_enum: true
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_TRUE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
@@ -9130,6 +9133,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_THAT(GetCoreFeatures(field), EqualsProto(R"pb(
                 field_presence: IMPLICIT
@@ -9144,6 +9148,7 @@ TEST_F(FeaturesTest, Proto3Features) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
   EXPECT_FALSE(field->has_presence());
   EXPECT_FALSE(field->requires_utf8_validation());
@@ -9326,6 +9331,7 @@ TEST_F(FeaturesTest, Edition2023Defaults) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
 
@@ -9411,6 +9417,7 @@ TEST_F(FeaturesTest, Edition2024Defaults) {
                   legacy_closed_enum: false
                   string_type: VIEW
                   enum_name_uses_string_view: true
+                  repeated_type: LEGACY
                 }
               )pb"));
 
@@ -9446,6 +9453,7 @@ TEST_F(FeaturesBaseTest, DefaultEdition2023Defaults) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 }
               )pb"));
   EXPECT_FALSE(GetFeatures(file).HasExtension(pb::test));
@@ -9476,6 +9484,7 @@ TEST_F(FeaturesTest, ClearsOptions) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9845,6 +9854,7 @@ TEST_F(FeaturesTest, NoOptions) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9880,6 +9890,7 @@ TEST_F(FeaturesTest, FileFeatures) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -9963,6 +9974,7 @@ TEST_F(FeaturesTest, MessageFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10076,6 +10088,7 @@ TEST_F(FeaturesTest, FieldFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10802,6 +10815,7 @@ TEST_F(FeaturesTest, EnumFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -10919,6 +10933,7 @@ TEST_F(FeaturesTest, EnumValueFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11020,6 +11035,7 @@ TEST_F(FeaturesTest, OneofFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11130,6 +11146,7 @@ TEST_F(FeaturesTest, ExtensionRangeFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11225,6 +11242,7 @@ TEST_F(FeaturesTest, ServiceFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11297,6 +11315,7 @@ TEST_F(FeaturesTest, MethodFeaturesDefault) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
@@ -11653,6 +11672,70 @@ TEST_F(FeaturesTest, FieldCppStringType) {
   EXPECT_EQ(cord_ext->cpp_string_type(),
             FieldDescriptor::CppStringType::kString);
 
+}
+
+TEST_F(FeaturesTest, FieldCppRepeatedType) {
+  BuildDescriptorMessagesInTestPool();
+  const std::string file_contents = absl::Substitute(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        message_type {
+          name: "Foo"
+          field {
+            name: "repeated_message"
+            number: 1
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+          }
+          field {
+            name: "repeated_message_proxy"
+            number: 2
+            label: LABEL_REPEATED
+            type: TYPE_MESSAGE
+            type_name: "Foo"
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+          field {
+            name: "repeated_int32"
+            number: 3
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+          }
+          field {
+            name: "repeated_int32_proxy"
+            number: 4
+            label: LABEL_REPEATED
+            type: TYPE_INT32
+            options {
+              features {
+                [pb.cpp] { repeated_type: PROXY }
+              }
+            }
+          }
+        }
+      )pb");
+  const FileDescriptor* file = BuildFile(file_contents);
+  const Descriptor* message = file->message_type(0);
+  const FieldDescriptor* repeated_message = message->field(0);
+  const FieldDescriptor* repeated_message_proxy = message->field(1);
+  const FieldDescriptor* repeated_int32 = message->field(2);
+  const FieldDescriptor* repeated_int32_proxy = message->field(3);
+
+  EXPECT_EQ(repeated_message->cpp_repeated_type(),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(repeated_message_proxy->cpp_repeated_type(),
+            FieldDescriptor::CppRepeatedType::kProxy);
+  EXPECT_EQ(repeated_int32->cpp_repeated_type(),
+            FieldDescriptor::CppRepeatedType::kRepeated);
+  EXPECT_EQ(repeated_int32_proxy->cpp_repeated_type(),
+            FieldDescriptor::CppRepeatedType::kProxy);
 }
 
 TEST_F(FeaturesTest, MergeFeatureValidationFailed) {
@@ -12442,6 +12525,7 @@ TEST_F(FeaturesTest, UninterpretedOptions) {
                   legacy_closed_enum: false
                   string_type: STRING
                   enum_name_uses_string_view: false
+                  repeated_type: LEGACY
                 })pb"));
 }
 
