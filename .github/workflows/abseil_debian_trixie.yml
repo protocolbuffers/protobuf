@@ -1,0 +1,30 @@
+name: Cover compilation with Abseil of Debian "trixie"
+
+on:
+  push:
+  # to all branches
+
+  schedule:
+    # Run Tuesdays at 19:00 UTC (i.e. 04:00 pacific time, i.e. UTC-8)
+    - cron: 0 19 * * 2
+
+  # manual
+  workflow_dispatch:
+
+# Drop permissions to minimum for security
+permissions:
+  contents: read
+
+jobs:
+  abseil-debian-trixie:
+    name: Cover compilation with Abseil of Debian "trixie"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Protobuf"
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          persist-credentials: false
+
+      - name: "Compile with Abseil of Debian \"trixie\" using Docker"
+        run: |-
+          docker build -f .github/workflows/abseil_debian_trixie.Dockerfile .
