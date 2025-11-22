@@ -927,29 +927,12 @@ const FieldDescriptor* MapValueField(const FieldDescriptor* descriptor) {
 
 namespace {
 
-// Gets the value of `nest_in_file_class` feature and returns whether the
-// generated class should be nested in the generated proto file Java class.
-template <typename Descriptor>
-inline bool NestInFileClass(const Descriptor& descriptor) {
-  auto nest_in_file_class =
-      JavaGenerator::GetResolvedSourceFeatureExtension(descriptor, pb::java)
-          .nest_in_file_class();
-  ABSL_CHECK(
-      nest_in_file_class !=
-      pb::JavaFeatures::NestInFileClassFeature::NEST_IN_FILE_CLASS_UNKNOWN);
-
-  if (nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::LEGACY) {
-    return !descriptor.file()->options().java_multiple_files();
-  }
-  return nest_in_file_class == pb::JavaFeatures::NestInFileClassFeature::YES;
-}
-
 // Returns whether the type should be nested in the file class for the given
 // descriptor, depending on different Protobuf Java API versions.
 template <typename Descriptor>
 bool NestInFileClass(const Descriptor& descriptor, bool immutable) {
   (void)immutable;
-  return NestInFileClass(descriptor);
+  return NestedInFileClass(descriptor);
 }
 
 template <typename Descriptor>

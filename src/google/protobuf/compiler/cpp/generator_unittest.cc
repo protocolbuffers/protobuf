@@ -100,8 +100,8 @@ TEST_F(CppGeneratorTest, LegacyClosedEnum) {
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectWarningSubstring(
-      "foo.proto:9:16: warning: Feature pb.CppFeatures.legacy_closed_enum has "
-      "been deprecated in edition 2023");
+      "foo.proto:9:16: warning: pb.CppFeatures.legacy_closed_enum has "
+      "been deprecated in edition 2023:");
 }
 
 TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
@@ -123,7 +123,7 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
       "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
 
   ExpectWarningSubstring(
-      "foo.proto: warning: Feature pb.CppFeatures.legacy_closed_enum has "
+      "foo.proto: warning: pb.CppFeatures.legacy_closed_enum has "
       "been deprecated in edition 2023");
 }
 

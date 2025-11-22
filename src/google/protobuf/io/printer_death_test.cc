@@ -9,7 +9,6 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <optional>
 #include <ostream>
 #include <string>
 #include <tuple>
@@ -23,6 +22,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -44,7 +44,7 @@ class PrinterDeathTest : public testing::Test {
   }
 
   std::string out_;
-  std::optional<StringOutputStream> stream_{&out_};
+  absl::optional<StringOutputStream> stream_{&out_};
 };
 
 // FakeDescriptorFile defines only those members that Printer uses to write out

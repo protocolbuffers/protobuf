@@ -86,6 +86,9 @@ enum Edition {
   EDITION_2023 = 1000;
   EDITION_2024 = 1001;
 
+  // A placeholder edition for developing and testing unscheduled features.
+  EDITION_UNSTABLE = 9999;
+
   // Placeholder editions for testing feature resolution.  These should not be
   // used or relied on outside of tests.
   EDITION_1_TEST_ONLY = 1;
@@ -473,7 +476,17 @@ message FileOptions {
   // named by java_outer_classname.  However, the wrapper class will still be
   // generated to contain the file's getDescriptor() method as well as any
   // top-level extensions defined in the file.
-  optional bool java_multiple_files = 10 [default = false];
+  optional bool java_multiple_files = 10 [
+    default = false,
+    feature_support = {
+      edition_introduced: EDITION_PROTO2
+      edition_removed: EDITION_2024
+      removal_error: "This behavior is enabled by default in editions 2024 and above. "
+                     "To disable it, you can set `features.(pb.java).nest_in_file_class = YES` "
+                     "on individual messages, enums, or services."
+
+    }
+  ];
 
   // This option does nothing.
   optional bool java_generate_equals_and_hash = 20 [deprecated=true];
@@ -1188,6 +1201,11 @@ message FeatureSet {
       number: 1003,
       full_name: ".pb.python",
       type: ".pb.PythonFeatures"
+    },
+    declaration = {
+      number: 1100,
+      full_name: ".imp.impress_feature_set",
+      type: ".imp.ImpressFeatureSet"
     },
     declaration = {
       number: 9989,

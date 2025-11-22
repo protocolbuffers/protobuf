@@ -16,7 +16,6 @@
 #include <iterator>
 #include <list>
 #include <memory>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -27,6 +26,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -346,7 +346,7 @@ TEST(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
   std::vector<Field*> fields;
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
-  std::optional<int> common_capacity;
+  absl::optional<int> common_capacity;
   for (int i = 0; i < kNumFields; ++i) {
     fields.push_back(Arena::Create<Field>(&arena));
     auto& field = *fields.back();

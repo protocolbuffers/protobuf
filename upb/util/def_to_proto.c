@@ -16,6 +16,7 @@
 #include "upb/reflection/def.h"
 #include "upb/reflection/enum_reserved_range.h"
 #include "upb/reflection/extension_range.h"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/internal/file_def.h"
 #include "upb/reflection/message.h"
@@ -34,16 +35,16 @@ typedef struct {
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
-#define SET_OPTIONS(proto, desc_type, options_type, src)                  \
-  {                                                                       \
-    size_t size;                                                          \
-    /* MEM: could use a temporary arena here instead. */                  \
-    char* pb = google_protobuf_##options_type##_serialize(src, ctx->arena, &size); \
-    CHK_OOM(pb);                                                          \
-    google_protobuf_##options_type* dst =                                          \
-        google_protobuf_##options_type##_parse(pb, size, ctx->arena);              \
-    CHK_OOM(dst);                                                         \
-    google_protobuf_##desc_type##_set_options(proto, dst);                         \
+#define SET_OPTIONS(proto, desc_type, options_type, src, extreg)           \
+  {                                                                        \
+    size_t size;                                                           \
+    /* MEM: could use a temporary arena here instead. */                   \
+    char* pb = google_protobuf_##options_type##_serialize(src, ctx->arena, &size);  \
+    CHK_OOM(pb);                                                           \
+    google_protobuf_##options_type* dst =                                           \
+        google_protobuf_##options_type##_parse_ex(pb, size, extreg, 0, ctx->arena); \
+    CHK_OOM(dst);                                                          \
+    google_protobuf_##desc_type##_set_options(proto, dst);                          \
   }
 
 static upb_StringView strviewdup2(upb_ToProto_Context* ctx,
@@ -272,7 +273,9 @@ static google_protobuf_FieldDescriptorProto* fielddef_toproto(upb_ToProto_Contex
 
   if (upb_FieldDef_HasOptions(f)) {
     SET_OPTIONS(proto, FieldDescriptorProto, FieldOptions,
-                upb_FieldDef_Options(f));
+                upb_FieldDef_Options(f),
+                _upb_DefPool_GeneratedExtensionRegistry(
+                    upb_FileDef_Pool(upb_FieldDef_File(f))));
   }
 
   return proto;
@@ -289,7 +292,9 @@ static google_protobuf_OneofDescriptorProto* oneofdef_toproto(upb_ToProto_Contex
 
   if (upb_OneofDef_HasOptions(o)) {
     SET_OPTIONS(proto, OneofDescriptorProto, OneofOptions,
-                upb_OneofDef_Options(o));
+                upb_OneofDef_Options(o),
+                _upb_DefPool_GeneratedExtensionRegistry(upb_FileDef_Pool(
+                    upb_MessageDef_File(upb_OneofDef_ContainingType(o)))));
   }
 
   return proto;
@@ -307,7 +312,9 @@ static google_protobuf_EnumValueDescriptorProto* enumvaldef_toproto(
 
   if (upb_EnumValueDef_HasOptions(e)) {
     SET_OPTIONS(proto, EnumValueDescriptorProto, EnumValueOptions,
-                upb_EnumValueDef_Options(e));
+                upb_EnumValueDef_Options(e),
+                _upb_DefPool_GeneratedExtensionRegistry(upb_FileDef_Pool(
+                    upb_EnumDef_File(upb_EnumValueDef_Enum(e)))));
   }
 
   return proto;
@@ -345,8 +352,9 @@ static google_protobuf_EnumDescriptorProto* enumdef_toproto(upb_ToProto_Context*
   }
 
   if (upb_EnumDef_HasOptions(e)) {
-    SET_OPTIONS(proto, EnumDescriptorProto, EnumOptions,
-                upb_EnumDef_Options(e));
+    SET_OPTIONS(proto, EnumDescriptorProto, EnumOptions, upb_EnumDef_Options(e),
+                _upb_DefPool_GeneratedExtensionRegistry(
+                    upb_FileDef_Pool(upb_EnumDef_File(e))));
   }
 
   UPB_DESC(SymbolVisibility) visibility = upb_EnumDef_Visibility(e);
@@ -358,7 +366,8 @@ static google_protobuf_EnumDescriptorProto* enumdef_toproto(upb_ToProto_Context*
 }
 
 static google_protobuf_DescriptorProto_ExtensionRange* extrange_toproto(
-    upb_ToProto_Context* ctx, const upb_ExtensionRange* e) {
+    upb_ToProto_Context* ctx, const upb_MessageDef* m,
+    const upb_ExtensionRange* e) {
   google_protobuf_DescriptorProto_ExtensionRange* proto =
       google_protobuf_DescriptorProto_ExtensionRange_new(ctx->arena);
   CHK_OOM(proto);
@@ -370,7 +379,9 @@ static google_protobuf_DescriptorProto_ExtensionRange* extrange_toproto(
 
   if (upb_ExtensionRange_HasOptions(e)) {
     SET_OPTIONS(proto, DescriptorProto_ExtensionRange, ExtensionRangeOptions,
-                upb_ExtensionRange_Options(e));
+                upb_ExtensionRange_Options(e),
+                _upb_DefPool_GeneratedExtensionRegistry(
+                    upb_FileDef_Pool(upb_MessageDef_File(m))));
   }
 
   return proto;
@@ -427,7 +438,8 @@ static google_protobuf_DescriptorProto* msgdef_toproto(upb_ToProto_Context* ctx,
   google_protobuf_DescriptorProto_ExtensionRange** ext_ranges =
       google_protobuf_DescriptorProto_resize_extension_range(proto, n, ctx->arena);
   for (int i = 0; i < n; i++) {
-    ext_ranges[i] = extrange_toproto(ctx, upb_MessageDef_ExtensionRange(m, i));
+    ext_ranges[i] =
+        extrange_toproto(ctx, m, upb_MessageDef_ExtensionRange(m, i));
   }
 
   n = upb_MessageDef_ReservedRangeCount(m);
@@ -446,7 +458,9 @@ static google_protobuf_DescriptorProto* msgdef_toproto(upb_ToProto_Context* ctx,
 
   if (upb_MessageDef_HasOptions(m)) {
     SET_OPTIONS(proto, DescriptorProto, MessageOptions,
-                upb_MessageDef_Options(m));
+                upb_MessageDef_Options(m),
+                _upb_DefPool_GeneratedExtensionRegistry(
+                    upb_FileDef_Pool(upb_MessageDef_File(m))));
   }
 
   UPB_DESC(SymbolVisibility) visibility = upb_MessageDef_Visibility(m);
@@ -482,8 +496,10 @@ static google_protobuf_MethodDescriptorProto* methoddef_toproto(upb_ToProto_Cont
   }
 
   if (upb_MethodDef_HasOptions(m)) {
-    SET_OPTIONS(proto, MethodDescriptorProto, MethodOptions,
-                upb_MethodDef_Options(m));
+    SET_OPTIONS(
+        proto, MethodDescriptorProto, MethodOptions, upb_MethodDef_Options(m),
+        _upb_DefPool_GeneratedExtensionRegistry(
+            upb_FileDef_Pool(upb_ServiceDef_File(upb_MethodDef_Service(m)))));
   }
 
   return proto;
@@ -507,7 +523,9 @@ static google_protobuf_ServiceDescriptorProto* servicedef_toproto(
 
   if (upb_ServiceDef_HasOptions(s)) {
     SET_OPTIONS(proto, ServiceDescriptorProto, ServiceOptions,
-                upb_ServiceDef_Options(s));
+                upb_ServiceDef_Options(s),
+                _upb_DefPool_GeneratedExtensionRegistry(
+                    upb_FileDef_Pool(upb_ServiceDef_File(s))));
   }
 
   return proto;
@@ -589,8 +607,8 @@ static google_protobuf_FileDescriptorProto* filedef_toproto(upb_ToProto_Context*
   }
 
   if (upb_FileDef_HasOptions(f)) {
-    SET_OPTIONS(proto, FileDescriptorProto, FileOptions,
-                upb_FileDef_Options(f));
+    SET_OPTIONS(proto, FileDescriptorProto, FileOptions, upb_FileDef_Options(f),
+                _upb_DefPool_GeneratedExtensionRegistry(upb_FileDef_Pool(f)));
   }
 
   return proto;

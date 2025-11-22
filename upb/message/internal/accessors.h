@@ -500,16 +500,14 @@ UPB_API_INLINE struct upb_Map* upb_Message_GetOrCreateMutableMap(
 }
 
 UPB_API_INLINE struct upb_Message* upb_Message_GetOrCreateMutableMessage(
-    struct upb_Message* msg, const upb_MiniTable* mini_table,
-    const upb_MiniTableField* f, upb_Arena* arena) {
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* arena) {
   UPB_ASSERT(arena);
   UPB_ASSUME(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
   struct upb_Message* sub_message =
       *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*);
   if (!sub_message) {
-    const upb_MiniTable* sub_mini_table =
-        upb_MiniTable_SubMessage(mini_table, f);
+    const upb_MiniTable* sub_mini_table = upb_MiniTable_SubMessage(f);
     UPB_ASSERT(sub_mini_table);
     sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, f->UPB_ONLYBITS(offset), struct upb_Message*) =
@@ -645,13 +643,12 @@ UPB_API_INLINE void upb_Message_SetBaseFieldUInt64(struct upb_Message* msg,
 }
 
 UPB_API_INLINE void upb_Message_SetClosedEnum(struct upb_Message* msg,
-                                              const upb_MiniTable* m,
                                               const upb_MiniTableField* f,
                                               int32_t value) {
   UPB_ASSERT(upb_MiniTableField_IsClosedEnum(f));
   UPB_ASSUME(UPB_PRIVATE(_upb_MiniTableField_GetRep)(f) == kUpb_FieldRep_4Byte);
-  UPB_ASSERT(
-      upb_MiniTableEnum_CheckValue(upb_MiniTable_GetSubEnumTable(m, f), value));
+  UPB_ASSERT(upb_MiniTableEnum_CheckValue(upb_MiniTable_GetSubEnumTable(f),
+                                          (uint32_t)value));
   upb_Message_SetBaseField(msg, f, &value);
 }
 

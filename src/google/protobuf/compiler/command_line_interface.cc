@@ -24,7 +24,6 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -69,6 +68,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/importer.h"
@@ -1093,13 +1093,13 @@ bool HasDebugRedactBehavior(
 // schema.  These can be used to mark fields that need to be redacted in debug
 // string APIs, but are only discoverable via reflection that doesn't force
 // linkage.
-std::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
-  std::optional<std::string> debug_redact_value;
+absl::optional<std::string> FindDebugRedactMarker(const FileDescriptor& desc) {
+  absl::optional<std::string> debug_redact_value;
   absl::flat_hash_map<const Descriptor*, bool> visited;
   google::protobuf::internal::VisitDescriptors(
       desc, [&debug_redact_value, &visited](const FieldDescriptor& field) {
         if (field.is_extension() && HasDebugRedactBehavior(field, visited)) {
-          debug_redact_value = field.full_name();
+          debug_redact_value = std::string(field.full_name());
         }
       });
   return debug_redact_value;
@@ -1115,7 +1115,8 @@ bool ValidateOptionImports(const FileDescriptor& file,
       // If we don't have the dependency we can't validate it, assume it's ok.
       continue;
     }
-    std::optional<std::string> debug_redact_value = FindDebugRedactMarker(*dep);
+    absl::optional<std::string> debug_redact_value =
+        FindDebugRedactMarker(*dep);
     if (debug_redact_value.has_value()) {
       printer->RecordError(
           file.name(), "", nullptr, DescriptorPool::ErrorCollector::OPTION_NAME,

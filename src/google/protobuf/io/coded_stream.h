@@ -668,6 +668,11 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return ptr;
   }
 
+  // Returns the number of bytes available to write to the stream.
+  [[nodiscard]] size_t BytesAvailable(uint8_t* ptr) const {
+    return end_ + kSlopBytes - ptr;
+  }
+
   uint8_t* WriteRaw(const void* data, int size, uint8_t* ptr) {
     if (ABSL_PREDICT_FALSE(end_ - ptr < size)) {
       return WriteRawFallback(data, size, ptr);

@@ -41,6 +41,7 @@
 #include "upb/message/test.upbdefs.h"
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/debug_string.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
@@ -845,7 +846,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fa = upb_MiniTable_FindFieldByNumber(m, 20);
-    const upb_MiniTable* ma = upb_MiniTable_SubMessage(m, fa);
+    const upb_MiniTable* ma = upb_MiniTable_SubMessage(fa);
     upb_Array_Freeze(arr, ma);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
@@ -853,7 +854,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fm = upb_MiniTable_FindFieldByNumber(m, 10);
-    const upb_MiniTable* mm = upb_MiniTable_SubMessage(m, fm);
+    const upb_MiniTable* mm = upb_MiniTable_SubMessage(fm);
     upb_Map_Freeze(map, mm);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));

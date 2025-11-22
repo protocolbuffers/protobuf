@@ -714,6 +714,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 #endif
 
   void ReserveWithArena(Arena* arena, int new_size);
+  void GrowByWithArena(Arena* arena, int grow_by) {
+    ReserveWithArena(arena, size() + grow_by);
+  }
 
   void AddWithArena(Arena* arena, Element value);
   pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;

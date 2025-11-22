@@ -49,6 +49,7 @@ cc_library(
         "//hpb:__subpackages__",
     ],
     deps = [
+        "//hpb:multibackend",
         "//upb/mem",
         "//upb/message",
     ],

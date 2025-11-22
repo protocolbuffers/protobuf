@@ -1753,8 +1753,6 @@ TextFormat::Parser::Parser()
       allow_singular_overwrites_(false),
       recursion_limit_(std::numeric_limits<int>::max()) {}
 
-TextFormat::Parser::~Parser() = default;
-
 namespace {
 
 template <typename T>

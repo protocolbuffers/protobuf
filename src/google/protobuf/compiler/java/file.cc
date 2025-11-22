@@ -471,11 +471,9 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       "    getDescriptor() {\n"
       "  return descriptor;\n"
       "}\n"
-      "private static $final$ com.google.protobuf.Descriptors.FileDescriptor\n"
+      "private static final com.google.protobuf.Descriptors.FileDescriptor\n"
       "    descriptor;\n"
-      "static {\n",
-      // TODO: Mark this as final.
-      "final", google::protobuf::internal::IsOss() ? "" : "final");
+      "static {\n");
   printer->Indent();
 
   if (google::protobuf::internal::IsOss()) {

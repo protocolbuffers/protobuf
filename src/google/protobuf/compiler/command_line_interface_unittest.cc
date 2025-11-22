@@ -1762,8 +1762,9 @@ TEST_F(CommandLineInterfaceTest, Plugin_DeprecatedFeature) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto");
   ExpectWarningSubstring(
-      "foo.proto:4:5: warning: Feature pb.TestFeatures.removed_feature has "
-      "been deprecated in edition 2023: Custom feature deprecation warning\n");
+      "foo.proto:4:5: warning: pb.TestFeatures.removed_feature has "
+      "been deprecated in edition 2023: Custom feature "
+      "deprecation warning\n");
 }
 
 TEST_F(CommandLineInterfaceTest, Plugin_TransitiveDeprecatedFeature) {
@@ -2031,8 +2032,8 @@ TEST_F(CommandLineInterfaceTest, GeneratorFeatureLifetimeError) {
   Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
       "--test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "foo.proto:6:13: Feature pb.TestFeatures.removed_feature has been "
-      "removed in edition 2024");
+      "foo.proto:6:13: pb.TestFeatures.removed_feature has been "
+      "removed in edition 2024:");
 }
 
 TEST_F(CommandLineInterfaceTest, PluginFeatureLifetimeError) {
@@ -2064,8 +2065,8 @@ TEST_F(CommandLineInterfaceTest, PluginFeatureLifetimeError) {
       "foo.proto --plugin=prefix-gen-fake_plugin=",
       plugin_path));
   ExpectErrorSubstring(
-      "foo.proto:6:13: Feature pb.TestFeatures.future_feature wasn't "
-      "introduced until edition 2024");
+      "foo.proto:6:13: pb.TestFeatures.future_feature wasn't introduced "
+      "until edition 2024 and can't be used in edition 2023");
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorNoEditionsSupport) {
@@ -2165,8 +2166,39 @@ TEST_F(CommandLineInterfaceTest,
   Run("protocol_compiler --experimental_editions --proto_path=$tmpdir "
       "--test_out=$tmpdir foo.proto");
   ExpectErrorSubstring(
-      "foo.proto:2:5: Edition 99997_TEST_ONLY is later than the maximum "
-      "supported edition 2024\n");
+      absl::StrCat("Edition 99997_TEST_ONLY is later than the maximum "
+                   "supported edition ",
+                   ProtocMaximumEdition()));
+}
+
+TEST_F(CommandLineInterfaceTest, UnstableEditionWithFlag) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir --experimental_editions "
+      "--test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, UnstableEditionWithoutFlag) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    package foo;
+    message Foo {
+    }
+  )schema");
+
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto: is a file using edition UNSTABLE, which is later than "
+      "the protoc maximum supported edition 2024.");
 }
 
 TEST_F(CommandLineInterfaceTest, EditionDefaults) {
@@ -2314,6 +2346,32 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMaximum) {
               )pb"));
 }
 
+TEST_F(CommandLineInterfaceTest, EditionDefaultsWithUnstable) {
+  CreateTempFile("google/protobuf/descriptor.proto",
+                 google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
+  CreateTempFile("google/protobuf/unittest_features.proto",
+                 pb::TestFeatures::descriptor()->file()->DebugString());
+  Run("protocol_compiler --proto_path=$tmpdir "
+      "--edition_defaults_out=$tmpdir/defaults "
+      "google/protobuf/unittest_features.proto "
+      "google/protobuf/descriptor.proto");
+  ExpectNoErrors();
+
+  FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
+  EXPECT_EQ(defaults.defaults_size(), 5);
+  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_UNSTABLE);
+  EXPECT_EQ(defaults.defaults(4)
+                .overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UnstableEnumFeature::UNSTABLE2);
+  EXPECT_EQ(defaults.defaults(4)
+                .overridable_features()
+                .GetExtension(pb::test)
+                .unstable_existing_feature(),
+            pb::UnstableEnumFeature::UNSTABLE3);
+}
+
 TEST_F(CommandLineInterfaceTest, EditionDefaultsWithMinimum) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
@@ -2403,12 +2461,13 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   FeatureSetDefaults defaults = ReadEditionDefaults("defaults");
   EXPECT_EQ(defaults.minimum_edition(), EDITION_PROTO2);
   EXPECT_EQ(defaults.maximum_edition(), EDITION_99999_TEST_ONLY);
-  ASSERT_EQ(defaults.defaults_size(), 7);
+  ASSERT_EQ(defaults.defaults_size(), 8);
   EXPECT_EQ(defaults.defaults(0).edition(), EDITION_LEGACY);
   EXPECT_EQ(defaults.defaults(2).edition(), EDITION_2023);
   EXPECT_EQ(defaults.defaults(3).edition(), EDITION_2024);
-  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_99997_TEST_ONLY);
-  EXPECT_EQ(defaults.defaults(5).edition(), EDITION_99998_TEST_ONLY);
+  EXPECT_EQ(defaults.defaults(4).edition(), EDITION_UNSTABLE);
+  EXPECT_EQ(defaults.defaults(5).edition(), EDITION_99997_TEST_ONLY);
+  EXPECT_EQ(defaults.defaults(6).edition(), EDITION_99998_TEST_ONLY);
   EXPECT_EQ(defaults.defaults(0)
                 .fixed_features()
                 .GetExtension(pb::test)
@@ -2427,9 +2486,14 @@ TEST_F(CommandLineInterfaceTest, EditionDefaultsWithExtension) {
   EXPECT_EQ(defaults.defaults(4)
                 .overridable_features()
                 .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UnstableEnumFeature::UNSTABLE2);
+  EXPECT_EQ(defaults.defaults(5)
+                .overridable_features()
+                .GetExtension(pb::test)
                 .file_feature(),
             pb::EnumFeature::VALUE4);
-  EXPECT_EQ(defaults.defaults(5)
+  EXPECT_EQ(defaults.defaults(6)
                 .overridable_features()
                 .GetExtension(pb::test)
                 .file_feature(),
@@ -2562,7 +2626,7 @@ TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "`java_multiple_files` is not supported in editions 2024 and above");
+      "The `java_multiple_files` behavior is enabled by default");
 }
 
 
@@ -2576,7 +2640,7 @@ TEST_F(CommandLineInterfaceTest, JavaNestInFileClassFor) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "`java_multiple_files` is not supported in editions 2024 and above");
+      "The `java_multiple_files` behavior is enabled by default");
 }
 
 

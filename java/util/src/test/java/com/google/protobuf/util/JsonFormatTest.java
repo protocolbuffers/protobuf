@@ -948,6 +948,18 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testFieldMaskWithQuote() throws Exception {
+    TestFieldMask message =
+        TestFieldMask.newBuilder()
+            .setFieldMaskValue(FieldMaskUtil.fromString("foo.bar,baz,foo_bar.baz,\""))
+            .build();
+
+    assertThat(toJsonString(message))
+        .isEqualTo("{\n" + "  \"fieldMaskValue\": \"foo.bar,baz,fooBar.baz,\\\"\"\n" + "}");
+    assertRoundTripEquals(message);
+  }
+
+  @Test
   public void testStruct() throws Exception {
     // Build a struct with all possible values.
     TestStruct.Builder builder = TestStruct.newBuilder();

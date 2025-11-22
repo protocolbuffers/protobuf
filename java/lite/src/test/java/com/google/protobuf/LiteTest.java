@@ -2975,9 +2975,8 @@ public class LiteTest {
     // Conversion happens during serialization.
     ByteString expectedBytes = ByteString.copyFromUtf8(expectedString);
     assertWithMessage(
-            String.format(
-                "Expected serializedMessage (%s) to contain \"%s\" (%s).",
-                encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes)))
+            "Expected serializedMessage (%s) to contain \"%s\" (%s).",
+            encodeHex(serializedMessage), expectedString, encodeHex(expectedBytes))
         .that(contains(serializedMessage, expectedBytes))
         .isTrue();
   }

@@ -3721,7 +3721,8 @@ public final class Descriptors {
     }
 
     private OneofDescriptor(
-        final OneofDescriptorProto proto, final Descriptor parent, final int index) {
+        final OneofDescriptorProto proto, final Descriptor parent, final int index)
+        throws DescriptorValidationException {
       this.proto = proto;
       fullName = computeFullName(null, parent, proto.getName());
       this.index = index;

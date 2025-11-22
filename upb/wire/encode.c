@@ -45,13 +45,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-// Returns the MiniTable corresponding to a given MiniTableField
-// from an array of MiniTableSubs.
-static const upb_MiniTable* _upb_Encoder_GetSubMiniTable(
-    const upb_MiniTableSubInternal* subs, const upb_MiniTableField* field) {
-  return *subs[field->UPB_PRIVATE(submsg_index)].UPB_PRIVATE(submsg);
-}
-
 static uint32_t encode_zz32(int32_t n) {
   return ((uint32_t)n << 1) ^ (n >> 31);
 }
@@ -156,6 +149,24 @@ static char* encode_fixed32_unchecked(char* ptr, upb_encstate* e,
 #define UPB_PB_VARINT32_MAX_LEN 5
 
 #if UPB_ARM64_ASM
+// Each arm64 instruction encodes to 4 bytes, and it takes two intructions
+// to process each byte of output, so we branch ahead by (4 + 4) * skip to
+// avoid the remaining bytes. When BTI is on, we need to use specific
+// "landing pad" instructions, so we pad those with nop to make it a power
+// of 2, skipping 16 bytes at each stage instead of 8. This carries some
+// overhead especially on in-order cores so they're not included unless
+// building with branch protection.
+#if UPB_ARM64_BTI_DEFAULT
+// BTI is used with jc targets here because we don't control which register will
+// be used for addr; if it's x16 or x17 a `br` is treated like a call.
+#define UPB_BTI_JC "bti jc\n"
+#define UPB_BTI_NOP "nop\n"
+#define UPB_BTI_SHIFT_IMM "4\n"
+#else
+#define UPB_BTI_JC
+#define UPB_BTI_NOP
+#define UPB_BTI_SHIFT_IMM "3\n"
+#endif
 UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
                                             uint64_t val) {
   ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
@@ -168,37 +179,66 @@ UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
   ptr += skip;
   uint64_t addr, mask;
   __asm__ volatile(
+      // Formatter keeps merging short lines
+      // clang-format off
       "adr %[addr], 0f\n"
-      // Each arm64 instruction encodes to 4 bytes, and it takes two
-      // intructions to process each byte of output, so we branch ahead by
-      //  (4 + 4) * skip to avoid the remaining bytes.
-      "add %[addr], %[addr], %[cnt], lsl #3\n"
+      "add %[addr], %[addr], %[cnt], lsl #" UPB_BTI_SHIFT_IMM
       "mov %w[mask], #0x80\n"
       "br %[addr]\n"
+      ".p2align " UPB_BTI_SHIFT_IMM
       "0:\n"
       // We don't need addr any more, but we've got the register for our whole
       // assembly block so we'll use it as scratch to store the shift+masked
       // values before storing them.
       // The following stores are unsigned offset stores:
       // strb Wt, [Xn, #imm]
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #56\n"
       "strb %w[addr], [%[ptr], #8]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #49\n"
       "strb %w[addr], [%[ptr], #7]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #42\n"
       "strb %w[addr], [%[ptr], #6]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #35\n"
       "strb %w[addr], [%[ptr], #5]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #28\n"
       "strb %w[addr], [%[ptr], #4]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[mask], %w[val], lsr #21\n"
       "strb %w[addr], [%[ptr], #3]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[mask], %w[val], lsr #14\n"
       "strb %w[addr], [%[ptr], #2]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[mask], %w[val], lsr #7\n"
       "strb %w[addr], [%[ptr], #1]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[val], #0x80\n"
       "strb %w[addr], [%[ptr]]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
+      // clang-format on
       : [addr] "=&r"(addr), [mask] "=&r"(mask)
       : [val] "r"(val), [ptr] "r"(ptr), [cnt] "r"((uint64_t)skip)
       : "memory");
@@ -209,6 +249,9 @@ UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
   ptr[continuations] = val >> (7 * continuations);
   return ptr;
 }
+#undef UPB_BTI_JC
+#undef UPB_BTI_NOP
+#undef UPB_BTI_SHIFT_IMM
 #else
 UPB_NOINLINE
 static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
@@ -338,7 +381,6 @@ static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
                             const upb_MiniTable* m, size_t* size);
 
 static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
-                           const upb_MiniTableSubInternal* subs,
                            const upb_MiniTableField* f) {
   // Max size is tag + 10 bytes for max varint or 8 for largest fixed size
 #define CASE(ctype, type, wtype, encodeval)                                   \
@@ -391,7 +433,7 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
     case kUpb_FieldType_Group: {
       size_t size;
       upb_Message* submsg = *(upb_Message**)field_mem;
-      const upb_MiniTable* subm = _upb_Encoder_GetSubMiniTable(subs, f);
+      const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
       if (submsg == 0) {
         return ptr;
       }
@@ -406,7 +448,7 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
     case kUpb_FieldType_Message: {
       size_t size;
       upb_Message* submsg = *(upb_Message**)field_mem;
-      const upb_MiniTable* subm = _upb_Encoder_GetSubMiniTable(subs, f);
+      const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
       if (submsg == 0) {
         return ptr;
       }
@@ -427,7 +469,6 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
 }
 
 static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
-                          const upb_MiniTableSubInternal* subs,
                           const upb_MiniTableField* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
   bool packed = upb_MiniTableField_IsPacked(f);
@@ -504,7 +545,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_Group: {
       const upb_Message* const* start = upb_Array_DataPtr(arr);
       const upb_Message* const* arr_ptr = start + upb_Array_Size(arr);
-      const upb_MiniTable* subm = _upb_Encoder_GetSubMiniTable(subs, f);
+      const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -521,7 +562,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
     case kUpb_FieldType_Message: {
       const upb_Message* const* start = upb_Array_DataPtr(arr);
       const upb_Message* const* arr_ptr = start + upb_Array_Size(arr);
-      const upb_MiniTable* subm = _upb_Encoder_GetSubMiniTable(subs, f);
+      const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
       if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
@@ -552,8 +593,8 @@ static char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
   const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
   size_t pre_len = e->limit - ptr;
   size_t size;
-  ptr = encode_scalar(ptr, e, &ent->v, layout->UPB_PRIVATE(subs), val_field);
-  ptr = encode_scalar(ptr, e, &ent->k, layout->UPB_PRIVATE(subs), key_field);
+  ptr = encode_scalar(ptr, e, &ent->v, val_field);
+  ptr = encode_scalar(ptr, e, &ent->k, key_field);
   size = (e->limit - ptr) - pre_len;
   ptr = encode_length(ptr, e, size);
   ptr = encode_tag(ptr, e, number, kUpb_WireType_Delimited);
@@ -561,10 +602,9 @@ static char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
 }
 
 static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
-                        const upb_MiniTableSubInternal* subs,
                         const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
-  const upb_MiniTable* layout = _upb_Encoder_GetSubMiniTable(subs, f);
+  const upb_MiniTable* layout = upb_MiniTable_MapEntrySubMessage(f);
   UPB_ASSERT(upb_MiniTable_FieldCount(layout) == 2);
 
   if (!map || !upb_Map_Size(map)) return ptr;
@@ -659,17 +699,15 @@ static bool encode_shouldencode(const upb_Message* msg,
 }
 
 static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
-                          const upb_MiniTableSubInternal* subs,
                           const upb_MiniTableField* field) {
   switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
     case kUpb_FieldMode_Array:
-      return encode_array(ptr, e, msg, subs, field);
+      return encode_array(ptr, e, msg, field);
     case kUpb_FieldMode_Map:
-      return encode_map(ptr, e, msg, subs, field);
+      return encode_map(ptr, e, msg, field);
     case kUpb_FieldMode_Scalar:
-      return encode_scalar(ptr, e,
-                           UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void),
-                           subs, field);
+      return encode_scalar(
+          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     default:
       UPB_UNREACHABLE();
   }
@@ -696,13 +734,7 @@ static char* encode_ext(char* ptr, upb_encstate* e,
   if (UPB_UNLIKELY(is_message_set)) {
     ptr = encode_msgset_item(ptr, e, ext, ext_val);
   } else {
-    upb_MiniTableSubInternal sub;
-    if (upb_MiniTableField_IsSubMessage(&ext->UPB_PRIVATE(field))) {
-      sub.UPB_PRIVATE(submsg) = &ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg);
-    } else {
-      sub.UPB_PRIVATE(subenum) = ext->UPB_PRIVATE(sub).UPB_PRIVATE(subenum);
-    }
-    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val), &sub,
+    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val),
                        &ext->UPB_PRIVATE(field));
   }
   return ptr;
@@ -789,7 +821,7 @@ static char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     while (f != first) {
       f--;
       if (encode_shouldencode(msg, f)) {
-        ptr = encode_field(ptr, e, msg, m->UPB_PRIVATE(subs), f);
+        ptr = encode_field(ptr, e, msg, f);
       }
     }
   }

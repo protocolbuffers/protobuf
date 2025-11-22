@@ -19,7 +19,6 @@ def serialize(
     preserving_proto_field_name: bool=False,
     use_integers_for_enums: bool=False,
     descriptor_pool: Optional[DescriptorPool]=None,
-    float_precision: int=None,
 ) -> dict:
   """Converts protobuf message to a dictionary.
 
@@ -37,7 +36,6 @@ def serialize(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: If set, use this to specify float field valid digits.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -47,7 +45,6 @@ def serialize(
       always_print_fields_with_no_presence=always_print_fields_with_no_presence,
       preserving_proto_field_name=preserving_proto_field_name,
       use_integers_for_enums=use_integers_for_enums,
-      float_precision=float_precision,
   )
 
 def parse(

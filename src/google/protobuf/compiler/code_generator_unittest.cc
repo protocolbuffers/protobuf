@@ -86,6 +86,16 @@ class SimpleErrorCollector : public io::ErrorCollector {
   }
 };
 
+const FeatureSetDefaults::FeatureSetEditionDefault* FindEditionDefault(
+    const FeatureSetDefaults& defaults, Edition edition) {
+  for (const auto& edition_default : defaults.defaults()) {
+    if (edition_default.edition() == edition) {
+      return &edition_default;
+    }
+  }
+  return nullptr;
+}
+
 class CodeGeneratorTest : public ::testing::Test {
  protected:
   const FileDescriptor* BuildFile(absl::string_view schema) {
@@ -394,6 +404,21 @@ MATCHER_P(IsOkAndHolds, matcher, "") {
   return arg.ok() && ExplainMatchResult(matcher, *arg, result_listener);
 }
 
+TEST_F(CodeGeneratorTest, FindEditionDefault) {
+  TestGenerator generator;
+  auto result = generator.BuildFeatureSetDefaults();
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  const auto* edition_defaults = FindEditionDefault(*result, EDITION_2023);
+  ASSERT_THAT(edition_defaults, NotNull());
+  EXPECT_EQ(edition_defaults->edition(), EDITION_2023);
+  EXPECT_EQ(edition_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .file_feature(),
+            pb::EnumFeature::VALUE3);
+  EXPECT_NE(edition_defaults->edition(), EDITION_2024);
+  EXPECT_EQ(FindEditionDefault(*result, EDITION_99999_TEST_ONLY), nullptr);
+}
+
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsInvalidExtension) {
   TestGenerator generator;
   generator.set_feature_extensions({nullptr});
@@ -468,6 +493,22 @@ TEST_F(CodeGeneratorTest, BuildFeatureSetDefaults) {
                 minimum_edition: EDITION_PROTO2
                 maximum_edition: EDITION_2024
               )pb")));
+}
+
+TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsWithUnstable) {
+  TestGenerator generator;
+  auto result = generator.BuildFeatureSetDefaults();
+  ASSERT_TRUE(result.ok()) << result.status().message();
+  const auto* unstable_defaults = FindEditionDefault(*result, EDITION_UNSTABLE);
+  ASSERT_THAT(unstable_defaults, NotNull());
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .new_unstable_feature(),
+            pb::UnstableEnumFeature::UNSTABLE2);
+  EXPECT_EQ(unstable_defaults->overridable_features()
+                .GetExtension(pb::test)
+                .unstable_existing_feature(),
+            pb::UnstableEnumFeature::UNSTABLE3);
 }
 
 TEST_F(CodeGeneratorTest, BuildFeatureSetDefaultsUnsupported) {

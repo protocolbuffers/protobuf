@@ -514,6 +514,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   }
 
   void DeleteNode(NodeBase* node);
+  void DeleteList(NodeBase* list);
 
   map_index_t num_elements_;
   map_index_t num_buckets_;
@@ -857,17 +858,44 @@ class KeyMapBase : public UntypedMapBase {
   void InsertOrReplaceNodes(Arena* arena, KeyNode* list, map_index_t count) {
     ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_elements_ + count);
 
-    while (list != nullptr) {
-      auto* node = list;
+    map_index_t new_size = num_elements_;
+
+    Inserter inserter(this, table_, num_buckets_);
+    NodeBase* list_to_delete = nullptr;
+
+    for (map_index_t i = 0; i < count; ++i) {
+      ABSL_DCHECK_NE(list, nullptr);
+      auto* node_to_insert = list;
       list = static_cast<KeyNode*>(list->next);
 
-      auto p = this->FindHelper(node->key());
-      map_index_t b = p.bucket;
-      if (ABSL_PREDICT_FALSE(p.node != nullptr)) {
-        EraseImpl(arena, p.bucket, static_cast<KeyNode*>(p.node), true);
+      const map_index_t b = inserter.BucketNumber(node_to_insert);
+      for (NodeBase** node_prev = &table_[b];;
+           node_prev = &(*node_prev)->next) {
+        KeyNode* n = static_cast<KeyNode*>(*node_prev);
+
+        if (n == nullptr) {
+          // Reached the end without finding anything. Insert it.
+          inserter.InsertUnique(node_to_insert, b);
+          ++new_size;
+          break;
+        }
+
+        if (ABSL_PREDICT_FALSE(n->key() == node_to_insert->key())) {
+          // Let's just replace the node right there.
+          *node_prev = node_to_insert;
+          node_to_insert->next = n->next;
+          // And append this node to a list to delete later.
+          n->next = list_to_delete;
+          list_to_delete = n;
+          break;
+        }
       }
-      InsertUnique(b, node);
-      ++num_elements_;
+    }
+
+    num_elements_ = new_size;
+
+    if (ABSL_PREDICT_FALSE(arena == nullptr && list_to_delete != nullptr)) {
+      DeleteList(list_to_delete);
     }
   }
 
@@ -1001,11 +1029,13 @@ class KeyMapBase : public UntypedMapBase {
     ResizeIfLoadIsOutOfRangeForMultiInsert(arena, num_nodes);
     num_elements_ = num_nodes;
     AssertLoadFactor();
-    while (head != nullptr) {
+    Inserter inserter(this, table_, num_buckets_);
+    for (size_t i = 0; i < num_nodes; ++i) {
       KeyNode* node = static_cast<KeyNode*>(head);
+      ABSL_DCHECK_NE(node, nullptr);
       head = head->next;
       absl::PrefetchToLocalCacheNta(head);
-      InsertUnique(BucketNumber(TS::ToView(node->key())), node);
+      inserter.InsertUnique(node);
     }
   }
 
@@ -1030,24 +1060,77 @@ class KeyMapBase : public UntypedMapBase {
     const auto old_table = table_;
     const map_index_t old_table_size = num_buckets_;
     num_buckets_ = new_num_buckets;
-    table_ = CreateEmptyTable(arena, num_buckets_);
+    NodeBase** table = table_ = CreateEmptyTable(arena, num_buckets_);
 #ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
     const map_index_t start = 0;
 #else
     const map_index_t start = index_of_first_non_null_;
     index_of_first_non_null_ = num_buckets_;
 #endif
+    Inserter inserter(this, table, new_num_buckets);
     for (map_index_t i = start; i < old_table_size; ++i) {
       for (KeyNode* node = static_cast<KeyNode*>(old_table[i]);
            node != nullptr;) {
         auto* next = static_cast<KeyNode*>(node->next);
-        InsertUnique(BucketNumber(TS::ToView(node->key())), node);
+        inserter.InsertUnique(node);
         node = next;
       }
     }
     DeleteTable(arena, old_table, old_table_size);
     AssertLoadFactor();
   }
+
+  // Caches all the relevant values of `UntypedMapBase` to hold a copy on the
+  // stack and avoid reloads after every write.
+  // It allows inserting multiple nodes in a row with reduced cost.
+  class Inserter {
+   public:
+    explicit Inserter(KeyMapBase* map, NodeBase** table,
+                      map_index_t num_buckets)
+        : table_(table),
+          mask_(num_buckets - 1),
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+          index_of_first_non_null_(map->index_of_first_non_null_),
+#endif
+          map_(map) {
+    }
+
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+    ~Inserter() {
+      // Flush the value at the end.
+      map_->index_of_first_non_null_ = index_of_first_non_null_;
+    }
+#endif
+
+    map_index_t BucketNumber(KeyNode* node) const {
+      return Hash(node->key(), table_) & mask_;
+    }
+
+    void InsertUnique(KeyNode* node, map_index_t bucket) {
+      ABSL_DCHECK_EQ(bucket, BucketNumber(node));
+      auto*& head = table_[bucket];
+      if (head != nullptr && map_->ShouldInsertAfterHead(node)) {
+        node->next = head->next;
+        head->next = node;
+      } else {
+        node->next = head;
+        head = node;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+        index_of_first_non_null_ = (std::min)(index_of_first_non_null_, bucket);
+#endif
+      }
+    }
+
+    void InsertUnique(KeyNode* node) { InsertUnique(node, BucketNumber(node)); }
+
+   private:
+    NodeBase** const table_;
+    const map_index_t mask_;
+#ifndef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_MAP_FIELD
+    map_index_t index_of_first_non_null_;
+#endif
+    KeyMapBase* const map_;
+  };
 
   map_index_t BucketNumber(typename TS::ViewType k) const {
     return Hash(k, table_) & (num_buckets_ - 1);

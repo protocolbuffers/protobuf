@@ -1405,6 +1405,9 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
     }
   }
 
+#ifdef PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
+  ABSL_DCHECK_EQ(arena_bits(), uintptr_t{0});
+#else
   if (arena_bits() != 0) {
     if (as_tag == kZeroInit) {
       PROTOBUF_DEBUG_COUNTER("MessageCreator.ZeroArena").Inc();
@@ -1432,6 +1435,7 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::PlacementNew(
       } while (offsets != 0);
     }
   }
+#endif  // PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD
 
   // The second memcpy overwrites part of the first, but the compiler should
   // avoid the double-write. It's easier than trying to avoid the overlap.

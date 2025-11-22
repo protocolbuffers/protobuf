@@ -52,7 +52,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "google/protobuf/descriptor_lite.h"
+#include "google/protobuf/descriptor_lite.h"  // IWYU pragma: export
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/port.h"
 

@@ -684,7 +684,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           type Proxied = $Msg$;
           fn as_view(&self) -> $pb$::View<'_, $Msg$> {
             $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner.clone())
+              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
             }
           }
         }
@@ -694,7 +694,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           where
               'msg: 'shorter {
             $Msg$View {
-              inner: $pbr$::MessageViewInner::view_of_mut(self.inner.clone())
+              inner: $pbr$::MessageViewInner::view_of_mut(self.inner)
             }
           }
         }

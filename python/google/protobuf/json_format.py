@@ -26,7 +26,6 @@ import json
 import math
 from operator import methodcaller
 import re
-import warnings
 
 from google.protobuf import descriptor
 from google.protobuf import message_factory
@@ -85,7 +84,6 @@ def MessageToJson(
     sort_keys=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None,
     ensure_ascii=True,
     always_print_fields_with_no_presence=False,
 ):
@@ -107,8 +105,6 @@ def MessageToJson(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: Deprecated. If set, use this to specify float field valid
-      digits.
     ensure_ascii: If True, strings with non-ASCII characters are escaped. If
       False, Unicode strings are returned unchanged.
 
@@ -119,7 +115,6 @@ def MessageToJson(
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
-      float_precision,
       always_print_fields_with_no_presence,
   )
   return printer.ToJsonString(message, indent, sort_keys, ensure_ascii)
@@ -131,7 +126,6 @@ def MessageToDict(
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None,
 ):
   """Converts protobuf message to a dictionary.
 
@@ -149,8 +143,6 @@ def MessageToDict(
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
       default.
-    float_precision: Deprecated. If set, use this to specify float field valid
-      digits.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -159,7 +151,6 @@ def MessageToDict(
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
-      float_precision,
       always_print_fields_with_no_presence,
   )
   # pylint: disable=protected-access
@@ -182,7 +173,6 @@ class _Printer(object):
       preserving_proto_field_name=False,
       use_integers_for_enums=False,
       descriptor_pool=None,
-      float_precision=None,
       always_print_fields_with_no_presence=False,
   ):
     self.always_print_fields_with_no_presence = (
@@ -191,15 +181,6 @@ class _Printer(object):
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
-    if float_precision:
-      warnings.warn(
-          'float_precision option is deprecated for json_format. '
-          'This will turn into error in 7.34.0, please remove it '
-          'before that.'
-      )
-      self.float_format = '.{}g'.format(float_precision)
-    else:
-      self.float_format = None
 
   def ToJsonString(self, message, indent, sort_keys, ensure_ascii):
     js = self._MessageToJsonObject(message)
@@ -322,8 +303,6 @@ class _Printer(object):
           return _INFINITY
       if math.isnan(value):
         return _NAN
-      if self.float_format:
-        return float(format(value, self.float_format))
       elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
         return type_checkers.ToShortestFloat(value)
 

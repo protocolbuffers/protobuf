@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <cstring>
 #include <limits>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -26,6 +25,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -870,8 +870,8 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   // input and output streams.
   std::string copy;
   std::string out;
-  std::optional<io::ArrayInputStream> tee_input;
-  std::optional<io::StringOutputStream> tee_output;
+  absl::optional<io::ArrayInputStream> tee_input;
+  absl::optional<io::StringOutputStream> tee_output;
   if (PROTOBUF_DEBUG) {
     const void* data;
     int len;

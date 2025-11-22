@@ -17,6 +17,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/reflection/def.hpp"
 
 // Must be last
@@ -33,9 +34,10 @@ std::string FieldInitializer(upb::FieldDefPtr field,
       ArchDependentSize(field32->UPB_PRIVATE(offset),
                         field64->UPB_PRIVATE(offset)),
       ArchDependentSize(field32->presence, field64->presence),
-      field64->UPB_PRIVATE(submsg_index) == kUpb_NoSub
+      field64->UPB_PRIVATE(submsg_ofs) == kUpb_NoSub
           ? "kUpb_NoSub"
-          : absl::StrCat(field64->UPB_PRIVATE(submsg_index)).c_str(),
+          : ArchDependentSize(field32->UPB_PRIVATE(submsg_ofs),
+                              field64->UPB_PRIVATE(submsg_ofs)),
       field64->UPB_PRIVATE(descriptortype), GetModeInit(field32, field64));
 }
 
@@ -52,7 +54,7 @@ std::string ArchDependentSize(int64_t size32, int64_t size64) {
 std::string GetModeInit(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64) {
   std::string ret;
-  uint8_t mode32 = field32->UPB_PRIVATE(mode);
+  uint8_t mode32 = UPB_SIZE(field32, field64)->UPB_PRIVATE(mode);
   switch (mode32 & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
       ret = "(int)kUpb_FieldMode_Map";

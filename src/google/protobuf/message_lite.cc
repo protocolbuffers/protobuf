@@ -17,7 +17,6 @@
 #include <cstdint>
 #include <cstring>
 #include <istream>
-#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
@@ -729,7 +728,6 @@ absl::Cord MessageLite::SerializePartialAsCord() const {
   if (!AppendPartialToString(&output)) output.Clear();
   return output;
 }
-
 
 namespace internal {
 

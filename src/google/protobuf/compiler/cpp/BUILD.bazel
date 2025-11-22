@@ -81,6 +81,7 @@ cc_library(
         "@abseil-cpp//absl/strings:cord",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -413,6 +414,7 @@ cc_test(
         "//src/google/protobuf/io:printer",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -428,6 +430,7 @@ cc_test(
         "//src/google/protobuf/io:printer",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
