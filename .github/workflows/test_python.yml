@@ -92,7 +92,7 @@ jobs:
             continuous-only: true
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v5

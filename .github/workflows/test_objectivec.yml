@@ -36,7 +36,7 @@ jobs:
           destination: "platform=macOS"
           xc_project: "ProtocolBuffers_OSX.xcodeproj"
         - platform: "iOS"
-          destination: "platform=iOS Simulator,name=iPhone 14,OS=latest"
+          destination: "platform=iOS Simulator,name=iPhone 15,OS=latest"
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
         # We run presubmits on all "Debug" entries, but not on "Release" entries
         - xc_config: "Debug"
@@ -44,9 +44,9 @@ jobs:
           continuous-only: true
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
-    runs-on: macos-13
+    runs-on: macos-14
     env:
-      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -67,6 +67,7 @@ jobs:
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
+          CODE_SIGN_IDENTITY: "-"
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-version: 8.0.1
@@ -91,8 +92,8 @@ jobs:
         PLATFORM: ["ios", "macos", "tvos", "watchos"]
         CONFIGURATION: ["Debug", "Release"]
         include:
-          - OS: macos-13
-            XCODE: "14.1"
+          - OS: macos-14
+            XCODE: "15.2"
           # We run presubmits on all "Debug" entries, but not on "Release" entries
           - CONFIGURATION: "Debug"
           - CONFIGURATION: "Release"
@@ -149,7 +150,7 @@ jobs:
         - platform: "macOS"
           bazel_targets: //objectivec/...
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}

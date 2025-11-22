@@ -83,9 +83,10 @@ jobs:
       matrix:
         config:
           - { name: "macOS", bazel-command: "test" }
-          - { name: "macOS ARM (build only)", bazel-command: "build", flags: "--cpu=darwin_arm64" }
+          - { name: "macOS ARM", bazel-command: "test", flags: "--cpu=darwin_arm64" }
+          - { name: "macOS Intel", bazel-command: "test", flags: "--cpu=darwin_x86_64" }
     name: ${{ matrix.config.name }}
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v5

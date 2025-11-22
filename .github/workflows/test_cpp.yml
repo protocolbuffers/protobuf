@@ -424,15 +424,17 @@ jobs:
       matrix:
         include:
           - name: MacOS Bazel
-            os: macos-13
-            cache_key: macos-13-bazel8
+            os: macos-14
+            cache_key: macos-14-bazel8
             bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
-          - name: MacOS Apple Silicon (build only) Bazel
-            os: macos-13
-            cache_key: macos-13-arm
-            # Current github runners are all Intel based, so just build/compile
-            # for Apple Silicon to detect issues there.
-            bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          - name: MacOS Apple Silicon Bazel
+            os: macos-14
+            cache_key: macos-14-arm
+            bazel: test --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          - name: MacOS Intel Bazel
+            os: macos-14
+            cache_key: macos-14-intel
+            bazel: test --cpu=darwin_x86_64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022-msvc-cl
@@ -464,7 +466,7 @@ jobs:
       matrix:
         include:
           - name: MacOS CMake
-            os: macos-13
+            os: macos-14
             cache-prefix: macos-cmake
             continuous-only: true
           - name: Windows CMake
