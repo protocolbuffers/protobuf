@@ -87,7 +87,7 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      * Editions before this will not have defaults.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition minimum_edition = 4;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getMinimumEdition()
     {
@@ -109,7 +109,7 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      * Editions before this will not have defaults.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition minimum_edition = 4;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
     public function setMinimumEdition($var)
@@ -125,7 +125,7 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      * after this will not have reliable defaults.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition maximum_edition = 5;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getMaximumEdition()
     {
@@ -147,7 +147,7 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      * after this will not have reliable defaults.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition maximum_edition = 5;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
     public function setMaximumEdition($var)

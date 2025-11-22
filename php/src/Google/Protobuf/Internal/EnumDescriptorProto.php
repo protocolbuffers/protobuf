@@ -225,7 +225,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * Support for `export` and `local` keywords on enums.
      *
      * Generated from protobuf field <code>optional .google.protobuf.SymbolVisibility visibility = 6;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\SymbolVisibility}
      */
     public function getVisibility()
     {
@@ -246,7 +246,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * Support for `export` and `local` keywords on enums.
      *
      * Generated from protobuf field <code>optional .google.protobuf.SymbolVisibility visibility = 6;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\SymbolVisibility}
      * @return $this
      */
     public function setVisibility($var)

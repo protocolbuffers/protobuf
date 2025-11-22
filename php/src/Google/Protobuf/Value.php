@@ -51,7 +51,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * Represents a null value.
      *
      * Generated from protobuf field <code>.google.protobuf.NullValue null_value = 1;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\NullValue}
      */
     public function getNullValue()
     {
@@ -67,7 +67,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * Represents a null value.
      *
      * Generated from protobuf field <code>.google.protobuf.NullValue null_value = 1;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\NullValue}
      * @return $this
      */
     public function setNullValue($var)

@@ -168,7 +168,7 @@ class ExtensionRangeOptions extends \Google\Protobuf\Internal\Message
      * are marked as UNVERIFIED.
      *
      * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\ExtensionRangeOptions\VerificationState}
      */
     public function getVerification()
     {
@@ -191,7 +191,7 @@ class ExtensionRangeOptions extends \Google\Protobuf\Internal\Message
      * are marked as UNVERIFIED.
      *
      * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\ExtensionRangeOptions\VerificationState}
      * @return $this
      */
     public function setVerification($var)

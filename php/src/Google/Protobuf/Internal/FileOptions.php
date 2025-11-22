@@ -520,7 +520,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FileOptions\OptimizeMode}
      */
     public function getOptimizeFor()
     {
@@ -539,7 +539,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FileOptions\OptimizeMode}
      * @return $this
      */
     public function setOptimizeFor($var)

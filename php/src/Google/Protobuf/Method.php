@@ -270,7 +270,7 @@ class Method extends \Google\Protobuf\Internal\Message
      * Api. This is similar to Field and EnumValue.
      *
      * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7 [deprecated = true];</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Syntax}
      * @deprecated
      */
     public function getSyntax()
@@ -287,7 +287,7 @@ class Method extends \Google\Protobuf\Internal\Message
      * Api. This is similar to Field and EnumValue.
      *
      * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 7 [deprecated = true];</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Syntax}
      * @return $this
      * @deprecated
      */

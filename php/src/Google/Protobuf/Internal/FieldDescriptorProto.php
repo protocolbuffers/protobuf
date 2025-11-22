@@ -234,7 +234,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Label label = 4;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FieldDescriptorProto\Label}
      */
     public function getLabel()
     {
@@ -253,7 +253,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Label label = 4;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FieldDescriptorProto\Label}
      * @return $this
      */
     public function setLabel($var)
@@ -269,7 +269,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Type type = 5;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FieldDescriptorProto\Type}
      */
     public function getType()
     {
@@ -291,7 +291,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Type type = 5;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FieldDescriptorProto\Type}
      * @return $this
      */
     public function setType($var)

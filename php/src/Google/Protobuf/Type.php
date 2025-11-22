@@ -234,7 +234,7 @@ class Type extends \Google\Protobuf\Internal\Message
      * The source syntax.
      *
      * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 6;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Syntax}
      */
     public function getSyntax()
     {
@@ -245,7 +245,7 @@ class Type extends \Google\Protobuf\Internal\Message
      * The source syntax.
      *
      * Generated from protobuf field <code>.google.protobuf.Syntax syntax = 6;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Syntax}
      * @return $this
      */
     public function setSyntax($var)

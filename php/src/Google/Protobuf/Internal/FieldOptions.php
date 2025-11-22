@@ -239,7 +239,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * TODO: make ctype actually deprecated.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FieldOptions\CType}
      */
     public function getCtype()
     {
@@ -266,7 +266,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * TODO: make ctype actually deprecated.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FieldOptions\CType}
      * @return $this
      */
     public function setCtype($var)
@@ -338,7 +338,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * goog.math.Integer.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FieldOptions\JSType}
      */
     public function getJstype()
     {
@@ -368,7 +368,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * goog.math.Integer.
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FieldOptions\JSType}
      * @return $this
      */
     public function setJstype($var)
@@ -621,7 +621,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.OptionRetention retention = 17;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\FieldOptions\OptionRetention}
      */
     public function getRetention()
     {
@@ -640,7 +640,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.OptionRetention retention = 17;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\FieldOptions\OptionRetention}
      * @return $this
      */
     public function setRetention($var)
@@ -653,7 +653,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;</code>
-     * @return RepeatedField<int>
+     * @return RepeatedField<int> one of the values in {@see \Google\Protobuf\Internal\FieldOptions\OptionTargetType}
      */
     public function getTargets()
     {
@@ -662,7 +662,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;</code>
-     * @param int[] $var
+     * @param int[] $var one of the values in {@see \Google\Protobuf\Internal\FieldOptions\OptionTargetType}
      * @return $this
      */
     public function setTargets($var)

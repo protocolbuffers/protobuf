@@ -92,7 +92,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * used, and proto files will not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_introduced = 1;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEditionIntroduced()
     {
@@ -115,7 +115,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * used, and proto files will not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_introduced = 1;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
     public function setEditionIntroduced($var)
@@ -131,7 +131,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * edition may trigger warnings.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_deprecated = 2;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEditionDeprecated()
     {
@@ -153,7 +153,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * edition may trigger warnings.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_deprecated = 2;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
     public function setEditionDeprecated($var)
@@ -208,7 +208,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_removed = 4;</code>
-     * @return int
+     * @return int one of the values in {@see \Google\Protobuf\Internal\Edition}
      */
     public function getEditionRemoved()
     {
@@ -231,7 +231,7 @@ class FeatureSupport extends \Google\Protobuf\Internal\Message
      * not be able to override it.
      *
      * Generated from protobuf field <code>optional .google.protobuf.Edition edition_removed = 4;</code>
-     * @param int $var
+     * @param int $var one of the values in {@see \Google\Protobuf\Internal\Edition}
      * @return $this
      */
     public function setEditionRemoved($var)

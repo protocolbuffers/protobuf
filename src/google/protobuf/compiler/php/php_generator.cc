@@ -1580,16 +1580,33 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   printer->Print(" * Generated from protobuf field <code>^def^</code>\n", "def",
                  EscapePhpdoc(FirstLineOf(field->DebugString())));
   if (function_type == kFieldSetter) {
-    printer->Print(" * @param ^php_type^ $var\n", "php_type",
-                   PhpSetterTypeName(field, options));
+    if (field->type() == FieldDescriptor::TYPE_ENUM) {
+      printer->Print(
+          " * @param ^php_type^ $var one of the values in {@see "
+          "^enum_class^}\n",
+          "php_type", PhpSetterTypeName(field, options), "enum_class",
+          absl::StrCat("\\", FullClassName(field->enum_type(), options)));
+    } else {
+      printer->Print(" * @param ^php_type^ $var\n", "php_type",
+                     PhpSetterTypeName(field, options));
+    }
     printer->Print(" * @return $this\n");
   } else if (function_type == kFieldGetter) {
     bool can_return_null =
         field->has_presence() &&
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
-    printer->Print(" * @return ^php_type^^maybe_null^\n", "php_type",
-                   PhpGetterTypeName(field, options), "maybe_null",
-                   can_return_null ? "|null" : "");
+    if (field->type() == FieldDescriptor::TYPE_ENUM) {
+      printer->Print(
+          " * @return ^php_type^^maybe_null^ one of the values in {@see "
+          "^enum_class^}\n",
+          "php_type", PhpGetterTypeName(field, options), "maybe_null",
+          can_return_null ? "|null" : "", "enum_class",
+          absl::StrCat("\\", FullClassName(field->enum_type(), options)));
+    } else {
+      printer->Print(" * @return ^php_type^^maybe_null^\n", "php_type",
+                     PhpGetterTypeName(field, options), "maybe_null",
+                     can_return_null ? "|null" : "");
+    }
   }
   if (field->options().deprecated()) {
     printer->Print(" * @deprecated\n");

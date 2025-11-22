@@ -23,6 +23,41 @@ class GeneratedPhpdocTest extends TestBase
     }
 
     /**
+     * @dataProvider providePhpDocForEnum
+     */
+    public function testPhpDocForEnum($method, $enumClass)
+    {
+        $class = new ReflectionClass('Foo\TestMessage');
+        $doc = $class->getMethod($method)->getDocComment();
+        $this->assertStringContainsString(
+            sprintf('one of the values in {@see %s}', $enumClass), 
+            $doc
+        );
+    }
+
+    public function providePhpDocForEnum()
+    {
+        return [
+            ['getOptionalEnum', '\Foo\TestEnum'],
+            ['setOptionalEnum', '\Foo\TestEnum'],
+            ['getTrueOptionalEnum', '\Foo\TestEnum'],
+            ['setTrueOptionalEnum', '\Foo\TestEnum'],
+            ['getRepeatedEnum', '\Foo\TestEnum'],
+            ['setRepeatedEnum', '\Foo\TestEnum'],
+            ['getOneofEnum', '\Foo\TestEnum'],
+            ['setOneofEnum', '\Foo\TestEnum'],
+            ['getOptionalNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['setOptionalNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['getRepeatedNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['setRepeatedNoNamespaceEnum', '\NoNamespaceEnum'],
+            ['getOptionalNestedEnum', '\Foo\TestMessage\NestedEnum'],
+            ['setOptionalNestedEnum', '\Foo\TestMessage\NestedEnum'],
+            ['getDeprecatedEnum', '\Foo\TestMessage\NestedEnum'],
+            ['setDeprecatedEnum', '\Foo\TestMessage\NestedEnum'],
+        ];
+    }
+
+    /**
      * @dataProvider providePhpDocForGettersAndSetters
      */
     public function testPhpDocForIntGetters($methods, $expectedDoc)
