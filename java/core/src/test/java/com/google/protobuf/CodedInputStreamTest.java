@@ -303,6 +303,15 @@ public class CodedInputStreamTest {
             | (0x26L << 56)
             | (0x01L << 63));
 
+    assertReadVarint(bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00), 5);
+    assertReadVarint(bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02), 5);
+
+    // Test that the last bit decides the sign of the long value.
+    assertReadVarint(
+        bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x01), Long.MIN_VALUE + 5L);
+    assertReadVarint(
+        bytes(0x85, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x03), Long.MIN_VALUE + 5L);
+
     // Failures
     assertReadVarintFailure(
         InvalidProtocolBufferException.malformedVarint(),
@@ -1354,8 +1363,9 @@ public class CodedInputStreamTest {
     for (InputType inputType : InputType.values()) {
       if (inputType == InputType.STREAM
           || inputType == InputType.STREAM_ITER_DIRECT
-          || inputType == InputType.ITER_DIRECT) {
-        // Aliasing doesn't apply to stream-backed CIS.
+          || inputType == InputType.ITER_DIRECT
+          || inputType == InputType.NIO_DIRECT) {
+        // Aliasing doesn't apply to stream-backed or direct-backed CIS.
         continue;
       }
 
@@ -1651,5 +1661,23 @@ public class CodedInputStreamTest {
     } catch (InvalidProtocolBufferException ex) {
       // Expected.
     }
+  }
+
+  @Test
+  public void testCodedInputStreamWithEmptyBuffers_isAtEnd() throws Exception {
+    ArrayList<ByteBuffer> inputList = new ArrayList<>();
+    inputList.add(ByteBuffer.wrap(new byte[0]));
+    CodedInputStream cis = CodedInputStream.newInstance(inputList);
+    assertThat(cis.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testCodedInputStreamWithEmptyBuffers_isAtEndAfterRead() throws Exception {
+    ArrayList<ByteBuffer> inputList = new ArrayList<>();
+    inputList.add(ByteBuffer.wrap(new byte[4096]));
+    inputList.add(ByteBuffer.wrap(new byte[0]));
+    CodedInputStream cis = CodedInputStream.newInstance(inputList);
+    cis.readRawBytes(4096);
+    assertThat(cis.isAtEnd()).isTrue();
   }
 }

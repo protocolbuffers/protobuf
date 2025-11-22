@@ -328,7 +328,7 @@ BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, InitBlock, Alias);
 
 static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   upb_benchmark::FileDescriptorProto proto;
-  proto.ParseFromArray(descriptor.data, descriptor.size);
+  proto.ParseFromString(absl::string_view(descriptor.data, descriptor.size));
   for (auto _ : state) {
     proto.SerializePartialToArray(buf, sizeof(buf));
     benchmark::DoNotOptimize(buf);

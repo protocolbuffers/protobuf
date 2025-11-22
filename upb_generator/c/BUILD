@@ -58,6 +58,8 @@ bootstrap_cc_binary(
         ":names_internal",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:plugin",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
@@ -73,7 +75,7 @@ bootstrap_cc_binary(
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 

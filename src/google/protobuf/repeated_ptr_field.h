@@ -71,9 +71,9 @@ class MapFieldBase;
 
 class MapFieldBase;
 
-template <typename It>
+template <typename Element>
 class RepeatedPtrIterator;
-template <typename It, typename VoidPtr>
+template <typename Element>
 class RepeatedPtrOverPtrsIterator;
 template <typename T>
 class RepeatedPtrFieldBackInsertIterator;
@@ -132,7 +132,7 @@ PROTOBUF_EXPORT inline void RuntimeAssertInBoundsLE(int64_t value,
                                                     int64_t limit) {
   if constexpr (GetBoundsCheckMode() == BoundsCheckMode::kAbort) {
     if (ABSL_PREDICT_FALSE(value > limit)) {
-      LogIndexOutOfBoundsAndAbort(value, limit);
+      PROTOBUF_NO_MERGE LogIndexOutOfBoundsAndAbort(value, limit);
     }
   }
 
@@ -232,7 +232,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Mutable(int index) {
-      RuntimeAssertInBounds(index, current_size_);
+    RuntimeAssertInBounds(index, current_size_);
     return cast<TypeHandler>(element_at(index));
   }
 
@@ -351,6 +351,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       ClearNonEmpty<H>();
     }
   }
+
+  template <typename T, typename CopyElementFn, typename CreateAndMergeFn>
+  void MergeFromInternal(const RepeatedPtrFieldBase& from, Arena* arena,
+                         CopyElementFn&& copy_fn,
+                         CreateAndMergeFn&& create_and_merge_fn);
+  template <typename T, typename CopyElementFn>
+  void MergeFromInternal(const RepeatedPtrFieldBase& from, Arena* arena,
+                         CopyElementFn&& copy_fn);
 
   // Appends all message values from `from` to this instance.
   template <typename T>
@@ -1123,11 +1131,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   // Custom STL-like iterator that iterates over and returns the underlying
   // pointers to Element rather than Element itself.
-  using pointer_iterator =
-      internal::RepeatedPtrOverPtrsIterator<Element*, void*>;
+  using pointer_iterator = internal::RepeatedPtrOverPtrsIterator<Element>;
   using const_pointer_iterator =
-      internal::RepeatedPtrOverPtrsIterator<const Element* const,
-                                            const void* const>;
+      internal::RepeatedPtrOverPtrsIterator<const Element>;
 
   constexpr RepeatedPtrField();
 
@@ -2187,42 +2193,43 @@ struct IteratorConceptSupport<Traits,
 // The VoidPtr template parameter holds the type-agnostic pointer value
 // referenced by the iterator.  It should either be "void *" for a mutable
 // iterator, or "const void* const" for a constant iterator.
-template <typename Element, typename VoidPtr>
+template <typename Element>
 class RepeatedPtrOverPtrsIterator {
  private:
-  using traits =
-      std::iterator_traits<typename std::remove_const<Element>::type*>;
+  using traits = std::iterator_traits<Element**>;
+
+  using ElementPtr =
+      std::conditional_t<std::is_const_v<Element>, Element* const, Element*>;
+  using VoidPtr =
+      std::conditional_t<std::is_const_v<Element>, const void* const, void*>;
 
  public:
   using value_type = typename traits::value_type;
   using difference_type = typename traits::difference_type;
-  using pointer = Element*;
-  using reference = Element&;
+  using pointer = ElementPtr*;
+  using reference = ElementPtr&;
   using iterator_category = typename traits::iterator_category;
   using iterator_concept = typename IteratorConceptSupport<traits>::tag;
 
-  using iterator = RepeatedPtrOverPtrsIterator<Element, VoidPtr>;
+  using iterator = RepeatedPtrOverPtrsIterator<Element>;
 
   RepeatedPtrOverPtrsIterator() : it_(nullptr) {}
   explicit RepeatedPtrOverPtrsIterator(VoidPtr* it) : it_(it) {}
 
-  // Allows "upcasting" from RepeatedPtrOverPtrsIterator<T**> to
-  // RepeatedPtrOverPtrsIterator<const T*const*>.
-  template <
-      typename OtherElement, typename OtherVoidPtr,
-      typename std::enable_if<
-          std::is_convertible<OtherElement*, pointer>::value &&
-          std::is_convertible<OtherVoidPtr, VoidPtr>::value>::type* = nullptr>
+  // Allow "upcasting" from RepeatedPtrOverPtrsIterator<T> to
+  // RepeatedPtrOverPtrsIterator<const T>.
+  template <typename E = Element,
+            typename = std::enable_if_t<std::is_const_v<E>>>
   RepeatedPtrOverPtrsIterator(
-      const RepeatedPtrOverPtrsIterator<OtherElement, OtherVoidPtr>& other)
+      const RepeatedPtrOverPtrsIterator<std::remove_const_t<Element>>& other)
       : it_(other.it_) {}
 
   // dereferenceable
   PROTOBUF_FUTURE_ADD_NODISCARD reference operator*() const {
-    return *reinterpret_cast<Element*>(it_);
+    return *reinterpret_cast<pointer>(it_);
   }
   PROTOBUF_FUTURE_ADD_NODISCARD pointer operator->() const {
-    return reinterpret_cast<Element*>(it_);
+    return reinterpret_cast<pointer>(it_);
   }
 
   // {inc,dec}rementable
@@ -2292,7 +2299,7 @@ class RepeatedPtrOverPtrsIterator {
   }
 
  private:
-  template <typename OtherElement, typename OtherVoidPtr>
+  template <typename OtherElement>
   friend class RepeatedPtrOverPtrsIterator;
 
   // The internal iterator.
@@ -2468,7 +2475,6 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
  private:
   RepeatedPtrField<T>* field_;
 };
-
 
 template <typename T>
 const T& CheckedGetOrDefault(const RepeatedPtrField<T>& field, int index) {

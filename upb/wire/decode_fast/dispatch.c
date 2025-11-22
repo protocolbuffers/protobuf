@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 
+#include "upb/message/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
@@ -19,7 +20,8 @@
 UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     UPB_PARSE_PARAMS) {
   int overrun;
-  switch (upb_EpsCopyInputStream_IsDoneStatus(&d->input, ptr, &overrun)) {
+  switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(&d->input, ptr,
+                                                           &overrun)) {
     case kUpb_IsDoneStatus_Done: {
       // We've reach end-of-message.  Sync hasbits and maybe check required
       // fields.
@@ -32,7 +34,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     }
     case kUpb_IsDoneStatus_NeedFallback:
       // We've reached end-of-buffer.  Refresh the buffer.
-      ptr = _upb_EpsCopyInputStream_IsDoneFallbackInline(
+      ptr = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
           &d->input, ptr, overrun, _upb_Decoder_BufferFlipCallback);
 
       // We successfully refreshed the buffer (otherwise the function above
@@ -49,4 +51,12 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
 const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
   UPB_LONGJMP(d->err, 1);
   return NULL;
+}
+
+UPB_PRESERVE_NONE const char* _upb_FastDecoder_DecodeGeneric(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg, intptr_t table,
+    uint64_t hasbits, uint64_t data) {
+  (void)data;
+  upb_DecodeFast_SetHasbits(msg, hasbits);
+  return ptr;
 }

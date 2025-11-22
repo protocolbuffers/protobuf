@@ -46,6 +46,7 @@ bootstrap_cc_library(
     deps = [
         "//src/google/protobuf:port",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "@abseil-cpp//absl/strings",
     ],

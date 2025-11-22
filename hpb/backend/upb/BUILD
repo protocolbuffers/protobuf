@@ -59,6 +59,7 @@ cc_test(
     deps = [
         ":interop",
         "//hpb_generator/tests:test_model_hpb_proto",
+        "//hpb_generator/tests:test_model_upb_minitable_proto",
         "//hpb_generator/tests:test_model_upb_proto",
         "//upb/mem",
         "//upb/message",

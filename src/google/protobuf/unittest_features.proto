@@ -47,6 +47,14 @@ enum EnumFeature {
   VALUE15 = 15;
 }
 
+enum UnstableEnumFeature {
+  TEST_UNSTABLE_ENUM_FEATURE_UNKNOWN = 0;
+  UNSTABLE1 = 1;
+  UNSTABLE2 = 2;
+  UNSTABLE3 = 3 [feature_support = { edition_introduced: EDITION_UNSTABLE }];
+  UNSTABLE4 = 4;
+}
+
 enum ValueLifetimeFeature {
   TEST_VALUE_LIFETIME_UNKNOWN = 0;
   VALUE_LIFETIME_INHERITED = 1;
@@ -66,6 +74,7 @@ enum ValueLifetimeFeature {
   VALUE_LIFETIME_REMOVED = 6 [feature_support = {
     edition_deprecated: EDITION_2023
     edition_removed: EDITION_99997_TEST_ONLY
+    removal_error: "Custom feature removal error"
   }];
 }
 
@@ -125,7 +134,9 @@ message TestFeatures {
   EnumFeature method_feature = 9 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_METHOD,
-    feature_support.edition_introduced = EDITION_2023,
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   EnumFeature multiple_feature = 10 [
@@ -190,10 +201,22 @@ message TestFeatures {
       edition_deprecated: EDITION_2023
       deprecation_warning: "Custom feature deprecation warning"
       edition_removed: EDITION_2024
+      removal_error: "Custom feature removal error"
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
     edition_defaults = { edition: EDITION_2023, value: "VALUE2" },
     edition_defaults = { edition: EDITION_2024, value: "VALUE3" }
+  ];
+
+  EnumFeature same_edition_removed_feature = 21 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = {
+      edition_introduced: EDITION_2023
+      edition_removed: EDITION_2023
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
 
   EnumFeature future_feature = 18 [
@@ -212,6 +235,7 @@ message TestFeatures {
     feature_support = {
       edition_introduced: EDITION_PROTO3
       edition_removed: EDITION_2023
+      removal_error: "Custom feature removal error"
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
     edition_defaults = { edition: EDITION_2023, value: "VALUE2" }
@@ -225,6 +249,7 @@ message TestFeatures {
       edition_deprecated: EDITION_99998_TEST_ONLY
       deprecation_warning: "Custom feature deprecation warning"
       edition_removed: EDITION_99999_TEST_ONLY
+      removal_error: "Custom feature removal error"
     },
     edition_defaults = {
       edition: EDITION_LEGACY,
@@ -240,5 +265,33 @@ message TestFeatures {
       edition: EDITION_99999_TEST_ONLY,
       value: "VALUE_LIFETIME_FUTURE"
     }
+  ];
+
+  UnstableEnumFeature new_unstable_feature = 22 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = { edition_introduced: EDITION_UNSTABLE },
+    edition_defaults = { edition: EDITION_LEGACY, value: "UNSTABLE1" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "UNSTABLE2" }
+  ];
+
+  UnstableEnumFeature unstable_existing_feature = 23 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_ENUM,
+    feature_support.edition_introduced = EDITION_2023,
+    edition_defaults = { edition: EDITION_LEGACY, value: "UNSTABLE1" },
+    edition_defaults = { edition: EDITION_2023, value: "UNSTABLE2" },
+    edition_defaults = { edition: EDITION_UNSTABLE, value: "UNSTABLE3" }
+  ];
+  UnstableEnumFeature removed_unstable_feature = 24 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_METHOD,
+    feature_support = {
+      edition_introduced: EDITION_2023,
+      edition_removed: EDITION_UNSTABLE,
+      removal_error: "Custom feature removal error"
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "UNSTABLE1" }
   ];
 }

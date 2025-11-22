@@ -18,9 +18,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/internal/arena.h"
+#include "upb/message/message.h"
 #include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
@@ -51,6 +55,7 @@ typedef struct upb_Decoder {
 #ifndef NDEBUG
   const char* debug_tagstart;
   const char* debug_valstart;
+  char* trace_buf;
   char* trace_ptr;
   char* trace_end;
 #endif
@@ -64,6 +69,11 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   upb_EpsCopyInputStream_Init(&d->input, &buf, size,
                               options & kUpb_DecodeOption_AliasString);
 
+  if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
+    // Fasttable decoder does not support this option.
+    options |= kUpb_DecodeOption_DisableFastTable;
+  }
+
   d->extreg = extreg;
   d->depth = upb_DecodeOptions_GetEffectiveMaxDepth(options);
   d->end_group = DECODE_NOGROUP;
@@ -72,6 +82,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->status = kUpb_DecodeStatus_Ok;
   d->message_is_done = false;
 #ifndef NDEBUG
+  d->trace_buf = trace_buf;
   d->trace_ptr = trace_buf;
   d->trace_end = UPB_PTRADD(trace_buf, trace_size);
 #endif
@@ -92,6 +103,32 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
   return d->status;
 }
 
+#ifndef NDEBUG
+UPB_INLINE bool _upb_Decoder_TraceBufferFull(upb_Decoder* d) {
+  return d->trace_ptr == d->trace_end - 1;
+}
+
+UPB_INLINE bool _upb_Decoder_TraceBufferAlmostFull(upb_Decoder* d) {
+  return d->trace_ptr == d->trace_end - 2;
+}
+#endif
+
+UPB_INLINE char* _upb_Decoder_TraceNext(upb_Decoder* d) {
+#ifndef NDEBUG
+  return _upb_Decoder_TraceBufferAlmostFull(d) ? NULL : d->trace_ptr + 1;
+#else
+  return NULL;
+#endif
+}
+
+UPB_INLINE char* _upb_Decoder_TracePtr(upb_Decoder* d) {
+#ifndef NDEBUG
+  return d->trace_ptr;
+#else
+  return NULL;
+#endif
+}
+
 // Trace events are used to trace the progress of the decoder.
 // Events:
 //   'D'  Fast dispatch
@@ -102,7 +139,7 @@ UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
 UPB_INLINE void _upb_Decoder_Trace(upb_Decoder* d, char event) {
 #ifndef NDEBUG
   if (d->trace_ptr == NULL) return;
-  if (d->trace_ptr == d->trace_end - 1) {
+  if (_upb_Decoder_TraceBufferFull(d)) {
     d->trace_ptr[-1] = 'X';  // Truncated.
     return;
   }
@@ -139,7 +176,7 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        const upb_MiniTable* layout);
 
 UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return upb_EpsCopyInputStream_IsDoneWithCallback(
+  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
       &d->input, ptr, &_upb_Decoder_IsDoneFallback);
 }
 
@@ -151,6 +188,19 @@ UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
   upb_Decoder* d = (upb_Decoder*)e;
   if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   return new_start;
+}
+
+UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
+    const upb_Decoder* d, const upb_MiniTableField* field) {
+  if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_String) return true;
+
+  if (field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bytes &&
+      (field->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate) &&
+      (d->options & kUpb_DecodeOption_AlwaysValidateUtf8)) {
+    return true;
+  }
+
+  return false;
 }
 
 #include "upb/port/undef.inc"

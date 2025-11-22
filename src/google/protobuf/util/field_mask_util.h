@@ -50,7 +50,7 @@ class PROTOBUF_EXPORT FieldMaskUtil {
     }
   }
 
-  // Converts FieldMask to/from string, formatted according to proto3 JSON
+  // Converts FieldMask to/from string, formatted according to ProtoJSON
   // spec for FieldMask (e.g., "fooBar,baz.quz"). If the field name is not
   // style conforming (i.e., not snake_case when converted to string, or not
   // camelCase when converted from string), the conversion will fail.

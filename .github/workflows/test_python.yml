@@ -28,7 +28,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -47,6 +47,8 @@ jobs:
           - version: "3.12"
             continuous-only: true
           - version: "3.13"
+            continuous-only: true
+          - version: "3.14"
           - type: C++
             version: aarch64
             targets: //python/... //python:aarch64_test
@@ -59,14 +61,14 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v4
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
         with:
-          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.6.1-{0}-e1c2fe666ffa9b941b126541a26340d0ea787cea', matrix.version) }}
+          image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:7.6.1-{0}-5237f14696e60e4b050edfbf7ba9b374f37f83c6', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: python_linux/${{ matrix.type }}_${{ matrix.version }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }} --test_env=KOKORO_PYTHON_VERSION
@@ -77,7 +79,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         type: [ Pure, C++]
-        version: [ "3.12", "3.13" ]
+        version: [ "3.12", "3.13", "3.14" ]
         include:
           - type: Pure
             targets: //python/... //python:python_version_test
@@ -86,12 +88,14 @@ jobs:
             flags: --define=use_fast_cpp_protos=true
           - version: "3.13"
             continuous-only: true
+          - version: "3.14"
+            continuous-only: true
 
     name: MacOS ${{ matrix.type }} ${{ matrix.version }}
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v4
+        uses: protocolbuffers/protobuf-ci/checkout@v5
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -111,7 +115,7 @@ jobs:
           source venv/bin/activate
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v4
+        uses: protocolbuffers/protobuf-ci/bazel@v5
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:

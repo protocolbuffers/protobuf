@@ -165,7 +165,7 @@ public final class FieldMaskUtil {
   }
 
   /**
-   * Converts a field mask to a Proto3 JSON string, that is converting from snake case to camel case
+   * Converts a field mask to a ProtoJSON string, that is converting from snake case to camel case
    * and joining all paths into one string with commas.
    */
   public static String toJsonString(FieldMask fieldMask) {
@@ -180,7 +180,7 @@ public final class FieldMaskUtil {
   }
 
   /**
-   * Converts a field mask from a Proto3 JSON string, that is splitting the paths along commas and
+   * Converts a field mask from a ProtoJSON string, that is splitting the paths along commas and
    * converting from camel case to snake case.
    */
   @SuppressWarnings("StringSplitter")

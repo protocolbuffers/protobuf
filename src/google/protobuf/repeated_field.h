@@ -149,6 +149,8 @@ struct HeapRep {
 
   void* elements() { return this + 1; }
 
+  static constexpr size_t SizeOf() { return sizeof(HeapRep); }
+
   // Align to 8 as sanitizers are picky on the alignment of containers to start
   // at 8 byte offsets even when compiling for 32 bit platforms.
   union {
@@ -712,6 +714,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 #endif
 
   void ReserveWithArena(Arena* arena, int new_size);
+  void GrowByWithArena(Arena* arena, int grow_by) {
+    ReserveWithArena(arena, size() + grow_by);
+  }
 
   void AddWithArena(Arena* arena, Element value);
   pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;

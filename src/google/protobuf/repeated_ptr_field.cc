@@ -131,33 +131,52 @@ template PROTOBUF_EXPORT_TEMPLATE_DEFINE void
 memswap<InternalMetadataResolverOffsetHelper<RepeatedPtrFieldBase>::value>(
     char* PROTOBUF_RESTRICT, char* PROTOBUF_RESTRICT);
 
-template <>
-void RepeatedPtrFieldBase::MergeFrom<std::string>(
-    const RepeatedPtrFieldBase& from, Arena* arena) {
+template <typename T, typename CopyElementFn, typename CreateAndMergeFn>
+PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
+    const RepeatedPtrFieldBase& from, Arena* arena, CopyElementFn&& copy_fn,
+    CreateAndMergeFn&& create_and_merge_fn) {
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
   int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<std::string**>(InternalReserve(new_size, arena));
-  auto src = reinterpret_cast<std::string* const*>(from.elements());
+  auto dst = reinterpret_cast<T**>(InternalReserve(new_size, arena));
+  auto src = reinterpret_cast<T* const*>(from.elements());
   auto end = src + from.current_size_;
   auto end_assign = src + std::min(ClearedCount(), from.current_size_);
   for (; src < end_assign; ++dst, ++src) {
-    (*dst)->assign(**src);
+    copy_fn(arena, *dst, **src);
   }
-  if (arena != nullptr) {
-    for (; src < end; ++dst, ++src) {
-      *dst = Arena::Create<std::string>(arena, **src);
-    }
-  } else {
-    for (; src < end; ++dst, ++src) {
-      *dst = new std::string(**src);
-    }
+  for (; src < end; ++dst, ++src) {
+    *dst = create_and_merge_fn(arena, **src);
   }
   ExchangeCurrentSize(new_size);
   if (new_size > allocated_size()) {
     rep()->allocated_size = new_size;
   }
+}
+
+template <typename T, typename CopyElementFn>
+PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
+    const RepeatedPtrFieldBase& from, Arena* arena, CopyElementFn&& copy_fn) {
+  if (arena != nullptr) {
+    MergeFromInternal<T>(from, arena, std::forward<CopyElementFn>(copy_fn),
+                         [](Arena* arena, const T& src) -> T* {
+                           return Arena::Create<T>(arena, src);
+                         });
+  } else {
+    MergeFromInternal<T>(
+        from, /*arena=*/nullptr, std::forward<CopyElementFn>(copy_fn),
+        [](Arena* arena, const T& src) -> T* { return new T(src); });
+  }
+}
+
+template <>
+void RepeatedPtrFieldBase::MergeFrom<std::string>(
+    const RepeatedPtrFieldBase& from, Arena* arena) {
+  MergeFromInternal<std::string>(
+      from, arena, [](Arena* arena, std::string* dst, const std::string& src) {
+        dst->assign(src);
+      });
 }
 
 
@@ -210,29 +229,19 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
 template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     const RepeatedPtrFieldBase& from, Arena* arena) {
-  Prefetch5LinesFrom1Line(&from);
-  ABSL_DCHECK_EQ(arena, GetArena());
-  ABSL_DCHECK_NE(&from, this);
   ABSL_DCHECK(from.current_size_ > 0);
-  int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size, arena));
-  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
-  auto end = src + from.current_size_;
-  const ClassData* class_data = GetClassData(*src[0]);
-  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
-    int recycled = MergeIntoClearedMessages(from);
-    dst += recycled;
-    src += recycled;
-  }
-  for (; src < end; ++src, ++dst) {
-    ABSL_DCHECK(*src != nullptr);
-    *dst = class_data->New(arena);
-    (*dst)->MergeFromWithClassData(**src, class_data);
-  }
-  ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
-  }
+  const ClassData* class_data =
+      GetClassData(*reinterpret_cast<const MessageLite*>(from.element_at(0)));
+  MergeFromInternal<MessageLite>(
+      from, arena,
+      [class_data](Arena* arena, MessageLite* dst, const MessageLite& src) {
+        dst->MergeFromWithClassData(src, class_data);
+      },
+      [class_data](Arena* arena, const MessageLite& src) -> MessageLite* {
+        MessageLite* dst = class_data->New(arena);
+        dst->MergeFromWithClassData(src, class_data);
+        return dst;
+      });
 }
 
 }  // namespace internal

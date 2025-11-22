@@ -36,7 +36,6 @@ pub enum DecodeStatus {
     BadUtf8 = 3,
     MaxDepthExceeded = 4,
     MissingRequired = 5,
-    UnlinkedSubMessage = 6,
 }
 // LINT.ThenChange()
 

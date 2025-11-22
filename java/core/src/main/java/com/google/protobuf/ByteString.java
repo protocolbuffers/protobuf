@@ -22,8 +22,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.InvalidMarkException;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
@@ -446,13 +444,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       final int offset = buffer.arrayOffset();
       return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
     } else {
-      return new NioByteString(buffer);
+      ByteBuffer slice = buffer.slice();
+      byte[] bytes = new byte[slice.remaining()];
+      slice.get(bytes);
+      return new LiteralByteString(bytes);
     }
-  }
-
-  // For use in tests
-  static ByteString nioByteString(ByteBuffer buffer) {
-    return new NioByteString(buffer);
   }
 
   /**
@@ -958,23 +954,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return whether the bytes in this {@code ByteString} are a well-formed UTF-8 byte sequence
    */
   public abstract boolean isValidUtf8();
-
-  /**
-   * Tells whether the given byte sequence is a well-formed, malformed, or incomplete UTF-8 byte
-   * sequence. This method accepts and returns a partial state result, allowing the bytes for a
-   * complete UTF-8 byte sequence to be composed from multiple {@code ByteString} segments.
-   *
-   * @param state either {@code 0} (if this is the initial decoding operation) or the value returned
-   *     from a call to a partial decoding method for the previous bytes
-   * @param offset offset of the first byte to check
-   * @param length number of bytes to check
-   * @return {@code -1} if the partial byte sequence is definitely malformed, {@code 0} if it is
-   *     well-formed (no additional input needed), or, if the byte sequence is "incomplete", i.e.
-   *     apparently terminated in the middle of a character, an opaque integer "state" value
-   *     containing enough information to decode the character when passed to a subsequent
-   *     invocation of a partial decoding method.
-   */
-  protected abstract int partialIsValidUtf8(int state, int offset, int length);
 
   // =================================================================
   // equals() and hashCode()
@@ -1565,11 +1544,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return Utf8.isValidUtf8(bytes);
     }
 
-    @Override
-    protected int partialIsValidUtf8(int state, int offset, int length) {
-      return Utf8.partialIsValidUtf8(state, bytes, offset, offset + length);
-    }
-
     // =================================================================
     // equals() and hashCode()
 
@@ -1757,12 +1731,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     @Override
-    protected int partialIsValidUtf8(int state, int offset, int length) {
-      int index = this.offset + offset;
-      return Utf8.partialIsValidUtf8(state, bytes, index, index + length);
-    }
-
-    @Override
     protected boolean equalsInternal(ByteString other) {
       // If the other side is a LiteralByteString or BoundedByteString, implement equals by doing
       // equalsInternal since that is as a fast range check against the byte arrays.
@@ -1827,243 +1795,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
       throw new InvalidObjectException(
           "BoundedByteStream instances are not to be serialized directly");
-    }
-  }
-
-  /** A {@link ByteString} that wraps around a {@link ByteBuffer}. */
-  // Keep this class private to avoid deadlocks in classloading across threads as ByteString's
-  // static initializer loads LiteralByteString and another thread loads BoundedByteString.
-  private static final class NioByteString extends ByteString.LeafByteString {
-    private final ByteBuffer buffer;
-
-    NioByteString(ByteBuffer buffer) {
-      checkNotNull(buffer, "buffer");
-
-      // Use native byte order for fast fixed32/64 operations.
-      this.buffer = buffer.slice().order(ByteOrder.nativeOrder());
-    }
-
-    // =================================================================
-    // Serializable
-
-    /** Magic method that lets us override serialization behavior. */
-    private Object writeReplace() {
-      return ByteString.copyFrom(buffer.slice());
-    }
-
-    /** Magic method that lets us override deserialization behavior. */
-    private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
-      throw new InvalidObjectException("NioByteString instances are not to be serialized directly");
-    }
-
-    // =================================================================
-
-    @Override
-    public byte byteAt(int index) {
-      try {
-        return buffer.get(index);
-      } catch (ArrayIndexOutOfBoundsException e) {
-        throw e;
-      } catch (IndexOutOfBoundsException e) {
-        throw new ArrayIndexOutOfBoundsException(e.getMessage());
-      }
-    }
-
-    @Override
-    public byte internalByteAt(int index) {
-      // it isn't possible to avoid the bounds checking inside of ByteBuffer, so just use the
-      // default
-      // implementation.
-      return byteAt(index);
-    }
-
-    @Override
-    public int size() {
-      return buffer.remaining();
-    }
-
-    @Override
-    public ByteString substring(int beginIndex, int endIndex) {
-      try {
-        ByteBuffer slice = slice(beginIndex, endIndex);
-        return new NioByteString(slice);
-      } catch (ArrayIndexOutOfBoundsException e) {
-        throw e;
-      } catch (IndexOutOfBoundsException e) {
-        throw new ArrayIndexOutOfBoundsException(e.getMessage());
-      }
-    }
-
-    @Override
-    protected void copyToInternal(
-        byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
-      ByteBuffer slice = buffer.slice();
-      Java8Compatibility.position(slice, sourceOffset);
-      slice.get(target, targetOffset, numberToCopy);
-    }
-
-    @Override
-    public void copyTo(ByteBuffer target) {
-      target.put(buffer.slice());
-    }
-
-    @Override
-    public void writeTo(OutputStream out) throws IOException {
-      out.write(toByteArray());
-    }
-
-    @Override
-    boolean equalsRange(ByteString other, int offset, int length) {
-      return substring(0, length).equals(other.substring(offset, offset + length));
-    }
-
-    @Override
-    void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite) throws IOException {
-      if (buffer.hasArray()) {
-        // Optimized write for array-backed buffers.
-        // Note that we're taking the risk that a malicious OutputStream could modify the array.
-        int bufferOffset = buffer.arrayOffset() + buffer.position() + sourceOffset;
-        out.write(buffer.array(), bufferOffset, numberToWrite);
-        return;
-      }
-
-      ByteBufferWriter.write(slice(sourceOffset, sourceOffset + numberToWrite), out);
-    }
-
-    @Override
-    void writeTo(ByteOutput output) throws IOException {
-      output.writeLazy(buffer.slice());
-    }
-
-    @Override
-    public ByteBuffer asReadOnlyByteBuffer() {
-      return buffer.asReadOnlyBuffer();
-    }
-
-    @Override
-    public List<ByteBuffer> asReadOnlyByteBufferList() {
-      return Collections.singletonList(asReadOnlyByteBuffer());
-    }
-
-    @Override
-    protected String toStringInternal(Charset charset) {
-      final byte[] bytes;
-      final int offset;
-      final int length;
-      if (buffer.hasArray()) {
-        bytes = buffer.array();
-        offset = buffer.arrayOffset() + buffer.position();
-        length = buffer.remaining();
-      } else {
-        // TODO: Can we optimize this?
-        bytes = toByteArray();
-        offset = 0;
-        length = bytes.length;
-      }
-      return new String(bytes, offset, length, charset);
-    }
-
-    @Override
-    public boolean isValidUtf8() {
-      return Utf8.isValidUtf8(buffer);
-    }
-
-    @Override
-    protected int partialIsValidUtf8(int state, int offset, int length) {
-      return Utf8.partialIsValidUtf8(state, buffer, offset, offset + length);
-    }
-
-    @Override
-    public boolean equalsInternal(ByteString other) {
-      if (other instanceof NioByteString) {
-        return buffer.equals(((NioByteString) other).buffer);
-      }
-      if (other instanceof RopeByteString) {
-        return other.equalsInternal(this);
-      }
-      return buffer.equals(other.asReadOnlyByteBuffer());
-    }
-
-    @Override
-    protected int partialHash(int h, int offset, int length) {
-      for (int i = offset; i < offset + length; i++) {
-        h = h * 31 + buffer.get(i);
-      }
-      return h;
-    }
-
-    @Override
-    public InputStream newInput() {
-      return new InputStream() {
-        private final ByteBuffer buf = buffer.slice();
-
-        @Override
-        public void mark(int readlimit) {
-          Java8Compatibility.mark(buf);
-        }
-
-        @Override
-        public boolean markSupported() {
-          return true;
-        }
-
-        @Override
-        public void reset() throws IOException {
-          try {
-            Java8Compatibility.reset(buf);
-          } catch (InvalidMarkException e) {
-            throw new IOException(e);
-          }
-        }
-
-        @Override
-        public int available() throws IOException {
-          return buf.remaining();
-        }
-
-        @Override
-        public int read() throws IOException {
-          if (!buf.hasRemaining()) {
-            return -1;
-          }
-          return buf.get() & 0xFF;
-        }
-
-        @Override
-        public int read(byte[] bytes, int off, int len) throws IOException {
-          if (!buf.hasRemaining()) {
-            return -1;
-          }
-
-          len = Math.min(len, buf.remaining());
-          buf.get(bytes, off, len);
-          return len;
-        }
-      };
-    }
-
-    @Override
-    public CodedInputStream newCodedInput() {
-      return CodedInputStream.newInstance(buffer, true);
-    }
-
-    /**
-     * Creates a slice of a range of this buffer.
-     *
-     * @param beginIndex the beginning index of the slice (inclusive).
-     * @param endIndex the end index of the slice (exclusive).
-     * @return the requested slice.
-     */
-    private ByteBuffer slice(int beginIndex, int endIndex) {
-      if (beginIndex < buffer.position() || endIndex > buffer.limit() || beginIndex > endIndex) {
-        throw new IllegalArgumentException(
-            String.format("Invalid indices [%d, %d]", beginIndex, endIndex));
-      }
-
-      ByteBuffer slice = buffer.slice();
-      Java8Compatibility.position(slice, beginIndex - buffer.position());
-      Java8Compatibility.limit(slice, endIndex - buffer.position());
-      return slice;
     }
   }
 }

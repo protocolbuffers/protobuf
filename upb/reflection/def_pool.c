@@ -7,25 +7,36 @@
 
 #include "upb/reflection/internal/def_pool.h"
 
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "upb/base/status.h"
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/file.h"
+#include "upb/mini_table/generated_registry.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/file_def.h"
 #include "upb/reflection/internal/def_builder.h"
-#include "upb/reflection/internal/enum_def.h"
-#include "upb/reflection/internal/enum_value_def.h"
-#include "upb/reflection/internal/field_def.h"
 #include "upb/reflection/internal/file_def.h"
 #include "upb/reflection/internal/message_def.h"
-#include "upb/reflection/internal/service_def.h"
 #include "upb/reflection/internal/upb_edition_defaults.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+#include "upb/wire/decode.h"
 
 struct upb_DefPool {
   upb_Arena* arena;
@@ -33,6 +44,7 @@ struct upb_DefPool {
   upb_strtable files;  // file_name -> (upb_FileDef*)
   upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
+  const upb_GeneratedRegistryRef* generated_extreg;
   const UPB_DESC(FeatureSetDefaults) * feature_set_defaults;
   upb_MiniTablePlatform platform;
   void* scratch_data;
@@ -41,6 +53,7 @@ struct upb_DefPool {
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
+  upb_GeneratedRegistry_Release(s->generated_extreg);
   upb_Arena_Free(s->arena);
   upb_gfree(s->scratch_data);
   upb_gfree(s);
@@ -65,6 +78,9 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->extreg = upb_ExtensionRegistry_New(s->arena);
   if (!s->extreg) goto err;
+
+  s->generated_extreg = upb_GeneratedRegistry_Load();
+  if (!s->generated_extreg) goto err;
 
   s->platform = kUpb_MiniTablePlatform_Native;
 
@@ -526,4 +542,9 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
 
 bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
   return _upb_DefPool_LoadDefInitEx(s, init, false);
+}
+
+const upb_ExtensionRegistry* _upb_DefPool_GeneratedExtensionRegistry(
+    const upb_DefPool* s) {
+  return upb_ExtensionRegistry_GetGenerated(s->generated_extreg);
 }

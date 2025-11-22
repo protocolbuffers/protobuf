@@ -24,7 +24,6 @@
 #include <cstdint>
 #include <initializer_list>
 #include <memory>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -35,6 +34,7 @@
 #include "absl/base/casts.h"
 #include "absl/base/optimization.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/implicit_weak_message.h"
@@ -384,18 +384,23 @@ inline void AddToRepeatedPtrField(InternalVisibility visibility,
   dest.InternalAddWithArena(visibility, arena, std::move(value));
 }
 
-constexpr std::optional<uintptr_t> EncodePlacementArenaOffsets(
+constexpr absl::optional<uintptr_t> EncodePlacementArenaOffsets(
     std::initializer_list<size_t> offsets) {
   uintptr_t arena_bits = 0;
   for (size_t offset : offsets) {
     offset /= sizeof(Arena*);
     if (offset >= sizeof(arena_bits) * 8) {
-      return std::nullopt;
+      return absl::nullopt;
     }
     arena_bits |= uintptr_t{1} << offset;
   }
   return arena_bits;
 }
+
+// The struct PrivateAccess is used to provide access to private members of
+// message classes without making them public. This is useful for highly
+// optimized code paths that need to access internals.
+struct PrivateAccess {};
 
 }  // namespace internal
 }  // namespace protobuf

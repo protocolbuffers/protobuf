@@ -107,6 +107,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -319,10 +320,10 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Computes (an estimate of) the total number of bytes currently used for
   // storing the message in memory.
   //
-  // SpaceUsed() is noticeably slower than ByteSize(), as it is implemented
-  // using reflection (rather than the generated code implementation for
-  // ByteSize()). Like ByteSize(), its CPU time is linear in the number of
-  // fields defined for the proto.
+  // SpaceUsedLong() is noticeably slower than ByteSizeLong(), as it is
+  // implemented using reflection (rather than the generated code implementation
+  // for ByteSizeLong()). Like ByteSizeLong(), its CPU time is linear in the
+  // number of fields defined for the proto.
   //
   // Note: The precise value of this method should never be depended on, and can
   // change substantially due to internal details.  In debug builds, this will
