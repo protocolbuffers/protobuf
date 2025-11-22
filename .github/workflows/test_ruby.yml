@@ -124,8 +124,8 @@ jobs:
         # TODO Re-enable these once flakes are fixed
         #- { version: "3.2", ffi: FFI }
 
-    name: MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
-    runs-on: macos-13
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
+    runs-on: macos-14
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
