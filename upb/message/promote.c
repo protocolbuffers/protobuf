@@ -19,10 +19,8 @@
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
-#include "upb/message/internal/tagged_ptr.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
-#include "upb/message/tagged_ptr.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
@@ -191,86 +189,6 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
   return ret;
 }
 
-static upb_DecodeStatus upb_Message_PromoteOne(upb_TaggedMessagePtr* tagged,
-                                               const upb_MiniTable* mini_table,
-                                               int decode_options,
-                                               upb_Arena* arena) {
-  upb_Message* empty =
-      UPB_PRIVATE(_upb_TaggedMessagePtr_GetEmptyMessage)(*tagged);
-  upb_Message* promoted = upb_Message_New(mini_table, arena);
-  if (!promoted) return kUpb_DecodeStatus_OutOfMemory;
-  upb_StringView unknown_data;
-  uintptr_t iter = kUpb_Message_UnknownBegin;
-  while (upb_Message_NextUnknown(empty, &unknown_data, &iter)) {
-    upb_DecodeStatus status =
-        upb_Decode(unknown_data.data, unknown_data.size, promoted, mini_table,
-                   NULL, decode_options, arena);
-    if (status != kUpb_DecodeStatus_Ok) {
-      return status;
-    }
-  }
-  *tagged = UPB_PRIVATE(_upb_TaggedMessagePtr_Pack)(promoted, false);
-  return kUpb_DecodeStatus_Ok;
-}
-
-upb_DecodeStatus upb_Message_PromoteMessage(upb_Message* parent,
-                                            const upb_MiniTable* mini_table,
-                                            const upb_MiniTableField* field,
-                                            int decode_options,
-                                            upb_Arena* arena,
-                                            upb_Message** promoted) {
-  UPB_ASSERT(!upb_Message_IsFrozen(parent));
-  const upb_MiniTable* sub_table =
-      upb_MiniTable_GetSubMessageTable(mini_table, field);
-  UPB_ASSERT(sub_table);
-  upb_TaggedMessagePtr tagged =
-      upb_Message_GetTaggedMessagePtr(parent, field, NULL);
-  upb_DecodeStatus ret =
-      upb_Message_PromoteOne(&tagged, sub_table, decode_options, arena);
-  if (ret == kUpb_DecodeStatus_Ok) {
-    *promoted = upb_TaggedMessagePtr_GetNonEmptyMessage(tagged);
-    upb_Message_SetMessage(parent, field, *promoted);
-  }
-  return ret;
-}
-
-upb_DecodeStatus upb_Array_PromoteMessages(upb_Array* arr,
-                                           const upb_MiniTable* mini_table,
-                                           int decode_options,
-                                           upb_Arena* arena) {
-  void** data = upb_Array_MutableDataPtr(arr);
-  size_t size = upb_Array_Size(arr);
-  for (size_t i = 0; i < size; i++) {
-    upb_TaggedMessagePtr tagged;
-    memcpy(&tagged, &data[i], sizeof(tagged));
-    if (!upb_TaggedMessagePtr_IsEmpty(tagged)) continue;
-    upb_DecodeStatus status =
-        upb_Message_PromoteOne(&tagged, mini_table, decode_options, arena);
-    if (status != kUpb_DecodeStatus_Ok) return status;
-    memcpy(&data[i], &tagged, sizeof(tagged));
-  }
-  return kUpb_DecodeStatus_Ok;
-}
-
-upb_DecodeStatus upb_Map_PromoteMessages(upb_Map* map,
-                                         const upb_MiniTable* mini_table,
-                                         int decode_options, upb_Arena* arena) {
-  size_t iter = kUpb_Map_Begin;
-  upb_MessageValue key, val;
-  while (upb_Map_Next(map, &key, &val, &iter)) {
-    if (!upb_TaggedMessagePtr_IsEmpty(val.tagged_msg_val)) continue;
-    upb_DecodeStatus status = upb_Message_PromoteOne(
-        &val.tagged_msg_val, mini_table, decode_options, arena);
-    if (status != kUpb_DecodeStatus_Ok) return status;
-    upb_Map_SetEntryValue(map, iter, val);
-  }
-  return kUpb_DecodeStatus_Ok;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// OLD promotion functions, will be removed!
-////////////////////////////////////////////////////////////////////////////////
-
 // Warning: See TODO
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
@@ -282,8 +200,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_Message* message = NULL;
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
-  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(mini_table, field) ==
-             sub_mini_table);
+  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(field) == sub_mini_table);
   bool is_oneof = upb_MiniTableField_IsInOneof(field);
   if (!is_oneof || UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, field) ==
                        upb_MiniTableField_Number(field)) {
@@ -380,7 +297,7 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
 
   const upb_MiniTable* map_entry_mini_table =
-      upb_MiniTable_MapEntrySubMessage(mini_table, field);
+      upb_MiniTable_MapEntrySubMessage(field);
   UPB_ASSERT(upb_MiniTable_FieldCount(map_entry_mini_table) == 2);
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
@@ -397,8 +314,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
     upb_Map* map = upb_Message_GetOrCreateMutableMap(msg, map_entry_mini_table,
                                                      field, arena);
     upb_Message* map_entry_message = ret.message;
-    bool insert_success = upb_Message_SetMapEntry(map, mini_table, field,
-                                                  map_entry_message, arena);
+    bool insert_success =
+        upb_Message_SetMapEntry(map, field, map_entry_message, arena);
     if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
     upb_StringView del =
         upb_StringView_FromDataAndSize(unknown.ptr, unknown.len);

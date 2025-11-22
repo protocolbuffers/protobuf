@@ -12,7 +12,6 @@
 #include <limits>
 #include <new>  // IWYU pragma: keep for operator new
 #include <numeric>
-#include <optional>
 #include <string>
 #include <type_traits>
 
@@ -26,6 +25,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -473,14 +473,14 @@ int TcParser::FieldNumber(const TcParseTableBase* table,
   // But it is fine because we are only using this for debug check messages.
   size_t need_to_skip = entry - table->field_entries_begin();
   const auto visit_bitmap = [&](uint32_t field_bitmap,
-                                int base_field_number) -> std::optional<int> {
+                                int base_field_number) -> absl::optional<int> {
     for (; field_bitmap != 0; field_bitmap &= field_bitmap - 1) {
       if (need_to_skip == 0) {
         return absl::countr_zero(field_bitmap) + base_field_number;
       }
       --need_to_skip;
     }
-    return std::nullopt;
+    return absl::nullopt;
   };
   if (auto number = visit_bitmap(~table->skipmap32, 1)) {
     return *number;
@@ -919,7 +919,7 @@ PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p, Type* value) {
                 "Only [u]int32_t and [u]int64_t please");
 #ifdef __aarch64__
   // The VarintParse parser has a faster implementation on ARM.
-  absl::conditional_t<sizeof(Type) == 4, uint32_t, uint64_t> tmp;
+  std::conditional_t<sizeof(Type) == 4, uint32_t, uint64_t> tmp;
   p = VarintParse(p, &tmp);
   if (p != nullptr) {
     *value = tmp;
@@ -1157,20 +1157,40 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   }
   SetCachedHasBitForRepeated(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
-  Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
+  // Count the number of varint (same as number of bytes with 0 in top bit)
+  // and preallocte space in repeated field.
+  int len = 0;
+  auto ptr2 = ptr;
   do {
+    ptr2 += sizeof(TagType);
+    // Defend against overflowing available data due to malformed input of
+    // infinite number of bytes with top bit set. Longest legal varint is 10
+    // bytes, which is also < 16 bytes of slop.
+    int limit = 10;
+    while ((*ptr2 & 0x80) && limit--) ptr2++;
+    len++;
+    ptr2++;
+  } while (ctx->DataAvailable(ptr2) &&
+           UnalignedLoad<TagType>(ptr2) == expected_tag);
+  int added = 0;
+  field.Reserve(field.size() + len);
+  // Allows us to skip SOO checks.
+  FieldType* x = field.AddNAlreadyReserved(len);
+  do {
+    ABSL_DCHECK(ctx->DataAvailable(ptr));
+    ABSL_DCHECK_EQ(UnalignedLoad<TagType>(ptr), expected_tag);
     ptr += sizeof(TagType);
     FieldType tmp;
     ptr = ParseVarint(ptr, &tmp);
     if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+      field.Truncate(x - field.data());
       PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
     }
-    field.AddWithArena(arena, ZigZagDecodeHelper<FieldType, zigzag>(tmp));
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+    added++;
+    *x = ZigZagDecodeHelper<FieldType, zigzag>(tmp);
+    x++;
+  } while (added < len);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 

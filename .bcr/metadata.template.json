@@ -92,6 +92,12 @@
       "github": "tonyliaoss",
       "name": "Tony Liao",
       "do_not_notify": true
+    },
+    {
+      "email": "rgoldfinger@google.com",
+      "github": "rgoldfinger6",
+      "name": "Rachel Goldfinger",
+      "do_not_notify": true
     }
   ],
   "repository": ["github:protocolbuffers/protobuf"],

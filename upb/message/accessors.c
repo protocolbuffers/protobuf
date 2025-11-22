@@ -17,12 +17,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTable* m,
-                             const upb_MiniTableField* f,
+bool upb_Message_SetMapEntry(upb_Map* map, const upb_MiniTableField* f,
                              upb_Message* map_entry_message, upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(map_entry_message));
   const upb_MiniTable* map_entry_mini_table =
-      upb_MiniTable_MapEntrySubMessage(m, f);
+      upb_MiniTable_MapEntrySubMessage(f);
   UPB_ASSERT(map_entry_mini_table);
   const upb_MiniTableField* map_entry_key_field =
       upb_MiniTable_MapKey(map_entry_mini_table);

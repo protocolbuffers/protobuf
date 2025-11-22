@@ -78,3 +78,12 @@ message MessageWithOption {
 
   optional int32 field1 = 1;
 }
+
+message FactoryMessageExtension {
+  optional int32 a = 1;
+}
+
+extend Factory1Message {
+  optional FactoryMessageExtension message_field1 = 1003;
+  optional FactoryMessageExtension message_field2 = 1004;
+}

@@ -19,7 +19,8 @@ bool proto2_rust_Message_parse(google::protobuf::MessageLite* m,
   if (input.len > std::numeric_limits<int>::max()) {
     return false;
   }
-  return m->ParseFromArray(input.ptr, static_cast<int>(input.len));
+  return m->ParseFromString(
+      absl::string_view(input.ptr, static_cast<int>(input.len)));
 }
 
 bool proto2_rust_Message_parse_dont_enforce_required(
@@ -27,7 +28,8 @@ bool proto2_rust_Message_parse_dont_enforce_required(
   if (input.len > std::numeric_limits<int>::max()) {
     return false;
   }
-  return m->ParsePartialFromArray(input.ptr, static_cast<int>(input.len));
+  return m->ParsePartialFromString(
+      absl::string_view(input.ptr, static_cast<int>(input.len)));
 }
 
 bool proto2_rust_Message_serialize(const google::protobuf::MessageLite* m,

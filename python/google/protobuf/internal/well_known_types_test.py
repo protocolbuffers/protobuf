@@ -530,7 +530,7 @@ class TimeUtilTest(TimeUtilTestBase):
     )
     self.assertRaisesRegex(
         ValueError,
-        'year (0 )?is out of range',
+        'year ',
         message.FromJsonString,
         '0000-01-01T00:00:00Z',
     )
@@ -540,10 +540,10 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertRaisesRegex(ValueError, 'Timestamp is not valid',
                            message.FromSeconds, -62135596801)
     msg = well_known_types_test_pb2.WKTMessage()
-    with self.assertRaises((TypeError, AttributeError)):
+    with self.assertRaises((TypeError)):
       msg.optional_timestamp = 1
 
-    with self.assertRaises((TypeError, AttributeError)):
+    with self.assertRaises((TypeError)):
       msg2 = well_known_types_test_pb2.WKTMessage(optional_timestamp=1)
 
     with self.assertRaises(TypeError):

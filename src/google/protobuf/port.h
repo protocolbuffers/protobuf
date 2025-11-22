@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <new>
-#include <optional>
 #include <string>
 #include <type_traits>
 #include <typeinfo>
@@ -32,8 +31,8 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/config.h"
-#include "absl/meta/type_traits.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 #if defined(ABSL_HAVE_ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
@@ -222,38 +221,38 @@ inline ToRef DownCast(From& f) {
 
 // Looks up the name of `T` via RTTI, if RTTI is available.
 template <typename T>
-inline std::optional<absl::string_view> RttiTypeName() {
+inline absl::optional<absl::string_view> RttiTypeName() {
 #if PROTOBUF_RTTI
   return typeid(T).name();
 #else
-  return std::nullopt;
+  return absl::nullopt;
 #endif
 }
 
 // Helpers for identifying our supported types.
 template <typename T>
 struct is_supported_integral_type
-    : absl::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
-                        std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
-                        std::is_same<T, bool>> {};
+    : std::disjunction<std::is_same<T, int32_t>, std::is_same<T, uint32_t>,
+                       std::is_same<T, int64_t>, std::is_same<T, uint64_t>,
+                       std::is_same<T, bool>> {};
 
 template <typename T>
 struct is_supported_floating_point_type
-    : absl::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
+    : std::disjunction<std::is_same<T, float>, std::is_same<T, double>> {};
 
 template <typename T>
 struct is_supported_string_type
-    : absl::disjunction<std::is_same<T, std::string>> {};
+    : std::disjunction<std::is_same<T, std::string>> {};
 
 template <typename T>
 struct is_supported_scalar_type
-    : absl::disjunction<is_supported_integral_type<T>,
-                        is_supported_floating_point_type<T>,
-                        is_supported_string_type<T>> {};
+    : std::disjunction<is_supported_integral_type<T>,
+                       is_supported_floating_point_type<T>,
+                       is_supported_string_type<T>> {};
 
 template <typename T>
 struct is_supported_message_type
-    : absl::disjunction<std::is_base_of<MessageLite, T>> {
+    : std::disjunction<std::is_base_of<MessageLite, T>> {
   static constexpr auto force_complete_type = sizeof(T);
 };
 

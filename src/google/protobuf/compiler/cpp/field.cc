@@ -14,7 +14,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -23,6 +22,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/generator.h"
@@ -61,6 +61,7 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"DeclaredCppType", DeclaredCppTypeMethodName(field->cpp_type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
+      {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
       Sub("PrepareSplitMessageForWrite",
           split ? "PrepareSplitMessageForWrite();" : "")
@@ -358,10 +359,11 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
 }
 
 void HasBitVars(const FieldDescriptor* field, const Options& opts,
-                std::optional<uint32_t> idx, std::vector<Sub>& vars) {
+                absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!idx.has_value()) {
     vars.emplace_back(Sub("set_hasbit", "").WithSuffix(";"));
     vars.emplace_back(Sub("clear_hasbit", "").WithSuffix(";"));
+    vars.emplace_back("exclude_mask", "0xFFFFFFFFU");
     return;
   }
 
@@ -388,10 +390,12 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
   vars.emplace_back("has_hasbit", has);
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
+  vars.emplace_back("exclude_mask",
+                    absl::StrFormat("0x%08xU", ~(1u << (*idx % 32))));
 }
 
 void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
-                       std::optional<uint32_t> idx, std::vector<Sub>& vars) {
+                       absl::optional<uint32_t> idx, std::vector<Sub>& vars) {
   if (!IsStringInlined(field, opts)) {
     ABSL_CHECK(!idx.has_value());
     return;
@@ -421,8 +425,8 @@ void InlinedStringVars(const FieldDescriptor* field, const Options& opts,
 FieldGenerator::FieldGenerator(const FieldDescriptor* field,
                                const Options& options,
                                MessageSCCAnalyzer* scc_analyzer,
-                               std::optional<uint32_t> hasbit_index,
-                               std::optional<uint32_t> inlined_string_index)
+                               absl::optional<uint32_t> hasbit_index,
+                               absl::optional<uint32_t> inlined_string_index)
     : impl_(MakeGenerator(field, options, scc_analyzer)),
       field_vars_(FieldVars(field, options)),
       tracker_vars_(MakeTrackerCalls(field, options)),
@@ -439,12 +443,12 @@ void FieldGeneratorTable::Build(
   fields_.reserve(static_cast<size_t>(descriptor_->field_count()));
   for (const auto* field : internal::FieldRange(descriptor_)) {
     size_t index = static_cast<size_t>(field->index());
-    std::optional<uint32_t> has_bit_index;
+    absl::optional<uint32_t> has_bit_index;
     if (!has_bit_indices.empty() && has_bit_indices[index] >= 0) {
       has_bit_index = static_cast<uint32_t>(has_bit_indices[index]);
     }
 
-    std::optional<uint32_t> inlined_string_index;
+    absl::optional<uint32_t> inlined_string_index;
     if (!inlined_string_indices.empty() && inlined_string_indices[index] >= 0) {
       inlined_string_index =
           static_cast<uint32_t>(inlined_string_indices[index]);

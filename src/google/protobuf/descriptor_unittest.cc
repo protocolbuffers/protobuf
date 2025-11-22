@@ -67,6 +67,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
@@ -12200,7 +12201,7 @@ TEST_F(FeaturesTest, DeprecatedFeature) {
           }
         }
       )pb",
-      "foo.proto: foo.proto: NAME: Feature "
+      "foo.proto: foo.proto: NAME: "
       "pb.TestFeatures.removed_feature has been deprecated in edition 2023: "
       "Custom feature deprecation warning\n");
   const FileDescriptor* file = pool_.FindFileByName("foo.proto");
@@ -12287,9 +12288,9 @@ TEST_F(FeaturesTest, RemovedFeature) {
           }
         }
       )pb",
-      "foo.proto: foo.proto: NAME: Feature "
-      "pb.TestFeatures.removed_feature has been removed in edition 2024 and "
-      "can't be used in edition 2024\n");
+      "foo.proto: foo.proto: NAME: "
+      "pb.TestFeatures.removed_feature has been removed in edition 2024: "
+      "Custom feature removal error\n");
 }
 
 TEST_F(FeaturesTest, RemovedFeatureDefault) {
@@ -12319,9 +12320,9 @@ TEST_F(FeaturesTest, FutureFeature) {
           }
         }
       )pb",
-      "foo.proto: foo.proto: NAME: Feature "
-      "pb.TestFeatures.future_feature wasn't introduced until edition 2024 and "
-      "can't be used in edition 2023\n");
+      "foo.proto: foo.proto: NAME: "
+      "pb.TestFeatures.future_feature wasn't introduced until edition "
+      "2024 and can't be used in edition 2023\n");
 }
 
 TEST_F(FeaturesTest, FutureFeatureDefault) {
@@ -12334,6 +12335,33 @@ TEST_F(FeaturesTest, FutureFeatureDefault) {
   ASSERT_THAT(file, NotNull());
   EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).future_feature(),
             pb::VALUE1);
+}
+
+TEST_F(FeaturesTest, NewUnstableFeatureDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_UNSTABLE
+  )pb");
+  ASSERT_THAT(file, NotNull());
+  EXPECT_EQ(GetFeatures(file).GetExtension(pb::test).new_unstable_feature(),
+            pb::UNSTABLE2);
+}
+
+TEST_F(FeaturesTest, ExistingUnstableFeatureDefault) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  const FileDescriptor* file = BuildFile(R"pb(
+    name: "foo.proto"
+    syntax: "editions"
+    edition: EDITION_UNSTABLE
+  )pb");
+  ASSERT_THAT(file, NotNull());
+  EXPECT_EQ(
+      GetFeatures(file).GetExtension(pb::test).unstable_existing_feature(),
+      pb::UNSTABLE3);
 }
 
 // Test that the result of FileDescriptor::DebugString() can be used to create
@@ -14121,10 +14149,11 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
   DescriptorPool pool(&database_, &error_collector);
 
   EXPECT_TRUE(pool.FindMessageTypeByName("FooFeatures") == nullptr);
-  EXPECT_EQ(error_collector.text_,
-            "features.proto: FooFeatures: NAME: Feature "
-            "pb.TestFeatures.future_feature wasn't introduced until edition "
-            "2024 and can't be used in edition 2023\n");
+  EXPECT_EQ(
+      error_collector.text_,
+      "features.proto: FooFeatures: NAME: "
+      "pb.TestFeatures.future_feature wasn't introduced until edition 2024 "
+      "and can't be used in edition 2023\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
@@ -14193,9 +14222,9 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
   error_collector.text_.clear();
   ASSERT_EQ(pool.FindExtensionByName("foo_extension"), nullptr);
   EXPECT_EQ(error_collector.text_,
-            "option.proto: foo_extension: NAME: Feature "
-            "pb.TestFeatures.legacy_feature has been removed in edition 2023 "
-            "and can't be used in edition 2023\n");
+            "option.proto: foo_extension: NAME: "
+            "pb.TestFeatures.legacy_feature has been removed in edition 2023: "
+            "Custom feature removal error\n");
 }
 
 TEST_F(DatabaseBackedPoolTest, DoesntRetryDbUnnecessarily) {

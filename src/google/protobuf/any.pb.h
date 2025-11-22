@@ -130,19 +130,18 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
 
   bool PackFrom(const ::google::protobuf::Message& message) {
     ABSL_DCHECK_NE(&message, this);
-    return ::google::protobuf::internal::InternalPackFrom(message, mutable_type_url(),
-                                   _internal_mutable_value());
+    return ::google::protobuf::internal::InternalPackFrom(message, mutable_type_url(), mutable_value());
   }
   bool PackFrom(const ::google::protobuf::Message& message,
                 ::absl::string_view type_url_prefix) {
     ABSL_DCHECK_NE(&message, this);
     return ::google::protobuf::internal::InternalPackFrom(message, type_url_prefix,
                                    mutable_type_url(),
-                                   _internal_mutable_value());
+                                   mutable_value());
   }
   bool UnpackTo(::google::protobuf::Message* PROTOBUF_NONNULL message) const {
-    return ::google::protobuf::internal::InternalUnpackTo(_internal_type_url(),
-                                   _internal_value(), message);
+    return ::google::protobuf::internal::InternalUnpackTo(
+        _internal_type_url(), _internal_value(), message);
   }
   static bool GetAnyFieldDescriptors(
       const ::google::protobuf::Message& message,
@@ -156,7 +155,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
           T, const ::google::protobuf::Message&>::value>::type>
   bool PackFrom(const T& message) {
     return ::google::protobuf::internal::InternalPackFrom<T>(
-        message, mutable_type_url(), _internal_mutable_value());
+        message, mutable_type_url(), mutable_value());
   }
   template <
       typename T,
@@ -166,7 +165,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
                 ::absl::string_view type_url_prefix) {
     return ::google::protobuf::internal::InternalPackFrom<T>(
         message, type_url_prefix, mutable_type_url(),
-        _internal_mutable_value());
+        mutable_value());
   }
   template <
       typename T,
@@ -314,6 +313,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
+  friend ::google::protobuf::internal::PrivateAccess;
   template <typename T>
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;

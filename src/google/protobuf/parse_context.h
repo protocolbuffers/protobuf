@@ -1665,6 +1665,9 @@ template <typename T, typename Validator>
 [[nodiscard]] PROTOBUF_EXPORT const char* UnknownFieldParse(
     uint32_t tag, std::string* unknown, const char* ptr, ParseContext* ctx);
 
+extern template const char* EpsCopyInputStream::NextBuffer<false>(int, int);
+extern template const char* EpsCopyInputStream::NextBuffer<true>(int, int);
+
 extern template std::pair<const char*, bool>
 EpsCopyInputStream::DoneFallback<false>(int, int);
 extern template std::pair<const char*, bool>

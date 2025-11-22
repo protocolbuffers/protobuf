@@ -49,7 +49,7 @@ class SymbolCheckerError {
                      SymbolCheckerErrorType type)
       : symbol_name_(symbol_name), descriptor_(descriptor), type_(type) {}
 
-  std::string_view symbol_name() const { return symbol_name_; }
+  absl::string_view symbol_name() const { return symbol_name_; }
   const Message* descriptor() const { return &descriptor_; }
   SymbolCheckerErrorType type() const { return type_; }
 

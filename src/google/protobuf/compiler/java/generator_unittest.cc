@@ -354,7 +354,7 @@ BBB = 1;
       "--experimental_editions");
 
   ExpectErrorSubstring(
-      "foo.proto:6:6: Feature pb.JavaFeatures.large_enum wasn't introduced "
+      "foo.proto:6:6: pb.JavaFeatures.large_enum wasn't introduced "
       "until edition 2024 and can't be used in edition 2023");
 }
 

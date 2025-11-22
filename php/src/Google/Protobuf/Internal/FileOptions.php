@@ -43,7 +43,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
-     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false, feature_support = {</code>
      */
     protected $java_multiple_files = null;
     /**
@@ -384,7 +384,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
-     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false, feature_support = {</code>
      * @return bool
      */
     public function getJavaMultipleFiles()
@@ -410,7 +410,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * generated to contain the file's getDescriptor() method as well as any
      * top-level extensions defined in the file.
      *
-     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false, feature_support = {</code>
      * @param bool $var
      * @return $this
      */

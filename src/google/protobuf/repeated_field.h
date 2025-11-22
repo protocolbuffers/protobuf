@@ -37,7 +37,6 @@
 #include "absl/base/no_destructor.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
-#include "absl/meta/type_traits.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/field_with_arena.h"
@@ -149,6 +148,8 @@ struct HeapRep {
   ~HeapRep() = delete;
 
   void* elements() { return this + 1; }
+
+  static constexpr size_t SizeOf() { return sizeof(HeapRep); }
 
   // Align to 8 as sanitizers are picky on the alignment of containers to start
   // at 8 byte offsets even when compiling for 32 bit platforms.
@@ -392,11 +393,11 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
-        absl::disjunction<internal::is_supported_integral_type<Element>,
-                          internal::is_supported_floating_point_type<Element>,
-                          std::is_same<absl::Cord, Element>,
-                          std::is_same<UnknownField, Element>,
-                          is_proto_enum<Element>>::value,
+        std::disjunction<internal::is_supported_integral_type<Element>,
+                         internal::is_supported_floating_point_type<Element>,
+                         std::is_same<absl::Cord, Element>,
+                         std::is_same<UnknownField, Element>,
+                         is_proto_enum<Element>>::value,
         "We only support non-string scalars in RepeatedField.");
   }
 
@@ -713,6 +714,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 #endif
 
   void ReserveWithArena(Arena* arena, int new_size);
+  void GrowByWithArena(Arena* arena, int grow_by) {
+    ReserveWithArena(arena, size() + grow_by);
+  }
 
   void AddWithArena(Arena* arena, Element value);
   pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;

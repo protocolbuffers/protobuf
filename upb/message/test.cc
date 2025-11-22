@@ -41,6 +41,7 @@
 #include "upb/message/test.upbdefs.h"
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/debug_string.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
@@ -733,7 +734,7 @@ TEST(MessageTest, MapFieldDeterministicEncoding) {
 }
 
 TEST(MessageTest, AdjacentAliasedUnknown) {
-  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
+  const upb_MiniTable* table = &upb_0test__EmptyMessage_msg_init;
   upb::Arena arena;
   upb_Message* msg = upb_Message_New(table, arena.ptr());
   char region[900];
@@ -845,7 +846,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fa = upb_MiniTable_FindFieldByNumber(m, 20);
-    const upb_MiniTable* ma = upb_MiniTable_SubMessage(m, fa);
+    const upb_MiniTable* ma = upb_MiniTable_SubMessage(fa);
     upb_Array_Freeze(arr, ma);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
@@ -853,7 +854,7 @@ TEST(MessageTest, Freeze) {
     ASSERT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nest)));
 
     const upb_MiniTableField* fm = upb_MiniTable_FindFieldByNumber(m, 10);
-    const upb_MiniTable* mm = upb_MiniTable_SubMessage(m, fm);
+    const upb_MiniTable* mm = upb_MiniTable_SubMessage(fm);
     upb_Map_Freeze(map, mm);
     ASSERT_FALSE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Array_IsFrozen(arr));
@@ -955,20 +956,17 @@ TEST(MessageTest, MessageTooBig) {
 }
 
 TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
-  const upb_MiniTable* table = UPB_PRIVATE(_upb_MiniTable_Empty)();
-  upb::Arena arena(table->UPB_PRIVATE(size));
-
+  upb::Arena arena;
   uintptr_t space_allocated_before =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
-  upb_Message* msg = upb_Message_New(table, arena.ptr());
   char region[300];
   memset(region, 0, sizeof(region));
   region[0] = 0x0A;  // Tag number 1
   region[1] = 0xA9;
   region[2] = 0x02;
-  upb_DecodeStatus status =
-      upb_Decode(region, sizeof(region), msg, table, nullptr, 0, arena.ptr());
-  EXPECT_EQ(status, kUpb_DecodeStatus_Ok);
+  upb_test_EmptyMessage* msg =
+      upb_test_EmptyMessage_parse(region, sizeof(region), arena.ptr());
+  EXPECT_NE(msg, nullptr);
   uintptr_t space_allocated_after =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
   EXPECT_GT(space_allocated_after, space_allocated_before + 297);

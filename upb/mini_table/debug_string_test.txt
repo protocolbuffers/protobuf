@@ -1,0 +1,154 @@
+MiniTable#0 {
+  .size = 96
+  .required_count = 1
+  .table_mask = ff
+  .dense_below = 12
+  .ext = 00 (NonExtendable)
+  .fields[12] = {
+    MiniTableField {
+      .number = 1
+      .offset = 12
+      .presence = 65 (hasbit=65)
+      .type = 5
+      .mode = 42 (Scalar | 4Byte)
+    },
+    MiniTableField {
+      .number = 2
+      .offset = 64
+      .presence = 0 (no explicit presence)
+      .type = 3
+      .mode = c5 (Array | 8Byte | Packed)
+    },
+    MiniTableField {
+      .number = 3
+      .offset = 72
+      .presence = 0 (no explicit presence)
+      .type = 3
+      .mode = c1 (Array | 8Byte)
+    },
+    MiniTableField {
+      .number = 4
+      .offset = 80
+      .presence = 0 (no explicit presence)
+      .submsg_ofs = 27
+      .type = 11
+      .mode = c0 (Map | 8Byte)
+      .submsg = MiniTable#1
+    },
+    MiniTableField {
+      .number = 5
+      .offset = 16
+      .presence = 64 (hasbit=64)
+      .type = 5
+      .mode = 42 (Scalar | 4Byte)
+    },
+    MiniTableField {
+      .number = 6
+      .offset = 20
+      .presence = 0 (no explicit presence)
+      .type = 5
+      .mode = 42 (Scalar | 4Byte)
+    },
+    MiniTableField {
+      .number = 7
+      .offset = 24
+      .presence = 66 (hasbit=66)
+      .submsg_ofs = 20
+      .type = 14
+      .mode = 42 (Scalar | 4Byte)
+      .subenum = MiniTableEnum#2
+    },
+    MiniTableField {
+      .number = 8
+      .offset = 28
+      .presence = 67 (hasbit=67)
+      .type = 5
+      .mode = 52 (Scalar | 4Byte | Alternate)
+    },
+    MiniTableField {
+      .number = 9
+      .offset = 32
+      .presence = 68 (hasbit=68)
+      .type = 9
+      .mode = 82 (Scalar | StringView)
+    },
+    MiniTableField {
+      .number = 10
+      .offset = 48
+      .presence = 69 (hasbit=69)
+      .type = 12
+      .mode = 92 (Scalar | StringView | Alternate)
+    },
+    MiniTableField {
+      .number = 11
+      .offset = 88
+      .presence = 70 (hasbit=70)
+      .submsg_ofs = 10
+      .type = 11
+      .mode = c2 (Scalar | 8Byte)
+      .submsg = MiniTable#3
+    },
+    MiniTableField {
+      .number = 12
+      .offset = 9
+      .presence = 71 (hasbit=71)
+      .type = 8
+      .mode = 02 (Scalar | 1Byte)
+    },
+  }
+}
+
+MiniTable#1 {
+  .size = 48
+  .required_count = 0
+  .table_mask = ff
+  .dense_below = 2
+  .ext = 00 (NonExtendable)
+  .fields[2] = {
+    MiniTableField {
+      .number = 1
+      .offset = 16
+      .presence = 64 (hasbit=64)
+      .type = 13
+      .mode = 42 (Scalar | 4Byte)
+    },
+    MiniTableField {
+      .number = 2
+      .offset = 32
+      .presence = 65 (hasbit=65)
+      .type = 13
+      .mode = 42 (Scalar | 4Byte)
+    },
+  }
+}
+
+MiniTableEnum#2 {
+  .mask_limit = 64
+  .value_count = 0
+  .values = {
+    0,
+    1,
+    2,
+  }
+}
+
+MiniTable#3 {
+  .size = 24
+  .required_count = 0
+  .table_mask = ff
+  .dense_below = 1
+  .ext = 00 (NonExtendable)
+  .fields[1] = {
+    MiniTableField {
+      .number = 1
+      .offset = 16
+      .presence = 64 (hasbit=64)
+      .submsg_ofs = 4
+      .type = 11
+      .mode = c2 (Scalar | 8Byte)
+      .submsg = MiniTable#0
+    },
+  }
+}
+
+
