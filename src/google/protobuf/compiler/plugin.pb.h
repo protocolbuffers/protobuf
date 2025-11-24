@@ -573,7 +573,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
   [[nodiscard]] bool has_generated_code_info()
       const;
   void clear_generated_code_info() ;
-  const ::google::protobuf::GeneratedCodeInfo& generated_code_info() const;
+  [[nodiscard]] const ::google::protobuf::GeneratedCodeInfo& generated_code_info() const;
   [[nodiscard]] ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE release_generated_code_info();
   ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL mutable_generated_code_info();
   void set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value);
@@ -811,9 +811,10 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& _internal_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL _internal_mutable_file();
   public:
-  const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
+  [[nodiscard]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
   ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL add_file();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& file() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& file()
+      const;
   // optional string error = 1;
   [[nodiscard]] bool has_error()
       const;
@@ -1100,9 +1101,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_proto_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_proto_file();
   public:
-  const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
+  [[nodiscard]] const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_proto_file();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& proto_file() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& proto_file()
+      const;
   // optional string parameter = 2;
   [[nodiscard]] bool has_parameter()
       const;
@@ -1124,7 +1126,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   [[nodiscard]] bool has_compiler_version()
       const;
   void clear_compiler_version() ;
-  const ::google::protobuf::compiler::Version& compiler_version() const;
+  [[nodiscard]] const ::google::protobuf::compiler::Version& compiler_version() const;
   [[nodiscard]] ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE release_compiler_version();
   ::google::protobuf::compiler::Version* PROTOBUF_NONNULL mutable_compiler_version();
   void set_allocated_compiler_version(::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value);
@@ -1151,9 +1153,10 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
   public:
-  const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
+  [[nodiscard]] const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
   ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_source_file_descriptors();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& source_file_descriptors() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& source_file_descriptors()
+      const;
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
   class _Internal;

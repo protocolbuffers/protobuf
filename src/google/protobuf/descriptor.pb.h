@@ -3900,9 +3900,10 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& _internal_name() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL _internal_mutable_name();
   public:
-  const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
   ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL add_name();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& name() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& name()
+      const;
   // optional string identifier_value = 3;
   [[nodiscard]] bool has_identifier_value()
       const;
@@ -4199,9 +4200,10 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& _internal_location() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* PROTOBUF_NONNULL _internal_mutable_location();
   public:
-  const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
+  [[nodiscard]] const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
   ::google::protobuf::SourceCodeInfo_Location* PROTOBUF_NONNULL add_location();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& location() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& location()
+      const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -4591,9 +4593,10 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>& _internal_annotation() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* PROTOBUF_NONNULL _internal_mutable_annotation();
   public:
-  const ::google::protobuf::GeneratedCodeInfo_Annotation& annotation(int index) const;
+  [[nodiscard]] const ::google::protobuf::GeneratedCodeInfo_Annotation& annotation(int index) const;
   ::google::protobuf::GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL add_annotation();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>& annotation() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>& annotation()
+      const;
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo)
  private:
   class _Internal;
@@ -4787,7 +4790,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   [[nodiscard]] bool has_overridable_features()
       const;
   void clear_overridable_features() ;
-  const ::google::protobuf::FeatureSet& overridable_features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& overridable_features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_overridable_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_overridable_features();
   void set_allocated_overridable_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -4803,7 +4806,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
   [[nodiscard]] bool has_fixed_features()
       const;
   void clear_fixed_features() ;
-  const ::google::protobuf::FeatureSet& fixed_features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& fixed_features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_fixed_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_fixed_features();
   void set_allocated_fixed_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -5033,14 +5036,15 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   // optional .google.protobuf.FeatureSet features = 34;
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -5460,14 +5464,15 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   // optional .google.protobuf.FeatureSet features = 1;
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -5897,14 +5902,15 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   // optional .google.protobuf.FeatureSet features = 35;
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -6331,7 +6337,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -6418,9 +6424,10 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -7020,7 +7027,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -7155,9 +7162,10 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -7677,9 +7685,10 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& _internal_edition_defaults() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL _internal_mutable_edition_defaults();
   public:
-  const ::google::protobuf::FieldOptions_EditionDefault& edition_defaults(int index) const;
+  [[nodiscard]] const ::google::protobuf::FieldOptions_EditionDefault& edition_defaults(int index) const;
   ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL add_edition_defaults();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& edition_defaults() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& edition_defaults()
+      const;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size()
       const;
@@ -7695,14 +7704,15 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   // optional .google.protobuf.FeatureSet features = 21;
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -7718,7 +7728,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
   [[nodiscard]] bool has_feature_support()
       const;
   void clear_feature_support() ;
-  const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
+  [[nodiscard]] const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
   [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value);
@@ -8267,9 +8277,10 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& _internal_defaults() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL _internal_mutable_defaults();
   public:
-  const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& defaults(int index) const;
+  [[nodiscard]] const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& defaults(int index) const;
   ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL add_defaults();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& defaults() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& defaults()
+      const;
   // optional .google.protobuf.Edition minimum_edition = 4;
   [[nodiscard]] bool has_minimum_edition()
       const;
@@ -8522,9 +8533,10 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& _internal_declaration() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* PROTOBUF_NONNULL _internal_mutable_declaration();
   public:
-  const ::google::protobuf::ExtensionRangeOptions_Declaration& declaration(int index) const;
+  [[nodiscard]] const ::google::protobuf::ExtensionRangeOptions_Declaration& declaration(int index) const;
   ::google::protobuf::ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL add_declaration();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& declaration() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& declaration()
+      const;
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size()
       const;
@@ -8540,14 +8552,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   // optional .google.protobuf.FeatureSet features = 50;
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -8971,14 +8984,15 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   // optional .google.protobuf.FeatureSet features = 2;
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -8994,7 +9008,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
   [[nodiscard]] bool has_feature_support()
       const;
   void clear_feature_support() ;
-  const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
+  [[nodiscard]] const ::google::protobuf::FieldOptions_FeatureSupport& feature_support() const;
   [[nodiscard]] ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE release_feature_support();
   ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL mutable_feature_support();
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value);
@@ -9420,7 +9434,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   [[nodiscard]] bool has_features()
       const;
   void clear_features() ;
-  const ::google::protobuf::FeatureSet& features() const;
+  [[nodiscard]] const ::google::protobuf::FeatureSet& features() const;
   [[nodiscard]] ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE release_features();
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL mutable_features();
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
@@ -9483,9 +9497,10 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
   public:
-  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL add_uninterpreted_option();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& uninterpreted_option()
+      const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -9890,7 +9905,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::OneofOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::OneofOptions& options() const;
   [[nodiscard]] ::google::protobuf::OneofOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::OneofOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::OneofOptions* PROTOBUF_NULLABLE value);
@@ -10150,7 +10165,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::MethodOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::MethodOptions& options() const;
   [[nodiscard]] ::google::protobuf::MethodOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::MethodOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::MethodOptions* PROTOBUF_NULLABLE value);
@@ -10534,7 +10549,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::FieldOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::FieldOptions& options() const;
   [[nodiscard]] ::google::protobuf::FieldOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::FieldOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::FieldOptions* PROTOBUF_NULLABLE value);
@@ -10826,7 +10841,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::EnumValueOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::EnumValueOptions& options() const;
   [[nodiscard]] ::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::EnumValueOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE value);
@@ -11045,7 +11060,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::ExtensionRangeOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::ExtensionRangeOptions& options() const;
   [[nodiscard]] ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE value);
@@ -11287,9 +11302,10 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& _internal_method() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_method();
   public:
-  const ::google::protobuf::MethodDescriptorProto& method(int index) const;
+  [[nodiscard]] const ::google::protobuf::MethodDescriptorProto& method(int index) const;
   ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL add_method();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& method() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& method()
+      const;
   // optional string name = 1;
   [[nodiscard]] bool has_name()
       const;
@@ -11311,7 +11327,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::ServiceOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::ServiceOptions& options() const;
   [[nodiscard]] ::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::ServiceOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE value);
@@ -11533,9 +11549,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& _internal_value() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_value();
   public:
-  const ::google::protobuf::EnumValueDescriptorProto& value(int index) const;
+  [[nodiscard]] const ::google::protobuf::EnumValueDescriptorProto& value(int index) const;
   ::google::protobuf::EnumValueDescriptorProto* PROTOBUF_NONNULL add_value();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& value() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& value()
+      const;
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
   [[nodiscard]] int reserved_range_size()
       const;
@@ -11551,9 +11568,10 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& _internal_reserved_range() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* PROTOBUF_NONNULL _internal_mutable_reserved_range();
   public:
-  const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& reserved_range(int index) const;
+  [[nodiscard]] const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& reserved_range(int index) const;
   ::google::protobuf::EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL add_reserved_range();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& reserved_range() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& reserved_range()
+      const;
   // repeated string reserved_name = 5;
   [[nodiscard]] int reserved_name_size()
       const;
@@ -11598,7 +11616,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::EnumOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::EnumOptions& options() const;
   [[nodiscard]] ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::EnumOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value);
@@ -11841,9 +11859,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_field() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_field();
   public:
-  const ::google::protobuf::FieldDescriptorProto& field(int index) const;
+  [[nodiscard]] const ::google::protobuf::FieldDescriptorProto& field(int index) const;
   ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL add_field();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& field() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& field()
+      const;
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
   [[nodiscard]] int nested_type_size()
       const;
@@ -11859,9 +11878,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_nested_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL _internal_mutable_nested_type();
   public:
-  const ::google::protobuf::DescriptorProto& nested_type(int index) const;
+  [[nodiscard]] const ::google::protobuf::DescriptorProto& nested_type(int index) const;
   ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL add_nested_type();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& nested_type() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& nested_type()
+      const;
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
   [[nodiscard]] int enum_type_size()
       const;
@@ -11877,9 +11897,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_enum_type();
   public:
-  const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
+  [[nodiscard]] const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
   ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL add_enum_type();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type()
+      const;
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
   [[nodiscard]] int extension_range_size()
       const;
@@ -11895,9 +11916,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& _internal_extension_range() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* PROTOBUF_NONNULL _internal_mutable_extension_range();
   public:
-  const ::google::protobuf::DescriptorProto_ExtensionRange& extension_range(int index) const;
+  [[nodiscard]] const ::google::protobuf::DescriptorProto_ExtensionRange& extension_range(int index) const;
   ::google::protobuf::DescriptorProto_ExtensionRange* PROTOBUF_NONNULL add_extension_range();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& extension_range() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& extension_range()
+      const;
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
   [[nodiscard]] int extension_size()
       const;
@@ -11913,9 +11935,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_extension();
   public:
-  const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
+  [[nodiscard]] const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
   ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL add_extension();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension()
+      const;
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
   [[nodiscard]] int oneof_decl_size()
       const;
@@ -11931,9 +11954,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& _internal_oneof_decl() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_oneof_decl();
   public:
-  const ::google::protobuf::OneofDescriptorProto& oneof_decl(int index) const;
+  [[nodiscard]] const ::google::protobuf::OneofDescriptorProto& oneof_decl(int index) const;
   ::google::protobuf::OneofDescriptorProto* PROTOBUF_NONNULL add_oneof_decl();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& oneof_decl() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& oneof_decl()
+      const;
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
   [[nodiscard]] int reserved_range_size()
       const;
@@ -11949,9 +11973,10 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& _internal_reserved_range() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* PROTOBUF_NONNULL _internal_mutable_reserved_range();
   public:
-  const ::google::protobuf::DescriptorProto_ReservedRange& reserved_range(int index) const;
+  [[nodiscard]] const ::google::protobuf::DescriptorProto_ReservedRange& reserved_range(int index) const;
   ::google::protobuf::DescriptorProto_ReservedRange* PROTOBUF_NONNULL add_reserved_range();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& reserved_range() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& reserved_range()
+      const;
   // repeated string reserved_name = 10;
   [[nodiscard]] int reserved_name_size()
       const;
@@ -11996,7 +12021,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::MessageOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::MessageOptions& options() const;
   [[nodiscard]] ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::MessageOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value);
@@ -12268,9 +12293,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_message_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL _internal_mutable_message_type();
   public:
-  const ::google::protobuf::DescriptorProto& message_type(int index) const;
+  [[nodiscard]] const ::google::protobuf::DescriptorProto& message_type(int index) const;
   ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL add_message_type();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& message_type() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& message_type()
+      const;
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
   [[nodiscard]] int enum_type_size()
       const;
@@ -12286,9 +12312,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_enum_type();
   public:
-  const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
+  [[nodiscard]] const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
   ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL add_enum_type();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& enum_type()
+      const;
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
   [[nodiscard]] int service_size()
       const;
@@ -12304,9 +12331,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& _internal_service() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_service();
   public:
-  const ::google::protobuf::ServiceDescriptorProto& service(int index) const;
+  [[nodiscard]] const ::google::protobuf::ServiceDescriptorProto& service(int index) const;
   ::google::protobuf::ServiceDescriptorProto* PROTOBUF_NONNULL add_service();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& service() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& service()
+      const;
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
   [[nodiscard]] int extension_size()
       const;
@@ -12322,9 +12350,10 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_extension();
   public:
-  const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
+  [[nodiscard]] const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
   ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL add_extension();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& extension()
+      const;
   // repeated int32 public_dependency = 10;
   [[nodiscard]] int public_dependency_size()
       const;
@@ -12441,7 +12470,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   [[nodiscard]] bool has_options()
       const;
   void clear_options() ;
-  const ::google::protobuf::FileOptions& options() const;
+  [[nodiscard]] const ::google::protobuf::FileOptions& options() const;
   [[nodiscard]] ::google::protobuf::FileOptions* PROTOBUF_NULLABLE release_options();
   ::google::protobuf::FileOptions* PROTOBUF_NONNULL mutable_options();
   void set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value);
@@ -12457,7 +12486,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
   [[nodiscard]] bool has_source_code_info()
       const;
   void clear_source_code_info() ;
-  const ::google::protobuf::SourceCodeInfo& source_code_info() const;
+  [[nodiscard]] const ::google::protobuf::SourceCodeInfo& source_code_info() const;
   [[nodiscard]] ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE release_source_code_info();
   ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL mutable_source_code_info();
   void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value);
@@ -12696,9 +12725,10 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_file() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_file();
   public:
-  const ::google::protobuf::FileDescriptorProto& file(int index) const;
+  [[nodiscard]] const ::google::protobuf::FileDescriptorProto& file(int index) const;
   ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL add_file();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& file() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& file()
+      const;
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
