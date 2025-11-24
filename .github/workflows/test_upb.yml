@@ -143,15 +143,15 @@ jobs:
           # supported Python versions and assume this gives us sufficient test
           # coverage.
           - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'binary' }
-          - { os: macos-13, python-version: "3.9", architecture: x64, type: 'binary' }
+          - { os: macos-14, python-version: "3.9", architecture: arm64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'binary' }
-          - { os: macos-13, python-version: "3.13", architecture: x64, type: 'binary' }
+          - { os: macos-14, python-version: "3.13", architecture: arm64, type: 'binary' }
           - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'source'}
-          - { os: macos-13, python-version: "3.9", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-14, python-version: "3.9", architecture: arm64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.13", architecture: x64, type: 'source'}
-          - { os: macos-13, python-version: "3.13", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-14, python-version: "3.13", architecture: arm64, type: 'source', continuous-only: true }
           - { os: ubuntu-latest, python-version: "3.14", architecture: x64, type: 'source', continuous-only: true }
-          - { os: macos-13, python-version: "3.14", architecture: x64, type: 'source', continuous-only: true }
+          - { os: macos-14, python-version: "3.14", architecture: arm64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10.
           - { os: windows-2022, python-version: "3.9", architecture: x86, type: 'binary', continuous-only: true }
