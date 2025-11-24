@@ -959,6 +959,35 @@ TEST(MESSAGE_TEST_NAME, CheckInitialized) {
                             "fields: a, b, c"));
 }
 
+TEST(MESSAGE_TEST_NAME, StringWithInvalidSizeDoesNotExposeGarbage) {
+  Arena the_arena;
+  // We test different sizes because we have different parsers for small/SSO and
+  // larger sizes.
+  for (char size = 1; size < 40; ++size) {
+    SCOPED_TRACE(size);
+    // We test arena and no arena because we have different parsers for
+    // donations and heap.
+    for (Arena* arena : {static_cast<Arena*>(nullptr), &the_arena}) {
+      SCOPED_TRACE(arena);
+
+      auto* msg = Arena::Create<UNITTEST::TestAllTypes>(arena);
+      std::unique_ptr<UNITTEST::TestAllTypes> cleanup(arena ? nullptr : msg);
+
+      const char input[] = {// Field 14, LEN
+                            '\162',
+                            // The size
+                            size};
+      ASSERT_FALSE(msg->ParseFromString(absl::string_view(input, 2)));
+
+      for (const char& c : msg->optional_string()) {
+        // If we have any chars in here, they must be zeros.
+        // Anything else indicates exposing garbage.
+        EXPECT_EQ(0, c);
+      }
+    }
+  }
+}
+
 #endif  // GTEST_HAS_DEATH_TEST
 
 namespace {
