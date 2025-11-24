@@ -427,10 +427,6 @@ jobs:
             os: macos-14
             cache_key: macos-14-bazel8
             bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
-          - name: MacOS Apple Silicon Bazel
-            os: macos-14
-            cache_key: macos-14-arm
-            bazel: test --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: MacOS Intel Bazel
             os: macos-14
             cache_key: macos-14-intel
