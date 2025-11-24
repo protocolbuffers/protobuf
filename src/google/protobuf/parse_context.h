@@ -419,9 +419,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // DoneFallback.
   uint32_t last_tag_minus_1_ = 0;
   int overall_limit_ = INT_MAX;  // Overall limit independent of pushed limits.
-  // Pretty random large number that seems like a safe allocation on most
-  // systems. TODO do we need to set this as build flag?
-  enum { kSafeStringSize = 50000000 };
 
   // Returns true if it has enough available data given requested. Note that
   // "available" can be negative but "requested" must not. Casting is done to

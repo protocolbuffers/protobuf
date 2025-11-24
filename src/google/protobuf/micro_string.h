@@ -534,10 +534,6 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
     }
   }
 
-  // Copied from ParseContext as an acceptable size that we can preallocate
-  // without verifying.
-  static constexpr size_t kSafeStringSize = 50000000;
-
   // We didn't have space for it, so allocate the space and dispatch.
   if (arena == nullptr) Destroy();
 

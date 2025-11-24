@@ -778,6 +778,9 @@ class NoopDebugCounter {
   constexpr void Inc() {}
 };
 
+// Pretty random large number that seems like a safe allocation on most systems.
+inline constexpr size_t kSafeStringSize = 50000000;
+
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference. This empty string is aligned with a
 // minimum alignment of 8 bytes to match the requirement of ArenaStringPtr.
