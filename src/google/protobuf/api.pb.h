@@ -459,9 +459,10 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
+      const;
   // string name = 1;
   void clear_name() ;
   const ::std::string& name() const;
@@ -763,9 +764,10 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL _internal_mutable_methods();
   public:
-  const ::google::protobuf::Method& methods(int index) const;
+  [[nodiscard]] const ::google::protobuf::Method& methods(int index) const;
   ::google::protobuf::Method* PROTOBUF_NONNULL add_methods();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& methods() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& methods()
+      const;
   // repeated .google.protobuf.Option options = 3;
   [[nodiscard]] int options_size()
       const;
@@ -781,9 +783,10 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
   public:
-  const ::google::protobuf::Option& options(int index) const;
+  [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   ::google::protobuf::Option* PROTOBUF_NONNULL add_options();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& options()
+      const;
   // repeated .google.protobuf.Mixin mixins = 6;
   [[nodiscard]] int mixins_size()
       const;
@@ -799,9 +802,10 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL _internal_mutable_mixins();
   public:
-  const ::google::protobuf::Mixin& mixins(int index) const;
+  [[nodiscard]] const ::google::protobuf::Mixin& mixins(int index) const;
   ::google::protobuf::Mixin* PROTOBUF_NONNULL add_mixins();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& mixins() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& mixins()
+      const;
   // string name = 1;
   void clear_name() ;
   const ::std::string& name() const;
@@ -851,7 +855,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   [[nodiscard]] bool has_source_context()
       const;
   void clear_source_context() ;
-  const ::google::protobuf::SourceContext& source_context() const;
+  [[nodiscard]] const ::google::protobuf::SourceContext& source_context() const;
   [[nodiscard]] ::google::protobuf::SourceContext* PROTOBUF_NULLABLE release_source_context();
   ::google::protobuf::SourceContext* PROTOBUF_NONNULL mutable_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* PROTOBUF_NULLABLE value);

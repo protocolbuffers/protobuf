@@ -285,9 +285,10 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
   ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_values();
   public:
-  const ::google::protobuf::Value& values(int index) const;
+  [[nodiscard]] const ::google::protobuf::Value& values(int index) const;
   ::google::protobuf::Value* PROTOBUF_NONNULL add_values();
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& values() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& values()
+      const;
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
   class _Internal;
@@ -782,7 +783,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   public:
   void clear_struct_value() ;
-  const ::google::protobuf::Struct& struct_value() const;
+  [[nodiscard]] const ::google::protobuf::Struct& struct_value() const;
   [[nodiscard]] ::google::protobuf::Struct* PROTOBUF_NULLABLE release_struct_value();
   ::google::protobuf::Struct* PROTOBUF_NONNULL mutable_struct_value();
   void set_allocated_struct_value(::google::protobuf::Struct* PROTOBUF_NULLABLE value);
@@ -802,7 +803,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
 
   public:
   void clear_list_value() ;
-  const ::google::protobuf::ListValue& list_value() const;
+  [[nodiscard]] const ::google::protobuf::ListValue& list_value() const;
   [[nodiscard]] ::google::protobuf::ListValue* PROTOBUF_NULLABLE release_list_value();
   ::google::protobuf::ListValue* PROTOBUF_NONNULL mutable_list_value();
   void set_allocated_list_value(::google::protobuf::ListValue* PROTOBUF_NULLABLE value);
