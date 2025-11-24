@@ -20,6 +20,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/macros.h"
 #include "absl/container/btree_map.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
@@ -51,15 +52,9 @@ class MergedDescriptorDatabase;
 // descriptors when they are needed.
 class PROTOBUF_EXPORT DescriptorDatabase {
  protected:
-  // Alias to enable the migration from const std::string& to absl::string_view
-  // in virtual methods. Controlled by
-  // PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE to allow a global switch
-  // when ready for consistent transition.
-#ifdef PROTOBUF_FUTURE_STRING_VIEW_DESCRIPTOR_DATABASE
-  using StringViewArg = absl::string_view;
-#else
-  using StringViewArg = const std::string&;
-#endif
+  // LSC: Replacing StringViewArg with absl::string_view
+  // (go/descriptor-db-string-view-lsc)
+  using StringViewArg ABSL_DEPRECATE_AND_INLINE() = absl::string_view;
 
  public:
   inline DescriptorDatabase() {}
