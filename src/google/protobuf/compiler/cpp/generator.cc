@@ -351,11 +351,6 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
     if (key == "dllexport_decl") {
       common_file_options.dllexport_decl = value;
-    } else if (key == "safe_boundary_check") {
-      common_file_options.bounds_check_mode =
-          BoundsCheckMode::kReturnDefaultValue;
-    } else if (key == "enforced_boundary_check") {
-      common_file_options.bounds_check_mode = BoundsCheckMode::kAbort;
     } else if (key == "annotate_headers") {
       common_file_options.annotate_headers = true;
     } else if (key == "annotation_pragma_name") {
@@ -410,16 +405,6 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       *error = absl::StrCat("Unknown generator option: ", key);
       return false;
     }
-  }
-
-  // The safe_boundary_check option controls behavior for Google-internal
-  // protobuf APIs.
-  if ((common_file_options.bounds_check_mode !=
-       BoundsCheckMode::kNoEnforcement) &&
-      common_file_options.opensource_runtime) {
-    *error =
-        "The safe_boundary_check option is not supported outside of Google.";
-    return false;
   }
 
   // -----------------------------------------------------------------
