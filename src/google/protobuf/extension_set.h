@@ -80,13 +80,6 @@ void InitializeLazyExtensionSet();
 }  // namespace google
 namespace pb {
 class CppFeatures;
-namespace internal {
-// Forward-declares the function for FeatureSet extensions to make it visible
-// to the internal feature helper. It should hold and return serialized
-// FeatureSetDefaults data.
-template <class T>
-inline ::absl::string_view GetFeatureSetDefaultsData();
-}  // namespace internal
 }  // namespace pb
 
 namespace google {
@@ -98,6 +91,12 @@ class FindExtensionTest;
 
 // Forward-declared from message.h.
 PROTOBUF_EXPORT bool IsDescendant(const Message& root, const Message& message);
+
+// Forward-declares the function for FeatureSet extensions to make it visible
+// to the internal feature helper. It should hold and return serialized
+// FeatureSetDefaults data.
+template <class T>
+inline ::absl::string_view GetFeatureSetDefaultsData();
 
 namespace v2 {
 class TableDrivenMessage;

@@ -1608,6 +1608,10 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
     decl.second.PrintTopLevelDecl(p, options_);
   }
 
+  for (auto& extension_generator : extension_generators_) {
+    extension_generator->GenerateFeatureDefaults(p);
+  }
+
   if (IsFileDescriptorProto(file_, options_)) {
     ns.ChangeTo(absl::StrCat(ProtobufNamespace(options_), "::internal"));
     p->Emit(R"cc(

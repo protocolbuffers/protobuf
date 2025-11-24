@@ -7,25 +7,12 @@
 
 edition = "2024";
 
-package pb;
+package custom_features;
 
 import "google/protobuf/descriptor.proto";
 
-option java_outer_classname = "UnittestFeatures";
-
 extend google.protobuf.FeatureSet {
-  TestFeatures test = 9999;
-}
-
-message TestMessage {
-  extend google.protobuf.FeatureSet {
-    TestMessageFeatures test_message = 9998;
-  }
-  message Nested {
-    extend google.protobuf.FeatureSet {
-      TestNestedFeatures test_nested = 9997;
-    }
-  }
+  TestCustomFeatures test = 9995;
 }
 
 enum EnumFeature {
@@ -77,33 +64,8 @@ enum ValueLifetimeFeature {
     removal_error: "Custom feature removal error"
   }];
 }
-message TestMessageFeatures {
-  EnumFeature file_feature = 1 [
-    retention = RETENTION_RUNTIME,
-    targets = TARGET_TYPE_FILE,
-    feature_support.edition_introduced = EDITION_2023,
-    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
-    edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
-    edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
-    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
-    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "VALUE5" }
-  ];
-}
 
-message TestNestedFeatures {
-  EnumFeature file_feature = 1 [
-    retention = RETENTION_RUNTIME,
-    targets = TARGET_TYPE_FILE,
-    feature_support.edition_introduced = EDITION_2023,
-    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
-    edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
-    edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
-    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
-    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "VALUE5" }
-  ];
-}
-
-message TestFeatures {
+message TestCustomFeatures {
   EnumFeature file_feature = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FILE,

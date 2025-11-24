@@ -58,6 +58,9 @@ class PROTOC_EXPORT ExtensionGenerator {
   // Source file stuff.
   void GenerateDefinition(io::Printer* p);
 
+  // Feature-specific defaults.
+  void GenerateFeatureDefaults(io::Printer* p) const;
+
   // Extension registration can happen at different priority levels depending on
   // the features used.
   //

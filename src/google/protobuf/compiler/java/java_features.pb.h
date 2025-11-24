@@ -77,6 +77,13 @@ internal::EnumTraitsT<::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass_
 template <>
 internal::EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
     internal::EnumTraitsImpl::value<::pb::JavaFeatures_Utf8Validation>;
+namespace internal {
+template <>
+inline ::absl::string_view GetFeatureSetDefaultsData<::pb::JavaFeatures>() {
+  static constexpr char kDefaults[] = "CicYhAciA8o+ACodCAEQAhgCIAMoATACOAJAAco+CggBEAEYACABKAMKJxjnByIDyj4AKh0IAhABGAEgAigBMAE4AkAByj4KCAAQARgAIAEoAwonGOgHIhMIARABGAEgAigBMAHKPgQIABABKg04AkAByj4GGAAgASgDCicY6QciGwgBEAEYASACKAEwATgBQALKPggIABABGAAoASoFyj4CIAAg5gco6Qc=";
+  return kDefaults;
+}
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
@@ -590,13 +597,6 @@ inline constexpr int kJavaFieldNumber = 1001;
 PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
     ::google::protobuf::FeatureSet, ::google::protobuf::internal::MessageTypeTraits< ::pb::JavaFeatures >, 11, false>
     java;
-namespace internal {
-template <>
-inline ::absl::string_view GetFeatureSetDefaultsData<::pb::JavaFeatures>() {
-  static constexpr char kDefaults[] = "CicYhAciA8o+ACodCAEQAhgCIAMoATACOAJAAco+CggBEAEYACABKAMKJxjnByIDyj4AKh0IAhABGAEgAigBMAE4AkAByj4KCAAQARgAIAEoAwonGOgHIhMIARABGAEgAigBMAHKPgQIABABKg04AkAByj4GGAAgASgDCicY6QciGwgBEAEYASACKAEwATgBQALKPggIABABGAAoASoFyj4CIAAg5gco6Qc=";
-  return kDefaults;
-}
-}  // namespace internal
 
 // ===================================================================
 

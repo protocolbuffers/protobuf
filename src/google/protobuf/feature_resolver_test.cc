@@ -154,18 +154,9 @@ TEST(FeatureResolverTest, DefaultsTestMessageExtension) {
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
   EXPECT_FALSE(merged->HasExtension(pb::test));
 
-  const pb::TestFeatures& ext =
+  const pb::TestMessageFeatures& ext =
       merged->GetExtension(pb::TestMessage::test_message);
   EXPECT_EQ(ext.file_feature(), pb::VALUE3);
-  EXPECT_EQ(ext.extension_range_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.message_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.field_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.oneof_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.enum_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.enum_entry_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.service_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.method_feature(), pb::VALUE1);
-  EXPECT_FALSE(ext.bool_field_feature());
 }
 
 TEST(FeatureResolverTest, DefaultsTestNestedExtension) {
@@ -179,18 +170,9 @@ TEST(FeatureResolverTest, DefaultsTestNestedExtension) {
   EXPECT_EQ(merged->message_encoding(), FeatureSet::LENGTH_PREFIXED);
   EXPECT_FALSE(merged->HasExtension(pb::test));
 
-  const pb::TestFeatures& ext =
+  const pb::TestNestedFeatures& ext =
       merged->GetExtension(pb::TestMessage::Nested::test_nested);
   EXPECT_EQ(ext.file_feature(), pb::VALUE3);
-  EXPECT_EQ(ext.extension_range_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.message_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.field_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.oneof_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.enum_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.enum_entry_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.service_feature(), pb::VALUE1);
-  EXPECT_EQ(ext.method_feature(), pb::VALUE1);
-  EXPECT_FALSE(ext.bool_field_feature());
 }
 
 TEST(FeatureResolverTest, DefaultsGeneratedPoolCustom) {
