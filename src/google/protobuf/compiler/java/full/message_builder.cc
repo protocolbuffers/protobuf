@@ -127,7 +127,14 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  absl::flat_hash_map<absl::string_view, std::string> vars;
+  absl::flat_hash_map<absl::string_view, std::string> vars = {
+      // These variables are placeholders to pick out the beginning and ends of
+      // identifiers for annotations (when doing so with existing variables
+      // would be ambiguous or impossible). They should never be set to anything
+      // but the empty string.
+      {"{", ""},
+      {"}", ""},
+  };
   for (auto& kv : oneofs_) {
     const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
@@ -138,21 +145,25 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
     printer->Print(vars,
                    "private int $oneof_name$Case_ = 0;\n"
                    "private java.lang.Object $oneof_name$_;\n");
-    // oneofCase() and clearOneof()
+    // getOneofCase()
     printer->Print(vars,
                    "public $oneof_capitalized_name$Case\n"
-                   "    get$oneof_capitalized_name$Case() {\n"
+                   "    ${$get$oneof_capitalized_name$Case$}$() {\n"
                    "  return $oneof_capitalized_name$Case.forNumber(\n"
                    "      $oneof_name$Case_);\n"
-                   "}\n"
+                   "}\n");
+    printer->Annotate("{", "}", oneof);
+    // clearOneof()
+    printer->Print(vars,
                    "\n"
-                   "public Builder clear$oneof_capitalized_name$() {\n"
+                   "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
                    "  $oneof_name$Case_ = 0;\n"
                    "  $oneof_name$_ = null;\n"
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n"
                    "\n");
+    printer->Annotate("{", "}", oneof, io::AnnotationCollector::Semantic::kSet);
   }
 
   // Integers for bit fields.

@@ -305,7 +305,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
                    "  $oneof_name$_ = null;\n"
                    "}\n"
                    "\n");
-    printer->Annotate("{", "}", oneof);
+    printer->Annotate("{", "}", oneof, io::AnnotationCollector::Semantic::kSet);
   }
 
   // Fields
