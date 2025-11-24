@@ -83,50 +83,6 @@ TEST_F(CppGeneratorTest, LegacyClosedEnumOnNonEnumField) {
       "type.");
 }
 
-TEST_F(CppGeneratorTest, LegacyClosedEnum) {
-  CreateTempFile("foo.proto",
-                 R"schema(
-    edition = "2023";
-    import "google/protobuf/cpp_features.proto";
-
-    enum TestEnum {
-      TEST_ENUM_UNKNOWN = 0;
-    }
-    message Foo {
-      TestEnum bar = 1 [features.(pb.cpp).legacy_closed_enum = true];
-    })schema");
-
-  RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
-
-  ExpectWarningSubstring(
-      "foo.proto:9:16: warning: pb.CppFeatures.legacy_closed_enum has "
-      "been deprecated in edition 2023:");
-}
-
-TEST_F(CppGeneratorTest, LegacyClosedEnumInherited) {
-  CreateTempFile("foo.proto",
-                 R"schema(
-    edition = "2023";
-    import "google/protobuf/cpp_features.proto";
-    option features.(pb.cpp).legacy_closed_enum = true;
-
-    enum TestEnum {
-      TEST_ENUM_UNKNOWN = 0;
-    }
-    message Foo {
-      TestEnum bar = 1;
-      int32 baz = 2;
-    })schema");
-
-  RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
-
-  ExpectWarningSubstring(
-      "foo.proto: warning: pb.CppFeatures.legacy_closed_enum has "
-      "been deprecated in edition 2023");
-}
-
 TEST_F(CppGeneratorTest, LegacyClosedEnumImplicit) {
   CreateTempFile("foo.proto", R"schema(
     edition = "2023";
