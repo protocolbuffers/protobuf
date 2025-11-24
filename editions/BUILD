@@ -125,6 +125,35 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "edition_defaults_test_utils",
+    testonly = True,
+    srcs = ["edition_defaults_test_utils.cc"],
+    hdrs = ["edition_defaults_test_utils.h"],
+    visibility = [
+        "//pkg:__subpackages__",
+        "//src/google/protobuf/compiler:__subpackages__",
+    ],
+    deps = [
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_test(
+    name = "edition_defaults_test_utils_test",
+    srcs = ["edition_defaults_test_utils_test.cc"],
+    deps = [
+        ":edition_defaults_test_utils",
+        "//src/google/protobuf",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf:unittest_features_cc_proto",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "defaults_test",
     srcs = ["defaults_test.cc"],
