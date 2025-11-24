@@ -1100,6 +1100,7 @@ set(lite_test_util_hdrs
 
 # @//pkg:test_util
 set(test_util_srcs
+  ${protobuf_SOURCE_DIR}/editions/edition_defaults_test_utils.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_test_utils.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
@@ -1110,6 +1111,7 @@ set(test_util_srcs
 
 # @//pkg:test_util
 set(test_util_hdrs
+  ${protobuf_SOURCE_DIR}/editions/edition_defaults_test_utils.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
