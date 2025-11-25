@@ -23,6 +23,9 @@ on:
 permissions:
   contents: read
 
+env:
+  BAZEL_FLAGS: --xcode_version_config=:host_xcode_16
+
 jobs:
   linux:
     strategy:
@@ -193,7 +196,7 @@ jobs:
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS PHP ${{ matrix.version }}
     # noop
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
