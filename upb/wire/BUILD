@@ -196,12 +196,24 @@ cc_test(
 )
 
 cc_library(
+    name = "eps_copy_input_stream_internal",
+    hdrs = ["internal/eps_copy_input_stream.h"],
+    visibility = ["//upb:__pkg__"],
+    deps = [
+        "//upb/base",
+        "//upb/mem",
+        "//upb/port",
+    ],
+)
+
+cc_library(
     name = "eps_copy_input_stream",
     srcs = ["eps_copy_input_stream.c"],
     hdrs = ["eps_copy_input_stream.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":eps_copy_input_stream_internal",
         "//upb/base",
         "//upb/mem",
         "//upb/port",
