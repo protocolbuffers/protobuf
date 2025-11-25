@@ -25,8 +25,8 @@ void PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
 // Gets a Python wrapper object for message `u_msg` of type `m`, returning a
 // cached wrapper if one was previously created.  If a new object is created,
 // it will reference `arena`, which must own `u_msg`.
-PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
-                            PyObject* arena);
+PyObject* PyUpb_Message_Get(PyUpb_ModuleState* state, upb_Message* u_msg,
+                            const upb_MessageDef* m, PyObject* arena);
 
 // Verifies that a Python object is a message.  Sets a TypeError exception and
 // returns false on failure.
@@ -80,6 +80,9 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
 // Returns the version associated with this message.  The version will be
 // incremented when the message changes.
 int PyUpb_Message_GetVersion(PyObject* _self);
+
+// Init the global CPython bits
+bool PyUpb_CPythonBits_Global_Init();
 
 // Module-level init.
 bool PyUpb_InitMessage(PyObject* m);

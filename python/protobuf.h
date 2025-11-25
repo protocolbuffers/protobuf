@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "python/descriptor.h"
 #include "python/python_api.h"
 #include "upb/hash/int_table.h"
 #include "upb/reflection/def.h"
@@ -35,6 +34,34 @@ typedef struct PyUpb_WeakMap PyUpb_WeakMap;
 // variables. This makes this extension compatible with sub-interpreters.
 
 typedef struct {
+  // A reference counter of how many handles are acquired for this interpreter
+  // state. Handles can be acquired via PyUpb_ModuleInterpreterState_Acquire and
+  // PyUpb_ModuleInterpreterState_Release.
+  //
+  // Since the interpreter state is not shared between interpreters,
+  // this counter is not atomic.
+  int refcount;
+
+  // The unique owning pointer to the object cache.
+  PyUpb_WeakMap* obj_cache;
+
+} PyUpb_ModuleInterpreterState;
+
+typedef enum {
+  kPyUpb_Descriptor = 0,
+  kPyUpb_EnumDescriptor = 1,
+  kPyUpb_EnumValueDescriptor = 2,
+  kPyUpb_FieldDescriptor = 3,
+  kPyUpb_FileDescriptor = 4,
+  kPyUpb_MethodDescriptor = 5,
+  kPyUpb_OneofDescriptor = 6,
+  kPyUpb_ServiceDescriptor = 7,
+  kPyUpb_Descriptor_Count = 8,
+} PyUpb_DescriptorType;
+
+typedef struct {
+  PyUpb_ModuleInterpreterState* interp_state;
+
   // From descriptor.c
   PyTypeObject* descriptor_types[kPyUpb_Descriptor_Count];
 
@@ -74,7 +101,12 @@ typedef struct {
   // From protobuf.c
   bool allow_oversize_protos;
   PyObject* wkt_bases;
+  PyObject* wkt_module;
   PyTypeObject* arena_type;
+
+  // A copy of the obj_cache pointer from the per interpreter state.
+  // The map is bound to the lifetime of the per interpreter state,
+  // which can outlife the module state.
   PyUpb_WeakMap* obj_cache;
 
   // From repeated.c
@@ -86,14 +118,21 @@ typedef struct {
   PyObject* unknown_field_type;
 } PyUpb_ModuleState;
 
-// Returns the global state object from the current interpreter. The current
-// interpreter is looked up from thread-local state.
-PyUpb_ModuleState* PyUpb_ModuleState_Get(void);
+// Returns a valid PyUpb_ModuleState* from the given module
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module);
+// Returns a valid PyUpb_ModuleState* from the given type
+PyUpb_ModuleState* PyUpb_ModuleState_GetFromType(PyTypeObject* type);
 
-// Returns NULL if module state is not yet available (during startup).
-// Any use of the module state during startup needs to be passed explicitly.
-PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void);
+// Returns a new handle to the shared UPB state of this interpreter instance
+// from the given module state with incrementing the reference counter.
+PyUpb_ModuleInterpreterState* PyUpb_ModuleInterpreterState_Acquire(
+    PyUpb_ModuleState* state);
+// Releases a handle to the shared UPB state.
+void PyUpb_ModuleInterpreterState_Release(PyUpb_ModuleInterpreterState* state);
+// Duplicates a handle to the shared UPB state with incrementing the reference
+// counter.
+PyUpb_ModuleInterpreterState* PyUpb_ModuleInterpreterState_DuplicateHandle(
+    PyUpb_ModuleInterpreterState* interp_state);
 
 // Returns:
 //   from google.protobuf.internal.well_known_types import WKTBASES
@@ -121,8 +160,8 @@ void PyUpb_WeakMap_Free(PyUpb_WeakMap* map);
 void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj);
 
 // Removes the given key from the cache. It must exist in the cache currently.
-void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key);
-void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key);
+PyObject* PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key);
+PyObject* PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key);
 
 // Returns a new reference to an object if it exists, otherwise returns NULL.
 PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
@@ -147,23 +186,24 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
 
 // The object cache is a global WeakMap for mapping upb objects to the
 // corresponding wrapper.
-void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
-void PyUpb_ObjCache_Delete(const void* key);
-PyObject* PyUpb_ObjCache_Get(const void* key);  // returns NULL if not present.
-PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
+void PyUpb_ObjCache_Add(PyUpb_ModuleState* state, const void* key,
+                        PyObject* py_obj);
+PyObject* PyUpb_ObjCache_Delete(PyUpb_ModuleInterpreterState* state,
+                                const void* key);
+PyObject* PyUpb_ObjCache_Get(PyUpb_ModuleState* state,
+                             const void* key);  // returns NULL if not present.
+PyUpb_WeakMap* PyUpb_ObjCache_Instance(PyUpb_ModuleState* state);
 
 // -----------------------------------------------------------------------------
 // Arena
 // -----------------------------------------------------------------------------
 
-PyObject* PyUpb_Arena_New(void);
+PyObject* PyUpb_Arena_New(PyUpb_ModuleState* state);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
 
 // -----------------------------------------------------------------------------
 // Utilities
 // -----------------------------------------------------------------------------
-
-PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec);
 
 // Creates a Python type from `spec` and adds it to the given module `m`.
 PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec);

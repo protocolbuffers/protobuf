@@ -7,6 +7,7 @@
 
 #include "python/extension_dict.h"
 
+#include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/reflection/def.h"
@@ -23,7 +24,7 @@ typedef struct {
 } PyUpb_ExtensionDict;
 
 PyObject* PyUpb_ExtensionDict_New(PyObject* msg) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(msg));
   PyUpb_ExtensionDict* ext_dict =
       (void*)PyType_GenericAlloc(state->extension_dict_type, 0);
   ext_dict->msg = msg;
@@ -44,7 +45,8 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByName(PyObject* _self,
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
   const upb_FieldDef* ext = upb_DefPool_FindExtensionByName(symtab, name);
   if (ext) {
-    return PyUpb_FieldDescriptor_Get(ext);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return PyUpb_FieldDescriptor_Get(state, ext);
   } else {
     Py_RETURN_NONE;
   }
@@ -64,7 +66,8 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
       (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l, number);
   if (ext) {
     const upb_FieldDef* f = upb_DefPool_FindExtensionByMiniTable(symtab, ext);
-    return PyUpb_FieldDescriptor_Get(f);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return PyUpb_FieldDescriptor_Get(state, f);
   } else {
     Py_RETURN_NONE;
   }
@@ -180,7 +183,7 @@ typedef struct {
 
 static PyObject* PyUpb_ExtensionIterator_New(PyObject* _ext_dict) {
   PyUpb_ExtensionDict* ext_dict = (PyUpb_ExtensionDict*)_ext_dict;
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_ext_dict));
   PyUpb_ExtensionIterator* iter =
       (void*)PyType_GenericAlloc(state->extension_iterator_type, 0);
   if (!iter) return NULL;
@@ -206,7 +209,10 @@ PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* _self) {
     const upb_FieldDef* f;
     upb_MessageValue val;
     if (!upb_Message_Next(msg, m, symtab, &f, &val, &self->iter)) return NULL;
-    if (upb_FieldDef_IsExtension(f)) return PyUpb_FieldDescriptor_Get(f);
+    if (upb_FieldDef_IsExtension(f)) {
+      PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+      return PyUpb_FieldDescriptor_Get(state, f);
+    }
   }
 }
 

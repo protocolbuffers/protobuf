@@ -8,6 +8,7 @@
 #include "python/map.h"
 
 #include "python/convert.h"
+#include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/message/map.h"
@@ -32,6 +33,7 @@ typedef struct {
     upb_Map* map;      // reified: the data for this array.
   } ptr;
   int version;
+  PyUpb_ModuleInterpreterState* interp_state;
 } PyUpb_MapContainer;
 
 static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map);
@@ -54,19 +56,21 @@ static const upb_FieldDef* PyUpb_MapContainer_GetField(
 static void PyUpb_MapContainer_Dealloc(void* _self) {
   PyUpb_MapContainer* self = _self;
   Py_DECREF(self->arena);
+  PyUpb_ModuleInterpreterState* state = self->interp_state;
   if (PyUpb_MapContainer_IsStub(self)) {
     PyUpb_Message_CacheDelete(self->ptr.parent,
                               PyUpb_MapContainer_GetField(self));
     Py_DECREF(self->ptr.parent);
   } else {
-    PyUpb_ObjCache_Delete(self->ptr.map);
+    PyUpb_ObjCache_Delete(state, self->ptr.map);
   }
   PyUpb_Dealloc(_self);
+  PyUpb_ModuleInterpreterState_Release(state);
 }
 
-static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f) {
+static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f,
+                                                 PyUpb_ModuleState* state) {
   assert(upb_FieldDef_IsMap(f));
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   const upb_FieldDef* val =
       upb_MessageDef_Field(upb_FieldDef_MessageSubDef(f), 1);
   assert(upb_FieldDef_Number(val) == 2);
@@ -74,17 +78,18 @@ static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f) {
                                         : state->scalar_map_container_type;
 }
 
-PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
-                                     PyObject* arena) {
+PyObject* PyUpb_MapContainer_NewStub(PyUpb_ModuleState* state, PyObject* parent,
+                                     const upb_FieldDef* f, PyObject* arena) {
   // We only create stubs when the parent is reified, by convention.  However
   // this is not an invariant: the parent could become reified at any time.
   assert(PyUpb_Message_GetIfReified(parent) == NULL);
-  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f, state);
   PyUpb_MapContainer* map = (void*)PyType_GenericAlloc(cls, 0);
   map->arena = arena;
   map->field = (uintptr_t)f | 1;
   map->ptr.parent = parent;
   map->version = 0;
+  map->interp_state = PyUpb_ModuleInterpreterState_Acquire(state);
   Py_INCREF(arena);
   Py_INCREF(parent);
   return &map->ob_base;
@@ -109,7 +114,8 @@ upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
     upb_MessageValue msgval = {.map_val = map};
     PyUpb_Message_SetConcreteSubobj(self->ptr.parent, f, msgval);
   }
-  PyUpb_ObjCache_Add(map, &self->ob_base);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(self));
+  PyUpb_ObjCache_Add(state, map, &self->ob_base);
   Py_DECREF(self->ptr.parent);
   self->ptr.map = map;  // Overwrites self->ptr.parent.
   self->field &= ~(uintptr_t)1;
@@ -193,7 +199,8 @@ static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
     }
     if (!PyUpb_MapContainer_Set(self, map, u_key, u_val, arena)) return false;
   }
-  return PyUpb_UpbToPy(u_val, val_f, self->arena);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return PyUpb_UpbToPy(state, u_val, val_f, self->arena);
 }
 
 static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
@@ -242,7 +249,8 @@ static PyObject* PyUpb_ScalarMapContainer_Setdefault(PyObject* _self,
   upb_MessageValue u_key, u_val;
   if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return NULL;
   if (upb_Map_Get(map, u_key, &u_val)) {
-    return PyUpb_UpbToPy(u_val, val_f, self->arena);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return PyUpb_UpbToPy(state, u_val, val_f, self->arena);
   }
 
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
@@ -279,7 +287,8 @@ static PyObject* PyUpb_MapContainer_Get(PyObject* _self, PyObject* args,
   upb_MessageValue u_key, u_val;
   if (!PyUpb_PyToUpb(key, key_f, &u_key, NULL)) return NULL;
   if (map && upb_Map_Get(map, u_key, &u_val)) {
-    return PyUpb_UpbToPy(u_val, val_f, self->arena);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return PyUpb_UpbToPy(state, u_val, val_f, self->arena);
   }
   if (default_value) {
     Py_INCREF(default_value);
@@ -293,7 +302,8 @@ static PyObject* PyUpb_MapContainer_GetEntryClass(PyObject* _self,
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
-  return PyUpb_Descriptor_GetClass(entry_m);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return PyUpb_Descriptor_GetClass(state, entry_m);
 }
 
 static Py_ssize_t PyUpb_MapContainer_Length(PyObject* _self) {
@@ -331,9 +341,10 @@ static PyObject* PyUpb_MapContainer_Repr(PyObject* _self) {
     const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue map_key, map_val;
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
     while (upb_Map_Next(map, &map_key, &map_val, &iter)) {
-      PyObject* key = PyUpb_UpbToPy(map_key, key_f, self->arena);
-      PyObject* val = PyUpb_UpbToPy(map_val, val_f, self->arena);
+      PyObject* key = PyUpb_UpbToPy(state, map_key, key_f, self->arena);
+      PyObject* val = PyUpb_UpbToPy(state, map_val, val_f, self->arena);
       if (!key || !val) {
         Py_XDECREF(key);
         Py_XDECREF(val);
@@ -350,20 +361,22 @@ static PyObject* PyUpb_MapContainer_Repr(PyObject* _self) {
   return repr;
 }
 
-PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
+PyObject* PyUpb_MapContainer_GetOrCreateWrapper(PyUpb_ModuleState* state,
+                                                upb_Map* map,
                                                 const upb_FieldDef* f,
                                                 PyObject* arena) {
-  PyUpb_MapContainer* ret = (void*)PyUpb_ObjCache_Get(map);
+  PyUpb_MapContainer* ret = (void*)PyUpb_ObjCache_Get(state, map);
   if (ret) return &ret->ob_base;
 
-  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f, state);
   ret = (void*)PyType_GenericAlloc(cls, 0);
   ret->arena = arena;
   ret->field = (uintptr_t)f;
   ret->ptr.map = map;
   ret->version = 0;
+  ret->interp_state = PyUpb_ModuleInterpreterState_Acquire(state);
   Py_INCREF(arena);
-  PyUpb_ObjCache_Add(map, &ret->ob_base);
+  PyUpb_ObjCache_Add(state, map, &ret->ob_base);
   return &ret->ob_base;
 }
 
@@ -467,7 +480,7 @@ typedef struct {
 } PyUpb_MapIterator;
 
 static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(map));
   PyUpb_MapIterator* iter =
       (void*)PyType_GenericAlloc(state->map_iterator_type, 0);
   iter->map = map;
@@ -495,7 +508,8 @@ static PyObject* PyUpb_MapIterator_IterNext(PyObject* _self) {
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self->map);
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
-  return PyUpb_UpbToPy(key, key_f, self->map->arena);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return PyUpb_UpbToPy(state, key, key_f, self->map->arena);
 }
 
 static PyType_Slot PyUpb_MapIterator_Slots[] = {

@@ -37,14 +37,15 @@ typedef struct {
   // Returns an element by index.
   const void* (*index)(const void* parent, int idx);
   // Returns a Python object wrapping this element, caller owns a ref.
-  PyObject* (*get_elem_wrapper)(const void* elem);
+  PyObject* (*get_elem_wrapper)(PyUpb_ModuleState* state, const void* elem);
 } PyUpb_GenericSequence_Funcs;
 
 // Returns a new GenericSequence.  The vtable `funcs` must outlive this object
 // (generally it should be static).  The GenericSequence will take a ref on
 // `parent_obj`, which must be sufficient to keep `parent` alive.  The object
 // `parent` will be passed as an argument to the functions in `funcs`.
-PyObject* PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs* funcs,
+PyObject* PyUpb_GenericSequence_New(PyUpb_ModuleState* state,
+                                    const PyUpb_GenericSequence_Funcs* funcs,
                                     const void* parent, PyObject* parent_obj);
 
 // -----------------------------------------------------------------------------
@@ -65,7 +66,8 @@ typedef struct {
 // (generally it should be static).  The ByNameMap will take a ref on
 // `parent_obj`, which must be sufficient to keep `parent` alive.  The object
 // `parent` will be passed as an argument to the functions in `funcs`.
-PyObject* PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs* funcs,
+PyObject* PyUpb_ByNameMap_New(PyUpb_ModuleState* state,
+                              const PyUpb_ByNameMap_Funcs* funcs,
                               const void* parent, PyObject* parent_obj);
 
 // -----------------------------------------------------------------------------
@@ -86,7 +88,8 @@ typedef struct {
 // (generally it should be static).  The ByNumberMap will take a ref on
 // `parent_obj`, which must be sufficient to keep `parent` alive.  The object
 // `parent` will be passed as an argument to the functions in `funcs`.
-PyObject* PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs* funcs,
+PyObject* PyUpb_ByNumberMap_New(PyUpb_ModuleState* state,
+                                const PyUpb_ByNumberMap_Funcs* funcs,
                                 const void* parent, PyObject* parent_obj);
 
 bool PyUpb_InitDescriptorContainers(PyObject* m);

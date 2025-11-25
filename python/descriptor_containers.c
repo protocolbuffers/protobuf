@@ -24,9 +24,16 @@ err:
   return ret;
 }
 
-#define CHECK_TYPE(obj, state_member)                                   \
-  assert(PyUpb_ModuleState_MaybeGet() == NULL || /* During shutdown. */ \
-         Py_TYPE(obj) == PyUpb_ModuleState_Get()->state_member)
+#ifndef NDEBUG
+#define CHECK_TYPE(obj, state_member)                                       \
+  do {                                                                      \
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(obj)); \
+    assert(state);                                                          \
+    assert(Py_TYPE(obj) == state->state_member);                            \
+  } while (false)
+#else
+#define CHECK_TYPE(obj, state_member)
+#endif
 
 // -----------------------------------------------------------------------------
 // ByNameIterator
@@ -53,12 +60,12 @@ static void PyUpb_ByNameIterator_Dealloc(PyObject* _self) {
   PyUpb_Dealloc(self);
 }
 
-static PyObject* PyUpb_ByNameIterator_New(const PyUpb_ByNameMap_Funcs* funcs,
+static PyObject* PyUpb_ByNameIterator_New(PyUpb_ModuleState* state,
+                                          const PyUpb_ByNameMap_Funcs* funcs,
                                           const void* parent,
                                           PyObject* parent_obj) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   PyUpb_ByNameIterator* iter =
-      (void*)PyType_GenericAlloc(s->by_name_iterator_type, 0);
+      (void*)PyType_GenericAlloc(state->by_name_iterator_type, 0);
   iter->funcs = funcs;
   iter->parent = parent;
   iter->parent_obj = parent_obj;
@@ -116,11 +123,10 @@ static void PyUpb_ByNumberIterator_Dealloc(PyObject* _self) {
 }
 
 static PyObject* PyUpb_ByNumberIterator_New(
-    const PyUpb_ByNumberMap_Funcs* funcs, const void* parent,
-    PyObject* parent_obj) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+    PyUpb_ModuleState* state, const PyUpb_ByNumberMap_Funcs* funcs,
+    const void* parent, PyObject* parent_obj) {
   PyUpb_ByNumberIterator* iter =
-      (void*)PyType_GenericAlloc(s->by_number_iterator_type, 0);
+      (void*)PyType_GenericAlloc(state->by_number_iterator_type, 0);
   iter->funcs = funcs;
   iter->parent = parent;
   iter->parent_obj = parent_obj;
@@ -176,11 +182,11 @@ static void PyUpb_GenericSequence_Dealloc(PyObject* _self) {
   PyUpb_Dealloc(self);
 }
 
-PyObject* PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs* funcs,
+PyObject* PyUpb_GenericSequence_New(PyUpb_ModuleState* state,
+                                    const PyUpb_GenericSequence_Funcs* funcs,
                                     const void* parent, PyObject* parent_obj) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  PyUpb_GenericSequence* seq =
-      (PyUpb_GenericSequence*)PyType_GenericAlloc(s->generic_sequence_type, 0);
+  PyUpb_GenericSequence* seq = (PyUpb_GenericSequence*)PyType_GenericAlloc(
+      state->generic_sequence_type, 0);
   seq->funcs = funcs;
   seq->parent = parent;
   seq->parent_obj = parent_obj;
@@ -205,7 +211,8 @@ static PyObject* PyUpb_GenericSequence_GetItem(PyObject* _self,
     return NULL;
   }
   const void* elem = self->funcs->index(self->parent, index);
-  return self->funcs->get_elem_wrapper(elem);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return self->funcs->get_elem_wrapper(state, elem);
 }
 
 // A sequence container can only be equal to another sequence container, or (for
@@ -267,9 +274,10 @@ static PyObject* PyUpb_GenericSequence_Subscript(PyObject* _self,
     return PyUpb_GenericSequence_GetItem(_self, idx);
   } else {
     PyObject* list = PyList_New(count);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
     for (Py_ssize_t i = 0; i < count; i++, idx += step) {
       const void* elem = self->funcs->index(self->parent, idx);
-      PyList_SetItem(list, i, self->funcs->get_elem_wrapper(elem));
+      PyList_SetItem(list, i, self->funcs->get_elem_wrapper(state, elem));
     }
     return list;
   }
@@ -371,10 +379,11 @@ static void PyUpb_ByNameMap_Dealloc(PyObject* _self) {
   PyUpb_Dealloc(self);
 }
 
-PyObject* PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs* funcs,
+PyObject* PyUpb_ByNameMap_New(PyUpb_ModuleState* state,
+                              const PyUpb_ByNameMap_Funcs* funcs,
                               const void* parent, PyObject* parent_obj) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  PyUpb_ByNameMap* map = (void*)PyType_GenericAlloc(s->by_name_map_type, 0);
+  PyUpb_ByNameMap* map = (void*)PyType_GenericAlloc(
+      ((PyUpb_ModuleState*)state)->by_name_map_type, 0);
   map->funcs = funcs;
   map->parent = parent;
   map->parent_obj = parent_obj;
@@ -395,7 +404,8 @@ static PyObject* PyUpb_ByNameMap_Subscript(PyObject* _self, PyObject* key) {
   if (!name && PyObject_Hash(key) == -1) return NULL;
 
   if (elem) {
-    return self->funcs->base.get_elem_wrapper(elem);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return self->funcs->base.get_elem_wrapper(state, elem);
   } else {
     PyErr_SetObject(PyExc_KeyError, key);
     return NULL;
@@ -431,7 +441,8 @@ static PyObject* PyUpb_ByNameMap_Get(PyObject* _self, PyObject* args) {
   if (!name && PyObject_Hash(key) == -1) return NULL;
 
   if (elem) {
-    return self->funcs->base.get_elem_wrapper(elem);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return self->funcs->base.get_elem_wrapper(state, elem);
   } else {
     Py_INCREF(default_value);
     return default_value;
@@ -440,7 +451,9 @@ static PyObject* PyUpb_ByNameMap_Get(PyObject* _self, PyObject* args) {
 
 static PyObject* PyUpb_ByNameMap_GetIter(PyObject* _self) {
   PyUpb_ByNameMap* self = PyUpb_ByNameMap_Self(_self);
-  return PyUpb_ByNameIterator_New(self->funcs, self->parent, self->parent_obj);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return PyUpb_ByNameIterator_New(state, self->funcs, self->parent,
+                                  self->parent_obj);
 }
 
 static PyObject* PyUpb_ByNameMap_Keys(PyObject* _self, PyObject* args) {
@@ -466,9 +479,10 @@ static PyObject* PyUpb_ByNameMap_Values(PyObject* _self, PyObject* args) {
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject* ret = PyList_New(n);
   if (!ret) return NULL;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
   for (int i = 0; i < n; i++) {
     const void* elem = self->funcs->base.index(self->parent, i);
-    PyObject* py_elem = self->funcs->base.get_elem_wrapper(elem);
+    PyObject* py_elem = self->funcs->base.get_elem_wrapper(state, elem);
     if (!py_elem) goto error;
     PyList_SetItem(ret, i, py_elem);
   }
@@ -486,10 +500,11 @@ static PyObject* PyUpb_ByNameMap_Items(PyObject* _self, PyObject* args) {
   PyObject* item;
   PyObject* py_elem;
   if (!ret) return NULL;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
   for (int i = 0; i < n; i++) {
     const void* elem = self->funcs->base.index(self->parent, i);
     item = PyTuple_New(2);
-    py_elem = self->funcs->base.get_elem_wrapper(elem);
+    py_elem = self->funcs->base.get_elem_wrapper(state, elem);
     if (!item || !py_elem) goto error;
     PyTuple_SetItem(item, 0,
                     PyUnicode_FromString(self->funcs->get_elem_name(elem)));
@@ -581,10 +596,11 @@ PyUpb_ByNumberMap* PyUpb_ByNumberMap_Self(PyObject* obj) {
   return (PyUpb_ByNumberMap*)obj;
 }
 
-PyObject* PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs* funcs,
+PyObject* PyUpb_ByNumberMap_New(PyUpb_ModuleState* state,
+                                const PyUpb_ByNumberMap_Funcs* funcs,
                                 const void* parent, PyObject* parent_obj) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  PyUpb_ByNumberMap* map = (void*)PyType_GenericAlloc(s->by_number_map_type, 0);
+  PyUpb_ByNumberMap* map =
+      (void*)PyType_GenericAlloc(state->by_number_map_type, 0);
   map->funcs = funcs;
   map->parent = parent;
   map->parent_obj = parent_obj;
@@ -620,7 +636,8 @@ static PyObject* PyUpb_ByNumberMap_Subscript(PyObject* _self, PyObject* key) {
   PyUpb_ByNumberMap* self = PyUpb_ByNumberMap_Self(_self);
   const void* elem = PyUpb_ByNumberMap_LookupHelper(self, key);
   if (elem) {
-    return self->funcs->base.get_elem_wrapper(elem);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return self->funcs->base.get_elem_wrapper(state, elem);
   } else {
     if (!PyErr_Occurred()) {
       PyErr_SetObject(PyExc_KeyError, key);
@@ -646,7 +663,8 @@ static PyObject* PyUpb_ByNumberMap_Get(PyObject* _self, PyObject* args) {
 
   const void* elem = PyUpb_ByNumberMap_LookupHelper(self, key);
   if (elem) {
-    return self->funcs->base.get_elem_wrapper(elem);
+    PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+    return self->funcs->base.get_elem_wrapper(state, elem);
   } else if (PyErr_Occurred()) {
     return NULL;
   } else {
@@ -656,7 +674,8 @@ static PyObject* PyUpb_ByNumberMap_Get(PyObject* _self, PyObject* args) {
 
 static PyObject* PyUpb_ByNumberMap_GetIter(PyObject* _self) {
   PyUpb_ByNumberMap* self = PyUpb_ByNumberMap_Self(_self);
-  return PyUpb_ByNumberIterator_New(self->funcs, self->parent,
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
+  return PyUpb_ByNumberIterator_New(state, self->funcs, self->parent,
                                     self->parent_obj);
 }
 
@@ -683,9 +702,10 @@ static PyObject* PyUpb_ByNumberMap_Values(PyObject* _self, PyObject* args) {
   int n = self->funcs->base.get_elem_count(self->parent);
   PyObject* ret = PyList_New(n);
   if (!ret) return NULL;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
   for (int i = 0; i < n; i++) {
     const void* elem = self->funcs->base.index(self->parent, i);
-    PyObject* py_elem = self->funcs->base.get_elem_wrapper(elem);
+    PyObject* py_elem = self->funcs->base.get_elem_wrapper(state, elem);
     if (!py_elem) goto error;
     PyList_SetItem(ret, i, py_elem);
   }
@@ -703,11 +723,12 @@ static PyObject* PyUpb_ByNumberMap_Items(PyObject* _self, PyObject* args) {
   PyObject* item;
   PyObject* py_elem;
   if (!ret) return NULL;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(Py_TYPE(_self));
   for (int i = 0; i < n; i++) {
     const void* elem = self->funcs->base.index(self->parent, i);
     int number = self->funcs->get_elem_num(elem);
     item = PyTuple_New(2);
-    py_elem = self->funcs->base.get_elem_wrapper(elem);
+    py_elem = self->funcs->base.get_elem_wrapper(state, elem);
     if (!item || !py_elem) goto error;
     PyTuple_SetItem(item, 0, PyLong_FromLong(number));
     PyTuple_SetItem(item, 1, py_elem);

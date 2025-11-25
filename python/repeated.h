@@ -16,7 +16,8 @@
 
 // Creates a new repeated field stub for field `f` of message object `parent`.
 // Precondition: `parent` must be a stub.
-PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
+PyObject* PyUpb_RepeatedContainer_NewStub(PyUpb_ModuleState* state,
+                                          PyObject* parent,
                                           const upb_FieldDef* f,
                                           PyObject* arena);
 
@@ -24,7 +25,8 @@ PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
 // must be on `arena`.  If an existing wrapper object exists, it will be
 // returned, otherwise a new object will be created.  The caller always owns a
 // ref on the returned value.
-PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
+PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(PyUpb_ModuleState* state,
+                                                     upb_Array* arr,
                                                      const upb_FieldDef* f,
                                                      PyObject* arena);
 

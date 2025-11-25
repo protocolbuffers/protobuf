@@ -6,6 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include "python/convert.h"
+
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/message/compare.h"
@@ -17,8 +18,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
-                        PyObject* arena) {
+PyObject* PyUpb_UpbToPy(PyUpb_ModuleState* state, upb_MessageValue val,
+                        const upb_FieldDef* f, PyObject* arena) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Enum:
     case kUpb_CType_Int32:
@@ -51,7 +52,7 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
       return ret;
     }
     case kUpb_CType_Message:
-      return PyUpb_Message_Get((upb_Message*)val.msg_val,
+      return PyUpb_Message_Get(state, (upb_Message*)val.msg_val,
                                upb_FieldDef_MessageSubDef(f), arena);
     default:
       PyErr_Format(PyExc_SystemError,
@@ -63,9 +64,9 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
 
 // TODO: raise error in 2026 Q1 release
 static void WarnBool(const upb_FieldDef* f) {
-  static int bool_warning_count = 100;
+  static volatile int bool_warning_count = 100;
   if (bool_warning_count > 0) {
-    --bool_warning_count;
+    bool_warning_count -= 1;
     PyErr_WarnFormat(PyExc_DeprecationWarning, 3,
                      "Field %s: Expected an int, got a boolean. This "
                      "will be rejected in 7.34.0, please fix it before that",
