@@ -838,6 +838,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.h
+  ${protobuf_SOURCE_DIR}/upb/wire/internal/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/reader.h
   ${protobuf_SOURCE_DIR}/upb/wire/types.h
