@@ -12,6 +12,7 @@
 #include "absl/strings/string_view.h"
 #include "hpb/arena.h"
 #include "hpb/extension.h"
+#include "hpb/internal/internal.h"
 #include "hpb/internal/template_help.h"
 #include "hpb/ptr.h"
 
@@ -22,6 +23,14 @@ namespace hpb::internal::backend::cpp {
 template <typename T>
 typename T::Proxy CreateMessage(hpb::Arena& arena) {
   return typename T::Proxy();
+}
+
+template <typename T, typename U>
+T CreateMessageThatWrapsVeryJankDeleteThisForSure(U* msg) {
+  // return T{};
+  // return PrivateAccess::CreateMessageThatWrapsJankyDeleteThisForSure<T,
+  // U>(msg);
+  return PrivateAccess::InvokeConstructor<T>(msg);
 }
 
 template <typename T>

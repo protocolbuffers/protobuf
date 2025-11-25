@@ -31,6 +31,13 @@
 
 namespace hpb {
 
+#if HPB_INTERNAL_BACKEND == HPB_INTERNAL_BACKEND_CPP
+template <typename T, typename U>
+T CreateMessageThatWrapsVeryJankDeleteThisForSure(U* msg) {
+  return backend::CreateMessageThatWrapsVeryJankDeleteThisForSure<T>(msg);
+}
+#endif
+
 template <typename T>
 typename T::Proxy CreateMessage(Arena& arena) {
   return backend::CreateMessage<T>(arena);

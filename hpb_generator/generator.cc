@@ -54,6 +54,22 @@ void WriteForwardDecls(const google::protobuf::FileDescriptor* file, Context& ct
   WriteTypedefForwardingHeader(file, this_file_messages, ctx);
 }
 
+std::string ScalarGetters(const google::protobuf::Descriptor* message) {
+  std::string res;
+  for (int i = 0; i < message->field_count(); ++i) {
+    const auto* field = message->field(i);
+    if (field->is_repeated() || field->is_map() || field->is_extension()) {
+      continue;
+    }
+    if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
+      absl::StrAppend(
+          &res, google::protobuf::FieldDescriptor::CppTypeName(field->cpp_type()), " ",
+          field->name(), "() const { return msg_->", field->name(), "(); }\n");
+    }
+  }
+  return res;
+}
+
 void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
   if (ctx.options().backend == Backend::CPP) {
     EmitFileWarning(file, ctx);
@@ -105,7 +121,9 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
     const auto msgs = SortedMessages(file);
     for (auto message : msgs) {
       ctx.Emit({{"type", QualifiedClassName(message)},
+                {"cpp_backend_type", CppBackendClassName(message)},
                 {"class_name", ClassName(message)},
+                {"scalar_getters", ScalarGetters(message)},
                 {"namespace", absl::StrCat(absl::StrReplaceAll(file->package(),
                                                                {{".", "::"}}),
                                            "::protos")}},
@@ -123,12 +141,14 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
 
                    $class_name$() = default;
 
-                  private:
-                   $class_name$($type$* msg) : msg_(msg) {}
+                  $scalar_getters$
 
-                   $type$* msg_;
+                      private : $class_name$($cpp_backend_type$* msg)
+                      : msg_(msg) {}
 
-                   $type$* msg() const { return msg_; }
+                   $cpp_backend_type$* msg_;
+
+                   $cpp_backend_type$* msg() const { return msg_; }
 
                    friend struct ::hpb::internal::PrivateAccess;
                  };
@@ -307,6 +327,9 @@ void WriteHeaderMessageForwardDecls(const google::protobuf::FileDescriptor* file
   if (ctx.options().backend == Backend::UPB) {
     ctx.Emit({{"upb_filename", UpbCFilename(file)}},
              "#include \"$upb_filename$\"\n");
+  } else if (ctx.options().backend == Backend::CPP) {
+    ctx.Emit({{"cpp_header", ProtoFilename(file)}},
+             "#include \"$cpp_header$\"\n");
   }
   WriteForwardDecls(file, ctx);
   // Import forward-declaration of types in dependencies.

@@ -22,9 +22,11 @@ inline constexpr absl::string_view kNoPackageNamePrefix = "hpb_";
 std::string ClassName(const google::protobuf::Descriptor* descriptor);
 std::string QualifiedClassName(const google::protobuf::Descriptor* descriptor);
 std::string QualifiedInternalClassName(const google::protobuf::Descriptor* descriptor);
+std::string CppBackendClassName(const google::protobuf::Descriptor* descriptor);
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file);
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file);
+std::string ProtoFilename(const google::protobuf::FileDescriptor* file);
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file);
 
 void WriteStartNamespace(const google::protobuf::FileDescriptor* file, Context& ctx);
