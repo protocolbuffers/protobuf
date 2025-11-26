@@ -77,16 +77,6 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
 UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
                                                    const char* ptr, int size);
 
-// Reads string data from the input, aliasing into the input buffer instead of
-// copying. The parsing pointer is passed in `*ptr`, and will be updated if
-// necessary to point to the actual input buffer. Returns the new parsing
-// pointer, which will be advanced past the string data.
-//
-// REQUIRES: Aliasing must be available for this data region (test with
-// upb_EpsCopyInputStream_AliasingAvailable().
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
-    upb_EpsCopyInputStream* e, const char** ptr, size_t size);
-
 // Reads string data from the stream and advances the pointer accordingly.
 // If aliasing was enabled when the stream was initialized, then the returned
 // pointer will point into the input buffer if possible, otherwise new data
