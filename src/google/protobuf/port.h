@@ -689,6 +689,14 @@ inline constexpr bool ShouldBatchRepeatedNumeric() {
 #endif
 }
 
+inline constexpr bool UseBatchOffset() {
+#ifdef PROTOBUF_INTERNAL_USE_BATCH_OFFSET
+  return true;
+#else
+  return false;
+#endif
+}
+
 #if defined(ABSL_HAVE_THREAD_SANITIZER)
 // TODO: it would be preferable to use __tsan_external_read/
 // __tsan_external_write, but they can cause dlopen issues.
