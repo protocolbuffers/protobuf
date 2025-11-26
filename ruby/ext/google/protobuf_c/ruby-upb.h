@@ -15946,12 +15946,6 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(
   return e->buffer_start + position;
 }
 
-UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
-    struct upb_EpsCopyInputStream* e, const char* ptr) {
-  UPB_ASSUME(UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, ptr, 0));
-  return UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
-}
-
 UPB_INLINE void upb_EpsCopyInputStream_StartCapture(
     struct upb_EpsCopyInputStream* e, const char* ptr) {
   UPB_ASSERT(e->capture_start == NULL);
@@ -15980,7 +15974,7 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
   UPB_ASSUME(
       UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, *ptr, size));
   const char* ret = *ptr + size;
-  *ptr = upb_EpsCopyInputStream_GetAliasedPtr(e, *ptr);
+  *ptr = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, *ptr);
   UPB_ASSUME(ret != NULL);
   return ret;
 }
@@ -16165,15 +16159,6 @@ UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
 // property can be useful in some cases.
 UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
     upb_EpsCopyInputStream* e, const char* ptr, int size);
-
-// Returns a pointer into an input buffer that corresponds to the parsing
-// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
-// be different if we are currently parsing out of the patch buffer.
-//
-// REQUIRES: Aliasing must be available for the given pointer. If the input is a
-// flat buffer and aliasing is enabled, then aliasing will always be available.
-UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
-    upb_EpsCopyInputStream* e, const char* ptr);
 
 // Marks the start of a capture operation.  Only one capture operation may be
 // active at a time.  The capture operation will be finalized by a call to
