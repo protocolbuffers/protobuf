@@ -16165,18 +16165,6 @@ UPB_INLINE bool UPB_PRIVATE(
                                                                 true);
 }
 
-// Returns true if aliasing_enabled=true was passed to
-// upb_EpsCopyInputStream_Init() when this stream was initialized *and* we can
-// alias into the region [ptr, size] in an input buffer.
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
-  // When EpsCopyInputStream supports streaming, this will need to become a
-  // runtime check.
-  return e->aliasing &&
-         UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
-                                                                    size);
-}
-
 // Returns a pointer into an input buffer that corresponds to the parsing
 // pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
 // be different if we are currently parsing out of the patch buffer.
@@ -16217,16 +16205,6 @@ UPB_INLINE const char* upb_EpsCopyInputStream_Skip(
   return ptr + size;
 }
 
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
-    struct upb_EpsCopyInputStream* e, const char** ptr, size_t size) {
-  UPB_ASSUME(
-      UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, *ptr, size));
-  const char* ret = *ptr + size;
-  *ptr = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, *ptr);
-  UPB_ASSUME(ret != NULL);
-  return ret;
-}
-
 // Copies `size` bytes of data from the input `ptr` into the buffer `to`, and
 // returns a pointer past the end. Returns NULL on end of stream or error.
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
@@ -16242,14 +16220,17 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
     struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
     upb_Arena* arena) {
-  if (UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, *ptr, size)) {
-    return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
+  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, *ptr,
+                                                                  size)) {
+    return NULL;
+  }
+  if (e->aliasing) {
+    const char* ret = *ptr + size;
+    *ptr = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, *ptr);
+    UPB_ASSUME(ret != NULL);
+    return ret;
   } else {
     // We need to allocate and copy.
-    if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, *ptr,
-                                                                    size)) {
-      return NULL;
-    }
     UPB_ASSERT(arena);
     char* data = (char*)upb_Arena_Malloc(arena, size);
     if (!data) return NULL;
@@ -16422,16 +16403,6 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
 // Returns NULL on end of stream or error.
 UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
                                                    const char* ptr, int size);
-
-// Reads string data from the input, aliasing into the input buffer instead of
-// copying. The parsing pointer is passed in `*ptr`, and will be updated if
-// necessary to point to the actual input buffer. Returns the new parsing
-// pointer, which will be advanced past the string data.
-//
-// REQUIRES: Aliasing must be available for this data region (test with
-// upb_EpsCopyInputStream_AliasingAvailable().
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
-    upb_EpsCopyInputStream* e, const char** ptr, size_t size);
 
 // Reads string data from the stream and advances the pointer accordingly.
 // If aliasing was enabled when the stream was initialized, then the returned
