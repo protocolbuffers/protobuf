@@ -151,6 +151,7 @@ UPB_INLINE struct upb_Message* _upb_Message_New(const upb_MiniTable* m,
   // Message sizes are aligned up when constructing minitables; telling the
   // compiler this avoids redoing alignment on the malloc fast path
   UPB_ASSUME(size % kUpb_Message_Align == 0);
+  UPB_ASSUME(size != 0);
   struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
   if (UPB_UNLIKELY(!msg)) return NULL;
   memset(msg, 0, size);
