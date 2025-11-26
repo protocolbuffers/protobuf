@@ -57,6 +57,8 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
   void RunDelimitedFieldTests();
 
+  void RunUnstableTests();
+
   void RunMessageSetTests();
 
   template <typename MessageType>

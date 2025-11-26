@@ -13,6 +13,7 @@
 #import "google/protobuf/TestMessagesProto2.pbobjc.h"
 #import "google/protobuf/TestMessagesProto3.pbobjc.h"
 #import "test_protos/TestMessagesEdition2023.pbobjc.h"
+#import "test_protos/TestMessagesEditionUnstable.pbobjc.h"
 
 static void Die(NSString *format, ...) __dead2;
 
@@ -65,6 +66,11 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
                      isEqual:@"protobuf_test_messages.editions.TestAllTypesEdition2023"]) {
         msgClass = [EditionsTestAllTypesEdition2023 class];
         registry = [EditionsTestMessagesEdition2023Root extensionRegistry];
+      } else if ([request.messageType
+                     isEqual:
+                         @"protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable"]) {
+        msgClass = [EditionUnstableTestAllTypesEditionUnstable class];
+        registry = [EditionUnstableTestMessagesEditionUnstableRoot extensionRegistry];
       } else if ([request.messageType
                      isEqual:@"protobuf_test_messages.editions.proto2.TestAllTypesProto2"]) {
         msgClass = [EditionsProto2TestAllTypesProto2 class];

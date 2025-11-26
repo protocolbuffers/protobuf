@@ -29,6 +29,7 @@ namespace Google.Protobuf.Conformance
                 ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor,
                 ProtobufTestMessages.Proto2.TestAllTypesProto2.Descriptor,
                 ProtobufTestMessages.Editions.TestAllTypesEdition2023.Descriptor,
+                ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable.Descriptor,
                 ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Descriptor,
                 ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Descriptor);
 
@@ -83,6 +84,9 @@ namespace Google.Protobuf.Conformance
               ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.DelimitedExt,
               ProtobufTestMessages.Editions.TestMessagesEdition2023Extensions.GroupLikeType
             };
+            ExtensionRegistry editionUnstableExtensionRegistry = new ExtensionRegistry {
+              ProtobufTestMessages.EditionUnstable.TestMessagesEditionUnstableExtensions.ExtensionInt32,
+            };
             IMessage message;
             try
             {
@@ -101,6 +105,9 @@ namespace Google.Protobuf.Conformance
                                   request.JsonPayload),
                           "protobuf_test_messages.editions.TestAllTypesEdition2023" =>
                               parser.Parse<ProtobufTestMessages.Editions.TestAllTypesEdition2023>(
+                                  request.JsonPayload),
+                          "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable" =>
+                              parser.Parse<ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable>(
                                   request.JsonPayload),
                           "protobuf_test_messages.editions.proto2.TestAllTypesProto2" =>
                               parser.Parse<ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2>(
@@ -125,6 +132,10 @@ namespace Google.Protobuf.Conformance
                         "protobuf_test_messages.editions.TestAllTypesEdition2023" =>
                             ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser
                                 .WithExtensionRegistry(edition2023ExtensionRegistry)
+                                .ParseFrom(request.ProtobufPayload),
+                        "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable" =>
+                            ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable.Parser
+                                .WithExtensionRegistry(editionUnstableExtensionRegistry)
                                 .ParseFrom(request.ProtobufPayload),
                         "protobuf_test_messages.editions.proto2.TestAllTypesProto2" =>
                             ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2.Parser
