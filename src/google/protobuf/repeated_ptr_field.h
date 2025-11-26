@@ -1765,9 +1765,13 @@ inline void RepeatedPtrField<Element>::RemoveLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
-  ABSL_DCHECK_GE(start, 0);
-  ABSL_DCHECK_GE(num, 0);
-  ABSL_DCHECK_LE(start + num, size());
+  if (ABSL_PREDICT_FALSE(start < 0)) {
+    internal::RuntimeAssertInBounds(start, 0);
+  }
+  if (ABSL_PREDICT_FALSE(num < 0)) {
+    internal::RuntimeAssertInBounds(num, 0);
+  }
+  internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
   void** subrange = raw_mutable_data() + start;
   Arena* arena = GetArena();
   for (int i = 0; i < num; ++i) {
