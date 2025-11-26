@@ -242,13 +242,11 @@ static upb_Message* _upb_Decoder_NewSubMessage(upb_Decoder* d,
   return _upb_Decoder_NewSubMessage2(d, subl, field, target);
 }
 
-static const char* _upb_Decoder_ReadString(upb_Decoder* d, const char* ptr,
-                                           int size, upb_StringView* str) {
-  const char* str_ptr = ptr;
-  ptr = upb_EpsCopyInputStream_ReadString(&d->input, &str_ptr, size, &d->arena);
-  if (!ptr) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
-  str->data = str_ptr;
-  str->size = size;
+static const char* _upb_Decoder_ReadString2(upb_Decoder* d, const char* ptr,
+                                            int size, upb_StringView* str) {
+  if (!_upb_Decoder_ReadString(d, &ptr, size, str)) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+  }
   return ptr;
 }
 
@@ -471,7 +469,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
       upb_StringView* str = (upb_StringView*)upb_Array_MutableDataPtr(arr) +
                             arr->UPB_PRIVATE(size);
       arr->UPB_PRIVATE(size)++;
-      return _upb_Decoder_ReadString(d, ptr, val->size, str);
+      return _upb_Decoder_ReadString2(d, ptr, val->size, str);
     }
     case kUpb_DecodeOp_SubMessage: {
       /* Append submessage / group. */
@@ -646,7 +644,7 @@ static const char* _upb_Decoder_DecodeToSubMessage(
       _upb_Decoder_VerifyUtf8(d, ptr, val->size);
       /* Fallthrough. */
     case kUpb_DecodeOp_Bytes:
-      return _upb_Decoder_ReadString(d, ptr, val->size, mem);
+      return _upb_Decoder_ReadString2(d, ptr, val->size, mem);
     case kUpb_DecodeOp_Scalar8Byte:
       memcpy(mem, val, 8);
       break;

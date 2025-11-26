@@ -12,7 +12,6 @@
 #include <string.h>
 
 #include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
 #include "upb/wire/internal/eps_copy_input_stream.h"
 
 // Must be last.
@@ -77,29 +76,14 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(upb_EpsCopyInputStream* e,
 UPB_INLINE const char* upb_EpsCopyInputStream_Skip(upb_EpsCopyInputStream* e,
                                                    const char* ptr, int size);
 
-// Reads string data from the stream and advances the pointer accordingly.
-// If aliasing was enabled when the stream was initialized, then the returned
-// pointer will point into the input buffer if possible, otherwise new data
-// will be allocated from arena and copied into. We may be forced to copy even
-// if aliasing was enabled if the input data spans input buffers.
-//
-// Returns NULL if memory allocation failed, or we reached a premature EOF.
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
-    upb_EpsCopyInputStream* e, const char** ptr, size_t size, upb_Arena* arena);
-
-// Reads a string from the stream and advances the pointer accordingly.
-//
-// Unlike upb_EpsCopyInputStream_ReadString(), this function will always alias
-// the input buffer, regardless of whether aliasing was enabled when the stream
-// was initialized. This is useful for cases where the string will only be used
-// for the duration of the current function, so there is no risk of the
-// underlying data being freed in the meantime.
+// Reads a string from the stream and advances the pointer accordingly.  The
+// returned string view will always alias the input buffer.
 //
 // Returns NULL if size extends beyond the end of the stream.
 //
 // NOTE: If/when EpsCopyInputStream supports multiple input buffers, this will
-// need to fall back to copying if the input data spans multiple buffers, which
-// will also require an additional arena parameter.
+// need to be capable of signaling that only part of the string is available
+// in the current buffer.
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
     upb_EpsCopyInputStream* e, const char* ptr, size_t size,
     upb_StringView* sv);

@@ -12,7 +12,6 @@
 #include <string.h>
 
 #include "upb/base/string_view.h"
-#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -297,30 +296,6 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
   }
   memcpy(to, ptr, size);
   return ptr + size;
-}
-
-UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
-    struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
-    upb_Arena* arena) {
-  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, *ptr,
-                                                                  size)) {
-    return NULL;
-  }
-  if (e->aliasing) {
-    const char* ret = *ptr + size;
-    *ptr = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, *ptr);
-    UPB_ASSUME(ret != NULL);
-    return ret;
-  } else {
-    // We need to allocate and copy.
-    UPB_ASSERT(arena);
-    char* data = (char*)upb_Arena_Malloc(arena, size);
-    if (!data) return NULL;
-    const char* ret =
-        UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(e, *ptr, data, size);
-    *ptr = data;
-    return ret;
-  }
 }
 
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(

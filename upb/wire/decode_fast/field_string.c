@@ -29,12 +29,7 @@ static bool upb_DecodeFast_SingleString(upb_Decoder* d, const char** ptr,
 
   if (!upb_DecodeFast_DecodeSize(d, ptr, &size, next)) return false;
 
-  sv->data = *ptr;
-  sv->size = size;
-  *ptr =
-      upb_EpsCopyInputStream_ReadString(&d->input, &sv->data, size, &d->arena);
-
-  if (!*ptr) {
+  if (!_upb_Decoder_ReadString(d, ptr, size, sv)) {
     sv->size = 0;
     // TODO: ReadString can actually return NULL for invalid wire format.
     // Need to fix ReadString to return a more granular error.

@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/internal/arena.h"
 #include "upb/message/message.h"
@@ -201,6 +202,22 @@ UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
   }
 
   return false;
+}
+
+UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
+                                        size_t size, upb_StringView* sv) {
+  upb_StringView tmp;
+  *ptr =
+      upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
+  if (*ptr == NULL) return false;
+  if ((d->options & kUpb_DecodeOption_AliasString) == 0) {
+    char* data = (char*)upb_Arena_Malloc(&d->arena, tmp.size);
+    if (!data) return false;
+    memcpy(data, tmp.data, tmp.size);
+    tmp.data = data;
+  }
+  *sv = tmp;
+  return true;
 }
 
 #include "upb/port/undef.inc"
