@@ -792,17 +792,6 @@ class FieldDescriptor(DescriptorBase):
     self._type = val
 
   @property
-  def label(self):
-    _Deprecated('label property', 'is_required or is_repeated properties')
-
-    if (
-        self._GetFeatures().field_presence
-        == _FEATURESET_FIELD_PRESENCE_LEGACY_REQUIRED
-    ):
-      return FieldDescriptor.LABEL_REQUIRED
-    return self._label
-
-  @property
   def is_required(self):
     """Returns if the field is required."""
     return (

@@ -863,22 +863,6 @@ static PyObject* GetCppType(PyBaseDescriptor* self, void* closure) {
   return PyLong_FromLong(_GetDescriptor(self)->cpp_type());
 }
 
-static void WarnDeprecatedLabel() {
-  static int deprecated_label_count = 100;
-  if (deprecated_label_count > 0) {
-    --deprecated_label_count;
-    PyErr_WarnEx(
-        PyExc_DeprecationWarning,
-        "label() is deprecated. Use is_required() or is_repeated() instead.",
-        3);
-  }
-}
-
-static PyObject* GetLabel(PyBaseDescriptor* self, void* closure) {
-  WarnDeprecatedLabel();
-  return PyLong_FromLong(_GetDescriptor(self)->label());
-}
-
 static PyObject* IsRequired(PyBaseDescriptor* self, void* closure) {
   return PyBool_FromLong(_GetDescriptor(self)->is_required());
 }
@@ -1094,7 +1078,6 @@ static PyGetSetDef Getters[] = {
     {"file", (getter)GetFile, nullptr, "File Descriptor"},
     {"type", (getter)GetType, nullptr, "C++ Type"},
     {"cpp_type", (getter)GetCppType, nullptr, "C++ Type"},
-    {"label", (getter)GetLabel, nullptr, "Label"},
     {"is_required", (getter)IsRequired, nullptr, "Is Required"},
     {"is_repeated", (getter)IsRepeated, nullptr, "Is Repeated"},
     {"number", (getter)GetNumber, nullptr, "Number"},
