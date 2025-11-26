@@ -15969,8 +15969,6 @@ struct upb_EpsCopyInputStream {
 
 UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
     struct upb_EpsCopyInputStream* e);
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size);
 
 UPB_INLINE bool upb_EpsCopyInputStream_IsError(
     struct upb_EpsCopyInputStream* e) {
@@ -16143,7 +16141,7 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(
   return ret;
 }
 
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
+UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(
     struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
   return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
                                                                 false);
@@ -16175,7 +16173,8 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(
   // When EpsCopyInputStream supports streaming, this will need to become a
   // runtime check.
   return e->aliasing &&
-         upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size);
+         UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                    size);
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing
@@ -16211,7 +16210,10 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(
 
 UPB_INLINE const char* upb_EpsCopyInputStream_Skip(
     struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                  size)) {
+    return NULL;
+  }
   return ptr + size;
 }
 
@@ -16229,7 +16231,10 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
 // returns a pointer past the end. Returns NULL on end of stream or error.
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
     struct upb_EpsCopyInputStream* e, const char* ptr, void* to, int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                  size)) {
+    return NULL;
+  }
   memcpy(to, ptr, size);
   return ptr + size;
 }
@@ -16241,7 +16246,8 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
     return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
   } else {
     // We need to allocate and copy.
-    if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
+    if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, *ptr,
+                                                                    size)) {
       return NULL;
     }
     UPB_ASSERT(arena);
@@ -16257,7 +16263,8 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
     struct upb_EpsCopyInputStream* e, const char* ptr, size_t size,
     upb_StringView* sv) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) {
+  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                  size)) {
     return NULL;
   }
   const char* input = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
@@ -16396,15 +16403,6 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
 // the current buffer.
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const upb_EpsCopyInputStream* e, const char* ptr, int size);
-
-// Returns true if the given delimited field size is valid (it does not extend
-// beyond any previously-pushed limited) *and* all of the data for this field is
-// available to be read in the current buffer.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr, int size);
 
 // Marks the start of a capture operation.  Only one capture operation may be
 // active at a time.  The capture operation will be finalized by a call to
