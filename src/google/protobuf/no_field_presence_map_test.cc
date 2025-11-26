@@ -128,7 +128,7 @@ TEST(NoFieldPresenceTest, DISABLED_GenCodeMapReflectionMissingKeyDeathTest) {
       desc->FindFieldByName("map_int32_bytes");
 
   // Trying to get an unset map entry would crash with a DCHECK in debug mode.
-  EXPECT_DEATH(r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
+  EXPECT_DEATH((void)r->GetRepeatedMessage(message, field_map_int32_bytes, 0),
                "index < size");
 }
 #endif

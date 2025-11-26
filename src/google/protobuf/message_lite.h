@@ -558,18 +558,18 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
-  MessageLite* New() const { return New(nullptr); }
+  [[nodiscard]] MessageLite* New() const { return New(nullptr); }
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
-  MessageLite* New(Arena* arena) const;
+  [[nodiscard]] MessageLite* New(Arena* arena) const;
 
   // Returns the arena, if any, that directly owns this message and its internal
   // memory (Arena::Own is different in that the arena doesn't directly own the
   // internal memory). This method is used in proto's implementation for
   // swapping, moving and setting allocated, for deciding whether the ownership
   // of this message or its internal memory could be changed.
-  Arena* GetArena() const { return _internal_metadata_.arena(); }
+  [[nodiscard]] Arena* GetArena() const { return _internal_metadata_.arena(); }
 
   // Clear all fields of the message and set them to their default values.
   // Clear() assumes that any memory allocated to hold parts of the message
@@ -582,12 +582,12 @@ class PROTOBUF_EXPORT MessageLite {
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Quickly check if all required fields have values set.
-  bool IsInitialized() const;
+  [[nodiscard]] bool IsInitialized() const;
 
   // This is not implemented for Lite messages -- it just returns "(cannot
   // determine missing fields for lite message)".  However, it is implemented
   // for full messages.  See message.h.
-  std::string InitializationErrorString() const;
+  [[nodiscard]] std::string InitializationErrorString() const;
 
   // If |other| is the exact same class as this, calls MergeFrom(). Otherwise,
   // results are undefined (probably crash).
@@ -602,11 +602,11 @@ class PROTOBUF_EXPORT MessageLite {
   //
   // The format of the returned string is subject to change, so please do not
   // assume it will remain stable over time.
-  std::string DebugString() const;
-  std::string ShortDebugString() const { return DebugString(); }
+  [[nodiscard]] std::string DebugString() const;
+  [[nodiscard]] std::string ShortDebugString() const { return DebugString(); }
   // MessageLite::DebugString is already Utf8 Safe. This is to add compatibility
   // with Message.
-  std::string Utf8DebugString() const { return DebugString(); }
+  [[nodiscard]] std::string Utf8DebugString() const { return DebugString(); }
 
   // Implementation of the `AbslStringify` interface. This adds `DebugString()`
   // to the sink. Do not rely on exact format.
@@ -881,9 +881,9 @@ class PROTOBUF_EXPORT MessageLite {
   // invalidated, which is too much work for an otherwise inlined setter
   // method.)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  int GetCachedSize() const { return AccessCachedSize().Get(); }
+  [[nodiscard]] int GetCachedSize() const { return AccessCachedSize().Get(); }
 #else
-  int GetCachedSize() const;
+  [[nodiscard]] int GetCachedSize() const;
 #endif
 
   const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
