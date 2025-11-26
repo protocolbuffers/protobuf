@@ -15711,7 +15711,6 @@ struct upb_EpsCopyInputStream {
   const char* capture_start;  // If non-NULL, the start of the captured region.
   int limit;                  // Submessage limit relative to end
   bool error;                 // To distinguish between EOF and error.
-  bool aliasing;
 #ifndef NDEBUG
   int guaranteed_bytes;
 #endif
@@ -15730,8 +15729,7 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsError(
 }
 
 UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size,
-                                            bool enable_aliasing) {
+                                            const char** ptr, size_t size) {
   e->buffer_start = *ptr;
   e->capture_start = NULL;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
@@ -15746,7 +15744,6 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
     e->limit = kUpb_EpsCopyInputStream_SlopBytes;
     e->input_delta = 0;
   }
-  e->aliasing = enable_aliasing;
   e->limit_ptr = e->end;
   e->error = false;
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
@@ -16085,8 +16082,7 @@ typedef struct upb_EpsCopyInputStream upb_EpsCopyInputStream;
 // [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
 // kUpb_EpsCopyInputStream_SlopBytes are available to read.
 UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size,
-                                            bool enable_aliasing);
+                                            const char** ptr, size_t size);
 
 // Returns true if the stream is in the error state. A stream enters the error
 // state when the user reads past a limit (caught in IsDone()) or the
@@ -16173,6 +16169,16 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
 
 #ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+#ifdef __cplusplus
+// Temporary overloads for functions whose signature has recently changed.
+UPB_DEPRECATE_AND_INLINE()
+UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size,
+                                            bool enable_aliasing) {
+  upb_EpsCopyInputStream_Init(e, ptr, size);
+}
 #endif
 
 
@@ -17533,8 +17539,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
                                         char* trace_buf, size_t trace_size) {
-  upb_EpsCopyInputStream_Init(&d->input, &buf, size,
-                              options & kUpb_DecodeOption_AliasString);
+  upb_EpsCopyInputStream_Init(&d->input, &buf, size);
 
   if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
     // Fasttable decoder does not support this option.

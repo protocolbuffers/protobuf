@@ -9127,7 +9127,7 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_StringView view;
   while (upb_Message_NextUnknown(msg, &view, &iter)) {
-    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size, true);
+    upb_EpsCopyInputStream_Init(&ctx->stream, &view.data, view.size);
     upb_CombineUnknownFields(ctx, &builder, &view.data);
     UPB_ASSERT(upb_EpsCopyInputStream_IsDone(&ctx->stream, &view.data) &&
                !upb_EpsCopyInputStream_IsError(&ctx->stream));
@@ -17067,7 +17067,7 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
   }
 
   upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
-  if (d->input.aliasing) {
+  if (d->options & kUpb_DecodeOption_AliasString) {
     if (sv.data != d->input.buffer_start) {
       // If the data is not from the beginning of the input buffer, then we can
       // safely attempt to coalesce this region with the previous one.
