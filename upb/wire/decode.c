@@ -1119,7 +1119,7 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
   }
 
   upb_AddUnknownMode mode = kUpb_AddUnknown_Copy;
-  if (d->input.aliasing) {
+  if (d->options & kUpb_DecodeOption_AliasString) {
     if (sv.data != d->input.buffer_start) {
       // If the data is not from the beginning of the input buffer, then we can
       // safely attempt to coalesce this region with the previous one.

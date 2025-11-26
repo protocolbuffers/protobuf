@@ -38,7 +38,6 @@ struct upb_EpsCopyInputStream {
   const char* capture_start;  // If non-NULL, the start of the captured region.
   int limit;                  // Submessage limit relative to end
   bool error;                 // To distinguish between EOF and error.
-  bool aliasing;
 #ifndef NDEBUG
   int guaranteed_bytes;
 #endif
@@ -57,8 +56,7 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsError(
 }
 
 UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size,
-                                            bool enable_aliasing) {
+                                            const char** ptr, size_t size) {
   e->buffer_start = *ptr;
   e->capture_start = NULL;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
@@ -73,7 +71,6 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
     e->limit = kUpb_EpsCopyInputStream_SlopBytes;
     e->input_delta = 0;
   }
-  e->aliasing = enable_aliasing;
   e->limit_ptr = e->end;
   e->error = false;
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);

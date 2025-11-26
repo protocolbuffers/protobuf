@@ -96,7 +96,7 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
         // speculative parse.
         upb_EpsCopyInputStream sub_stream;
         const char* sub_ptr = sv.data;
-        upb_EpsCopyInputStream_Init(&sub_stream, &sub_ptr, size, true);
+        upb_EpsCopyInputStream_Init(&sub_stream, &sub_ptr, size);
 
         e->indent_depth++;
         if (UPB_PRIVATE(_upb_TextEncode_Unknown)(e, sub_ptr, &sub_stream, -1)) {
@@ -142,7 +142,7 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
   while (upb_Message_NextUnknown(msg, &view, &iter)) {
     char* start = e->ptr;
     upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &view.data, view.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &view.data, view.size);
     if (!UPB_PRIVATE(_upb_TextEncode_Unknown)(e, view.data, &stream, -1)) {
       /* Unknown failed to parse, back up and don't print it at all. */
       e->ptr = start;

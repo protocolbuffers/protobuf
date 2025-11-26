@@ -67,8 +67,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
                                         char* trace_buf, size_t trace_size) {
-  upb_EpsCopyInputStream_Init(&d->input, &buf, size,
-                              options & kUpb_DecodeOption_AliasString);
+  upb_EpsCopyInputStream_Init(&d->input, &buf, size);
 
   if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
     // Fasttable decoder does not support this option.

@@ -250,7 +250,7 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   while (upb_Message_NextUnknown(msg, &view, &iter)) {
     const char* ptr = view.data;
     upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, view.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &ptr, view.size);
     const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef(py_msg);
 
     bool ok;

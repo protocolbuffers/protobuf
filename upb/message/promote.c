@@ -87,7 +87,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   while (upb_Message_NextUnknown(msg, &data, &iter)) {
     const char* ptr = data.data;
     upb_EpsCopyInputStream stream;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size);
     while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
       uint32_t tag;
       const char* unknown_begin = ptr;
@@ -160,7 +160,7 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
   while (upb_Message_NextUnknown(msg, &data, &ret.iter)) {
     upb_EpsCopyInputStream stream;
     const char* ptr = data.data;
-    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size, true);
+    upb_EpsCopyInputStream_Init(&stream, &ptr, data.size);
 
     while (!upb_EpsCopyInputStream_IsDone(&stream, &ptr)) {
       uint32_t tag;

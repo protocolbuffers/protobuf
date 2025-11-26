@@ -27,8 +27,7 @@ typedef struct upb_EpsCopyInputStream upb_EpsCopyInputStream;
 // [*ptr, size].  Updates `*ptr` as necessary to guarantee that at least
 // kUpb_EpsCopyInputStream_SlopBytes are available to read.
 UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size,
-                                            bool enable_aliasing);
+                                            const char** ptr, size_t size);
 
 // Returns true if the stream is in the error state. A stream enters the error
 // state when the user reads past a limit (caught in IsDone()) or the
@@ -115,6 +114,16 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
 
 #ifdef __cplusplus
 } /* extern "C" */
+#endif
+
+#ifdef __cplusplus
+// Temporary overloads for functions whose signature has recently changed.
+UPB_DEPRECATE_AND_INLINE()
+UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size,
+                                            bool enable_aliasing) {
+  upb_EpsCopyInputStream_Init(e, ptr, size);
+}
 #endif
 
 #include "upb/port/undef.inc"
