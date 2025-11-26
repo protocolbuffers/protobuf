@@ -274,12 +274,6 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(
   return e->buffer_start + position;
 }
 
-UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
-    struct upb_EpsCopyInputStream* e, const char* ptr) {
-  UPB_ASSUME(UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, ptr, 0));
-  return UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
-}
-
 UPB_INLINE void upb_EpsCopyInputStream_StartCapture(
     struct upb_EpsCopyInputStream* e, const char* ptr) {
   UPB_ASSERT(e->capture_start == NULL);
@@ -308,7 +302,7 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
   UPB_ASSUME(
       UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(e, *ptr, size));
   const char* ret = *ptr + size;
-  *ptr = upb_EpsCopyInputStream_GetAliasedPtr(e, *ptr);
+  *ptr = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, *ptr);
   UPB_ASSUME(ret != NULL);
   return ret;
 }

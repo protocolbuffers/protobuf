@@ -67,15 +67,6 @@ UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
 UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
     upb_EpsCopyInputStream* e, const char* ptr, int size);
 
-// Returns a pointer into an input buffer that corresponds to the parsing
-// pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
-// be different if we are currently parsing out of the patch buffer.
-//
-// REQUIRES: Aliasing must be available for the given pointer. If the input is a
-// flat buffer and aliasing is enabled, then aliasing will always be available.
-UPB_INLINE const char* upb_EpsCopyInputStream_GetAliasedPtr(
-    upb_EpsCopyInputStream* e, const char* ptr);
-
 // Marks the start of a capture operation.  Only one capture operation may be
 // active at a time.  The capture operation will be finalized by a call to
 // upb_EpsCopyInputStream_EndCapture().  The captured string will be returned in
