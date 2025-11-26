@@ -51,8 +51,6 @@ struct upb_EpsCopyInputStream {
 
 UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
     struct upb_EpsCopyInputStream* e);
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size);
 
 UPB_INLINE bool upb_EpsCopyInputStream_IsError(
     struct upb_EpsCopyInputStream* e) {
@@ -225,7 +223,7 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(
   return ret;
 }
 
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
+UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(
     struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
   return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
                                                                 false);
@@ -257,7 +255,8 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_AliasingAvailable)(
   // When EpsCopyInputStream supports streaming, this will need to become a
   // runtime check.
   return e->aliasing &&
-         upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size);
+         UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                    size);
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing
@@ -293,7 +292,10 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(
 
 UPB_INLINE const char* upb_EpsCopyInputStream_Skip(
     struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                  size)) {
+    return NULL;
+  }
   return ptr + size;
 }
 
@@ -311,7 +313,10 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAliased(
 // returns a pointer past the end. Returns NULL on end of stream or error.
 UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
     struct upb_EpsCopyInputStream* e, const char* ptr, void* to, int size) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) return NULL;
+  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                  size)) {
+    return NULL;
+  }
   memcpy(to, ptr, size);
   return ptr + size;
 }
@@ -323,7 +328,8 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
     return upb_EpsCopyInputStream_ReadStringAliased(e, ptr, size);
   } else {
     // We need to allocate and copy.
-    if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, *ptr, size)) {
+    if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, *ptr,
+                                                                    size)) {
       return NULL;
     }
     UPB_ASSERT(arena);
@@ -339,7 +345,8 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadString(
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
     struct upb_EpsCopyInputStream* e, const char* ptr, size_t size,
     upb_StringView* sv) {
-  if (!upb_EpsCopyInputStream_CheckDataSizeAvailable(e, ptr, size)) {
+  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
+                                                                  size)) {
     return NULL;
   }
   const char* input = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);

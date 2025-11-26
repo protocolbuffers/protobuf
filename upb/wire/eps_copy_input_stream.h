@@ -58,15 +58,6 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const upb_EpsCopyInputStream* e, const char* ptr, int size);
 
-// Returns true if the given delimited field size is valid (it does not extend
-// beyond any previously-pushed limited) *and* all of the data for this field is
-// available to be read in the current buffer.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool upb_EpsCopyInputStream_CheckDataSizeAvailable(
-    upb_EpsCopyInputStream* e, const char* ptr, int size);
-
 // Marks the start of a capture operation.  Only one capture operation may be
 // active at a time.  The capture operation will be finalized by a call to
 // upb_EpsCopyInputStream_EndCapture().  The captured string will be returned in
