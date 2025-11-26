@@ -120,7 +120,8 @@ public final class Descriptors {
               + javaEditionDefaults.getMinimumEdition()
               + "!");
     }
-    if (edition.getNumber() > javaEditionDefaults.getMaximumEdition().getNumber()) {
+    if (edition.getNumber() > javaEditionDefaults.getMaximumEdition().getNumber()
+        && edition != Edition.EDITION_UNSTABLE) {
       throw new IllegalArgumentException(
           "Edition "
               + edition
