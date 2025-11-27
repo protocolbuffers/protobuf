@@ -72,6 +72,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -238,6 +239,13 @@ bool Tokenizer::report_newlines() const { return report_newlines_; }
 void Tokenizer::set_report_newlines(bool report) {
   report_newlines_ = report;
   report_whitespace_ |= report;  // enable report_whitespace if necessary
+}
+
+bool Tokenizer::report_single_characters() const {
+  return report_single_characters_;
+}
+void Tokenizer::set_report_single_characters(bool report) {
+  report_single_characters_ = report;
 }
 
 // -------------------------------------------------------------------
@@ -650,7 +658,10 @@ bool Tokenizer::Next() {
       // Reading some sort of token.
       StartToken();
 
-      if (TryConsumeOne<Letter>()) {
+      if (report_single_characters_) {
+        current_.type = TYPE_CHARACTER;
+        NextChar();
+      } else if (TryConsumeOne<Letter>()) {
         ConsumeZeroOrMore<Alphanumeric>();
         current_.type = TYPE_IDENTIFIER;
       } else if (TryConsume('0')) {
@@ -1234,14 +1245,14 @@ void Tokenizer::ParseStringAppend(const std::string& text,
 }
 
 template <typename CharacterClass>
-static bool AllInClass(const std::string& s) {
+static bool AllInClass(absl::string_view s) {
   for (const char character : s) {
     if (!CharacterClass::InClass(character)) return false;
   }
   return true;
 }
 
-bool Tokenizer::IsIdentifier(const std::string& text) {
+bool Tokenizer::IsIdentifier(absl::string_view text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
   if (text.empty()) return false;
   if (!Letter::InClass(text.at(0))) return false;

@@ -113,6 +113,10 @@ class PROTOBUF_EXPORT Tokenizer {
                       // produced if report_whitespace() is true and
                       // report_newlines() is true.  It is not reported for
                       // newlines in comments or strings.
+    TYPE_CHARACTER,   // Any printable, non-whitespace character. Only produced
+                      // if single-character mode is enabled (see
+                      // set_single_character_mode()). Character tokens are
+                      // always a single character.
   };
 
   // Structure representing a token read from the token stream.
@@ -257,8 +261,18 @@ class PROTOBUF_EXPORT Tokenizer {
   bool report_newlines() const;
   void set_report_newlines(bool report);
 
+  // If true, single-character mode is enabled: All printable, non-whitespace
+  // characters will be reported as single character tokens with TYPE_CHARACTER.
+  // Whitespace tokens will be reported depending on the report_whitespace() and
+  // report_newlines() options. All other non-whitespace token types
+  // (identifiers, integers, symbols, etc.) will not be produced. For example,
+  // "25 foo7 +x" will be tokenized as 2, 5, f, o, o, 7 +, x (if whitespace
+  // reporting is disabled).
+  bool report_single_characters() const;
+  void set_report_single_characters(bool report);
+
   // External helper: validate an identifier.
-  static bool IsIdentifier(const std::string& text);
+  static bool IsIdentifier(absl::string_view text);
 
   // -----------------------------------------------------------------
  private:
@@ -292,6 +306,7 @@ class PROTOBUF_EXPORT Tokenizer {
   bool allow_multiline_strings_;
   bool report_whitespace_ = false;
   bool report_newlines_ = false;
+  bool report_single_characters_ = false;
 
   // Since we count columns we need to interpret tabs somehow.  We'll take
   // the standard 8-character definition for lack of any way to do better.
