@@ -216,7 +216,7 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
   };
   // int64 seconds = 1;
   void clear_seconds() ;
-  ::int64_t seconds() const;
+  [[nodiscard]] ::int64_t seconds() const;
   void set_seconds(::int64_t value);
 
   private:
@@ -226,7 +226,7 @@ class PROTOBUF_EXPORT Duration final : public ::google::protobuf::Message
   public:
   // int32 nanos = 2;
   void clear_nanos() ;
-  ::int32_t nanos() const;
+  [[nodiscard]] ::int32_t nanos() const;
   void set_nanos(::int32_t value);
 
   private:

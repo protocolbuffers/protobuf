@@ -247,7 +247,7 @@ class PROTOBUF_EXPORT UInt64Value final : public ::google::protobuf::Message
   };
   // uint64 value = 1;
   void clear_value() ;
-  ::uint64_t value() const;
+  [[nodiscard]] ::uint64_t value() const;
   void set_value(::uint64_t value);
 
   private:
@@ -439,7 +439,7 @@ class PROTOBUF_EXPORT UInt32Value final : public ::google::protobuf::Message
   };
   // uint32 value = 1;
   void clear_value() ;
-  ::uint32_t value() const;
+  [[nodiscard]] ::uint32_t value() const;
   void set_value(::uint32_t value);
 
   private:
@@ -631,7 +631,7 @@ class PROTOBUF_EXPORT StringValue final : public ::google::protobuf::Message
   };
   // string value = 1;
   void clear_value() ;
-  const ::std::string& value() const;
+  [[nodiscard]] const ::std::string& value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   ::std::string* PROTOBUF_NONNULL mutable_value();
@@ -828,7 +828,7 @@ class PROTOBUF_EXPORT Int64Value final : public ::google::protobuf::Message
   };
   // int64 value = 1;
   void clear_value() ;
-  ::int64_t value() const;
+  [[nodiscard]] ::int64_t value() const;
   void set_value(::int64_t value);
 
   private:
@@ -1020,7 +1020,7 @@ class PROTOBUF_EXPORT Int32Value final : public ::google::protobuf::Message
   };
   // int32 value = 1;
   void clear_value() ;
-  ::int32_t value() const;
+  [[nodiscard]] ::int32_t value() const;
   void set_value(::int32_t value);
 
   private:
@@ -1212,7 +1212,7 @@ class PROTOBUF_EXPORT FloatValue final : public ::google::protobuf::Message
   };
   // float value = 1;
   void clear_value() ;
-  float value() const;
+  [[nodiscard]] float value() const;
   void set_value(float value);
 
   private:
@@ -1404,7 +1404,7 @@ class PROTOBUF_EXPORT DoubleValue final : public ::google::protobuf::Message
   };
   // double value = 1;
   void clear_value() ;
-  double value() const;
+  [[nodiscard]] double value() const;
   void set_value(double value);
 
   private:
@@ -1596,7 +1596,7 @@ class PROTOBUF_EXPORT BytesValue final : public ::google::protobuf::Message
   };
   // bytes value = 1;
   void clear_value() ;
-  const ::std::string& value() const;
+  [[nodiscard]] const ::std::string& value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   ::std::string* PROTOBUF_NONNULL mutable_value();
@@ -1793,7 +1793,7 @@ class PROTOBUF_EXPORT BoolValue final : public ::google::protobuf::Message
   };
   // bool value = 1;
   void clear_value() ;
-  bool value() const;
+  [[nodiscard]] bool value() const;
   void set_value(bool value);
 
   private:

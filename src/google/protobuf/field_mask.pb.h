@@ -221,14 +221,15 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
 
   public:
   void clear_paths() ;
-  const ::std::string& paths(int index) const;
+  [[nodiscard]] const ::std::string& paths(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_paths(int index);
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_paths(int index, Arg_&& value, Args_... args);
   ::std::string* PROTOBUF_NONNULL add_paths();
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void add_paths(Arg_&& value, Args_... args);
-  const ::google::protobuf::RepeatedPtrField<::std::string>& paths() const;
+  [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
+  paths() const;
   ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_paths();
 
   private:

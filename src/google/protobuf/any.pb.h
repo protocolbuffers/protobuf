@@ -274,7 +274,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   };
   // string type_url = 1;
   void clear_type_url() ;
-  const ::std::string& type_url() const;
+  [[nodiscard]] const ::std::string& type_url() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_type_url(Arg_&& arg, Args_... args);
   ::std::string* PROTOBUF_NONNULL mutable_type_url();
@@ -289,7 +289,7 @@ class PROTOBUF_EXPORT Any final : public ::google::protobuf::Message
   public:
   // bytes value = 2;
   void clear_value() ;
-  const ::std::string& value() const;
+  [[nodiscard]] const ::std::string& value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_value(Arg_&& arg, Args_... args);
   ::std::string* PROTOBUF_NONNULL mutable_value();

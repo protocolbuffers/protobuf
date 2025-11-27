@@ -215,7 +215,7 @@ class PROTOBUF_EXPORT SourceContext final : public ::google::protobuf::Message
   };
   // string file_name = 1;
   void clear_file_name() ;
-  const ::std::string& file_name() const;
+  [[nodiscard]] const ::std::string& file_name() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_file_name(Arg_&& arg, Args_... args);
   ::std::string* PROTOBUF_NONNULL mutable_file_name();

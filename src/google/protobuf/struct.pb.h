@@ -479,7 +479,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
 
   public:
   void clear_fields() ;
-  const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& fields() const;
+  [[nodiscard]] const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& fields() const;
   ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL mutable_fields();
 
   private:
@@ -726,7 +726,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   [[nodiscard]] bool has_null_value()
       const;
   void clear_null_value() ;
-  ::google::protobuf::NullValue null_value() const;
+  [[nodiscard]] ::google::protobuf::NullValue null_value() const;
   void set_null_value(::google::protobuf::NullValue value);
 
   private:
@@ -738,7 +738,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   [[nodiscard]] bool has_number_value()
       const;
   void clear_number_value() ;
-  double number_value() const;
+  [[nodiscard]] double number_value() const;
   void set_number_value(double value);
 
   private:
@@ -750,7 +750,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   [[nodiscard]] bool has_string_value()
       const;
   void clear_string_value() ;
-  const ::std::string& string_value() const;
+  [[nodiscard]] const ::std::string& string_value() const;
   template <typename Arg_ = const ::std::string&, typename... Args_>
   void set_string_value(Arg_&& arg, Args_... args);
   ::std::string* PROTOBUF_NONNULL mutable_string_value();
@@ -767,7 +767,7 @@ class PROTOBUF_EXPORT Value final : public ::google::protobuf::Message
   [[nodiscard]] bool has_bool_value()
       const;
   void clear_bool_value() ;
-  bool bool_value() const;
+  [[nodiscard]] bool bool_value() const;
   void set_bool_value(bool value);
 
   private:
