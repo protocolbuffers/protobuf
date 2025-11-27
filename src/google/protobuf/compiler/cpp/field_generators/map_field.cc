@@ -205,7 +205,7 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v2 = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
-    $DEPRECATED$ const $Map$& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const $Map$& $name$() const;
     $DEPRECATED$ $Map$* $nonnull$ $mutable_name$();
 
     private:

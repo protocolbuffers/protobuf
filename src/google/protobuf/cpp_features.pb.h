@@ -290,7 +290,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_string_type()
       const;
   void clear_string_type() ;
-  ::pb::CppFeatures_StringType string_type() const;
+  [[nodiscard]] ::pb::CppFeatures_StringType string_type() const;
   void set_string_type(::pb::CppFeatures_StringType value);
 
   private:
@@ -302,7 +302,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_legacy_closed_enum()
       const;
   void clear_legacy_closed_enum() ;
-  bool legacy_closed_enum() const;
+  [[nodiscard]] bool legacy_closed_enum() const;
   void set_legacy_closed_enum(bool value);
 
   private:
@@ -314,7 +314,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_enum_name_uses_string_view()
       const;
   void clear_enum_name_uses_string_view() ;
-  bool enum_name_uses_string_view() const;
+  [[nodiscard]] bool enum_name_uses_string_view() const;
   void set_enum_name_uses_string_view(bool value);
 
   private:

@@ -492,7 +492,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_utf8_validation()
       const;
   void clear_utf8_validation() ;
-  ::pb::JavaFeatures_Utf8Validation utf8_validation() const;
+  [[nodiscard]] ::pb::JavaFeatures_Utf8Validation utf8_validation() const;
   void set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
 
   private:
@@ -504,7 +504,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_legacy_closed_enum()
       const;
   void clear_legacy_closed_enum() ;
-  bool legacy_closed_enum() const;
+  [[nodiscard]] bool legacy_closed_enum() const;
   void set_legacy_closed_enum(bool value);
 
   private:
@@ -516,7 +516,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_large_enum()
       const;
   void clear_large_enum() ;
-  bool large_enum() const;
+  [[nodiscard]] bool large_enum() const;
   void set_large_enum(bool value);
 
   private:
@@ -528,7 +528,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_use_old_outer_classname_default()
       const;
   void clear_use_old_outer_classname_default() ;
-  bool use_old_outer_classname_default() const;
+  [[nodiscard]] bool use_old_outer_classname_default() const;
   void set_use_old_outer_classname_default(bool value);
 
   private:
@@ -540,7 +540,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
   [[nodiscard]] bool has_nest_in_file_class()
       const;
   void clear_nest_in_file_class() ;
-  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass nest_in_file_class() const;
+  [[nodiscard]] ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass nest_in_file_class() const;
   void set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
 
   private:
