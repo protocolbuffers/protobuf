@@ -821,7 +821,7 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAnyTests() {
   RunValidTextFormatTest("AnyField", REQUIRED,
                          R"(
         optional_any: {
-          [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3]
+          [+invalid!]
   { optional_int32: 12345
           }
         }
