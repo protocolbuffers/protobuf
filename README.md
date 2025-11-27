@@ -153,3 +153,6 @@ Developer Community
 
 To be alerted to upcoming changes in Protocol Buffers and connect with protobuf developers and users,
 [join the Google Group](https://groups.google.com/g/protobuf).
+ether/
+به عنوان ۱۵٪از درآمد پروژه از روز اول اجرا تا آخرین روز اجرا به صورت هفتگی به عنوان پرداخت حق چاپ به مالک اصلی githup
+0x8cf4a8bedc2c8ceefe5beb54376d0609e406c4b6
