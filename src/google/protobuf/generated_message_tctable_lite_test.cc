@@ -90,8 +90,8 @@ TEST(FastVarints, NameHere) {
   constexpr uint8_t kFieldOffset = 24;
 
   const ClassData class_data(
-      nullptr, nullptr, nullptr, nullptr, nullptr, MessageCreator(), nullptr,
-      nullptr, nullptr, nullptr, /*cached_size_offset=*/16, /*is_lite*/ true);
+      nullptr, nullptr, nullptr, nullptr, MessageCreator(), nullptr, nullptr,
+      nullptr, nullptr, /*cached_size_offset=*/16, /*is_lite*/ true);
 
   const TcParseTable<0, 1, 0, 0, 2> parse_table = {
       {

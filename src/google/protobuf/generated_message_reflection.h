@@ -161,21 +161,6 @@ struct ReflectionSchema {
     return static_cast<uint32_t>(has_bits_offset_);
   }
 
-  bool HasInlinedString() const { return inlined_string_donated_offset_ != -1; }
-
-  // Bit index within the bit array of _inlined_string_donated_.  Bit order is
-  // low-to-high.
-  uint32_t InlinedStringIndex(const FieldDescriptor* field) const {
-    ABSL_DCHECK(HasInlinedString());
-    return inlined_string_indices_[field->index()];
-  }
-
-  // Byte offset of the _inlined_string_donated_ array.
-  uint32_t InlinedStringDonatedOffset() const {
-    ABSL_DCHECK(HasInlinedString());
-    return static_cast<uint32_t>(inlined_string_donated_offset_);
-  }
-
   // Whether this message has an ExtensionSet.
   bool HasExtensionSet() const { return extensions_offset_ != -1; }
 
@@ -242,8 +227,6 @@ struct ReflectionSchema {
   int oneof_case_offset_;
   int object_size_;
   int weak_field_map_offset_;
-  const uint32_t* inlined_string_indices_;
-  int inlined_string_donated_offset_;
   int split_offset_;
   int sizeof_split_;
 

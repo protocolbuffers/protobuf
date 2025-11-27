@@ -77,10 +77,6 @@ class SingularString : public FieldGeneratorBase {
 
   bool IsInlined() const override { return is_inlined(); }
 
-  ArenaDtorNeeds NeedsArenaDestructor() const override {
-    return is_inlined() ? ArenaDtorNeeds::kOnDemand : ArenaDtorNeeds::kNone;
-  }
-
   void GeneratePrivateMembers(io::Printer* p) const override {
     // Skips the automatic destruction if inlined; rather calls it explicitly if
     // allocating arena is null.
@@ -111,16 +107,6 @@ class SingularString : public FieldGeneratorBase {
         _this->_internal_set_$name$(from._internal_$name$());
       )cc");
     }
-  }
-
-  void GenerateArenaDestructorCode(io::Printer* p) const override {
-    if (!is_inlined()) return;
-
-    p->Emit(R"cc(
-      if (!_this->_internal_$name$_donated()) {
-        _this->$field_$.~InlinedStringField();
-      }
-    )cc");
   }
 
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {
@@ -255,33 +241,25 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v3 = p->WithVars(
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
-  p->Emit({{"donated",
-            [&] {
-              if (!is_inlined()) return;
-              p->Emit(R"cc(
-                PROTOBUF_ALWAYS_INLINE bool _internal_$name$_donated() const;
-              )cc");
-            }}},
-          R"cc(
-            $DEPRECATED$ const ::std::string& $name$() const;
-            //~ Using `Arg_ = const std::string&` will make the type of `arg`
-            //~ default to `const std::string&`, due to reference collapse. This
-            //~ is necessary because there are a handful of users that rely on
-            //~ this default.
-            template <typename Arg_ = const ::std::string&, typename... Args_>
-            $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
-            $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$();
-            $DEPRECATED$ [[nodiscard]] ::std::string* $nullable$ $release_name$();
-            $DEPRECATED$ void $set_allocated_name$(::std::string* $nullable$ value);
+  p->Emit(R"cc(
+    $DEPRECATED$ const ::std::string& $name$() const;
+    //~ Using `Arg_ = const std::string&` will make the type of `arg`
+    //~ default to `const std::string&`, due to reference collapse. This
+    //~ is necessary because there are a handful of users that rely on
+    //~ this default.
+    template <typename Arg_ = const ::std::string&, typename... Args_>
+    $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
+    $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$();
+    $DEPRECATED$ [[nodiscard]] ::std::string* $nullable$ $release_name$();
+    $DEPRECATED$ void $set_allocated_name$(::std::string* $nullable$ value);
 
-            private:
-            const ::std::string& _internal_$name$() const;
-            PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(const ::std::string& value);
-            ::std::string* $nonnull$ _internal_mutable_$name$();
-            $donated$;
+    private:
+    const ::std::string& _internal_$name$() const;
+    PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(const ::std::string& value);
+    ::std::string* $nonnull$ _internal_mutable_$name$();
 
-            public:
-          )cc");
+    public:
+  )cc");
 }
 
 void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
@@ -300,16 +278,6 @@ void UpdateHasbitSet(io::Printer* p, bool is_oneof) {
       $field_$.InitDefault();
     }
   )cc");
-}
-
-void ArgsForSetter(io::Printer* p, bool inlined) {
-  if (!inlined) {
-    p->Emit("GetArena()");
-    return;
-  }
-  p->Emit(
-      "GetArena(), _internal_$name_internal$_donated(), "
-      "&$donating_states_word$, $mask_for_undonate$, this");
 }
 
 void SingularString::ReleaseImpl(io::Printer* p) const {
@@ -338,7 +306,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
       }
       $clear_hasbit$;
 
-      return $field_$.Release(GetArena(), _internal_$name_internal$_donated());
+      return $field_$.Release(GetArena());
     )cc");
     return;
   }
@@ -360,7 +328,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
   p->Emit(R"cc(
     auto* released = $field_$.Release();
     if ($pbi$::DebugHardenForceCopyDefaultString()) {
-      $field_$.Set("", $set_args$);
+      $field_$.Set("", GetArena());
     }
     return released;
   )cc");
@@ -390,22 +358,18 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
     )cc");
   }
 
+  p->Emit(R"cc(
+    $field_$.SetAllocated(value, GetArena());
+  )cc");
+
   if (is_inlined()) {
-    // Currently, string fields with default value can't be inlined.
-    p->Emit(R"cc(
-      $field_$.SetAllocated(nullptr, value, $set_args$);
-    )cc");
     return;
   }
-
-  p->Emit(R"cc(
-    $field_$.SetAllocated(value, $set_args$);
-  )cc");
 
   if (EmptyDefault()) {
     p->Emit(R"cc(
       if ($pbi$::DebugHardenForceCopyDefaultString() && $field_$.IsDefault()) {
-        $field_$.Set("", $set_args$);
+        $field_$.Set("", GetArena());
       }
     )cc");
   }
@@ -423,7 +387,6 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
          )cc");
        }},
       {"update_hasbit", [&] { UpdateHasbitSet(p, is_oneof()); }},
-      {"set_args", [&] { ArgsForSetter(p, is_inlined()); }},
       {"check_hasbit",
        [&] {
          if (!is_oneof()) return;
@@ -454,7 +417,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
       $update_hasbit$;
-      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., $set_args$);
+      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., GetArena());
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
@@ -477,11 +440,11 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       //~ Don't use $Set$ here; we always want the std::string variant
       //~ regardless of whether this is a `bytes` field.
-      $field_$.Set(value, $set_args$);
+      $field_$.Set(value, GetArena());
     }
     inline ::std::string* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
-      return $field_$.Mutable($lazy_args$, $set_args$);
+      return $field_$.Mutable($lazy_args$, GetArena());
     }
     inline ::std::string* $nullable$ $Msg$::$release_name$() {
       $WeakDescriptorSelfPin$;
@@ -500,14 +463,6 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
     })cc";
   p->Emit(vars, code);
-
-  if (is_inlined()) {
-    p->Emit(R"cc(
-      inline bool $Msg$::_internal_$name_internal$_donated() const {
-        return $inlined_string_donated$;
-      }
-    )cc");
-  }
 }
 
 void SingularString::GenerateClearingCode(io::Printer* p) const {
@@ -592,14 +547,8 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    {
-      bool lhs_dtor_registered = ($inlined_string_donated_array$[0] & 1) == 0;
-      bool rhs_dtor_registered =
-          (other->$inlined_string_donated_array$[0] & 1) == 0;
-      ::_pbi::InlinedStringField::InternalSwap(
-          &$field_$, lhs_dtor_registered, this, &other->$field_$,
-          rhs_dtor_registered, other, arena);
-    }
+    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
+                                             arena);
   )cc");
 }
 
@@ -634,21 +583,10 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
           } else {
             p->Emit(R"cc(!from._internal_$name$().empty())cc");
           }
-        }},
-       {"set_args",
-        [&] {
-          if (!is_inlined()) {
-            p->Emit("_this->GetArena()");
-          } else {
-            p->Emit(
-                "_this->GetArena(), "
-                "_this->_internal_$name$_donated(), "
-                "&_this->$donating_states_word$, $mask_for_undonate$, _this");
-          }
         }}},
       R"cc(
         if ($hazzer$) {
-          _this->$field_$.Set(from._internal_$name$(), $set_args$);
+          _this->$field_$.Set(from._internal_$name$(), _this->GetArena());
         }
       )cc");
 }

@@ -118,16 +118,6 @@ absl::string_view TypeId::name() const {
   return reinterpret_cast<const char*>(data_) + sizeof(internal::ClassData);
 }
 
-void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
-  if (arena == nullptr) return;
-  auto* data = GetClassData();
-  ABSL_DCHECK(data != nullptr);
-
-  if (data->on_demand_register_arena_dtor != nullptr) {
-    data->on_demand_register_arena_dtor(*this, *arena);
-  }
-}
-
 std::string MessageLite::InitializationErrorString() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
