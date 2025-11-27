@@ -1919,6 +1919,13 @@ inline void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
 
 template <typename Element>
 inline Arena* RepeatedPtrField<Element>::GetArena() {
+  // Note: we make this function non-const to force callers to call the
+  // `mutable_*` accessor on the repeated field before calling `GetArena()`,
+  // which initializes the field if it is split. If this method were const, then
+  // `msg.repeated_ptr_field().GetArena()` would be valid, but for split
+  // repeated fields `repeated_ptr_field()` could point to the default split
+  // instance. This would always return `nullptr`, which is incorrect when using
+  // arenas.
   return RepeatedPtrFieldBase::GetArena();
 }
 
