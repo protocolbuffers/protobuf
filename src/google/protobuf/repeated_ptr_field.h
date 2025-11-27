@@ -58,7 +58,6 @@ namespace protobuf {
 class DynamicMessage;
 class Message;
 class Reflection;
-class DynamicMessage;
 
 template <typename T>
 struct WeakRepeatedPtrField;
