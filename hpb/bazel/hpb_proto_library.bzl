@@ -70,11 +70,8 @@ def _hpb_proto_rule_impl(ctx):
 
     if _HpbWrappedCcInfo in dep:
         cc_info = dep[_HpbWrappedCcInfo].cc_info
-    elif UpbWrappedCcInfo in dep:
-        cc_info = dep[UpbWrappedCcInfo].cc_info
     else:
-        fail("proto_library rule must generate UpbWrappedCcInfo or " +
-             "_HpbWrappedCcInfo (aspect should have handled this).")
+        fail("proto_library rule must generate _HpbWrappedCcInfo (aspect should have handled this).")
 
     lib = cc_info.linking_context.linker_inputs.to_list()[0].libraries[0]
     files = _filter_none([
