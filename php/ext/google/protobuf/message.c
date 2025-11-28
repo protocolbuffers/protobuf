@@ -509,6 +509,14 @@ bool Message_InitFromPhp(upb_Message* msg, const upb_MessageDef* m, zval* init,
       return false;
     }
 
+    // Handle NULL optional field
+    if (Z_TYPE_P(val) == IS_NULL && upb_FieldDef_IsOptional(f)) {
+      upb_Message_ClearFieldByDef(msg, f);
+      zend_hash_move_forward_ex(table, &pos);
+      zval_dtor(&key);
+      continue;
+    }
+
     if (upb_FieldDef_IsMap(f)) {
       msgval.map_val = MapField_GetUpbMap(val, MapType_Get(f), arena);
       if (!msgval.map_val) return false;
