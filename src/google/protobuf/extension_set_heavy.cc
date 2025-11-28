@@ -14,8 +14,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <initializer_list>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
 
@@ -310,6 +312,37 @@ bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
   return true;
 }
 
+
+bool ExtensionSet::MoveExtension(Arena* arena, int dst_number,
+                                 ExtensionSet& src, int src_number) {
+  // Find the source extension & return if it doesn't exist.
+  Extension* src_ext = src.FindOrNull(src_number);
+  if (src_ext == nullptr) {
+    ClearExtension(dst_number);
+    return true;
+  }
+
+  if (src_ext->descriptor != nullptr) {
+    return false;
+  }
+
+  // Get or create the destination extension.
+  auto [dst_ext, is_new] = Insert(arena, dst_number);
+  if (!is_new) {
+    // If an extension already exists at dst_number, free it if not using an
+    // arena.
+    if (arena == nullptr) {
+      dst_ext->Free();
+    }
+  }
+
+  // Move the extension from the source to the destination.
+  *dst_ext = std::move(*src_ext);
+
+  // Erase the extension from the source.
+  src.Erase(src_number);
+  return true;
+}
 
 const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
                                      const Message* extendee,
