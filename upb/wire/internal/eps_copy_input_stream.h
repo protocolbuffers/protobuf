@@ -8,6 +8,7 @@
 #ifndef UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -187,62 +188,6 @@ UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
   return size <= e->limit - (ptr - e->end);
 }
 
-// Returns the total number of bytes that are safe to read from the current
-// buffer without reading uninitialized or unallocated memory.
-//
-// Note that this check does not respect any semantic limits on the stream,
-// either limits from PushLimit() or the overall stream end, so some of these
-// bytes may have unpredictable, nonsense values in them. The guarantee is only
-// that the bytes are valid to read from the perspective of the C language
-// (ie. you can read without triggering UBSAN or ASAN).
-UPB_INLINE size_t UPB_PRIVATE(upb_EpsCopyInputStream_BytesAvailable)(
-    struct upb_EpsCopyInputStream* e, const char* ptr) {
-  return (e->end - ptr) + kUpb_EpsCopyInputStream_SlopBytes;
-}
-
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size,
-    bool submessage) {
-  // This is one extra branch compared to the more normal:
-  //   return (size_t)(end - ptr) < size;
-  // However it is one less computation if we are just about to use "ptr + len":
-  //   https://godbolt.org/z/35YGPz
-  // In microbenchmarks this shows a small improvement.
-  uintptr_t uptr = (uintptr_t)ptr;
-  uintptr_t uend = (uintptr_t)e->limit_ptr;
-  uintptr_t res = uptr + (size_t)size;
-  if (!submessage) uend += kUpb_EpsCopyInputStream_SlopBytes;
-  // NOTE: this check depends on having a linear address space.  This is not
-  // technically guaranteed by uintptr_t.
-  bool ret = res >= uptr && res <= uend;
-  if (size < 0) UPB_ASSERT(!ret);
-  return ret;
-}
-
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
-                                                                false);
-}
-
-// Returns true if the given sub-message size is valid (it does not extend
-// beyond any previously-pushed limited) *and* all of the data for this
-// sub-message is available to be parsed in the current buffer.
-//
-// This implies that all fields from the sub-message can be parsed from the
-// current buffer while maintaining the invariant that we always have at
-// least kUpb_EpsCopyInputStream_SlopBytes of data available past the
-// beginning of any individual field start.
-//
-// If the size is negative, this function will always return false. This
-// property can be useful in some cases.
-UPB_INLINE bool UPB_PRIVATE(
-    upb_EpsCopyInputStream_CheckSubMessageSizeAvailable)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_CheckSizeAvailable)(e, ptr, size,
-                                                                true);
-}
-
 // Returns a pointer into an input buffer that corresponds to the parsing
 // pointer `ptr`.  The returned pointer may be the same as `ptr`, but also may
 // be different if we are currently parsing out of the patch buffer.
@@ -274,36 +219,31 @@ UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(
   return true;
 }
 
-UPB_INLINE const char* upb_EpsCopyInputStream_Skip(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
-                                                                  size)) {
-    return NULL;
-  }
-  return ptr + size;
-}
-
-// Copies `size` bytes of data from the input `ptr` into the buffer `to`, and
-// returns a pointer past the end. Returns NULL on end of stream or error.
-UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, void* to, int size) {
-  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
-                                                                  size)) {
-    return NULL;
-  }
-  memcpy(to, ptr, size);
-  return ptr + size;
-}
-
 UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
     struct upb_EpsCopyInputStream* e, const char* ptr, size_t size,
     upb_StringView* sv) {
-  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckDataSizeAvailable)(e, ptr,
-                                                                  size)) {
-    return NULL;
-  }
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  // The `size` must be within the input buffer. If `ptr` is in the input
+  // buffer, then using the slop bytes is fine (because they are real bytes from
+  // the tail of the input buffer). If `ptr` is in the patch buffer, then slop
+  // bytes represent bytes that do not actually exist in the original input
+  // buffer, so we must fail if the size extends into the slop bytes.
+  const char* limit =
+      e->end + (e->input_delta == 0) * kUpb_EpsCopyInputStream_SlopBytes;
+  if ((ptrdiff_t)size > limit - ptr) return NULL;
   const char* input = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   *sv = upb_StringView_FromDataAndSize(input, size);
+  return ptr + size;
+}
+
+UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringEphemeral(
+    struct upb_EpsCopyInputStream* e, const char* ptr, size_t size,
+    upb_StringView* sv) {
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  // Size must be within the current buffer (including slop bytes).
+  const char* limit = e->end + kUpb_EpsCopyInputStream_SlopBytes;
+  if ((ptrdiff_t)size > limit - ptr) return NULL;
+  *sv = upb_StringView_FromDataAndSize(ptr, size);
   return ptr + size;
 }
 
@@ -312,10 +252,11 @@ UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
 }
 
-UPB_INLINE int upb_EpsCopyInputStream_PushLimit(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  int limit = size + (int)(ptr - e->end);
-  int delta = e->limit - limit;
+UPB_INLINE ptrdiff_t upb_EpsCopyInputStream_PushLimit(
+    struct upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  ptrdiff_t limit = (ptrdiff_t)size + (ptr - e->end);
+  ptrdiff_t delta = e->limit - limit;
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
   UPB_ASSERT(limit <= e->limit);
   e->limit = limit;
@@ -328,7 +269,7 @@ UPB_INLINE int upb_EpsCopyInputStream_PushLimit(
 // once IsDone() returns true.  The user must pass the delta that was returned
 // from PushLimit().
 UPB_INLINE void upb_EpsCopyInputStream_PopLimit(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int saved_delta) {
+    struct upb_EpsCopyInputStream* e, const char* ptr, ptrdiff_t saved_delta) {
   UPB_ASSERT(ptr - e->end == e->limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
   e->limit += saved_delta;
@@ -369,10 +310,10 @@ typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
     struct upb_EpsCopyInputStream* e, const char* ptr, int size, void* ctx);
 
 UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
-    struct upb_EpsCopyInputStream* e, const char** ptr, int len,
+    struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
     upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx) {
-  if (!UPB_PRIVATE(upb_EpsCopyInputStream_CheckSubMessageSizeAvailable)(e, *ptr,
-                                                                        len)) {
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  if ((ptrdiff_t)size > e->limit_ptr - *ptr) {
     return false;
   }
 
@@ -380,10 +321,10 @@ UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
   // This means we can preserve limit/limit_ptr verbatim.
   const char* saved_limit_ptr = e->limit_ptr;
   int saved_limit = e->limit;
-  e->limit_ptr = *ptr + len;
+  e->limit_ptr = *ptr + size;
   e->limit = e->limit_ptr - e->end;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
-  *ptr = func(e, *ptr, len, ctx);
+  *ptr = func(e, *ptr, size, ctx);
   e->limit_ptr = saved_limit_ptr;
   e->limit = saved_limit;
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
