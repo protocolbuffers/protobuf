@@ -209,7 +209,7 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
   *ptr =
       upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
   if (*ptr == NULL) return false;
-  if ((d->options & kUpb_DecodeOption_AliasString) == 0) {
+  if ((d->options & kUpb_DecodeOption_AliasString) == 0 && tmp.size != 0) {
     char* data = (char*)upb_Arena_Malloc(&d->arena, tmp.size);
     if (!data) return false;
     memcpy(data, tmp.data, tmp.size);
