@@ -16,7 +16,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -322,7 +321,7 @@ void FieldMaskTree::AddPath(absl::string_view path) {
     std::unique_ptr<Node>& child = node->children[node_name];
     if (child == nullptr) {
       new_branch = true;
-      child = absl::make_unique<Node>();
+      child = std::make_unique<Node>();
     }
     node = child.get();
   }
@@ -368,7 +367,7 @@ void FieldMaskTree::RemovePath(absl::string_view path,
       }
       for (int j = 0; j < current_descriptor->field_count(); ++j) {
         node->children[current_descriptor->field(j)->name()] =
-            absl::make_unique<Node>();
+            std::make_unique<Node>();
       }
     }
     auto it = node->children.find(parts[i]);
@@ -536,7 +535,7 @@ void FieldMaskTree::AddRequiredFieldPath(Node* node,
       std::unique_ptr<Node>& child = node->children[node_name];
       if (child == nullptr) {
         // Add required field path to the tree
-        child = absl::make_unique<Node>();
+        child = std::make_unique<Node>();
       } else if (child->children.empty()) {
         // If the required field is in the tree and does not have any children,
         // do nothing.

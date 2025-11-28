@@ -76,7 +76,6 @@ else()
     absl::log_initialize
     absl::log_globals
     absl::log_severity
-    absl::memory
     absl::node_hash_map
     absl::node_hash_set
     absl::optional

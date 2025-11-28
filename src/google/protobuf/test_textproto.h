@@ -10,7 +10,6 @@
 
 #include <gmock/gmock.h>
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/text_format.h"
 

@@ -105,7 +105,6 @@
 #include "absl/base/macros.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -667,7 +666,7 @@ class PROTOBUF_EXPORT Reflection final {
         return *flat;
       }
       if (!buffer_) {
-        buffer_ = absl::make_unique<std::string>();
+        buffer_ = std::make_unique<std::string>();
       }
       absl::CopyCordToString(cord, buffer_.get());
       return *buffer_;

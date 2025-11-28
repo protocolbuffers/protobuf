@@ -14,7 +14,6 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "google/protobuf/descriptor.h"
 
 // Must be included last.
@@ -82,7 +81,7 @@ class PROTOC_EXPORT SCCAnalyzer {
   // Tarjan's Strongly Connected Components algo
   NodeData DFS(const Descriptor* descriptor) {
     // Mark visited by inserting in map.
-    auto ins = cache_.try_emplace(descriptor, absl::make_unique<NodeData>());
+    auto ins = cache_.try_emplace(descriptor, std::make_unique<NodeData>());
     // Must not have visited already.
     ABSL_DCHECK(ins.second);
     NodeData& result = *ins.first->second;
