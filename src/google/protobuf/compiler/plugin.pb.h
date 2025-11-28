@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <utility>
 
+// clang-format off
 #include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 6034000
 #error "Protobuf C++ gencode is built with an incompatible version of"
@@ -2261,5 +2262,6 @@ inline const EnumDescriptor* PROTOBUF_NONNULL GetEnumDescriptor<::google::protob
 // @@protoc_insertion_point(global_scope)
 
 #include "google/protobuf/port_undef.inc"
+// clang-format on
 
 #endif  // google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh
