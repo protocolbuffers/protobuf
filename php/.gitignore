@@ -1,0 +1,7 @@
+ext/google/protobuf/Makefile
+ext/google/protobuf/configure
+ext/google/protobuf/BUILD_STAMP
+ext/google/protobuf/*.dep
+ext/google/protobuf/*.cache
+ext/google/protobuf/*.h.in
+tmp/
