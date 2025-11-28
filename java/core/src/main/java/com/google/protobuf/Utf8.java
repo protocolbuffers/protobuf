@@ -42,16 +42,8 @@ import java.util.Arrays;
  * <p>See the Unicode Standard,</br> Table 3-6. <em>UTF-8 Bit Distribution</em>,</br> Table 3-7.
  * <em>Well Formed UTF-8 Byte Sequences</em>.
  *
- * <p>This class supports decoding of partial byte sequences, so that the bytes in a complete UTF-8
- * byte sequence can be stored in multiple segments. Methods typically return {@link #MALFORMED} if
- * the partial byte sequence is definitely not well-formed; {@link #COMPLETE} if it is well-formed
- * in the absence of additional input; or, if the byte sequence apparently terminated in the middle
- * of a character, an opaque integer "state" value containing enough information to decode the
- * character when passed to a subsequent invocation of a partial decoding method.
- *
  * @author martinrb@google.com (Martin Buchholz)
  */
-// TODO: Copy changes in this class back to Guava
 final class Utf8 {
 
   /**
@@ -105,6 +97,29 @@ final class Utf8 {
    */
   static boolean isValidUtf8(byte[] bytes, int index, int limit) {
     return processor.isValidUtf8(bytes, index, limit);
+  }
+
+  /**
+   * Determines if the given {@link ByteBuffer} is a valid UTF-8 string.
+   *
+   * <p>Selects an optimal algorithm based on the type of {@link ByteBuffer} (i.e. heap or direct)
+   * and the capabilities of the platform.
+   *
+   * @param buffer the buffer to check.
+   * @see Utf8#isValidUtf8(byte[], int, int)
+   */
+  static boolean isValidUtf8(ByteBuffer buffer) {
+    int index = buffer.position();
+    int limit = index + buffer.remaining();
+
+    if (buffer.hasArray()) {
+      final int offset = buffer.arrayOffset();
+      return processor.isValidUtf8(buffer.array(), offset + index, offset + limit);
+    } else if (buffer.isDirect()) {
+      return processor.isValidUtf8BufferDirect(buffer, index, limit);
+    } else {
+      return processor.isValidUtf8BufferDefault(buffer, index, limit);
+    }
   }
 
   // These UTF-8 handling methods are copied from Guava's Utf8 class with a modification to throw
@@ -187,20 +202,8 @@ final class Utf8 {
   static int encode(String in, byte[] out, int offset, int length) {
     return processor.encodeUtf8(in, out, offset, length);
   }
-  // End Guava UTF-8 methods.
 
-  /**
-   * Determines if the given {@link ByteBuffer} is a valid UTF-8 string.
-   *
-   * <p>Selects an optimal algorithm based on the type of {@link ByteBuffer} (i.e. heap or direct)
-   * and the capabilities of the platform.
-   *
-   * @param buffer the buffer to check.
-   * @see Utf8#isValidUtf8(byte[], int, int)
-   */
-  static boolean isValidUtf8(ByteBuffer buffer) {
-    return processor.isValidUtf8(buffer, buffer.position(), buffer.remaining());
-  }
+  // End Guava UTF-8 methods.
 
   /**
    * Decodes the given UTF-8 portion of the {@link ByteBuffer} into a {@link String}.
@@ -258,56 +261,32 @@ final class Utf8 {
   }
 
   /** A processor of UTF-8 strings, providing methods for checking validity and encoding. */
-  // TODO: Add support for Memory/MemoryBlock on Android.
   abstract static class Processor {
     /**
      * Returns {@code true} if the given byte array slice is a well-formed UTF-8 byte sequence. The
      * range of bytes to be checked extends from index {@code index}, inclusive, to {@code limit},
      * exclusive.
      */
-    final boolean isValidUtf8(byte[] bytes, int index, int limit) {
-      return partialIsValidUtf8(bytes, index, limit);
-    }
+    abstract boolean isValidUtf8(byte[] bytes, int index, int limit);
 
     /**
-     * Tells whether the given byte array slice is a well-formed UTF-8 byte sequence. The range of
-     * bytes to be checked extends from index {@code index}, inclusive, to {@code limit}, exclusive.
-     *
-     * @return true if the partial byte sequence is well-formed, false otherwise.
+     * Must only be called on Direct buffers. This exists as a separate method only so that the
+     * UnsafeProcessor can optimize specially for that case.
      */
-    protected abstract boolean partialIsValidUtf8(byte[] bytes, int index, int limit);
+    protected boolean isValidUtf8BufferDirect(ByteBuffer buffer, int index, int limit) {
+      return isValidUtf8BufferDefault(buffer, index, limit);
+    }
 
     /**
      * Returns {@code true} if the given portion of the {@link ByteBuffer} is a well-formed UTF-8
      * byte sequence. The range of bytes to be checked extends from index {@code index}, inclusive,
      * to {@code limit}, exclusive.
      */
-    final boolean isValidUtf8(ByteBuffer buffer, int index, int limit) {
-      if (buffer.hasArray()) {
-        final int offset = buffer.arrayOffset();
-        return partialIsValidUtf8(buffer.array(), offset + index, offset + limit);
-      } else if (buffer.isDirect()) {
-        return partialIsValidUtf8Direct(buffer, index, limit);
-      }
-      return partialIsValidUtf8Default(buffer, index, limit);
-    }
-
-    /** Performs validation for direct {@link ByteBuffer} instances. */
-    protected abstract boolean partialIsValidUtf8Direct(ByteBuffer buffer, int index, int limit);
-
-    /**
-     * Performs validation for {@link ByteBuffer} instances using the {@link ByteBuffer} API rather
-     * than potentially faster approaches. This first completes validation for the current character
-     * (provided by {@code state}) and then finishes validation for the sequence.
-     */
-    protected final boolean partialIsValidUtf8Default(
-        final ByteBuffer buffer, int index, final int limit) {
+    protected boolean isValidUtf8BufferDefault(ByteBuffer buffer, int index, int limit) {
       index += estimateConsecutiveAscii(buffer, index, limit);
 
       for (; ; ) {
         // Optimize for interior runs of ASCII bytes.
-        // TODO: Consider checking 8 bytes at a time after some threshold?
-        // Maybe after seeing a few in a row that are ASCII, go back to fast mode?
         int byte1;
         do {
           if (index >= limit) {
@@ -562,7 +541,7 @@ final class Utf8 {
   /** {@link Processor} implementation that does not use any {@code sun.misc.Unsafe} methods. */
   static final class SafeProcessor extends Processor {
     @Override
-    protected boolean partialIsValidUtf8(byte[] bytes, int index, int limit) {
+    public boolean isValidUtf8(byte[] bytes, int index, int limit) {
       // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
       // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
       while (index < limit && bytes[index] >= 0) {
@@ -573,13 +552,7 @@ final class Utf8 {
         return true;
       }
 
-      return partialIsValidUtf8NonAscii(bytes, index, limit);
-    }
-
-    @Override
-    protected boolean partialIsValidUtf8Direct(ByteBuffer buffer, int index, int limit) {
-      // For safe processing, we have to use the ByteBuffer API.
-      return partialIsValidUtf8Default(buffer, index, limit);
+      return isValidUtf8NonAscii(bytes, index, limit);
     }
 
     @Override
@@ -788,7 +761,7 @@ final class Utf8 {
       }
     }
 
-    private static boolean partialIsValidUtf8NonAscii(byte[] bytes, int index, int limit) {
+    private static boolean isValidUtf8NonAscii(byte[] bytes, int index, int limit) {
       for (; ; ) {
         int byte1;
         int byte2;
@@ -859,7 +832,7 @@ final class Utf8 {
     }
 
     @Override
-    protected boolean partialIsValidUtf8(byte[] bytes, final int index, final int limit) {
+    public boolean isValidUtf8(byte[] bytes, final int index, final int limit) {
       // Bitwise OR combines the sign bits so any negative value fails the check.
       if ((index | limit | bytes.length - limit) < 0) {
         throw new ArrayIndexOutOfBoundsException(
@@ -942,8 +915,11 @@ final class Utf8 {
     }
 
     @Override
-    protected boolean partialIsValidUtf8Direct(
-        ByteBuffer buffer, final int index, final int limit) {
+    protected boolean isValidUtf8BufferDirect(ByteBuffer buffer, final int index, final int limit) {
+      if (!buffer.isDirect()) {
+        throw new IllegalArgumentException("ByteBuffer must be direct");
+      }
+
       // Bitwise OR combines the sign bits so any negative value fails the check.
       if ((index | limit | buffer.limit() - limit) < 0) {
         throw new ArrayIndexOutOfBoundsException(
