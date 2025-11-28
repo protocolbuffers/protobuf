@@ -17,6 +17,7 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/internal/endian.h"
+#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
@@ -64,14 +65,6 @@ typedef struct {
   _upb_mapsorter sorter;
 } upb_encstate;
 
-static size_t upb_roundup_pow2(size_t bytes) {
-  size_t ret = 128;
-  while (ret < bytes) {
-    ret *= 2;
-  }
-  return ret;
-}
-
 UPB_NORETURN static void encode_err(upb_encstate* e, upb_EncodeStatus s) {
   UPB_ASSERT(s != kUpb_EncodeStatus_Ok);
   e->status = s;
@@ -87,7 +80,9 @@ UPB_NOINLINE static char* encode_growbuffer(char* ptr, upb_encstate* e,
                                             size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t needed_size = bytes + (e->limit - ptr);
-  size_t new_size = upb_roundup_pow2(needed_size);
+  if (needed_size < bytes) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+  size_t new_size = upb_RoundUpToPowerOfTwo(UPB_MAX(128, needed_size));
+  if (new_size == old_size) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
   void* old_buf = e->buf == &initial_buf_sentinel ? NULL : (void*)e->buf;
   char* new_buf = upb_Arena_Realloc(e->arena, old_buf, old_size, new_size);
 

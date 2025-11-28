@@ -200,8 +200,18 @@ Error, UINTPTR_MAX is undefined
 #define UPB_XSAN_STRUCT_SIZE 0
 #endif
 
+#if UPB_HAS_BUILTIN(__builtin_align_up)
+#define UPB_ALIGN_UP(size, align) __builtin_align_up(size, align)
+#else
 #define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
+#endif
+
+#if UPB_HAS_BUILTIN(__builtin_align_down)
+#define UPB_ALIGN_DOWN(size, align) __builtin_align_down(size, align)
+#else
 #define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
+#endif
+
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
 
 #if __STDC_VERSION__ >= 202311L || UPB_HAS_EXTENSION(cxx_alignof) || \
