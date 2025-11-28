@@ -11,6 +11,7 @@
 
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/internal/generated_registry.h"  // IWYU pragma: keep
 #include "upb/port/atomic.h"
@@ -22,6 +23,9 @@
 #include <sched.h>
 #endif  // UPB_TSAN
 
+const UPB_PRIVATE(upb_GeneratedExtensionListEntry) *
+    UPB_PRIVATE(upb_generated_extension_list) = NULL;
+
 typedef struct upb_GeneratedRegistry {
   UPB_ATOMIC(upb_GeneratedRegistryRef*) ref;
   UPB_ATOMIC(int32_t) ref_count;
@@ -30,6 +34,40 @@ typedef struct upb_GeneratedRegistry {
 static upb_GeneratedRegistry* _upb_generated_registry(void) {
   static upb_GeneratedRegistry r = {NULL, 0};
   return &r;
+}
+
+static bool _upb_GeneratedRegistry_AddAllLinkedExtensions(
+    upb_ExtensionRegistry* r) {
+  const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
+      UPB_PRIVATE(upb_generated_extension_list);
+  while (entry != NULL) {
+    // Comparing pointers to different objects is undefined behavior, so we
+    // convert them to uintptr_t and compare their values.
+    uintptr_t begin = (uintptr_t)entry->start;
+    uintptr_t end = (uintptr_t)entry->stop;
+    uintptr_t current = begin;
+    while (current < end) {
+      const upb_MiniTableExtension* ext =
+          (const upb_MiniTableExtension*)current;
+      // Sentinels and padding introduced by the linker can result in zeroed
+      // entries, so simply skip them.
+      if (upb_MiniTableExtension_Number(ext) == 0) {
+        // MSVC introduces padding that might not be sized exactly the same as
+        // upb_MiniTableExtension, so we can't iterate by sizeof.  This is a
+        // valid thing for any linker to do, so it's safer to just always do it.
+        current += UPB_ALIGN_OF(upb_MiniTableExtension);
+        continue;
+      }
+
+      if (upb_ExtensionRegistry_Add(r, ext) !=
+          kUpb_ExtensionRegistryStatus_Ok) {
+        return false;
+      }
+      current += sizeof(upb_MiniTableExtension);
+    }
+    entry = entry->next;
+  }
+  return true;
 }
 
 // Constructs a new GeneratedRegistryRef, adding all linked extensions to the
@@ -47,7 +85,7 @@ static upb_GeneratedRegistryRef* _upb_GeneratedRegistry_New(void) {
   ref->UPB_PRIVATE(arena) = arena;
   ref->UPB_PRIVATE(registry) = extreg;
 
-  if (!upb_ExtensionRegistry_AddAllLinkedExtensions(extreg)) goto err;
+  if (!_upb_GeneratedRegistry_AddAllLinkedExtensions(extreg)) goto err;
 
   return ref;
 
@@ -137,4 +175,10 @@ void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r) {
       upb_gfree(ref);
     }
   }
+}
+
+const upb_ExtensionRegistry* upb_GeneratedRegistry_Get(
+    const upb_GeneratedRegistryRef* r) {
+  if (r == NULL) return NULL;
+  return r->UPB_PRIVATE(registry);
 }

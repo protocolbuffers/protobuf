@@ -15,8 +15,6 @@
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
-#include "upb/mini_table/generated_registry.h"
-#include "upb/mini_table/internal/generated_registry.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -89,47 +87,6 @@ failure:
   }
   UPB_ASSERT(status != kUpb_ExtensionRegistryStatus_Ok);
   return status;
-}
-
-const UPB_PRIVATE(upb_GeneratedExtensionListEntry) *
-    UPB_PRIVATE(upb_generated_extension_list) = NULL;
-
-bool upb_ExtensionRegistry_AddAllLinkedExtensions(upb_ExtensionRegistry* r) {
-  const UPB_PRIVATE(upb_GeneratedExtensionListEntry)* entry =
-      UPB_PRIVATE(upb_generated_extension_list);
-  while (entry != NULL) {
-    // Comparing pointers to different objects is undefined behavior, so we
-    // convert them to uintptr_t and compare their values.
-    uintptr_t begin = (uintptr_t)entry->start;
-    uintptr_t end = (uintptr_t)entry->stop;
-    uintptr_t current = begin;
-    while (current < end) {
-      const upb_MiniTableExtension* ext =
-          (const upb_MiniTableExtension*)current;
-      // Sentinels and padding introduced by the linker can result in zeroed
-      // entries, so simply skip them.
-      if (upb_MiniTableExtension_Number(ext) == 0) {
-        // MSVC introduces padding that might not be sized exactly the same as
-        // upb_MiniTableExtension, so we can't iterate by sizeof.  This is a
-        // valid thing for any linker to do, so it's safer to just always do it.
-        current += UPB_ALIGN_OF(upb_MiniTableExtension);
-        continue;
-      }
-
-      if (upb_ExtensionRegistry_Add(r, ext) !=
-          kUpb_ExtensionRegistryStatus_Ok) {
-        return false;
-      }
-      current += sizeof(upb_MiniTableExtension);
-    }
-    entry = entry->next;
-  }
-  return true;
-}
-
-const upb_ExtensionRegistry* upb_ExtensionRegistry_GetGenerated(
-    const upb_GeneratedRegistryRef* genreg) {
-  return genreg != NULL ? genreg->UPB_PRIVATE(registry) : NULL;
 }
 
 const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(

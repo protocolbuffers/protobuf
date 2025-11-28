@@ -546,5 +546,5 @@ bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init) {
 
 const upb_ExtensionRegistry* _upb_DefPool_GeneratedExtensionRegistry(
     const upb_DefPool* s) {
-  return upb_ExtensionRegistry_GetGenerated(s->generated_extreg);
+  return upb_GeneratedRegistry_Get(s->generated_extreg);
 }
