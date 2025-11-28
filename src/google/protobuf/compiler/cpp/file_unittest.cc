@@ -106,6 +106,7 @@ TEST(FileTest, TopologicallyOrderedDescriptors) {
       "TestCommentInjectionMessage",
       "TestChildExtensionData.NestedTestAllExtensionsData."
       "NestedDynamicExtensions",
+      "TestAllTypesAsExtension",
       "TestAllTypes.RepeatedGroup",
       "TestAllTypes.OptionalGroup",
       "TestAllTypes.NestedMessage",
