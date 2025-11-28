@@ -5,6 +5,19 @@
 # `.github/workflows/test_objectivec.yml` are supported for the given versions
 # of Xcode.
 xcode_version(
+    name = "version16_0",
+    aliases = [
+        "160",
+        "16.0",
+    ],
+    default_ios_sdk_version = "17.2",
+    default_macos_sdk_version = "14.2",
+    default_tvos_sdk_version = "17.2",
+    default_watchos_sdk_version = "10.2",
+    version = "16.0",
+)
+
+xcode_version(
     name = "version15_2_15C500b",
     aliases = [
         "15C500b",
@@ -47,6 +60,7 @@ xcode_config(
     name = "host_xcodes",
     default = ":version15_2_15C500b",
     versions = [
+        ":version16_0",
         ":version15_2_15C500b",
         ":version14_2_14C18",
         ":version14_1_0_14B47b",
