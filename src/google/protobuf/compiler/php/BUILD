@@ -12,6 +12,16 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
+cc_binary(
+    name = "protoc-gen-php",
+    srcs = ["plugin_main.cc"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":php",
+        "//src/google/protobuf/compiler:plugin",
+    ],
+)
+
 cc_library(
     name = "names",
     srcs = ["names.cc"],
