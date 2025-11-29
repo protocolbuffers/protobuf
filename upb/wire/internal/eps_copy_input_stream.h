@@ -8,6 +8,7 @@
 #ifndef UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -36,7 +37,7 @@ struct upb_EpsCopyInputStream {
   uintptr_t input_delta;  // Diff between the original input pointer and patch
   const char* buffer_start;   // Pointer to the original input buffer
   const char* capture_start;  // If non-NULL, the start of the captured region.
-  int limit;                  // Submessage limit relative to end
+  ptrdiff_t limit;            // Submessage limit relative to end
   bool error;                 // To distinguish between EOF and error.
 #ifndef NDEBUG
   int guaranteed_bytes;
@@ -312,15 +313,16 @@ UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(
   UPB_ASSERT(e->limit_ptr == e->end + UPB_MIN(0, e->limit));
 }
 
-UPB_INLINE int upb_EpsCopyInputStream_PushLimit(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
-  int limit = size + (int)(ptr - e->end);
-  int delta = e->limit - limit;
+UPB_INLINE ptrdiff_t upb_EpsCopyInputStream_PushLimit(
+    struct upb_EpsCopyInputStream* e, const char* ptr, size_t size) {
+  UPB_ASSERT(size <= PTRDIFF_MAX);
+  ptrdiff_t limit = size + (ptrdiff_t)(ptr - e->end);
+  ptrdiff_t delta = e->limit - limit;
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
-  UPB_ASSERT(limit <= e->limit);
   e->limit = limit;
   e->limit_ptr = e->end + UPB_MIN(0, limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
+  if (UPB_UNLIKELY(delta < 0)) e->error = true;
   return delta;
 }
 
@@ -328,7 +330,7 @@ UPB_INLINE int upb_EpsCopyInputStream_PushLimit(
 // once IsDone() returns true.  The user must pass the delta that was returned
 // from PushLimit().
 UPB_INLINE void upb_EpsCopyInputStream_PopLimit(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int saved_delta) {
+    struct upb_EpsCopyInputStream* e, const char* ptr, ptrdiff_t saved_delta) {
   UPB_ASSERT(ptr - e->end == e->limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
   e->limit += saved_delta;

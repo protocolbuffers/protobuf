@@ -8,6 +8,7 @@
 #ifndef UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_EPS_COPY_INPUT_STREAM_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -93,15 +94,20 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
 // reaches this limit.
 //
 // Returns a delta that the caller must store and supply to PopLimit() below.
-UPB_INLINE int upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
-                                                const char* ptr, int size);
+//
+// A return value of <0 indicates that `size` is too large, and exceeds a
+// previous limit. If this occurs, the stream is in an error state and must no
+// longer be used.
+UPB_INLINE ptrdiff_t upb_EpsCopyInputStream_PushLimit(upb_EpsCopyInputStream* e,
+                                                      const char* ptr,
+                                                      size_t size);
 
 // Pops the last limit that was pushed on this stream.  This may only be called
 // once IsDone() returns true.  The user must pass the delta that was returned
 // from PushLimit().
 UPB_INLINE void upb_EpsCopyInputStream_PopLimit(upb_EpsCopyInputStream* e,
                                                 const char* ptr,
-                                                int saved_delta);
+                                                ptrdiff_t saved_delta);
 
 // Tries to perform a fast-path handling of the given delimited message data.
 // If the sub-message beginning at `*ptr` and extending for `len` is short and

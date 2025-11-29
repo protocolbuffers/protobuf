@@ -484,7 +484,12 @@ bool upb_DecodeFast_Delimited(upb_Decoder* d, const char** ptr,
       *ptr = NULL;
       return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
     }
-    int delta = upb_EpsCopyInputStream_PushLimit(&d->input, p, size);
+    ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(&d->input, p, size);
+    if (UPB_UNLIKELY(delta < 0)) {
+      // Corrupt wire format: invalid limit.
+      *ptr = NULL;
+      return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, ret);
+    }
     p = func(&d->input, p, size, ctx);
     if (UPB_UNLIKELY(p == NULL)) goto fail;
     upb_EpsCopyInputStream_PopLimit(&d->input, p, delta);
