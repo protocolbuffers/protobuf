@@ -319,6 +319,40 @@ TEST(RepeatedFieldTest, LongRepeatedField) {
   // force reallocations that cause fallbacks to the MiniTable decoder.
 }
 
+TYPED_TEST(PackedTest, DecodeTruncatedPackedFieldMaxLen) {
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<TypeParam>(
+      1, kUpb_DecodeFast_Packed, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  // Malformed payload with the maximum allowed varint length but only one byte
+  // of data.
+  std::string payload = "\012\xff\xff\xff\xff\x07\000\000\000\000";
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+  ASSERT_EQ(result, kUpb_DecodeStatus_Malformed)
+      << upb_DecodeStatus_String(result);
+}
+
+TYPED_TEST(PackedTest, DecodeTruncatedPackedFieldShortLength) {
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<TypeParam>(
+      1, kUpb_DecodeFast_Packed, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  // Malformed payload with the maximum allowed varint length but only one byte
+  // of data.
+  std::string payload = "\012\001";
+  upb_DecodeStatus result =
+      upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+  ASSERT_EQ(result, kUpb_DecodeStatus_Malformed)
+      << upb_DecodeStatus_String(result);
+}
+
 }  // namespace
 
 }  // namespace test
