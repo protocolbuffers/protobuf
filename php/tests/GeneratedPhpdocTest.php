@@ -11,15 +11,15 @@ class GeneratedPhpdocTest extends TestBase
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getDocComment();
-        $this->assertStringContains('foo.TestMessage', $doc);
+        $this->assertStringContainsString('foo.TestMessage', $doc);
     }
 
     public function testPhpDocForConstructor()
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getMethod('__construct')->getDocComment();
-        $this->assertStringContains('@param array $data', $doc);
-        $this->assertStringContains('@type int $optional_int32', $doc);
+        $this->assertStringContainsString('@param array $data', $doc);
+        $this->assertStringContainsString('@type int $optional_int32', $doc);
     }
 
     /**
@@ -35,7 +35,7 @@ class GeneratedPhpdocTest extends TestBase
         );
     }
 
-    public function providePhpDocForEnum()
+    public static function providePhpDocForEnum()
     {
         return [
             ['getOptionalEnum', '\Foo\TestEnum'],
@@ -65,7 +65,7 @@ class GeneratedPhpdocTest extends TestBase
         $class = new ReflectionClass('Foo\TestMessage');
         foreach ($methods as $method) {
             $doc = $class->getMethod($method)->getDocComment();
-            $this->assertStringContains($expectedDoc, $doc);
+            $this->assertStringContainsString($expectedDoc, $doc);
         }
     }
 
