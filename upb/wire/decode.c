@@ -123,14 +123,13 @@ typedef struct {
   uint64_t val;
 } _upb_DecodeLongVarintReturn;
 
+// This is identical to _upb_Decoder_DecodeTag() except that the maximum value
+// is INT32_MAX instead of UINT32_MAX.
 UPB_FORCEINLINE
 const char* upb_Decoder_DecodeSize(upb_Decoder* d, const char* ptr,
                                    uint32_t* size) {
   int sz;
   ptr = upb_WireReader_ReadSize(ptr, &sz, EPS(d));
-  if (!upb_EpsCopyInputStream_CheckSize(&d->input, ptr, sz)) {
-    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_Malformed);
-  }
   *size = sz;
   return ptr;
 }
