@@ -6,9 +6,9 @@
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "binary_wireformat.h"
+#include "conformance/conformance.pb.h"
 #include "test_runner.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
-#include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
