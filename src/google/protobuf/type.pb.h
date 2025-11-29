@@ -135,8 +135,8 @@ inline constexpr int Field_Kind_Kind_ARRAYSIZE = 18 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Kind_descriptor();
 template <typename T>
 const ::std::string& Field_Kind_Name(T value) {
-  static_assert(::std::is_same<T, Field_Kind>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, Field_Kind> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Kind_Name().");
   return Field_Kind_Name(static_cast<Field_Kind>(value));
 }
@@ -173,8 +173,8 @@ inline constexpr int Field_Cardinality_Cardinality_ARRAYSIZE = 3 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Cardinality_descriptor();
 template <typename T>
 const ::std::string& Field_Cardinality_Name(T value) {
-  static_assert(::std::is_same<T, Field_Cardinality>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, Field_Cardinality> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Cardinality_Name().");
   return Field_Cardinality_Name(static_cast<Field_Cardinality>(value));
 }
@@ -210,8 +210,8 @@ inline constexpr int Syntax_ARRAYSIZE = 2 + 1;
 PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Syntax_descriptor();
 template <typename T>
 const ::std::string& Syntax_Name(T value) {
-  static_assert(::std::is_same<T, Syntax>::value ||
-                    ::std::is_integral<T>::value,
+  static_assert(::std::is_same_v<T, Syntax> ||
+                    ::std::is_integral_v<T>,
                 "Incorrect type passed to Syntax_Name().");
   return Syntax_Name(static_cast<Syntax>(value));
 }

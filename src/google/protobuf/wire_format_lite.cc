@@ -604,11 +604,11 @@ static size_t VarintSize(const T* data, const int n) {
   static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert(
-      (std::is_unsigned<T>::value ^ ZigZag) || std::is_signed<T>::value,
+      (std::is_unsigned_v<T> ^ ZigZag) || std::is_signed_v<T>,
       "Cannot ZigZag encode unsigned types");
   // is_unsigned<T> => !SignExtended
   static_assert(
-      (std::is_unsigned<T>::value ^ SignExtended) || std::is_signed<T>::value,
+      (std::is_unsigned_v<T> ^ SignExtended) || std::is_signed_v<T>,
       "Cannot SignExtended unsigned types");
   static_assert(!(SignExtended && ZigZag),
                 "Cannot SignExtended and ZigZag on the same type");
@@ -662,7 +662,7 @@ template <bool ZigZag, typename T>
 static size_t VarintSize64(const T* data, const int n) {
   static_assert(sizeof(T) == 8, "This routine only works for 64 bit integers");
   // is_unsigned<T> => !ZigZag
-  static_assert(!ZigZag || !std::is_unsigned<T>::value,
+  static_assert(!ZigZag || !std::is_unsigned_v<T>,
                 "Cannot ZigZag encode unsigned types");
   int vectorN = n & -32;
   uint64_t sum = vectorN;
