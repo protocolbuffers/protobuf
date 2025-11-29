@@ -11,20 +11,14 @@
 
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 
-#include <algorithm>
-#include <limits>
-#include <sstream>
 #include <string>
-#include <vector>
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/csharp/csharp_enum_field.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
-#include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_map_field.h"
 #include "google/protobuf/compiler/csharp/csharp_message_field.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"

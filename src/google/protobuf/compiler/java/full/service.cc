@@ -11,7 +11,6 @@
 
 #include "google/protobuf/compiler/java/full/service.h"
 
-#include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"

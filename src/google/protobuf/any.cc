@@ -7,7 +7,6 @@
 
 #include "google/protobuf/any.h"
 
-#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_util.h"

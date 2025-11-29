@@ -28,7 +28,6 @@
 #include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/strtod.h"
-#include "google/protobuf/stubs/common.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.

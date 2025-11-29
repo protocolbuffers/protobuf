@@ -10,7 +10,6 @@
 #include <sstream>
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"

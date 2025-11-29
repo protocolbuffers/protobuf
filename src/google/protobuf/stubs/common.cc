@@ -9,12 +9,7 @@
 
 #include "google/protobuf/stubs/common.h"
 
-#include <errno.h>
 #include <stdio.h>
-
-#include <atomic>
-#include <sstream>
-#include <vector>
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -28,9 +23,6 @@
 #endif
 
 #include "absl/log/absl_log.h"
-#include "absl/status/status.h"
-#include "absl/strings/str_cat.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/stubs/callback.h"
 
 // Must be last.
