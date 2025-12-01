@@ -99,17 +99,22 @@ void MessageGenerator::Generate(io::Printer* printer) const {
              [&] {
                java::JvmName("get$oneof_capitalized_name$Case", name_ctx);
              }},
-            {"oneof_name", oneof_name},
+            io::Printer::Sub("oneof_name_case",
+                             absl::StrCat(oneof_name, "Case"))
+                .AnnotatedAs(oneof),
             {"oneof_capitalized_name", oneof_capitalized_name},
             {"oneof_case_getter", oneof_case_getter},
+            io::Printer::Sub("oneof_case_clearer",
+                             absl::StrCat("clear", oneof_capitalized_name))
+                .AnnotatedAs({oneof, io::AnnotationCollector::kSet}),
             {"message", java::EscapeKotlinKeywords(
                             name_resolver_->GetClassName(descriptor_, true))},
         },
-        "public val $oneof_name$Case: $message$.$oneof_capitalized_name$Case\n"
+        "public val $oneof_name_case$: $message$.$oneof_capitalized_name$Case\n"
         "$jvm_name$"
         "  get() = _builder.$oneof_case_getter$\n\n"
-        "public fun clear$oneof_capitalized_name$() {\n"
-        "  _builder.clear$oneof_capitalized_name$()\n"
+        "public fun $oneof_case_clearer$() {\n"
+        "  _builder.$oneof_case_clearer$()\n"
         "}\n");
   }
 
@@ -128,18 +133,19 @@ void MessageGenerator::GenerateMembers(io::Printer* printer) const {
                    name_resolver_->GetKotlinFactoryName(descriptor_));
   }
 
-  printer->Print(
+  printer->Emit(
+      {io::Printer::Sub{"camelcase_name",
+                        name_resolver_->GetKotlinFactoryName(descriptor_)}
+           .AnnotatedAs(descriptor_),
+       {"message_kt",
+        java::EscapeKotlinKeywords(
+            name_resolver_->GetKotlinExtensionsClassName(descriptor_))},
+       {"message", java::EscapeKotlinKeywords(
+                       name_resolver_->GetClassName(descriptor_, true))}},
       "public inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): $message$ =\n"
       "  $message_kt$.Dsl._create($message$.newBuilder()).apply { block() "
-      "}._build()\n",
-      "camelcase_name", name_resolver_->GetKotlinFactoryName(descriptor_),
-      "message_kt",
-      java::EscapeKotlinKeywords(
-          name_resolver_->GetKotlinExtensionsClassName(descriptor_)),
-      "message",
-      java::EscapeKotlinKeywords(
-          name_resolver_->GetClassName(descriptor_, true)));
+      "}._build()\n");
 
   WriteMessageDocComment(printer, descriptor_, context_->options(),
                          /* kdoc */ true);

@@ -89,8 +89,20 @@ TEST_F(KotlinMetadataTest, CapturesFooOrNull) {
   FileDescriptorProto file;
   atu::ExpectedOutput output("com/google/protos/bar/MessageKt.kt");
   EXPECT_TRUE(CaptureMetadata("test.proto", &file, {&output}));
-  CheckAnnotation(output, {kMessageTypeFieldNumber, 0, kFieldFieldNumber, 0},
-                  "fooOrNull", Annotation::NONE);
+  std::vector<int> foo_path = {kMessageTypeFieldNumber, 0, kFieldFieldNumber,
+                               0};
+  CheckAnnotation(output, foo_path, "fooOrNull",
+                  /* expected_semantic= */ Annotation::NONE);
+  CheckAnnotation(output, foo_path, "foo",
+                  /* expected_semantic= */ Annotation::NONE);
+  CheckAnnotation(output, foo_path, "get",
+                  /* expected_semantic= */ Annotation::NONE);
+  CheckAnnotation(output, foo_path, "set",
+                  /* expected_semantic= */ Annotation::SET);
+  CheckAnnotation(output, foo_path, "hasFoo",
+                  /* expected_semantic= */ Annotation::NONE);
+  CheckAnnotation(output, foo_path, "clearFoo",
+                  /* expected_semantic= */ Annotation::SET);
 }
 
 }  // namespace
