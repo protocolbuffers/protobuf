@@ -185,7 +185,9 @@ void FileGenerator::GenerateFile(io::Printer* p, GeneratedFileType file_type,
     #include <type_traits>
     #include <utility>
 
+    // clang-format off
     $cb$;
+    // clang-format on
 
     #endif  // $guard$
   )");
