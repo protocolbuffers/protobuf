@@ -624,6 +624,21 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
 #endif
 
+  // Moves an extension from one ExtensionSet to another.
+  //
+  // If the source extension does not exist, then destination extension is
+  // cleared.
+  //
+  // If the destination extension already exists, it is overwritten otherwise
+  // it is created and then moved.
+  bool MoveExtension(Arena* arena, int dst_number, ExtensionSet& src,
+                     int src_number);
+
+  bool IsLazy(int number) const {
+    const Extension* extension = FindOrNull(number);
+    return extension != nullptr && extension->is_lazy;
+  }
+
  private:
   template <typename Type>
   friend class PrimitiveTypeTraits;
