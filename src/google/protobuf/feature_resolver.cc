@@ -54,38 +54,6 @@ absl::Status Error(Args... args) {
   return absl::FailedPreconditionError(absl::StrCat(args...));
 }
 
-absl::Status ValidateFeatureSupport(const FieldOptions::FeatureSupport& support,
-                                    absl::string_view full_name) {
-  if (support.has_edition_deprecated()) {
-    if (support.edition_deprecated() < support.edition_introduced()) {
-      return Error("Feature ", full_name,
-                   " was deprecated before it was introduced.");
-    }
-    if (!support.has_deprecation_warning()) {
-      return Error(
-          "Feature ", full_name,
-          " is deprecated but does not specify a deprecation warning.");
-    }
-  }
-  if (!support.has_edition_deprecated() && support.has_deprecation_warning()) {
-    return Error("Feature ", full_name,
-                 " specifies a deprecation warning but is not marked "
-                 "deprecated in any edition.");
-  }
-  if (support.has_edition_removed()) {
-    if (support.edition_deprecated() >= support.edition_removed()) {
-      return Error("Feature ", full_name,
-                   " was deprecated after it was removed.");
-    }
-    if (support.edition_removed() < support.edition_introduced()) {
-      return Error("Feature ", full_name,
-                   " was removed before it was introduced.");
-    }
-  }
-
-  return absl::OkStatus();
-}
-
 absl::Status ValidateFieldFeatureSupport(const FieldDescriptor& field) {
   if (!field.options().has_feature_support()) {
     return Error("Feature field ", field.full_name(),
@@ -98,7 +66,6 @@ absl::Status ValidateFieldFeatureSupport(const FieldDescriptor& field) {
     return Error("Feature field ", field.full_name(),
                  " does not specify the edition it was introduced in.");
   }
-  RETURN_IF_ERROR(ValidateFeatureSupport(support, field.full_name()));
 
   // Validate edition defaults specification wrt support windows.
   for (const auto& d : field.options().edition_defaults()) {
@@ -118,54 +85,6 @@ absl::Status ValidateFieldFeatureSupport(const FieldDescriptor& field) {
                    " has a default specified for edition ", d.edition(),
                    ", after it was removed.");
     }
-  }
-
-  return absl::OkStatus();
-}
-
-absl::Status ValidateValueFeatureSupport(
-    const FieldOptions::FeatureSupport& parent,
-    const EnumValueDescriptor& value, absl::string_view field_name) {
-  if (!value.options().has_feature_support()) {
-    // We allow missing support windows on feature values, and they'll inherit
-    // from the feature spec.
-    return absl::OkStatus();
-  }
-
-  FieldOptions::FeatureSupport support = parent;
-  support.MergeFrom(value.options().feature_support());
-  RETURN_IF_ERROR(ValidateFeatureSupport(support, value.full_name()));
-
-  // Make sure the value doesn't expand any bounds.
-  if (support.edition_introduced() < parent.edition_introduced()) {
-    return Error("Feature value ", value.full_name(),
-                 " was introduced before feature ", field_name, " was.");
-  }
-  if (parent.has_edition_removed() &&
-      support.edition_removed() > parent.edition_removed()) {
-    return Error("Feature value ", value.full_name(),
-                 " was removed after feature ", field_name, " was.");
-  }
-  if (parent.has_edition_deprecated() &&
-      support.edition_deprecated() > parent.edition_deprecated()) {
-    return Error("Feature value ", value.full_name(),
-                 " was deprecated after feature ", field_name, " was.");
-  }
-
-  return absl::OkStatus();
-}
-
-absl::Status ValidateValuesFeatureSupport(const FieldDescriptor& field) {
-  // This only applies to enum features.
-  ABSL_CHECK(field.enum_type() != nullptr);
-
-  const FieldOptions::FeatureSupport& parent =
-      field.options().feature_support();
-
-  for (int i = 0; i < field.enum_type()->value_count(); ++i) {
-    const EnumValueDescriptor& value = *field.enum_type()->value(i);
-    RETURN_IF_ERROR(
-        ValidateValueFeatureSupport(parent, value, field.full_name()));
   }
 
   return absl::OkStatus();
@@ -211,9 +130,6 @@ absl::Status ValidateDescriptor(const Descriptor& descriptor) {
     }
 
     RETURN_IF_ERROR(ValidateFieldFeatureSupport(field));
-    if (field.enum_type() != nullptr) {
-      RETURN_IF_ERROR(ValidateValuesFeatureSupport(field));
-    }
   }
 
   return absl::OkStatus();
@@ -583,6 +499,65 @@ FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
   ValidationResults results;
   ValidateFeatureLifetimesImpl(edition, *pool_features, results);
   return results;
+}
+
+absl::Status FeatureResolver::ValidateFeatureSupport(
+    const FieldOptions::FeatureSupport& support, absl::string_view full_name) {
+  if (support.has_edition_deprecated()) {
+    if (support.edition_deprecated() < support.edition_introduced()) {
+      return absl::Status(
+          absl::StatusCode::kInternal,
+          absl::Substitute("$0 was deprecated before it was introduced.",
+                           full_name));
+    }
+    if (!support.has_deprecation_warning()) {
+      return absl::Status(
+          absl::StatusCode::kInternal,
+          absl::Substitute(
+              "$0 is deprecated but does not specify a deprecation warning.",
+              full_name));
+    }
+  }
+  if (!support.has_edition_deprecated() && support.has_deprecation_warning()) {
+    return absl::Status(
+        absl::StatusCode::kInternal,
+        absl::Substitute("$0 specifies a deprecation warning but is not marked "
+                         "deprecated in any edition.",
+                         full_name));
+  }
+  if (support.has_edition_removed()) {
+    if (support.edition_deprecated() >= support.edition_removed()) {
+      return absl::Status(
+          absl::StatusCode::kInternal,
+          absl::Substitute("$0 was deprecated after it was removed.",
+                           full_name));
+    }
+    if (support.edition_removed() < support.edition_introduced()) {
+      return absl::Status(
+          absl::StatusCode::kInternal,
+          absl::Substitute("$0 was removed before it was introduced.",
+                           full_name));
+    }
+    // Not enforcing removal errors on features or options that have been
+    // introduced and removed in the same edition
+    if ((support.edition_introduced() != support.edition_removed()) &&
+        !support.has_removal_error()) {
+      return absl::Status(
+          absl::StatusCode::kInternal,
+          absl::Substitute(
+              "$0 has been removed but does not specify a removal error.",
+              full_name));
+    }
+  }
+  if (!support.has_edition_removed() && support.has_removal_error()) {
+    return absl::Status(
+        absl::StatusCode::kInternal,
+        absl::Substitute(
+            "$0 specifies a removal error but is not marked removed in any "
+            "edition.",
+            full_name));
+  }
+  return absl::OkStatus();
 }
 
 namespace internal {
