@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <utility>
 
+// clang-format off
 #include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 6034000
 #error "Protobuf C++ gencode is built with an incompatible version of"
@@ -2203,5 +2204,6 @@ inline void BytesValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE val
 // @@protoc_insertion_point(global_scope)
 
 #include "google/protobuf/port_undef.inc"
+// clang-format on
 
 #endif  // google_2fprotobuf_2fwrappers_2eproto_2epb_2eh
