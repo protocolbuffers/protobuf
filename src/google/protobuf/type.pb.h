@@ -667,8 +667,9 @@ class PROTOBUF_EXPORT Field final : public ::google::protobuf::Message
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL mutable_options();
+  [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+  mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
@@ -989,8 +990,9 @@ class PROTOBUF_EXPORT EnumValue final : public ::google::protobuf::Message
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL mutable_options();
+  [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+  mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
@@ -1223,8 +1225,9 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 
   public:
   void clear_fields() ;
-  ::google::protobuf::Field* PROTOBUF_NONNULL mutable_fields(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL mutable_fields();
+  [[nodiscard]] ::google::protobuf::Field* PROTOBUF_NONNULL mutable_fields(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL
+  mutable_fields();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& _internal_fields() const;
@@ -1251,7 +1254,8 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
   void add_oneofs(Arg_&& value, Args_... args);
   [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
   oneofs() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_oneofs();
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
+  mutable_oneofs();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_oneofs() const;
@@ -1266,8 +1270,9 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL mutable_options();
+  [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+  mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
@@ -1534,8 +1539,9 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 
   public:
   void clear_enumvalue() ;
-  ::google::protobuf::EnumValue* PROTOBUF_NONNULL mutable_enumvalue(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL mutable_enumvalue();
+  [[nodiscard]] ::google::protobuf::EnumValue* PROTOBUF_NONNULL mutable_enumvalue(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL
+  mutable_enumvalue();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& _internal_enumvalue() const;
@@ -1553,8 +1559,9 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL mutable_options();
+  [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+  mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;

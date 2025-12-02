@@ -231,7 +231,8 @@ class PROTOBUF_EXPORT FieldMask final : public ::google::protobuf::Message
   void add_paths(Arg_&& value, Args_... args);
   [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
   paths() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_paths();
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
+  mutable_paths();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;

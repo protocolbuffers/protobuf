@@ -279,8 +279,9 @@ class PROTOBUF_EXPORT ListValue final : public ::google::protobuf::Message
 
   public:
   void clear_values() ;
-  ::google::protobuf::Value* PROTOBUF_NONNULL mutable_values(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL mutable_values();
+  [[nodiscard]] ::google::protobuf::Value* PROTOBUF_NONNULL mutable_values(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL
+  mutable_values();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
@@ -481,7 +482,7 @@ class PROTOBUF_EXPORT Struct final : public ::google::protobuf::Message
   public:
   void clear_fields() ;
   [[nodiscard]] const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& fields() const;
-  ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL mutable_fields();
+  [[nodiscard]] ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL mutable_fields();
 
   private:
   const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& _internal_fields() const;
