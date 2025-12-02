@@ -53,7 +53,7 @@ UPB_NOINLINE UPB_PRIVATE(_upb_WireReader_LongVarint)
 const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
     const char* ptr, uint32_t tag, int depth_limit,
     upb_EpsCopyInputStream* stream) {
-  if (--depth_limit == 0) return NULL;
+  if (--depth_limit < 0) return NULL;
   uint32_t end_group_tag = (tag & ~7ULL) | kUpb_WireType_EndGroup;
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
