@@ -24,9 +24,17 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
 #include <zlib.h>
+// Externally we always want to include <zlib.h>, but internally we only want to
+// do that for Android builds, where we get zlib for free as a shared library.
+// Otherwise we have to get zlib from //third_party/zlib. For this
+// reason during the migration the rust version of zlib, some classes are
+// defined in the .cc file. others checks on PROTO2_OPENSOURCE were set in this
+// file to implement this forward declarations only for the internal version.
+// TODO - b/477521589: Remove this comment after the migration is complete.
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
 
 namespace google {
 namespace protobuf {
@@ -60,6 +68,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
       const {
     return zcontext_.msg;
   }
+#else
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
+
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
     return zerror_;
   }
@@ -76,7 +87,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
 
   ZeroCopyInputStream* sub_stream_;
 
-  z_stream zcontext_;
+  z_stream_s zcontext_;
+#else
+  struct z_stream_s* zcontext_;
   int zerror_;
 
   void* output_buffer_;
@@ -134,6 +147,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
       const {
     return zcontext_.msg;
   }
+#else
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ZlibErrorMessage() const;
+
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int ZlibErrorCode() const {
     return zerror_;
   }
@@ -170,7 +186,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
   void* sub_data_;
   int sub_data_size_;
 
-  z_stream zcontext_;
+  z_stream_s zcontext_;
+#else
+  struct z_stream_s* zcontext_;
   int zerror_;
   void* input_buffer_;
   size_t input_buffer_length_;
