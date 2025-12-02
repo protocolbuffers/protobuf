@@ -5709,83 +5709,6 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 #include <stdint.h>
 
 
-#ifndef UPB_MINI_TABLE_GENERATED_REGISTRY_H_
-#define UPB_MINI_TABLE_GENERATED_REGISTRY_H_
-
-
-#ifndef UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
-#define UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) {
-  const struct upb_MiniTableExtension* start;
-  const struct upb_MiniTableExtension* stop;
-  const struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) * next;
-} UPB_PRIVATE(upb_GeneratedExtensionListEntry);
-
-struct upb_GeneratedRegistryRef {
-  struct upb_Arena* UPB_PRIVATE(arena);
-  const struct upb_ExtensionRegistry* UPB_PRIVATE(registry);
-};
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_ */
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Generated registry: a global singleton that gathers all extensions linked
- * into the binary.
- *
- * This singleton is thread-safe and lock-free, implemented using atomics.  The
- * registry is lazily initialized the first time it is loaded.  When all
- * references are released, the registry will be destroyed.  New loads
- * afterwards will simply reload the same registry as needed.
- *
- * The extension minitables are registered in gencode using linker arrays.  Each
- * .proto file produces a weak, hidden, constructor function that adds all
- * visible extensions from the array into the registry.  In each binary, only
- * one copy of the constructor will actually be preserved by the linker, and
- * that copy will add all of the extensions for the entire binary.  All of these
- * are added to a global linked list of minitables pre-main, which are then used
- * to construct this singleton as needed.
- */
-
-typedef struct upb_GeneratedRegistryRef upb_GeneratedRegistryRef;
-
-// Loads the generated registry, returning a reference to it.  The reference
-// must be held for the lifetime of any ExtensionRegistry obtained from it.
-//
-// Returns NULL on failure.
-UPB_API const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void);
-
-// Releases a reference to the generated registry.  This may destroy the
-// registry if there are no other references to it.
-//
-// NULL is a valid argument and is simply ignored for easier error handling in
-// callers.
-UPB_API void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif  // UPB_MINI_TABLE_GENERATED_REGISTRY_H_
-
 // Must be last.
 
 #ifdef __cplusplus
@@ -5848,28 +5771,6 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 // Possible errors include OOM or an extension number that already exists.
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count);
-
-// Adds all extensions linked into the binary into the registry.  The set of
-// linked extensions is assembled by the linker using linker arrays.  This
-// will likely not work properly if the extensions are split across multiple
-// shared libraries.
-//
-// Returns true if all extensions were added successfully, false on out of
-// memory or if any extensions were already present.
-//
-// This API is currently not available on MSVC (though it *is* available on
-// Windows using clang-cl).
-UPB_API bool upb_ExtensionRegistry_AddAllLinkedExtensions(
-    upb_ExtensionRegistry* r);
-
-// Returns the extension registry contained by a reference to the generated
-// registry.  The reference must be held for the lifetime of the registry.
-//
-// TODO This should actually be moved to generated_registry.h, but
-// can't because of the current location of
-// upb_ExtensionRegistry_AddAllLinkedExtensions.
-UPB_API const upb_ExtensionRegistry* upb_ExtensionRegistry_GetGenerated(
-    const upb_GeneratedRegistryRef* genreg);
 
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.
@@ -5974,6 +5875,34 @@ UPB_API_INLINE int upb_MiniTableFile_MessageCount(const upb_MiniTableFile* f);
 
 
 #endif /* UPB_MINI_TABLE_FILE_H_ */
+
+#ifndef UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
+#define UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) {
+  const struct upb_MiniTableExtension* start;
+  const struct upb_MiniTableExtension* stop;
+  const struct UPB_PRIVATE(upb_GeneratedExtensionListEntry) * next;
+} UPB_PRIVATE(upb_GeneratedExtensionListEntry);
+
+struct upb_GeneratedRegistryRef {
+  struct upb_Arena* UPB_PRIVATE(arena);
+  const struct upb_ExtensionRegistry* UPB_PRIVATE(registry);
+};
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_INTERNAL_GENERATED_EXTENSION_REGISTRY_H_ */
 
 // upb_decode: parsing into a upb_Message using a upb_MiniTable.
 
@@ -17017,6 +16946,62 @@ char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
 
 
 #endif /* UPB_MINI_DESCRIPTOR_INTERNAL_ENCODE_H_ */
+
+#ifndef UPB_MINI_TABLE_GENERATED_REGISTRY_H_
+#define UPB_MINI_TABLE_GENERATED_REGISTRY_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Generated registry: a global singleton that gathers all extensions linked
+ * into the binary.
+ *
+ * This singleton is thread-safe and lock-free, implemented using atomics.  The
+ * registry is lazily initialized the first time it is loaded.  When all
+ * references are released, the registry will be destroyed.  New loads
+ * afterwards will simply reload the same registry as needed.
+ *
+ * The extension minitables are registered in gencode using linker arrays.  Each
+ * .proto file produces a weak, hidden, constructor function that adds all
+ * visible extensions from the array into the registry.  In each binary, only
+ * one copy of the constructor will actually be preserved by the linker, and
+ * that copy will add all of the extensions for the entire binary.  All of these
+ * are added to a global linked list of minitables pre-main, which are then used
+ * to construct this singleton as needed.
+ */
+
+typedef struct upb_GeneratedRegistryRef upb_GeneratedRegistryRef;
+
+// Loads the generated registry, returning a reference to it.  The reference
+// must be held for the lifetime of any ExtensionRegistry obtained from it.
+//
+// Returns NULL on failure.
+UPB_API const upb_GeneratedRegistryRef* upb_GeneratedRegistry_Load(void);
+
+// Releases a reference to the generated registry.  This may destroy the
+// registry if there are no other references to it.
+//
+// NULL is a valid argument and is simply ignored for easier error handling in
+// callers.
+UPB_API void upb_GeneratedRegistry_Release(const upb_GeneratedRegistryRef* r);
+
+// Returns the extension registry contained by a reference to the generated
+// registry.
+//
+// The reference must be held for the lifetime of the registry.
+UPB_API const upb_ExtensionRegistry* upb_GeneratedRegistry_Get(
+    const upb_GeneratedRegistryRef* r);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif  // UPB_MINI_TABLE_GENERATED_REGISTRY_H_
 
 #ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 #define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
