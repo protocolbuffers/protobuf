@@ -12293,6 +12293,49 @@ TEST_F(FeaturesTest, RemovedFeature) {
       "Custom feature removal error\n");
 }
 
+TEST_F(FeaturesTest, RemovedOption) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        options { java_multiple_files: true }
+      )pb",
+      "foo.proto: foo.proto: NAME: "
+      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
+      "2024: This behavior is enabled by default in "
+      "editions 2024 and above. To disable it, you can set "
+      "`features.(pb.java).nest_in_file_class = YES` on individual messages, "
+      "enums, or services.\n");
+}
+
+TEST_F(FeaturesTest, RemoveOptionAndFeature) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        dependency: "google/protobuf/unittest_features.proto"
+        options {
+          java_multiple_files: true
+          features {
+            [pb.test] { removed_feature: VALUE9 }
+          }
+        }
+      )pb",
+      "foo.proto: foo.proto: NAME: "
+      "pb.TestFeatures.removed_feature has been removed in edition 2024: "
+      "Custom feature removal error\n"
+      "foo.proto: foo.proto: NAME: google.protobuf.FileOptions.java_multiple_files has "
+      "been removed in edition 2024: This behavior is enabled by default in "
+      "editions 2024 and above. To disable it, you can set "
+      "`features.(pb.java).nest_in_file_class = YES` on individual messages, "
+      "enums, or services.\n");
+}
+
 TEST_F(FeaturesTest, RemovedFeatureDefault) {
   BuildDescriptorMessagesInTestPool();
   BuildFileInTestPool(pb::TestFeatures::descriptor()->file());

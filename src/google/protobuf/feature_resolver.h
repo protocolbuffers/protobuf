@@ -70,7 +70,7 @@ class PROTOBUF_EXPORT FeatureResolver {
     std::vector<std::string> warnings;
   };
   static ValidationResults ValidateFeatureLifetimes(
-      Edition edition, const FeatureSet& features,
+      Edition edition, const Message& option,
       const Descriptor* pool_descriptor);
 
  private:
@@ -91,4 +91,3 @@ absl::StatusOr<FeatureSet> PROTOBUF_EXPORT GetEditionFeatureSetDefaults(
 #include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_FEATURE_RESOLVER_H__
-

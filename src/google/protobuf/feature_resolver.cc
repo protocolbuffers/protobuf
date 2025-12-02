@@ -399,32 +399,40 @@ void ValidateSingleFeatureLifetimes(
 }
 
 void ValidateFeatureLifetimesImpl(Edition edition, const Message& message,
-                                  FeatureResolver::ValidationResults& results) {
+                                  FeatureResolver::ValidationResults& results,
+                                  bool is_feature) {
   std::vector<const FieldDescriptor*> fields;
   message.GetReflection()->ListFields(message, &fields);
   for (const FieldDescriptor* field : fields) {
-    // Recurse into message extension.
-    if (field->is_extension() &&
-        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      ValidateFeatureLifetimesImpl(
-          edition, message.GetReflection()->GetMessage(message, field),
-          results);
-      continue;
-    }
-
-    if (field->enum_type() != nullptr) {
-      int number = message.GetReflection()->GetEnumValue(message, field);
-      auto value = field->enum_type()->FindValueByNumber(number);
-      if (value == nullptr) {
-        results.errors.emplace_back(absl::StrCat(
-            "Feature ", field->full_name(), " has no known value ", number));
+    // TODO: Support repeated option enum values and custom options
+    // feature support
+    if (is_feature) {
+      // Recurse into message extension.
+      if (field->is_extension() &&
+          field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        ValidateFeatureLifetimesImpl(
+            edition, message.GetReflection()->GetMessage(message, field),
+            results, is_feature);
         continue;
       }
-      ValidateSingleFeatureLifetimes(edition, value->full_name(),
-                                     value->options().feature_support(),
-                                     results);
-    }
 
+      if (field->enum_type() != nullptr) {
+        int number = message.GetReflection()->GetEnumValue(message, field);
+        auto value = field->enum_type()->FindValueByNumber(number);
+        if (value == nullptr) {
+          results.errors.emplace_back(absl::StrCat(
+              "Feature ", field->full_name(), " has no known value ", number));
+          continue;
+        }
+        ValidateSingleFeatureLifetimes(edition, value->full_name(),
+                                       value->options().feature_support(),
+                                       results);
+      }
+    }
+    // TODO: Support custom options
+    if (field->is_extension()) {
+      continue;
+    }
     ValidateSingleFeatureLifetimes(edition, field->full_name(),
                                    field->options().feature_support(), results);
   }
@@ -556,29 +564,33 @@ absl::StatusOr<FeatureSet> FeatureResolver::MergeFeatures(
 }
 
 FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
-    Edition edition, const FeatureSet& features,
-    const Descriptor* pool_descriptor) {
-  const Message* pool_features = nullptr;
+    Edition edition, const Message& option, const Descriptor* pool_descriptor) {
+  const Message* pool_option = nullptr;
   DynamicMessageFactory factory;
-  std::unique_ptr<Message> features_storage;
-  if (pool_descriptor == nullptr) {
-    // The FeatureSet descriptor can be null if no custom extensions are defined
-    // in any transitive dependency.  In this case, we can just use the
-    // generated pool for validation, since there wouldn't be any feature
-    // extensions defined anyway.
-    pool_features = &features;
-  } else {
-    // Move the features back to the current pool so that we can reflect on any
-    // extensions.
-    features_storage =
+  std::unique_ptr<Message> message_storage;
+  bool is_feature =
+      option.GetDescriptor()->name() == FeatureSet::descriptor()->name();
+  // TODO: Support custom options
+  if (pool_descriptor != nullptr && is_feature) {
+    // Move the messages back to the current pool so that we can reflect on
+    // any extensions.
+    message_storage =
         absl::WrapUnique(factory.GetPrototype(pool_descriptor)->New());
-    features_storage->ParseFromString(features.SerializeAsString());
-    pool_features = features_storage.get();
+    message_storage->ParseFromString(option.SerializeAsString());
+    pool_option = message_storage.get();
+  } else {
+    // The Message descriptor can be null if no custom extensions are
+    // defined in any transitive dependency.  In this case, we can just use
+    // the generated pool for validation, since there wouldn't be any feature
+    // extensions defined anyway.
+    pool_option = &option;
   }
-  ABSL_CHECK(pool_features != nullptr);
+  ABSL_CHECK(pool_option != nullptr);
 
   ValidationResults results;
-  ValidateFeatureLifetimesImpl(edition, *pool_features, results);
+  // Validate feature support
+  ValidateFeatureLifetimesImpl(edition, *pool_option, results, is_feature);
+
   return results;
 }
 
