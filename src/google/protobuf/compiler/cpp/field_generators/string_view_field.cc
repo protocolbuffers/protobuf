@@ -719,7 +719,8 @@ void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ void add_$name$(Arg_&& value);
     [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<::std::string>&
     $name$() const;
-    $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>* $nonnull$ $mutable_name$();
+    [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>* $nonnull$
+    $mutable_name$();
 
     private:
     const $pb$::RepeatedPtrField<::std::string>& _internal_$name$() const;

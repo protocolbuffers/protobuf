@@ -805,8 +805,9 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   public:
   void clear_file() ;
-  ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL mutable_file(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL mutable_file();
+  [[nodiscard]] ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL mutable_file(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL
+  mutable_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& _internal_file() const;
@@ -1081,7 +1082,8 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
   void add_file_to_generate(Arg_&& value, Args_... args);
   [[nodiscard]] const ::google::protobuf::RepeatedPtrField<::std::string>&
   file_to_generate() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL mutable_file_to_generate();
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL
+  mutable_file_to_generate();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_file_to_generate() const;
@@ -1096,8 +1098,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   public:
   void clear_proto_file() ;
-  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_proto_file(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL mutable_proto_file();
+  [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_proto_file(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
+  mutable_proto_file();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_proto_file() const;
@@ -1148,8 +1151,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   public:
   void clear_source_file_descriptors() ;
-  ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL mutable_source_file_descriptors();
+  [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
+  mutable_source_file_descriptors();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;

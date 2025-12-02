@@ -1890,7 +1890,7 @@ TEST(GeneratedMessageReflection, ListFieldsEmptyMap) {
   const Reflection* reflection = msg.GetReflection();
   std::vector<const FieldDescriptor*> fields;
 
-  msg.mutable_map_int32_int32();
+  (void)msg.mutable_map_int32_int32();
   reflection->ListFields(msg, &fields);
   EXPECT_THAT(fields, IsEmpty());
   EXPECT_TRUE(reflection->IsEmpty(msg));
