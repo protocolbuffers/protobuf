@@ -388,6 +388,27 @@ Error, UINTPTR_MAX is undefined
 #define UPB_PRESERVE_NONE
 #endif
 
+#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__))
+#define UPB_ARM64_ASM 1
+#else
+#define UPB_ARM64_ASM 0
+#endif
+
+/* When compiling with branch protection, we need to ensure that all branch
+ * targets in assembly use the appropriate landing pad instruction. These
+ * instructions are backwards compatible with processors that don't have
+ * FEAT_BTI and are treated as nops.
+ */
+#if UPB_ARM64_ASM && defined(__ARM_FEATURE_BTI_DEFAULT)
+#if __ARM_FEATURE_BTI_DEFAULT == 1
+#define UPB_ARM64_BTI_DEFAULT 1
+#else
+#define UPB_ARM64_BTI_DEFAULT 0
+#endif
+#else
+#define UPB_ARM64_BTI_DEFAULT 0
+#endif
+
 /* This check is not fully robust: it does not require that we have "musttail"
  * support available. We need tail calls to avoid consuming arbitrary amounts
  * of stack space.
@@ -16748,15 +16769,27 @@ static char* encode_fixed32(char* ptr, upb_encstate* e, uint32_t val) {
 
 #define UPB_PB_VARINT_MAX_LEN 10
 
-// Need gnu extended inline asm; msan can't instrument stores in inline assembly
-#if defined(__aarch64__) && (defined(__GNUC__) || defined(__clang__)) && \
-    !UPB_HAS_FEATURE(memory_sanitizer)
-#define UPB_ARM64_ASM
+#if UPB_ARM64_ASM
+// Each arm64 instruction encodes to 4 bytes, and it takes two intructions
+// to process each byte of output, so we branch ahead by (4 + 4) * skip to
+// avoid the remaining bytes. When BTI is on, we need to use specific
+// "landing pad" instructions, so we pad those with nop to make it a power
+// of 2, skipping 16 bytes at each stage instead of 8. This carries some
+// overhead especially on in-order cores so they're not included unless
+// building with branch protection.
+#if UPB_ARM64_BTI_DEFAULT
+// BTI is used with jc targets here because we don't control which register will
+// be used for addr; if it's x16 or x17 a `br` is treated like a call.
+#define UPB_BTI_JC "bti jc\n"
+#define UPB_BTI_NOP "nop\n"
+#define UPB_BTI_SHIFT_IMM "4\n"
+#else
+#define UPB_BTI_JC
+#define UPB_BTI_NOP
+#define UPB_BTI_SHIFT_IMM "3\n"
 #endif
-
-#ifdef UPB_ARM64_ASM
-UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
-                                                  uint64_t val) {
+UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
+                                            uint64_t val) {
   ptr = encode_reserve(ptr, e, UPB_PB_VARINT_MAX_LEN);
   uint64_t clz;
   __asm__("clz %[cnt], %[val]\n" : [cnt] "=r"(clz) : [val] "r"(val));
@@ -16767,37 +16800,66 @@ UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
   ptr += skip;
   uint64_t addr, mask;
   __asm__ volatile(
+      // Formatter keeps merging short lines
+      // clang-format off
       "adr %[addr], 0f\n"
-      // Each arm64 instruction encodes to 4 bytes, and it takes two
-      // intructions to process each byte of output, so we branch ahead by
-      //  (4 + 4) * skip to avoid the remaining bytes.
-      "add %[addr], %[addr], %[cnt], lsl #3\n"
+      "add %[addr], %[addr], %[cnt], lsl #" UPB_BTI_SHIFT_IMM
       "mov %w[mask], #0x80\n"
       "br %[addr]\n"
+      ".p2align " UPB_BTI_SHIFT_IMM
       "0:\n"
       // We don't need addr any more, but we've got the register for our whole
       // assembly block so we'll use it as scratch to store the shift+masked
       // values before storing them.
       // The following stores are unsigned offset stores:
       // strb Wt, [Xn, #imm]
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #56\n"
       "strb %w[addr], [%[ptr], #8]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #49\n"
       "strb %w[addr], [%[ptr], #7]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #42\n"
       "strb %w[addr], [%[ptr], #6]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #35\n"
       "strb %w[addr], [%[ptr], #5]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %[addr], %[mask], %[val], lsr #28\n"
       "strb %w[addr], [%[ptr], #4]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[mask], %w[val], lsr #21\n"
       "strb %w[addr], [%[ptr], #3]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[mask], %w[val], lsr #14\n"
       "strb %w[addr], [%[ptr], #2]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[mask], %w[val], lsr #7\n"
       "strb %w[addr], [%[ptr], #1]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
       "orr %w[addr], %w[val], #0x80\n"
       "strb %w[addr], [%[ptr]]\n"
+      UPB_BTI_NOP
+
+      UPB_BTI_JC
+      // clang-format on
       : [addr] "=&r"(addr), [mask] "=&r"(mask)
       : [val] "r"(val), [ptr] "r"(ptr), [cnt] "r"((uint64_t)skip)
       : "memory");
@@ -16806,6 +16868,9 @@ UPB_NOINLINE static char* encode_longvarint_arm64(char* ptr, upb_encstate* e,
   ptr[continuations] = val >> (7 * continuations);
   return ptr;
 }
+#undef UPB_BTI_JC
+#undef UPB_BTI_NOP
+#undef UPB_BTI_SHIFT_IMM
 #else
 UPB_NOINLINE
 static char* encode_longvarint(char* ptr, upb_encstate* e, uint64_t val) {
@@ -16830,11 +16895,7 @@ char* encode_varint(char* ptr, upb_encstate* e, uint64_t val) {
     *ptr = val;
     return ptr;
   } else {
-#ifdef UPB_ARM64_ASM
-    return encode_longvarint_arm64(ptr, e, val);
-#else
     return encode_longvarint(ptr, e, val);
-#endif
   }
 }
 
@@ -17623,3 +17684,5 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_XSAN
 #undef UPB_XSAN_STRUCT_SIZE
 #undef UPB_ENABLE_REF_CYCLE_CHECKS
+#undef UPB_ARM64_ASM
+#undef UPB_ARM64_BTI_DEFAULT

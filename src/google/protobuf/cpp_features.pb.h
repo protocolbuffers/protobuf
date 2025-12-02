@@ -67,6 +67,13 @@ namespace protobuf {
 template <>
 internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
     internal::EnumTraitsImpl::value<::pb::CppFeatures_StringType>;
+namespace internal {
+template <>
+inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
+  static constexpr char kDefaults[] = "CiMYhAciA8I+ACoZCAEQAhgCIAMoATACOAJAAcI+BggBEAMYAAojGOcHIgPCPgAqGQgCEAEYASACKAEwATgCQAHCPgYIABADGAAKIxjoByITCAEQARgBIAIoATABwj4ECAAQAyoJOAJAAcI+AhgACiMY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqA8I+ACDmByjpBw==";
+  return kDefaults;
+}
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 

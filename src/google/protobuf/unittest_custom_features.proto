@@ -7,25 +7,12 @@
 
 edition = "2024";
 
-package pb;
+package custom_features;
 
 import "google/protobuf/descriptor.proto";
 
-option java_outer_classname = "UnittestFeatures";
-
 extend google.protobuf.FeatureSet {
-  TestFeatures test = 9999;
-}
-
-message TestMessage {
-  extend google.protobuf.FeatureSet {
-    TestMessageFeatures test_message = 9998;
-  }
-  message Nested {
-    extend google.protobuf.FeatureSet {
-      TestNestedFeatures test_nested = 9997;
-    }
-  }
+  TestCustomFeatures test = 9995;
 }
 
 enum EnumFeature {
@@ -54,7 +41,6 @@ enum ValueLifetimeFeature {
     edition_introduced: EDITION_99997_TEST_ONLY
     edition_deprecated: EDITION_99998_TEST_ONLY
     deprecation_warning: "Custom feature deprecation warning"
-    edition_removed: EDITION_99999_TEST_ONLY
   }];
   VALUE_LIFETIME_EMPTY_SUPPORT = 3 [feature_support = {}];
   VALUE_LIFETIME_FUTURE = 4
@@ -65,36 +51,10 @@ enum ValueLifetimeFeature {
   }];
   VALUE_LIFETIME_REMOVED = 6 [feature_support = {
     edition_deprecated: EDITION_2023
-    edition_removed: EDITION_99997_TEST_ONLY
   }];
 }
-message TestMessageFeatures {
-  EnumFeature file_feature = 1 [
-    retention = RETENTION_RUNTIME,
-    targets = TARGET_TYPE_FILE,
-    feature_support.edition_introduced = EDITION_2023,
-    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
-    edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
-    edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
-    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
-    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "VALUE5" }
-  ];
-}
 
-message TestNestedFeatures {
-  EnumFeature file_feature = 1 [
-    retention = RETENTION_RUNTIME,
-    targets = TARGET_TYPE_FILE,
-    feature_support.edition_introduced = EDITION_2023,
-    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
-    edition_defaults = { edition: EDITION_PROTO3, value: "VALUE2" },
-    edition_defaults = { edition: EDITION_2023, value: "VALUE3" },
-    edition_defaults = { edition: EDITION_99997_TEST_ONLY, value: "VALUE4" },
-    edition_defaults = { edition: EDITION_99998_TEST_ONLY, value: "VALUE5" }
-  ];
-}
-
-message TestFeatures {
+message TestCustomFeatures {
   EnumFeature file_feature = 1 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_FILE,
@@ -150,7 +110,9 @@ message TestFeatures {
   EnumFeature method_feature = 9 [
     retention = RETENTION_RUNTIME,
     targets = TARGET_TYPE_METHOD,
-    feature_support.edition_introduced = EDITION_2023,
+    feature_support = {
+      edition_introduced: EDITION_2023,
+    },
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
   EnumFeature multiple_feature = 10 [
@@ -214,11 +176,20 @@ message TestFeatures {
       edition_introduced: EDITION_2023
       edition_deprecated: EDITION_2023
       deprecation_warning: "Custom feature deprecation warning"
-      edition_removed: EDITION_2024
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
     edition_defaults = { edition: EDITION_2023, value: "VALUE2" },
     edition_defaults = { edition: EDITION_2024, value: "VALUE3" }
+  ];
+
+  EnumFeature same_edition_removed_feature = 21 [
+    retention = RETENTION_RUNTIME,
+    targets = TARGET_TYPE_FILE,
+    targets = TARGET_TYPE_FIELD,
+    feature_support = {
+      edition_introduced: EDITION_2023
+    },
+    edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" }
   ];
 
   EnumFeature future_feature = 18 [
@@ -236,7 +207,6 @@ message TestFeatures {
     targets = TARGET_TYPE_FIELD,
     feature_support = {
       edition_introduced: EDITION_PROTO3
-      edition_removed: EDITION_2023
     },
     edition_defaults = { edition: EDITION_LEGACY, value: "VALUE1" },
     edition_defaults = { edition: EDITION_2023, value: "VALUE2" }
@@ -249,7 +219,6 @@ message TestFeatures {
       edition_introduced: EDITION_2023
       edition_deprecated: EDITION_99998_TEST_ONLY
       deprecation_warning: "Custom feature deprecation warning"
-      edition_removed: EDITION_99999_TEST_ONLY
     },
     edition_defaults = {
       edition: EDITION_LEGACY,
