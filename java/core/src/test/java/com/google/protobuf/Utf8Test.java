@@ -94,7 +94,7 @@ public class Utf8Test {
 
     ByteBuffer buffer = ByteBuffer.wrap(data);
     assertWithMessage("isValidUtf8[NIO_HEAP]")
-        .that(safeProcessor.isValidUtf8(buffer, buffer.position(), buffer.remaining()))
+        .that(safeProcessor.isValidUtf8BufferDefault(buffer, buffer.position(), buffer.remaining()))
         .isEqualTo(valid);
 
     // Direct buffers.
@@ -102,10 +102,11 @@ public class Utf8Test {
     buffer.put(data);
     buffer.flip();
     assertWithMessage("isValidUtf8[NIO_DEFAULT]")
-        .that(safeProcessor.isValidUtf8(buffer, buffer.position(), buffer.remaining()))
+        .that(safeProcessor.isValidUtf8BufferDefault(buffer, buffer.position(), buffer.remaining()))
         .isEqualTo(valid);
     assertWithMessage("isValidUtf8[NIO_UNSAFE]")
-        .that(unsafeProcessor.isValidUtf8(buffer, buffer.position(), buffer.remaining()))
+        .that(
+            unsafeProcessor.isValidUtf8BufferDirect(buffer, buffer.position(), buffer.remaining()))
         .isEqualTo(valid);
   }
 
