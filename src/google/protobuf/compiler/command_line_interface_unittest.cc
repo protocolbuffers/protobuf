@@ -2631,8 +2631,7 @@ TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
-      "2024: This behavior is enabled by default");
+      "The `java_multiple_files` behavior is enabled by default");
 }
 
 
@@ -2646,8 +2645,7 @@ TEST_F(CommandLineInterfaceTest, JavaNestInFileClassFor) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
-      "2024: This behavior is enabled by default");
+      "The `java_multiple_files` behavior is enabled by default");
 }
 
 
