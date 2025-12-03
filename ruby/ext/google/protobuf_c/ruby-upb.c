@@ -15768,7 +15768,7 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeSubMessage(upb_Decoder* d, const char* ptr,
                                           upb_Message* submsg,
                                           const upb_MiniTableField* field,
-                                          int size) {
+                                          size_t size) {
   ptrdiff_t delta = upb_EpsCopyInputStream_PushLimit(&d->input, ptr, size);
   if (UPB_UNLIKELY(delta < 0)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
@@ -15842,39 +15842,41 @@ const char* _upb_Decoder_DecodeFixedPacked(upb_Decoder* d, const char* ptr,
                                            upb_Array* arr, wireval* val,
                                            const upb_MiniTableField* field,
                                            int lg2) {
+  upb_StringView sv;
+  ptr = upb_EpsCopyInputStream_ReadStringEphemeral(&d->input, ptr, val->size,
+                                                   &sv);
   int mask = (1 << lg2) - 1;
-  size_t count = val->size >> lg2;
-  if ((val->size & mask) != 0) {
-    // Length isn't a round multiple of elem size.
+  if (UPB_UNLIKELY((val->size & mask) != 0 || ptr == NULL)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   }
+  size_t count = val->size >> lg2;
+  if (count == 0) return ptr;
   _upb_Decoder_Reserve(d, arr, count);
   void* mem = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
                          arr->UPB_PRIVATE(size) << lg2, void);
   arr->UPB_PRIVATE(size) += count;
-  // Note: if/when the decoder supports multi-buffer input, we will need to
-  // handle buffer seams here.
   if (upb_IsLittleEndian()) {
-    ptr = UPB_PRIVATE(upb_EpsCopyInputStream_Copy)(&d->input, ptr, mem,
-                                                   val->size);
+    memcpy(mem, sv.data, sv.size);
   } else {
-    ptrdiff_t delta =
-        upb_EpsCopyInputStream_PushLimit(&d->input, ptr, val->size);
-    if (UPB_UNLIKELY(delta < 0)) {
-      _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-    }
+    const char* src = sv.data;
+    const char* src_end = src + sv.size;
     char* dst = mem;
-    while (!_upb_Decoder_IsDone(d, &ptr)) {
-      if (lg2 == 2) {
-        ptr = upb_WireReader_ReadFixed32(ptr, dst, &d->input);
-        dst += 4;
-      } else {
-        UPB_ASSERT(lg2 == 3);
-        ptr = upb_WireReader_ReadFixed64(ptr, dst, &d->input);
-        dst += 8;
+    if (lg2 == 2) {
+      for (; src < src_end; src += 4, dst += 4) {
+        uint32_t x;
+        memcpy(&x, src, 4);
+        x = upb_BigEndian32(x);
+        memcpy(dst, &x, 4);
+      }
+    } else {
+      UPB_ASSERT(lg2 == 3);
+      for (; src < src_end; src += 8, dst += 8) {
+        uint64_t x;
+        memcpy(&x, src, 8);
+        x = upb_BigEndian64(x);
+        memcpy(dst, &x, 8);
       }
     }
-    upb_EpsCopyInputStream_PopLimit(&d->input, ptr, delta);
   }
 
   return ptr;
@@ -16618,7 +16620,12 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
   upb_EpsCopyInputStream_StartCapture(&d->input, start);
 
   if (wire_type == kUpb_WireType_Delimited) {
-    ptr = upb_EpsCopyInputStream_Skip(&d->input, ptr, val.size);
+    upb_StringView sv;
+    ptr = upb_EpsCopyInputStream_ReadStringEphemeral(&d->input, ptr, val.size,
+                                                     &sv);
+    if (UPB_UNLIKELY(ptr == NULL)) {
+      _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+    }
   } else if (wire_type == kUpb_WireType_StartGroup) {
     ptr = UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, field_number << 3,
                                                  d->depth, &d->input);
