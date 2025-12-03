@@ -3531,11 +3531,9 @@ INSTANTIATE_TEST_SUITE_P(
 enum DescriptorPoolMode { NO_DATABASE, FALLBACK_DATABASE };
 
 class AllowUnknownDependenciesTest
-    : public testing::TestWithParam<
-          std::tuple<DescriptorPoolMode, const char*>> {
+    : public testing::TestWithParam<DescriptorPoolMode> {
  protected:
-  DescriptorPoolMode mode() { return std::get<0>(GetParam()); }
-  const char* syntax() { return std::get<1>(GetParam()); }
+  DescriptorPoolMode mode() { return GetParam(); }
 
   void SetUp() override {
     FileDescriptorProto foo_proto, bar_proto;
@@ -3552,35 +3550,47 @@ class AllowUnknownDependenciesTest
     pool_->AllowUnknownDependencies();
 
     ASSERT_TRUE(TextFormat::ParseFromString(
-        "name: 'foo.proto'"
-        "dependency: 'bar.proto'"
-        "dependency: 'baz.proto'"
-        "message_type {"
-        "  name: 'Foo'"
-        "  field { name:'bar' number:1 label:LABEL_OPTIONAL type_name:'Bar' }"
-        "  field { name:'baz' number:2 label:LABEL_OPTIONAL type_name:'Baz' }"
-        "  field { name:'moo' number:3 label:LABEL_OPTIONAL"
-        "    type_name: '.corge.Moo'"
-        "    type: TYPE_ENUM"
-        "    options {"
-        "      uninterpreted_option {"
-        "        name {"
-        "          name_part: 'grault'"
-        "          is_extension: true"
-        "        }"
-        "        positive_int_value: 1234"
-        "      }"
-        "    }"
-        "  }"
-        "}",
+        R"pb(
+          name: 'foo.proto'
+          edition: EDITION_2024
+          dependency: 'bar.proto'
+          dependency: 'baz.proto'
+          option_dependency: 'qux.proto'
+          message_type {
+            name: 'Foo'
+            field {
+              name: 'bar'
+              number: 1
+              label: LABEL_OPTIONAL
+              type_name: 'Bar'
+            }
+            field {
+              name: 'baz'
+              number: 2
+              label: LABEL_OPTIONAL
+              type_name: 'Baz'
+            }
+            field {
+              name: 'moo'
+              number: 3
+              label: LABEL_OPTIONAL
+              type_name: '.corge.Moo'
+              type: TYPE_ENUM
+              options {
+                uninterpreted_option {
+                  name { name_part: 'grault' is_extension: true }
+                  positive_int_value: 1234
+                }
+              }
+            }
+          }
+        )pb",
         &foo_proto));
-    foo_proto.set_syntax(syntax());
 
     ASSERT_TRUE(
         TextFormat::ParseFromString("name: 'bar.proto'"
                                     "message_type { name: 'Bar' }",
                                     &bar_proto));
-    bar_proto.set_syntax(syntax());
 
     // Collect pointers to stuff.
     bar_file_ = BuildFile(bar_proto);
@@ -3640,7 +3650,6 @@ TEST_P(AllowUnknownDependenciesTest, PlaceholderFile) {
   // Placeholder files should not be findable.
   EXPECT_EQ(bar_file_, pool_->FindFileByName(bar_file_->name()));
   EXPECT_TRUE(pool_->FindFileByName(baz_file->name()) == nullptr);
-
   // Copy*To should not crash for placeholder files.
   FileDescriptorProto baz_file_proto;
   baz_file->CopyTo(&baz_file_proto);
@@ -3672,6 +3681,15 @@ TEST_P(AllowUnknownDependenciesTest, PlaceholderTypes) {
   EXPECT_EQ(bar_type_, pool_->FindMessageTypeByName(bar_type_->full_name()));
   EXPECT_TRUE(pool_->FindMessageTypeByName(baz_type->full_name()) == nullptr);
   EXPECT_TRUE(pool_->FindEnumTypeByName(moo_type->full_name()) == nullptr);
+}
+
+TEST_P(AllowUnknownDependenciesTest, UnknownOptionDependency) {
+  ASSERT_EQ(1, foo_file_->option_dependency_count());
+  EXPECT_EQ("qux.proto", foo_file_->option_dependency_name(0));
+
+  // Unknown option dependencies should not be findable.
+  EXPECT_TRUE(pool_->FindFileByName(foo_file_->option_dependency_name(0)) ==
+              nullptr);
 }
 
 TEST_P(AllowUnknownDependenciesTest, CopyTo) {
@@ -3857,9 +3875,7 @@ TEST_P(AllowUnknownDependenciesTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(DatabaseSource, AllowUnknownDependenciesTest,
-                         testing::Combine(testing::Values(NO_DATABASE,
-                                                          FALLBACK_DATABASE),
-                                          testing::Values("proto2", "proto3")));
+                         testing::Values(NO_DATABASE, FALLBACK_DATABASE));
 
 // ===================================================================
 
@@ -5969,6 +5985,20 @@ TEST_F(ImportOptionValidationErrorTest, OptionDefinedInOptionDependency) {
     message Foo {
       int32 foo = 1 [(bar) = {baz: 1}];
     })schema");
+}
+
+TEST_F(ImportOptionValidationErrorTest,
+       OptionDefinedInUnknownOptionDependencyErrors) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFileWithErrors("bar.proto",
+                              R"schema(
+    edition = "2024";
+    import option "baz.proto";
+    message Bar {
+      int32 bar = 1 [(baz) = {baz: 1}];
+    })schema",
+                              "bar.proto: baz.proto: IMPORT: Import "
+                              "\"baz.proto\" has not been loaded.\n");
 }
 
 TEST_F(ImportOptionValidationErrorTest,
