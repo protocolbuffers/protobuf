@@ -7,6 +7,7 @@
 
 #include "upb/wire/eps_copy_input_stream.h"
 
+#include <stddef.h>
 #include <string.h>
 
 #include <cstdint>
@@ -22,7 +23,7 @@ namespace {
 TEST(EpsCopyInputStreamTest, ZeroSize) {
   upb_EpsCopyInputStream stream;
   const char* ptr = nullptr;
-  upb_EpsCopyInputStream_Init(&stream, &ptr, 0, false);
+  upb_EpsCopyInputStream_Init(&stream, &ptr, 0);
   EXPECT_TRUE(upb_EpsCopyInputStream_IsDone(&stream, &ptr));
 }
 
