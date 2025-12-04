@@ -158,6 +158,8 @@ rust_cc_aspect_test = analysistest.make(_rust_cc_aspect_test_impl)
 def _test_cc_aspect():
     attach_cc_aspect(name = "child_proto_with_cc_aspect", dep = ":child_proto")
 
+    attach_cc_aspect(name = "parent_nested_subdirectory_proto_with_cc_aspect", dep = ":parent_nested_proto")
+
     rust_cc_aspect_test(
         name = "rust_cc_aspect_test",
         target_under_test = ":child_proto_with_cc_aspect",
@@ -230,6 +232,11 @@ def rust_proto_library_unit_test(name):
         name = "child_proto",
         srcs = ["child.proto"],
         deps = [":parent_proto", ":parent2_proto"],
+    )
+
+    proto_library(
+        name = "parent_nested_proto",
+        srcs = ["parent3.proto", "subdirectory/parent3.proto"],
     )
 
     _test_upb_aspect()

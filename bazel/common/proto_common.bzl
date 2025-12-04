@@ -323,7 +323,15 @@ def _declare_generated_files(
     proto_sources = proto_info.direct_sources
     outputs = []
 
+    # Ensure that we only declare once per base name.
+    base_set = set()
+
     for src in proto_sources:
+        if str(src.basename) in base_set:
+            continue
+
+        base_set.add(str(src.basename))
+
         basename_no_ext = src.basename[:-(len(src.extension) + 1)]
 
         if name_mapper:
