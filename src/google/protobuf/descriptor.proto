@@ -86,6 +86,9 @@ enum Edition {
   EDITION_2023 = 1000;
   EDITION_2024 = 1001;
 
+  // A placeholder edition for developing and testing unscheduled features.
+  EDITION_UNSTABLE = 9999;
+
   // Placeholder editions for testing feature resolution.  These should not be
   // used or relied on outside of tests.
   EDITION_1_TEST_ONLY = 1;

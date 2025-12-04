@@ -255,18 +255,19 @@ namespace Google.Protobuf.Reflection {
             "AiABKAkSDQoFYmVnaW4YAyABKAUSCwoDZW5kGAQgASgFEkgKCHNlbWFudGlj",
             "GAUgASgOMjYuZ29vZ2xlLnByb3RvYnVmLkdlbmVyYXRlZENvZGVJbmZvLkFu",
             "bm90YXRpb24uU2VtYW50aWMiKAoIU2VtYW50aWMSCAoETk9ORRAAEgcKA1NF",
-            "VBABEgkKBUFMSUFTEAIqpwIKB0VkaXRpb24SEwoPRURJVElPTl9VTktOT1dO",
+            "VBABEgkKBUFMSUFTEAIqvgIKB0VkaXRpb24SEwoPRURJVElPTl9VTktOT1dO",
             "EAASEwoORURJVElPTl9MRUdBQ1kQhAcSEwoORURJVElPTl9QUk9UTzIQ5gcS",
             "EwoORURJVElPTl9QUk9UTzMQ5wcSEQoMRURJVElPTl8yMDIzEOgHEhEKDEVE",
-            "SVRJT05fMjAyNBDpBxIXChNFRElUSU9OXzFfVEVTVF9PTkxZEAESFwoTRURJ",
-            "VElPTl8yX1RFU1RfT05MWRACEh0KF0VESVRJT05fOTk5OTdfVEVTVF9PTkxZ",
-            "EJ2NBhIdChdFRElUSU9OXzk5OTk4X1RFU1RfT05MWRCejQYSHQoXRURJVElP",
-            "Tl85OTk5OV9URVNUX09OTFkQn40GEhMKC0VESVRJT05fTUFYEP////8HKlUK",
-            "EFN5bWJvbFZpc2liaWxpdHkSFAoQVklTSUJJTElUWV9VTlNFVBAAEhQKEFZJ",
-            "U0lCSUxJVFlfTE9DQUwQARIVChFWSVNJQklMSVRZX0VYUE9SVBACQn4KE2Nv",
-            "bS5nb29nbGUucHJvdG9idWZCEERlc2NyaXB0b3JQcm90b3NIAVotZ29vZ2xl",
-            "LmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMvZGVzY3JpcHRvcnBi+AEBogID",
-            "R1BCqgIaR29vZ2xlLlByb3RvYnVmLlJlZmxlY3Rpb24="));
+            "SVRJT05fMjAyNBDpBxIVChBFRElUSU9OX1VOU1RBQkxFEI9OEhcKE0VESVRJ",
+            "T05fMV9URVNUX09OTFkQARIXChNFRElUSU9OXzJfVEVTVF9PTkxZEAISHQoX",
+            "RURJVElPTl85OTk5N19URVNUX09OTFkQnY0GEh0KF0VESVRJT05fOTk5OThf",
+            "VEVTVF9PTkxZEJ6NBhIdChdFRElUSU9OXzk5OTk5X1RFU1RfT05MWRCfjQYS",
+            "EwoLRURJVElPTl9NQVgQ/////wcqVQoQU3ltYm9sVmlzaWJpbGl0eRIUChBW",
+            "SVNJQklMSVRZX1VOU0VUEAASFAoQVklTSUJJTElUWV9MT0NBTBABEhUKEVZJ",
+            "U0lCSUxJVFlfRVhQT1JUEAJCfgoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVz",
+            "Y3JpcHRvclByb3Rvc0gBWi1nb29nbGUuZ29sYW5nLm9yZy9wcm90b2J1Zi90",
+            "eXBlcy9kZXNjcmlwdG9ycGL4AQGiAgNHUEKqAhpHb29nbGUuUHJvdG9idWYu",
+            "UmVmbGVjdGlvbg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.Reflection.Edition), typeof(global::Google.Protobuf.Reflection.SymbolVisibility), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -329,6 +330,10 @@ namespace Google.Protobuf.Reflection {
     /// </summary>
     [pbr::OriginalName("EDITION_2023")] _2023 = 1000,
     [pbr::OriginalName("EDITION_2024")] _2024 = 1001,
+    /// <summary>
+    /// A placeholder edition for developing and testing unscheduled features.
+    /// </summary>
+    [pbr::OriginalName("EDITION_UNSTABLE")] Unstable = 9999,
     /// <summary>
     /// Placeholder editions for testing feature resolution.  These should not be
     /// used or relied on outside of tests.
