@@ -134,7 +134,7 @@ class JsonLexer {
     // Suppress the error; this can only fail on EOF in which case we would
     // return false regardless.
     (void)SkipToToken();
-    auto ignored = stream_.BufferAtLeast(literal.size());
+    (void)stream_.BufferAtLeast(literal.size());
     if (!absl::StartsWith(stream_.Unread(), literal)) {
       return false;
     }
