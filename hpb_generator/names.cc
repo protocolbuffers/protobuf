@@ -33,10 +33,16 @@ std::string Namespace(const absl::string_view package) {
 
 // Return the qualified C++ name for a file level symbol.
 std::string QualifiedFileLevelSymbol(const google::protobuf::FileDescriptor* file,
-                                     const std::string& name) {
+                                     const std::string& name,
+                                     bool is_upb = true) {
   if (file->package().empty()) {
     return absl::StrCat("::", name);
   }
+
+  if (!is_upb) {
+    return absl::StrCat(Namespace(file->package()), "::", name);
+  }
+
   // Append ::protos postfix to package name.
   return absl::StrCat(Namespace(file->package()), "::protos::", name);
 }
@@ -102,12 +108,21 @@ std::string QualifiedInternalClassName(const google::protobuf::Descriptor* descr
       descriptor->file(), absl::StrCat("internal::", ClassName(descriptor)));
 }
 
+std::string CppBackendClassName(const google::protobuf::Descriptor* descriptor) {
+  return QualifiedFileLevelSymbol(descriptor->file(), ClassName(descriptor),
+                                  false);
+}
+
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file) {
   return compiler::StripProto(file->name()) + ".hpb.cc";
 }
 
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file) {
   return compiler::StripProto(file->name()) + ".upb.h";
+}
+
+std::string ProtoFilename(const google::protobuf::FileDescriptor* file) {
+  return compiler::StripProto(file->name()) + ".proto.h";
 }
 
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file) {

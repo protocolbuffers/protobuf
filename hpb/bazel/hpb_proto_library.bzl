@@ -9,12 +9,14 @@
   - hpb_proto_library()
 """
 
+load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "use_cpp_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:google_cc_proto_library.bzl", "CCWrappedCcInfo", "cc_proto_aspect")  # buildifier: disable=bzl-visibility
 load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
 def upb_use_cpp_toolchain():
@@ -73,6 +75,10 @@ def _hpb_proto_rule_impl(ctx):
     else:
         fail("proto_library rule must generate _HpbWrappedCcInfo (aspect should have handled this).")
 
+    backend = ctx.attr._hpb_backend[BuildSettingInfo].value
+    if backend == "cpp" and CCWrappedCcInfo in dep:
+        cc_info = cc_common.merge_cc_infos(direct_cc_infos = [cc_info, dep[CCWrappedCcInfo].cc_info])
+
     lib = cc_info.linking_context.linker_inputs.to_list()[0].libraries[0]
     files = _filter_none([
         lib.static_library,
@@ -93,9 +99,15 @@ def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
     dep_ccinfos += [dep[_HpbWrappedCcInfo].cc_info for dep in deps if _HpbWrappedCcInfo in dep]
-    if UpbWrappedCcInfo not in target:
-        fail("Target should have UpbWrappedCcInfo provider")
-    dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+
+    backend = ctx.attr._hpb_backend[BuildSettingInfo].value
+
+    if backend == "upb" and UpbWrappedCcInfo in target:
+        dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+
+    if backend == "cpp" and CCWrappedCcInfo in target:
+        dep_ccinfos.append(target[CCWrappedCcInfo].cc_info)
+
     proto_info = target[ProtoInfo]
 
     if not getattr(ctx.rule.attr, "srcs", []):
@@ -137,6 +149,9 @@ _hpb_proto_library_aspect = aspect(
                 "//hpb:repeated_field",
             ],
         ),
+        "_hpb_backend": attr.label(
+            default = "//hpb:hpb_backend",
+        ),
     },
     exec_groups = {
         "proto_compiler": exec_group(),
@@ -160,9 +175,24 @@ hpb_proto_library = rule(
     attrs = {
         "deps": attr.label_list(
             aspects = [
+                cc_proto_aspect,
                 upb_proto_library_aspect,
                 _hpb_proto_library_aspect,
             ],
+            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
+        ),
+        "_hpb_backend": attr.label(
+            default = "//hpb:hpb_backend",
+        ),
+    },
+)
+
+hpb_proto_library_cpp = rule(
+    implementation = _hpb_proto_rule_impl,
+    attrs = {
+        "deps": attr.label_list(
+            aspects = [cc_proto_aspect, _hpb_proto_library_aspect],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],
         ),
