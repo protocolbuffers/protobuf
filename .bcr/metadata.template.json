@@ -98,6 +98,12 @@
       "github": "rgoldfinger6",
       "name": "Rachel Goldfinger",
       "do_not_notify": true
+    },
+    {
+      "email": "jamiepilgrim@google.com",
+      "github": "pilgrimmemoirs",
+      "name": "Jamie Pilgrim",
+      "do_not_notify": true
     }
   ],
   "repository": ["github:protocolbuffers/protobuf"],
