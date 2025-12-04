@@ -38,6 +38,7 @@
     "process-timeout": 1200
   },
   "php-ext": {
-    "extension-name": "protobuf"
+    "extension-name": "protobuf",
+    "build-path": "ext/google/protobuf"
   }
 }
