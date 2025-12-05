@@ -779,7 +779,7 @@ TYPED_TEST_P(WireFormatTest, ParseMessageSetWithDeepRecReverseOrder) {
       m->set_i(i);
       mset = m->mutable_recursive();
     }
-    message_set.ByteSizeLong();
+    EXPECT_GT(message_set.ByteSizeLong(), 0);
     // Serialize with reverse payload tag order
     io::StringOutputStream output_stream(&data);
     io::CodedOutputStream coded_output(&output_stream);
@@ -834,7 +834,7 @@ TYPED_TEST_P(WireFormatTest, ParseFailMalformedMessageSetReverseOrder) {
     // SerializeReverseOrder() assumes "recursive" is always present.
     m->mutable_recursive();
 
-    message_set.ByteSizeLong();
+    EXPECT_GT(message_set.ByteSizeLong(), 0);
 
     // Serialize with reverse payload tag order
     io::StringOutputStream output_stream(&data);
