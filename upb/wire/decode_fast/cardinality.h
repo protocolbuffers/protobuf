@@ -94,7 +94,7 @@ fastdecode_nextret fastdecode_nextrepeated(upb_Decoder* d, void* dst,
   fastdecode_nextret ret;
   dst = (char*)dst + valbytes;
 
-  if (UPB_LIKELY(!_upb_Decoder_IsDone(d, ptr))) {
+  if (UPB_LIKELY(!upb_EpsCopyInputStream_IsDone(&d->input, ptr))) {
     ret.tag = _upb_FastDecoder_LoadTag(*ptr);
     if (fastdecode_tagmatch(ret.tag, data, tagbytes)) {
       ret.next = FD_NEXT_SAMEFIELD;

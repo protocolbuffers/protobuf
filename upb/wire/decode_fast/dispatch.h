@@ -202,7 +202,7 @@ const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d);
 
 UPB_INLINE
 const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
-  d->status = status;
+  d->err.code = status;
   return _upb_FastDecoder_ErrorJmp2(d);
 }
 
@@ -213,7 +213,7 @@ const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, upb_DecodeStatus status) {
     case kUpb_DecodeFastNext_FallbackToMiniTable:                         \
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeGeneric(UPB_PARSE_ARGS); \
     case kUpb_DecodeFastNext_Error:                                       \
-      UPB_ASSERT(d->status != kUpb_DecodeStatus_Ok);                      \
+      UPB_ASSERT(d->err.code != kUpb_DecodeStatus_Ok);                    \
       return _upb_FastDecoder_ErrorJmp2(d);                               \
     case kUpb_DecodeFastNext_MessageIsDoneFallback:                       \
       UPB_MUSTTAIL return upb_DecodeFast_MessageIsDoneFallback(           \
@@ -253,7 +253,7 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
 #ifdef UPB_TRACE_FASTDECODER
   fprintf(stderr, "Fasttable error @ %s:%d -> %s (%d)\n", file, line, sym, val);
 #endif
-  d->status = val;
+  d->err.code = val;
   *next = kUpb_DecodeFastNext_Error;
   return false;
 }
