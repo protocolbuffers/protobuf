@@ -45,3 +45,7 @@ Required.*.DurationProtoNanosWrongSignNegativeSecs.JsonOutput # Should have fail
 Required.*.TimestampProtoNanoTooLarge.JsonOutput # Should have failed to serialize, but didn't.
 Required.*.TimestampProtoNegativeNanos.JsonOutput # Should have failed to serialize, but didn't.
 Required.*.JsonInput.SingleValueForRepeatedFieldInt32 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_VarintMoreThanTenBytes                                                             # Should have failed to parse, but didn't.
