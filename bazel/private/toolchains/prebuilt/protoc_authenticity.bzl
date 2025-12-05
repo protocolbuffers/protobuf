@@ -20,7 +20,9 @@ def _protoc_authenticity_impl(ctx):
         command = """\
         {protoc} --version > {validation_output}
         grep -q "^libprotoc {RELEASE_VERSION}" {validation_output} || {{
-          echo 'ERROR: protoc version does not match protobuf Bazel module; we do not support this. To suppress this error, run Bazel with --norun_validations'
+          echo 'ERROR: protoc version does not match protobuf Bazel module; we do not support this.
+          It is considered undefined behavior that is expected to break in the future even if it appears to work today.
+          To suppress this error, run Bazel with --norun_validations'
           echo 'Expected: libprotoc {RELEASE_VERSION}'
           echo -n 'Actual:   '
           cat {validation_output}
