@@ -31,8 +31,8 @@ jobs:
         bzlmod: [ true, false ]
         # Note, we must test with validation disabled, otherwise the build will fail due to version mismatch:
         #  ERROR: protoc version does not match protobuf Bazel module; we do not support this. To suppress this error, run Bazel with --norun_validations
-        #  Expected: libprotoc 33.0
-        #  Actual:   libprotoc 34.0-dev
+        #  Expected: libprotoc XX
+        #  Actual:   libprotoc YY
         toolchain_resolution: [ "", "--incompatible_enable_proto_toolchain_resolution=true --norun_validations" ]
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
@@ -76,3 +76,5 @@ jobs:
           bash: >
             cd examples;
             bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
+            cd example_without_cc_toolchain
+            bazel build //... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
