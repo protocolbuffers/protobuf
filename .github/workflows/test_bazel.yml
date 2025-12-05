@@ -79,4 +79,4 @@ jobs:
           version: ${{ matrix.bazelversion }}
           bash: |
             cd examples
-            bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }}
+            bazel build //... --show_progress_rate_limit=60 @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }}
