@@ -5,5 +5,9 @@ build:macos --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 
 common:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17 --enable_runfiles
 
+# Avoid 3k+ lines of noisy warning spam on CI
+common --per_file_copt=external/abseil-cpp/.*@-Wno-everything
+common --per_file_copt=external/com_google_protobuf/.*@-Wno-everything
+
 build --experimental_remote_cache_eviction_retries=5
 build --remote_download_outputs=all
