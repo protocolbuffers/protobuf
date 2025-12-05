@@ -2494,8 +2494,10 @@ const DescriptorPool* DescriptorPool::generated_pool() {
   // runtime. We have to avoid registering it pre-main, because we need to
   // ensure that the linker --gc-sections step can strip out the full runtime if
   // it is unused.
-  DescriptorProto::descriptor();
-  pb::CppFeatures::descriptor();
+  // TODO: Remove this suppression.
+  (void)DescriptorProto::descriptor();
+  // TODO: Remove this suppression.
+  (void)pb::CppFeatures::descriptor();
   return pool;
 }
 
@@ -10230,7 +10232,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     return false;
   } else {
     std::string serial;
-    dynamic->SerializeToString(&serial);  // Never fails
+    ABSL_CHECK(dynamic->SerializeToString(&serial));  // Never fails
     if (option_field->type() == FieldDescriptor::TYPE_MESSAGE) {
       unknown_fields->AddLengthDelimited(option_field->number(), serial);
     } else {

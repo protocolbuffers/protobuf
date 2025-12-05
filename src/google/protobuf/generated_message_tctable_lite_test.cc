@@ -901,7 +901,7 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
   }
 
   proto2_unittest::TestPackedEnumSmallRange new_proto;
-  new_proto.ParseFromString(proto.SerializeAsString());
+  ABSL_CHECK(new_proto.ParseFromString(proto.SerializeAsString()));
 
   // We should have reserved exactly the right size for new_proto's `vals`,
   // rather than growing it on demand like we did in `proto`.
@@ -985,7 +985,8 @@ TEST(GeneratedMessageTctableLiteTest,
   // field 1, because it notices that the input serialized proto is much smaller
   // than 2^20 bytes.
   proto2_unittest::TestPackedEnumSmallRange proto;
-  proto.MergeFromString(serialized);
+  // TODO: Remove this suppression.
+  (void)proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }
 

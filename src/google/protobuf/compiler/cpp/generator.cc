@@ -150,7 +150,7 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
 
     if (file_options.annotate_headers) {
       auto info_output = absl::WrapUnique(generator_context->Open(info_path));
-      annotations.SerializeToZeroCopyStream(info_output.get());
+      ABSL_CHECK(annotations.SerializeToZeroCopyStream(info_output.get()));
     }
   }
 
@@ -175,7 +175,7 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
 
     if (file_options.annotate_headers) {
       auto info_output = absl::WrapUnique(generator_context->Open(info_path));
-      annotations.SerializeToZeroCopyStream(info_output.get());
+      ABSL_CHECK(annotations.SerializeToZeroCopyStream(info_output.get()));
     }
   }
 

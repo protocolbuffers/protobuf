@@ -2100,7 +2100,7 @@ static bool HasBootstrapProblem(const FileDescriptor* file,
   // are converted to extensions.
   DynamicMessageFactory factory(pool);
   Message* fd_proto = factory.GetPrototype(fd_proto_descriptor)->New();
-  fd_proto->ParseFromString(linkedin_fd_proto.SerializeAsString());
+  ABSL_CHECK(fd_proto->ParseFromString(linkedin_fd_proto.SerializeAsString()));
 
   bool res = HasExtensionFromFile(*fd_proto, file, options,
                                   has_opt_codesize_extension);

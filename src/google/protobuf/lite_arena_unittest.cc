@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include "absl/log/absl_check.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/map_test_util.h"
@@ -43,11 +44,11 @@ TEST_F(LiteArenaTest, MapNoHeapAllocation) {
     proto2_unittest::TestArenaMapLite* from =
         Arena::Create<proto2_unittest::TestArenaMapLite>(arena_.get());
     MapTestUtil::SetArenaMapFields(from);
-    from->SerializeToString(&data);
+    ABSL_CHECK(from->SerializeToString(&data));
 
     proto2_unittest::TestArenaMapLite* to =
         Arena::Create<proto2_unittest::TestArenaMapLite>(arena_.get());
-    to->ParseFromString(data);
+    ABSL_CHECK(to->ParseFromString(data));
     MapTestUtil::ExpectArenaMapFieldsSet(*to);
   }
 }
@@ -61,7 +62,7 @@ TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
     data.append("a");
   }
   data[1] = data.size() - 2;
-  message->ParseFromString(data);
+  ABSL_CHECK(message->ParseFromString(data));
 }
 
 }  // namespace

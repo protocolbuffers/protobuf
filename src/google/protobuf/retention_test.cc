@@ -302,9 +302,6 @@ TEST(RetentionTest, InvalidDescriptor) {
   ASSERT_NE(pool.BuildFile(descriptor_proto_descriptor), nullptr);
   const FileDescriptor* file_descriptor = pool.BuildFile(file_descriptor_proto);
   ASSERT_NE(file_descriptor, nullptr);
-
-  FileDescriptorProto stripped_file =
-      compiler::StripSourceRetentionOptions(*file_descriptor);
 }
 
 TEST(RetentionTest, MissingRequiredField) {

@@ -104,7 +104,7 @@ TEST(Proto3ArenaTest, Parsing) {
 
   Arena arena;
   TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
   ExpectAllFieldsSet(*arena_message);
 }
 
@@ -114,7 +114,7 @@ TEST(Proto3ArenaTest, UnknownFields) {
 
   Arena arena;
   TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
   ExpectAllFieldsSet(*arena_message);
 
   // In proto3 we can still get a pointer to the UnknownFieldSet through
@@ -249,12 +249,12 @@ TEST(Proto3OptionalTest, OptionalFields) {
   EXPECT_TRUE(msg.has_optional_int32());
 
   std::string serialized;
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_GT(serialized.size(), 0);
 
   msg.clear_optional_int32();
   EXPECT_FALSE(msg.has_optional_int32());
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_EQ(serialized.size(), 0);
 }
 
@@ -350,12 +350,12 @@ TEST(Proto3OptionalTest, OptionalField) {
   EXPECT_TRUE(msg.has_optional_int32());
 
   std::string serialized;
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_GT(serialized.size(), 0);
 
   msg.clear_optional_int32();
   EXPECT_FALSE(msg.has_optional_int32());
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_EQ(serialized.size(), 0);
 }
 
@@ -566,7 +566,7 @@ TEST(Proto3OptionalTest, BinaryRoundTrip) {
 
   proto2_unittest::TestProto3Optional msg2;
   std::string serialized;
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_TRUE(msg2.ParseFromString(serialized));
   TestAllFieldsZero(msg2);
   TestAllFieldsSet(msg2, true);

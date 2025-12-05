@@ -4,6 +4,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "binary_wireformat.h"
 #include "test_runner.h"
@@ -24,7 +25,7 @@ using ::testing::Return;
 
 MATCHER_P(RequestEquals, expected_textproto, "") {
   ::conformance::ConformanceRequest request, expected;
-  request.ParseFromString(arg);
+  ABSL_CHECK(request.ParseFromString(arg));
   TextFormat::ParseFromString(expected_textproto, &expected);
   if (!util::MessageDifferencer::Equals(request, expected)) {
     std::string request_string;

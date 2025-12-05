@@ -553,7 +553,7 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
   }
 
   std::string serialized_request;
-  request.SerializeToString(&serialized_request);
+  ABSL_CHECK(request.SerializeToString(&serialized_request));
 
   uint32_t len = internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_request.size()));

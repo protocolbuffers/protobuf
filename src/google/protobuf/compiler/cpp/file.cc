@@ -1264,7 +1264,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
 
   FileDescriptorProto file_proto = StripSourceRetentionOptions(*file_);
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  ABSL_CHECK(file_proto.SerializeToString(&file_data));
 
   auto desc_name = UniqueName("descriptor_table_protodef", file_, options_);
   p->Emit(

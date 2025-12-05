@@ -5564,7 +5564,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
   message.set_optional_int32(123);
   message.set_optional_string("foo");
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   RedirectStdinFromText(data);
   EXPECT_TRUE(Run("--decode_raw", /*specify_proto_files=*/false));

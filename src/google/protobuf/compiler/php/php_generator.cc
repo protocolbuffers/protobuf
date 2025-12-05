@@ -945,7 +945,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
       }
 
       std::string files_data;
-      files.SerializeToString(&files_data);
+      ABSL_CHECK(files.SerializeToString(&files_data));
 
       printer->Print("$pool->internalAddGeneratedFile(\n");
       Indent(printer);
@@ -1078,7 +1078,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   }
 
   std::string files_data;
-  sorted_file_set.SerializeToString(&files_data);
+  ABSL_CHECK(sorted_file_set.SerializeToString(&files_data));
 
   printer->Print("$pool->internalAddGeneratedFile(\n");
   Indent(printer);
@@ -1985,7 +1985,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
         absl::StrReplaceAll(metadata_classname, {{"\\", "\\\\"}});
     FileDescriptorProto file_proto = StripSourceRetentionOptions(*file);
     std::string serialized;
-    file_proto.SerializeToString(&serialized);
+    ABSL_CHECK(file_proto.SerializeToString(&serialized));
     printer.Print(
         "/* $filename$ */\n"
         "\n"

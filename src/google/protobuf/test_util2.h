@@ -37,7 +37,7 @@ inline std::string GetTestDataPath(absl::string_view path) {
 template <typename ProtoType>
 bool EqualsToSerialized(const ProtoType& message, const std::string& data) {
   ProtoType other;
-  other.ParsePartialFromString(data);
+  ABSL_CHECK(other.ParsePartialFromString(data));
   return util::MessageDifferencer::Equals(message, other);
 }
 

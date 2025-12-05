@@ -2785,7 +2785,7 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
   (*from.mutable_known_map_field())[0] = UNITTEST::E_PROTO2_MAP_ENUM_FOO;
   (*from.mutable_unknown_map_field())[0] = UNITTEST::E_PROTO2_MAP_ENUM_EXTRA;
   std::string data;
-  from.SerializeToString(&data);
+  ABSL_CHECK(from.SerializeToString(&data));
 
   UNITTEST::TestEnumMap to;
   EXPECT_TRUE(to.ParseFromString(data));
@@ -2796,7 +2796,7 @@ TEST(GeneratedMapFieldTest, Proto2UnknownEnum) {
 
   data.clear();
   from.Clear();
-  to.SerializeToString(&data);
+  ABSL_CHECK(to.SerializeToString(&data));
   EXPECT_TRUE(from.ParseFromString(data));
   EXPECT_EQ(from.GetReflection()->GetUnknownFields(from).field_count(), 0);
   EXPECT_THAT(from.known_map_field(),
@@ -3583,14 +3583,14 @@ TEST_F(MapFieldInDynamicMessageTest, MapValueReferernceValidAfterSerialize) {
   // from map to repeated field, which will invalidate the submsg we previously
   // got.
   std::string data;
-  message->SerializeToString(&data);
+  ABSL_CHECK(message->SerializeToString(&data));
 
   const Reflection* submsg_reflection = submsg->GetReflection();
   const Descriptor* submsg_desc = submsg->GetDescriptor();
   const FieldDescriptor* submsg_field = submsg_desc->FindFieldByName("c");
   submsg_reflection->SetInt32(submsg, submsg_field, 128);
 
-  message->SerializeToString(&data);
+  ABSL_CHECK(message->SerializeToString(&data));
   TestMap to;
   ASSERT_TRUE(to.ParseFromString(data));
   EXPECT_EQ(128, to.map_int32_foreign_message().at(0).c());
@@ -3615,16 +3615,16 @@ TEST_F(MapFieldInDynamicMessageTest, MapEntryReferernceValidAfterSerialize) {
   // from repeated field to map, which will invalidate the map_entry we
   // previously got.
   std::string data;
-  message->SerializeToString(&data);
+  ABSL_CHECK(message->SerializeToString(&data));
 
   const Reflection* submsg_reflection = submsg->GetReflection();
   const Descriptor* submsg_desc = submsg->GetDescriptor();
   const FieldDescriptor* submsg_field = submsg_desc->FindFieldByName("c");
   submsg_reflection->SetInt32(submsg, submsg_field, 128);
 
-  message->SerializeToString(&data);
+  ABSL_CHECK(message->SerializeToString(&data));
   TestMap to;
-  to.ParseFromString(data);
+  ABSL_CHECK(to.ParseFromString(data));
   EXPECT_EQ(128, to.map_int32_foreign_message().at(0).c());
 }
 
@@ -3712,7 +3712,7 @@ TEST(WireFormatForMapFieldTest, ParseMap) {
 
   // Serialize using the generated code.
   MapTestUtil::SetMapFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
 
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
@@ -3742,7 +3742,7 @@ TEST(WireFormatForMapFieldTest, SerializeMap) {
 
   // Serialize using the generated code.
   {
-    message.ByteSizeLong();
+    ASSERT_GT(message.ByteSizeLong(), 0);
     io::StringOutputStream raw_output(&generated_data);
     io::CodedOutputStream output(&raw_output);
     message.SerializeWithCachedSizes(&output);
@@ -3780,8 +3780,8 @@ TEST(WireFormatForMapFieldTest, SerializeMapDynamicMessage) {
   std::string dynamic_data;
 
   // Serialize.
-  generated_message.SerializeToString(&generated_data);
-  dynamic_message->SerializeToString(&dynamic_data);
+  ABSL_CHECK(generated_message.SerializeToString(&generated_data));
+  ABSL_CHECK(dynamic_message->SerializeToString(&dynamic_data));
 
   // Because map serialization doesn't guarantee order, we just compare
   // serialized size here. This is enough to tell dynamic message doesn't miss
@@ -3798,11 +3798,11 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   reflection_tester.SetMapFieldsViaReflection(dynamic_message.get());
   reflection_tester.ExpectMapFieldsSetViaReflection(*dynamic_message);
   std::string expected_serialized_data;
-  dynamic_message->SerializeToString(&expected_serialized_data);
+  ABSL_CHECK(dynamic_message->SerializeToString(&expected_serialized_data));
   int expected_size = expected_serialized_data.size();
   EXPECT_EQ(dynamic_message->ByteSizeLong(), expected_size);
   TestMap expected_message;
-  expected_message.ParseFromString(expected_serialized_data);
+  ABSL_CHECK(expected_message.ParseFromString(expected_serialized_data));
 
   std::unique_ptr<Message> message2;
   message2.reset(factory.GetPrototype(UNITTEST::TestMap::descriptor())->New());
@@ -3821,7 +3821,7 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   size_t duplicate_size = dynamic_message->ByteSizeLong();
   EXPECT_TRUE(duplicate_size > expected_size);
   std::string duplicate_serialized_data;
-  dynamic_message->SerializeToString(&duplicate_serialized_data);
+  ABSL_CHECK(dynamic_message->SerializeToString(&duplicate_serialized_data));
   EXPECT_EQ(dynamic_message->ByteSizeLong(), duplicate_serialized_data.size());
 
   // Force the map field to mark with map CLEAN
@@ -3857,7 +3857,7 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   // warning was raised at parse back if user use SerializeWithCachedSizes()
   // which avoids size check at serialize.
   std::string serialized_data;
-  dynamic_message->SerializeToString(&serialized_data);
+  ABSL_CHECK(dynamic_message->SerializeToString(&serialized_data));
   EXPECT_TRUE(dynamic_message->ParseFromString(serialized_data));
 }
 
@@ -3868,7 +3868,7 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
     // Set up.
     UNITTEST::TestMap message;
     MapTestUtil::SetMapFields(&message);
-    message.SerializeToString(&data);
+    ABSL_CHECK(message.SerializeToString(&data));
   }
 
   {
@@ -3946,7 +3946,7 @@ static std::string DeterministicSerializationWithSerializePartialToCodedStream(
   io::ArrayOutputStream array_stream(&result[0], size);
   io::CodedOutputStream output_stream(&array_stream);
   output_stream.SetSerializationDeterministic(true);
-  t.SerializePartialToCodedStream(&output_stream);
+  ABSL_CHECK(t.SerializePartialToCodedStream(&output_stream));
   EXPECT_FALSE(output_stream.HadError());
   EXPECT_EQ(size, output_stream.ByteCount());
   return result;
@@ -3960,7 +3960,7 @@ static std::string DeterministicSerializationWithSerializeToCodedStream(
   io::ArrayOutputStream array_stream(&result[0], size);
   io::CodedOutputStream output_stream(&array_stream);
   output_stream.SetSerializationDeterministic(true);
-  t.SerializeToCodedStream(&output_stream);
+  ABSL_CHECK(t.SerializeToCodedStream(&output_stream));
   EXPECT_FALSE(output_stream.HadError());
   EXPECT_EQ(size, output_stream.ByteCount());
   return result;
@@ -4058,10 +4058,11 @@ static std::string GetGoldenMessageBinary() {
   static std::string* golden_message_binary = [] {
     UNITTEST::TestMaps t;
     TextFormat::Parser parser;
-    parser.ParseFromString(GetGoldenMessageTextProto(), &t);
+    // TODO: Remove this suppression.
+    (void) parser.ParseFromString(GetGoldenMessageTextProto(), &t);
 
     std::string* result = new std::string;
-    t.SerializeToString(result);
+    ABSL_CHECK(t.SerializeToString(result));
     return result;
   }();
   return *golden_message_binary;
@@ -4070,7 +4071,7 @@ static std::string GetGoldenMessageBinary() {
 TEST(MapSerializationTest, DeterministicSubmessage) {
   UNITTEST::TestSubmessageMaps p;
   UNITTEST::TestMaps t;
-  t.ParseFromString(GetGoldenMessageBinary());
+  ABSL_CHECK(t.ParseFromString(GetGoldenMessageBinary()));
   *(p.mutable_m()) = t;
   std::vector<std::string> v;
   // Use multiple attempts to increase the chance of a failure if something is
@@ -4220,10 +4221,10 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
     UNITTEST::TestArenaMap* from =
         Arena::Create<UNITTEST::TestArenaMap>(&arena);
     MapTestUtil::SetArenaMapFields(from);
-    from->SerializeToString(&data);
+    ABSL_CHECK(from->SerializeToString(&data));
 
     UNITTEST::TestArenaMap* to = Arena::Create<UNITTEST::TestArenaMap>(&arena);
-    to->ParseFromString(data);
+    ABSL_CHECK(to->ParseFromString(data));
     MapTestUtil::ExpectArenaMapFieldsSet(*to);
   }
 }
@@ -4268,7 +4269,7 @@ TEST(ArenaTest, StringMapNoLeak) {
   }
   (*message->mutable_map_string_string())[data] = data;
   // Now we recreate the map via parsing
-  message->ParseFromString(message->SerializeAsString());
+  ABSL_CHECK(message->ParseFromString(message->SerializeAsString()));
   // And we cause value strings to grow to make sure they are handled correctly.
   std::string& value = (*message->mutable_map_string_string())[data];
   ASSERT_EQ(value, data);

@@ -494,9 +494,11 @@ absl::StatusOr<FeatureSetDefaults> FeatureResolver::CompileDefaults(
     }
     auto* edition_defaults = defaults.mutable_defaults()->Add();
     edition_defaults->set_edition(edition);
-    edition_defaults->mutable_fixed_features()->MergeFromString(
+    // TODO: Remove this suppression.
+    (void)edition_defaults->mutable_fixed_features()->MergeFromString(
         fixed_defaults_dynamic->SerializeAsString());
-    edition_defaults->mutable_overridable_features()->MergeFromString(
+    // TODO: Remove this suppression.
+    (void)edition_defaults->mutable_overridable_features()->MergeFromString(
         overridable_defaults_dynamic->SerializeAsString());
   }
   return defaults;
@@ -572,7 +574,8 @@ FeatureResolver::ValidationResults FeatureResolver::ValidateFeatureLifetimes(
     // extensions.
     features_storage =
         absl::WrapUnique(factory.GetPrototype(pool_descriptor)->New());
-    features_storage->ParseFromString(features.SerializeAsString());
+    // TODO: Remove this suppression.
+    (void)features_storage->ParseFromString(features.SerializeAsString());
     pool_features = features_storage.get();
   }
   ABSL_CHECK(pool_features != nullptr);

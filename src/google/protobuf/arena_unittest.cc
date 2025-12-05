@@ -651,7 +651,7 @@ TEST(ArenaTest, Parsing) {
   // Test memory leak.
   Arena arena;
   TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
   TestUtil::ExpectAllFieldsSet(*arena_message);
 
   // Test that string fields have nul terminator bytes (earlier bug).
@@ -667,10 +667,10 @@ TEST(ArenaTest, UnknownFields) {
   // an arena.
   Arena arena;
   TestEmptyMessage* arena_message = Arena::Create<TestEmptyMessage>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
 
   TestAllTypes copied;
-  copied.ParseFromString(arena_message->SerializeAsString());
+  ABSL_CHECK(copied.ParseFromString(arena_message->SerializeAsString()));
   TestUtil::ExpectAllFieldsSet(copied);
 
   // Exercise UFS manual manipulation (setters).
@@ -678,7 +678,7 @@ TEST(ArenaTest, UnknownFields) {
   arena_message->mutable_unknown_fields()->AddVarint(
       TestAllTypes::kOptionalInt32FieldNumber, 42);
   copied.Clear();
-  copied.ParseFromString(arena_message->SerializeAsString());
+  ABSL_CHECK(copied.ParseFromString(arena_message->SerializeAsString()));
   EXPECT_TRUE(copied.has_optional_int32());
   EXPECT_EQ(42, copied.optional_int32());
 
@@ -686,7 +686,7 @@ TEST(ArenaTest, UnknownFields) {
   TestEmptyMessage* arena_message_2 = Arena::Create<TestEmptyMessage>(&arena);
   arena_message_2->Swap(arena_message);
   copied.Clear();
-  copied.ParseFromString(arena_message_2->SerializeAsString());
+  ABSL_CHECK(copied.ParseFromString(arena_message_2->SerializeAsString()));
   EXPECT_TRUE(copied.has_optional_int32());
   EXPECT_EQ(42, copied.optional_int32());
 
@@ -758,11 +758,11 @@ TEST(ArenaTest, ReflectionSwapFields) {
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(&arena2, arena2_message->GetArena());
   std::string output;
-  arena1_message->SerializeToString(&output);
+  ABSL_CHECK(arena1_message->SerializeToString(&output));
   EXPECT_EQ(0, output.size());
   TestUtil::ExpectAllFieldsSet(*arena2_message);
   reflection->SwapFields(arena1_message, arena2_message, fields);
-  arena2_message->SerializeToString(&output);
+  ABSL_CHECK(arena2_message->SerializeToString(&output));
   EXPECT_EQ(0, output.size());
   TestUtil::ExpectAllFieldsSet(*arena1_message);
 
@@ -794,7 +794,7 @@ TEST(ArenaTest, ReflectionSwapFields) {
   reflection->SwapFields(arena1_message, &message, fields);
   EXPECT_EQ(&arena1, arena1_message->GetArena());
   EXPECT_EQ(nullptr, message.GetArena());
-  arena1_message->SerializeToString(&output);
+  ABSL_CHECK(arena1_message->SerializeToString(&output));
   EXPECT_EQ(0, output.size());
   TestUtil::ExpectAllFieldsSet(message);
 }
@@ -850,7 +850,7 @@ TEST(ArenaTest, SwapBetweenArenasWithAllFieldsSet) {
     TestUtil::SetAllFields(arena2_message);
     arena2_message->Swap(arena1_message);
     std::string output;
-    arena2_message->SerializeToString(&output);
+    ABSL_CHECK(arena2_message->SerializeToString(&output));
     EXPECT_EQ(0, output.size());
   }
   TestUtil::ExpectAllFieldsSet(*arena1_message);
@@ -888,7 +888,7 @@ TEST(ArenaTest, SwapBetweenArenasUsingReflection) {
     const Reflection* r = arena2_message->GetReflection();
     r->Swap(arena1_message, arena2_message);
     std::string output;
-    arena2_message->SerializeToString(&output);
+    ABSL_CHECK(arena2_message->SerializeToString(&output));
     EXPECT_EQ(0, output.size());
   }
   TestUtil::ExpectAllFieldsSet(*arena1_message);
@@ -1689,7 +1689,7 @@ TEST(ArenaTest, MessageLiteOnArena) {
   TestAllTypes initial_message;
   FillArenaAwareFields(&initial_message);
   std::string serialized;
-  initial_message.SerializeToString(&serialized);
+  ABSL_CHECK(initial_message.SerializeToString(&serialized));
 
   {
     MessageLite* generic_message = prototype->New(&arena);
