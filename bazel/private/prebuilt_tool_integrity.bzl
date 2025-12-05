@@ -14,6 +14,7 @@ _TEST_SHAS = dict()
 # Add a couple platforms which are commonly used for testing.
 _TEST_SHAS["protoc-33.0-linux-x86_64.zip"] = "d99c011b799e9e412064244f0be417e5d76c9b6ace13a2ac735330fa7d57ad8f"
 _TEST_SHAS["protoc-33.0-osx-aarch_64.zip"] = "3cf55dd47118bd2efda9cd26b74f8bbbfcf5beb1bf606bc56ad4c001b543f6d3"
+_TEST_SHAS["protoc-33.0-win64.zip"] = "3742cd49c8b6bd78b6760540367eb0ff62fa70a1032e15dafe131bfaf296986a"
 
 RELEASE_VERSION = _TEST_VERSION
 RELEASED_BINARY_INTEGRITY = _TEST_SHAS
