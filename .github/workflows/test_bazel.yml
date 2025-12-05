@@ -31,13 +31,11 @@ jobs:
         bzlmod: [ true, false ]
         toolchain_resolution:
           - "" # Default flags, uses from-source protoc
-          - "--incompatible_enable_proto_toolchain_resolution=true" # protoc from source because prebuilt toolchains disabled
-          # --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc
-          # # Note, we must test with validation disabled, otherwise the build will fail due to version mismatch:
-          # #  ERROR: protoc version does not match protobuf Bazel module; we do not support this. To suppress this error, run Bazel with --norun_validations
-          # #  Expected: libprotoc XX
-          # #  Actual:   libprotoc YY
-          # - "--incompatible_enable_proto_toolchain_resolution=true --norun_validations"
+          # Note, we must test with validation disabled, otherwise the build will fail due to version mismatch:
+          #  ERROR: protoc version does not match protobuf Bazel module; we do not support this. To suppress this error, run Bazel with --norun_validations
+          #  Expected: libprotoc XX
+          #  Actual:   libprotoc YY
+          - "--incompatible_enable_proto_toolchain_resolution=true --norun_validations"
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
     steps:
@@ -77,6 +75,17 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: examples-${{ matrix.bazelversion }}-${{ matrix.bzlmod }}-${{ matrix.toolchain_resolution }}
           version: ${{ matrix.bazelversion }}
-          bash: |
-            cd examples
-            bazel build //... --show_progress_rate_limit=60 @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }}
+          bash: >
+            cd examples;
+            bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
+
+      - name: Prebuilt test
+        if: ${{ matrix.bzlmod && (!matrix.continuous-only || inputs.continuous-run) }}
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: examples-prebuilt-${{ matrix.bazelversion }}-${{ matrix.toolchain_resolution }}
+          version: ${{ matrix.bazelversion }}
+          bash: >
+            cd examples/example_without_cc_toolchain;
+            bazel build //... $BAZEL_FLAGS --enable_bzlmod=true ${{ matrix.toolchain_resolution }};
