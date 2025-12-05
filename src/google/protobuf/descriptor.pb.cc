@@ -4259,17 +4259,6 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf:
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
-DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-}
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -4496,12 +4485,6 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
       from._internal_metadata_);
 }
 
-void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
 
 
 void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
@@ -7101,17 +7084,6 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::g
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
-EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-}
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -7338,12 +7310,6 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
       from._internal_metadata_);
 }
 
-void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
 
 
 void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {

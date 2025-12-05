@@ -189,7 +189,8 @@ class PROTOBUF_EXPORT CachedSize {
   constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
 
 #ifdef PROTOBUF_BUILTIN_ATOMIC
-  constexpr CachedSize(const CachedSize& other) = default;
+  constexpr CachedSize(const CachedSize& other) noexcept = default;
+  constexpr CachedSize& operator=(const CachedSize& other) noexcept = default;
 
   Scalar Get() const noexcept {
     return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
@@ -974,6 +975,25 @@ class PROTOBUF_EXPORT MessageLite {
       : _internal_metadata_(arena) {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
+  // The following functions are the backend for derived type copy/move
+  // operations.
+  // They all REQUIRE that `from` has unknown fields.
+  // Note that we do these with `MessageLite` parameters and not
+  // `InternalMetadata` to avoid the `+8` offset calculation on the callers.
+  //
+  // CopyFromUFS: Copies the unknown field.
+  // MoveFromUFS: Moves the data when possible, otherwise copy.
+  // MoveAssignFromUFS: Like MoveFromUFS, but the caller didn't have the arena
+  //                    pointer.
+  template <typename UFS>
+  void CopyFromUFS(const MessageLite& from);
+
+  template <typename UFS>
+  void MoveFromUFS(Arena* arena, MessageLite& from);
+
+  template <typename UFS>
+  void MoveAssignFromUFS(MessageLite& from);
+
   // GetClassData() returns a pointer to a ClassData struct which
   // exists in global memory and is unique to each subclass.  This uniqueness
   // property is used in order to quickly determine whether two messages are
@@ -1624,6 +1644,25 @@ std::shared_ptr<const T> DynamicCastMessage(
     return nullptr;
   }
 }
+
+// Specialized and implemented in message_lite.cc and message.cc respectively.
+template <>
+PROTOBUF_EXPORT void MessageLite::CopyFromUFS<std::string>(const MessageLite&);
+template <>
+PROTOBUF_EXPORT void MessageLite::MoveFromUFS<std::string>(Arena*,
+                                                           MessageLite&);
+template <>
+PROTOBUF_EXPORT void MessageLite::MoveAssignFromUFS<std::string>(MessageLite&);
+
+template <>
+PROTOBUF_EXPORT void MessageLite::CopyFromUFS<UnknownFieldSet>(
+    const MessageLite&);
+template <>
+PROTOBUF_EXPORT void MessageLite::MoveFromUFS<UnknownFieldSet>(Arena*,
+                                                               MessageLite&);
+template <>
+PROTOBUF_EXPORT void MessageLite::MoveAssignFromUFS<UnknownFieldSet>(
+    MessageLite&);
 
 }  // namespace protobuf
 }  // namespace google

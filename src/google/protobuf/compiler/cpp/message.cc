@@ -2241,15 +2241,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             CopyFrom(from);
             return *this;
           }
-          inline $classname$& operator=($classname$&& from) noexcept {
-            if (this == &from) return *this;
-            if ($pbi$::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-              InternalSwap(&from);
-            } else {
-              CopyFrom(from);
-            }
-            return *this;
-          }
+          $classname$& operator=($classname$&& from) noexcept;
           $decl_verify_func$;
 
           inline const $unknown_fields_type$& unknown_fields() const
@@ -2309,12 +2301,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           explicit $classname$($pb$::Arena* $nullable$ arena);
           $classname$($pb$::Arena* $nullable$ arena, const $classname$& from);
-          $classname$(
-              //~
-              $pb$::Arena* $nullable$ arena, $classname$&& from) noexcept
-              : $classname$(arena) {
-            *this = ::std::move(from);
-          }
+          $classname$($pb$::Arena* $nullable$ arena, $classname$&& from) noexcept;
           $arena_dtor$;
           const $pbi$::ClassData* $nonnull$ GetClassData() const PROTOBUF_FINAL;
           static void* $nonnull$ PlacementNew_(
@@ -2373,6 +2360,74 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
   auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   if (IsMapEntryMessage(descriptor_)) return;
+
+  if (CanUseTrivialCopy()) {
+    p->Emit(R"cc(
+      inline $classname$::$classname$($pb$::Arena* $nullable$ arena,
+                                      const $classname$& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          : $superclass$(arena, $classname$_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+          : $superclass$(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            _impl_(from._impl_) {
+        if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+          $superclass$::CopyFromUFS<$unknown_fields_type$>(from);
+        }
+      }
+
+      inline $classname$::$classname$($pb$::Arena* $nullable$ arena,
+                                      $classname$&& from) noexcept
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          : $superclass$(arena, $classname$_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+          : $superclass$(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+            _impl_(from._impl_) {
+        if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+          $superclass$::MoveFromUFS<$unknown_fields_type$>(arena, from);
+        }
+      }
+
+      inline $classname$& $classname$::operator=($classname$&& from) noexcept {
+        _impl_ = from._impl_;
+        if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+          $superclass$::MoveAssignFromUFS<$unknown_fields_type$>(from);
+        }
+        return *this;
+      }
+    )cc");
+
+    if (HasGeneratedMethods(descriptor_->file(), options_)) {
+      p->Emit(R"cc(
+        inline void $classname$::CopyFrom(const $classname$& from) {
+          // @@protoc_insertion_point(class_specific_copy_from_start:$full_name$)
+          _impl_ = from._impl_;
+          if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+            $superclass$::CopyFromUFS<$unknown_fields_type$>(from);
+          }
+        }
+      )cc");
+    }
+  } else {
+    p->Emit(R"cc(
+      inline $classname$::$classname$($pb$::Arena* $nullable$ arena,
+                                      $classname$&& from) noexcept
+          : $classname$(arena) {
+        *this = ::std::move(from);
+      }
+      inline $classname$& $classname$::operator=($classname$&& from) noexcept {
+        if (this == &from) return *this;
+        if ($pbi$::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+          InternalSwap(&from);
+        } else {
+          CopyFrom(from);
+        }
+        return *this;
+      }
+    )cc");
+  }
+
   GenerateFieldAccessorDefinitions(p);
 
   // Generate oneof_case() functions.
@@ -3477,7 +3532,9 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       )cc");
 
   // Generate the copy constructor.
-  if (UsingImplicitWeakFields(descriptor_->file(), options_)) {
+  if (CanUseTrivialCopy()) {
+    // Do nothing. Already generated as inline.
+  } else if (UsingImplicitWeakFields(descriptor_->file(), options_)) {
     // If we are in lite mode and using implicit weak fields, we generate a
     // one-liner copy constructor that delegates to MergeFrom. This saves some
     // code size and also cuts down on the complexity of implicit weak fields.
@@ -3488,21 +3545,6 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           $pb$::Arena* $nullable$ arena, const $classname$& from)
           : $classname$(arena) {
         MergeFrom(from);
-      }
-    )cc");
-  } else if (CanUseTrivialCopy()) {
-    p->Emit(R"cc(
-      $classname$::$classname$(
-          //~ Force alignment
-          $pb$::Arena* $nullable$ arena, const $classname$& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          : $superclass$(arena, $classname$_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-          : $superclass$(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            _impl_(from._impl_) {
-        _internal_metadata_.MergeFrom<$unknown_fields_type$>(
-            from._internal_metadata_);
       }
     )cc");
   } else {
@@ -4554,6 +4596,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
 
 void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
+  if (CanUseTrivialCopy()) return;
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     // We don't override the generalized CopyFrom (aka that which
     // takes in the Message base class as a parameter); instead we just

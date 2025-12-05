@@ -142,15 +142,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline CppFeatures& operator=(CppFeatures&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CppFeatures& operator=(CppFeatures&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -242,11 +234,7 @@ class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 
   explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
-  CppFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept
-      : CppFeatures(arena) {
-    *this = ::std::move(from);
-  }
+  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -380,6 +368,46 @@ PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
 #endif  // __GNUC__
 // -------------------------------------------------------------------
 
+inline CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                const CppFeatures& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
+
+inline CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                CppFeatures&& from) noexcept
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, CppFeatures_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveFromUFS<::google::protobuf::UnknownFieldSet>(arena, from);
+  }
+}
+
+inline CppFeatures& CppFeatures::operator=(CppFeatures&& from) noexcept {
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveAssignFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+  return *this;
+}
+inline void CppFeatures::CopyFrom(const CppFeatures& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:pb.CppFeatures)
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
 // CppFeatures
 
 // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {

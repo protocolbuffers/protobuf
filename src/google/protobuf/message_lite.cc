@@ -744,6 +744,23 @@ void InternalMetadata::DoSwap<std::string>(std::string* other) {
 
 }  // namespace internal
 
+template <>
+void MessageLite::CopyFromUFS<std::string>(const MessageLite& from) {
+  *_internal_metadata_.mutable_unknown_fields<std::string>() =
+      from._internal_metadata_.unknown_fields<std::string>(nullptr);
+}
+
+template <>
+void MessageLite::MoveFromUFS<std::string>(Arena*, MessageLite& from) {
+  MoveAssignFromUFS<std::string>(from);
+}
+
+template <>
+void MessageLite::MoveAssignFromUFS<std::string>(MessageLite& from) {
+  std::swap(*_internal_metadata_.mutable_unknown_fields<std::string>(),
+            *from._internal_metadata_.mutable_unknown_fields<std::string>());
+}
+
 std::string ShortFormat(const MessageLite& message_lite) {
   return message_lite.DebugString();
 }

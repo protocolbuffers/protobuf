@@ -154,15 +154,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline Version& operator=(Version&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  Version& operator=(Version&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -254,11 +246,7 @@ class PROTOC_EXPORT Version final : public ::google::protobuf::Message
 
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from);
-  Version(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
-      : Version(arena) {
-    *this = ::std::move(from);
-  }
+  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -395,15 +383,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
     CopyFrom(from);
     return *this;
   }
-  inline CodeGeneratorResponse_File& operator=(CodeGeneratorResponse_File&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CodeGeneratorResponse_File& operator=(CodeGeneratorResponse_File&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -495,11 +475,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final : public ::google::protobuf
 
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from);
-  CodeGeneratorResponse_File(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
-      : CodeGeneratorResponse_File(arena) {
-    *this = ::std::move(from);
-  }
+  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -650,15 +626,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
     CopyFrom(from);
     return *this;
   }
-  inline CodeGeneratorResponse& operator=(CodeGeneratorResponse&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CodeGeneratorResponse& operator=(CodeGeneratorResponse&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -750,11 +718,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final : public ::google::protobuf::Mes
 
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from);
-  CodeGeneratorResponse(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
-      : CodeGeneratorResponse(arena) {
-    *this = ::std::move(from);
-  }
+  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -935,15 +899,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
     CopyFrom(from);
     return *this;
   }
-  inline CodeGeneratorRequest& operator=(CodeGeneratorRequest&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  CodeGeneratorRequest& operator=(CodeGeneratorRequest&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1040,11 +996,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final : public ::google::protobuf::Mess
 
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from);
-  CodeGeneratorRequest(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
-      : CodeGeneratorRequest(arena) {
-    *this = ::std::move(from);
-  }
+  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1218,6 +1170,20 @@ PROTOC_EXPORT extern const ::google::protobuf::internal::ClassDataFull CodeGener
 #endif  // __GNUC__
 // -------------------------------------------------------------------
 
+inline Version::Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                Version&& from) noexcept
+    : Version(arena) {
+  *this = ::std::move(from);
+}
+inline Version& Version::operator=(Version&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // Version
 
 // optional int32 major = 1;
@@ -1378,6 +1344,20 @@ inline void Version::set_allocated_suffix(::std::string* PROTOBUF_NULLABLE value
 
 // -------------------------------------------------------------------
 
+inline CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                CodeGeneratorRequest&& from) noexcept
+    : CodeGeneratorRequest(arena) {
+  *this = ::std::move(from);
+}
+inline CodeGeneratorRequest& CodeGeneratorRequest::operator=(CodeGeneratorRequest&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // CodeGeneratorRequest
 
 // repeated string file_to_generate = 1;
@@ -1722,6 +1702,20 @@ inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::proto
 
 // -------------------------------------------------------------------
 
+inline CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                CodeGeneratorResponse_File&& from) noexcept
+    : CodeGeneratorResponse_File(arena) {
+  *this = ::std::move(from);
+}
+inline CodeGeneratorResponse_File& CodeGeneratorResponse_File::operator=(CodeGeneratorResponse_File&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // CodeGeneratorResponse_File
 
 // optional string name = 1;
@@ -2026,6 +2020,20 @@ inline void CodeGeneratorResponse_File::set_allocated_generated_code_info(::goog
 
 // -------------------------------------------------------------------
 
+inline CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                CodeGeneratorResponse&& from) noexcept
+    : CodeGeneratorResponse(arena) {
+  *this = ::std::move(from);
+}
+inline CodeGeneratorResponse& CodeGeneratorResponse::operator=(CodeGeneratorResponse&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // CodeGeneratorResponse
 
 // optional string error = 1;

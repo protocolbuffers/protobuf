@@ -303,17 +303,6 @@ JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
-JavaFeatures::JavaFeatures(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : ::google::protobuf::Message(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
-}
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -596,12 +585,6 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void JavaFeatures::CopyFrom(const JavaFeatures& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:pb.JavaFeatures)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
 
 
 void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {

@@ -184,15 +184,7 @@ class PROTOC_EXPORT JavaFeatures_NestInFileClassFeature final : public ::google:
     CopyFrom(from);
     return *this;
   }
-  inline JavaFeatures_NestInFileClassFeature& operator=(JavaFeatures_NestInFileClassFeature&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  JavaFeatures_NestInFileClassFeature& operator=(JavaFeatures_NestInFileClassFeature&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -257,11 +249,7 @@ class PROTOC_EXPORT JavaFeatures_NestInFileClassFeature final : public ::google:
 
   explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures_NestInFileClassFeature& from);
-  JavaFeatures_NestInFileClassFeature(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept
-      : JavaFeatures_NestInFileClassFeature(arena) {
-    *this = ::std::move(from);
-  }
+  JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -342,15 +330,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline JavaFeatures& operator=(JavaFeatures&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  JavaFeatures& operator=(JavaFeatures&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -442,11 +422,7 @@ class PROTOC_EXPORT JavaFeatures final : public ::google::protobuf::Message
 
   explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
-  JavaFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
-      : JavaFeatures(arena) {
-    *this = ::std::move(from);
-  }
+  JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -608,10 +584,64 @@ PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
 #endif  // __GNUC__
 // -------------------------------------------------------------------
 
+inline JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                JavaFeatures_NestInFileClassFeature&& from) noexcept
+    : JavaFeatures_NestInFileClassFeature(arena) {
+  *this = ::std::move(from);
+}
+inline JavaFeatures_NestInFileClassFeature& JavaFeatures_NestInFileClassFeature::operator=(JavaFeatures_NestInFileClassFeature&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // JavaFeatures_NestInFileClassFeature
 
 // -------------------------------------------------------------------
 
+inline JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                const JavaFeatures& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
+
+inline JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                JavaFeatures&& from) noexcept
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, JavaFeatures_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveFromUFS<::google::protobuf::UnknownFieldSet>(arena, from);
+  }
+}
+
+inline JavaFeatures& JavaFeatures::operator=(JavaFeatures&& from) noexcept {
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveAssignFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+  return *this;
+}
+inline void JavaFeatures::CopyFrom(const JavaFeatures& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:pb.JavaFeatures)
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
 // JavaFeatures
 
 // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {

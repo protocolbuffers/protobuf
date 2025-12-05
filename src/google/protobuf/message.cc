@@ -508,6 +508,27 @@ template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 }  // namespace internal
 
+template <>
+void MessageLite::CopyFromUFS<UnknownFieldSet>(const MessageLite& from) {
+  auto* dst = _internal_metadata_.mutable_unknown_fields<UnknownFieldSet>();
+  dst->Clear();
+  dst->MergeFrom(
+      from._internal_metadata_.unknown_fields<UnknownFieldSet>(nullptr));
+}
+
+template <>
+void MessageLite::MoveFromUFS<UnknownFieldSet>(Arena* arena,
+                                               MessageLite& from) {
+  if (this == &from) return;
+  if (arena != from.GetArena()) return CopyFromUFS<UnknownFieldSet>(from);
+  _internal_metadata_.InternalSwap(&from._internal_metadata_);
+}
+
+template <>
+void MessageLite::MoveAssignFromUFS<UnknownFieldSet>(MessageLite& from) {
+  MoveFromUFS<UnknownFieldSet>(GetArena(), from);
+}
+
 
 }  // namespace protobuf
 }  // namespace google
