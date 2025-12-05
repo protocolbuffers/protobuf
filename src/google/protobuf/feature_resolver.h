@@ -73,6 +73,9 @@ class PROTOBUF_EXPORT FeatureResolver {
       Edition edition, const FeatureSet& features,
       const Descriptor* pool_descriptor);
 
+  static absl::Status ValidateFeatureSupport(
+      const FieldOptions::FeatureSupport& support, absl::string_view full_name);
+
  private:
   explicit FeatureResolver(FeatureSet defaults)
       : defaults_(std::move(defaults)) {}

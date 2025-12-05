@@ -1637,7 +1637,9 @@ class DescriptorPool::DeferredValidation {
   }
 
   bool Validate() {
-    if (lifetimes_info_map_.empty()) return true;
+    if (lifetimes_info_map_.empty()) {
+      return true;
+    }
 
     static absl::string_view feature_set_name = "google.protobuf.FeatureSet";
     const Descriptor* feature_set =
@@ -5014,6 +5016,9 @@ class DescriptorBuilder {
                        const DescriptorProto::ExtensionRange& proto) {}
   void ValidateExtensionRangeOptions(const DescriptorProto& proto,
                                      const Descriptor& message);
+  void ValidateFeatureSupport(
+      const FieldOptions::FeatureSupport& feature_support, const Message& proto,
+      absl::string_view full_name);
   void ValidateExtensionDeclaration(
       absl::string_view full_name,
       const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
@@ -8487,12 +8492,84 @@ void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,
 }
 
 
+void DescriptorBuilder::ValidateFeatureSupport(
+    const FieldOptions::FeatureSupport& feature_support, const Message& proto,
+    absl::string_view full_name) {
+  std::string feature_support_error(
+      FeatureResolver::ValidateFeatureSupport(feature_support, full_name)
+          .message());
+  if (!feature_support_error.empty()) {
+    AddError(full_name, proto, DescriptorPool::ErrorCollector::OPTION_NAME,
+             feature_support_error.c_str());
+  }
+}
+
 void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
                                         const FieldDescriptorProto& proto) {
   if (pool_->lazily_build_dependencies_ && (!field || !field->message_type())) {
     return;
   }
+  if (field->options().has_feature_support()) {
+    const FieldOptions::FeatureSupport field_feature_support =
+        field->options().feature_support();
+    ValidateFeatureSupport(field_feature_support, proto, field->full_name());
+    if (field->enum_type() != nullptr) {
+      for (int i = 0; i < field->enum_type()->value_count(); i++) {
+        const EnumValueDescriptor& value = *field->enum_type()->value(i);
+        // We allow missing support windows on feature values, and they'll
+        // inherit from the feature spec.
+        if (!value.options().has_feature_support()) {
+          continue;
+        }
 
+        FieldOptions::FeatureSupport value_feature_support =
+            field_feature_support;
+        value_feature_support.MergeFrom(value.options().feature_support());
+        ValidateFeatureSupport(value_feature_support, proto, value.full_name());
+
+        // Make sure enum values don't expand any bounds
+        if (field_feature_support.edition_introduced() >
+            value_feature_support.edition_introduced()) {
+          AddError(value.full_name(), proto,
+                   DescriptorPool::ErrorCollector::OPTION_NAME,
+                   absl::Substitute("value $0 was introduced before $1 was.",
+                                    value.full_name(), field->full_name())
+                       .c_str());
+        }
+        if (field_feature_support.has_edition_removed() &&
+            field_feature_support.edition_removed() <
+                value_feature_support.edition_removed()) {
+          AddError(value.full_name(), proto,
+                   DescriptorPool::ErrorCollector::OPTION_NAME,
+                   absl::Substitute("value $0 was removed after $1 was.",
+                                    value.full_name(), field->full_name())
+                       .c_str());
+        }
+        if (field_feature_support.has_edition_deprecated() &&
+            field_feature_support.edition_deprecated() <
+                value_feature_support.edition_deprecated()) {
+          AddError(value.full_name(), proto,
+                   DescriptorPool::ErrorCollector::OPTION_NAME,
+                   absl::Substitute("value $0 was deprecated after $1 was.",
+                                    value.full_name(), field->full_name())
+                       .c_str());
+        }
+      }
+    }
+  } else if (field->enum_type() != nullptr) {
+    for (int i = 0; i < field->enum_type()->value_count(); i++) {
+      const EnumValueDescriptor& value = *field->enum_type()->value(i);
+      if (value.options().has_feature_support()) {
+        AddError(value.full_name(), proto,
+                 DescriptorPool::ErrorCollector::OPTION_NAME,
+                 absl::Substitute(
+                     "value $0 is not allowed to have feature support "
+                     "because its field $1 doesn't have feature support.",
+                     value.full_name(), field->full_name())
+                     .c_str());
+      }
+    }
+  }
   ValidateFieldFeatures(field, proto);
 
 
@@ -8822,10 +8899,12 @@ void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
   }
 }
 
-void DescriptorBuilder::ValidateOptions(
-    const EnumValueDescriptor* /* enum_value */,
-    const EnumValueDescriptorProto& /* proto */) {
-  // Nothing to do so far.
+void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
+                                        const EnumValueDescriptorProto& proto) {
+  if (enum_value->options().has_feature_support()) {
+    ValidateFeatureSupport(enum_value->options().feature_support(), proto,
+                           enum_value->full_name());
+  }
 }
 
 namespace {

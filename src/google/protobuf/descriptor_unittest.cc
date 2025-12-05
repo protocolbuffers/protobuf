@@ -4693,6 +4693,911 @@ TEST(CustomOptions, DebugString) {
       descriptor->DebugString());
 }
 
+TEST(CustomOptions, FeatureSupportMissingDeprecationWarning) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support { edition_deprecated: EDITION_99997_TEST_ONLY }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.Foo.Bar: OPTION_NAME: proto"
+            "2_unittest.Foo.Bar is deprecated but does not specify a "
+            "deprecation warning.\n");
+}
+
+TEST(CustomOptions, FeatureSupportMissingDeprecation) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support {
+                deprecation_warning: "Custom deprecation warning"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.Foo.Bar: OPTION_NAME: proto"
+            "2_unittest.Foo.Bar specifies a deprecation warning but is not "
+            "marked deprecated in any edition.\n");
+}
+
+TEST(CustomOptions, FeatureSupportMissingRemovalError) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support { edition_removed: EDITION_99997_TEST_ONLY }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.Foo.Bar: OPTION_NAME: proto"
+            "2_unittest.Foo.Bar has been removed but does not specify a "
+            "removal error.\n");
+}
+
+TEST(CustomOptions, FeatureSupportMissingRemoval) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support { removal_error: "Custom removal error" }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.Foo.Bar: OPTION_NAME: proto"
+            "2_unittest.Foo.Bar specifies a removal error but is not marked "
+            "removed in any edition.\n");
+}
+
+TEST(CustomOptions, FeatureSupportMissingRemovalErrorException) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support {
+                edition_introduced: EDITION_99997_TEST_ONLY
+                edition_removed: EDITION_99997_TEST_ONLY
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  EXPECT_NE(pool.BuildFile(file_proto), nullptr);
+}
+
+TEST(CustomOptions, FeatureSupportInvalidDeprecatedBeforeIntroduced) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support {
+                edition_introduced: EDITION_2024
+                edition_deprecated: EDITION_2023
+                deprecation_warning: "warning"
+                edition_removed: EDITION_2024
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.Foo.Bar: OPTION_NAME: "
+            "proto2_unittest.Foo.Bar "
+            "was deprecated before it was introduced.\n");
+}
+
+TEST(CustomOptions, FeatureSupportInvalidDeprecatedAfterRemoved) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_deprecated: EDITION_2024
+                deprecation_warning: "warning"
+                edition_removed: EDITION_2024
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.Foo.Bar: OPTION_NAME: "
+            "proto2_unittest.Foo.Bar "
+            "was deprecated after it was removed.\n");
+}
+
+TEST(CustomOptions, FeatureSupportInvalidRemovedBeforeIntroduced) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        message_type {
+          name: "Foo"
+          field {
+            name: "Bar"
+            number: 9
+            label: LABEL_OPTIONAL
+            type: TYPE_INT32
+            options {
+              feature_support {
+                edition_introduced: EDITION_2024
+                edition_removed: EDITION_2023
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.Foo.Bar: OPTION_NAME: "
+            "proto2_unittest.Foo.Bar "
+            "was removed before it was introduced.\n");
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueWithFeatureSupport) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options { feature_support { edition_deprecated: EDITION_2023 } }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr(
+                  "value proto2_unittest.VALUE is not allowed to have feature "
+                  "support because its field proto2_unittest.Bar.bool_field "
+                  "doesn't have feature support.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueWithMissingDeprecationWarning) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options { feature_support { edition_deprecated: EDITION_2023 } }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr(
+                  "foo.proto: proto2_unittest.VALUE: OPTION_NAME: "
+                  "proto2_unittest.VALUE is "
+                  "deprecated but does not specify a deprecation warning.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueWithMissingDeprecation) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                deprecation_warning: "Custom deprecation warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(
+      error_collector.text_,
+      testing::HasSubstr(
+          "foo.proto: proto2_unittest.VALUE: OPTION_NAME: "
+          "proto2_unittest.VALUE specifies a deprecation warning but is not "
+          "marked deprecated in any edition.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueWithMissingRemovalError) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options { feature_support { edition_removed: EDITION_2023 } }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(
+      error_collector.text_,
+      testing::HasSubstr("foo.proto: proto2_unittest.VALUE: OPTION_NAME: "
+                         "proto2_unittest.VALUE has been removed but does not "
+                         "specify a removal error.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueWithMissingRemoval) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support { removal_error: "Custom removal error" }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(
+      error_collector.text_,
+      testing::HasSubstr("foo.proto: proto2_unittest.VALUE: OPTION_NAME: "
+                         "proto2_unittest.VALUE specifies a removal error but "
+                         "is not marked removed in any "
+                         "edition.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueDeprecatedBeforeIntroduced) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_introduced: EDITION_2024
+                edition_deprecated: EDITION_2023
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr("foo.proto: proto2_unittest.VALUE: "
+                                 "OPTION_NAME: proto2_unittest.VALUE "
+                                 "was deprecated before it was introduced.\n"));
+}
+
+TEST(CustomOptions,
+     FeatureSupportInvalidValueDeprecatedBeforeIntroducedInherited) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_deprecated: EDITION_2023
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2024 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr("foo.proto: proto2_unittest.VALUE: "
+                                 "OPTION_NAME: proto2_unittest.VALUE "
+                                 "was deprecated before it was introduced.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueDeprecatedAfterRemoved) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_deprecated: EDITION_2024
+                deprecation_warning: "warning"
+                edition_removed: EDITION_2024
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr("foo.proto: proto2_unittest.VALUE: "
+                                 "OPTION_NAME: proto2_unittest.VALUE "
+                                 "was deprecated after it was removed.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueRemovedBeforeIntroduced) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_introduced: EDITION_2024
+                edition_removed: EDITION_2023
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr("foo.proto: proto2_unittest.VALUE: "
+                                 "OPTION_NAME: proto2_unittest.VALUE "
+                                 "was removed before it was introduced.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueIntroducedBeforeOption) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options { feature_support { edition_introduced: EDITION_2023 } }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options { feature_support { edition_introduced: EDITION_2024 } }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr(
+                  "foo.proto: proto2_unittest.VALUE: "
+                  "OPTION_NAME: value proto2_unittest.VALUE was introduced "
+                  "before proto2_unittest.Bar.bool_field was.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueIntroducedAfterOptionRemoved) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support { edition_introduced: EDITION_99997_TEST_ONLY }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_removed: EDITION_2024
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr("foo.proto: proto2_unittest.VALUE: "
+                                 "OPTION_NAME: proto2_unittest.VALUE was "
+                                 "removed before it was introduced.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueRemovedAfterFeature) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_removed: EDITION_99997_TEST_ONLY
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_removed: EDITION_2024
+                removal_error: "Custom feature removal error"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr(
+                  "foo.proto: proto2_unittest.VALUE: "
+                  "OPTION_NAME: value proto2_unittest.VALUE was "
+                  "removed after proto2_unittest.Bar.bool_field was.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueDeprecatedAfterOption) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_deprecated: EDITION_99997_TEST_ONLY
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          field {
+            name: "bool_field"
+            number: 1
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_deprecated: EDITION_2024
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr(
+                  "foo.proto: proto2_unittest.VALUE: "
+                  "OPTION_NAME: value proto2_unittest.VALUE was "
+                  "deprecated after proto2_unittest.Bar.bool_field was.\n"));
+}
+
 // ===================================================================
 
 TEST_F(ValidationErrorTest, AlreadyDefined) {
