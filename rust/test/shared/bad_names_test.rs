@@ -41,6 +41,11 @@ fn test_collision_in_accessors() {
     m.set_x_mut_5(false);
     assert_that!(m.x_mut_5(), eq(false));
     assert_that!(m.has_x_mut_5(), eq(true));
-    assert_that!(m.has_x(), eq(false));
     assert_that!(m.has_set_x_2(), eq(false));
+
+    assert_that!(m.has_x(), eq(false));
+    m.x_mut();
+    m.clear_x_7();
+    assert_that!(m.has_x(), eq(true));
+    assert_that!(m.has_clear_x_7(), eq(false));
 }
