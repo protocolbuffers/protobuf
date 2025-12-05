@@ -87,7 +87,7 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
                                                  ".well_known_types");
 
     if (wkt_module == NULL) {
-      return false;
+      return NULL;
     }
 
     state->wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
