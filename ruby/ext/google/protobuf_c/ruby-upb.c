@@ -17805,6 +17805,7 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
   UPB_ASSERT(m->UPB_PRIVATE(required_count));
   if (UPB_UNLIKELY(d->options & kUpb_DecodeOption_CheckRequired)) {
     d->missing_required =
+        d->missing_required ||
         !UPB_PRIVATE(_upb_Message_IsInitializedShallow)(msg, m);
   }
   return ptr;
