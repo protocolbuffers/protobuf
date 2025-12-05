@@ -43,3 +43,6 @@ Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool       
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.StringFieldNotAString                                                                         # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.UnknownOrdering.ProtobufOutput                                                            # Unknown field mismatch
+Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.

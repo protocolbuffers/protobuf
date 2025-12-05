@@ -34,4 +34,4 @@ Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                             
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
 Required.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
 Required.*.JsonInput.SingleValueForRepeatedFieldMessage                                                            # Should have failed to parse, but didn't.
-
+Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.

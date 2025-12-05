@@ -1,2 +1,5 @@
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1 # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
