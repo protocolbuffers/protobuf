@@ -72,6 +72,12 @@ PROTOC_EXPORT std::string FilePathBasename(const FileDescriptor* file);
 // the rest of the classes need
 PROTOC_EXPORT std::string FileClassName(const FileDescriptor* file);
 
+// Returns [ClassPrefix][Package][FileBasename][suffix].
+PROTOC_EXPORT std::string FileUniqueSymbolName(const FileDescriptor* file,
+                                               absl::string_view suffix);
+
+PROTOC_EXPORT std::string ProtoPackageSanitizedName(const FileDescriptor* file);
+
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
 PROTOC_EXPORT std::string ClassName(const Descriptor* descriptor);
@@ -89,6 +95,11 @@ PROTOC_EXPORT std::string EnumValueShortName(
 
 // Reverse what an enum does.
 PROTOC_EXPORT std::string UnCamelCaseEnumShortName(absl::string_view name);
+
+// Returns the name to use for the extension (used as the method off the file's
+// Root class).
+PROTOC_EXPORT std::string ExtensionFunctionName(
+    const FieldDescriptor* descriptor, absl::string_view prefix);
 
 // Returns the name to use for the extension (used as the method off the file's
 // Root class).

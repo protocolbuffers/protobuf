@@ -16,7 +16,6 @@
 #import "GPBDictionary.h"
 #import "GPBExtensionRegistry.h"
 #import "GPBMessage.h"
-#import "GPBRootObject.h"
 #import "GPBUnknownField.h"
 #import "GPBUnknownFields.h"
 #import "GPBUtilities.h"

@@ -67,4 +67,18 @@ __attribute__((objc_subclassing_restricted))
 
 @end
 
+/**
+ * A protocol for providing an extension registry.
+ *
+ * This is useful for dependency injection of an extension registry.
+ */
+@protocol GPBExtensionRegistryProvider <NSObject>
+
+/**
+ * Returns an extension registry.
+ **/
+- (GPBExtensionRegistry *)extensionRegistry;
+
+@end
+
 NS_ASSUME_NONNULL_END

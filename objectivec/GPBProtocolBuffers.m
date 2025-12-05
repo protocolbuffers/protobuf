@@ -23,7 +23,6 @@
 #import "GPBExtensionInternals.m"
 #import "GPBExtensionRegistry.m"
 #import "GPBMessage.m"
-#import "GPBRootObject.m"
 #import "GPBUnknownField.m"
 #import "GPBUnknownFields.m"
 #import "GPBUtilities.m"
