@@ -239,7 +239,8 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   RETURN_IF_ERROR(response.status());
 
   std::string serialized_output;
-  response->SerializeToString(&serialized_output);
+  // TODO: Remove this suppression.
+  (void)response->SerializeToString(&serialized_output);
 
   uint32_t out_len = internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_output.size()));

@@ -521,7 +521,7 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
   message.add_repeated_nested_message()->set_bb(123);
 
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   std::string text;
   UnknownFieldSet unknown_fields;

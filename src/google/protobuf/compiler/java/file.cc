@@ -122,7 +122,8 @@ void CollectExtensions(const FileDescriptor& file, const Options& options,
                        FieldDescriptorSet* optional_extensions) {
   FileDescriptorProto file_proto = StripSourceRetentionOptions(file);
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  // TODO: Remove this suppression.
+  (void)file_proto.SerializeToString(&file_data);
   const Descriptor* file_proto_desc = file.pool()->FindMessageTypeByName(
       file_proto.GetDescriptor()->full_name());
 
@@ -627,7 +628,8 @@ static void GenerateSibling(
   if (annotate_code) {
     std::unique_ptr<io::ZeroCopyOutputStream> info_output(
         context->Open(info_full_path));
-    annotations.SerializeToZeroCopyStream(info_output.get());
+    // TODO: Remove this suppression.
+    (void)annotations.SerializeToZeroCopyStream(info_output.get());
     annotation_list->push_back(info_full_path);
   }
 }

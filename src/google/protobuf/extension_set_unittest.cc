@@ -23,6 +23,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
@@ -708,7 +709,7 @@ TEST(ExtensionSetTest, NestedExtensionGroup) {
 
   source.mutable_optionalgroup()->set_a(117);
   source.set_optional_foreign_enum(unittest::FOREIGN_BAZ);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   EXPECT_TRUE(
       destination
@@ -733,7 +734,7 @@ TEST(ExtensionSetTest, Parsing) {
   std::string data;
 
   TestUtil::SetAllFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::SetOneofFieldsExtensions(&destination);
   TestUtil::ExpectAllExtensionsSet(destination);
@@ -746,7 +747,7 @@ TEST(ExtensionSetTest, PackedParsing) {
   std::string data;
 
   TestUtil::SetPackedFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedExtensionsSet(destination);
 }
@@ -757,7 +758,7 @@ TEST(ExtensionSetTest, PackedToUnpackedParsing) {
   std::string data;
 
   TestUtil::SetPackedFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectUnpackedExtensionsSet(destination);
 
@@ -781,7 +782,7 @@ TEST(ExtensionSetTest, UnpackedToPackedParsing) {
   std::string data;
 
   TestUtil::SetUnpackedFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
   EXPECT_TRUE(destination.ParseFromString(data));
   TestUtil::ExpectPackedExtensionsSet(destination);
 
@@ -1356,7 +1357,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     // A regular unknown field.
     message.mutable_unknown_fields()->AddLengthDelimited(54321, "unknown");
 
-    message.SerializeToString(&data);
+    ABSL_CHECK(message.SerializeToString(&data));
     dynamic_extension = message;
   }
 
@@ -1511,7 +1512,6 @@ TEST(ExtensionSetTest, ConstInit) {
 
 // Make sure that is_cleared is set correctly for repeated fields.
 TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
-  unittest::TestAllExtensions msg;
   ExtensionSet set;
   const auto* desc =
       unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
@@ -1698,7 +1698,7 @@ auto MakeExtensionWithLazyRep(int value) {
   tmp.SetExtension(unittest::optional_int32_extension, value);
 
   unittest::TestAllExtensions out;
-  out.ParseFromString(tmp.SerializeAsString());
+  ABSL_CHECK(out.ParseFromString(tmp.SerializeAsString()));
   return out;
 }
 

@@ -914,7 +914,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
             ? ""
             : absl::StrCat(tag(field->number(), wire_type), values[i].second);
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -937,7 +937,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     std::string expected_proto =
         absl::StrCat(tag(field->number(), wire_type), values.back().second);
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -998,7 +998,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
                      delim(unpacked_proto_packed));
 
     MessageType test_message;
-    test_message.MergeFromString(default_proto_packed_expected);
+    ABSL_CHECK(test_message.MergeFromString(default_proto_packed_expected));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -1049,7 +1049,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
           absl::StrCat(tag(rep_field->number(), wire_type), values[i].second);
     }
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -1129,7 +1129,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key1_data, value1_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
@@ -1143,7 +1143,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(""));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
@@ -1157,7 +1157,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key2_data, value2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
@@ -1171,7 +1171,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(value2_data, key2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
@@ -1189,7 +1189,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         delim(absl::StrCat(key2_data, value2_data)));
     std::string proto = absl::StrCat(proto1, proto2);
     MessageType test_message;
-    test_message.MergeFromString(proto2);
+    ABSL_CHECK(test_message.MergeFromString(proto2));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
@@ -1203,7 +1203,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key1_data, key2_data, value2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
     RunValidProtobufTest(
@@ -1218,7 +1218,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
         tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
         delim(absl::StrCat(key2_data, value1_data, value2_data)));
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
     RunValidProtobufTest(
@@ -1261,7 +1261,7 @@ void BinaryAndJsonConformanceSuiteImpl<
       delim(absl::StrCat(key_data, value2_data)));
   std::string proto = absl::StrCat(proto1, proto2);
   MessageType test_message;
-  test_message.MergeFromString(proto2);
+  ABSL_CHECK(test_message.MergeFromString(proto2));
   std::string text;
   TextFormat::PrintToString(test_message, &text);
   RunValidProtobufTest("ValidDataMap.STRING.MESSAGE.MergeValue", REQUIRED,
@@ -1286,7 +1286,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     // Tests oneof with default value.
     const std::string& proto = default_value;
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -1302,7 +1302,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     // Tests oneof with non-default value.
     const std::string& proto = non_default_value;
     MessageType test_message;
-    test_message.MergeFromString(proto);
+    ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -1319,7 +1319,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     const std::string proto = absl::StrCat(default_value, non_default_value);
     const std::string& expected_proto = non_default_value;
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -1345,7 +1345,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     const std::string proto = absl::StrCat(other_value, non_default_value);
     const std::string& expected_proto = non_default_value;
     MessageType test_message;
-    test_message.MergeFromString(expected_proto);
+    ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
     TextFormat::PrintToString(test_message, &text);
 
@@ -1394,7 +1394,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestMergeOneofMessage() {
       delim(merged_data));
 
   MessageType test_message;
-  test_message.MergeFromString(expected_proto);
+  ABSL_CHECK(test_message.MergeFromString(expected_proto));
   std::string text;
   TextFormat::PrintToString(test_message, &text);
   RunValidProtobufTest("ValidDataOneof.MESSAGE.Merge", REQUIRED, proto, text);
@@ -1519,7 +1519,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownMessage() {
   MessageType message;
-  message.ParseFromString("\xA8\x1F\x01");
+  ABSL_CHECK(message.ParseFromString("\xA8\x1F\x01"));
   RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
                              message.SerializeAsString());
 }

@@ -175,7 +175,7 @@ class FakeAnnotationCollector : public AnnotationCollector {
 
   void AddAnnotationNew(Annotation& a) override {
     GeneratedCodeInfo::Annotation annotation;
-    annotation.ParseFromString(a.second);
+    ABSL_CHECK(annotation.ParseFromString(a.second));
 
     Record r{a.first.first, a.first.second, annotation.source_file(), {}};
     for (int i : annotation.path()) {

@@ -23,6 +23,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
@@ -98,7 +99,7 @@ class EncodedDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
   DescriptorDatabase* GetDatabase() override { return &database_; }
   bool AddToDatabase(const FileDescriptorProto& file) override {
     std::string data;
-    file.SerializeToString(&data);
+    ABSL_CHECK(file.SerializeToString(&data));
     return database_.AddCopy(data.data(), data.size());
   }
 

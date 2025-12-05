@@ -139,7 +139,8 @@ class AnnotationProtoCollector : public AnnotationCollector {
 
   void AddAnnotationNew(Annotation& a) override {
     auto* annotation = annotation_proto_->add_annotation();
-    annotation->ParseFromString(a.second);
+    // TODO: Remove this suppression.
+    (void)annotation->ParseFromString(a.second);
     annotation->set_begin(a.first.first);
     annotation->set_end(a.first.second);
   }
