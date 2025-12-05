@@ -31,10 +31,8 @@ jobs:
         bzlmod: [ true, false ]
         toolchain_resolution:
           - "" # Default flags, uses from-source protoc
-          # Note, we must test with validation disabled, otherwise the build will fail due to version mismatch:
-          #  ERROR: protoc version does not match protobuf Bazel module; we do not support this. To suppress this error, run Bazel with --norun_validations
-          #  Expected: libprotoc XX
-          #  Actual:   libprotoc YY
+          # Note, we must test with validation disabled, otherwise the build will fail due to version mismatch.
+          # MODULE.bazel has a -dev version, but the prebuilt protoc is a release version.
           - "--incompatible_enable_proto_toolchain_resolution=true --norun_validations"
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
