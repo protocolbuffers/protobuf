@@ -21,7 +21,7 @@ load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_aspect.bzl", "cc_proto_aspect")
 
-visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/..."])
+visibility(["//rust/...", "//third_party/crubit/rs_bindings_from_cc/...", "//net/proto2/compiler/stubby/cc/build_defs/..."])
 
 CrateMappingInfo = provider(
     doc = "Struct mapping crate name to the .proto import paths",
@@ -203,7 +203,7 @@ def _compile_cc(
     cc_info = cc_common.merge_cc_infos(direct_cc_infos = cc_infos)
 
     (compilation_context, compilation_outputs) = cc_common.compile(
-        name = src.basename,
+        name = src.path,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
@@ -213,7 +213,7 @@ def _compile_cc(
     )
 
     (linking_context, _) = cc_common.create_linking_context_from_compilation_outputs(
-        name = src.basename,
+        name = src.path,
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         cc_toolchain = cc_toolchain,
