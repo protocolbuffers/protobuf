@@ -214,7 +214,8 @@ class MessageGenerator {
   // Helper functions to reduce nesting levels of deep Emit calls.
   template <bool kIsV2 = false>
   void EmitCheckAndUpdateByteSizeForField(const FieldDescriptor* field,
-                                          io::Printer* p, bool try_batch) const;
+                                          io::Printer* p, bool try_batch,
+                                          bool compact_field_numbers) const;
   void EmitUpdateByteSizeForField(const FieldDescriptor* field, io::Printer* p,
                                   int& cached_has_word_index) const;
 

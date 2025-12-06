@@ -46,6 +46,10 @@ namespace compiler {
 namespace cpp {
 enum class ArenaDtorNeeds { kNone = 0, kOnDemand = 1, kRequired = 2 };
 
+// Returns true if the message is eligible for compact v2 fields, i.e. all field
+// numbers can be stored in a uint8_t.
+bool EligibleForCompactV2Fields(const Descriptor* desc);
+
 inline absl::string_view ProtobufNamespace(const Options& opts) {
   // This won't be transformed by copybara, since copybara looks for google::protobuf::.
   constexpr absl::string_view kGoogle3Ns = "proto2";

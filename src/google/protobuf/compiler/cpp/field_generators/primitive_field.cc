@@ -423,6 +423,9 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override;
 
  private:
+  template <bool kUseCompactFieldNumbers>
+  void GenerateByteSizeV2Impl(io::Printer* p, bool try_batch) const;
+
   bool HasCachedSize() const {
     bool is_packed_varint =
         field_->is_packed() && !FixedSize(field_->type()).has_value();
@@ -668,6 +671,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
         total_size += tag_size + data_size;
       )cc");
 }
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarPrimitiveGenerator(
