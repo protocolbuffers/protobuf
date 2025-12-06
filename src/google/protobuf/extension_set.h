@@ -639,6 +639,14 @@ class PROTOBUF_EXPORT ExtensionSet {
     return extension != nullptr && extension->is_lazy;
   }
 
+  // Returns a pointer to the LazyField for the given extension number, or
+  // nullptr if the extension is not lazy.
+  // If the extension does not exist, it is created as a lazy extension.
+  // This function returns nullptr if lazy parsing is not supported, if the
+  // extension exists but is not lazy, or if the extension is not a message
+  // type.
+  LazyField* TryGetLazyField(Arena* arena, int number, FieldType type);
+
  private:
   template <typename Type>
   friend class PrimitiveTypeTraits;
@@ -741,6 +749,8 @@ class PROTOBUF_EXPORT ExtensionSet {
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
 
+
+    virtual LazyField* GetUnderlyingField() = 0;
 
    private:
     virtual void UnusedKeyMethod();  // Dummy key method to avoid weak vtable.
@@ -1867,6 +1877,19 @@ class ExtensionIdentifier {
   const int number_;
   typename TypeTraits::InitType default_value_;
 };
+
+template <typename ExtendeeType, typename TypeTraitsType,
+          internal::FieldType field_type, bool is_packed>
+auto TryGetLazyMessageFromExtensionSet(
+    Arena* arena,
+    const google::protobuf::internal::ExtensionIdentifier<
+        ExtendeeType, TypeTraitsType, field_type, is_packed>& extension,
+    ExtensionSet& set) {
+  static_assert(std::is_base_of_v<
+                MessageLite,
+                std::decay_t<typename TypeTraitsType::Singular::ConstType>>);
+  return set.TryGetLazyField(arena, extension.number(), field_type);
+}
 
 // -------------------------------------------------------------------
 // Generated accessors
