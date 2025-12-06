@@ -1377,7 +1377,8 @@ class AccessorVerifier {
 
 template <bool kIsV2>
 void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
-    const FieldDescriptor* field, io::Printer* p, bool try_batch) const {
+    const FieldDescriptor* field, io::Printer* p, bool try_batch,
+    bool use_compact_field_numbers) const {
   absl::AnyInvocable<void()> emit_body = [&] {
     const auto& gen = field_generators_.get(field);
     if constexpr (!kIsV2) {
@@ -1447,7 +1448,8 @@ void MessageGenerator::EmitUpdateByteSizeForField(
        {"check_and_update_byte_size_for_field",
         [&]() {
           EmitCheckAndUpdateByteSizeForField</*kIsV2=*/false>(
-              field, p, /*try_batch=*/false);
+              field, p, /*try_batch=*/false,
+              /*use_compact_field_numbers=*/false);
         }}},
       R"cc(
         $comment$;

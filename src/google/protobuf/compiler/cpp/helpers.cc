@@ -243,6 +243,20 @@ bool HasV2Table(const Descriptor* descriptor, const Options& options) {
 
 }  // namespace
 
+bool EligibleForCompactV2Fields(const Descriptor* desc) {
+  for (int i = 0; i < desc->field_count(); ++i) {
+    if (desc->field(i)->number() >= std::numeric_limits<uint8_t>::max()) {
+      return false;
+    }
+  }
+  for (int i = 0; i < desc->extension_count(); ++i) {
+    if (desc->extension(i)->number() >= std::numeric_limits<uint8_t>::max()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool IsLazy(const FieldDescriptor* field, const Options& options,
             MessageSCCAnalyzer* scc_analyzer) {
   return IsLazilyVerifiedLazy(field, options) ||

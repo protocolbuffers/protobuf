@@ -216,6 +216,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   }
 }
 
+
 class RepeatedEnum : public FieldGeneratorBase {
  public:
   RepeatedEnum(const FieldDescriptor* field, const Options& opts,
@@ -584,6 +585,7 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
         total_size += data_size + tag_size;
       )cc");
 }
+
 }  // namespace
 
 std::unique_ptr<FieldGeneratorBase> MakeSinguarEnumGenerator(
