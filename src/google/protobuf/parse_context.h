@@ -740,8 +740,8 @@ T UnalignedLoad(const Void* p) {
 }
 
 template <typename T>
-T UnalignedLoadAndIncrement(const char** ptr) {
-  T value = UnalignedLoad<T>(*ptr);
+T UnalignedLoadAndIncrementNoPrefetch(const char** ptr) {
+  T value = UnalignedLoadNoPrefetch<T>(*ptr);
   *ptr += sizeof(T);
   return value;
 }
@@ -1134,7 +1134,7 @@ PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
 // add eax, edi
 // adc [rsi], 1
 inline uint32_t DecodeTwoBytes(const char** ptr) {
-  uint32_t value = UnalignedLoad<uint16_t>(*ptr);
+  uint32_t value = UnalignedLoadNoPrefetch<uint16_t>(*ptr);
   // Sign extend the low byte continuation bit
   uint32_t x = static_cast<int8_t>(value);
   value &= x;  // Mask out the high byte iff no continuation
@@ -1304,10 +1304,11 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr, Arena* arena,
                                                   Tag expected_tag,
                                                   RepeatedField<T>* out) {
   do {
-    out->AddWithArena(arena, UnalignedLoad<T>(ptr));
+    out->AddWithArena(arena, UnalignedLoadNoPrefetch<T>(ptr));
     ptr += sizeof(T);
     if (ABSL_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
-  } while (UnalignedLoad<Tag>(ptr) == expected_tag && (ptr += sizeof(Tag)));
+  } while (UnalignedLoadNoPrefetch<Tag>(ptr) == expected_tag &&
+           (ptr += sizeof(Tag)));
   return ptr;
 }
 
@@ -1340,7 +1341,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
     std::memcpy(dst, ptr, block_size);
 #else
     for (int i = 0; i < num; i++)
-      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+      dst[i] = UnalignedLoadNoPrefetch<T>(ptr + i * sizeof(T));
 #endif
     size -= block_size;
     if (limit_ <= kSlopBytes) return nullptr;
@@ -1359,7 +1360,8 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
   ABSL_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
 #else
-  for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+  for (int i = 0; i < num; i++)
+    dst[i] = UnalignedLoadNoPrefetch<T>(ptr + i * sizeof(T));
 #endif
   ptr += block_size;
   if (size != block_size) return nullptr;
@@ -1535,7 +1537,7 @@ template <typename T>
       break;
     }
     case WireType::WIRETYPE_FIXED64: {
-      uint64_t value = UnalignedLoad<uint64_t>(ptr);
+      uint64_t value = UnalignedLoadNoPrefetch<uint64_t>(ptr);
       ptr += 8;
       field_parser.AddFixed64(number, value);
       break;
@@ -1555,7 +1557,7 @@ template <typename T>
       break;
     }
     case WireType::WIRETYPE_FIXED32: {
-      uint32_t value = UnalignedLoad<uint32_t>(ptr);
+      uint32_t value = UnalignedLoadNoPrefetch<uint32_t>(ptr);
       ptr += 4;
       field_parser.AddFixed32(number, value);
       break;
