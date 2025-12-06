@@ -695,19 +695,8 @@ MessageGenerator::MessageGenerator(
       }
       has_bit_indices_[field->index()] = max_has_bit_index_++;
     }
-    if (IsStringInlined(field, options_)) {
-      if (inlined_string_indices_.empty()) {
-        inlined_string_indices_.resize(descriptor_->field_count(), kNoHasbit);
-        // The bitset[0] is for arena dtor tracking. Donating states start from
-        // bitset[1];
-        ++max_inlined_string_index_;
-      }
-
-      inlined_string_indices_[field->index()] = max_inlined_string_index_++;
-    }
   }
-  field_generators_.Build(options_, scc_analyzer_, has_bit_indices_,
-                          inlined_string_indices_);
+  field_generators_.Build(options_, scc_analyzer_, has_bit_indices_);
 
   for (int i = 0; i < descriptor->field_count(); ++i) {
     if (descriptor->field(i)->is_required()) {
@@ -716,9 +705,8 @@ MessageGenerator::MessageGenerator(
   }
 
   parse_function_generator_ = std::make_unique<ParseFunctionGenerator>(
-      descriptor_, max_has_bit_index_, has_bit_indices_,
-      inlined_string_indices_, options_, scc_analyzer_, variables_,
-      index_in_file_messages_);
+      descriptor_, max_has_bit_index_, has_bit_indices_, options_,
+      scc_analyzer_, variables_, index_in_file_messages_);
 }
 
 bool MessageGenerator::ShouldGenerateEnclosingIf(
@@ -734,10 +722,6 @@ bool MessageGenerator::ShouldGenerateEnclosingIf(
 
 size_t MessageGenerator::HasBitsSize() const {
   return (max_has_bit_index_ + 31) / 32;
-}
-
-size_t MessageGenerator::InlinedStringDonatedSize() const {
-  return (max_inlined_string_index_ + 31) / 32;
 }
 
 absl::flat_hash_map<absl::string_view, std::string>
@@ -1630,18 +1614,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
             static void TrackerOnGetMetadata() { $annotate_reflection$; }
           )cc");
         }},
-       {"inlined_string_donated",
-        [&] {
-          // Generate _inlined_string_donated_ for inlined string type.
-          // TODO: To avoid affecting the locality of
-          // `_has_bits_`, should this be below or above `_has_bits_`?
-          if (inlined_string_indices_.empty()) return;
-
-          p->Emit({{"donated_size", InlinedStringDonatedSize()}},
-                  R"cc(
-                    $pbi$::HasBits<$donated_size$> _inlined_string_donated_;
-                  )cc");
-        }},
        {"has_bits",
         [&] {
           if (has_bit_indices_.empty()) return;
@@ -1773,7 +1745,6 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           //~ Members assumed to align to 8 bytes:
           $extension_set$;
           $tracker$;
-          $inlined_string_donated$;
           $has_bits$;
           //~ Field members:
           $field_members$;
@@ -2116,20 +2087,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
        {"arena_dtor",
         [&] {
           switch (NeedsArenaDestructor()) {
-            case ArenaDtorNeeds::kOnDemand:
-              p->Emit(R"cc(
-                private:
-                static void ArenaDtor(void* $nonnull$ object);
-                static void OnDemandRegisterArenaDtor(MessageLite& msg, $pb$::Arena& arena) {
-                  auto& this_ = static_cast<$classname$&>(msg);
-                  if ((this_.$inlined_string_donated_array$[0] & 0x1u) == 0) {
-                    return;
-                  }
-                  this_.$inlined_string_donated_array$[0] &= 0xFFFFFFFEu;
-                  arena.OwnCustomDestructor(&this_, &$classname$::ArenaDtor);
-                }
-              )cc");
-              break;
             case ArenaDtorNeeds::kRequired:
               p->Emit(R"cc(
                 private:
@@ -2701,7 +2658,8 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   const bool has_extensions = descriptor_->extension_range_count() > 0;
   const bool has_oneofs = descriptor_->real_oneof_decl_count() > 0;
   const bool has_weak_fields = num_weak_fields_ > 0;
-  const bool has_inline_strings = !inlined_string_indices_.empty();
+  // NOTE: We can cleanup two bits from old donated logic.
+  const bool has_inline_strings = false;
   const bool has_split = ShouldSplit(descriptor_, options_);
 
   format("$1$, // bitmap\n",
@@ -2724,11 +2682,6 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
   if (has_weak_fields) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, $weak_field_map$),\n");
   }
-  if (has_inline_strings) {
-    format(
-        "PROTOBUF_FIELD_OFFSET($classtype$, "
-        "$inlined_string_donated_array$),\n");
-  }
   if (has_split) {
     format(
         "PROTOBUF_FIELD_OFFSET($classtype$, $split$),\n"
@@ -2738,10 +2691,6 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
                          descriptor_->real_oneof_decl_count();
   if (has_has_bits) {
     format("$1$, // hasbit index offset\n", offsets);
-  }
-  if (has_inline_strings) {
-    format("$1$, // inline string index offset\n",
-           offsets + has_bit_indices_.size());
   }
   size_t entries = offsets;
   for (auto field : FieldRange(descriptor_)) {
@@ -2802,16 +2751,6 @@ size_t MessageGenerator::GenerateOffsets(io::Printer* p) {
       const std::string index =
           has_bit_indices_[i] >= 0 ? absl::StrCat(has_bit_indices_[i]) : "~0u";
       format("$1$,\n", index);
-    }
-  }
-  if (!inlined_string_indices_.empty()) {
-    entries += inlined_string_indices_.size();
-    for (int inlined_string_index : inlined_string_indices_) {
-      const std::string index =
-          inlined_string_index >= 0
-              ? absl::StrCat(inlined_string_index, ",  // inlined_string_index")
-              : "~0u,";
-      format("$1$\n", index);
     }
   }
 
@@ -2910,24 +2849,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
     }
   };
 
-  auto init_inlined_string_indices = [&] {
-    if (!inlined_string_indices_.empty()) {
-      bool dtor_on_demand = NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand;
-      auto values = [&] {
-        for (size_t i = 0; i < InlinedStringDonatedSize(); ++i) {
-          if (i > 0) {
-            p->Emit(", ");
-          }
-          p->Emit(dtor_on_demand
-                      ? "::_pbi::InitDonatingStates()"
-                      : "::_pbi::InitDonatingStates() & 0xFFFFFFFEu");
-        }
-      };
-      separator();
-      p->Emit({{"values", values}}, "_inlined_string_donated_{$values$}");
-    }
-  };
-
   auto init_has_bits = [&] {
     if (!has_bit_indices_.empty()) {
       if (init_type == InitType::kArenaCopy) {
@@ -3017,7 +2938,6 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
 
   // Initialization order of the various fields inside `_impl_(...)`
   init_extensions();
-  init_inlined_string_indices();
   init_has_bits();
   init_fields();
   init_split();
@@ -3488,13 +3408,6 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
         )cc");
         break;
       }
-      case ArenaDtorNeeds::kOnDemand: {
-        p->Emit(R"cc(
-          ::_pbi::InternalRegisterArenaDtor(arena, this,
-                                            &$classname$::ArenaDtor);
-        )cc");
-        break;
-      }
       case ArenaDtorNeeds::kNone:
         break;
     }
@@ -3543,13 +3456,6 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
                    if (arena != nullptr) {
                      arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);
                    }
-                 )cc");
-                 break;
-               }
-               case ArenaDtorNeeds::kOnDemand: {
-                 p->Emit(R"cc(
-                   ::_pbi::InternalRegisterArenaDtor(arena, this,
-                                                     &$classname$::ArenaDtor);
                  )cc");
                  break;
                }
@@ -3989,15 +3895,6 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
           "$weak_field_map$.UnsafeArenaSwap(&other->$weak_field_map$)"
           ";\n");
     }
-
-    if (!inlined_string_indices_.empty()) {
-      for (size_t i = 0; i < InlinedStringDonatedSize(); ++i) {
-        format(
-            "swap($inlined_string_donated_array$[$1$], "
-            "other->$inlined_string_donated_array$[$1$]);\n",
-            i);
-      }
-    }
   } else {
     format("GetReflection()->Swap(this, other);");
   }
@@ -4200,17 +4097,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
       {{"default_instance",
         absl::StrCat("&", DefaultInstanceName(descriptor_, options_),
                      "._instance")}});
-  const auto on_demand_register_arena_dtor = [&] {
-    if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
-      p->Emit(R"cc(
-        $classname$::OnDemandRegisterArenaDtor,
-      )cc");
-    } else {
-      p->Emit(R"cc(
-        nullptr,  // OnDemandRegisterArenaDtor
-      )cc");
-    }
-  };
   const auto is_initialized = [&] {
     if (NeedsIsInitialized()) {
       p->Emit(R"cc(
@@ -4265,7 +4151,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     };
     p->Emit(
         {
-            {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"is_initialized", is_initialized},
             {"pin_weak_descriptor", pin_weak_descriptor},
             {"custom_vtable_methods", custom_vtable_methods},
@@ -4289,7 +4174,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                 $pbi$::ClassData{
                     $default_instance$,
                     &_table_.header,
-                    $on_demand_register_arena_dtor$,
                     $is_initialized$,
                     &$classname$::MergeImpl,
                     $superclass$::GetNewImpl<$classname$>(),
@@ -4330,7 +4214,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
     p->Emit(
         {
             {"type_size", descriptor_->full_name().size() + 1},
-            {"on_demand_register_arena_dtor", on_demand_register_arena_dtor},
             {"is_initialized", is_initialized},
             {"custom_vtable_methods", custom_vtable_methods},
             {"v2_data", emit_v2_data},
@@ -4341,7 +4224,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
                 {
                     $default_instance$,
                     &_table_.header,
-                    $on_demand_register_arena_dtor$,
                     $is_initialized$,
                     &$classname$::MergeImpl,
                     $superclass$::GetNewImpl<$classname$>(),

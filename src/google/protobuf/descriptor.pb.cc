@@ -2774,7 +2774,6 @@ constexpr auto FileDescriptorSet::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FileDescriptorSet_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FileDescriptorSet::IsInitializedImpl,
           &FileDescriptorSet::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FileDescriptorSet>(),
@@ -3278,7 +3277,6 @@ constexpr auto FileDescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FileDescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FileDescriptorProto::IsInitializedImpl,
           &FileDescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FileDescriptorProto>(),
@@ -3993,7 +3991,6 @@ constexpr auto DescriptorProto_ExtensionRange::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_DescriptorProto_ExtensionRange_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           DescriptorProto_ExtensionRange::IsInitializedImpl,
           &DescriptorProto_ExtensionRange::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<DescriptorProto_ExtensionRange>(),
@@ -4315,7 +4312,6 @@ constexpr auto DescriptorProto_ReservedRange::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_DescriptorProto_ReservedRange_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &DescriptorProto_ReservedRange::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<DescriptorProto_ReservedRange>(),
@@ -4807,7 +4803,6 @@ constexpr auto DescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_DescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           DescriptorProto::IsInitializedImpl,
           &DescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<DescriptorProto>(),
@@ -5464,7 +5459,6 @@ constexpr auto ExtensionRangeOptions_Declaration::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_ExtensionRangeOptions_Declaration_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &ExtensionRangeOptions_Declaration::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions_Declaration>(),
@@ -5903,7 +5897,6 @@ constexpr auto ExtensionRangeOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_ExtensionRangeOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           ExtensionRangeOptions::IsInitializedImpl,
           &ExtensionRangeOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<ExtensionRangeOptions>(),
@@ -6334,7 +6327,6 @@ constexpr auto FieldDescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FieldDescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FieldDescriptorProto::IsInitializedImpl,
           &FieldDescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FieldDescriptorProto>(),
@@ -6866,7 +6858,6 @@ constexpr auto OneofDescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_OneofDescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           OneofDescriptorProto::IsInitializedImpl,
           &OneofDescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<OneofDescriptorProto>(),
@@ -7163,7 +7154,6 @@ constexpr auto EnumDescriptorProto_EnumReservedRange::InternalGenerateClassData_
       ::google::protobuf::internal::ClassData{
           &_EnumDescriptorProto_EnumReservedRange_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &EnumDescriptorProto_EnumReservedRange::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto_EnumReservedRange>(),
@@ -7545,7 +7535,6 @@ constexpr auto EnumDescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_EnumDescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           EnumDescriptorProto::IsInitializedImpl,
           &EnumDescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<EnumDescriptorProto>(),
@@ -7999,7 +7988,6 @@ constexpr auto EnumValueDescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_EnumValueDescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           EnumValueDescriptorProto::IsInitializedImpl,
           &EnumValueDescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<EnumValueDescriptorProto>(),
@@ -8376,7 +8364,6 @@ constexpr auto ServiceDescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_ServiceDescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           ServiceDescriptorProto::IsInitializedImpl,
           &ServiceDescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<ServiceDescriptorProto>(),
@@ -8745,7 +8732,6 @@ constexpr auto MethodDescriptorProto::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_MethodDescriptorProto_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           MethodDescriptorProto::IsInitializedImpl,
           &MethodDescriptorProto::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<MethodDescriptorProto>(),
@@ -9245,7 +9231,6 @@ constexpr auto FileOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FileOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FileOptions::IsInitializedImpl,
           &FileOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FileOptions>(),
@@ -10070,7 +10055,6 @@ constexpr auto MessageOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_MessageOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           MessageOptions::IsInitializedImpl,
           &MessageOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<MessageOptions>(),
@@ -10488,7 +10472,6 @@ constexpr auto FieldOptions_EditionDefault::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FieldOptions_EditionDefault_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &FieldOptions_EditionDefault::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FieldOptions_EditionDefault>(),
@@ -10791,7 +10774,6 @@ constexpr auto FieldOptions_FeatureSupport::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FieldOptions_FeatureSupport_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &FieldOptions_FeatureSupport::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FieldOptions_FeatureSupport>(),
@@ -11279,7 +11261,6 @@ constexpr auto FieldOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FieldOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FieldOptions::IsInitializedImpl,
           &FieldOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FieldOptions>(),
@@ -11942,7 +11923,6 @@ constexpr auto OneofOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_OneofOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           OneofOptions::IsInitializedImpl,
           &OneofOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<OneofOptions>(),
@@ -12347,7 +12327,6 @@ constexpr auto EnumOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_EnumOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           EnumOptions::IsInitializedImpl,
           &EnumOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<EnumOptions>(),
@@ -12809,7 +12788,6 @@ constexpr auto EnumValueOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_EnumValueOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           EnumValueOptions::IsInitializedImpl,
           &EnumValueOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<EnumValueOptions>(),
@@ -13281,7 +13259,6 @@ constexpr auto ServiceOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_ServiceOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           ServiceOptions::IsInitializedImpl,
           &ServiceOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<ServiceOptions>(),
@@ -13710,7 +13687,6 @@ constexpr auto MethodOptions::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_MethodOptions_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           MethodOptions::IsInitializedImpl,
           &MethodOptions::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<MethodOptions>(),
@@ -14102,7 +14078,6 @@ constexpr auto UninterpretedOption_NamePart::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_UninterpretedOption_NamePart_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           UninterpretedOption_NamePart::IsInitializedImpl,
           &UninterpretedOption_NamePart::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<UninterpretedOption_NamePart>(),
@@ -14447,7 +14422,6 @@ constexpr auto UninterpretedOption::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_UninterpretedOption_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           UninterpretedOption::IsInitializedImpl,
           &UninterpretedOption::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<UninterpretedOption>(),
@@ -14838,7 +14812,6 @@ constexpr auto FeatureSet_VisibilityFeature::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FeatureSet_VisibilityFeature_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &FeatureSet_VisibilityFeature::MergeImpl,
           ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<FeatureSet_VisibilityFeature>(),
@@ -15028,7 +15001,6 @@ constexpr auto FeatureSet::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FeatureSet_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FeatureSet::IsInitializedImpl,
           &FeatureSet::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FeatureSet>(),
@@ -15483,7 +15455,6 @@ constexpr auto FeatureSetDefaults_FeatureSetEditionDefault::InternalGenerateClas
       ::google::protobuf::internal::ClassData{
           &_FeatureSetDefaults_FeatureSetEditionDefault_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl,
           &FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults_FeatureSetEditionDefault>(),
@@ -15873,7 +15844,6 @@ constexpr auto FeatureSetDefaults::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FeatureSetDefaults_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           FeatureSetDefaults::IsInitializedImpl,
           &FeatureSetDefaults::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FeatureSetDefaults>(),
@@ -16293,7 +16263,6 @@ constexpr auto SourceCodeInfo_Location::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_SourceCodeInfo_Location_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &SourceCodeInfo_Location::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<SourceCodeInfo_Location>(),
@@ -16732,7 +16701,6 @@ constexpr auto SourceCodeInfo::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_SourceCodeInfo_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           SourceCodeInfo::IsInitializedImpl,
           &SourceCodeInfo::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<SourceCodeInfo>(),
@@ -17073,7 +17041,6 @@ constexpr auto GeneratedCodeInfo_Annotation::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_GeneratedCodeInfo_Annotation_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &GeneratedCodeInfo_Annotation::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo_Annotation>(),
@@ -17481,7 +17448,6 @@ constexpr auto GeneratedCodeInfo::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_GeneratedCodeInfo_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &GeneratedCodeInfo::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<GeneratedCodeInfo>(),

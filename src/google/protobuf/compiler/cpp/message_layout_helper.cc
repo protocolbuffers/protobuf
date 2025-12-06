@@ -136,7 +136,7 @@ MessageLayoutHelper::BuildFastParseTable(
   }
   auto field_options = ParseFunctionGenerator::BuildFieldOptions(
       descriptor_, ordered_fields, options, scc_analyzer,
-      /*has_bit_indices=*/{}, /*inlined_string_indices=*/{});
+      /*has_bit_indices=*/{});
   auto table_info = ParseFunctionGenerator::BuildTcTableInfoFromDescriptor(
       descriptor_, options, field_options);
   return table_info.fast_path_fields;
