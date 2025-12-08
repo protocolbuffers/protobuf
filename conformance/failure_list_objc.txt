@@ -1,2 +1,6 @@
 # JSON input or output tests are skipped (in conformance_objc.m) as mobile
 # platforms don't support JSON wire format to avoid code bloat.
+
+Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.

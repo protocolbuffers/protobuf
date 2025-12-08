@@ -1411,6 +1411,41 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
     name.back() += i;
     ExpectParseFailureForProto(nullfield[i], name, REQUIRED);
   }
+
+  // Reused for a few cases: this is a single byte tag for a field number 1
+  // varint but where the byte has the continuation bit set, so that we can
+  // easily construct longer tags.
+  std::string tag_with_continuation_bit =
+      tag(1, WireFormatLite::WIRETYPE_VARINT);
+  assert(tag_with_continuation_bit.size() == 1);
+  tag_with_continuation_bit[0] |= 0b10000000;
+
+  // A varint where field number is far out of range of
+  // maximum legal field number. The lower 5 bytes of the varint do look like a
+  // well-formed tag for field number 1.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x80\x80\x0F",
+                   varint(1234)),
+      "BadTag_FieldNumberTooHigh", REQUIRED);
+
+  // A 5-byte tag varint where the value is above UINT32_MAX (bit 35 is set)
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x40", varint(1234)),
+      "BadTag_FieldNumberSlightlyTooHigh", REQUIRED);
+
+  // A tag where the varint is more than 5 bytes but only because it is an
+  // overlong varint, so the decoded value is still below UINT32_MAX.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x80\x80\x80\x80",
+                   std::string("\0", 1), varint(1234)),
+      "BadTag_OverlongVarint", REQUIRED);
+
+  // An overlong varint that is even more than 10 bytes.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag_with_continuation_bit,
+                   "\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80",
+                   std::string("\0", 1), varint(1234)),
+      "BadTag_VarintMoreThanTenBytes", REQUIRED);
 }
 
 template <typename MessageType>
