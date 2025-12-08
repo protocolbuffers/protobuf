@@ -16759,7 +16759,7 @@ static upb_MiniTableField upb_Decoder_FieldNotFoundField = {
 
 UPB_NOINLINE const upb_MiniTableField* _upb_Decoder_FindExtensionField(
     upb_Decoder* d, const upb_MiniTable* t, uint32_t field_number, int ext_mode,
-    int wire_type) {
+    uint32_t wire_type) {
   // Treat a message set as an extendable message if it is a delimited field.
   // This provides compatibility with encoders that are unaware of message
   // sets and serialize them as normal extensions.
@@ -16782,7 +16782,7 @@ UPB_NOINLINE const upb_MiniTableField* _upb_Decoder_FindExtensionField(
 static const upb_MiniTableField* _upb_Decoder_FindField(upb_Decoder* d,
                                                         const upb_MiniTable* t,
                                                         uint32_t field_number,
-                                                        int wire_type) {
+                                                        uint32_t wire_type) {
   UPB_ASSERT(t);
   const upb_MiniTableField* field =
       upb_MiniTable_FindFieldByNumber(t, field_number);
@@ -16921,7 +16921,8 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
                                          const upb_MiniTable* mt,
                                          const upb_MiniTableField* field,
-                                         int wire_type, wireval* val, int* op) {
+                                         uint32_t wire_type, wireval* val,
+                                         int* op) {
   static const unsigned kFixed32OkMask = (1 << kUpb_FieldType_Float) |
                                          (1 << kUpb_FieldType_Fixed32) |
                                          (1 << kUpb_FieldType_SFixed32);
@@ -17011,8 +17012,8 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
 }
 
 static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
-                                               int field_number,
-                                               int wire_type) {
+                                               uint32_t field_number,
+                                               uint32_t wire_type) {
   // Since unknown fields are the uncommon case, we do a little extra work here
   // to walk backwards through the buffer to find the field start.  This frees
   // up a register in the fast paths (when the field is known), which leads to
@@ -17061,11 +17062,9 @@ static const char* _upb_Decoder_FindFieldStart(upb_Decoder* d, const char* ptr,
   return start;
 }
 
-static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
-                                                   const char* ptr,
-                                                   upb_Message* msg,
-                                                   int field_number,
-                                                   int wire_type, wireval val) {
+static const char* _upb_Decoder_DecodeUnknownField(
+    upb_Decoder* d, const char* ptr, upb_Message* msg, uint32_t field_number,
+    uint32_t wire_type, wireval val) {
   if (field_number == 0) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
 
   const char* start =
@@ -17111,7 +17110,8 @@ static const char* _upb_Decoder_DecodeUnknownField(upb_Decoder* d,
 
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFieldTag(upb_Decoder* d, const char* ptr,
-                                        int* field_number, int* wire_type) {
+                                        uint32_t* field_number,
+                                        uint32_t* wire_type) {
 #ifndef NDEBUG
   d->debug_tagstart = ptr;
 #endif
@@ -17128,7 +17128,8 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFieldData(upb_Decoder* d, const char* ptr,
                                          upb_Message* msg,
                                          const upb_MiniTable* mt,
-                                         int field_number, int wire_type) {
+                                         uint32_t field_number,
+                                         uint32_t wire_type) {
 #ifndef NDEBUG
   d->debug_valstart = ptr;
 #endif
@@ -17164,8 +17165,8 @@ UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeFieldNoFast(upb_Decoder* d, const char* ptr,
                                            upb_Message* msg,
                                            const upb_MiniTable* mt) {
-  int field_number;
-  int wire_type;
+  uint32_t field_number;
+  uint32_t wire_type;
 
   ptr = _upb_Decoder_DecodeFieldTag(d, ptr, &field_number, &wire_type);
 
