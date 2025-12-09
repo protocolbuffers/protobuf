@@ -285,8 +285,10 @@ absl::StatusOr<google::protobuf::Message*> CreateNewMessage(PyObject* py_msg) {
 bool CopyToOwnedMsg(google::protobuf::Message** copy, const google::protobuf::Message& message) {
   *copy = message.New();
   std::string wire;
-  message.SerializePartialToString(&wire);
-  (*copy)->ParsePartialFromString(wire);
+  // TODO: Remove this suppression.
+      (void)message.SerializePartialToString(&wire);
+  // TODO: Remove this suppression.
+      (void)(*copy)->ParsePartialFromString(wire);
   return true;
 }
 

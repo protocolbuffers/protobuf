@@ -364,9 +364,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   void Clear() override;
 
-  size_t ByteSizeLong() const override;
-  uint8_t* _InternalSerialize(uint8_t* target,
-                              io::EpsCopyOutputStream* stream) const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t ByteSizeLong() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* _InternalSerialize(
+      uint8_t* target, io::EpsCopyOutputStream* stream) const override;
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // Introspection ---------------------------------------------------
@@ -488,7 +488,8 @@ class PROTOBUF_EXPORT Reflection final {
   // Get a mutable pointer to the UnknownFieldSet for the message.  This
   // contains fields which were seen when the Message was parsed but were not
   // recognized according to the Message's definition.
-  UnknownFieldSet* MutableUnknownFields(Message* message) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD UnknownFieldSet* MutableUnknownFields(
+      Message* message) const;
 
   // Estimate the amount of memory used by the message object.
   [[nodiscard]] size_t SpaceUsedLong(const Message& message) const;
@@ -1506,7 +1507,8 @@ class PROTOBUF_EXPORT MessageFactory {
   //
   // This method may or may not be thread-safe depending on the implementation.
   // Each implementation should document its own degree thread-safety.
-  virtual const Message* GetPrototype(const Descriptor* type) = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual const Message* GetPrototype(
+      const Descriptor* type) = 0;
 
   // Gets a MessageFactory which supports all generated, compiled-in messages.
   // In other words, for any compiled-in type FooMessage, the following is true:
@@ -1522,7 +1524,8 @@ class PROTOBUF_EXPORT MessageFactory {
   // any shared data.
   //
   // This factory is a singleton.  The caller must not delete the object.
-  static MessageFactory* generated_factory();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static MessageFactory*
+  generated_factory();
 
   // For internal use only:  Registers a .proto file at static initialization
   // time, to be placed in generated_factory.  The first time GetPrototype()

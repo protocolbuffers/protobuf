@@ -1399,8 +1399,9 @@ TEST(LiteTest, DynamicCastMessageInvalidReferenceType) {
   CastType1 test_type_1;
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
 #if defined(ABSL_HAVE_EXCEPTIONS)
-  EXPECT_THROW(DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
-               std::bad_cast);
+  EXPECT_THROW(
+      (void)DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),
+      std::bad_cast);
 #elif defined(GTEST_HAS_DEATH_TEST)
   ASSERT_DEATH(
       (void)DynamicCastMessage<CastType2>(test_type_1_pointer_const_ref),

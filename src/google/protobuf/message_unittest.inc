@@ -861,7 +861,7 @@ TEST(MESSAGE_TEST_NAME, DynamicCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
 #if defined(ABSL_HAVE_EXCEPTIONS)
-  EXPECT_THROW(DynamicCastMessage<UNITTEST::TestRequired>(
+  EXPECT_THROW((void)DynamicCastMessage<UNITTEST::TestRequired>(
                    test_all_types_pointer_const_ref),
                std::bad_cast);
 #else

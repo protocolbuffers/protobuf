@@ -1036,7 +1036,8 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     }
     const int read_bytes = num_read * per_value_size;
     if (read_bytes > 0) {
-      input->Skip(read_bytes);
+      // TODO: Remove this suppression.
+      (void)input->Skip(read_bytes);
     }
   }
   return true;
