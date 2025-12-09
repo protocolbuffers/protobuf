@@ -193,7 +193,7 @@ jobs:
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS PHP ${{ matrix.version }}
     # noop
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -224,6 +224,8 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-version: 8.0.1
+          # TODO this shouldn't be necessary, remove it
+          bazel-flags: --xcode_version_config=//.github:host_xcodes_macos15
           command: |
             pushd php
             php -v
@@ -238,5 +240,5 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           version: 8.0.1 # Bazel version
-          bazel-cache: php_macos/${{ matrix.version }}
-          bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
+          bazel-cache: php_macos15/${{ matrix.version }}
+          bazel: test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15
