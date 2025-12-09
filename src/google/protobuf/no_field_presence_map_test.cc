@@ -112,7 +112,7 @@ TEST(NoFieldPresenceTest, GenCodeMapMissingKeyDeathTest) {
   TestAllMapTypes message;
 
   // Trying to find an unset key in a map would crash.
-  EXPECT_DEATH(message.map_int32_bytes().at(9), "key not found");
+  EXPECT_DEATH((void)message.map_int32_bytes().at(9), "key not found");
 }
 
 #ifndef NDEBUG

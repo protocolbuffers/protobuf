@@ -916,7 +916,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(
         absl::StrCat("ValidDataScalar", type_name, "[", i, "]"), REQUIRED,
@@ -939,7 +939,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("RepeatedScalarSelectsLast", type_name),
                          REQUIRED, proto, text);
@@ -1000,7 +1000,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(default_proto_packed_expected));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     // Ensures both packed and unpacked data can be parsed.
     RunValidProtobufTest(
@@ -1051,7 +1051,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("ValidDataRepeated", type_name), REQUIRED,
                          proto, text);
@@ -1131,7 +1131,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".Default"),
                          REQUIRED, proto, text);
@@ -1145,7 +1145,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".MissingDefault"),
                          REQUIRED, proto, text);
@@ -1159,7 +1159,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".NonDefault"),
                          REQUIRED, proto, text);
@@ -1173,7 +1173,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".Unordered"),
                          REQUIRED, proto, text);
@@ -1191,7 +1191,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto2));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(absl::StrCat("ValidDataMap", key_type_name,
                                       value_type_name, ".DuplicateKey"),
                          REQUIRED, proto, text);
@@ -1205,7 +1205,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(
         absl::StrCat("ValidDataMap", key_type_name, value_type_name,
                      ".DuplicateKeyInMapEntry"),
@@ -1220,7 +1220,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
     RunValidProtobufTest(
         absl::StrCat("ValidDataMap", key_type_name, value_type_name,
                      ".DuplicateValueInMapEntry"),
@@ -1263,7 +1263,7 @@ void BinaryAndJsonConformanceSuiteImpl<
   MessageType test_message;
   ABSL_CHECK(test_message.MergeFromString(proto2));
   std::string text;
-  TextFormat::PrintToString(test_message, &text);
+  ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
   RunValidProtobufTest("ValidDataMap.STRING.MESSAGE.MergeValue", REQUIRED,
                        proto, text);
 }
@@ -1288,7 +1288,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(
         absl::StrCat("ValidDataOneof", type_name, ".DefaultValue"), REQUIRED,
@@ -1304,7 +1304,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(
         absl::StrCat("ValidDataOneof", type_name, ".NonDefaultValue"), REQUIRED,
@@ -1321,7 +1321,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("ValidDataOneof", type_name,
                                       ".MultipleValuesForSameField"),
@@ -1347,7 +1347,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
     MessageType test_message;
     ABSL_CHECK(test_message.MergeFromString(expected_proto));
     std::string text;
-    TextFormat::PrintToString(test_message, &text);
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
 
     RunValidProtobufTest(absl::StrCat("ValidDataOneof", type_name,
                                       ".MultipleValuesForDifferentField"),
@@ -1396,7 +1396,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestMergeOneofMessage() {
   MessageType test_message;
   ABSL_CHECK(test_message.MergeFromString(expected_proto));
   std::string text;
-  TextFormat::PrintToString(test_message, &text);
+  ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
   RunValidProtobufTest("ValidDataOneof.MESSAGE.Merge", REQUIRED, proto, text);
   RunValidBinaryProtobufTest("ValidDataOneofBinary.MESSAGE.Merge", RECOMMENDED,
                              proto, expected_proto);

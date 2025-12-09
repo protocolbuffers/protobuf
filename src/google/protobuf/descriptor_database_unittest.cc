@@ -504,7 +504,7 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
 
   // Test!
   std::vector<std::string> all_files;
-  db.FindAllFileNames(&all_files);
+  ASSERT_TRUE(db.FindAllFileNames(&all_files));
   EXPECT_THAT(all_files, testing::ElementsAre("foo.proto"));
 }
 

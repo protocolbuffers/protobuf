@@ -103,7 +103,6 @@ class FindExtensionTest : public ::testing::TestWithParam<ExtensionFinderType> {
   bool FindExtensionInfoFromFieldNumber(int wire_type, int field_number,
                                         ExtensionInfo* extension,
                                         bool* was_packed_on_wire) {
-    ExtensionSet es;
     switch (GetParam()) {
       case ExtensionFinderType::kGeneratedExtensionFinder:
         return ExtensionSet::FindExtensionInfoFromFieldNumber(
@@ -1373,7 +1372,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
 
   // Can we print it?
   std::string message_text;
-  TextFormat::PrintToString(message, &message_text);
+  ASSERT_TRUE(TextFormat::PrintToString(message, &message_text));
   EXPECT_EQ(
       "[dynamic_extensions.scalar_extension]: 123\n"
       "[dynamic_extensions.enum_extension]: FOREIGN_BAR\n"
@@ -1517,8 +1516,8 @@ TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
       unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
           "repeated_int32_extension");
   ASSERT_NE(desc, nullptr);
-  set.MutableRawRepeatedField(/*arena=*/nullptr, desc->number(),
-                              WireFormatLite::TYPE_INT32, false, desc);
+  (void)set.MutableRawRepeatedField(/*arena=*/nullptr, desc->number(),
+                                    WireFormatLite::TYPE_INT32, false, desc);
   EXPECT_EQ(set.NumExtensions(), 1);
 }
 
@@ -1720,7 +1719,7 @@ TEST(ExtensionSetTest, MoveLazyMessageExtension) {
   EXPECT_TRUE(dst.HasExtension(unittest::optional_int32_extension));
 
   // Dest is lazy.
-  set2.IsLazy(unittest::optional_int32_extension.number());
+  (void)set2.IsLazy(unittest::optional_int32_extension.number());
 
   // Finally, force the parse just to verify.
   EXPECT_EQ(dst.GetExtension(unittest::optional_int32_extension), 1234);
