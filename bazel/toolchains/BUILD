@@ -54,3 +54,14 @@ config_setting(
     name = "prefer_prebuilt_protoc.flag_set",
     flag_values = {":prefer_prebuilt_protoc": "true"},
 )
+
+# The public API users set to disable the validation action failing.
+bool_flag(
+    name = "allow_nonstandard_protoc",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "allow_nonstandard_protoc.flag_set",
+    flag_values = {":allow_nonstandard_protoc": "true"},
+)

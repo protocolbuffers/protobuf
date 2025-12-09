@@ -26,18 +26,24 @@ def _protoc_authenticity_impl(ctx):
           exit 0
         }}
         grep -q "^libprotoc {RELEASE_VERSION}" {validation_output} || {{
-          echo 'ERROR: protoc version does not match protobuf Bazel module; we do not support this.
-          It is considered undefined behavior that is expected to break in the future even if it appears to work today.
-          To suppress this error, run Bazel with --norun_validations'
+          echo '{severity}: protoc version does not match protobuf Bazel module; we do not support this.
+          It is considered undefined behavior that is expected to break in the future even if it appears to work today.'
+          echo '{suppression_note}'
           echo 'Expected: libprotoc {RELEASE_VERSION}'
           echo -n 'Actual:   '
           cat {validation_output}
-          exit 1
+          exit {mismatch_exit_code}
         }} >&2
         """.format(
             protoc = proto_lang_toolchain_info.proto_compiler.executable.path,
             validation_output = validation_output.path,
             RELEASE_VERSION = RELEASE_VERSION.removeprefix("v"),
+            suppression_note = (
+                "To suppress this error, run Bazel with --@com_google_protobuf//bazel/toolchains:allow_nonstandard_protoc"
+                if ctx.attr.fail_on_mismatch else ""
+            ),
+            mismatch_exit_code = 1 if ctx.attr.fail_on_mismatch else 0,
+            severity = "ERROR" if ctx.attr.fail_on_mismatch else "INFO",
         ),
     )
     return [OutputGroupInfo(_validation = depset([validation_output]))]
@@ -45,7 +51,12 @@ def _protoc_authenticity_impl(ctx):
 protoc_authenticity = rule(
     implementation = _protoc_authenticity_impl,
     fragments = ["proto"],
-    attrs = toolchains.if_legacy_toolchain({
+    attrs = {
+        "fail_on_mismatch": attr.bool(
+            default = True,
+            doc = "If true, the build will fail when the protoc binary does not match the expected version.",
+        ),
+    } | toolchains.if_legacy_toolchain({
         "_proto_compiler": attr.label(
             cfg = "exec",
             executable = True,

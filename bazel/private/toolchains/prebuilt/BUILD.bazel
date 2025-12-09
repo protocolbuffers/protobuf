@@ -20,8 +20,13 @@ load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
     for platform, meta in PROTOBUF_PLATFORMS.items()
 ]
 
+
 # Support verification of user-registered toolchains
 protoc_authenticity(
     name = "authenticity_validation",
+    fail_on_mismatch = select({
+        "//bazel/toolchains:allow_nonstandard_protoc.flag_set": False,
+        "//conditions:default": True,
+    }),
     visibility = ["//visibility:public"],
 )
