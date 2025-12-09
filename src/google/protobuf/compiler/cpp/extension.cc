@@ -131,7 +131,8 @@ void ExtensionGenerator::GenerateFeatureDefaults(io::Printer* p) const {
 
 void ExtensionGenerator::GenerateDeclaration(io::Printer* p) const {
   auto var = p->WithVars(variables_);
-  auto annotate = p->WithAnnotations({{"name", descriptor_}});
+  auto annotate = p->WithAnnotations(
+      {{"name", descriptor_}, {"constant_name", descriptor_}});
   p->Emit(
       {
           {"constant_qualifier",
