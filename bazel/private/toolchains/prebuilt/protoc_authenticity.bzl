@@ -19,7 +19,7 @@ def _protoc_authenticity_impl(ctx):
         tools = [proto_lang_toolchain_info.proto_compiler],
         command = """\
         {protoc} --version > {validation_output}
-        grep -q "-dev$" {validation_output} && {{
+        grep -q -e "-dev$" {validation_output} && {{
           echo 'WARNING: Detected a development version of protoc.
           Development versions are not validated for authenticity.
           To ensure a secure build, please use a released version of protoc.'
