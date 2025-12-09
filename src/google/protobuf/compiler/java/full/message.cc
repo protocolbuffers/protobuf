@@ -782,6 +782,17 @@ void ImmutableMessageGenerator::GenerateDescriptorMethods(
         "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
         "identifier", UniqueFileScopeIdentifier(descriptor_));
   }
+
+  printer->Print(
+      "@java.lang.Override\n"
+      "public com.google.protobuf.Descriptors.Descriptor "
+      "getDescriptorForType() {\n"
+      "  return $fileclass$.internal_$identifier$_descriptor;\n"
+      "}\n"
+      "\n",
+      "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
+      "identifier", UniqueFileScopeIdentifier(descriptor_));
+
   std::vector<const FieldDescriptor*> map_fields;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
