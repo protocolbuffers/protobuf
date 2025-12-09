@@ -21,7 +21,7 @@ namespace protobuf {
 //
 // See go/statically-dispatched-message-hooks for details.
 template <typename Proto>
-struct NoOpAccessListener {
+struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED NoOpAccessListener {
   // Number of fields are provided at compile time for the trackers to be able
   // to have stack allocated bitmaps for the fields. This is useful for
   // performance critical trackers. This is also to avoid cyclic dependencies

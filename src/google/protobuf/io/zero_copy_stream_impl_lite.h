@@ -43,7 +43,8 @@ namespace io {
 // ===================================================================
 
 // A ZeroCopyInputStream backed by an in-memory array of bytes.
-class PROTOBUF_EXPORT ArrayInputStream final : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    ArrayInputStream final : public ZeroCopyInputStream {
  public:
   // Create an InputStream that returns the bytes pointed to by "data".
   // "data" remains the property of the caller but must remain valid until
@@ -60,10 +61,11 @@ class PROTOBUF_EXPORT ArrayInputStream final : public ZeroCopyInputStream {
   ArrayInputStream& operator=(const ArrayInputStream&) = delete;
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
 
  private:
@@ -79,7 +81,8 @@ class PROTOBUF_EXPORT ArrayInputStream final : public ZeroCopyInputStream {
 // ===================================================================
 
 // A ZeroCopyOutputStream backed by an in-memory array of bytes.
-class PROTOBUF_EXPORT ArrayOutputStream final : public ZeroCopyOutputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    ArrayOutputStream final : public ZeroCopyOutputStream {
  public:
   // Create an OutputStream that writes to the bytes pointed to by "data".
   // "data" remains the property of the caller but must remain valid until
@@ -96,9 +99,10 @@ class PROTOBUF_EXPORT ArrayOutputStream final : public ZeroCopyOutputStream {
   ArrayOutputStream& operator=(const ArrayOutputStream&) = delete;
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   uint8_t* const data_;     // The byte array.
@@ -113,7 +117,8 @@ class PROTOBUF_EXPORT ArrayOutputStream final : public ZeroCopyOutputStream {
 // ===================================================================
 
 // A ZeroCopyOutputStream which appends bytes to a string.
-class PROTOBUF_EXPORT StringOutputStream final : public ZeroCopyOutputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    StringOutputStream final : public ZeroCopyOutputStream {
  public:
   // Create a StringOutputStream which appends bytes to the given string.
   // The string remains property of the caller, but it is mutated in arbitrary
@@ -132,9 +137,10 @@ class PROTOBUF_EXPORT StringOutputStream final : public ZeroCopyOutputStream {
   StringOutputStream& operator=(const StringOutputStream&) = delete;
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   static constexpr size_t kMinimumSize = 16;
@@ -159,7 +165,7 @@ class PROTOBUF_EXPORT StringOutputStream final : public ZeroCopyOutputStream {
 // CopyingInputStream implementations should avoid buffering if possible.
 // CopyingInputStreamAdaptor does its own buffering and will read data
 // in large blocks.
-class PROTOBUF_EXPORT CopyingInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT CopyingInputStream {
  public:
   virtual ~CopyingInputStream() = default;
 
@@ -167,7 +173,8 @@ class PROTOBUF_EXPORT CopyingInputStream {
   // bytes read.  Read() waits until at least one byte is available, or
   // returns zero if no bytes will ever become available (EOF), or -1 if a
   // permanent read error occurred.
-  virtual int Read(void* buffer, int size) = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual int Read(void* buffer,
+                                                       int size) = 0;
 
   // Skips the next "count" bytes of input.  Returns the number of bytes
   // actually skipped.  This will always be exactly equal to "count" unless
@@ -175,7 +182,7 @@ class PROTOBUF_EXPORT CopyingInputStream {
   //
   // The default implementation just repeatedly calls Read() into a scratch
   // buffer.
-  virtual int Skip(int count);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual int Skip(int count);
 };
 
 // A ZeroCopyInputStream which reads from a CopyingInputStream.  This is
@@ -185,7 +192,8 @@ class PROTOBUF_EXPORT CopyingInputStream {
 // If you want to read from file descriptors or C++ istreams, this is
 // already implemented for you:  use FileInputStream or IstreamInputStream
 // respectively.
-class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    CopyingInputStreamAdaptor : public ZeroCopyInputStream {
  public:
   // Creates a stream that reads from the given CopyingInputStream.
   // If a block_size is given, it specifies the number of bytes that
@@ -205,10 +213,11 @@ class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
   void SetOwnsCopyingStream(bool value) { owns_copying_stream_ = value; }
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   // Insures that buffer_ is not NULL.
@@ -255,13 +264,15 @@ class PROTOBUF_EXPORT CopyingInputStreamAdaptor : public ZeroCopyInputStream {
 // CopyingOutputStream implementations should avoid buffering if possible.
 // CopyingOutputStreamAdaptor does its own buffering and will write data
 // in large blocks.
-class PROTOBUF_EXPORT CopyingOutputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    CopyingOutputStream {
  public:
   virtual ~CopyingOutputStream() = default;
 
   // Writes "size" bytes from the given buffer to the output.  Returns true
   // if successful, false on a write error.
-  virtual bool Write(const void* buffer, int size) = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool Write(const void* buffer,
+                                                         int size) = 0;
 };
 
 // A ZeroCopyOutputStream which writes to a CopyingOutputStream.  This is
@@ -271,7 +282,8 @@ class PROTOBUF_EXPORT CopyingOutputStream {
 // If you want to write to file descriptors or C++ ostreams, this is
 // already implemented for you:  use FileOutputStream or OstreamOutputStream
 // respectively.
-class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
  public:
   // Creates a stream that writes to the given Unix file descriptor.
   // If a block_size is given, it specifies the size of the buffers
@@ -288,19 +300,24 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
   // Writes all pending data to the underlying stream.  Returns false if a
   // write error occurred on the underlying stream.  (The underlying
   // stream itself is not necessarily flushed.)
-  bool Flush();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Flush();
 
   // Call SetOwnsCopyingStream(true) to tell the CopyingOutputStreamAdaptor to
   // delete the underlying CopyingOutputStream when it is destroyed.
   void SetOwnsCopyingStream(bool value) { owns_copying_stream_ = value; }
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  int64_t ByteCount() const override;
-  bool WriteAliasedRaw(const void* data, int size) override;
-  bool AllowsAliasing() const override { return true; }
-  bool WriteCord(const absl::Cord& cord) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool WriteAliasedRaw(const void* data,
+                                                           int size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AllowsAliasing() const override {
+    return true;
+  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool WriteCord(
+      const absl::Cord& cord) override;
 
  private:
   // Write the current buffer, if it is present.
@@ -336,7 +353,8 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
 
 // A ZeroCopyInputStream which wraps some other stream and limits it to
 // a particular byte count.
-class PROTOBUF_EXPORT LimitingInputStream final : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    LimitingInputStream final : public ZeroCopyInputStream {
  public:
   LimitingInputStream(ZeroCopyInputStream* input, int64_t limit);
   ~LimitingInputStream() override;
@@ -346,11 +364,13 @@ class PROTOBUF_EXPORT LimitingInputStream final : public ZeroCopyInputStream {
   LimitingInputStream& operator=(const LimitingInputStream&) = delete;
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
-  bool ReadCord(absl::Cord* cord, int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ReadCord(absl::Cord* cord,
+                                                    int count) override;
 
 
  private:
@@ -364,7 +384,8 @@ class PROTOBUF_EXPORT LimitingInputStream final : public ZeroCopyInputStream {
 // A ZeroCopyInputStream backed by a Cord.  This stream implements ReadCord()
 // in a way that can share memory between the source and destination cords
 // rather than copying.
-class PROTOBUF_EXPORT CordInputStream final : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    CordInputStream final : public ZeroCopyInputStream {
  public:
   // Creates an InputStream that reads from the given Cord. `cord` must
   // not be null and must outlive this CordInputStream instance. `cord` must
@@ -380,11 +401,13 @@ class PROTOBUF_EXPORT CordInputStream final : public ZeroCopyInputStream {
   CordInputStream& operator=(const CordInputStream&) = delete;
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
-  bool ReadCord(absl::Cord* cord, int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ReadCord(absl::Cord* cord,
+                                                    int count) override;
 
 
  private:
@@ -410,7 +433,8 @@ class PROTOBUF_EXPORT CordInputStream final : public ZeroCopyInputStream {
 // A ZeroCopyOutputStream that writes to a Cord.  This stream implements
 // WriteCord() in a way that can share memory between the source and
 // destination cords rather than copying.
-class PROTOBUF_EXPORT CordOutputStream final : public ZeroCopyOutputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    CordOutputStream final : public ZeroCopyOutputStream {
  public:
   // Creates an OutputStream streaming serialized data into a Cord. `size_hint`,
   // if given, is the expected total size of the resulting Cord. This is a hint
@@ -457,10 +481,11 @@ class PROTOBUF_EXPORT CordOutputStream final : public ZeroCopyOutputStream {
   CordOutputStream& operator=(const CordOutputStream&) = delete;
 
   // implements `ZeroCopyOutputStream` ---------------------------------
-  bool Next(void** data, int* size) final;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data, int* size) final;
   void BackUp(int count) final;
   int64_t ByteCount() const final;
-  bool WriteCord(const absl::Cord& cord) final;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool WriteCord(
+      const absl::Cord& cord) final;
 
   // Consumes the serialized data as a cord value. `Consume()` internally
   // flushes any pending state 'as if' BackUp(0) was called. While a final call
@@ -493,6 +518,7 @@ class PROTOBUF_EXPORT CordOutputStream final : public ZeroCopyOutputStream {
 // Return a pointer to mutable characters underlying the given string.  The
 // return value is valid until the next time the string is resized.  We
 // trust the caller to treat the return value as an array of length s->size().
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline char* mutable_string_data(std::string* s) {
   return &(*s)[0];
 }
@@ -501,6 +527,7 @@ inline char* mutable_string_data(std::string* s) {
 //  ({ char* p = mutable_string_data(s); make_pair(p, p != NULL); })
 // Sometimes it's faster: in some scenarios p cannot be NULL, and then the
 // code can avoid that check.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline std::pair<char*, bool> as_string_data(std::string* s) {
   char* p = mutable_string_data(s);
   return std::make_pair(p, true);

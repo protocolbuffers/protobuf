@@ -50,7 +50,7 @@ class MergedDescriptorDatabase;
 // calling DescriptorPool::BuildFile() for each one.  Instead, a DescriptorPool
 // can be created which wraps a DescriptorDatabase and only builds particular
 // descriptors when they are needed.
-class PROTOBUF_EXPORT DescriptorDatabase {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT DescriptorDatabase {
  protected:
   // LSC: Replacing StringViewArg with absl::string_view
   // (go/descriptor-db-string-view-lsc)
@@ -64,21 +64,21 @@ class PROTOBUF_EXPORT DescriptorDatabase {
 
   // Find a file by file name.  Fills in in *output and returns true if found.
   // Otherwise, returns false, leaving the contents of *output undefined.
-  virtual bool FindFileByName(StringViewArg filename,
-                              FileDescriptorProto* PROTOBUF_NONNULL output) = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool FindFileByName(
+      StringViewArg filename, FileDescriptorProto* PROTOBUF_NONNULL output) = 0;
 
   // Find the file that declares the given fully-qualified symbol name.
   // If found, fills in *output and returns true, otherwise returns false
   // and leaves *output undefined.
-  virtual bool FindFileContainingSymbol(StringViewArg symbol_name,
-                                        FileDescriptorProto* PROTOBUF_NONNULL
-                                            output) = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool FindFileContainingSymbol(
+      StringViewArg symbol_name,
+      FileDescriptorProto* PROTOBUF_NONNULL output) = 0;
 
   // Find the file which defines an extension extending the given message type
   // with the given field number.  If found, fills in *output and returns true,
   // otherwise returns false and leaves *output undefined.  containing_type
   // must be a fully-qualified type name.
-  virtual bool FindFileContainingExtension(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool FindFileContainingExtension(
       StringViewArg containing_type, int field_number,
       FileDescriptorProto* PROTOBUF_NONNULL output) = 0;
 
@@ -92,7 +92,7 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   //
   // This method has a default implementation that always returns
   // false.
-  virtual bool FindAllExtensionNumbers(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool FindAllExtensionNumbers(
       StringViewArg /* extendee_type */,
       std::vector<int>* PROTOBUF_NONNULL /* output */) {
     return false;
@@ -107,7 +107,7 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   //
   // This method has a default implementation that always returns
   // false.
-  virtual bool FindAllFileNames(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool FindAllFileNames(
       std::vector<std::string>* PROTOBUF_NONNULL /*output*/) {
     return false;
   }
@@ -124,7 +124,8 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   // database will find all messages. Returns true if the database supports
   // searching all message names, otherwise returns false and leaves output
   // unchanged.
-  bool FindAllMessageNames(std::vector<std::string>* PROTOBUF_NONNULL output);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllMessageNames(
+      std::vector<std::string>* PROTOBUF_NONNULL output);
 
  private:
   static_assert(std::is_same<StringViewArg, absl::string_view>::value ||
@@ -154,7 +155,8 @@ class PROTOBUF_EXPORT DescriptorDatabase {
 // FileDescriptor::CopyTo()) will always use fully-qualified names for all
 // types.  You only need to worry if you are constructing FileDescriptorProtos
 // yourself, or are calling compiler::Parser directly.
-class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    SimpleDescriptorDatabase : public DescriptorDatabase {
  public:
   SimpleDescriptorDatabase();
   SimpleDescriptorDatabase(const SimpleDescriptorDatabase&) = delete;
@@ -175,19 +177,20 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   bool AddUnowned(const FileDescriptorProto* PROTOBUF_NONNULL file);
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(StringViewArg filename,
-                      FileDescriptorProto* PROTOBUF_NONNULL output) override;
-  bool FindFileContainingSymbol(StringViewArg symbol_name,
-                                FileDescriptorProto* PROTOBUF_NONNULL
-                                    output) override;
-  bool FindFileContainingExtension(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileByName(
+      StringViewArg filename,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingSymbol(
+      StringViewArg symbol_name,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingExtension(
       StringViewArg containing_type, int field_number,
       FileDescriptorProto* PROTOBUF_NONNULL output) override;
-  bool FindAllExtensionNumbers(StringViewArg extendee_type,
-                               std::vector<int>* PROTOBUF_NONNULL
-                                   output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllExtensionNumbers(
+      StringViewArg extendee_type,
+      std::vector<int>* PROTOBUF_NONNULL output) override;
 
-  bool FindAllFileNames(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllFileNames(
       std::vector<std::string>* PROTOBUF_NONNULL output) override;
 
  private:
@@ -283,7 +286,8 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
 //
 // The same caveats regarding FindFileContainingExtension() apply as with
 // SimpleDescriptorDatabase.
-class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    EncodedDescriptorDatabase : public DescriptorDatabase {
  public:
   EncodedDescriptorDatabase();
   EncodedDescriptorDatabase(const EncodedDescriptorDatabase&) = delete;
@@ -304,22 +308,23 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
   bool AddCopy(const void* PROTOBUF_NONNULL encoded_file_descriptor, int size);
 
   // Like FindFileContainingSymbol but returns only the name of the file.
-  bool FindNameOfFileContainingSymbol(StringViewArg symbol_name,
-                                      std::string* PROTOBUF_NONNULL output);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindNameOfFileContainingSymbol(
+      StringViewArg symbol_name, std::string* PROTOBUF_NONNULL output);
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(StringViewArg filename,
-                      FileDescriptorProto* PROTOBUF_NONNULL output) override;
-  bool FindFileContainingSymbol(StringViewArg symbol_name,
-                                FileDescriptorProto* PROTOBUF_NONNULL
-                                    output) override;
-  bool FindFileContainingExtension(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileByName(
+      StringViewArg filename,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingSymbol(
+      StringViewArg symbol_name,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingExtension(
       StringViewArg containing_type, int field_number,
       FileDescriptorProto* PROTOBUF_NONNULL output) override;
-  bool FindAllExtensionNumbers(StringViewArg extendee_type,
-                               std::vector<int>* PROTOBUF_NONNULL
-                                   output) override;
-  bool FindAllFileNames(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllExtensionNumbers(
+      StringViewArg extendee_type,
+      std::vector<int>* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllFileNames(
       std::vector<std::string>* PROTOBUF_NONNULL output) override;
 
  private:
@@ -335,14 +340,16 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
                   FileDescriptorProto* PROTOBUF_NONNULL output);
 };
 
-struct PROTOBUF_EXPORT DescriptorPoolDatabaseOptions {
+struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    DescriptorPoolDatabaseOptions {
   // If true, the database will preserve source code info when returning
   // descriptors.
   bool preserve_source_code_info = false;
 };
 
 // A DescriptorDatabase that fetches files from a given pool.
-class PROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    DescriptorPoolDatabase : public DescriptorDatabase {
  public:
   explicit DescriptorPoolDatabase(const DescriptorPool& pool,
                                   DescriptorPoolDatabaseOptions options = {});
@@ -351,17 +358,18 @@ class PROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
   ~DescriptorPoolDatabase() override;
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(StringViewArg filename,
-                      FileDescriptorProto* PROTOBUF_NONNULL output) override;
-  bool FindFileContainingSymbol(StringViewArg symbol_name,
-                                FileDescriptorProto* PROTOBUF_NONNULL
-                                    output) override;
-  bool FindFileContainingExtension(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileByName(
+      StringViewArg filename,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingSymbol(
+      StringViewArg symbol_name,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingExtension(
       StringViewArg containing_type, int field_number,
       FileDescriptorProto* PROTOBUF_NONNULL output) override;
-  bool FindAllExtensionNumbers(StringViewArg extendee_type,
-                               std::vector<int>* PROTOBUF_NONNULL
-                                   output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllExtensionNumbers(
+      StringViewArg extendee_type,
+      std::vector<int>* PROTOBUF_NONNULL output) override;
 
  private:
   const DescriptorPool& pool_;
@@ -370,7 +378,8 @@ class PROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
 
 // A DescriptorDatabase that wraps two or more others.  It first searches the
 // first database and, if that fails, tries the second, and so on.
-class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    MergedDescriptorDatabase : public DescriptorDatabase {
  public:
   // Merge just two databases.  The sources remain property of the caller.
   MergedDescriptorDatabase(DescriptorDatabase* PROTOBUF_NONNULL source1,
@@ -385,24 +394,25 @@ class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   ~MergedDescriptorDatabase() override;
 
   // implements DescriptorDatabase -----------------------------------
-  bool FindFileByName(StringViewArg filename,
-                      FileDescriptorProto* PROTOBUF_NONNULL output) override;
-  bool FindFileContainingSymbol(StringViewArg symbol_name,
-                                FileDescriptorProto* PROTOBUF_NONNULL
-                                    output) override;
-  bool FindFileContainingExtension(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileByName(
+      StringViewArg filename,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingSymbol(
+      StringViewArg symbol_name,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingExtension(
       StringViewArg containing_type, int field_number,
       FileDescriptorProto* PROTOBUF_NONNULL output) override;
   // Merges the results of calling all databases. Returns true iff any
   // of the databases returned true.
-  bool FindAllExtensionNumbers(StringViewArg extendee_type,
-                               std::vector<int>* PROTOBUF_NONNULL
-                                   output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllExtensionNumbers(
+      StringViewArg extendee_type,
+      std::vector<int>* PROTOBUF_NONNULL output) override;
 
 
   // This function is best-effort. Returns true if at least one underlying
   // DescriptorDatabase returns true.
-  bool FindAllFileNames(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllFileNames(
       std::vector<std::string>* PROTOBUF_NONNULL output) override;
 
  private:

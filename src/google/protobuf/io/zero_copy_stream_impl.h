@@ -39,7 +39,8 @@ namespace io {
 // The latter will introduce an extra layer of buffering, harming performance.
 // Also, it's conceivable that FileInputStream could someday be enhanced
 // to use zero-copy file descriptors on OSs which support them.
-class PROTOBUF_EXPORT FileInputStream final : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    FileInputStream final : public ZeroCopyInputStream {
  public:
   // Creates a stream that reads from the given Unix file descriptor.
   // If a block_size is given, it specifies the number of bytes that
@@ -65,13 +66,16 @@ class PROTOBUF_EXPORT FileInputStream final : public ZeroCopyInputStream {
   // errno from that error.  Otherwise, this is zero.  Once an error
   // occurs, the stream is broken and all subsequent operations will
   // fail.
-  int GetErrno() const { return copying_input_.GetErrno(); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int GetErrno() const {
+    return copying_input_.GetErrno();
+  }
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingFileInputStream final
@@ -117,8 +121,8 @@ class PROTOBUF_EXPORT FileInputStream final : public ZeroCopyInputStream {
 // harming performance.  Also, it's conceivable that FileOutputStream could
 // someday be enhanced to use zero-copy file descriptors on OSs which
 // support them.
-class PROTOBUF_EXPORT FileOutputStream final
-    : public CopyingOutputStreamAdaptor {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    FileOutputStream final : public CopyingOutputStreamAdaptor {
  public:
   // Creates a stream that writes to the given Unix file descriptor.
   // If a block_size is given, it specifies the size of the buffers
@@ -146,7 +150,9 @@ class PROTOBUF_EXPORT FileOutputStream final
   // errno from that error.  Otherwise, this is zero.  Once an error
   // occurs, the stream is broken and all subsequent operations will
   // fail.
-  int GetErrno() const { return copying_output_.GetErrno(); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int GetErrno() const {
+    return copying_output_.GetErrno();
+  }
 
  private:
   class PROTOBUF_EXPORT CopyingFileOutputStream final
@@ -183,7 +189,8 @@ class PROTOBUF_EXPORT FileOutputStream final
 //
 // Note that for reading files (or anything represented by a file descriptor),
 // FileInputStream is more efficient.
-class PROTOBUF_EXPORT IstreamInputStream final : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    IstreamInputStream final : public ZeroCopyInputStream {
  public:
   // Creates a stream that reads from the given C++ istream.
   // If a block_size is given, it specifies the number of bytes that
@@ -194,10 +201,11 @@ class PROTOBUF_EXPORT IstreamInputStream final : public ZeroCopyInputStream {
   IstreamInputStream& operator=(const IstreamInputStream&) = delete;
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingIstreamInputStream final
@@ -228,7 +236,8 @@ class PROTOBUF_EXPORT IstreamInputStream final : public ZeroCopyInputStream {
 //
 // Note that for writing files (or anything represented by a file descriptor),
 // FileOutputStream is more efficient.
-class PROTOBUF_EXPORT OstreamOutputStream final : public ZeroCopyOutputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    OstreamOutputStream final : public ZeroCopyOutputStream {
  public:
   // Creates a stream that writes to the given C++ ostream.
   // If a block_size is given, it specifies the size of the buffers
@@ -240,9 +249,10 @@ class PROTOBUF_EXPORT OstreamOutputStream final : public ZeroCopyOutputStream {
   ~OstreamOutputStream() override;
 
   // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingOstreamOutputStream final
@@ -275,8 +285,8 @@ class PROTOBUF_EXPORT OstreamOutputStream final : public ZeroCopyOutputStream {
 // ConcatenatingInputStream may do odd things.  It is suggested that you do
 // not use ConcatenatingInputStream on streams that might produce read errors
 // other than end-of-stream.
-class PROTOBUF_EXPORT ConcatenatingInputStream final
-    : public ZeroCopyInputStream {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    ConcatenatingInputStream final : public ZeroCopyInputStream {
  public:
   // All streams passed in as well as the array itself must remain valid
   // until the ConcatenatingInputStream is destroyed.
@@ -286,10 +296,11 @@ class PROTOBUF_EXPORT ConcatenatingInputStream final
   ~ConcatenatingInputStream() override = default;
 
   // implements ZeroCopyInputStream ----------------------------------
-  bool Next(const void** data, int* size) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Next(const void** data,
+                                                int* size) override;
   void BackUp(int count) override;
-  bool Skip(int count) override;
-  int64_t ByteCount() const override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool Skip(int count) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int64_t ByteCount() const override;
 
 
  private:

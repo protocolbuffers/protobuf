@@ -109,7 +109,7 @@ class Message;            // message.h
 // stubs), but they subclass this base interface.  The methods of this
 // interface can be used to call the methods of the Service without knowing
 // its exact type at compile time (analogous to Reflection).
-class PROTOBUF_EXPORT Service {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT Service {
  public:
   inline Service() {}
   Service(const Service&) = delete;
@@ -122,7 +122,8 @@ class PROTOBUF_EXPORT Service {
   enum ChannelOwnership { STUB_OWNS_CHANNEL, STUB_DOESNT_OWN_CHANNEL };
 
   // Get the ServiceDescriptor describing this service and its methods.
-  virtual const ServiceDescriptor* GetDescriptor() = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual const ServiceDescriptor*
+  GetDescriptor() = 0;
 
   // Call a method of the service specified by MethodDescriptor.  This is
   // normally implemented as a simple switch() that calls the standard
@@ -166,10 +167,10 @@ class PROTOBUF_EXPORT Service {
   //   Message* response = stub->GetResponsePrototype(method)->New();
   //   request->ParseFromString(input);
   //   service->CallMethod(method, *request, response, callback);
-  virtual const Message& GetRequestPrototype(
-      const MethodDescriptor* method) const = 0;
-  virtual const Message& GetResponsePrototype(
-      const MethodDescriptor* method) const = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual const Message&
+  GetRequestPrototype(const MethodDescriptor* method) const = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual const Message&
+  GetResponsePrototype(const MethodDescriptor* method) const = 0;
 };
 
 // An RpcController mediates a single method call.  The primary purpose of
@@ -180,7 +181,7 @@ class PROTOBUF_EXPORT Service {
 // "least common denominator" set of features which we expect all
 // implementations to support.  Specific implementations may provide more
 // advanced features (e.g. deadline propagation).
-class PROTOBUF_EXPORT RpcController {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT RpcController {
  public:
   inline RpcController() {}
   RpcController(const RpcController&) = delete;
@@ -199,10 +200,10 @@ class PROTOBUF_EXPORT RpcController {
   // reasons for failure depend on the RPC implementation.  Failed() must not
   // be called before a call has finished.  If Failed() returns true, the
   // contents of the response message are undefined.
-  virtual bool Failed() const = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool Failed() const = 0;
 
   // If Failed() is true, returns a human-readable description of the error.
-  virtual std::string ErrorText() const = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual std::string ErrorText() const = 0;
 
   // Advises the RPC system that the caller desires that the RPC call be
   // canceled.  The RPC system may cancel it immediately, may wait awhile and
@@ -225,7 +226,7 @@ class PROTOBUF_EXPORT RpcController {
   // If true, indicates that the client canceled the RPC, so the server may
   // as well give up on replying to it.  The server should still call the
   // final "done" callback.
-  virtual bool IsCanceled() const = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool IsCanceled() const = 0;
 
   // Asks that the given callback be called when the RPC is canceled.  The
   // callback will always be called exactly once.  If the RPC completes without
@@ -245,7 +246,7 @@ class PROTOBUF_EXPORT RpcController {
 //   RpcChannel* channel = new MyRpcChannel("remotehost.example.com:1234");
 //   MyService* service = new MyService::Stub(channel);
 //   service->MyMethod(request, &response, callback);
-class PROTOBUF_EXPORT RpcChannel {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT RpcChannel {
  public:
   inline RpcChannel() {}
   RpcChannel(const RpcChannel&) = delete;

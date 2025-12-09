@@ -90,7 +90,7 @@ struct SymbolCheckerState {
 //
 // This should not be considered public API and is intended for internal tooling
 // and CLI access only.
-class PROTOBUF_EXPORT SymbolChecker {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT SymbolChecker {
  public:
   SymbolChecker(const FileDescriptor* file, const FileDescriptorProto& proto);
   SymbolChecker(const SymbolChecker&) = delete;
@@ -109,17 +109,20 @@ class PROTOBUF_EXPORT SymbolChecker {
   //   }
   //   reserved 1 to max;
   // }
-  static bool IsEnumNamespaceMessage(const Descriptor& container);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool IsEnumNamespaceMessage(
+      const Descriptor& container);
 
   // Returns true iff the enum is a namespaced enum.  This is an enum that is
   // nested within a message that is considered an 'EnumNamespaceMessage' as
   // defined above. IsEnumNamespaceMessage must return true for the enums
   // container message.
-  static bool IsNamespacedEnum(const EnumDescriptor& enm);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static bool IsNamespacedEnum(
+      const EnumDescriptor& enm);
 
   // Return a list of errors identified in the given FileDescriptor/proto w.r.t
   // to SymbolChecking visibility.
-  std::vector<SymbolCheckerError> CheckSymbolVisibilityRules();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::vector<SymbolCheckerError>
+  CheckSymbolVisibilityRules();
 
  private:
   void Initialize();
