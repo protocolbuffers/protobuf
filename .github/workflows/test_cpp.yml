@@ -356,18 +356,18 @@ jobs:
       matrix:
         include:
           - name: MacOS Bazel
-            os: macos-13
-            cache_key: macos-13
+            os: macos-14
+            cache_key: macos-14
             bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           - name: MacOS Bazel 7
-            os: macos-13
-            cache_key: macos-13-bazel7
+            os: macos-14
+            cache_key: macos-14-bazel7
             bazel: test //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
             bazel_version: '7.1.2'
             continuous-only: true
           - name: MacOS Apple Silicon (build only) Bazel
-            os: macos-13
-            cache_key: macos-13-arm
+            os: macos-14
+            cache_key: macos-14-arm
             # Current github runners are all Intel based, so just build/compile
             # for Apple Silicon to detect issues there.
             bazel: build --cpu=darwin_arm64 //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
@@ -404,7 +404,7 @@ jobs:
       matrix:
         include:
           - name: MacOS CMake
-            os: macos-13
+            os: macos-14
             flags: -DCMAKE_CXX_STANDARD=14
             cache-prefix: macos-cmake
             continuous-only: true
