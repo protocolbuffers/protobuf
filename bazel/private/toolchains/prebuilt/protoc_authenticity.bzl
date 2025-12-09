@@ -19,6 +19,12 @@ def _protoc_authenticity_impl(ctx):
         tools = [proto_lang_toolchain_info.proto_compiler],
         command = """\
         {protoc} --version > {validation_output}
+        grep -q "-dev$" {validation_output} && {{
+          echo 'WARNING: Detected a development version of protoc.
+          Development versions are not validated for authenticity.
+          To ensure a secure build, please use a released version of protoc.'
+          exit 0
+        }}
         grep -q "^libprotoc {RELEASE_VERSION}" {validation_output} || {{
           echo 'ERROR: protoc version does not match protobuf Bazel module; we do not support this.
           It is considered undefined behavior that is expected to break in the future even if it appears to work today.
