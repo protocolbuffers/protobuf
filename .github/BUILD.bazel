@@ -10,7 +10,7 @@ xcode_version(
     aliases = ["160", "16.0"],
     default_ios_sdk_version = "17.2",
     default_tvos_sdk_version = "17.2",
-    default_macos_sdk_version = "14.2",
+    default_macos_sdk_version = "15.0",
     default_watchos_sdk_version = "10.2",
 )
 
@@ -65,7 +65,7 @@ xcode_config(
 
 # https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
 xcode_config(
-    name = "host_xcode_16_macos_15",
+    name = "host_xcodes_macos15",
     versions = [":version16_0"],
     default = ":version16_0",
 )

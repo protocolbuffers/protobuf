@@ -216,7 +216,7 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           # TODO(b/467211650) this shouldn't be necessary, remove it
-          bazel-flags: --xcode_version_config=//.github:host_xcode_16_macos_15
+          bazel-flags: --xcode_version_config=//.github:host_xcodes_macos15
           command: |
             pushd php
             php -v
@@ -231,4 +231,4 @@ jobs:
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_macos15/${{ matrix.version }}
-          bazel: test //php:conformance_test_c --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcode_16_macos_15
+          bazel: test //php:conformance_test_c --action_env=PATH --test_env=PATH --xcode_version_config=//.github:host_xcodes_macos15
