@@ -336,10 +336,10 @@ public class LazyFieldLite {
   public int getSerializedSize() {
     // We *must* return delayed bytes size if it was ever set because the dependent messages may
     // have memoized serialized size based off of it.
-    if (memoizedBytes != null) {
-      return memoizedBytes.size();
-    } else if (delayedBytes != null) {
+    if (delayedBytes != null) {
       return delayedBytes.size();
+    } else if (memoizedBytes != null) {
+      return memoizedBytes.size();
     } else if (value != null) {
       return value.getSerializedSize();
     } else {
@@ -349,13 +349,13 @@ public class LazyFieldLite {
 
   /** Returns a BytesString for this field in a thread-safe way. */
   public ByteString toByteString() {
-    if (memoizedBytes != null) {
-      return memoizedBytes;
-    }
     // We *must* return delayed bytes if it was set because the dependent messages may have
     // memoized serialized size based off of it.
     if (delayedBytes != null) {
       return delayedBytes;
+    }
+    if (memoizedBytes != null) {
+      return memoizedBytes;
     }
     synchronized (this) {
       if (memoizedBytes != null) {
