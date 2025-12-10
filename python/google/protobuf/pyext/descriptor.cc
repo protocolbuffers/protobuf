@@ -228,8 +228,7 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
              Message* to) {
   // Reparse message.
   std::string serialized;
-  // TODO: Remove this suppression.
-  (void)from.SerializeToString(&serialized);
+  from.SerializeToString(&serialized);
   io::CodedInputStream input(
       reinterpret_cast<const uint8_t*>(serialized.c_str()), serialized.size());
   input.SetExtensionRegistry(message_factory->pool->pool,
@@ -1491,8 +1490,7 @@ static PyObject* GetSerializedPb(PyFileDescriptor* self, void* closure) {
   FileDescriptorProto file_proto;
   _GetDescriptor(self)->CopyTo(&file_proto);
   std::string contents;
-  // TODO: Remove this suppression.
-  (void)file_proto.SerializePartialToString(&contents);
+  file_proto.SerializePartialToString(&contents);
   self->serialized_pb = PyBytes_FromStringAndSize(
       contents.c_str(), static_cast<size_t>(contents.size()));
   if (self->serialized_pb == nullptr) {

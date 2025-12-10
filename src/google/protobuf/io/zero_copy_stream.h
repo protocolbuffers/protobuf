@@ -98,8 +98,7 @@ namespace io {
 
 // Abstract interface similar to an input stream but designed to minimize
 // copying.
-class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
-    ZeroCopyInputStream {
+class PROTOBUF_EXPORT ZeroCopyInputStream {
  public:
   ZeroCopyInputStream() = default;
   virtual ~ZeroCopyInputStream() = default;
@@ -125,8 +124,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   // * It is legal for the returned buffer to have zero size, as long
   //   as repeatedly calling Next() eventually yields a buffer with non-zero
   //   size.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool Next(const void** data,
-                                                        int* size) = 0;
+  virtual bool Next(const void** data, int* size) = 0;
 
   // Backs up a number of bytes, so that the next call to Next() returns
   // data again that was already returned by the last call to Next().  This
@@ -154,10 +152,10 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   // Preconditions:
   // * `count` is non-negative.
   //
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool Skip(int count) = 0;
+  virtual bool Skip(int count) = 0;
 
   // Returns the total number of bytes read since this object was created.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual int64_t ByteCount() const = 0;
+  virtual int64_t ByteCount() const = 0;
 
   // Read the next `count` bytes and append it to the given Cord.
   //
@@ -169,15 +167,13 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   // Some streams may implement this in a way that avoids copying by sharing or
   // reference counting existing data managed by the stream implementation.
   //
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool ReadCord(absl::Cord* cord,
-                                                            int count);
+  virtual bool ReadCord(absl::Cord* cord, int count);
 
 };
 
 // Abstract interface similar to an output stream but designed to minimize
 // copying.
-class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
-    ZeroCopyOutputStream {
+class PROTOBUF_EXPORT ZeroCopyOutputStream {
  public:
   ZeroCopyOutputStream() = default;
   ZeroCopyOutputStream(const ZeroCopyOutputStream&) = delete;
@@ -204,8 +200,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   // * It is legal for the returned buffer to have zero size, as long
   //   as repeatedly calling Next() eventually yields a buffer with non-zero
   //   size.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool Next(void** data,
-                                                        int* size) = 0;
+  virtual bool Next(void** data, int* size) = 0;
 
   // Backs up a number of bytes, so that the end of the last buffer returned
   // by Next() is not actually written.  This is needed when you finish
@@ -233,7 +228,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   virtual void BackUp(int count) = 0;
 
   // Returns the total number of bytes written since this object was created.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual int64_t ByteCount() const = 0;
+  virtual int64_t ByteCount() const = 0;
 
   // Write a given chunk of data to the output.  Some output streams may
   // implement this in a way that avoids copying. Check AllowsAliasing() before
@@ -242,11 +237,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   //
   // NOTE: It is caller's responsibility to ensure that the chunk of memory
   // remains live until all of the data has been consumed from the stream.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool WriteAliasedRaw(
-      const void* data, int size);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool AllowsAliasing() const {
-    return false;
-  }
+  virtual bool WriteAliasedRaw(const void* data, int size);
+  virtual bool AllowsAliasing() const { return false; }
 
   // Writes the given Cord to the output.
   //
@@ -255,8 +247,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   //
   // Some streams may implement this in a way that avoids copying the cord
   // data by copying and managing a copy of the provided cord instead.
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual bool WriteCord(
-      const absl::Cord& cord);
+  virtual bool WriteCord(const absl::Cord& cord);
 
 };
 

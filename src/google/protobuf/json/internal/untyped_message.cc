@@ -256,8 +256,7 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
           if (!stream.ReadVarint32(&x)) {
             return MakeUnexpectedEofError();
           }
-          // TODO: Remove this suppression.
-          (void)stream.Skip(x);
+          stream.Skip(x);
           continue;
         }
         case WireFormatLite::WIRETYPE_START_GROUP: {
@@ -517,8 +516,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       break;
     }
   }
-  // TODO: Remove this suppression.
-  (void)stream.DecrementRecursionDepthAndPopLimit(limit);
+  stream.DecrementRecursionDepthAndPopLimit(limit);
   return absl::OkStatus();
 }
 

@@ -122,8 +122,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
     file_level_service_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto,
 };
 namespace pb {
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
-CppFeatures_StringType_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcpp_5ffeatures_2eproto[0];
 }

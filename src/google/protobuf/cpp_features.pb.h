@@ -91,27 +91,24 @@ inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MIN =
     static_cast<CppFeatures_StringType>(0);
 inline constexpr CppFeatures_StringType CppFeatures_StringType_StringType_MAX =
     static_cast<CppFeatures_StringType>(3);
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool CppFeatures_StringType_IsValid(
-    int value) {
+inline bool CppFeatures_StringType_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
 inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor();
 template <typename T>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const ::std::string&
-CppFeatures_StringType_Name(T value) {
+const ::std::string& CppFeatures_StringType_Name(T value) {
   static_assert(::std::is_same<T, CppFeatures_StringType>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to StringType_Name().");
   return CppFeatures_StringType_Name(static_cast<CppFeatures_StringType>(value));
 }
 template <>
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const ::std::string&
-CppFeatures_StringType_Name(CppFeatures_StringType value) {
+inline const ::std::string& CppFeatures_StringType_Name(CppFeatures_StringType value) {
   return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor, 0, 3>(
       static_cast<int>(value));
 }
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool CppFeatures_StringType_Parse(
+inline bool CppFeatures_StringType_Parse(
     ::absl::string_view name, CppFeatures_StringType* PROTOBUF_NONNULL value) {
   return ::google::protobuf::internal::ParseNamedEnum<CppFeatures_StringType>(CppFeatures_StringType_descriptor(), name,
                                            value);
@@ -122,8 +119,7 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline bool CppFeatures_StringType_Parse(
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
-    CppFeatures final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT CppFeatures final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:pb.CppFeatures) */ {
  public:
   inline CppFeatures() : CppFeatures(nullptr) {}
@@ -156,33 +152,25 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
     return *this;
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const ::google::protobuf::UnknownFieldSet&
-  unknown_fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline ::google::protobuf::UnknownFieldSet*
-      PROTOBUF_NONNULL
-      mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Descriptor*
-      PROTOBUF_NONNULL
-      descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Descriptor*
-      PROTOBUF_NONNULL
-      GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Reflection*
-      PROTOBUF_NONNULL
-      GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const CppFeatures&
-  default_instance() {
+  static const CppFeatures& default_instance() {
     return *reinterpret_cast<const CppFeatures*>(
         &_CppFeatures_default_instance_);
   }
@@ -204,8 +192,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   // implements Message ----------------------------------------------
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD CppFeatures* PROTOBUF_NONNULL
-  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  CppFeatures* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<CppFeatures>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -218,39 +205,31 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool IsInitialized() const {
+  bool IsInitialized() const {
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ::size_t ByteSizeLong(
-      const ::google::protobuf::MessageLite& msg);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ::uint8_t* PROTOBUF_NONNULL
-  _InternalSerialize(
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::size_t ByteSizeLong() const {
-    return ByteSizeLong(*this);
-  }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::uint8_t* PROTOBUF_NONNULL
-  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::size_t ByteSizeLong() const final;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::uint8_t* PROTOBUF_NONNULL
-  _InternalSerialize(
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int GetCachedSize() const {
-    return _impl_._cached_size_.Get();
-  }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -277,16 +256,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::google::protobuf::Metadata GetMetadata()
-      const;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using StringType = CppFeatures_StringType;
   static constexpr StringType STRING_TYPE_UNKNOWN = CppFeatures_StringType_STRING_TYPE_UNKNOWN;
   static constexpr StringType VIEW = CppFeatures_StringType_VIEW;
   static constexpr StringType CORD = CppFeatures_StringType_CORD;
   static constexpr StringType STRING = CppFeatures_StringType_STRING;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool StringType_IsValid(
-      int value) {
+  static inline bool StringType_IsValid(int value) {
     return CppFeatures_StringType_IsValid(value);
   }
   static constexpr StringType StringType_MIN = CppFeatures_StringType_StringType_MIN;
@@ -296,11 +273,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
     return CppFeatures_StringType_descriptor();
   }
   template <typename T>
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const ::std::string& StringType_Name(
-      T value) {
+  static inline const ::std::string& StringType_Name(T value) {
     return CppFeatures_StringType_Name(value);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline bool StringType_Parse(
+  static inline bool StringType_Parse(
       ::absl::string_view name, StringType* PROTOBUF_NONNULL value) {
     return CppFeatures_StringType_Parse(name, value);
   }

@@ -314,8 +314,7 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
 namespace google {
 namespace protobuf {
 namespace compiler {
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
-CodeGeneratorResponse_Feature_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CodeGeneratorResponse_Feature_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0];
 }

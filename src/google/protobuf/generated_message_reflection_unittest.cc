@@ -1432,9 +1432,7 @@ TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {
   unittest::TestAllTypes message;
-#ifndef NDEBUG
   unittest::ForeignMessage foreign;
-#endif
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();
 

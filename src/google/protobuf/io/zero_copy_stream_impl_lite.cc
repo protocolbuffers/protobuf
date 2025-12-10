@@ -443,8 +443,7 @@ void LimitingInputStream::BackUp(int count) {
 bool LimitingInputStream::Skip(int count) {
   if (count > limit_) {
     if (limit_ < 0) return false;
-    // TODO: Remove this suppression.
-    (void)input_->Skip(limit_);
+    input_->Skip(limit_);
     limit_ = 0;
     return false;
   } else {
@@ -469,8 +468,7 @@ bool LimitingInputStream::ReadCord(absl::Cord* cord, int count) {
     limit_ -= count;
     return true;
   }
-  // TODO: Remove this suppression.
-  (void)input_->ReadCord(cord, limit_);
+  input_->ReadCord(cord, limit_);
   limit_ = 0;
   return false;
 }
