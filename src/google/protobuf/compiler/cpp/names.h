@@ -80,6 +80,10 @@ PROTOC_EXPORT std::string EnumValueName(const EnumValueDescriptor* enum_value);
 // Strips ".proto" or ".protodevel" from the end of a filename.
 PROTOC_EXPORT std::string StripProto(absl::string_view filename);
 
+// Yields the filename of the .proto
+PROTOC_EXPORT std::string HeaderFilenameProtoH(
+    const google::protobuf::FileDescriptor* file);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

@@ -774,6 +774,10 @@ std::string StripProto(absl::string_view filename) {
   return compiler::StripProto(filename);
 }
 
+std::string HeaderFilenameProtoH(const FileDescriptor* file) {
+  return compiler::StripProto(file->name()) + ".proto.h";
+}
+
 const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
   switch (type) {
     case FieldDescriptor::CPPTYPE_INT32:

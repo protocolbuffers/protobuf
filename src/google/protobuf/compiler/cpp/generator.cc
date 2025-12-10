@@ -30,6 +30,7 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -130,8 +131,8 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
 
   // Generate header(s).
   if (file_options.proto_h) {
-    auto output = absl::WrapUnique(
-        generator_context->Open(absl::StrCat(basename, ".proto.h")));
+    auto output =
+        absl::WrapUnique(generator_context->Open(HeaderFilenameProtoH(file)));
 
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
