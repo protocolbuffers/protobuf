@@ -8,6 +8,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/proto_api.h"
 #include "third_party/pybind11/include/pybind11/eval.h"
@@ -137,10 +138,65 @@ auto ReprDynamicMessage(int value) {
   return result_string;
 }
 
+py::object CreateDynamicPoolMessage() {
+  FileDescriptorProto file_descriptor;
+  file_descriptor.set_name("test_file");
+  file_descriptor.set_package("test_package");
+  DescriptorProto* message_descriptor = file_descriptor.add_message_type();
+  message_descriptor->set_name("MyMessage");
+  FieldDescriptorProto* field_descriptor = message_descriptor->add_field();
+  field_descriptor->set_name("my_field");
+  field_descriptor->set_number(1);
+  field_descriptor->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  field_descriptor->set_type(FieldDescriptorProto::TYPE_INT32);
+  auto owned_pool = std::make_unique<DescriptorPool>();
+  if (!owned_pool->BuildFile(file_descriptor)) {
+    throw std::runtime_error("Failed to build file descriptor");
+  }
+
+  // Create a Python DescriptorPool from the C++ one.
+  const PyProto_API* api = GetProtoApi();
+  auto py_pool = py::reinterpret_steal<py::object>(
+      api->DescriptorPool_FromPool(std::move(owned_pool), nullptr));
+  if (!py_pool) {
+    throw py::error_already_set();
+  }
+
+  const DescriptorPool* pool = api->DescriptorPool_AsPool(py_pool.ptr());
+  if (!pool) {
+    throw py::error_already_set();
+  }
+
+  // Navigate through the C++ Descriptors, and create a Python message.
+  const Descriptor* descriptor =
+      pool->FindMessageTypeByName("test_package.MyMessage");
+  if (!descriptor) {
+    throw std::runtime_error("Failed to find file descriptor");
+  }
+  auto py_msg =
+      py::reinterpret_steal<py::object>(api->NewMessage(descriptor, nullptr));
+  if (!py_msg) {
+    throw py::error_already_set();
+  }
+  Message* msg = api->GetMutableMessagePointer(py_msg.ptr());
+  if (!msg) {
+    throw py::error_already_set();
+  }
+
+  // Populate the message, and return it.
+  if (!google::protobuf::TextFormat::ParseFromString("my_field: 42", msg)) {
+    throw std::runtime_error("Failed to parse message");
+  }
+  // This is safe: the Python object keeps a reference to the Python
+  // DescriptorPool, which owns the C++ DescriptorPool.
+  return py_msg;
+}
+
 PYBIND11_MODULE(proto_api_test_ext, m) {
   m.def("get_const_message", &GetConstMessage);
   m.def("set_message_field_with_mutator", &SetMessageFieldWithMutator);
   m.def("repr_dynamic_message", &ReprDynamicMessage);
+  m.def("create_dynamic_pool_message", &CreateDynamicPoolMessage);
 }
 
 }  // namespace python

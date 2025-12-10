@@ -379,6 +379,17 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
       const google::protobuf::DescriptorPool* pool) const override {
     return google::protobuf::python::PyDescriptorPool_FromPool(pool);
   }
+  PyObject* DescriptorPool_FromPool(
+      std::unique_ptr<const google::protobuf::DescriptorPool> pool,
+      std::unique_ptr<const google::protobuf::DescriptorDatabase> database)
+      const override {
+    return google::protobuf::python::PyDescriptorPool_FromPool(std::move(pool),
+                                                     std::move(database));
+  }
+  const google::protobuf::DescriptorPool* DescriptorPool_AsPool(
+      PyObject* pool) const override {
+    return google::protobuf::python::PyDescriptorPool_AsPool(pool);
+  }
 };
 
 }  // namespace
