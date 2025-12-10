@@ -22,7 +22,8 @@ namespace io {
 namespace zc_sink_internal {
 
 // Internal helper class, for turning a ZeroCopyOutputStream into a sink.
-class PROTOBUF_EXPORT ZeroCopyStreamByteSink {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    ZeroCopyStreamByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
       : stream_(stream) {}
@@ -38,8 +39,10 @@ class PROTOBUF_EXPORT ZeroCopyStreamByteSink {
   void Append(const char* bytes, size_t len);
   void Write(absl::string_view str) { Append(str.data(), str.size()); }
 
-  size_t bytes_written() { return bytes_written_; }
-  bool failed() { return failed_; }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t bytes_written() {
+    return bytes_written_;
+  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool failed() { return failed_; }
 
  private:
   io::ZeroCopyOutputStream* stream_;

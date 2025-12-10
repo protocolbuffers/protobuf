@@ -63,7 +63,8 @@ class DescriptorPool;  // descriptor.h
 //
 // The thread safety for this class is subtle, see comments around GetPrototype
 // for details
-class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT
+    DynamicMessageFactory : public MessageFactory {
  public:
   // Construct a DynamicMessageFactory that will search for extensions in
   // the DescriptorPool in which the extendee is defined.
@@ -112,7 +113,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   // hence must outlive the DynamicMessageFactory.
   //
   // The method is thread-safe.
-  const Message* PROTOBUF_NONNULL
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const Message* PROTOBUF_NONNULL
   GetPrototype(const Descriptor* PROTOBUF_NONNULL type) override;
 
  private:
@@ -129,7 +130,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 };
 
 // Helper for computing a sorted list of map entries via reflection.
-class PROTOBUF_EXPORT DynamicMapSorter {
+class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT DynamicMapSorter {
  public:
   static std::vector<const Message*> Sort(
       const Message& message, int map_size,
