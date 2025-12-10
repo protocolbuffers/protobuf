@@ -25,6 +25,12 @@ internal_ruby_proto_library(
     srcs = [":copied_test_messages_edition2023_proto"],
 )
 
+internal_ruby_proto_library(
+    name = "test_messages_edition_unstable_ruby_proto",
+    testonly = True,
+    srcs = [":copied_test_messages_edition_unstable_proto"],
+)
+
 rb_binary(
     name = "conformance_ruby",
     testonly = True,
@@ -34,6 +40,7 @@ rb_binary(
     deps = [
         ":conformance_ruby_proto",
         ":test_messages_edition2023_ruby_proto",
+        ":test_messages_edition_unstable_ruby_proto",
         "//ruby:conformance_editions_test_ruby_proto",
         "//ruby:conformance_test_ruby_proto",
         "//ruby:protobuf",
@@ -53,5 +60,12 @@ internal_copy_files(
     name = "copied_test_messages_edition2023_proto",
     testonly = True,
     srcs = ["//conformance/test_protos:test_messages_edition2023.proto"],
+    strip_prefix = "conformance/test_protos",
+)
+
+internal_copy_files(
+    name = "copied_test_messages_edition_unstable_proto",
+    testonly = True,
+    srcs = ["//conformance/test_protos:test_messages_edition_unstable.proto"],
     strip_prefix = "conformance/test_protos",
 )
