@@ -100,8 +100,6 @@ def MessageToString(
     use_short_repeated_primitives=False,
     pointy_brackets=False,
     use_index_order=False,
-    float_format=None,
-    double_format=None,
     use_field_number=False,
     descriptor_pool=None,
     indent=0,
@@ -109,11 +107,6 @@ def MessageToString(
     print_unknown_fields=False,
     force_colon=False) -> str:
   """Convert protobuf message to text format.
-
-  Double values can be formatted compactly with 15 digits of
-  precision (which is the most that IEEE 754 "double" can guarantee)
-  using double_format='.15g'. To ensure that converting to text and back to a
-  proto will result in an identical value, double_format='.17g' should be used.
 
   Args:
     message: The protocol buffers message.
@@ -127,13 +120,6 @@ def MessageToString(
       will be printed at the end of the message and their relative order is
       determined by the extension number. By default, use the field number
       order.
-    float_format (str): Deprecated. If set, use this to specify float field
-      formatting (per the "Format Specification Mini-Language"); otherwise,
-      shortest float that has same value in wire will be printed. Also affect
-      double field if double_format is not set but float_format is set.
-    double_format (str): Deprecated. If set, use this to specify double field
-      formatting (per the "Format Specification Mini-Language"); if it is not
-      set but float_format is set, use float_format. Otherwise, use ``str()``
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
     indent (int): The initial indent level, in terms of spaces, for pretty
@@ -150,20 +136,19 @@ def MessageToString(
   """
   out = TextWriter(as_utf8)
   printer = _Printer(
-      out,
-      indent,
-      as_utf8,
-      as_one_line,
-      use_short_repeated_primitives,
-      pointy_brackets,
-      use_index_order,
-      float_format,
-      double_format,
-      use_field_number,
-      descriptor_pool,
-      message_formatter,
+      out=out,
+      indent=indent,
+      as_utf8=as_utf8,
+      as_one_line=as_one_line,
+      use_short_repeated_primitives=use_short_repeated_primitives,
+      pointy_brackets=pointy_brackets,
+      use_index_order=use_index_order,
+      use_field_number=use_field_number,
+      descriptor_pool=descriptor_pool,
+      message_formatter=message_formatter,
       print_unknown_fields=print_unknown_fields,
-      force_colon=force_colon)
+      force_colon=force_colon,
+  )
   printer.PrintMessage(message)
   result = out.getvalue()
   out.close()
@@ -225,8 +210,6 @@ def PrintMessage(message,
                  use_short_repeated_primitives=False,
                  pointy_brackets=False,
                  use_index_order=False,
-                 float_format=None,
-                 double_format=None,
                  use_field_number=False,
                  descriptor_pool=None,
                  message_formatter=None,
@@ -246,13 +229,6 @@ def PrintMessage(message,
     use_index_order: If True, print fields of a proto message using the order
       defined in source code instead of the field number. By default, use the
       field number order.
-    float_format: If set, use this to specify float field formatting
-      (per the "Format Specification Mini-Language"); otherwise, shortest
-      float that has same value in wire will be printed. Also affect double
-      field if double_format is not set but float_format is set.
-    double_format: If set, use this to specify double field formatting
-      (per the "Format Specification Mini-Language"); if it is not set but
-      float_format is set, use float_format. Otherwise, str() is used.
     use_field_number: If True, print field numbers instead of names.
     descriptor_pool: A DescriptorPool used to resolve Any types.
     message_formatter: A function(message, indent, as_one_line): unicode|None
@@ -268,8 +244,6 @@ def PrintMessage(message,
       use_short_repeated_primitives=use_short_repeated_primitives,
       pointy_brackets=pointy_brackets,
       use_index_order=use_index_order,
-      float_format=float_format,
-      double_format=double_format,
       use_field_number=use_field_number,
       descriptor_pool=descriptor_pool,
       message_formatter=message_formatter,
@@ -287,18 +261,22 @@ def PrintField(field,
                use_short_repeated_primitives=False,
                pointy_brackets=False,
                use_index_order=False,
-               float_format=None,
-               double_format=None,
                message_formatter=None,
                print_unknown_fields=False,
                force_colon=False):
   """Print a single field name/value pair."""
-  printer = _Printer(out, indent, as_utf8, as_one_line,
-                     use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, double_format,
-                     message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields,
-                     force_colon=force_colon)
+  printer = _Printer(
+      out,
+      indent,
+      as_utf8,
+      as_one_line,
+      use_short_repeated_primitives,
+      pointy_brackets,
+      use_index_order,
+      message_formatter=message_formatter,
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon,
+  )
   printer.PrintField(field, value)
 
 
@@ -311,18 +289,22 @@ def PrintFieldValue(field,
                     use_short_repeated_primitives=False,
                     pointy_brackets=False,
                     use_index_order=False,
-                    float_format=None,
-                    double_format=None,
                     message_formatter=None,
                     print_unknown_fields=False,
                     force_colon=False):
   """Print a single field value (not including name)."""
-  printer = _Printer(out, indent, as_utf8, as_one_line,
-                     use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, double_format,
-                     message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields,
-                     force_colon=force_colon)
+  printer = _Printer(
+      out,
+      indent,
+      as_utf8,
+      as_one_line,
+      use_short_repeated_primitives,
+      pointy_brackets,
+      use_index_order,
+      message_formatter=message_formatter,
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon,
+  )
   printer.PrintFieldValue(field, value)
 
 
@@ -367,19 +349,13 @@ class _Printer(object):
       use_short_repeated_primitives=False,
       pointy_brackets=False,
       use_index_order=False,
-      float_format=None,
-      double_format=None,
       use_field_number=False,
       descriptor_pool=None,
       message_formatter=None,
       print_unknown_fields=False,
-      force_colon=False):
+      force_colon=False,
+  ):
     """Initialize the Printer.
-
-    Double values can be formatted compactly with 15 digits of precision
-    (which is the most that IEEE 754 "double" can guarantee) using
-    double_format='.15g'. To ensure that converting to text and back to a proto
-    will result in an identical value, double_format='.17g' should be used.
 
     Args:
       out: To record the text format result.
@@ -392,13 +368,6 @@ class _Printer(object):
       use_index_order: If True, print fields of a proto message using the order
         defined in source code instead of the field number. By default, use the
         field number order.
-      float_format: Deprecated. If set, use this to specify float field
-        formatting (per the "Format Specification Mini-Language"); otherwise,
-        shortest float that has same value in wire will be printed. Also affect
-        double field if double_format is not set but float_format is set.
-      double_format: Deprecated. If set, use this to specify double field
-        formatting (per the "Format Specification Mini-Language"); if it is not
-        set but float_format is set, use float_format. Otherwise, str() is used.
       use_field_number: If True, print field numbers instead of names.
       descriptor_pool: A DescriptorPool used to resolve Any types.
       message_formatter: A function(message, indent, as_one_line): unicode|None
@@ -415,15 +384,6 @@ class _Printer(object):
     self.use_short_repeated_primitives = use_short_repeated_primitives
     self.pointy_brackets = pointy_brackets
     self.use_index_order = use_index_order
-    self.float_format = float_format
-    if double_format is not None:
-      warnings.warn(
-          'double_format is deprecated for text_format. This will '
-          'turn into error in 7.34.0, please remove it before that.'
-      )
-      self.double_format = double_format
-    else:
-      self.double_format = float_format
     self.use_field_number = use_field_number
     self.descriptor_pool = descriptor_pool
     self.message_formatter = message_formatter
@@ -656,21 +616,10 @@ class _Printer(object):
       else:
         out.write('false')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
-      if self.float_format is not None:
-        warnings.warn(
-            'float_format is deprecated for text_format. This '
-            'will turn into error in 7.34.0, please remove it '
-            'before that.'
-        )
-        out.write('{1:{0}}'.format(self.float_format, value))
+      if math.isnan(value):
+        out.write(str(value))
       else:
-        if math.isnan(value):
-          out.write(str(value))
-        else:
-          out.write(str(type_checkers.ToShortestFloat(value)))
-    elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_DOUBLE and
-          self.double_format is not None):
-      out.write('{1:{0}}'.format(self.double_format, value))
+        out.write(str(type_checkers.ToShortestFloat(value)))
     else:
       out.write(str(value))
 
