@@ -19,6 +19,7 @@
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -764,6 +765,34 @@ template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<false>(
     int, int);
 template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<true>(
     int, int);
+
+int CountVarints(const uint8_t* ptr, const uint8_t* end) {
+  // The number of varints is the number of bytes with the highest bit clear.
+  // This is easier to compute as the total number of bytes, minus the number
+  // of bytes with the highest bit set.
+  const int num_bytes = end - ptr;
+  int num_varints = num_bytes;
+
+  if (num_bytes < int{sizeof(uint64_t)}) {
+    // Count byte by byte.
+    for (int i = 0; i < num_bytes; ++i) {
+      num_varints -= ptr[i] >> 7;
+    }
+    return num_varints;
+  }
+
+  // Count in whole blocks, except for the last one.
+  const uint8_t* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    num_varints -=
+        absl::popcount(EndianHelper<8>::Load(ptr) & 0x8080808080808080);
+    ptr += sizeof(uint64_t);
+  }
+
+  // Count in the last, possibly incomplete block.
+  const uint64_t last = EndianHelper<8>::Load(limit) >> ((ptr - limit) * 8);
+  return num_varints - absl::popcount(last & 0x8080808080808080);
+}
 
 }  // namespace internal
 }  // namespace protobuf
