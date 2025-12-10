@@ -444,7 +444,6 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
   Annotate("class_name", &message_descriptor);
   printer_->Indent();
 
-  printer_->Print("__slots__ = ()\n");
 
   // Prints Extensions for extendable messages
   if (message_descriptor.extension_range_count() > 0) {
