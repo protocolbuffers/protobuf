@@ -70,8 +70,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
-    Timestamp final : public ::google::protobuf::Message
+class PROTOBUF_EXPORT Timestamp final : public ::google::protobuf::Message
 /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   inline Timestamp() : Timestamp(nullptr) {}
@@ -104,33 +103,25 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
     return *this;
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const ::google::protobuf::UnknownFieldSet&
-  unknown_fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline ::google::protobuf::UnknownFieldSet*
-      PROTOBUF_NONNULL
-      mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Descriptor*
-      PROTOBUF_NONNULL
-      descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Descriptor*
-      PROTOBUF_NONNULL
-      GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Reflection*
-      PROTOBUF_NONNULL
-      GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const Timestamp&
-  default_instance() {
+  static const Timestamp& default_instance() {
     return *reinterpret_cast<const Timestamp*>(
         &_Timestamp_default_instance_);
   }
@@ -152,8 +143,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   // implements Message ----------------------------------------------
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Timestamp* PROTOBUF_NONNULL
-  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  Timestamp* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::Message::DefaultConstruct<Timestamp>(arena);
   }
   using ::google::protobuf::Message::CopyFrom;
@@ -166,39 +156,31 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool IsInitialized() const {
+  bool IsInitialized() const {
     return true;
   }
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
   #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ::size_t ByteSizeLong(
-      const ::google::protobuf::MessageLite& msg);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ::uint8_t* PROTOBUF_NONNULL
-  _InternalSerialize(
+  static ::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+  static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::size_t ByteSizeLong() const {
-    return ByteSizeLong(*this);
-  }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::uint8_t* PROTOBUF_NONNULL
-  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+      ::uint8_t* PROTOBUF_NONNULL target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::size_t ByteSizeLong() const final;
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::uint8_t* PROTOBUF_NONNULL
-  _InternalSerialize(
+  ::size_t ByteSizeLong() const final;
+  ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int GetCachedSize() const {
-    return _impl_._cached_size_.Get();
-  }
+  int GetCachedSize() const { return _impl_._cached_size_.Get(); }
 
   private:
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
@@ -225,8 +207,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::google::protobuf::Metadata GetMetadata()
-      const;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

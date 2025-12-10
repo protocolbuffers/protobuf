@@ -71,8 +71,7 @@ namespace protobuf {
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
-    Empty final : public ::google::protobuf::internal::ZeroFieldsBase
+class PROTOBUF_EXPORT Empty final : public ::google::protobuf::internal::ZeroFieldsBase
 /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   inline Empty() : Empty(nullptr) {}
@@ -104,33 +103,25 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
     return *this;
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const ::google::protobuf::UnknownFieldSet&
-  unknown_fields() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline ::google::protobuf::UnknownFieldSet*
-      PROTOBUF_NONNULL
-      mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Descriptor*
-      PROTOBUF_NONNULL
-      descriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
     return GetDescriptor();
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Descriptor*
-      PROTOBUF_NONNULL
-      GetDescriptor() {
+  static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL GetDescriptor() {
     return default_instance().GetMetadata().descriptor;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const ::google::protobuf::Reflection*
-      PROTOBUF_NONNULL
-      GetReflection() {
+  static const ::google::protobuf::Reflection* PROTOBUF_NONNULL GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static const Empty&
-  default_instance() {
+  static const Empty& default_instance() {
     return *reinterpret_cast<const Empty*>(
         &_Empty_default_instance_);
   }
@@ -152,8 +143,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   // implements Message ----------------------------------------------
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Empty* PROTOBUF_NONNULL
-  New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
+  Empty* PROTOBUF_NONNULL New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return ::google::protobuf::internal::ZeroFieldsBase::DefaultConstruct<Empty>(arena);
   }
   using ::google::protobuf::internal::ZeroFieldsBase::CopyFrom;
@@ -166,7 +156,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
   }
 
   public:
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool IsInitialized() const {
+  bool IsInitialized() const {
     return true;
   }
  private:
@@ -190,8 +180,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
  public:
   static constexpr auto InternalGenerateClassData_();
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ::google::protobuf::Metadata GetMetadata()
-      const;
+  ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------

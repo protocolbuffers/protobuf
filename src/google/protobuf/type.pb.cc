@@ -422,22 +422,19 @@ PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_google_2fproto
 };
 namespace google {
 namespace protobuf {
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
-Field_Kind_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Kind_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[0];
 }
 PROTOBUF_CONSTINIT const uint32_t Field_Kind_internal_data_[] = {
     1245184u, 0u, };
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
-Field_Cardinality_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Cardinality_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[1];
 }
 PROTOBUF_CONSTINIT const uint32_t Field_Cardinality_internal_data_[] = {
     262144u, 0u, };
-PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
-Syntax_descriptor() {
+const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Syntax_descriptor() {
   ::google::protobuf::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[2];
 }
