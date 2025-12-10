@@ -654,8 +654,8 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
     has_edition = true;
   } else {
     DO(Consume("syntax",
-               "File must begin with a syntax statement, e.g. 'syntax = "
-               "\"proto2\";'."));
+               "File must begin with an edition or syntax statement, e.g."
+               " 'edition = \"2023\";'."));
   }
 
   DO(Consume("="));
