@@ -119,7 +119,6 @@ register_toolchains(
 register_toolchains("//bazel/private/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
-    "3.9",
     "3.10",
     "3.11",
     "3.12",
@@ -132,7 +131,7 @@ SUPPORTED_PYTHON_VERSIONS = [
 system_python = use_extension("//python/dist:system_python.bzl", "system_python_extension", dev_dependency = True)
 system_python.find(
     name = "system_python",
-    minimum = "3.9",
+    minimum = "3.10",
 )
 use_repo(system_python, "system_python")
 

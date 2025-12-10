@@ -21,7 +21,6 @@ package(
 )
 
 LIMITED_API_FLAG_SELECT = {
-    ":limited_api_3.9": ["-DPy_LIMITED_API=0x03090000"],
     ":limited_api_3.10": ["-DPy_LIMITED_API=0x030a0000"],
     "//conditions:default": [],
 }
@@ -39,40 +38,6 @@ string_flag(
         "39",
         "310",
         "311",
-    ],
-)
-
-config_setting(
-    name = "limited_api_3.9",
-    flag_values = {
-        ":limited_api": "True",
-        ":python_version": "39",
-    },
-)
-
-config_setting(
-    name = "full_api_3.9_win32",
-    flag_values = {
-        ":limited_api": "False",
-        ":python_version": "39",
-    },
-    values = {"cpu": "win32"},
-)
-
-config_setting(
-    name = "full_api_3.9_win64",
-    flag_values = {
-        ":limited_api": "False",
-        ":python_version": "39",
-    },
-    values = {"cpu": "win64"},
-)
-
-selects.config_setting_group(
-    name = "full_api_3.9",
-    match_any = [
-        "full_api_3.9_win32",
-        ":full_api_3.9_win64",
     ],
 )
 
