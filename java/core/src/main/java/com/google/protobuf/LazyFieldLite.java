@@ -250,13 +250,17 @@ public class LazyFieldLite {
       return;
     }
 
-    // At least one is parsed and both contain data. We won't drop any extensions here directly, but
-    // in the case that the extension registries are not the same then we might in the future if we
-    // need to serialize and parse a message again.
+    // At least one is parsed and both contain data. We will follow "this.mergeFrom(other)", and
+    // then whichever contains null value will be parsed using the other's default instance.
     if (this.value == null && other.value != null) {
-      setValue(mergeValueAndBytes(other.value, this.delayedBytes, this.extensionRegistry));
+      setValue(
+          getValue(other.value.getDefaultInstanceForType()).toBuilder()
+              .mergeFrom(other.value)
+              .build());
       return;
-    } else if (this.value != null && other.value == null) {
+    }
+
+    if (this.value != null && other.value == null) {
       setValue(mergeValueAndBytes(this.value, other.delayedBytes, other.extensionRegistry));
       return;
     }

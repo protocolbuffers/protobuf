@@ -215,6 +215,36 @@ public class LazyFieldLiteTest {
         .isEqualTo(messageWithExtensions);
   }
 
+  @Test
+  public void testMergeOverwritesFromUnparsed() throws Exception {
+    TestAllTypes thisMessage = TestAllTypes.newBuilder().setOptionalString("foo").build();
+    TestAllTypes otherMessage = TestAllTypes.newBuilder().setOptionalString("bar").build();
+    LazyFieldLite base =
+        new LazyFieldLite(ExtensionRegistryLite.getEmptyRegistry(), thisMessage.toByteString());
+    LazyFieldLite other = LazyFieldLite.fromValue(otherMessage);
+
+    base.merge(other);
+
+    assertThat(
+            ((TestAllTypes) base.getValue(TestAllTypes.getDefaultInstance())).getOptionalString())
+        .isEqualTo("bar");
+  }
+
+  @Test
+  public void testMergeOverwritesFromParsed() throws Exception {
+    TestAllTypes thisMessage = TestAllTypes.newBuilder().setOptionalString("foo").build();
+    TestAllTypes otherMessage = TestAllTypes.newBuilder().setOptionalString("bar").build();
+    LazyFieldLite base = LazyFieldLite.fromValue(thisMessage);
+    LazyFieldLite other =
+        new LazyFieldLite(ExtensionRegistryLite.getEmptyRegistry(), otherMessage.toByteString());
+
+    base.merge(other);
+
+    assertThat(
+            ((TestAllTypes) base.getValue(TestAllTypes.getDefaultInstance())).getOptionalString())
+        .isEqualTo("bar");
+  }
+
   // Help methods.
 
   private LazyFieldLite createLazyFieldLiteFromMessage(MessageLite message) {
