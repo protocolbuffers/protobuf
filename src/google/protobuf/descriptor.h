@@ -337,6 +337,11 @@ bool IsEnumFullySequential(const EnumDescriptor* enum_desc);
 const std::string& DefaultValueStringAsString(const FieldDescriptor* field);
 const std::string& NameOfEnumAsString(const EnumValueDescriptor* descriptor);
 
+struct NameLimits {
+  static constexpr int package_name = 511;
+  static constexpr int reserved_name = std::numeric_limits<uint16_t>::max();
+};
+
 }  // namespace internal
 
 // Provide an Abseil formatter for edition names.
