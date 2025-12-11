@@ -3957,7 +3957,7 @@ void FieldDescriptor::DebugString(
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
   if (is_map() || real_containing_oneof() ||
-      (!is_required() && !is_repeated() && !has_optional_keyword())) {
+      (!is_required() && !is_repeated() && !has_presence())) {
     label.clear();
   }
   // Label is omitted for optional and required fields under editions.
@@ -4277,12 +4277,6 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
   return type() == TYPE_ENUM &&
          (features().GetExtension(pb::cpp).legacy_closed_enum() ||
           enum_type()->is_closed());
-}
-
-bool FieldDescriptor::has_optional_keyword() const {
-  return proto3_optional_ ||
-         (file()->edition() == Edition::EDITION_PROTO2 && !is_required() &&
-          !is_repeated() && !containing_oneof());
 }
 
 FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
