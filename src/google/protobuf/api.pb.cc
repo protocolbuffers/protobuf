@@ -544,7 +544,7 @@ Api::_table_ = {
     {::_pbi::TcParser::FastUS1,
      {34, 4, 0,
       PROTOBUF_FIELD_OFFSET(Api, _impl_.version_)}},
-    // .google.protobuf.SourceContext source_context = 5;
+    // optional .google.protobuf.SourceContext source_context = 5;
     {::_pbi::TcParser::FastMtS1,
      {42, 6, 2,
       PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_)}},
@@ -567,7 +567,7 @@ Api::_table_ = {
     {PROTOBUF_FIELD_OFFSET(Api, _impl_.options_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
     // string version = 4;
     {PROTOBUF_FIELD_OFFSET(Api, _impl_.version_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    // .google.protobuf.SourceContext source_context = 5;
+    // optional .google.protobuf.SourceContext source_context = 5;
     {PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_), _Internal::kHasBitsOffset + 6, 2, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.Mixin mixins = 6;
     {PROTOBUF_FIELD_OFFSET(Api, _impl_.mixins_), _Internal::kHasBitsOffset + 2, 3, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
@@ -692,7 +692,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
     }
   }
 
-  // .google.protobuf.SourceContext source_context = 5;
+  // optional .google.protobuf.SourceContext source_context = 5;
   if (CheckHasBit(cached_has_bits, 0x00000040U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         5, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
@@ -799,7 +799,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
                                         this_._internal_edition());
       }
     }
-    // .google.protobuf.SourceContext source_context = 5;
+    // optional .google.protobuf.SourceContext source_context = 5;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);

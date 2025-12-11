@@ -392,7 +392,7 @@ class PROTOBUF_EXPORT Option final : public ::google::protobuf::Message
   ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
 
   public:
-  // .google.protobuf.Any value = 2;
+  // optional .google.protobuf.Any value = 2;
   [[nodiscard]] bool has_value()
       const;
   void clear_value() ;
@@ -1312,7 +1312,7 @@ class PROTOBUF_EXPORT Type final : public ::google::protobuf::Message
   ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
 
   public:
-  // .google.protobuf.SourceContext source_context = 5;
+  // optional .google.protobuf.SourceContext source_context = 5;
   [[nodiscard]] bool has_source_context()
       const;
   void clear_source_context() ;
@@ -1601,7 +1601,7 @@ class PROTOBUF_EXPORT Enum final : public ::google::protobuf::Message
   ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
 
   public:
-  // .google.protobuf.SourceContext source_context = 4;
+  // optional .google.protobuf.SourceContext source_context = 4;
   [[nodiscard]] bool has_source_context()
       const;
   void clear_source_context() ;
@@ -1934,7 +1934,7 @@ Type::_internal_mutable_options() {
   return &_impl_.options_;
 }
 
-// .google.protobuf.SourceContext source_context = 5;
+// optional .google.protobuf.SourceContext source_context = 5;
 inline bool Type::has_source_context() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000020U);
   PROTOBUF_ASSUME(!value || _impl_.source_context_ != nullptr);
@@ -2743,7 +2743,7 @@ Enum::_internal_mutable_options() {
   return &_impl_.options_;
 }
 
-// .google.protobuf.SourceContext source_context = 4;
+// optional .google.protobuf.SourceContext source_context = 4;
 inline bool Enum::has_source_context() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
   PROTOBUF_ASSUME(!value || _impl_.source_context_ != nullptr);
@@ -3145,7 +3145,7 @@ inline void Option::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Option.name)
 }
 
-// .google.protobuf.Any value = 2;
+// optional .google.protobuf.Any value = 2;
 inline bool Option::has_value() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   PROTOBUF_ASSUME(!value || _impl_.value_ != nullptr);

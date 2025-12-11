@@ -47,7 +47,7 @@ class Type extends \Google\Protobuf\Internal\Message
     /**
      * The source context.
      *
-     * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 5;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.SourceContext source_context = 5;</code>
      */
     protected $source_context = null;
     /**
@@ -197,7 +197,7 @@ class Type extends \Google\Protobuf\Internal\Message
     /**
      * The source context.
      *
-     * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 5;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.SourceContext source_context = 5;</code>
      * @return \Google\Protobuf\SourceContext|null
      */
     public function getSourceContext()
@@ -218,7 +218,7 @@ class Type extends \Google\Protobuf\Internal\Message
     /**
      * The source context.
      *
-     * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 5;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.SourceContext source_context = 5;</code>
      * @param \Google\Protobuf\SourceContext $var
      * @return $this
      */

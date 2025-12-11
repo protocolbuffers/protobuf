@@ -35,7 +35,7 @@ class Option extends \Google\Protobuf\Internal\Message
      * should be used. If the value is an enum, it should be stored as an int32
      * value using the google.protobuf.Int32Value type.
      *
-     * Generated from protobuf field <code>.google.protobuf.Any value = 2;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.Any value = 2;</code>
      */
     protected $value = null;
 
@@ -100,7 +100,7 @@ class Option extends \Google\Protobuf\Internal\Message
      * should be used. If the value is an enum, it should be stored as an int32
      * value using the google.protobuf.Int32Value type.
      *
-     * Generated from protobuf field <code>.google.protobuf.Any value = 2;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.Any value = 2;</code>
      * @return \Google\Protobuf\Any|null
      */
     public function getValue()
@@ -124,7 +124,7 @@ class Option extends \Google\Protobuf\Internal\Message
      * should be used. If the value is an enum, it should be stored as an int32
      * value using the google.protobuf.Int32Value type.
      *
-     * Generated from protobuf field <code>.google.protobuf.Any value = 2;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.Any value = 2;</code>
      * @param \Google\Protobuf\Any $var
      * @return $this
      */

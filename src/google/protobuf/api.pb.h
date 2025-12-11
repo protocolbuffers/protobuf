@@ -856,7 +856,7 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
   ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
 
   public:
-  // .google.protobuf.SourceContext source_context = 5;
+  // optional .google.protobuf.SourceContext source_context = 5;
   [[nodiscard]] bool has_source_context()
       const;
   void clear_source_context() ;
@@ -1178,7 +1178,7 @@ inline void Api::set_allocated_version(::std::string* PROTOBUF_NULLABLE value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Api.version)
 }
 
-// .google.protobuf.SourceContext source_context = 5;
+// optional .google.protobuf.SourceContext source_context = 5;
 inline bool Api::has_source_context() const {
   bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000040U);
   PROTOBUF_ASSUME(!value || _impl_.source_context_ != nullptr);
