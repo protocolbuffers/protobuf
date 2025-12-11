@@ -13,6 +13,7 @@
 
 // Tests in this file are run against both backends {upb, cpp} to ensure
 // api conformance, compatibility, and correctness.
+// We eventually expect this file to disappear as we approach full parity.
 
 namespace hpb::testing {
 namespace {
@@ -20,17 +21,17 @@ namespace {
 using ::hpb_unittest::protos::Trivial;
 using ::hpb_unittest::protos::TRIVIAL_PAINTING_SARGENT;
 
-TEST(CppBackend, CanCreateMessage) {
+TEST(MultiBackend, CanCreateMessage) {
   hpb::Arena arena;
   hpb::Ptr<Trivial> trivial_ptr = hpb::CreateMessage<Trivial>(arena);
   (void)trivial_ptr;
 }
 
-TEST(CppBackend, Enums) { EXPECT_EQ(2, TRIVIAL_PAINTING_SARGENT); }
+TEST(MultiBackend, Enums) { EXPECT_EQ(2, TRIVIAL_PAINTING_SARGENT); }
 
-TEST(CppBackend, Booleans) {
-  Trivial cpp_trivial;
-  EXPECT_FALSE(cpp_trivial.b());
+TEST(MultiBackend, Booleans) {
+  Trivial trivial;
+  EXPECT_FALSE(trivial.b());
   // TODO: set, clear
 }
 

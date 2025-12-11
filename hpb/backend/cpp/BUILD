@@ -46,8 +46,8 @@ cc_library(
 )
 
 cc_test(
-    name = "cpp_test",
-    srcs = ["cpp_test.cc"],
+    name = "multibackend_test",
+    srcs = ["multibackend_test.cc"],
     deps = [
         "//hpb",
         "//hpb:arena",
