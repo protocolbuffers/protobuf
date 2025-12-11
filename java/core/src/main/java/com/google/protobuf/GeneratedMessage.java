@@ -371,10 +371,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
   }
 
-  protected static boolean canUseUnsafe() {
-    return UnsafeUtil.hasUnsafeArrayOperations() && UnsafeUtil.hasUnsafeByteBufferOperations();
-  }
-
   protected static IntList emptyIntList() {
     return IntArrayList.emptyList();
   }
