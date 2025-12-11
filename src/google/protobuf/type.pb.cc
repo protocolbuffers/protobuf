@@ -688,7 +688,7 @@ Type::_table_ = {
     {::_pbi::TcParser::FastMtR1,
      {34, 2, 1,
       PROTOBUF_FIELD_OFFSET(Type, _impl_.options_)}},
-    // optional .google.protobuf.SourceContext source_context = 5;
+    // .google.protobuf.SourceContext source_context = 5;
     {::_pbi::TcParser::FastMtS1,
      {42, 5, 2,
       PROTOBUF_FIELD_OFFSET(Type, _impl_.source_context_)}},
@@ -711,7 +711,7 @@ Type::_table_ = {
     {PROTOBUF_FIELD_OFFSET(Type, _impl_.oneofs_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcRepeated | ::_fl::kUtf8String | ::_fl::kRepSString)},
     // repeated .google.protobuf.Option options = 4;
     {PROTOBUF_FIELD_OFFSET(Type, _impl_.options_), _Internal::kHasBitsOffset + 2, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-    // optional .google.protobuf.SourceContext source_context = 5;
+    // .google.protobuf.SourceContext source_context = 5;
     {PROTOBUF_FIELD_OFFSET(Type, _impl_.source_context_), _Internal::kHasBitsOffset + 5, 2, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // .google.protobuf.Syntax syntax = 6;
     {PROTOBUF_FIELD_OFFSET(Type, _impl_.syntax_), _Internal::kHasBitsOffset + 6, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
@@ -830,7 +830,7 @@ PROTOBUF_NOINLINE void Type::Clear() {
     }
   }
 
-  // optional .google.protobuf.SourceContext source_context = 5;
+  // .google.protobuf.SourceContext source_context = 5;
   if (CheckHasBit(cached_has_bits, 0x00000020U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         5, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
@@ -919,7 +919,7 @@ PROTOBUF_NOINLINE void Type::Clear() {
                                         this_._internal_edition());
       }
     }
-    // optional .google.protobuf.SourceContext source_context = 5;
+    // .google.protobuf.SourceContext source_context = 5;
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
@@ -1904,7 +1904,7 @@ Enum::_table_ = {
     {::_pbi::TcParser::FastMtR1,
      {26, 1, 1,
       PROTOBUF_FIELD_OFFSET(Enum, _impl_.options_)}},
-    // optional .google.protobuf.SourceContext source_context = 4;
+    // .google.protobuf.SourceContext source_context = 4;
     {::_pbi::TcParser::FastMtS1,
      {34, 4, 2,
       PROTOBUF_FIELD_OFFSET(Enum, _impl_.source_context_)}},
@@ -1926,7 +1926,7 @@ Enum::_table_ = {
     {PROTOBUF_FIELD_OFFSET(Enum, _impl_.enumvalue_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
     // repeated .google.protobuf.Option options = 3;
     {PROTOBUF_FIELD_OFFSET(Enum, _impl_.options_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvTable)},
-    // optional .google.protobuf.SourceContext source_context = 4;
+    // .google.protobuf.SourceContext source_context = 4;
     {PROTOBUF_FIELD_OFFSET(Enum, _impl_.source_context_), _Internal::kHasBitsOffset + 4, 2, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // .google.protobuf.Syntax syntax = 5;
     {PROTOBUF_FIELD_OFFSET(Enum, _impl_.syntax_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
@@ -2031,7 +2031,7 @@ PROTOBUF_NOINLINE void Enum::Clear() {
     }
   }
 
-  // optional .google.protobuf.SourceContext source_context = 4;
+  // .google.protobuf.SourceContext source_context = 4;
   if (CheckHasBit(cached_has_bits, 0x00000010U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         4, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
@@ -2111,7 +2111,7 @@ PROTOBUF_NOINLINE void Enum::Clear() {
                                         this_._internal_edition());
       }
     }
-    // optional .google.protobuf.SourceContext source_context = 4;
+    // .google.protobuf.SourceContext source_context = 4;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
@@ -2748,7 +2748,7 @@ Option::_table_ = {
     ::_pbi::TcParser::GetTable<::google::protobuf::Option>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    // optional .google.protobuf.Any value = 2;
+    // .google.protobuf.Any value = 2;
     {::_pbi::TcParser::FastMtS1,
      {18, 1, 0,
       PROTOBUF_FIELD_OFFSET(Option, _impl_.value_)}},
@@ -2761,7 +2761,7 @@ Option::_table_ = {
   }}, {{
     // string name = 1;
     {PROTOBUF_FIELD_OFFSET(Option, _impl_.name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    // optional .google.protobuf.Any value = 2;
+    // .google.protobuf.Any value = 2;
     {PROTOBUF_FIELD_OFFSET(Option, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
   }},
   {{
@@ -2823,7 +2823,7 @@ PROTOBUF_NOINLINE void Option::Clear() {
     }
   }
 
-  // optional .google.protobuf.Any value = 2;
+  // .google.protobuf.Any value = 2;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
     target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
         2, *this_._impl_.value_, this_._impl_.value_->GetCachedSize(), target,
@@ -2863,7 +2863,7 @@ PROTOBUF_NOINLINE void Option::Clear() {
                                         this_._internal_name());
       }
     }
-    // optional .google.protobuf.Any value = 2;
+    // .google.protobuf.Any value = 2;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size += 1 +
                     ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.value_);

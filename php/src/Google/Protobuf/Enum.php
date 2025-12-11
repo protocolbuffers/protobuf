@@ -41,7 +41,7 @@ class Enum extends \Google\Protobuf\Internal\Message
     /**
      * The source context.
      *
-     * Generated from protobuf field <code>optional .google.protobuf.SourceContext source_context = 4;</code>
+     * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 4;</code>
      */
     protected $source_context = null;
     /**
@@ -163,7 +163,7 @@ class Enum extends \Google\Protobuf\Internal\Message
     /**
      * The source context.
      *
-     * Generated from protobuf field <code>optional .google.protobuf.SourceContext source_context = 4;</code>
+     * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 4;</code>
      * @return \Google\Protobuf\SourceContext|null
      */
     public function getSourceContext()
@@ -184,7 +184,7 @@ class Enum extends \Google\Protobuf\Internal\Message
     /**
      * The source context.
      *
-     * Generated from protobuf field <code>optional .google.protobuf.SourceContext source_context = 4;</code>
+     * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 4;</code>
      * @param \Google\Protobuf\SourceContext $var
      * @return $this
      */
