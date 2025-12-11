@@ -65,10 +65,12 @@ void ExtensionSet::AppendToList(
           //   lazily-initialized, so they might not even be constructed until
           //   AppendToList() is called.
 
-          if (ext.descriptor == nullptr) {
+          const auto* field_descriptor =
+              ext.descriptor_or_prototype.GetFieldDescriptor();
+          if (field_descriptor == nullptr) {
             output->push_back(pool->FindExtensionByNumber(extendee, number));
           } else {
-            output->push_back(ext.descriptor);
+            output->push_back(field_descriptor);
           }
         }
       },
@@ -322,7 +324,7 @@ bool ExtensionSet::MoveExtension(Arena* arena, int dst_number,
     return true;
   }
 
-  if (src_ext->descriptor != nullptr) {
+  if (src_ext->descriptor_or_prototype.GetFieldDescriptor() != nullptr) {
     return false;
   }
 
@@ -451,7 +453,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
 uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     const MessageLite* extendee, uint8_t* target) const {
   io::EpsCopyOutputStream stream(
-      target, MessageSetByteSize(),
+      target, MessageSetByteSize(extendee),
       io::CodedOutputStream::IsDefaultSerializationDeterministic());
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);
