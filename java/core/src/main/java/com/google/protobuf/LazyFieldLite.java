@@ -91,9 +91,23 @@ public class LazyFieldLite {
 
   private volatile boolean corrupted;
 
+  /**
+   * Carry a message's default instance which is used by {@code hashCode()}, {@code equals()}, and
+   * {@code toString()}.
+   */
+  private MessageLite defaultInstance;
+
   /** Constructs a LazyFieldLite with bytes that will be parsed lazily. */
   public LazyFieldLite(ExtensionRegistryLite extensionRegistry, ByteString bytes) {
     checkArguments(extensionRegistry, bytes);
+    this.extensionRegistry = extensionRegistry;
+    this.delayedBytes = bytes;
+  }
+
+  public LazyFieldLite(
+      MessageLite defaultInstance, ExtensionRegistryLite extensionRegistry, ByteString bytes) {
+    checkArguments(extensionRegistry, bytes);
+    this.defaultInstance = defaultInstance;
     this.extensionRegistry = extensionRegistry;
     this.delayedBytes = bytes;
   }
@@ -154,7 +168,8 @@ public class LazyFieldLite {
    */
   public boolean containsDefaultInstance() {
     return memoizedBytes == ByteString.EMPTY
-        || (value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY));
+        || (value == null && (delayedBytes == null || delayedBytes == ByteString.EMPTY))
+        || (defaultInstance != null && value == defaultInstance);
   }
 
   /**
@@ -202,6 +217,10 @@ public class LazyFieldLite {
     return value;
   }
 
+  public MessageLite getValue() {
+    return getValue(defaultInstance);
+  }
+
   /**
    * Sets the value of the instance and returns the old value without delay parsing anything.
    *
@@ -214,6 +233,26 @@ public class LazyFieldLite {
     this.memoizedBytes = null;
     this.value = value;
     return originalValue;
+  }
+
+  // Do "this.mergeFrom(other)", and then whichever contains null value will be parsed using the
+  // other's default instance.
+  private void mergeValue(LazyFieldLite other) {
+    if (this.value == null && other.value != null) {
+      setValue(
+          getValue(other.value.getDefaultInstanceForType()).toBuilder()
+              .mergeFrom(other.value)
+              .build());
+      return;
+    }
+
+    if (this.value != null && other.value == null) {
+      setValue(mergeValueAndBytes(this.value, other.delayedBytes, other.extensionRegistry));
+      return;
+    }
+
+    // At this point we have two fully parsed messages.
+    setValue(this.value.toBuilder().mergeFrom(other.value).build());
   }
 
   /**
@@ -240,33 +279,43 @@ public class LazyFieldLite {
       this.extensionRegistry = other.extensionRegistry;
     }
 
-    // In the case that both of them are not parsed we simply concatenate the bytes to save time. In
-    // the (probably rare) case that they have different extension registries there is a chance that
-    // some of the extensions may be dropped, but the tradeoff of making this operation fast seems
-    // to outway the benefits of combining the extension registries, which is not normally done for
-    // lite protos anyways.
+    // In the case that both of them have delayed bytes we simply concatenate the bytes to save
+    // time only if their extension registries are the same.
     if (this.delayedBytes != null && other.delayedBytes != null) {
-      this.delayedBytes = this.delayedBytes.concat(other.delayedBytes);
+      if (this.extensionRegistry == other.extensionRegistry) {
+        this.delayedBytes = this.delayedBytes.concat(other.delayedBytes);
+        return;
+      }
+
+      // value can be present even if delayedBytes is present.
+      if (this.value != null || other.value != null) {
+        mergeValue(other);
+      } else {
+        // Both are unparsed, try to merge them by selecting the default instance, or fall back to
+        // concatenating the bytes if default instances are not available. ;
+
+        if (defaultInstance != null
+            && other.defaultInstance != null
+            && defaultInstance != other.defaultInstance) {
+          this.delayedBytes = this.delayedBytes.concat(other.delayedBytes);
+          return;
+        }
+        if (defaultInstance == null) {
+          defaultInstance = other.defaultInstance;
+        }
+        if (defaultInstance == null) {
+          // TODO: b/467739361 - Consider throwing an exception here.
+          this.delayedBytes = this.delayedBytes.concat(other.delayedBytes);
+          return;
+        }
+        setValue(
+            mergeValueAndBytes(getValue(defaultInstance), other.delayedBytes, extensionRegistry));
+      }
       return;
     }
 
-    // At least one is parsed and both contain data. We will follow "this.mergeFrom(other)", and
-    // then whichever contains null value will be parsed using the other's default instance.
-    if (this.value == null && other.value != null) {
-      setValue(
-          getValue(other.value.getDefaultInstanceForType()).toBuilder()
-              .mergeFrom(other.value)
-              .build());
-      return;
-    }
-
-    if (this.value != null && other.value == null) {
-      setValue(mergeValueAndBytes(this.value, other.delayedBytes, other.extensionRegistry));
-      return;
-    }
-
-    // At this point we have two fully parsed messages.
-    setValue(this.value.toBuilder().mergeFrom(other.value).build());
+    // At least one is parsed and both contain data.
+    mergeValue(other);
   }
 
   /**
