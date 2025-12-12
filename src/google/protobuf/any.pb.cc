@@ -210,7 +210,6 @@ constexpr auto Any::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Any_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Any::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Any>(),

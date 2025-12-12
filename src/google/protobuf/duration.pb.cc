@@ -179,7 +179,6 @@ constexpr auto Duration::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Duration_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Duration::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Duration>(),

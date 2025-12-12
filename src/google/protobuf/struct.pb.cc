@@ -259,7 +259,6 @@ constexpr auto Struct_FieldsEntry_DoNotUse::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Struct_FieldsEntry_DoNotUse_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Struct_FieldsEntry_DoNotUse::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
@@ -448,7 +447,6 @@ constexpr auto Struct::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Struct_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Struct::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Struct>(),
@@ -832,7 +830,6 @@ constexpr auto Value::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Value_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Value::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Value>(),
@@ -1246,7 +1243,6 @@ constexpr auto ListValue::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_ListValue_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &ListValue::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<ListValue>(),
