@@ -105,6 +105,12 @@
       "name": "Jamie Pilgrim",
       "do_not_notify": true
     }
+    {
+      "email": "karenwuz@google.com",
+      "github": "karenwuz",
+      "name": "Karen Wu",
+      "do_not_notify": true
+    }
   ],
   "repository": ["github:protocolbuffers/protobuf"],
   "versions": [],
