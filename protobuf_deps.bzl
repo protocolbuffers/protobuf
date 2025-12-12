@@ -150,7 +150,7 @@ def protobuf_deps():
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.9",
+            minimum_python_version = "3.10",
         )
 
     if not native.existing_rule("rules_jvm_external"):
