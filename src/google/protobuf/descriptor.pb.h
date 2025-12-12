@@ -1020,15 +1020,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
     CopyFrom(from);
     return *this;
   }
-  inline UninterpretedOption_NamePart& operator=(UninterpretedOption_NamePart&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  UninterpretedOption_NamePart& operator=(UninterpretedOption_NamePart&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1125,11 +1117,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final : public ::google::prot
 
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption_NamePart& from);
-  UninterpretedOption_NamePart(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption_NamePart&& from) noexcept
-      : UninterpretedOption_NamePart(arena) {
-    *this = ::std::move(from);
-  }
+  UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption_NamePart&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1238,15 +1226,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
     CopyFrom(from);
     return *this;
   }
-  inline SourceCodeInfo_Location& operator=(SourceCodeInfo_Location&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  SourceCodeInfo_Location& operator=(SourceCodeInfo_Location&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1338,11 +1318,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final : public ::google::protobuf:
 
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo_Location& from);
-  SourceCodeInfo_Location(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo_Location&& from) noexcept
-      : SourceCodeInfo_Location(arena) {
-    *this = ::std::move(from);
-  }
+  SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo_Location&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1527,15 +1503,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
     CopyFrom(from);
     return *this;
   }
-  inline GeneratedCodeInfo_Annotation& operator=(GeneratedCodeInfo_Annotation&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  GeneratedCodeInfo_Annotation& operator=(GeneratedCodeInfo_Annotation&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1627,11 +1595,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final : public ::google::prot
 
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo_Annotation& from);
-  GeneratedCodeInfo_Annotation(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo_Annotation&& from) noexcept
-      : GeneratedCodeInfo_Annotation(arena) {
-    *this = ::std::move(from);
-  }
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo_Annotation&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -1811,15 +1775,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
     CopyFrom(from);
     return *this;
   }
-  inline FieldOptions_FeatureSupport& operator=(FieldOptions_FeatureSupport&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FieldOptions_FeatureSupport& operator=(FieldOptions_FeatureSupport&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1911,11 +1867,7 @@ class PROTOBUF_EXPORT FieldOptions_FeatureSupport final : public ::google::proto
 
   explicit FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_FeatureSupport& from);
-  FieldOptions_FeatureSupport(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_FeatureSupport&& from) noexcept
-      : FieldOptions_FeatureSupport(arena) {
-    *this = ::std::move(from);
-  }
+  FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_FeatureSupport&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -2071,15 +2023,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
     CopyFrom(from);
     return *this;
   }
-  inline FieldOptions_EditionDefault& operator=(FieldOptions_EditionDefault&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FieldOptions_EditionDefault& operator=(FieldOptions_EditionDefault&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2171,11 +2115,7 @@ class PROTOBUF_EXPORT FieldOptions_EditionDefault final : public ::google::proto
 
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_EditionDefault& from);
-  FieldOptions_EditionDefault(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_EditionDefault&& from) noexcept
-      : FieldOptions_EditionDefault(arena) {
-    *this = ::std::move(from);
-  }
+  FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_EditionDefault&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -2283,15 +2223,7 @@ class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::prot
     CopyFrom(from);
     return *this;
   }
-  inline FeatureSet_VisibilityFeature& operator=(FeatureSet_VisibilityFeature&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FeatureSet_VisibilityFeature& operator=(FeatureSet_VisibilityFeature&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2356,11 +2288,7 @@ class PROTOBUF_EXPORT FeatureSet_VisibilityFeature final : public ::google::prot
 
   explicit FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_VisibilityFeature& from);
-  FeatureSet_VisibilityFeature(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_VisibilityFeature&& from) noexcept
-      : FeatureSet_VisibilityFeature(arena) {
-    *this = ::std::move(from);
-  }
+  FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_VisibilityFeature&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -2442,15 +2370,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline FeatureSet& operator=(FeatureSet&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FeatureSet& operator=(FeatureSet&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -2547,11 +2467,7 @@ class PROTOBUF_EXPORT FeatureSet final : public ::google::protobuf::Message
 
   explicit FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet& from);
-  FeatureSet(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet&& from) noexcept
-      : FeatureSet(arena) {
-    *this = ::std::move(from);
-  }
+  FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -3079,15 +2995,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
     CopyFrom(from);
     return *this;
   }
-  inline ExtensionRangeOptions_Declaration& operator=(ExtensionRangeOptions_Declaration&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  ExtensionRangeOptions_Declaration& operator=(ExtensionRangeOptions_Declaration&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3179,11 +3087,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions_Declaration final : public ::google:
 
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions_Declaration& from);
-  ExtensionRangeOptions_Declaration(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions_Declaration&& from) noexcept
-      : ExtensionRangeOptions_Declaration(arena) {
-    *this = ::std::move(from);
-  }
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions_Declaration&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -3339,15 +3243,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
     CopyFrom(from);
     return *this;
   }
-  inline EnumDescriptorProto_EnumReservedRange& operator=(EnumDescriptorProto_EnumReservedRange&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  EnumDescriptorProto_EnumReservedRange& operator=(EnumDescriptorProto_EnumReservedRange&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3439,11 +3335,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final : public ::goo
 
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from);
-  EnumDescriptorProto_EnumReservedRange(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto_EnumReservedRange&& from) noexcept
-      : EnumDescriptorProto_EnumReservedRange(arena) {
-    *this = ::std::move(from);
-  }
+  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto_EnumReservedRange&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -3547,15 +3439,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
     CopyFrom(from);
     return *this;
   }
-  inline DescriptorProto_ReservedRange& operator=(DescriptorProto_ReservedRange&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  DescriptorProto_ReservedRange& operator=(DescriptorProto_ReservedRange&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3647,11 +3531,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final : public ::google::pro
 
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from);
-  DescriptorProto_ReservedRange(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ReservedRange&& from) noexcept
-      : DescriptorProto_ReservedRange(arena) {
-    *this = ::std::move(from);
-  }
+  DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ReservedRange&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -3755,15 +3635,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
     CopyFrom(from);
     return *this;
   }
-  inline UninterpretedOption& operator=(UninterpretedOption&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  UninterpretedOption& operator=(UninterpretedOption&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -3860,11 +3732,7 @@ class PROTOBUF_EXPORT UninterpretedOption final : public ::google::protobuf::Mes
 
   explicit UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption& from);
-  UninterpretedOption(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption&& from) noexcept
-      : UninterpretedOption(arena) {
-    *this = ::std::move(from);
-  }
+  UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4062,15 +3930,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline SourceCodeInfo& operator=(SourceCodeInfo&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  SourceCodeInfo& operator=(SourceCodeInfo&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -4167,11 +4027,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final : public ::google::protobuf::Message
 
   explicit SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo& from);
-  SourceCodeInfo(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo&& from) noexcept
-      : SourceCodeInfo(arena) {
-    *this = ::std::move(from);
-  }
+  SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4461,15 +4317,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
     CopyFrom(from);
     return *this;
   }
-  inline GeneratedCodeInfo& operator=(GeneratedCodeInfo&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  GeneratedCodeInfo& operator=(GeneratedCodeInfo&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -4561,11 +4409,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final : public ::google::protobuf::Messa
 
   explicit GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo& from);
-  GeneratedCodeInfo(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo&& from) noexcept
-      : GeneratedCodeInfo(arena) {
-    *this = ::std::move(from);
-  }
+  GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4664,15 +4508,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
     CopyFrom(from);
     return *this;
   }
-  inline FeatureSetDefaults_FeatureSetEditionDefault& operator=(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FeatureSetDefaults_FeatureSetEditionDefault& operator=(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -4769,11 +4605,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults_FeatureSetEditionDefault final : public
 
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
-  FeatureSetDefaults_FeatureSetEditionDefault(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
-      : FeatureSetDefaults_FeatureSetEditionDefault(arena) {
-    *this = ::std::move(from);
-  }
+  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -4899,15 +4731,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline ServiceOptions& operator=(ServiceOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  ServiceOptions& operator=(ServiceOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -5004,11 +4828,7 @@ class PROTOBUF_EXPORT ServiceOptions final : public ::google::protobuf::Message
 
   explicit ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceOptions& from);
-  ServiceOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceOptions&& from) noexcept
-      : ServiceOptions(arena) {
-    *this = ::std::move(from);
-  }
+  ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -5329,15 +5149,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline OneofOptions& operator=(OneofOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  OneofOptions& operator=(OneofOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -5434,11 +5246,7 @@ class PROTOBUF_EXPORT OneofOptions final : public ::google::protobuf::Message
 
   explicit OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofOptions& from);
-  OneofOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofOptions&& from) noexcept
-      : OneofOptions(arena) {
-    *this = ::std::move(from);
-  }
+  OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -5745,15 +5553,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline MethodOptions& operator=(MethodOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  MethodOptions& operator=(MethodOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -5850,11 +5650,7 @@ class PROTOBUF_EXPORT MethodOptions final : public ::google::protobuf::Message
 
   explicit MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodOptions& from);
-  MethodOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodOptions&& from) noexcept
-      : MethodOptions(arena) {
-    *this = ::std::move(from);
-  }
+  MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -6210,15 +6006,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline MessageOptions& operator=(MessageOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  MessageOptions& operator=(MessageOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -6315,11 +6103,7 @@ class PROTOBUF_EXPORT MessageOptions final : public ::google::protobuf::Message
 
   explicit MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MessageOptions& from);
-  MessageOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MessageOptions&& from) noexcept
-      : MessageOptions(arena) {
-    *this = ::std::move(from);
-  }
+  MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MessageOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -6696,15 +6480,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline FileOptions& operator=(FileOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FileOptions& operator=(FileOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -6801,11 +6577,7 @@ class PROTOBUF_EXPORT FileOptions final : public ::google::protobuf::Message
 
   explicit FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileOptions& from);
-  FileOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileOptions&& from) noexcept
-      : FileOptions(arena) {
-    *this = ::std::move(from);
-  }
+  FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -7449,15 +7221,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline FieldOptions& operator=(FieldOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FieldOptions& operator=(FieldOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -7554,11 +7318,7 @@ class PROTOBUF_EXPORT FieldOptions final : public ::google::protobuf::Message
 
   explicit FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions& from);
-  FieldOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions&& from) noexcept
-      : FieldOptions(arena) {
-    *this = ::std::move(from);
-  }
+  FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -8146,15 +7906,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
     CopyFrom(from);
     return *this;
   }
-  inline FeatureSetDefaults& operator=(FeatureSetDefaults&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FeatureSetDefaults& operator=(FeatureSetDefaults&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -8251,11 +8003,7 @@ class PROTOBUF_EXPORT FeatureSetDefaults final : public ::google::protobuf::Mess
 
   explicit FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults& from);
-  FeatureSetDefaults(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults&& from) noexcept
-      : FeatureSetDefaults(arena) {
-    *this = ::std::move(from);
-  }
+  FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -8382,15 +8130,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
     CopyFrom(from);
     return *this;
   }
-  inline ExtensionRangeOptions& operator=(ExtensionRangeOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  ExtensionRangeOptions& operator=(ExtensionRangeOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -8487,11 +8227,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final : public ::google::protobuf::M
 
   explicit ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions& from);
-  ExtensionRangeOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions&& from) noexcept
-      : ExtensionRangeOptions(arena) {
-    *this = ::std::move(from);
-  }
+  ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -8855,15 +8591,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
     CopyFrom(from);
     return *this;
   }
-  inline EnumValueOptions& operator=(EnumValueOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  EnumValueOptions& operator=(EnumValueOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -8960,11 +8688,7 @@ class PROTOBUF_EXPORT EnumValueOptions final : public ::google::protobuf::Messag
 
   explicit EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueOptions& from);
-  EnumValueOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueOptions&& from) noexcept
-      : EnumValueOptions(arena) {
-    *this = ::std::move(from);
-  }
+  EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -9317,15 +9041,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline EnumOptions& operator=(EnumOptions&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  EnumOptions& operator=(EnumOptions&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -9422,11 +9138,7 @@ class PROTOBUF_EXPORT EnumOptions final : public ::google::protobuf::Message
 
   explicit EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumOptions& from);
-  EnumOptions(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumOptions&& from) noexcept
-      : EnumOptions(arena) {
-    *this = ::std::move(from);
-  }
+  EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumOptions&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -9775,15 +9487,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
     CopyFrom(from);
     return *this;
   }
-  inline OneofDescriptorProto& operator=(OneofDescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  OneofDescriptorProto& operator=(OneofDescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -9880,11 +9584,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final : public ::google::protobuf::Me
 
   explicit OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofDescriptorProto& from);
-  OneofDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofDescriptorProto&& from) noexcept
-      : OneofDescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofDescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -9997,15 +9697,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
     CopyFrom(from);
     return *this;
   }
-  inline MethodDescriptorProto& operator=(MethodDescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  MethodDescriptorProto& operator=(MethodDescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -10102,11 +9794,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final : public ::google::protobuf::M
 
   explicit MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodDescriptorProto& from);
-  MethodDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodDescriptorProto&& from) noexcept
-      : MethodDescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodDescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -10285,15 +9973,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
     CopyFrom(from);
     return *this;
   }
-  inline FieldDescriptorProto& operator=(FieldDescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FieldDescriptorProto& operator=(FieldDescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -10390,11 +10070,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final : public ::google::protobuf::Me
 
   explicit FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldDescriptorProto& from);
-  FieldDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldDescriptorProto&& from) noexcept
-      : FieldDescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldDescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -10710,15 +10386,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
     CopyFrom(from);
     return *this;
   }
-  inline EnumValueDescriptorProto& operator=(EnumValueDescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  EnumValueDescriptorProto& operator=(EnumValueDescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -10815,11 +10483,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final : public ::google::protobuf
 
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueDescriptorProto& from);
-  EnumValueDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueDescriptorProto&& from) noexcept
-      : EnumValueDescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueDescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -10946,15 +10610,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
     CopyFrom(from);
     return *this;
   }
-  inline DescriptorProto_ExtensionRange& operator=(DescriptorProto_ExtensionRange&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  DescriptorProto_ExtensionRange& operator=(DescriptorProto_ExtensionRange&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -11051,11 +10707,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final : public ::google::pr
 
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ExtensionRange& from);
-  DescriptorProto_ExtensionRange(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ExtensionRange&& from) noexcept
-      : DescriptorProto_ExtensionRange(arena) {
-    *this = ::std::move(from);
-  }
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ExtensionRange&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -11177,15 +10829,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
     CopyFrom(from);
     return *this;
   }
-  inline ServiceDescriptorProto& operator=(ServiceDescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  ServiceDescriptorProto& operator=(ServiceDescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -11282,11 +10926,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final : public ::google::protobuf::
 
   explicit ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceDescriptorProto& from);
-  ServiceDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceDescriptorProto&& from) noexcept
-      : ServiceDescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceDescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -11421,15 +11061,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
     CopyFrom(from);
     return *this;
   }
-  inline EnumDescriptorProto& operator=(EnumDescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  EnumDescriptorProto& operator=(EnumDescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -11526,11 +11158,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final : public ::google::protobuf::Mes
 
   explicit EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto& from);
-  EnumDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto&& from) noexcept
-      : EnumDescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -11729,15 +11357,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
-  inline DescriptorProto& operator=(DescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  DescriptorProto& operator=(DescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -11834,11 +11454,7 @@ class PROTOBUF_EXPORT DescriptorProto final : public ::google::protobuf::Message
 
   explicit DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto& from);
-  DescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto&& from) noexcept
-      : DescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -12148,15 +11764,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
     CopyFrom(from);
     return *this;
   }
-  inline FileDescriptorProto& operator=(FileDescriptorProto&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FileDescriptorProto& operator=(FileDescriptorProto&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -12253,11 +11861,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final : public ::google::protobuf::Mes
 
   explicit FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorProto& from);
-  FileDescriptorProto(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorProto&& from) noexcept
-      : FileDescriptorProto(arena) {
-    *this = ::std::move(from);
-  }
+  FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorProto&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -12624,15 +12228,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
     CopyFrom(from);
     return *this;
   }
-  inline FileDescriptorSet& operator=(FileDescriptorSet&& from) noexcept {
-    if (this == &from) return *this;
-    if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
+  FileDescriptorSet& operator=(FileDescriptorSet&& from) noexcept;
 
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -12729,11 +12325,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final : public ::google::protobuf::Messa
 
   explicit FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorSet& from);
-  FileDescriptorSet(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorSet&& from) noexcept
-      : FileDescriptorSet(arena) {
-    *this = ::std::move(from);
-  }
+  FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorSet&& from) noexcept;
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
   static void* PROTOBUF_NONNULL PlacementNew_(
       const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
@@ -13012,6 +12604,20 @@ PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull FileDes
 #endif  // __GNUC__
 // -------------------------------------------------------------------
 
+inline FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FileDescriptorSet&& from) noexcept
+    : FileDescriptorSet(arena) {
+  *this = ::std::move(from);
+}
+inline FileDescriptorSet& FileDescriptorSet::operator=(FileDescriptorSet&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FileDescriptorSet
 
 // repeated .google.protobuf.FileDescriptorProto file = 1;
@@ -13072,6 +12678,20 @@ FileDescriptorSet::_internal_mutable_file() {
 
 // -------------------------------------------------------------------
 
+inline FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FileDescriptorProto&& from) noexcept
+    : FileDescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline FileDescriptorProto& FileDescriptorProto::operator=(FileDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FileDescriptorProto
 
 // optional string name = 1;
@@ -13983,6 +13603,20 @@ inline void FileDescriptorProto::_internal_set_edition(::google::protobuf::Editi
 
 // -------------------------------------------------------------------
 
+inline DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                DescriptorProto_ExtensionRange&& from) noexcept
+    : DescriptorProto_ExtensionRange(arena) {
+  *this = ::std::move(from);
+}
+inline DescriptorProto_ExtensionRange& DescriptorProto_ExtensionRange::operator=(DescriptorProto_ExtensionRange&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // DescriptorProto_ExtensionRange
 
 // optional int32 start = 1;
@@ -14144,6 +13778,46 @@ inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::prot
 
 // -------------------------------------------------------------------
 
+inline DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                const DescriptorProto_ReservedRange& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
+
+inline DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                DescriptorProto_ReservedRange&& from) noexcept
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, DescriptorProto_ReservedRange_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveFromUFS<::google::protobuf::UnknownFieldSet>(arena, from);
+  }
+}
+
+inline DescriptorProto_ReservedRange& DescriptorProto_ReservedRange::operator=(DescriptorProto_ReservedRange&& from) noexcept {
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveAssignFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+  return *this;
+}
+inline void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
 // DescriptorProto_ReservedRange
 
 // optional int32 start = 1;
@@ -14206,6 +13880,20 @@ inline void DescriptorProto_ReservedRange::_internal_set_end(::int32_t value) {
 
 // -------------------------------------------------------------------
 
+inline DescriptorProto::DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                DescriptorProto&& from) noexcept
+    : DescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline DescriptorProto& DescriptorProto::operator=(DescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // DescriptorProto
 
 // optional string name = 1;
@@ -14874,6 +14562,20 @@ inline void DescriptorProto::_internal_set_visibility(::google::protobuf::Symbol
 
 // -------------------------------------------------------------------
 
+inline ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                ExtensionRangeOptions_Declaration&& from) noexcept
+    : ExtensionRangeOptions_Declaration(arena) {
+  *this = ::std::move(from);
+}
+inline ExtensionRangeOptions_Declaration& ExtensionRangeOptions_Declaration::operator=(ExtensionRangeOptions_Declaration&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // ExtensionRangeOptions_Declaration
 
 // optional int32 number = 1;
@@ -15103,6 +14805,20 @@ inline void ExtensionRangeOptions_Declaration::_internal_set_repeated(bool value
 
 // -------------------------------------------------------------------
 
+inline ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                ExtensionRangeOptions&& from) noexcept
+    : ExtensionRangeOptions(arena) {
+  *this = ::std::move(from);
+}
+inline ExtensionRangeOptions& ExtensionRangeOptions::operator=(ExtensionRangeOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // ExtensionRangeOptions
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -15350,6 +15066,20 @@ inline void ExtensionRangeOptions::_internal_set_verification(::google::protobuf
 
 // -------------------------------------------------------------------
 
+inline FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FieldDescriptorProto&& from) noexcept
+    : FieldDescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline FieldDescriptorProto& FieldDescriptorProto::operator=(FieldDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FieldDescriptorProto
 
 // optional string name = 1;
@@ -15949,6 +15679,20 @@ inline void FieldDescriptorProto::_internal_set_proto3_optional(bool value) {
 
 // -------------------------------------------------------------------
 
+inline OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                OneofDescriptorProto&& from) noexcept
+    : OneofDescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline OneofDescriptorProto& OneofDescriptorProto::operator=(OneofDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // OneofDescriptorProto
 
 // optional string name = 1;
@@ -16121,6 +15865,46 @@ inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::Oneo
 
 // -------------------------------------------------------------------
 
+inline EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                const EnumDescriptorProto_EnumReservedRange& from)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
+
+inline EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                EnumDescriptorProto_EnumReservedRange&& from) noexcept
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    : ::google::protobuf::Message(arena, EnumDescriptorProto_EnumReservedRange_class_data_.base()),
+#else   // PROTOBUF_CUSTOM_VTABLE
+    : ::google::protobuf::Message(arena),
+#endif  // PROTOBUF_CUSTOM_VTABLE
+      _impl_(from._impl_) {
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveFromUFS<::google::protobuf::UnknownFieldSet>(arena, from);
+  }
+}
+
+inline EnumDescriptorProto_EnumReservedRange& EnumDescriptorProto_EnumReservedRange::operator=(EnumDescriptorProto_EnumReservedRange&& from) noexcept {
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::MoveAssignFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+  return *this;
+}
+inline void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) {
+  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
+  _impl_ = from._impl_;
+  if (ABSL_PREDICT_FALSE(from._internal_metadata_.have_unknown_fields())) {
+    ::google::protobuf::Message::CopyFromUFS<::google::protobuf::UnknownFieldSet>(from);
+  }
+}
 // EnumDescriptorProto_EnumReservedRange
 
 // optional int32 start = 1;
@@ -16183,6 +15967,20 @@ inline void EnumDescriptorProto_EnumReservedRange::_internal_set_end(::int32_t v
 
 // -------------------------------------------------------------------
 
+inline EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                EnumDescriptorProto&& from) noexcept
+    : EnumDescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline EnumDescriptorProto& EnumDescriptorProto::operator=(EnumDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // EnumDescriptorProto
 
 // optional string name = 1;
@@ -16571,6 +16369,20 @@ inline void EnumDescriptorProto::_internal_set_visibility(::google::protobuf::Sy
 
 // -------------------------------------------------------------------
 
+inline EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                EnumValueDescriptorProto&& from) noexcept
+    : EnumValueDescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline EnumValueDescriptorProto& EnumValueDescriptorProto::operator=(EnumValueDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // EnumValueDescriptorProto
 
 // optional string name = 1;
@@ -16772,6 +16584,20 @@ inline void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::
 
 // -------------------------------------------------------------------
 
+inline ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                ServiceDescriptorProto&& from) noexcept
+    : ServiceDescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline ServiceDescriptorProto& ServiceDescriptorProto::operator=(ServiceDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // ServiceDescriptorProto
 
 // optional string name = 1;
@@ -17000,6 +16826,20 @@ inline void ServiceDescriptorProto::set_allocated_options(::google::protobuf::Se
 
 // -------------------------------------------------------------------
 
+inline MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                MethodDescriptorProto&& from) noexcept
+    : MethodDescriptorProto(arena) {
+  *this = ::std::move(from);
+}
+inline MethodDescriptorProto& MethodDescriptorProto::operator=(MethodDescriptorProto&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // MethodDescriptorProto
 
 // optional string name = 1;
@@ -17368,6 +17208,20 @@ inline void MethodDescriptorProto::_internal_set_server_streaming(bool value) {
 
 // -------------------------------------------------------------------
 
+inline FileOptions::FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FileOptions&& from) noexcept
+    : FileOptions(arena) {
+  *this = ::std::move(from);
+}
+inline FileOptions& FileOptions::operator=(FileOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FileOptions
 
 // optional string java_package = 1;
@@ -18481,6 +18335,20 @@ FileOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline MessageOptions::MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                MessageOptions&& from) noexcept
+    : MessageOptions(arena) {
+  *this = ::std::move(from);
+}
+inline MessageOptions& MessageOptions::operator=(MessageOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // MessageOptions
 
 // optional bool message_set_wire_format = 1 [default = false];
@@ -18785,6 +18653,20 @@ MessageOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FieldOptions_EditionDefault&& from) noexcept
+    : FieldOptions_EditionDefault(arena) {
+  *this = ::std::move(from);
+}
+inline FieldOptions_EditionDefault& FieldOptions_EditionDefault::operator=(FieldOptions_EditionDefault&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FieldOptions_EditionDefault
 
 // optional .google.protobuf.Edition edition = 3;
@@ -18890,6 +18772,20 @@ inline void FieldOptions_EditionDefault::set_allocated_value(::std::string* PROT
 
 // -------------------------------------------------------------------
 
+inline FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FieldOptions_FeatureSupport&& from) noexcept
+    : FieldOptions_FeatureSupport(arena) {
+  *this = ::std::move(from);
+}
+inline FieldOptions_FeatureSupport& FieldOptions_FeatureSupport::operator=(FieldOptions_FeatureSupport&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FieldOptions_FeatureSupport
 
 // optional .google.protobuf.Edition edition_introduced = 1;
@@ -19128,6 +19024,20 @@ inline void FieldOptions_FeatureSupport::set_allocated_removal_error(::std::stri
 
 // -------------------------------------------------------------------
 
+inline FieldOptions::FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FieldOptions&& from) noexcept
+    : FieldOptions(arena) {
+  *this = ::std::move(from);
+}
+inline FieldOptions& FieldOptions::operator=(FieldOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FieldOptions
 
 // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
@@ -19769,6 +19679,20 @@ FieldOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline OneofOptions::OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                OneofOptions&& from) noexcept
+    : OneofOptions(arena) {
+  *this = ::std::move(from);
+}
+inline OneofOptions& OneofOptions::operator=(OneofOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // OneofOptions
 
 // optional .google.protobuf.FeatureSet features = 1;
@@ -19928,6 +19852,20 @@ OneofOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline EnumOptions::EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                EnumOptions&& from) noexcept
+    : EnumOptions(arena) {
+  *this = ::std::move(from);
+}
+inline EnumOptions& EnumOptions::operator=(EnumOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // EnumOptions
 
 // optional bool allow_alias = 2;
@@ -20174,6 +20112,20 @@ EnumOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                EnumValueOptions&& from) noexcept
+    : EnumValueOptions(arena) {
+  *this = ::std::move(from);
+}
+inline EnumValueOptions& EnumValueOptions::operator=(EnumValueOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // EnumValueOptions
 
 // optional bool deprecated = 1 [default = false];
@@ -20490,6 +20442,20 @@ EnumValueOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline ServiceOptions::ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                ServiceOptions&& from) noexcept
+    : ServiceOptions(arena) {
+  *this = ::std::move(from);
+}
+inline ServiceOptions& ServiceOptions::operator=(ServiceOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // ServiceOptions
 
 // optional .google.protobuf.FeatureSet features = 34;
@@ -20678,6 +20644,20 @@ ServiceOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline MethodOptions::MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                MethodOptions&& from) noexcept
+    : MethodOptions(arena) {
+  *this = ::std::move(from);
+}
+inline MethodOptions& MethodOptions::operator=(MethodOptions&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // MethodOptions
 
 // optional bool deprecated = 33 [default = false];
@@ -20898,6 +20878,20 @@ MethodOptions::_internal_mutable_uninterpreted_option() {
 
 // -------------------------------------------------------------------
 
+inline UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                UninterpretedOption_NamePart&& from) noexcept
+    : UninterpretedOption_NamePart(arena) {
+  *this = ::std::move(from);
+}
+inline UninterpretedOption_NamePart& UninterpretedOption_NamePart::operator=(UninterpretedOption_NamePart&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // UninterpretedOption_NamePart
 
 // required string name_part = 1;
@@ -21000,6 +20994,20 @@ inline void UninterpretedOption_NamePart::_internal_set_is_extension(bool value)
 
 // -------------------------------------------------------------------
 
+inline UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                UninterpretedOption&& from) noexcept
+    : UninterpretedOption(arena) {
+  *this = ::std::move(from);
+}
+inline UninterpretedOption& UninterpretedOption::operator=(UninterpretedOption&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // UninterpretedOption
 
 // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
@@ -21354,10 +21362,38 @@ inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* PR
 
 // -------------------------------------------------------------------
 
+inline FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FeatureSet_VisibilityFeature&& from) noexcept
+    : FeatureSet_VisibilityFeature(arena) {
+  *this = ::std::move(from);
+}
+inline FeatureSet_VisibilityFeature& FeatureSet_VisibilityFeature::operator=(FeatureSet_VisibilityFeature&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FeatureSet_VisibilityFeature
 
 // -------------------------------------------------------------------
 
+inline FeatureSet::FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FeatureSet&& from) noexcept
+    : FeatureSet(arena) {
+  *this = ::std::move(from);
+}
+inline FeatureSet& FeatureSet::operator=(FeatureSet&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FeatureSet
 
 // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -21618,6 +21654,20 @@ inline void FeatureSet::_internal_set_default_symbol_visibility(::google::protob
 
 // -------------------------------------------------------------------
 
+inline FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
+    : FeatureSetDefaults_FeatureSetEditionDefault(arena) {
+  *this = ::std::move(from);
+}
+inline FeatureSetDefaults_FeatureSetEditionDefault& FeatureSetDefaults_FeatureSetEditionDefault::operator=(FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FeatureSetDefaults_FeatureSetEditionDefault
 
 // optional .google.protobuf.Edition edition = 3;
@@ -21852,6 +21902,20 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_fixed_fea
 
 // -------------------------------------------------------------------
 
+inline FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                FeatureSetDefaults&& from) noexcept
+    : FeatureSetDefaults(arena) {
+  *this = ::std::move(from);
+}
+inline FeatureSetDefaults& FeatureSetDefaults::operator=(FeatureSetDefaults&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // FeatureSetDefaults
 
 // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
@@ -21976,6 +22040,20 @@ inline void FeatureSetDefaults::_internal_set_maximum_edition(::google::protobuf
 
 // -------------------------------------------------------------------
 
+inline SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                SourceCodeInfo_Location&& from) noexcept
+    : SourceCodeInfo_Location(arena) {
+  *this = ::std::move(from);
+}
+inline SourceCodeInfo_Location& SourceCodeInfo_Location::operator=(SourceCodeInfo_Location&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // SourceCodeInfo_Location
 
 // repeated int32 path = 1 [packed = true];
@@ -22292,6 +22370,20 @@ SourceCodeInfo_Location::_internal_mutable_leading_detached_comments() {
 
 // -------------------------------------------------------------------
 
+inline SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                SourceCodeInfo&& from) noexcept
+    : SourceCodeInfo(arena) {
+  *this = ::std::move(from);
+}
+inline SourceCodeInfo& SourceCodeInfo::operator=(SourceCodeInfo&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // SourceCodeInfo
 
 // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
@@ -22352,6 +22444,20 @@ SourceCodeInfo::_internal_mutable_location() {
 
 // -------------------------------------------------------------------
 
+inline GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                GeneratedCodeInfo_Annotation&& from) noexcept
+    : GeneratedCodeInfo_Annotation(arena) {
+  *this = ::std::move(from);
+}
+inline GeneratedCodeInfo_Annotation& GeneratedCodeInfo_Annotation::operator=(GeneratedCodeInfo_Annotation&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // GeneratedCodeInfo_Annotation
 
 // repeated int32 path = 1 [packed = true];
@@ -22566,6 +22672,20 @@ inline void GeneratedCodeInfo_Annotation::_internal_set_semantic(::google::proto
 
 // -------------------------------------------------------------------
 
+inline GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                                GeneratedCodeInfo&& from) noexcept
+    : GeneratedCodeInfo(arena) {
+  *this = ::std::move(from);
+}
+inline GeneratedCodeInfo& GeneratedCodeInfo::operator=(GeneratedCodeInfo&& from) noexcept {
+  if (this == &from) return *this;
+  if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
+    InternalSwap(&from);
+  } else {
+    CopyFrom(from);
+  }
+  return *this;
+}
 // GeneratedCodeInfo
 
 // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;

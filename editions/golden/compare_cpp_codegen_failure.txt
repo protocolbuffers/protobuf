@@ -46,7 +46,7 @@
        const;
    void clear_int32_field() ;
 @@ @@
- 
+ }
  // SimpleProto3
  
 -// optional int32 int32_field = 1;
