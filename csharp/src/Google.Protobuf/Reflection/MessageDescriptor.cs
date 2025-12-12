@@ -44,7 +44,7 @@ namespace Google.Protobuf.Reflection
             : base(file, file.ComputeFullName(parent, proto.Name), typeIndex, (parent?.Features ?? file.Features).MergedWith(proto.Options?.Features))
         {
             Proto = proto;
-            Parser = generatedCodeInfo?.Parser;
+            generatedParser = generatedCodeInfo?.Parser;
             ClrType = generatedCodeInfo?.ClrType;
             ContainingType = parent;
 
@@ -168,13 +168,21 @@ namespace Google.Protobuf.Reflection
         [DynamicallyAccessedMembers(GeneratedClrTypeInfo.MessageAccessibility)]
         public Type ClrType { get; }
 
+        private readonly MessageParser generatedParser;
+
         /// <summary>
         /// A parser for this message type.
         /// </summary>
         /// <remarks>
         /// <para>
         /// As <see cref="MessageDescriptor"/> is not generic, this cannot be statically
-        /// typed to the relevant type, but it should produce objects of a type compatible with <see cref="ClrType"/>.
+        /// typed to the relevant type, but it should produce objects of a type compatible with <see cref="ClrType"/>
+        /// (for generated types) or <see cref="DynamicMessage"/> (for dynamically-loaded descriptors).
+        /// </para>
+        /// <para>
+        /// For generated types, this returns the parser for the generated message class.
+        /// For dynamically-loaded descriptors (via <see cref="FileDescriptor.BuildFromByteStrings(IEnumerable{ByteString})"/> for example),
+        /// this returns a parser that produces <see cref="DynamicMessage"/> instances.
         /// </para>
         /// <para>
         /// The value returned by this property will be non-null for all regular fields. However,
@@ -189,7 +197,7 @@ namespace Google.Protobuf.Reflection
         /// a wrapper type, and handle the result appropriately.
         /// </para>
         /// </remarks>
-        public MessageParser Parser { get; }
+        public MessageParser Parser => generatedParser ?? (IsMapEntry ? null : DynamicMessage.CreateParser(this));
 
         /// <summary>
         /// Returns whether this message is one of the "well known types" which may have runtime/protoc support.

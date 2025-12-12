@@ -219,6 +219,41 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        public void FieldDescriptor_Equality_IsBasedOnAbsoluteId()
+        {
+            var descriptorData = new List<ByteString>
+            {
+                UnittestImportPublicProto3Reflection.Descriptor.SerializedData,
+                UnittestImportProto3Reflection.Descriptor.SerializedData,
+                UnittestProto3Reflection.Descriptor.SerializedData
+            };
+
+            // Build two separate descriptor graphs to ensure we get distinct FieldDescriptor instances.
+            var converted1 = FileDescriptor.BuildFromByteStrings(descriptorData);
+            var converted2 = FileDescriptor.BuildFromByteStrings(descriptorData);
+
+            var file1 = converted1[2];
+            var file2 = converted2[2];
+
+            var msg1 = file1.FindTypeByName<MessageDescriptor>("TestAllTypes");
+            var msg2 = file2.FindTypeByName<MessageDescriptor>("TestAllTypes");
+            var field1 = msg1.FindFieldByNumber(1);
+            var field2 = msg2.FindFieldByNumber(1);
+
+            Assert.AreNotSame(field1, field2);
+            Assert.AreEqual(field1, field2);
+            Assert.AreEqual(field1.GetHashCode(), field2.GetHashCode());
+
+            var dict = new Dictionary<FieldDescriptor, string>();
+            dict[field1] = "value";
+            Assert.AreEqual("value", dict[field2]);
+
+            // Same field number in a different containing type should not compare equal.
+            var otherTypeField = file1.FindTypeByName<MessageDescriptor>("ForeignMessage").FindFieldByNumber(1);
+            Assert.AreNotEqual(field1, otherTypeField);
+        }
+
+        [Test]
         public void FieldDescriptor_BuildFromByteStrings()
         {
             // The descriptors have to be supplied in an order such that all the
@@ -522,6 +557,44 @@ namespace Google.Protobuf.Reflection
             var fieldDescriptor = messageDescriptor.FindFieldByName("unpacked_int32");
             Assert.NotNull(fieldDescriptor);
             Assert.AreEqual(RepeatedFieldEncoding.Expanded, fieldDescriptor.Features.RepeatedFieldEncoding);
+        }
+
+        [Test]
+        public void ExtensionField_ContainingTypeReturnsExtendee()
+        {
+            // For extensions, ContainingType returns the type being extended.
+            // ExtensionScope returns the message where the extension was declared (null for top-level).
+            var file = proto2.UnittestReflection.Descriptor;
+            var testAllExtensions = file.FindTypeByName<MessageDescriptor>("TestAllExtensions");
+
+            // Find an extension from the file
+            var extensions = file.Extensions.GetExtensionsInNumberOrder(testAllExtensions);
+            Assert.IsNotEmpty(extensions);
+
+            // Get a top-level extension
+            var topLevelExtension = extensions[0];
+            Assert.IsTrue(topLevelExtension.IsExtension);
+
+            // ContainingType should return the extendee (TestAllExtensions)
+            Assert.AreEqual(testAllExtensions, topLevelExtension.ContainingType);
+
+            // ExtensionScope should be null for top-level extensions
+            Assert.IsNull(topLevelExtension.ExtensionScope);
+
+            // ExtendeeType should also return the extendee
+            Assert.AreEqual(testAllExtensions, topLevelExtension.ExtendeeType);
+        }
+
+        [Test]
+        public void RegularField_ExtensionScopeThrows()
+        {
+            // ExtensionScope is only valid for extensions, throws for regular fields
+            var testAllTypes = TestAllTypes.Descriptor;
+            var field = testAllTypes.FindFieldByNumber(TestAllTypes.SingleInt32FieldNumber);
+
+            Assert.IsFalse(field.IsExtension);
+            Assert.AreEqual(testAllTypes, field.ContainingType);
+            Assert.Throws<InvalidOperationException>(() => { var _ = field.ExtensionScope; });
         }
 
         private static void TestDescriptorToProto(Func<IMessage> toProtoFunction, IMessage expectedProto)
