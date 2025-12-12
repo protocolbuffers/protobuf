@@ -160,14 +160,6 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
 
   const FieldDescriptor* field = entry.field;
   info.aux_idx = static_cast<uint8_t>(entry.aux_idx);
-  if (field->type() == FieldDescriptor::TYPE_BYTES ||
-      field->type() == FieldDescriptor::TYPE_STRING) {
-    if (options.is_string_inlined) {
-      ABSL_CHECK(!field->is_repeated());
-      info.aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
-    }
-  }
-
   TcParseFunction picked = TcParseFunction::kNone;
   switch (field->type()) {
     case FieldDescriptor::TYPE_BOOL:
@@ -277,34 +269,12 @@ bool IsFieldEligibleForFastParsing(
     return false;
   }
 
-  // We will check for a valid auxiliary index range later. However, we might
-  // want to change the value we check for inlined string fields.
-  int aux_idx = entry.aux_idx;
-
-  switch (field->type()) {
-      // Some bytes fields can be handled on fast path.
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES: {
-      if (options.is_string_inlined) {
-        ABSL_CHECK(!field->is_repeated());
-        // For inlined strings, the donation state index is stored in the
-        // `aux_idx` field of the fast parsing info. We need to check the range
-        // of that value instead of the auxiliary index.
-        aux_idx = entry.inlined_string_idx;
-      }
-      break;
-    }
-
-    default:
-      break;
-  }
-
   if (entry.hasbit_idx > TailCallTableInfo::kMaxFastFieldHasbitIndex)
     return false;
 
   // If the field needs auxiliary data, then the aux index is needed. This
   // must fit in a uint8_t.
-  if (aux_idx > std::numeric_limits<uint8_t>::max()) {
+  if (entry.aux_idx > std::numeric_limits<uint8_t>::max()) {
     return false;
   }
 
@@ -862,21 +832,6 @@ TailCallTableInfo::BuildFieldEntries(
         aux_entry.type = kEnumValidator;
         aux_entry.field = field;
       }
-
-    } else if ((field->type() == FieldDescriptor::TYPE_STRING ||
-                field->type() == FieldDescriptor::TYPE_BYTES) &&
-               options.is_string_inlined) {
-      ABSL_CHECK(!field->is_repeated());
-      // Inlined strings have an extra marker to represent their donation state.
-      int idx = options.inlined_string_index;
-      // For mini parsing, the donation state index is stored as an `offset`
-      // auxiliary entry.
-      entry.aux_idx = aux_entries.size();
-      aux_entries.push_back({kNumericOffset});
-      aux_entries.back().offset = idx;
-      // For fast table parsing, the donation state index is stored instead of
-      // the aux_idx (this will limit the range to 8 bits).
-      entry.inlined_string_idx = idx;
     }
   }
   ABSL_CHECK_EQ(subtable_aux_idx - subtable_aux_idx_begin,
@@ -930,13 +885,6 @@ TailCallTableInfo::TailCallTableInfo(
                              [](const auto& lhs, const auto& rhs) {
                                return lhs.field->number() < rhs.field->number();
                              }));
-  // If this message has any inlined string fields, store the donation state
-  // offset in the first auxiliary entry, which is kInlinedStringAuxIdx.
-  if (std::any_of(ordered_fields.begin(), ordered_fields.end(),
-                  [](auto& f) { return f.is_string_inlined; })) {
-    aux_entries.resize(kInlinedStringAuxIdx + 1);  // Allocate our slot
-    aux_entries[kInlinedStringAuxIdx] = {kInlinedStringDonatedOffset};
-  }
 
   // If this message is split, store the split pointer offset in the second
   // and third auxiliary entries, which are kSplitOffsetAuxIdx and

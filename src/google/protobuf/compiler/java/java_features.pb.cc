@@ -219,7 +219,6 @@ constexpr auto JavaFeatures_NestInFileClassFeature::InternalGenerateClassData_()
       ::google::protobuf::internal::ClassData{
           &_JavaFeatures_NestInFileClassFeature_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &JavaFeatures_NestInFileClassFeature::MergeImpl,
           ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<JavaFeatures_NestInFileClassFeature>(),
@@ -357,7 +356,6 @@ constexpr auto JavaFeatures::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_JavaFeatures_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &JavaFeatures::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<JavaFeatures>(),
