@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "upb/base/error_handler.h"
 #include "upb/base/string_view.h"
 #include "upb/wire/internal/eps_copy_input_stream.h"
 
@@ -28,6 +29,24 @@ typedef struct upb_EpsCopyInputStream upb_EpsCopyInputStream;
 // kUpb_EpsCopyInputStream_SlopBytes are available to read.
 UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
                                             const char** ptr, size_t size);
+
+// Like the previous function, but registers an error handler that will be
+// called for any errors encountered.
+UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_ErrorHandler* err);
+
+// Returns true if the stream has an error handler.
+//
+// This function is marked const, which indicates to the compiler that the
+// return value is solely a function of the pointer value.  This is not
+// entirely true if the stream is reinitialized with
+// upb_EpsCopyInputStream_Init*(), so users must not call this function in
+// any context where the stream may be reinitialized between calls to this
+// function, and the presence of an error handler changes when reinitialized.
+UPB_ATTR_CONST
+UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
+    const upb_EpsCopyInputStream* e);
 
 // Returns true if the stream is in the error state. A stream enters the error
 // state when the user reads past a limit (caught in IsDone()) or the

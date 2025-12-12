@@ -34,8 +34,8 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
     }
     case kUpb_IsDoneStatus_NeedFallback:
       // We've reached end-of-buffer.  Refresh the buffer.
-      ptr = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
-          &d->input, ptr, overrun, _upb_Decoder_BufferFlipCallback);
+      ptr = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(&d->input, ptr,
+                                                               overrun);
 
       // We successfully refreshed the buffer (otherwise the function above
       // would have thrown an error with longjmp()).  So continue with the
@@ -49,7 +49,7 @@ UPB_NOINLINE UPB_PRESERVE_NONE const char* upb_DecodeFast_MessageIsDoneFallback(
 }
 
 const char* _upb_FastDecoder_ErrorJmp2(upb_Decoder* d) {
-  UPB_LONGJMP(d->err, 1);
+  UPB_LONGJMP(d->err.buf, 1);
   return NULL;
 }
 

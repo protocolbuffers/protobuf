@@ -28,17 +28,3 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
   }
   return ptr;
 }
-
-UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
-                                         upb_DecodeStatus status) {
-  UPB_ASSERT(status != kUpb_DecodeStatus_Ok);
-  d->status = status;
-  UPB_LONGJMP(d->err, 1);
-}
-
-UPB_NOINLINE
-const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
-      e, ptr, overrun, _upb_Decoder_BufferFlipCallback);
-}

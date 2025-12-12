@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/error_handler.h"
 #include "upb/base/string_view.h"
 
 // Must be last.
@@ -38,6 +39,7 @@ struct upb_EpsCopyInputStream {
   const char* buffer_start;   // Pointer to the original input buffer
   const char* capture_start;  // If non-NULL, the start of the captured region.
   ptrdiff_t limit;            // Submessage limit relative to end
+  upb_ErrorHandler* err;      // Error handler to use when things go wrong.
   bool error;                 // To distinguish between EOF and error.
 #ifndef NDEBUG
   int guaranteed_bytes;
@@ -56,10 +58,12 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsError(
   return e->error;
 }
 
-UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size) {
+UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
+    struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_ErrorHandler* err) {
   e->buffer_start = *ptr;
   e->capture_start = NULL;
+  e->err = err;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
     if (size) memcpy(&e->patch, *ptr, size);
@@ -77,12 +81,28 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
 }
 
-typedef const char* upb_EpsCopyInputStream_BufferFlipCallback(
-    struct upb_EpsCopyInputStream* e, const char* old_end,
-    const char* new_start);
+UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size) {
+  upb_EpsCopyInputStream_InitWithErrorHandler(e, ptr, size, NULL);
+}
 
-typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+UPB_ATTR_CONST
+UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
+    const struct upb_EpsCopyInputStream* e) {
+  return e && e->err != NULL;
+}
+
+// Call this function to signal an error. If an error handler is set, it will be
+// called and the function will never return. Otherwise, returns NULL to
+// indicate an error.
+const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
+    struct upb_EpsCopyInputStream* e);
+
+UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(
+    struct upb_EpsCopyInputStream* e, const char* ptr) {
+  UPB_MAYBE_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(e), ptr != NULL);
+  return ptr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -150,9 +170,11 @@ UPB_INLINE upb_IsDoneStatus UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
   }
 }
 
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-    struct upb_EpsCopyInputStream* e, const char** ptr,
-    upb_EpsCopyInputStream_IsDoneFallbackFunc* func) {
+const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
+    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+
+UPB_INLINE bool upb_EpsCopyInputStream_IsDone(struct upb_EpsCopyInputStream* e,
+                                              const char** ptr) {
   int overrun;
   switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(e, *ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done:
@@ -162,7 +184,8 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
       UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
       return false;
     case kUpb_IsDoneStatus_NeedFallback:
-      *ptr = func(e, *ptr, overrun);
+      *ptr =
+          UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(e, *ptr, overrun);
       if (*ptr) {
         UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
       } else {
@@ -171,15 +194,6 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
       return *ptr == NULL;
   }
   UPB_UNREACHABLE();
-}
-
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun);
-
-UPB_INLINE bool upb_EpsCopyInputStream_IsDone(struct upb_EpsCopyInputStream* e,
-                                              const char** ptr) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-      e, ptr, UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback));
 }
 
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
@@ -211,7 +225,9 @@ UPB_INLINE void upb_EpsCopyInputStream_StartCapture(
 UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(
     struct upb_EpsCopyInputStream* e, const char* ptr, upb_StringView* sv) {
   UPB_ASSERT(e->capture_start != NULL);
-  if (ptr - e->end > e->limit) return false;
+  if (ptr - e->end > e->limit) {
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   const char* end = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   sv->data = e->capture_start;
   sv->size = end - sv->data;
@@ -230,7 +246,12 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
   // buffer, so we must fail if the size extends into the slop bytes.
   const char* limit =
       e->end + (e->input_delta == 0) * kUpb_EpsCopyInputStream_SlopBytes;
-  if ((ptrdiff_t)size > limit - ptr) return NULL;
+  if ((ptrdiff_t)size > limit - ptr) {
+    // For the moment, we consider this an error.  In a multi-buffer world,
+    // it could be that the requested string extends into the next buffer, which
+    // is not an error and should be recoverable.
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   const char* input = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   *sv = upb_StringView_FromDataAndSize(input, size);
   return ptr + size;
@@ -242,7 +263,12 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringEphemeral(
   UPB_ASSERT(size <= PTRDIFF_MAX);
   // Size must be within the current buffer (including slop bytes).
   const char* limit = e->end + kUpb_EpsCopyInputStream_SlopBytes;
-  if ((ptrdiff_t)size > limit - ptr) return NULL;
+  if ((ptrdiff_t)size > limit - ptr) {
+    // For the moment, we consider this an error.  In a multi-buffer world,
+    // it could be that the requested string extends into the next buffer, which
+    // is not an error and should be recoverable.
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   *sv = upb_StringView_FromDataAndSize(ptr, size);
   return ptr + size;
 }
@@ -261,7 +287,9 @@ UPB_INLINE ptrdiff_t upb_EpsCopyInputStream_PushLimit(
   e->limit = limit;
   e->limit_ptr = e->end + UPB_MIN(0, limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
-  if (UPB_UNLIKELY(delta < 0)) e->error = true;
+  if (UPB_UNLIKELY(delta < 0)) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   return delta;
 }
 
@@ -275,35 +303,6 @@ UPB_INLINE void upb_EpsCopyInputStream_PopLimit(
   e->limit += saved_delta;
   e->limit_ptr = e->end + UPB_MIN(0, e->limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
-}
-
-UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun,
-    upb_EpsCopyInputStream_BufferFlipCallback* callback) {
-  if (overrun < e->limit) {
-    // Need to copy remaining data into patch buffer.
-    UPB_ASSERT(overrun < kUpb_EpsCopyInputStream_SlopBytes);
-    const char* old_end = ptr;
-    const char* new_start = &e->patch[0] + overrun;
-    memset(e->patch + kUpb_EpsCopyInputStream_SlopBytes, 0,
-           kUpb_EpsCopyInputStream_SlopBytes);
-    memcpy(e->patch, e->end, kUpb_EpsCopyInputStream_SlopBytes);
-    ptr = new_start;
-    e->end = &e->patch[kUpb_EpsCopyInputStream_SlopBytes];
-    e->limit -= kUpb_EpsCopyInputStream_SlopBytes;
-    e->limit_ptr = e->end + e->limit;
-    UPB_ASSERT(ptr < e->limit_ptr);
-    e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    const char* ret = callback(e, old_end, new_start);
-    if (ret) {
-      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
-    }
-    return ret;
-  } else {
-    UPB_ASSERT(overrun > e->limit);
-    e->error = true;
-    return callback(e, NULL, NULL);
-  }
 }
 
 typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
