@@ -7,7 +7,7 @@
 
 """Internal rules for building upb."""
 
-load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo")
+load("//upb/bazel:upb_proto_library.bzl", "GeneratedSrcsInfo")
 
 # upb_amalgamation() rule, with file_list aspect.
 

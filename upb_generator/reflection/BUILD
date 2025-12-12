@@ -75,5 +75,5 @@ proto_lang_toolchain(
     plugin_format_flag = "--plugin=protoc-gen-upbdefs=%s",
     progress_message = "Generating upb protos",
     runtime = "//upb/reflection:generated_reflection_support",
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//upb/bazel:__pkg__"],
 )

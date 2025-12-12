@@ -116,7 +116,7 @@ register_toolchains(
 )
 
 # Proto toolchains
-register_toolchains("//bazel/private/toolchains:all")
+register_toolchains("//bazel/private/oss/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
     "3.9",

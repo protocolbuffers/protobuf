@@ -129,5 +129,5 @@ proto_lang_toolchain(
     plugin_format_flag = "--plugin=protoc-gen-upb_minitable=%s",
     progress_message = "Generating upb minitables",
     runtime = "//upb:generated_code_support",
-    visibility = ["//bazel:__pkg__"],
+    visibility = ["//upb/bazel:__pkg__"],
 )
