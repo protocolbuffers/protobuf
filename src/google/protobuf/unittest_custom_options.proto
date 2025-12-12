@@ -71,6 +71,35 @@ extend google.protobuf.MethodOptions {
   optional MethodOpt1 method_opt1 = 7890860;
 }
 
+// Custom options with feature support
+extend google.protobuf.MessageOptions {
+  optional bool removed_option = 7733026 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "Custom feature removal warning"
+  }];
+  optional bool deprecated_option = 7737036 [feature_support = {
+    edition_deprecated: EDITION_2023
+    deprecation_warning: "Custom feature deprecation warning"
+  }];
+  optional CustomOption custom_option = 7737026;
+}
+
+message CustomOption {
+  optional string removed_message_option = 7734026 [feature_support = {
+    edition_removed: EDITION_2023
+    removal_error: "Custom feature removal warning"
+  }];
+  optional string deprecated_message_option = 7734016 [feature_support = {
+    edition_deprecated: EDITION_2023
+    deprecation_warning: "Custom feature deprecation warning"
+  }];
+  message Nested {
+    extend google.protobuf.MessageOptions {
+      optional CustomOption nested_custom_option = 7732016;
+    }
+  }
+}
+
 // A test message with custom options at all possible locations (and also some
 // regular options, to make sure they interact nicely).
 message TestMessageWithCustomOptions {
