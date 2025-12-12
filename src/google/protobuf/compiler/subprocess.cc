@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstring>
 #include <string>
+#include <vector>
 
 #ifndef _WIN32
 #include <errno.h>
@@ -24,6 +25,8 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/message.h"
@@ -56,7 +59,8 @@ Subprocess::~Subprocess() {
   }
 }
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string& program, SearchMode search_mode,
+                       absl::Span<const std::string> args) {
   // Create the pipes.
   HANDLE stdin_pipe_read;
   HANDLE stdin_pipe_write;
@@ -95,14 +99,55 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     ABSL_LOG(FATAL) << "GetStdHandle: " << Win32ErrorMessage(GetLastError());
   }
 
+  // CreateProcessW takes a single command-line string, so we need to quote any
+  // argument that contains spaces, tabs, quotes, or backslashes before quotes.
+  // This is a minimal implementation that mirrors the basic CommandLineToArgvW
+  // expectations for our usage: protoc plugin names and optional wrappers.
+  auto quote_for_windows = [](absl::string_view arg) {
+    bool needs_quotes = arg.empty();
+    for (char ch : arg) {
+      if (ch == ' ' || ch == '\t' || ch == '"') {
+        needs_quotes = true;
+        break;
+      }
+    }
+    if (!needs_quotes) {
+      return std::string(arg);
+    }
+    std::string quoted;
+    quoted.reserve(arg.size() + 2);
+    quoted.push_back('"');
+    for (char ch : arg) {
+      if (ch == '"' || ch == '\\') {
+        quoted.push_back('\\');
+      }
+      quoted.push_back(ch);
+    }
+    quoted.push_back('"');
+    return quoted;
+  };
+
+  std::vector<std::string> argv;
+  argv.reserve(args.size() + 1);
+  argv.push_back(program);
+  argv.insert(argv.end(), args.begin(), args.end());
+
+  std::string joined = absl::StrJoin(
+      argv, " ", [&quote_for_windows](std::string* out, const std::string& arg) {
+        out->append(quote_for_windows(arg));
+      });
+
+  std::string command_line = joined;
+  if (search_mode == SEARCH_PATH) {
+    // SEARCH_PATH needs cmd.exe so .bat/.cmd files on PATH are picked up.
+    command_line = absl::StrCat("cmd.exe /c ", quote_for_windows(joined));
+  }
+
   // get wide string version of program as the path may contain non-ascii characters
   std::wstring wprogram;
   if (!io::win32::strings::utf8_to_wcs(program.c_str(), &wprogram)) {
     ABSL_LOG(FATAL) << "utf8_to_wcs: " << Win32ErrorMessage(GetLastError());
   }
-
-  // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
-  std::string command_line = absl::StrCat("cmd.exe /c \"", program, "\"");
 
   // get wide string version of command line as the path may contain non-ascii characters
   std::wstring wcommand_line;
@@ -119,7 +164,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 
   if (CreateProcessW(
           (search_mode == SEARCH_PATH) ? nullptr : wprogram.c_str(),
-          (search_mode == SEARCH_PATH) ? wcommand_line_copy : nullptr,
+          wcommand_line_copy,
           nullptr,  // process security attributes
           nullptr,  // thread security attributes
           TRUE,     // inherit handles?
@@ -298,7 +343,8 @@ char* portable_strdup(const char* s) {
 }
 }  // namespace
 
-void Subprocess::Start(const std::string& program, SearchMode search_mode) {
+void Subprocess::Start(const std::string& program, SearchMode search_mode,
+                       absl::Span<const std::string> args) {
   // Note that we assume that there are no other threads, thus we don't have to
   // do crazy stuff like using socket pairs or avoiding libc locks.
 
@@ -309,7 +355,17 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   ABSL_CHECK(pipe(stdin_pipe) != -1);
   ABSL_CHECK(pipe(stdout_pipe) != -1);
 
-  char* argv[2] = {portable_strdup(program.c_str()), nullptr};
+  std::vector<std::string> argv_storage;
+  argv_storage.reserve(args.size() + 1);
+  argv_storage.push_back(program);
+  argv_storage.insert(argv_storage.end(), args.begin(), args.end());
+
+  std::vector<char*> argv;
+  argv.reserve(argv_storage.size() + 1);
+  for (const auto& arg : argv_storage) {
+    argv.push_back(portable_strdup(arg.c_str()));
+  }
+  argv.push_back(nullptr);
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
@@ -326,10 +382,10 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
 
     switch (search_mode) {
       case SEARCH_PATH:
-        execvp(argv[0], argv);
+        execvp(argv[0], argv.data());
         break;
       case EXACT_NAME:
-        execv(argv[0], argv);
+        execv(argv[0], argv.data());
         break;
     }
 
@@ -348,7 +404,9 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
     // that will also be flushed by the parent.
     _exit(1);
   } else {
-    free(argv[0]);
+    for (char* arg : argv) {
+      free(arg);
+    }
 
     close(stdin_pipe[0]);
     close(stdout_pipe[1]);
