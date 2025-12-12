@@ -20,7 +20,9 @@
 #include <unistd.h>
 #endif  // !_WIN32
 #include <string>
+#include <vector>
 
+#include "absl/types/span.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -44,9 +46,9 @@ class PROTOC_EXPORT Subprocess {
     EXACT_NAME    // Program is an exact file name; don't use the PATH.
   };
 
-  // Start the subprocess.  Currently we don't provide a way to specify
-  // arguments as protoc plugins don't have any.
-  void Start(const std::string& program, SearchMode search_mode);
+  // Start the subprocess with optional arguments.
+  void Start(const std::string& program, SearchMode search_mode,
+             absl::Span<const std::string> args = {});
 
   // Serialize the input message and pipe it to the subprocess's stdin, then
   // close the pipe.  Meanwhile, read from the subprocess's stdout and parse
