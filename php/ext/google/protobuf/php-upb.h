@@ -312,6 +312,15 @@ Error, UINTPTR_MAX is undefined
 #define UPB_ASSUME(expr) assert(expr)
 #endif
 
+#if UPB_HAS_BUILTIN(__builtin_constant_p) && UPB_HAS_ATTRIBUTE(const)
+#define UPB_MAYBE_ASSUME(pred, x) \
+  if (__builtin_constant_p(pred) && pred) UPB_ASSUME(x)
+#define UPB_ATTR_CONST __attribute__((const))
+#else
+#define UPB_MAYBE_ASSUME(pred, x)
+#define UPB_ATTR_CONST
+#endif
+
 /* UPB_ASSERT(): in release mode, we use the expression without letting it be
  * evaluated.  This prevents "unused variable" warnings. */
 #ifdef NDEBUG
@@ -5979,8 +5988,8 @@ UPB_INLINE int upb_Decode_LimitDepth(uint32_t decode_options, uint32_t limit) {
 // LINT.IfChange
 typedef enum {
   kUpb_DecodeStatus_Ok = 0,
-  kUpb_DecodeStatus_Malformed = 1,    // Wire format was corrupt
-  kUpb_DecodeStatus_OutOfMemory = 2,  // Arena alloc failed
+  kUpb_DecodeStatus_OutOfMemory = 1,  // Arena alloc failed
+  kUpb_DecodeStatus_Malformed = 2,    // Wire format was corrupt
   kUpb_DecodeStatus_BadUtf8 = 3,      // String field had bad UTF-8
   kUpb_DecodeStatus_MaxDepthExceeded =
       4,  // Exceeded upb_DecodeOptions_MaxDepth
@@ -15863,6 +15872,77 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
 #include <stdint.h>
 
 
+#ifndef GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+#define GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
+#include <setjmp.h>
+
+// Must be last.
+
+// upb_ErrorHandler is a standard longjmp()-based exception handler for UPB.
+// It is used for efficient error handling in cases where longjmp() is safe to
+// use, such as in highly performance-sensitive C parsing code.
+//
+// This structure contains both a jmp_buf and an error code; the error code is
+// stored in the structure prior to calling longjmp(). This is necessary because
+// per the C standard, it is not possible to store the result of setjmp(), so
+// the error code must be passed out-of-band.
+//
+// upb_ErrorHandler is generally not C++-compatible, because longjmp() does not
+// run C++ destructors.  So any library that supports upb_ErrorHandler should
+// also support a regular return-based error handling mechanism. (Note: we
+// could conceivably extend this to take a callback, which could either call
+// longjmp() or throw a C++ exception. But since C++ exceptions are forbidden
+// by the C++ style guide, there's not likely to be a demand for this.)
+//
+// To support both cases (longjmp() or return-based status) efficiently, code
+// can be written like this:
+//
+//   UPB_ATTR_CONST bool upb_Arena_HasErrHandler(const upb_Arena* a);
+//
+//   INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+//     if (UPB_UNLIKELY(a->end - a->ptr < size)) {
+//         void* ret = upb_Arena_MallocFallback(a, size);
+//         UPB_MAYBE_ASSUME(upb_Arena_HasErrHandler(a), ret != NULL);
+//         return ret;
+//     }
+//     void* ret = a->ptr;
+//     a->ptr += size;
+//     UPB_ASSUME(ret != NULL);
+//     return ret;
+//   }
+//
+// If the optimizer can prove that an error handler is present, it can assume
+// that upb_Arena_Malloc() will not return NULL.
+
+// We need to standardize on any error code that might be thrown by an error
+// handler.
+
+typedef enum {
+  kUpb_ErrorCode_Ok = 0,
+  kUpb_ErrorCode_OutOfMemory = 1,
+  kUpb_ErrorCode_Malformed = 2,
+} upb_ErrorCode;
+
+typedef struct {
+  int code;
+  jmp_buf buf;
+} upb_ErrorHandler;
+
+UPB_INLINE void upb_ErrorHandler_Init(upb_ErrorHandler* e) {
+  e->code = kUpb_ErrorCode_Ok;
+}
+
+UPB_INLINE UPB_NORETURN void upb_ErrorHandler_ThrowError(upb_ErrorHandler* e,
+                                                         int code) {
+  UPB_ASSERT(code != kUpb_ErrorCode_Ok);
+  e->code = code;
+  UPB_LONGJMP(e->buf, 1);
+}
+
+
+#endif  // GOOGLE_UPB_UPB_BASE_ERROR_HANDLER_H__
+
 #ifndef UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 #define UPB_WIRE_INTERNAL_EPS_COPY_INPUT_STREAM_H_
 
@@ -15894,6 +15974,7 @@ struct upb_EpsCopyInputStream {
   const char* buffer_start;   // Pointer to the original input buffer
   const char* capture_start;  // If non-NULL, the start of the captured region.
   ptrdiff_t limit;            // Submessage limit relative to end
+  upb_ErrorHandler* err;      // Error handler to use when things go wrong.
   bool error;                 // To distinguish between EOF and error.
 #ifndef NDEBUG
   int guaranteed_bytes;
@@ -15912,10 +15993,12 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsError(
   return e->error;
 }
 
-UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
-                                            const char** ptr, size_t size) {
+UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
+    struct upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_ErrorHandler* err) {
   e->buffer_start = *ptr;
   e->capture_start = NULL;
+  e->err = err;
   if (size <= kUpb_EpsCopyInputStream_SlopBytes) {
     memset(&e->patch, 0, 32);
     if (size) memcpy(&e->patch, *ptr, size);
@@ -15933,12 +16016,28 @@ UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
 }
 
-typedef const char* upb_EpsCopyInputStream_BufferFlipCallback(
-    struct upb_EpsCopyInputStream* e, const char* old_end,
-    const char* new_start);
+UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
+                                            const char** ptr, size_t size) {
+  upb_EpsCopyInputStream_InitWithErrorHandler(e, ptr, size, NULL);
+}
 
-typedef const char* upb_EpsCopyInputStream_IsDoneFallbackFunc(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+UPB_ATTR_CONST
+UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
+    const struct upb_EpsCopyInputStream* e) {
+  return e && e->err != NULL;
+}
+
+// Call this function to signal an error. If an error handler is set, it will be
+// called and the function will never return. Otherwise, returns NULL to
+// indicate an error.
+const char* UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(
+    struct upb_EpsCopyInputStream* e);
+
+UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(
+    struct upb_EpsCopyInputStream* e, const char* ptr) {
+  UPB_MAYBE_ASSUME(upb_EpsCopyInputStream_HasErrorHandler(e), ptr != NULL);
+  return ptr;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -16006,9 +16105,11 @@ UPB_INLINE upb_IsDoneStatus UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
   }
 }
 
-UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-    struct upb_EpsCopyInputStream* e, const char** ptr,
-    upb_EpsCopyInputStream_IsDoneFallbackFunc* func) {
+const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
+    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun);
+
+UPB_INLINE bool upb_EpsCopyInputStream_IsDone(struct upb_EpsCopyInputStream* e,
+                                              const char** ptr) {
   int overrun;
   switch (UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(e, *ptr, &overrun)) {
     case kUpb_IsDoneStatus_Done:
@@ -16018,7 +16119,8 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
       UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
       return false;
     case kUpb_IsDoneStatus_NeedFallback:
-      *ptr = func(e, *ptr, overrun);
+      *ptr =
+          UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(e, *ptr, overrun);
       if (*ptr) {
         UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
       } else {
@@ -16027,15 +16129,6 @@ UPB_INLINE bool UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
       return *ptr == NULL;
   }
   UPB_UNREACHABLE();
-}
-
-const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun);
-
-UPB_INLINE bool upb_EpsCopyInputStream_IsDone(struct upb_EpsCopyInputStream* e,
-                                              const char** ptr) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-      e, ptr, UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackNoCallback));
 }
 
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
@@ -16067,7 +16160,9 @@ UPB_INLINE void upb_EpsCopyInputStream_StartCapture(
 UPB_INLINE bool upb_EpsCopyInputStream_EndCapture(
     struct upb_EpsCopyInputStream* e, const char* ptr, upb_StringView* sv) {
   UPB_ASSERT(e->capture_start != NULL);
-  if (ptr - e->end > e->limit) return false;
+  if (ptr - e->end > e->limit) {
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   const char* end = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   sv->data = e->capture_start;
   sv->size = end - sv->data;
@@ -16086,7 +16181,12 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringAlwaysAlias(
   // buffer, so we must fail if the size extends into the slop bytes.
   const char* limit =
       e->end + (e->input_delta == 0) * kUpb_EpsCopyInputStream_SlopBytes;
-  if ((ptrdiff_t)size > limit - ptr) return NULL;
+  if ((ptrdiff_t)size > limit - ptr) {
+    // For the moment, we consider this an error.  In a multi-buffer world,
+    // it could be that the requested string extends into the next buffer, which
+    // is not an error and should be recoverable.
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   const char* input = UPB_PRIVATE(upb_EpsCopyInputStream_GetInputPtr)(e, ptr);
   *sv = upb_StringView_FromDataAndSize(input, size);
   return ptr + size;
@@ -16098,7 +16198,12 @@ UPB_INLINE const char* upb_EpsCopyInputStream_ReadStringEphemeral(
   UPB_ASSERT(size <= PTRDIFF_MAX);
   // Size must be within the current buffer (including slop bytes).
   const char* limit = e->end + kUpb_EpsCopyInputStream_SlopBytes;
-  if ((ptrdiff_t)size > limit - ptr) return NULL;
+  if ((ptrdiff_t)size > limit - ptr) {
+    // For the moment, we consider this an error.  In a multi-buffer world,
+    // it could be that the requested string extends into the next buffer, which
+    // is not an error and should be recoverable.
+    return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   *sv = upb_StringView_FromDataAndSize(ptr, size);
   return ptr + size;
 }
@@ -16117,7 +16222,9 @@ UPB_INLINE ptrdiff_t upb_EpsCopyInputStream_PushLimit(
   e->limit = limit;
   e->limit_ptr = e->end + UPB_MIN(0, limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
-  if (UPB_UNLIKELY(delta < 0)) e->error = true;
+  if (UPB_UNLIKELY(delta < 0)) {
+    UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(e);
+  }
   return delta;
 }
 
@@ -16131,35 +16238,6 @@ UPB_INLINE void upb_EpsCopyInputStream_PopLimit(
   e->limit += saved_delta;
   e->limit_ptr = e->end + UPB_MIN(0, e->limit);
   UPB_PRIVATE(upb_EpsCopyInputStream_CheckLimit)(e);
-}
-
-UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
-    struct upb_EpsCopyInputStream* e, const char* ptr, int overrun,
-    upb_EpsCopyInputStream_BufferFlipCallback* callback) {
-  if (overrun < e->limit) {
-    // Need to copy remaining data into patch buffer.
-    UPB_ASSERT(overrun < kUpb_EpsCopyInputStream_SlopBytes);
-    const char* old_end = ptr;
-    const char* new_start = &e->patch[0] + overrun;
-    memset(e->patch + kUpb_EpsCopyInputStream_SlopBytes, 0,
-           kUpb_EpsCopyInputStream_SlopBytes);
-    memcpy(e->patch, e->end, kUpb_EpsCopyInputStream_SlopBytes);
-    ptr = new_start;
-    e->end = &e->patch[kUpb_EpsCopyInputStream_SlopBytes];
-    e->limit -= kUpb_EpsCopyInputStream_SlopBytes;
-    e->limit_ptr = e->end + e->limit;
-    UPB_ASSERT(ptr < e->limit_ptr);
-    e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    const char* ret = callback(e, old_end, new_start);
-    if (ret) {
-      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
-    }
-    return ret;
-  } else {
-    UPB_ASSERT(overrun > e->limit);
-    e->error = true;
-    return callback(e, NULL, NULL);
-  }
 }
 
 typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
@@ -16207,6 +16285,24 @@ typedef struct upb_EpsCopyInputStream upb_EpsCopyInputStream;
 // kUpb_EpsCopyInputStream_SlopBytes are available to read.
 UPB_INLINE void upb_EpsCopyInputStream_Init(upb_EpsCopyInputStream* e,
                                             const char** ptr, size_t size);
+
+// Like the previous function, but registers an error handler that will be
+// called for any errors encountered.
+UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
+    upb_EpsCopyInputStream* e, const char** ptr, size_t size,
+    upb_ErrorHandler* err);
+
+// Returns true if the stream has an error handler.
+//
+// This function is marked const, which indicates to the compiler that the
+// return value is solely a function of the pointer value.  This is not
+// entirely true if the stream is reinitialized with
+// upb_EpsCopyInputStream_Init*(), so users must not call this function in
+// any context where the stream may be reinitialized between calls to this
+// function, and the presence of an error handler changes when reinitialized.
+UPB_ATTR_CONST
+UPB_INLINE bool upb_EpsCopyInputStream_HasErrorHandler(
+    const upb_EpsCopyInputStream* e);
 
 // Returns true if the stream is in the error state. A stream enters the error
 // state when the user reads past a limit (caught in IsDone()) or the
@@ -16363,11 +16459,16 @@ extern "C" {
 #endif
 
 UPB_PRIVATE(_upb_WireReader_LongVarint)
-UPB_PRIVATE(_upb_WireReader_ReadLongVarint32)(const char* ptr, uint32_t val);
+UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(const char* ptr, uint64_t val,
+                                            upb_EpsCopyInputStream* stream);
 UPB_PRIVATE(_upb_WireReader_LongVarint)
-UPB_PRIVATE(_upb_WireReader_ReadLongVarint64)(const char* ptr, uint64_t val);
+UPB_PRIVATE(_upb_WireReader_ReadLongTag)(const char* ptr, uint64_t val,
+                                         upb_EpsCopyInputStream* stream);
+UPB_PRIVATE(_upb_WireReader_LongVarint)
+UPB_PRIVATE(_upb_WireReader_ReadLongSize)(const char* ptr, uint64_t val,
+                                          upb_EpsCopyInputStream* stream);
 
-UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
+UPB_FORCEINLINE const char* upb_WireReader_ReadVarint(
     const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream) {
   UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 10);
   uint8_t byte = *ptr;
@@ -16375,14 +16476,13 @@ UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadVarint)(
     *val = byte;
     return ptr + 1;
   }
-  UPB_PRIVATE(_upb_WireReader_LongVarint)
-  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint64)(ptr, byte);
-  if (UPB_UNLIKELY(!res.ptr)) return NULL;
+  UPB_PRIVATE(_upb_WireReader_LongVarint) res;
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint)(ptr, byte, stream);
   *val = res.val;
-  return res.ptr;
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, res.ptr);
 }
 
-UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadTag)(
+UPB_FORCEINLINE const char* upb_WireReader_ReadTag(
     const char* ptr, uint32_t* val, upb_EpsCopyInputStream* stream) {
   UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 5);
   uint8_t byte = *ptr;
@@ -16390,11 +16490,24 @@ UPB_FORCEINLINE const char* UPB_PRIVATE(_upb_WireReader_ReadTag)(
     *val = byte;
     return ptr + 1;
   }
-  UPB_PRIVATE(_upb_WireReader_LongVarint)
-  res = UPB_PRIVATE(_upb_WireReader_ReadLongVarint32)(ptr, byte);
-  if (UPB_UNLIKELY(!res.ptr)) return NULL;
+  UPB_PRIVATE(_upb_WireReader_LongVarint) res;
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongTag)(ptr, byte, stream);
   *val = res.val;
-  return res.ptr;
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, res.ptr);
+}
+
+UPB_FORCEINLINE const char* upb_WireReader_ReadSize(
+    const char* ptr, int* val, upb_EpsCopyInputStream* stream) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(stream, 5);
+  uint8_t byte = *ptr;
+  if (UPB_LIKELY((byte & 0x80) == 0)) {
+    *val = byte;
+    return ptr + 1;
+  }
+  UPB_PRIVATE(_upb_WireReader_LongVarint) res;
+  res = UPB_PRIVATE(_upb_WireReader_ReadLongSize)(ptr, byte, stream);
+  *val = res.val;
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, res.ptr);
 }
 
 UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag) {
@@ -16446,9 +16559,7 @@ extern "C" {
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_FORCEINLINE const char* upb_WireReader_ReadTag(
-    const char* ptr, uint32_t* tag, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_ReadTag)(ptr, tag, stream);
-}
+    const char* ptr, uint32_t* tag, upb_EpsCopyInputStream* stream);
 
 // Given a tag, returns the field number.
 UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
@@ -16456,10 +16567,8 @@ UPB_API_INLINE uint32_t upb_WireReader_GetFieldNumber(uint32_t tag);
 // Given a tag, returns the wire type.
 UPB_API_INLINE uint8_t upb_WireReader_GetWireType(uint32_t tag);
 
-UPB_INLINE const char* upb_WireReader_ReadVarint(
-    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_ReadVarint)(ptr, val, stream);
-}
+UPB_FORCEINLINE const char* upb_WireReader_ReadVarint(
+    const char* ptr, uint64_t* val, upb_EpsCopyInputStream* stream);
 
 // Skips data for a varint, returning a pointer past the end of the varint, or
 // NULL if there was an error in the varint data.
@@ -16480,13 +16589,7 @@ UPB_INLINE const char* upb_WireReader_SkipVarint(
 // Bounds checks must be performed before calling this function, preferably
 // by calling upb_EpsCopyInputStream_IsDone().
 UPB_INLINE const char* upb_WireReader_ReadSize(const char* ptr, int* size,
-                                               upb_EpsCopyInputStream* stream) {
-  uint64_t size64;
-  ptr = upb_WireReader_ReadVarint(ptr, &size64, stream);
-  if (!ptr || size64 >= INT32_MAX) return NULL;
-  *size = size64;
-  return ptr;
-}
+                                               upb_EpsCopyInputStream* stream);
 
 // Reads a fixed32 field, performing byte swapping if necessary.
 //
@@ -16533,7 +16636,9 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 // control over this?
 UPB_INLINE const char* upb_WireReader_SkipGroup(
     const char* ptr, uint32_t tag, upb_EpsCopyInputStream* stream) {
-  return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, 100, stream);
+  const char* ret =
+      UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, 100, stream);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(stream, ret);
 }
 
 UPB_INLINE const char* _upb_WireReader_SkipValue(
@@ -16552,7 +16657,7 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       int size;
       ptr = upb_WireReader_ReadSize(ptr, &size, stream);
       if (!ptr || !upb_EpsCopyInputStream_CheckSize(stream, ptr, size)) {
-        return NULL;
+        return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
       }
       ptr += size;
       return ptr;
@@ -16561,9 +16666,10 @@ UPB_INLINE const char* _upb_WireReader_SkipValue(
       return UPB_PRIVATE(_upb_WireReader_SkipGroup)(ptr, tag, depth_limit,
                                                     stream);
     case kUpb_WireType_EndGroup:
-      return NULL;  // Should be handled before now.
+      // Should be handled before now.
     default:
-      return NULL;  // Unknown wire type.
+      // Unknown wire type.
+      return UPB_PRIVATE(upb_EpsCopyInputStream_ReturnError)(stream);
   }
 }
 
@@ -17642,8 +17748,7 @@ typedef struct upb_Decoder {
     upb_Arena arena;
     void* foo[UPB_ARENA_SIZE_HACK];
   };
-  upb_DecodeStatus status;
-  jmp_buf err;
+  upb_ErrorHandler err;
 
 #ifndef NDEBUG
   const char* debug_tagstart;
@@ -17659,7 +17764,17 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
                                         char* trace_buf, size_t trace_size) {
-  upb_EpsCopyInputStream_Init(&d->input, &buf, size);
+  upb_ErrorHandler_Init(&d->err);
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, &d->err);
+
+  UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
+                    "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_OutOfMemory == (int)kUpb_ErrorCode_OutOfMemory,
+      "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_Malformed == (int)kUpb_ErrorCode_Malformed,
+      "mismatched error codes");
 
   if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
     // Fasttable decoder does not support this option.
@@ -17671,7 +17786,6 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->end_group = DECODE_NOGROUP;
   d->options = (uint16_t)options;
   d->missing_required = false;
-  d->status = kUpb_DecodeStatus_Ok;
   d->message_is_done = false;
 #ifndef NDEBUG
   d->trace_buf = trace_buf;
@@ -17692,7 +17806,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
 UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
                                                 upb_Arena* arena) {
   UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return d->status;
+  return (upb_DecodeStatus)d->err.code;
 }
 
 #ifndef NDEBUG
@@ -17760,27 +17874,9 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
   return (const upb_MiniTable*)(table >> 8);
 }
 
-const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun);
-
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
-
-UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-      &d->input, ptr, &_upb_Decoder_IsDoneFallback);
-}
-
-UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
-                                         upb_DecodeStatus status);
-
-UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
-    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
-  upb_Decoder* d = (upb_Decoder*)e;
-  if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  return new_start;
-}
 
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
@@ -17915,3 +18011,5 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_ARM64_ASM
 #undef UPB_ARM64_BTI_DEFAULT
 #undef UPB_DEPRECATE_AND_INLINE
+#undef UPB_MAYBE_ASSUME
+#undef UPB_ATTR_CONST
