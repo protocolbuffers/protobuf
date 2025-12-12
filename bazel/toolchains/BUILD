@@ -11,6 +11,7 @@ bzl_library(
     srcs = [
         "proto_toolchain.bzl",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "//bazel/private:proto_toolchain_rule_bzl",
         "//bazel/private:toolchain_helpers_bzl",
@@ -22,6 +23,7 @@ bzl_library(
     srcs = [
         "proto_lang_toolchain.bzl",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "//bazel/common:proto_common_bzl",
         "//bazel/private:proto_lang_toolchain_rule_bzl",
