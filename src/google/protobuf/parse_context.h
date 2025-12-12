@@ -66,6 +66,8 @@ inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* unknown);
 inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                  UnknownFieldSet* unknown);
 
+int CountVarints(const uint8_t* ptr, const uint8_t* end);
+
 
 // The basic abstraction the parser is designed for is a slight modification
 // of the ZeroCopyInputStream (ZCIS) abstraction. A ZCIS presents a serialized
@@ -1395,7 +1397,8 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     // We are not guaranteed to have enough space for worst possible case,
     // do an actual count and reserve.
     if (count < end - ptr) {
-      count = std::count_if(ptr, end, [](char c) { return (c & 0x80) == 0; });
+      count = CountVarints(reinterpret_cast<const uint8_t*>(ptr),
+                           reinterpret_cast<const uint8_t*>(end));
       // We can overread, so if the last byte has a continuation bit set,
       // we need to account for that.
       if (end[-1] & 0x80) count++;
