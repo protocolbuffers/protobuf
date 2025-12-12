@@ -206,7 +206,13 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
     return 0;
   }
 
-  state->lastTag = ReadRawVarint32(state);
+  uint64_t rawTag = (uint64_t)ReadRawVarint64(state);
+  state->lastTag = (int32_t)rawTag;
+  // Following _upb_Decoder_DecodeLongTag logic, fail if this is >32bit value.
+  if (rawTag > (uint64_t)UINT32_MAX) {
+    GPBRaiseStreamError(GPBCodedInputStreamErrorInvalidTag, @"Invalid tag");
+  }
+
   // Tags have to include a valid wireformat.
   if (!GPBWireFormatIsValidTag(state->lastTag)) {
     GPBRaiseStreamError(GPBCodedInputStreamErrorInvalidTag, @"Invalid wireformat in tag.");
