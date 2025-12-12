@@ -377,7 +377,7 @@ for use with MessageSet.
 """,
         ),
         "_authenticity_validation": attr.label(
-            default = "//bazel/private/toolchains/prebuilt:authenticity_validation",
+            default = "//bazel/private/oss/toolchains/prebuilt:authenticity_validation",
             doc = "Validate that the binary registered on the toolchain is produced by protobuf team",
         ),
         # buildifier: disable=attr-license (calling attr.license())

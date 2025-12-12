@@ -1,13 +1,6 @@
-# Copyright (c) 2009-2021, Google LLC
-# All rights reserved.
-#
-# Use of this source code is governed by a BSD-style
-# license that can be found in the LICENSE file or at
-# https://developers.google.com/open-source/licenses/bsd
-
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
-licenses(["notice"])
+package(default_applicable_licenses = ["//:license"])
 
 bzl_library(
     name = "proto_library_bzl",
@@ -15,7 +8,6 @@ bzl_library(
     visibility = ["//visibility:public"],
     deps = [
         "//bazel/private:proto_library_rule_bzl",
-        "@proto_bazel_features//:features",
     ],
 )
 
@@ -23,14 +15,18 @@ bzl_library(
     name = "cc_proto_library_bzl",
     srcs = ["cc_proto_library.bzl"],
     visibility = ["//visibility:public"],
-    deps = ["//bazel/private:bazel_cc_proto_library_bzl"],
+    deps = [
+        "//bazel/private/oss:cc_proto_library_bzl",
+    ],
 )
 
 bzl_library(
     name = "java_proto_library_bzl",
     srcs = ["java_proto_library.bzl"],
     visibility = ["//visibility:public"],
-    deps = ["//bazel/private:bazel_java_proto_library_rule_bzl"],
+    deps = [
+        "//bazel/private:java_proto_library_bzl",
+    ],
 )
 
 bzl_library(
@@ -45,23 +41,8 @@ bzl_library(
     srcs = ["py_proto_library.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        "//bazel/common:proto_common_bzl",
-        "//bazel/common:proto_info_bzl",
-        "//bazel/private:toolchain_helpers_bzl",
-        "@rules_python//python:py_info_bzl",
+        "//bazel/private/oss:py_proto_library_bzl",
     ],
-)
-
-bzl_library(
-    name = "upb_proto_library_bzl",
-    srcs = [
-        "upb_c_proto_library.bzl",
-        "upb_minitable_proto_library.bzl",
-        "upb_proto_library.bzl",
-        "upb_proto_reflection_library.bzl",
-    ],
-    visibility = ["//visibility:public"],
-    deps = ["//bazel/private:upb_proto_library_internal_bzl"],
 )
 
 bzl_library(
@@ -75,7 +56,7 @@ filegroup(
     name = "for_bazel_tests",
     testonly = True,
     srcs = [
-        "BUILD.bazel",
+        "BUILD",
         ":cc_proto_library_bzl",
         ":java_lite_proto_library_bzl",
         ":proto_library_bzl",
@@ -83,5 +64,7 @@ filegroup(
         "//bazel/common:for_bazel_tests",
         "//bazel/toolchains:for_bazel_tests",
     ],
-    visibility = ["//bazel/private:__pkg__"],
+    visibility = [
+        "//bazel/private:__pkg__",
+    ],
 )

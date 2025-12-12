@@ -9,9 +9,9 @@ load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
-load("//bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
+load("//upb/bazel:upb_minitable_proto_library.bzl", "upb_minitable_proto_library")
 load(
-    "//bazel:upb_proto_library.bzl",
+    "//upb/bazel:upb_proto_library.bzl",
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
