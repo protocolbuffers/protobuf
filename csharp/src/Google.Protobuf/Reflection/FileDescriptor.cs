@@ -471,8 +471,15 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// Converts the given descriptor binary data into FileDescriptor objects.
-        /// Note: reflection using the returned FileDescriptors is not currently supported.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The returned file descriptors support reflection via <see cref="DynamicMessage"/>.
+        /// Use <see cref="MessageDescriptor.Parser"/> to parse messages - it will automatically
+        /// return <see cref="DynamicMessage"/> instances for dynamically-loaded descriptors.
+        /// Field accessors will also work with <see cref="DynamicMessage"/> instances.
+        /// </para>
+        /// </remarks>
         /// <param name="descriptorData">The binary file descriptor proto data. Must not be null, and any
         /// dependencies must come before the descriptor which depends on them. (If A depends on B, and B
         /// depends on C, then the descriptors must be presented in the order C, B, A.) This is compatible
@@ -518,8 +525,15 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// Converts the given descriptor binary data into FileDescriptor objects.
-        /// Note: reflection using the returned FileDescriptors is not currently supported.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The returned file descriptors support reflection via <see cref="DynamicMessage"/>.
+        /// Use <see cref="MessageDescriptor.Parser"/> to parse messages - it will automatically
+        /// return <see cref="DynamicMessage"/> instances for dynamically-loaded descriptors.
+        /// Field accessors will also work with <see cref="DynamicMessage"/> instances.
+        /// </para>
+        /// </remarks>
         /// <param name="descriptorData">The binary file descriptor proto data. Must not be null, and any
         /// dependencies must come before the descriptor which depends on them. (If A depends on B, and B
         /// depends on C, then the descriptors must be presented in the order C, B, A.) This is compatible
