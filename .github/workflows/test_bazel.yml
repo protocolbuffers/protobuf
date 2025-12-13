@@ -29,7 +29,12 @@ jobs:
         runner: [ ubuntu, windows, macos ]
         bazelversion: [ '7.6.1', '8.0.0' ]
         bzlmod: [ true, false ]
-        toolchain_resolution: [ "", "--incompatible_enable_proto_toolchain_resolution=true" ]
+        toolchain_resolution:
+          # Default flags, uses from-source protoc
+          - ""
+          # still uses from-source protoc unless 
+          # --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc is set
+          - "--incompatible_enable_proto_toolchain_resolution=true"
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
     steps:
@@ -72,3 +77,14 @@ jobs:
           bash: >
             cd examples;
             bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
+
+      - name: Prebuilt test
+        if: ${{ matrix.bzlmod && (!matrix.continuous-only || inputs.continuous-run) }}
+        uses: protocolbuffers/protobuf-ci/bazel@v5
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: examples-prebuilt-${{ matrix.bazelversion }}-${{ matrix.toolchain_resolution }}
+          version: ${{ matrix.bazelversion }}
+          bash: >
+            cd examples/example_without_cc_toolchain;
+            bazel build //... $BAZEL_FLAGS --enable_bzlmod=true ${{ matrix.toolchain_resolution }};
