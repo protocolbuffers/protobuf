@@ -61,7 +61,7 @@ class FieldDescriptor
 
     public function getJsonName()
     {
-        return $this->json_name;
+        return isset($this->json_name) ? $this->json_name : '';
     }
 
     public function setSetter($setter)
