@@ -113,6 +113,7 @@ def _proto_library_impl(ctx):
             default_runfiles = ctx.runfiles(),  # empty
             data_runfiles = data_runfiles,
         ),
+        OutputGroupInfo(_validation = ctx.attr._authenticity_validation[OutputGroupInfo]._validation),
     ]
 
 def _process_srcs(ctx, srcs, import_prefix, strip_import_prefix):
@@ -374,6 +375,10 @@ lang_proto_library that is not in one of the listed packages.""",
 List of files containing extension declarations. This attribute is only allowed
 for use with MessageSet.
 """,
+        ),
+        "_authenticity_validation": attr.label(
+            default = "//bazel/private/toolchains/prebuilt:authenticity_validation",
+            doc = "Validate that the binary registered on the toolchain is produced by protobuf team",
         ),
         # buildifier: disable=attr-license (calling attr.license())
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
