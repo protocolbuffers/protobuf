@@ -220,10 +220,7 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
 // arena concurrently. Destruction is not thread-safe and the destructing
 // thread must synchronize with users of the arena first.
 class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
-#ifdef __clang__
-    // TODO: Enable this for GCC.
     ABSL_ATTRIBUTE_WARN_UNUSED
-#endif  // __clang__
     Arena final {
  public:
   // Default constructor with sensible default options, tuned for average
