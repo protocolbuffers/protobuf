@@ -255,7 +255,7 @@ class SooRep {
     }
   }
 
-  void swap(SooRep& other) {
+  void swap(SooRep& other) noexcept {
     resolver_.SwapTags(other.resolver_);
     internal::memswap<sizeof(SooRep) - offsetof(SooRep, size_)>(
         reinterpret_cast<char*>(&this->size_),
