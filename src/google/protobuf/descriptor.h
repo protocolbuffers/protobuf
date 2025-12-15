@@ -1137,11 +1137,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   int legacy_proto_ctype() const { return legacy_proto_ctype_; }
   bool has_legacy_proto_ctype() const;
 
-  // Returns true if this field was syntactically written with "optional" in the
-  // .proto file. Excludes singular proto3 fields that do not have a label.
-  ABSL_DEPRECATED("Use has_presence() instead.")
-  bool has_optional_keyword() const;
-
   // Get the merged features that apply to this field.  These are specified in
   // the .proto file through the feature options in the message definition.
   // Allowed features are defined by Features in descriptor.proto, along with
