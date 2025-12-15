@@ -312,6 +312,7 @@ TEST(NoFieldPresenceTest, CopyTwiceDefaultStringFieldTest) {
 
   dst = src;
   dst = src;
+  (void)dst;
 }
 
 TEST(NoFieldPresenceTest, CopyTwiceAllocatedStringFieldTest) {
@@ -325,6 +326,7 @@ TEST(NoFieldPresenceTest, CopyTwiceAllocatedStringFieldTest) {
 
   dst = src;
   dst = src;
+  (void)dst;
 }
 
 TEST(NoFieldPresenceTest, CopyTwiceEmptyStringFieldTest) {
@@ -339,6 +341,7 @@ TEST(NoFieldPresenceTest, CopyTwiceEmptyStringFieldTest) {
 
   dst = src;
   dst = src;
+  (void)dst;
 }
 
 class NoFieldPresenceSwapFieldTest : public testing::Test {

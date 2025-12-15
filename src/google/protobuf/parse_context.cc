@@ -698,7 +698,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 1, unknown_);
     char buffer[8];
-    io::CodedOutputStream::WriteLittleEndian64ToArray(
+    // TODO: Remove this suppression.
+    (void)io::CodedOutputStream::WriteLittleEndian64ToArray(
         value, reinterpret_cast<uint8_t*>(buffer));
     unknown_->append(buffer, 8);
   }
@@ -724,7 +725,8 @@ class UnknownFieldLiteParserHelper {
     if (unknown_ == nullptr) return;
     WriteVarint(num * 8 + 5, unknown_);
     char buffer[4];
-    io::CodedOutputStream::WriteLittleEndian32ToArray(
+    // TODO: Remove this suppression.
+    (void)io::CodedOutputStream::WriteLittleEndian32ToArray(
         value, reinterpret_cast<uint8_t*>(buffer));
     unknown_->append(buffer, 4);
   }

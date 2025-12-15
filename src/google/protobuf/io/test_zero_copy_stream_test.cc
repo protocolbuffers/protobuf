@@ -62,8 +62,8 @@ TEST(TestZeroCopyInputStreamTest, NextChecksPreconditions) {
       std::make_unique<TestZeroCopyInputStream>(std::vector<std::string>{});
   const void* data;
   int size;
-  EXPECT_DEATH(stream->Next(nullptr, &size), "data must not be null");
-  EXPECT_DEATH(stream->Next(&data, nullptr), "size must not be null");
+  EXPECT_DEATH((void)stream->Next(nullptr, &size), "data must not be null");
+  EXPECT_DEATH((void)stream->Next(&data, nullptr), "size must not be null");
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
@@ -119,7 +119,7 @@ TEST(TestZeroCopyInputStreamTest, BackUpChecksPreconditions) {
                "The last call was not a successful Next\\(\\)");
   EXPECT_THAT(CallNext(*stream), Optional(Eq("C")));
   EXPECT_THAT(CallNext(*stream), Optional(Eq("D")));
-  stream->Skip(1);
+  (void)stream->Skip(1);
   EXPECT_DEATH(stream->BackUp(0),
                "The last call was not a successful Next\\(\\)");
   EXPECT_THAT(CallNext(*stream), Optional(Eq("FG")));
@@ -168,7 +168,7 @@ TEST(TestZeroCopyInputStreamTest, SkipWorks) {
 TEST(TestZeroCopyInputStreamTest, SkipChecksPreconditions) {
   std::unique_ptr<ZeroCopyInputStream> stream =
       std::make_unique<TestZeroCopyInputStream>(std::vector<std::string>{});
-  EXPECT_DEATH(stream->Skip(-1), "count must not be negative");
+  EXPECT_DEATH((void)stream->Skip(-1), "count must not be negative");
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
@@ -207,8 +207,8 @@ TEST(TestZeroCopyOutputStreamTest, NextChecksPreconditions) {
       std::make_unique<TestZeroCopyOutputStream>(empty);
   void* data;
   int size;
-  EXPECT_DEATH(stream->Next(nullptr, &size), "data must not be null");
-  EXPECT_DEATH(stream->Next(&data, nullptr), "size must not be null");
+  EXPECT_DEATH((void)stream->Next(nullptr, &size), "data must not be null");
+  EXPECT_DEATH((void)stream->Next(&data, nullptr), "size must not be null");
 }
 #endif  // GTEST_HAS_DEATH_TEST
 
