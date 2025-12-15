@@ -1808,7 +1808,6 @@ TEST(ExtensionSetTest, MoveExtensionWithDynamicDescriptor) {
 }
 
 
-
 TEST_P(FindExtensionTest,
        FindExtensionInfoFromFieldNumber_FindExistingExtension) {
   ExtensionInfo extension_info;
