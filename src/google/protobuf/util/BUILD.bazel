@@ -14,7 +14,7 @@ cc_library(
     hdrs = ["delimited_message_util.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//:protobuf_lite",
         "//src/google/protobuf:port",
@@ -48,7 +48,7 @@ cc_library(
         "message_differencer.h",
     ],
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port",
@@ -117,7 +117,7 @@ cc_library(
     hdrs = ["field_mask_util.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:field_mask_cc_proto",
@@ -163,7 +163,7 @@ cc_library(
     hdrs = ["json_util.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/json"],
 )
 
@@ -216,7 +216,7 @@ cc_library(
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:any_cc_proto",
