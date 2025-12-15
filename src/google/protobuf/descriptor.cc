@@ -6281,8 +6281,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     }
   }
 
-  static const int kMaximumPackageLength = 511;
-  if (proto.package().size() > kMaximumPackageLength) {
+  if (proto.package().size() > internal::NameLimits::kPackageName) {
     AddError(proto.package(), proto, DescriptorPool::ErrorCollector::NAME,
              "Package name is too long");
     return nullptr;
@@ -6840,6 +6839,10 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
+    if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
+      AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Reserved name too long.");
+    }
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
@@ -7545,6 +7548,10 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
+    if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
+      AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Reserved name too long.");
+    }
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
@@ -7617,6 +7624,11 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   full_name.reserve(scope_len + proto.name().size());
   full_name.append(parent->full_name().data(), scope_len);
   full_name.append(proto.name());
+
+  if (full_name.size() > std::numeric_limits<uint16_t>::max()) {
+    AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
+             "Name too long.");
+  }
 
   result->all_names_ =
       alloc.AllocateStrings(proto.name(), std::move(full_name));

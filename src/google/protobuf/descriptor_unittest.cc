@@ -1387,6 +1387,217 @@ TEST_F(DescriptorTest, AbslStringifyWorks) {
 }
 
 
+static void ExtendStringTo(std::string* str, int size) {
+  ABSL_CHECK_LE(str->size(), size);
+  str->replace(0, 0, size - str->size(), 'x');
+  ABSL_CHECK_EQ(str->size(), size);
+}
+
+static void TestBuildFileOnNameLimits(const FileDescriptorProto& proto,
+                                      std::string* str, int limit,
+                                      absl::string_view error) {
+  // Builds correctly.
+  {
+    ExtendStringTo(str, limit);
+    DescriptorPool pool;
+    MockErrorCollector error_collector;
+    EXPECT_NE(pool.BuildFileCollectingErrors(proto, &error_collector), nullptr);
+    EXPECT_EQ(error_collector.text_, "");
+  }
+
+  ExtendStringTo(str, limit + 1);
+  DescriptorPool pool;
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(proto, &error_collector), nullptr);
+  // Fails with the expected error.
+  EXPECT_THAT(error_collector.text_, HasSubstr(error));
+}
+
+static FileDescriptorProto MakeFile(absl::string_view in) {
+  FileDescriptorProto proto;
+  ABSL_CHECK(TextFormat::ParseFromString(in, &proto));
+  return proto;
+}
+
+TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
+  auto limits = internal::NameLimits();
+  FileDescriptorProto proto;
+
+  // This limit comes from how AllocateNames is implemented and the math for
+  // that leaks below.
+  // Ideally we would have hard and predictable limits on each kind of symbol
+  // instead.
+  constexpr int kNamesImplLimit = std::numeric_limits<uint16_t>::max();
+
+  // FileDescriptor::package
+  proto = MakeFile(R"pb(name: "foo.proto" package: "Package")pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_package(), limits.kPackageName,
+                            "Package name is too long");
+
+  // Descriptor::name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        message_type { name: "Message" })pb");
+  TestBuildFileOnNameLimits(proto,
+                            proto.mutable_message_type(0)->mutable_name(),
+                            kNamesImplLimit, "Name too long");
+  // Descriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type { name: "Message" })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_message_type(0)->mutable_name(),
+      kNamesImplLimit - proto.package().size() - 1, "Name too long");
+  // Descriptor::reserved_name
+  proto = MakeFile(
+      R"pb(name: "foo.proto"
+           package: "Package"
+           message_type { name: "Message" reserved_name: "Reserved" })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_message_type(0)->mutable_reserved_name(0),
+      limits.kReservedName, "Reserved name too long");
+  // No FieldDescriptor::name, because that is always within a message.
+  // FieldDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          field { name: 'field' number: 1 type: TYPE_INT64 }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_message_type(0)->mutable_field(0)->mutable_name(),
+      kNamesImplLimit - proto.message_type(0).name().size() -
+          proto.package().size() - 2,
+      "Name too long");
+  // FieldDescriptor::json_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          field {
+                            name: 'field'
+                            number: 1
+                            type: TYPE_INT64
+                            json_name: "other"
+                          }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto,
+      proto.mutable_message_type(0)->mutable_field(0)->mutable_json_name(),
+      // the math here leaks the implementation details of AllocateFieldNames.
+      kNamesImplLimit - 3 * (1 + proto.message_type(0).field(0).name().size()) -
+          proto.message_type(0).name().size() - proto.package().size() - 3,
+      "Name too long");
+  // FieldDescriptor::name (extension)
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        message_type {
+                          name: "Message"
+                          extension_range { start: 1 end: 2 }
+                        }
+                        extension {
+                          name: "extension"
+                          number: 1
+                          type: TYPE_INT32
+                          extendee: "Message"
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_extension(0)->mutable_name(),
+                            kNamesImplLimit - 1, "Name too long");
+  // FieldDescriptor::full_name (extension)
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          extension_range { start: 1 end: 2 }
+                        }
+                        extension {
+                          name: "extension"
+                          number: 1
+                          type: TYPE_INT32
+                          extendee: "Message"
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_extension(0)->mutable_name(),
+                            kNamesImplLimit - proto.package().size() - 1,
+                            "Name too long");
+  // No OneofDescriptor::name, because that is always within a message.
+  // OneofDescriptor::full_name
+  proto = MakeFile(
+      R"pb(name: "foo.proto"
+           message_type {
+             name: "Message"
+             oneof_decl { name: "oneof" }
+             field { name: 'field' number: 1 type: TYPE_INT64 oneof_index: 0 }
+           }
+      )pb");
+  TestBuildFileOnNameLimits(
+      proto,
+      proto.mutable_message_type(0)->mutable_oneof_decl(0)->mutable_name(),
+      kNamesImplLimit - proto.message_type(0).name().size() - 1,
+      "Name too long");
+  // EnumDescriptor::name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_enum_type(0)->mutable_name(),
+                            kNamesImplLimit, "Name too long");
+  // EnumDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_enum_type(0)->mutable_name(),
+                            kNamesImplLimit - proto.package().size() - 1,
+                            "Name too long");
+  // EnumDescriptor::reserved_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                          reserved_name: "reserved"
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_enum_type(0)->mutable_reserved_name(0),
+      limits.kReservedName, "Reserved name too long");
+  // EnumValueDescriptor::name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_enum_type(0)->mutable_value(0)->mutable_name(),
+      kNamesImplLimit, "Name too long");
+  // EnumValueDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_enum_type(0)->mutable_value(0)->mutable_name(),
+      kNamesImplLimit - proto.package().size() - 1, "Name too long");
+  // ServiceDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        service { name: "Service" })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_service(0)->mutable_name(),
+                            kNamesImplLimit - proto.package().size() - 1,
+                            "Name too long");
+  // MethodDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        message_type { name: "M" }
+                        service {
+                          name: "Service"
+                          method { name: "A" input_type: "M" output_type: "M" }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_service(0)->mutable_method(0)->mutable_name(),
+      kNamesImplLimit - proto.service(0).name().size() - 1, "Name too long");
+}
+
 // ===================================================================
 
 // Test simple flat messages and fields.
