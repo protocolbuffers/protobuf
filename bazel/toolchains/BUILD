@@ -11,6 +11,9 @@ bzl_library(
     srcs = [
         "proto_toolchain.bzl",
     ],
+    visibility = [
+        "//java/com/google/devtools/build/docgen:__subpackages__",
+    ],
     deps = [
         "//bazel/private:proto_toolchain_rule_bzl",
         "//bazel/private:toolchain_helpers_bzl",
@@ -21,6 +24,9 @@ bzl_library(
     name = "proto_lang_toolchain_bzl",
     srcs = [
         "proto_lang_toolchain.bzl",
+    ],
+    visibility = [
+        "//java/com/google/devtools/build/docgen:__subpackages__",
     ],
     deps = [
         "//bazel/common:proto_common_bzl",
