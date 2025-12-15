@@ -11,6 +11,8 @@
 
 #include "google/protobuf/test_util_lite.h"
 
+#include <cstdint>
+
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "google/protobuf/unittest_import_lite.pb.h"
@@ -609,34 +611,36 @@ void TestUtilLite::ExpectRepeatedFieldsModified(
 
 // -------------------------------------------------------------------
 
-void TestUtilLite::SetPackedFields(unittest::TestPackedTypesLite* message) {
-  message->add_packed_int32(601);
-  message->add_packed_int64(602);
-  message->add_packed_uint32(603);
-  message->add_packed_uint64(604);
-  message->add_packed_sint32(605);
-  message->add_packed_sint64(606);
-  message->add_packed_fixed32(607);
-  message->add_packed_fixed64(608);
-  message->add_packed_sfixed32(609);
-  message->add_packed_sfixed64(610);
-  message->add_packed_float(611);
-  message->add_packed_double(612);
+void TestUtilLite::SetPackedFields(unittest::TestPackedTypesLite* message,
+                                   bool use_large_values) {
+  const uint64_t kMask = use_large_values ? 0xFFFFFFFFFFFFFFFF : 0x7F;
+  message->add_packed_int32(601 & kMask);
+  message->add_packed_int64(602 & kMask);
+  message->add_packed_uint32(603 & kMask);
+  message->add_packed_uint64(604 & kMask);
+  message->add_packed_sint32(605 & kMask);
+  message->add_packed_sint64(606 & kMask);
+  message->add_packed_fixed32(607 & kMask);
+  message->add_packed_fixed64(608 & kMask);
+  message->add_packed_sfixed32(609 & kMask);
+  message->add_packed_sfixed64(610 & kMask);
+  message->add_packed_float(611 & kMask);
+  message->add_packed_double(612 & kMask);
   message->add_packed_bool(true);
   message->add_packed_enum(unittest::FOREIGN_LITE_BAR);
   // add a second one of each field
-  message->add_packed_int32(701);
-  message->add_packed_int64(702);
-  message->add_packed_uint32(703);
-  message->add_packed_uint64(704);
-  message->add_packed_sint32(705);
-  message->add_packed_sint64(706);
-  message->add_packed_fixed32(707);
-  message->add_packed_fixed64(708);
-  message->add_packed_sfixed32(709);
-  message->add_packed_sfixed64(710);
-  message->add_packed_float(711);
-  message->add_packed_double(712);
+  message->add_packed_int32(701 & kMask);
+  message->add_packed_int64(702 & kMask);
+  message->add_packed_uint32(703 & kMask);
+  message->add_packed_uint64(704 & kMask);
+  message->add_packed_sint32(705 & kMask);
+  message->add_packed_sint64(706 & kMask);
+  message->add_packed_fixed32(707 & kMask);
+  message->add_packed_fixed64(708 & kMask);
+  message->add_packed_sfixed32(709 & kMask);
+  message->add_packed_sfixed64(710 & kMask);
+  message->add_packed_float(711 & kMask);
+  message->add_packed_double(712 & kMask);
   message->add_packed_bool(false);
   message->add_packed_enum(unittest::FOREIGN_LITE_BAZ);
 }
