@@ -1621,6 +1621,10 @@ bool Parser::ParseOption(Message* options,
           return false;
         }
         break;
+
+      case io::Tokenizer::TYPE_CHARACTER:
+        ABSL_LOG(FATAL) << "Unexpected token type.";
+        return false;
     }
   }
 

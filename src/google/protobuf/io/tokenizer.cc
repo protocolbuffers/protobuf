@@ -72,6 +72,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -238,6 +239,13 @@ bool Tokenizer::report_newlines() const { return report_newlines_; }
 void Tokenizer::set_report_newlines(bool report) {
   report_newlines_ = report;
   report_whitespace_ |= report;  // enable report_whitespace if necessary
+}
+
+bool Tokenizer::report_single_characters() const {
+  return report_single_characters_;
+}
+void Tokenizer::set_report_single_characters(bool report) {
+  report_single_characters_ = report;
 }
 
 // -------------------------------------------------------------------
@@ -606,6 +614,46 @@ bool Tokenizer::TryConsumeNewline() {
 
 // -------------------------------------------------------------------
 
+// #include <cstdlib>
+
+// void printToken(const Tokenizer::Token& token) {
+//   return;
+//   if (std::getenv("TEST_SIZE") == nullptr) return;
+
+//   std::string type_name;
+//   switch (token.type) {
+//     case Tokenizer::TYPE_END:
+//       type_name = "END";
+//       break;
+//     case Tokenizer::TYPE_NEWLINE:
+//       type_name = "NEWLINE";
+//       break;
+//     case Tokenizer::TYPE_WHITESPACE:
+//       type_name = "WHITESPACE";
+//       break;
+//     case Tokenizer::TYPE_SYMBOL:
+//       type_name = "SYMBOL";
+//       break;
+//     case Tokenizer::TYPE_IDENTIFIER:
+//       type_name = "IDENTIFIER";
+//       break;
+//     case Tokenizer::TYPE_STRING:
+//       type_name = "STRING";
+//       break;
+//     case Tokenizer::TYPE_INTEGER:
+//       type_name = "INTEGER";
+//       break;
+//     case Tokenizer::TYPE_FLOAT:
+//       type_name = "FLOAT";
+//       break;
+//     default:
+//       type_name = "UNKNOWN";
+//       break;
+//   }
+
+//   LOG(INFO) << absl::StrFormat("token: %12s \"%s\"", type_name, token.text);
+// }
+
 bool Tokenizer::Next() {
   previous_ = current_;
 
@@ -614,6 +662,7 @@ bool Tokenizer::Next() {
     bool report_token = TryConsumeWhitespace() || TryConsumeNewline();
     EndToken();
     if (report_token) {
+      // printToken(current_);
       return true;
     }
 
@@ -625,6 +674,7 @@ bool Tokenizer::Next() {
         ConsumeBlockComment(nullptr);
         continue;
       case SLASH_NOT_COMMENT:
+        // printToken(current_);
         return true;
       case NO_COMMENT:
         break;
@@ -650,7 +700,10 @@ bool Tokenizer::Next() {
       // Reading some sort of token.
       StartToken();
 
-      if (TryConsumeOne<Letter>()) {
+      if (report_single_characters_) {
+        current_.type = TYPE_CHARACTER;
+        NextChar();
+      } else if (TryConsumeOne<Letter>()) {
         ConsumeZeroOrMore<Alphanumeric>();
         current_.type = TYPE_IDENTIFIER;
       } else if (TryConsume('0')) {
@@ -694,6 +747,7 @@ bool Tokenizer::Next() {
       }
 
       EndToken();
+      // printToken(current_);
       return true;
     }
   }
@@ -704,6 +758,7 @@ bool Tokenizer::Next() {
   current_.line = line_;
   current_.column = column_;
   current_.end_column = column_;
+  // printToken(current_);
   return false;
 }
 
@@ -1234,14 +1289,14 @@ void Tokenizer::ParseStringAppend(const std::string& text,
 }
 
 template <typename CharacterClass>
-static bool AllInClass(const std::string& s) {
+static bool AllInClass(absl::string_view s) {
   for (const char character : s) {
     if (!CharacterClass::InClass(character)) return false;
   }
   return true;
 }
 
-bool Tokenizer::IsIdentifier(const std::string& text) {
+bool Tokenizer::IsIdentifier(absl::string_view text) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
   if (text.empty()) return false;
   if (!Letter::InClass(text.at(0))) return false;

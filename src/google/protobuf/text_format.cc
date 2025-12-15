@@ -27,7 +27,9 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/base/no_destructor.h"
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
@@ -38,6 +40,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
@@ -251,10 +254,6 @@ const FieldDescriptor* DefaultFinderFindExtensionByNumber(
 const Descriptor* DefaultFinderFindAnyType(const Message& message,
                                            const std::string& prefix,
                                            const std::string& name) {
-  if (prefix != internal::kTypeGoogleApisComPrefix &&
-      prefix != internal::kTypeGoogleProdComPrefix) {
-    return nullptr;
-  }
   return message.GetDescriptor()->file()->pool()->FindMessageTypeByName(name);
 }
 }  // namespace
@@ -486,12 +485,12 @@ class TextFormat::Parser::ParserImpl {
     const FieldDescriptor* any_value_field;
     if (internal::GetAnyFieldDescriptors(*message, &any_type_url_field,
                                          &any_value_field) &&
-        TryConsume("[")) {
+        LookingAt("[")) {
       std::string full_type_name, prefix;
-      DO(ConsumeAnyTypeUrl(&full_type_name, &prefix));
+      DO(ConsumeAnyTypeUrlOrFullTypeName(&full_type_name, &prefix,
+                                         /*prefix_required=*/true));
       std::string prefix_and_full_type_name =
           absl::StrCat(prefix, full_type_name);
-      DO(ConsumeBeforeWhitespace("]"));
       TryConsumeWhitespace();
       // ':' is optional between message labels and values.
       if (TryConsumeBeforeWhitespace(":")) {
@@ -707,10 +706,12 @@ class TextFormat::Parser::ParserImpl {
   // Skips the next field including the field's name and value.
   bool SkipField() {
     std::string field_name;
-    if (TryConsume("[")) {
+    if (LookingAt("[")) {
       // Extension name or type URL.
-      DO(ConsumeTypeUrlOrFullTypeName(&field_name));
-      DO(ConsumeBeforeWhitespace("]"));
+      std::string full_type_name, prefix;
+      DO(ConsumeAnyTypeUrlOrFullTypeName(&full_type_name, &prefix,
+                                         /*prefix_required=*/false));
+      field_name = absl::StrCat(prefix, full_type_name);
     } else {
       DO(ConsumeIdentifierBeforeWhitespace(&field_name));
     }
@@ -1084,25 +1085,6 @@ class TextFormat::Parser::ParserImpl {
     return true;
   }
 
-  bool ConsumeTypeUrlOrFullTypeName(std::string* name) {
-    DO(ConsumeIdentifier(name));
-    while (true) {
-      std::string connector;
-      if (TryConsume(".")) {
-        connector = ".";
-      } else if (TryConsume("/")) {
-        connector = "/";
-      } else {
-        break;
-      }
-      std::string part;
-      DO(ConsumeIdentifier(&part));
-      *name += connector;
-      *name += part;
-    }
-    return true;
-  }
-
   // Consumes a string and saves its value in the text parameter.
   // Returns false if the token is not of type STRING.
   bool ConsumeString(std::string* text) {
@@ -1253,20 +1235,108 @@ class TextFormat::Parser::ParserImpl {
 
   // Consumes Any::type_url value, of form "type.googleapis.com/full.type.Name"
   // or "type.googleprod.com/full.type.Name"
-  bool ConsumeAnyTypeUrl(std::string* full_type_name, std::string* prefix) {
-    // TODO Extend Consume() to consume multiple tokens at once, so that
-    // this code can be written as just DO(Consume(kGoogleApisTypePrefix)).
-    DO(ConsumeIdentifier(prefix));
-    while (TryConsume(".")) {
-      std::string url;
-      DO(ConsumeIdentifier(&url));
-      absl::StrAppend(prefix, ".", url);
+  // Mode 1: type name or type URL
+  // Mode 2: type URL only
+  bool ConsumeAnyTypeUrlOrFullTypeName(std::string* full_type_name,
+                                       std::string* prefix,
+                                       bool prefix_required) {
+    // Collect all characters between [ and ] using the single-character mode of
+    // the tokenizer.
+    tokenizer_.set_report_single_characters(true);
+    Consume("[");
+
+    std::string text;
+    int last_slash_pos = -1;
+
+    while (true) {
+      char url_char;
+      if (TryConsumeUrlChar(&url_char)) {
+        text.push_back(url_char);
+        continue;
+      } else if (TryConsume("/")) {
+        last_slash_pos = text.size();
+        text.push_back('/');
+        continue;
+      }
+      tokenizer_.set_report_single_characters(false);
+      DO(ConsumeBeforeWhitespace("]"));
+      break;
     }
-    DO(Consume("/"));
-    absl::StrAppend(prefix, "/");
-    DO(ConsumeFullTypeName(full_type_name));
+
+    if (last_slash_pos == -1) {
+      // No slash found, this must be a type name.
+      if (prefix_required) {
+        ReportError("Expected \"/\" in type URL");
+        return false;
+      }
+      *prefix = "";
+      *full_type_name = text;
+    } else {
+      // Found a slash, this must be a type URL.
+      *prefix = text.substr(0, last_slash_pos + 1);
+      *full_type_name = text.substr(last_slash_pos + 1);
+
+      // Validate prefix
+      if (*prefix == "/") {
+        ReportError("Type URL prefix is empty");
+        return false;
+      }
+
+      if (prefix->at(0) == '/') {
+        ReportError("Type URL starts with \"/\"");
+        return false;
+      }
+
+      // Validate percent encodings in prefix: Every '%' needs to be followed by
+      // two hex characters.
+      for (size_t i = 0; i < prefix->size(); ++i) {
+        if (prefix->at(i) == '%' &&
+            (i + 2 >= prefix->size() || !IsHexCharacter(prefix->at(i + 1)) ||
+             !IsHexCharacter(prefix->at(i + 2)))) {
+          ReportError(absl::StrFormat("Invalid percent encode, got: \"%s\"",
+                                      prefix->substr(i, 3)));
+          return false;
+        }
+      }
+    }
+
+    // Validate type name: Must be non-empty and consist of valid identifiers
+    // separated by '.'.
+    for (absl::string_view identifier : absl::StrSplit(*full_type_name, '.')) {
+      if (!tokenizer_.IsIdentifier(identifier)) {
+        ReportError(absl::StrFormat(
+            "Invalid identifier in type name, got: \"%s\"", identifier));
+        return false;
+      }
+    }
 
     return true;
+  }
+
+  bool TryConsumeUrlChar(char* url_char) {
+    static const absl::NoDestructor<absl::flat_hash_set<char>> kUrlExtraChars(
+        {'-', '.', '~', '_', '!', '$', '&', '(', ')', '*', '+', ',', ';', '=',
+         '%'});
+
+    if (!LookingAtType(io::Tokenizer::TYPE_CHARACTER)) {
+      return false;
+    }
+
+    char c = tokenizer_.current().text[0];
+
+    if (('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
+        ('0' <= c && c <= '9') || kUrlExtraChars->contains(c)) {
+      *url_char = c;
+      tokenizer_.Next();
+      return true;
+    }
+
+    return false;
+  }
+
+  bool IsHexCharacter(char c) {
+    return ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') ||
+           ('A' <= c && c <= 'F');
   }
 
   // A helper function for reconstructing Any::value. Consumes a text of

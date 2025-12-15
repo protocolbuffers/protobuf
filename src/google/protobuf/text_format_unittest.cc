@@ -2478,21 +2478,25 @@ TEST_F(TextFormatParserTest, ParseSkippedFieldWithAdditionalWhiteSpaces) {
   proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
   parser.AllowUnknownField(true);
-  EXPECT_TRUE(
-      parser.ParseFromString("optional_int32: 321\n"
-                             "unknown_field1   : \t 12345\n"
-                             "[somewhere.unknown_extension1]   {\n"
-                             "  unknown_field2 \t :   12345\n"
-                             "}\n"
-                             "[somewhere.unknown_extension2]    : \t {\n"
-                             "  unknown_field3     \t :   12345\n"
-                             "  [somewhere.unknown_extension3]    \t :   {\n"
-                             "    unknown_field4:   10\n"
-                             "  }\n"
-                             "  [somewhere.unknown_extension4] \t {\n"
-                             "  }\n"
-                             "}\n",
-                             &proto));
+  EXPECT_TRUE(parser.ParseFromString(
+      "optional_int32: 321\n"
+      "unknown_field1   : \t 12345\n"
+      "[somewhere.unknown_extension1]   {\n"
+      "  unknown_field2 \t :   12345\n"
+      "  unknown_any1 { [domain.com/1+-&!%2b/proto2_unittest.TestAllTypes] {\n"
+      "      unknown_field3: 12345\n"
+      "    }\n"
+      "  }\n"
+      "}\n"
+      "[somewhere.unknown_extension2]    : \t {\n"
+      "  unknown_field4     \t :   12345\n"
+      "  [somewhere.unknown_extension3]    \t :   {\n"
+      "    unknown_field5:   10\n"
+      "  }\n"
+      "  [somewhere.unknown_extension4] \t {\n"
+      "  }\n"
+      "}\n",
+      &proto));
   std::string text;
   TextFormat::Printer printer;
   ASSERT_TRUE(printer.PrintToString(proto, &text));
