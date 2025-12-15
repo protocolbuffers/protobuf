@@ -1741,26 +1741,26 @@ class Proto2Tests(TextFormatBase):
 
     # Fail if invalid Any message type url inside unknown extensions.
     message = any_test_pb2.TestAny()
-    text = ('any_value {\n'
-            '  [type.googleapis.com.invalid/google.protobuf.internal.TestAny] {\n'
-            '    [unknown_extension] {\n'
-            '      str: "string"\n'
-            '      any_value {\n'
-            '        [type.googleapis.com/proto2_unittest.OneString] {\n'
-            '          data: "string"\n'
-            '        }\n'
-            '      }\n'
-            '    }\n'
-            '  }\n'
-            '}\n'
-            'int32_value: 123')
-    self.assertRaisesRegex(
+    text = (
+        'any_value {\n'
+        '  [invalid@prefix/google.protobuf.internal.TestAny] {\n'
+        '    [unknown_extension] {\n'
+        '      str: "string"\n'
+        '      any_value {\n'
+        '        [type.googleapis.com/proto2_unittest.OneString] {\n'
+        '          data: "string"\n'
+        '        }\n'
+        '      }\n'
+        '    }\n'
+        '  }\n'
+        '}\n'
+        'int32_value: 123'
+    )
+    with self.assertRaisesRegex(
         text_format.ParseError,
-        '[type.googleapis.com.invalid/google.protobuf.internal.TestAny]',
-        text_format.Parse,
-        text,
-        message,
-        allow_unknown_extension=True)
+        '[invalid@prefix/google.protobuf.internal.TestAny]',
+    ):
+      text_format.Parse(text, message, allow_unknown_extension=True)
 
   def testParseBadIdentifier(self):
     message = unittest_pb2.TestAllTypes()
@@ -1885,7 +1885,7 @@ class Proto2Tests(TextFormatBase):
     self.assertEqual(5, message.map_int32_foreign_message[111].c)
 
 
-class Proto3Tests(unittest.TestCase):
+class Proto3Tests(parameterized.TestCase):
 
   def testPrintMessageExpandAny(self):
     packed_message = unittest_pb2.OneString()
@@ -1893,13 +1893,15 @@ class Proto3Tests(unittest.TestCase):
     message = any_test_pb2.TestAny()
     message.any_value.Pack(packed_message)
     self.assertEqual(
-        text_format.MessageToString(message,
-                                    descriptor_pool=descriptor_pool.Default()),
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()
+        ),
         'any_value {\n'
         '  [type.googleapis.com/proto2_unittest.OneString] {\n'
         '    data: "string"\n'
         '  }\n'
-        '}\n')
+        '}\n',
+    )
 
   def testPrintStructInAny(self):
     packed_message = struct_pb2.Struct()
@@ -2084,17 +2086,205 @@ class Proto3Tests(unittest.TestCase):
     message.any_value.Unpack(packed_message)
     self.assertEqual('string', packed_message.data)
 
-  def testMergeAlternativeUrl(self):
+  @parameterized.parameters(
+      {
+          'any_name': '[domain.com/proto2_unittest.OneString]',
+          'type_url': 'domain.com/proto2_unittest.OneString',
+      },
+      # Multiple slashes in prefix
+      {
+          'any_name': '[domain.com/path/proto2_unittest.OneString]',
+          'type_url': 'domain.com/path/proto2_unittest.OneString',
+      },
+      {
+          'any_name': '[domain.com///path//proto2_unittest.OneString]',
+          'type_url': 'domain.com///path//proto2_unittest.OneString',
+      },
+      # Special characters in prefix
+      {
+          'any_name': '[domain.com/-.~_!$&()*+,;=/proto2_unittest.OneString]',
+          'type_url': 'domain.com/-.~_!$&()*+,;=/proto2_unittest.OneString',
+      },
+      # Percent escapes in prefix
+      {
+          'any_name': (
+              '[percent.escapes/%0a%1B%2c%3D%4e%F5%A6%b7%C8%f9/proto2_unittest.OneString]'
+          ),
+          'type_url': (
+              'percent.escapes/%0a%1B%2c%3D%4e%F5%A6%b7%C8%f9/proto2_unittest.OneString'
+          ),
+      },
+      # Whitespace and comments (should be ignored between [])
+      {
+          'any_name': '[ domain . com / proto2_ unittest. One String ]',
+          'type_url': 'domain.com/proto2_unittest.OneString',
+      },
+      {
+          'any_name': (
+              '[ \t\n\r\f\v domain.com/pr \t\n\r\f\v oto2_unittest.OneString'
+              ' \t\n\r\f\v ]'
+          ),
+          'type_url': 'domain.com/proto2_unittest.OneString',
+      },
+      {
+          'any_name': (
+              '[ # comment\n domain.com/pr # comment\n oto2_unittest.One String'
+              ' # comment\n ]'
+          ),
+          'type_url': 'domain.com/proto2_unittest.OneString',
+      },
+  )
+  def testMergeExpandedAnyTypeUrls(self, *, any_name, type_url):
     message = any_test_pb2.TestAny()
-    text = ('any_value {\n'
-            '  [type.otherapi.com/proto2_unittest.OneString] {\n'
-            '    data: "string"\n'
-            '  }\n'
-            '}\n')
+    text = f'any_value {{\n {any_name} {{\n data: "string"\n }}\n }}'
+
     text_format.Merge(text, message)
-    packed_message = unittest_pb2.OneString()
-    self.assertEqual('type.otherapi.com/proto2_unittest.OneString',
-                     message.any_value.type_url)
+    self.assertEqual(type_url, message.any_value.type_url)
+
+  @parameterized.parameters(
+      # General error cases
+      {
+          'any_name': '[',
+          'error_msg': '2:4 : \' [ {\': Expected "]"',
+      },
+      {
+          'any_name': '[]',
+          'error_msg': '2:5 : \' [] {\': Type URL does not contain "/"',
+      },
+      {
+          'any_name': '[.type]',
+          'error_msg': '2:10 : \' [.type] {\': Type URL does not contain "/"',
+      },
+      # Prefix error cases
+      {
+          'any_name': '[/]',
+          'error_msg': "2:6 : ' [/] {': Type URL prefix is empty.",
+      },
+      {
+          'any_name': '[/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:31 : ' [/proto2_unittest.OneString] {': "
+              'Type URL prefix is empty'
+          ),
+      },
+      {
+          'any_name': '[/domain.com/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:42 : ' [/domain.com/proto2_unittest.OneString] {': "
+              'Type URL prefix starts with "/"'
+          ),
+      },
+      # Special characters in prefix
+      {
+          'any_name': '[domain.com/?/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:14 : ' [domain.com/?/proto2_unittest.OneString] {':"
+              ' Expected "]"'
+          ),
+      },
+      {
+          'any_name': '[domain.com/:/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:14 : ' [domain.com/:/proto2_unittest.OneString] {':"
+              ' Expected "]"'
+          ),
+      },
+      {
+          'any_name': '[domain.com/@/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:14 : ' [domain.com/@/proto2_unittest.OneString] {': "
+              'Expected "]".'
+          ),
+      },
+      {
+          'any_name': '[domain.com/@/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:14 : ' [domain.com/@/proto2_unittest.OneString] {':"
+              ' Expected "]"'
+          ),
+      },
+      # Percent escapes in prefix
+      {
+          'any_name': '[percent.escapes/%/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:48 : ' [percent.escapes/%/proto2_unittest.OneString] {':"
+              ' Invalid percent escape, got "%".'
+          ),
+      },
+      {
+          'any_name': '[percent.escapes/%G/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:49 : ' [percent.escapes/%G/proto2_unittest.OneString] {':"
+              ' Invalid percent escape, got "%G".'
+          ),
+      },
+      {
+          'any_name': '[percent.escapes/%aG/proto2_unittest.OneString]',
+          'error_msg': (
+              "2:50 : ' [percent.escapes/%aG/proto2_unittest.OneString] {':"
+              ' Invalid percent escape, got "%aG".'
+          ),
+      },
+      # Invalid type names
+      {
+          'any_name': '[domain.com/]',
+          'error_msg': (
+              '2:16 : \' [domain.com/] {\': Expected type name, got "".'
+          ),
+      },
+      {
+          'any_name': '[domain.com/.]',
+          'error_msg': (
+              '2:17 : \' [domain.com/.] {\': Expected type name, got ".".'
+          ),
+      },
+      {
+          'any_name': '[domain.com/.OneString]',
+          'error_msg': (
+              "2:26 : ' [domain.com/.OneString] {': "
+              'Expected type name, got ".OneString".'
+          ),
+      },
+      {
+          'any_name': '[domain.com/proto2_unittest.]',
+          'error_msg': (
+              "2:32 : ' [domain.com/proto2_unittest.] {': "
+              'Expected type name, got "proto2_unittest.".'
+          ),
+      },
+      {
+          'any_name': '[domain.com/5type]',
+          'error_msg': (
+              "2:21 : ' [domain.com/5type] {': "
+              'Expected type name, got "5type".'
+          ),
+      },
+      {
+          'any_name': '[domain.com/!]',
+          'error_msg': (
+              '2:17 : \' [domain.com/!] {\': Expected type name, got "!".'
+          ),
+      },
+      {
+          'any_name': '[domain.com/my_?_type]',
+          'error_msg': '2:17 : \' [domain.com/my_?_type] {\': Expected "]".',
+      },
+      {
+          'any_name': '[domain.com/my.:type]',
+          'error_msg': '2:17 : \' [domain.com/my.:type] {\': Expected "]".',
+      },
+      {
+          'any_name': '[domain.com/my.type@]',
+          'error_msg': '2:21 : \' [domain.com/my.type@] {\': Expected "]".',
+      },
+  )
+  def testMergeFailsOnInvalidExpandedAnyTypeUrls(self, *, any_name, error_msg):
+    message = any_test_pb2.TestAny()
+    text = 'any_value {\n %s {\n data: "string"\n }\n }' % any_name
+
+    with self.assertRaises(text_format.ParseError) as e:
+      text_format.Merge(text, message)
+    self.assertIn(error_msg, str(e.exception))
 
   def testMergeExpandedAnyDescriptorPoolMissingType(self):
     message = any_test_pb2.TestAny()

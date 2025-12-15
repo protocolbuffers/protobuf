@@ -44,6 +44,8 @@ _INTEGER_CHECKERS = (type_checkers.Uint32ValueChecker(),
 _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
 _FLOAT_OCTAL_PREFIX = re.compile('-?0[0-9]+')
+_PERCENT_ENCODING = re.compile(r'^%[\da-fA-F][\da-fA-F]$')
+_TYPE_NAME = re.compile(r'^[^\d\W]\w*(\.[^\d\W]\w*)*$')
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
@@ -322,8 +324,10 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   # pylint: disable=g-import-not-at-top
   if descriptor_pool is None:
     from google.protobuf import descriptor_pool as pool_mod
+
     descriptor_pool = pool_mod.Default()
   from google.protobuf import message_factory
+
   try:
     message_descriptor = descriptor_pool.FindMessageTypeByName(type_name)
   except KeyError:
@@ -850,10 +854,12 @@ class _Parser(object):
     if (message_descriptor.full_name == _ANY_FULL_TYPE_NAME and
         tokenizer.TryConsume('[')):
       type_url_prefix, packed_type_name = self._ConsumeAnyTypeUrl(tokenizer)
-      tokenizer.Consume(']')
       tokenizer.TryConsume(':')
-      self._DetectSilentMarker(tokenizer, message_descriptor.full_name,
-                               type_url_prefix + '/' + packed_type_name)
+      self._DetectSilentMarker(
+          tokenizer,
+          message_descriptor.full_name,
+          type_url_prefix + '/' + packed_type_name,
+      )
       if tokenizer.TryConsume('<'):
         expanded_any_end_token = '>'
       else:
@@ -874,9 +880,11 @@ class _Parser(object):
         self._MergeField(tokenizer, expanded_any_sub_message)
       deterministic = False
 
-      message.Pack(expanded_any_sub_message,
-                   type_url_prefix=type_url_prefix,
-                   deterministic=deterministic)
+      message.Pack(
+          expanded_any_sub_message,
+          type_url_prefix=type_url_prefix + '/',
+          deterministic=deterministic,
+      )
       return
 
     if tokenizer.TryConsume('['):
@@ -988,19 +996,59 @@ class _Parser(object):
       self._LogSilentMarker(immediate_message_type, field_name)
 
   def _ConsumeAnyTypeUrl(self, tokenizer):
-    """Consumes a google.protobuf.Any type URL and returns the type name."""
-    # Consume "type.googleapis.com/".
-    prefix = [tokenizer.ConsumeIdentifier()]
-    tokenizer.Consume('.')
-    prefix.append(tokenizer.ConsumeIdentifier())
-    tokenizer.Consume('.')
-    prefix.append(tokenizer.ConsumeIdentifier())
-    tokenizer.Consume('/')
-    # Consume the fully-qualified type name.
-    name = [tokenizer.ConsumeIdentifier()]
-    while tokenizer.TryConsume('.'):
-      name.append(tokenizer.ConsumeIdentifier())
-    return '.'.join(prefix), '.'.join(name)
+    """Consumes a google.protobuf.Any type URL.
+
+    Assumes the caller has already consumed the opening [ and consumes up to the
+    closing ].
+
+    Args:
+      tokenizer: A tokenizer to parse the type URL.
+
+    Returns:
+      A tuple of type URL prefix (without trailing slash) and type name.
+    """
+    # Consume all tokens with valid URL characters until ]. Whitespace and
+    # comments are ignored/skipped by the Tokenizer.
+    tokens = []
+    last_slash = -1
+    while True:
+      try:
+        tokens.append(tokenizer.ConsumeUrlChars())
+        continue
+      except ParseError:
+        pass
+      if tokenizer.TryConsume('/'):
+        last_slash = len(tokens)
+        tokens.append('/')
+      else:
+        tokenizer.Consume(']')
+        break
+
+    if last_slash == -1:
+      raise tokenizer.ParseError('Type URL does not contain "/".')
+
+    prefix = ''.join(tokens[:last_slash])
+    name = ''.join(tokens[last_slash + 1 :])
+
+    if not prefix:
+      raise tokenizer.ParseError('Type URL prefix is empty.')
+    if prefix.startswith('/'):
+      raise tokenizer.ParseError('Type URL prefix starts with "/".')
+
+    # Check for invalid percent encodings. '%' needs to be followed by exactly
+    # two valid hexadecimal digits.
+    for i, char in enumerate(prefix):
+      if char == '%' and not _PERCENT_ENCODING.match(prefix[i : i + 3]):
+        raise tokenizer.ParseError(
+            f'Invalid percent escape, got "{prefix[i : i + 3]}".'
+        )
+
+    # After the last slash we expect a valid type name, not just any sequence of
+    # URL characters.
+    if not _TYPE_NAME.match(name):
+      raise tokenizer.ParseError('Expected type name, got "%s".' % name)
+
+    return prefix, name
 
   def _MergeMessageField(self, tokenizer, message, field):
     """Merges a single scalar field into a message.
@@ -1261,17 +1309,26 @@ class Tokenizer(object):
   _WHITESPACE = re.compile(r'\s+')
   _COMMENT = re.compile(r'(\s*#.*$)', re.MULTILINE)
   _WHITESPACE_OR_COMMENT = re.compile(r'(\s|(#.*$))+', re.MULTILINE)
-  _TOKEN = re.compile('|'.join([
-      r'[a-zA-Z_][0-9a-zA-Z_+-]*',  # an identifier
-      r'([0-9+-]|(\.[0-9]))[0-9a-zA-Z_.+-]*',  # a number
-  ] + [  # quoted str for each quote mark
-      # Avoid backtracking! https://stackoverflow.com/a/844267
-      r'{qt}[^{qt}\n\\]*((\\.)+[^{qt}\n\\]*)*({qt}|\\?$)'.format(qt=mark)
-      for mark in _QUOTES
-  ]))
+  _TOKEN = re.compile(
+      '|'.join(
+          [
+              r'[a-zA-Z_][0-9a-zA-Z_+-]*',  # an identifier
+              r'([0-9+-]|(\.[0-9]))[0-9a-zA-Z_.+-]*',  # a number
+          ]
+          + [  # quoted str for each quote mark
+              # Avoid backtracking! https://stackoverflow.com/a/844267
+              r'{qt}[^{qt}\n\\]*((\\.)+[^{qt}\n\\]*)*({qt}|\\?$)'.format(
+                  qt=mark
+              )
+              for mark in _QUOTES
+          ]
+      )
+  )
 
   _IDENTIFIER = re.compile(r'[^\d\W]\w*')
   _IDENTIFIER_OR_NUMBER = re.compile(r'\w+')
+  # Accepted URL characters (excluding "/")
+  _URL_CHARS = re.compile(r'^[0-9a-zA-Z-.~_ !$&()*+,;=%]+$')
 
   def __init__(self, lines, skip_comments=True):
     self._position = 0
@@ -1550,6 +1607,31 @@ class Tokenizer(object):
       raise self.ParseError(str(e))
     self.NextToken()
     return result
+
+  def ConsumeUrlChars(self):
+    """Consumes a token containing valid URL characters.
+
+    Excludes '/' so that it can be treated specially as a delimiter.
+
+    Returns:
+      The next token containing one or more URL characters.
+
+    Raises:
+      ParseError: If the next token contains unaccepted URL characters.
+    """
+    if not self._URL_CHARS.match(self.token):
+      raise self.ParseError('Expected URL character(s), got "%s"' % self.token)
+
+    result = self.token
+    self.NextToken()
+    return result
+
+  def TryConsumeUrlChars(self):
+    try:
+      self.ConsumeUrlChars()
+      return True
+    except ParseError:
+      return False
 
   def ParseErrorPreviousToken(self, message):
     """Creates and *returns* a ParseError for the previously read token.
