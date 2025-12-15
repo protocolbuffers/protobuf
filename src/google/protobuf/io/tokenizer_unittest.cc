@@ -14,9 +14,13 @@
 #include <limits.h>
 #include <math.h>
 
+#include <cstddef>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
+#include <gmock/gmock.h>
+#include "absl/base/macros.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -59,7 +63,7 @@ namespace {
   };                                                              \
                                                                   \
   TEST_F(FIXTURE##_##NAME##_DD, NAME) {                           \
-    for (int i = 0; i < ABSL_ARRAYSIZE(CASES); i++) {             \
+    for (size_t i = 0; i < ABSL_ARRAYSIZE(CASES); i++) {          \
       SCOPED_TRACE(testing::Message()                             \
                    << #CASES " case #" << i << ": " << CASES[i]); \
       DoSingleCase(CASES[i]);                                     \
@@ -94,12 +98,51 @@ namespace {
 
 // -------------------------------------------------------------------
 
+// A simple equals matcher for Tokenizer::Token.
+MATCHER_P(EqualsToken, token,
+          absl::StrFormat(
+              "%s equal to Token{TokenType(%s), \"%s\", %d, %d, %d}",
+              negation ? "isn't" : "is", testing::PrintToString(token.type),
+              token.text, token.line, token.column, token.end_column)) {
+  if (arg.type != token.type || arg.text != token.text ||
+      arg.line != token.line || arg.column != token.column ||
+      arg.end_column != token.end_column) {
+    *result_listener << absl::StrFormat(
+        "which is Token{TokenType(%s), \"%s\", %d, %d, %d}",
+        testing::PrintToString(arg.type), arg.text, arg.line, arg.column,
+        arg.end_column);
+    return false;
+  }
+
+  return true;
+}
+
+// Advances the tokenizer to the next token and verifies that the next token
+// matches the given, expected one. Also verifies that the previous token is
+// updated correctly.
+void ExpectNextToken(Tokenizer& tokenizer,
+                     const Tokenizer::Token& expected_token) {
+  Tokenizer::Token previous = tokenizer.current();
+
+  // Next() should only return false when it hits the end token.
+  if (expected_token.type != Tokenizer::TYPE_END) {
+    ASSERT_TRUE(tokenizer.Next());
+  } else {
+    ASSERT_FALSE(tokenizer.Next());
+  }
+
+  EXPECT_THAT(tokenizer.previous(), EqualsToken(previous));
+  EXPECT_THAT(tokenizer.current(), EqualsToken(expected_token));
+}
+
+// -------------------------------------------------------------------
+
 // An input stream that is basically like an ArrayInputStream but sometimes
 // returns empty buffers, just to throw us off.
 class TestInputStream : public ZeroCopyInputStream {
  public:
-  TestInputStream(const void* data, int size, int block_size)
-      : array_stream_(data, size, block_size), counter_(0) {}
+  TestInputStream(const void* data, size_t size, int block_size)
+      : array_stream_(data, static_cast<int>(size), block_size), counter_(0) {}
   ~TestInputStream() override = default;
 
   // implements ZeroCopyInputStream ----------------------------------
@@ -449,44 +492,18 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   Tokenizer tokenizer(&input, &error_collector);
 
   // Before Next() is called, the initial token should always be TYPE_START.
-  EXPECT_EQ(Tokenizer::TYPE_START, tokenizer.current().type);
-  EXPECT_EQ("", tokenizer.current().text);
-  EXPECT_EQ(0, tokenizer.current().line);
-  EXPECT_EQ(0, tokenizer.current().column);
-  EXPECT_EQ(0, tokenizer.current().end_column);
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
 
   // Loop through all expected tokens.
-  int i = 0;
-  Tokenizer::Token token;
+  size_t i = 0;
+  Tokenizer::Token expected_token;
   do {
-    token = kMultiTokenCases_case.output[i++];
-
-    SCOPED_TRACE(testing::Message() << "Token #" << i << ": " << token.text);
-
-    Tokenizer::Token previous = tokenizer.current();
-
-    // Next() should only return false when it hits the end token.
-    if (token.type != Tokenizer::TYPE_END) {
-      ASSERT_TRUE(tokenizer.Next());
-    } else {
-      ASSERT_FALSE(tokenizer.Next());
-    }
-
-    // Check that the previous token is set correctly.
-    EXPECT_EQ(previous.type, tokenizer.previous().type);
-    EXPECT_EQ(previous.text, tokenizer.previous().text);
-    EXPECT_EQ(previous.line, tokenizer.previous().line);
-    EXPECT_EQ(previous.column, tokenizer.previous().column);
-    EXPECT_EQ(previous.end_column, tokenizer.previous().end_column);
-
-    // Check that the token matches the expected one.
-    EXPECT_EQ(token.type, tokenizer.current().type);
-    EXPECT_EQ(token.text, tokenizer.current().text);
-    EXPECT_EQ(token.line, tokenizer.current().line);
-    EXPECT_EQ(token.column, tokenizer.current().column);
-    EXPECT_EQ(token.end_column, tokenizer.current().end_column);
-
-  } while (token.type != Tokenizer::TYPE_END);
+    expected_token = kMultiTokenCases_case.output[i++];
+    SCOPED_TRACE(testing::Message()
+                 << "Token #" << i << ": " << expected_token.text);
+    ExpectNextToken(tokenizer, expected_token);
+  } while (expected_token.type != Tokenizer::TYPE_END);
 
   // There should be no errors.
   EXPECT_TRUE(error_collector.text_.empty());
@@ -524,44 +541,118 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
   tokenizer.set_report_newlines(true);
 
   // Before Next() is called, the initial token should always be TYPE_START.
-  EXPECT_EQ(Tokenizer::TYPE_START, tokenizer.current().type);
-  EXPECT_EQ("", tokenizer.current().text);
-  EXPECT_EQ(0, tokenizer.current().line);
-  EXPECT_EQ(0, tokenizer.current().column);
-  EXPECT_EQ(0, tokenizer.current().end_column);
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
 
   // Loop through all expected tokens.
-  int i = 0;
-  Tokenizer::Token token;
+  size_t i = 0;
+  Tokenizer::Token expected_token;
   do {
-    token = kMultiWhitespaceTokenCases_case.output[i++];
+    expected_token = kMultiWhitespaceTokenCases_case.output[i++];
+    SCOPED_TRACE(testing::Message()
+                 << "Token #" << i << ": " << expected_token.text);
+    ExpectNextToken(tokenizer, expected_token);
+  } while (expected_token.type != Tokenizer::TYPE_END);
 
-    SCOPED_TRACE(testing::Message() << "Token #" << i << ": " << token.text);
+  // There should be no errors.
+  EXPECT_TRUE(error_collector.text_.empty());
+}
 
-    Tokenizer::Token previous = tokenizer.current();
+TEST_1D(TokenizerTest, SingleCharacterMode, kBlockSizes) {
+  std::string input_string =
+      "foo\n1 1.2\t+\r'bar' foo\n1 1.2\t+\r'bar'\v!&=* foo\n1 1.2\t+\r'bar'";
 
-    // Next() should only return false when it hits the end token.
-    if (token.type != Tokenizer::TYPE_END) {
-      ASSERT_TRUE(tokenizer.Next());
-    } else {
-      ASSERT_FALSE(tokenizer.Next());
-    }
+  // Set up the tokenizer.
+  TestInputStream input(input_string.data(), input_string.size(),
+                        kBlockSizes_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
 
-    // Check that the previous token is set correctly.
-    EXPECT_EQ(previous.type, tokenizer.previous().type);
-    EXPECT_EQ(previous.text, tokenizer.previous().text);
-    EXPECT_EQ(previous.line, tokenizer.previous().line);
-    EXPECT_EQ(previous.column, tokenizer.previous().column);
-    EXPECT_EQ(previous.end_column, tokenizer.previous().end_column);
+  // Before Next() is called, the initial token should always be TYPE_START.
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
 
-    // Check that the token matches the expected one.
-    EXPECT_EQ(token.type, tokenizer.current().type);
-    EXPECT_EQ(token.text, tokenizer.current().text);
-    EXPECT_EQ(token.line, tokenizer.current().line);
-    EXPECT_EQ(token.column, tokenizer.current().column);
-    EXPECT_EQ(token.end_column, tokenizer.current().end_column);
+  // Single-character mode is disabled by default, input should be tokenized
+  // into corresponding multi-character tokens.
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_INTEGER, "1", 1, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_FLOAT, "1.2", 1, 2, 5});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "+", 1, 8, 9});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_STRING, "'bar'", 1, 10, 15});
 
-  } while (token.type != Tokenizer::TYPE_END);
+  // Switch to single-character mode. All characters should be reported as
+  // single character tokens while whitespace and newlines should be skipped
+  // since whitespace and newline reporting is disabled by default.
+  tokenizer.set_report_single_characters(true);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "f", 1, 16, 17});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "o", 1, 17, 18});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "o", 1, 18, 19});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "1", 2, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "1", 2, 2, 3});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, ".", 2, 3, 4});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "2", 2, 4, 5});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "+", 2, 8, 9});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "'", 2, 10, 11});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "b", 2, 11, 12});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "a", 2, 12, 13});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "r", 2, 13, 14});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "'", 2, 14, 15});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "!", 2, 16, 17});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "&", 2, 17, 18});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "=", 2, 18, 19});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "*", 2, 19, 20});
+
+  // Disable single-character mode again, input should be tokenized into
+  // corresponding multi-character tokens..
+  tokenizer.set_report_single_characters(false);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_IDENTIFIER, "foo", 2, 21, 24});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_INTEGER, "1", 3, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_FLOAT, "1.2", 3, 2, 5});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_SYMBOL, "+", 3, 8, 9});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_STRING, "'bar'", 3, 10, 15});
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_END, "", 3, 15, 15});
+
+  // There should be no errors.
+  EXPECT_TRUE(error_collector.text_.empty());
+}
+
+TEST_1D(TokenizerTest, SingleCharacterModeWithWhitespaceReporting,
+        kBlockSizes) {
+  std::string input_string = "A \nB \nC \nD";
+
+  // Set up the tokenizer.
+  TestInputStream input(input_string.data(), input_string.size(),
+                        kBlockSizes_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
+
+  tokenizer.set_report_single_characters(true);
+
+  // Before Next() is called, the initial token should always be TYPE_START.
+  EXPECT_THAT(tokenizer.current(), EqualsToken(Tokenizer::Token{
+                                       Tokenizer::TYPE_START, "", 0, 0, 0}));
+
+  // Whitespace and newline reporting are disabled by default.
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "A", 0, 0, 1});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "B", 1, 0, 1});
+
+  // Enable whitespace reporting only.
+  tokenizer.set_report_whitespace(true);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_WHITESPACE, " \n", 1, 1, 0});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "C", 2, 0, 1});
+
+  // Enable whitespace and newline reporting.
+  tokenizer.set_report_newlines(true);
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_WHITESPACE, " ", 2, 1, 2});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_NEWLINE, "\n", 2, 2, 0});
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_CHARACTER, "D", 3, 0, 1});
+
+  ExpectNextToken(tokenizer, {Tokenizer::TYPE_END, "", 3, 1, 1});
 
   // There should be no errors.
   EXPECT_TRUE(error_collector.text_.empty());
