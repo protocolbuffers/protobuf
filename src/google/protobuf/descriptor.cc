@@ -9279,7 +9279,7 @@ bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
 }
 
 constexpr absl::string_view kNamingStyleOptOutMessage =
-    " (feature.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
+    " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
 
 }  // namespace
