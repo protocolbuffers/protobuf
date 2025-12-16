@@ -931,11 +931,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Name of the C++ type.
   absl::string_view cpp_type_name() const;
 
-  // This should never be called directly. Use is_required() and is_repeated()
-  // helper methods instead.
-  ABSL_DEPRECATED("Use is_required() or is_repeated() instead.")
-  Label label() const;  // optional/required/repeated
-
 #ifndef SWIG
   CppStringType cpp_string_type() const;  // The C++ string type of this field.
 #endif
@@ -2923,16 +2918,6 @@ inline int FieldDescriptor::index_in_oneof() const {
 inline const Descriptor* FieldDescriptor::extension_scope() const {
   ABSL_CHECK(is_extension_);
   return scope_.extension_scope;
-}
-
-inline FieldDescriptor::Label FieldDescriptor::label() const {
-  if (is_required()) {
-    return LABEL_REQUIRED;
-  } else if (is_repeated()) {
-    return LABEL_REPEATED;
-  } else {
-    return LABEL_OPTIONAL;
-  }
 }
 
 inline FieldDescriptor::Type FieldDescriptor::type() const {

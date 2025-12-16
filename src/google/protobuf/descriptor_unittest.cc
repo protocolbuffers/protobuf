@@ -1218,11 +1218,6 @@ TEST_F(DescriptorTest, FieldType) {
 }
 
 TEST_F(DescriptorTest, FieldLabel) {
-  EXPECT_EQ(FieldDescriptor::LABEL_REQUIRED, foo_->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, bar_->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_REPEATED, baz_->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, moo_->label());
-
   EXPECT_TRUE(foo_->is_required());
   EXPECT_FALSE((!foo_->is_repeated() && !foo_->is_required()));
   EXPECT_FALSE(foo_->is_repeated());
@@ -2548,10 +2543,12 @@ TEST_F(ExtensionDescriptorTest, Extensions) {
   EXPECT_EQ(moo_, bar_->extension(0)->message_type());
   EXPECT_EQ(moo_, bar_->extension(1)->message_type());
 
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, foo_file_->extension(0)->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_REPEATED, foo_file_->extension(1)->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, bar_->extension(0)->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_REPEATED, bar_->extension(1)->label());
+  EXPECT_FALSE(foo_file_->extension(0)->is_required());
+  EXPECT_FALSE(foo_file_->extension(0)->is_repeated());
+  EXPECT_TRUE(foo_file_->extension(1)->is_repeated());
+  EXPECT_FALSE(bar_->extension(0)->is_required());
+  EXPECT_FALSE(bar_->extension(0)->is_repeated());
+  EXPECT_TRUE(bar_->extension(1)->is_repeated());
 
   EXPECT_EQ(foo_, foo_file_->extension(0)->containing_type());
   EXPECT_EQ(foo_, foo_file_->extension(1)->containing_type());
@@ -9637,7 +9634,6 @@ TEST_F(FeaturesTest, RestoresLabelRoundTrip) {
     }
   )pb");
   const FieldDescriptor* field = file->message_type(0)->field(0);
-  ASSERT_EQ(field->label(), FieldDescriptor::LABEL_REQUIRED);
   ASSERT_TRUE(field->is_required());
 
   FileDescriptorProto proto;
