@@ -125,4 +125,4 @@ jobs:
           bazel: >-
             test ${{ matrix.targets }} ${{ matrix.flags }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
-            --macos_minimum_os=11.0
+            --macos_minimum_os=12.0
