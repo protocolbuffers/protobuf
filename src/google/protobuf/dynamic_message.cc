@@ -690,7 +690,7 @@ void DynamicMessage::operator delete(DynamicMessage* msg,
 DynamicMessage::~DynamicMessage() {
   const Descriptor* descriptor = type_info_->class_data.descriptor;
 
-  _internal_metadata_.Delete<UnknownFieldSet>();
+  _internal_metadata_.Delete();
 
   if (type_info_->extensions_offset != -1) {
     reinterpret_cast<ExtensionSet*>(MutableExtensionsRaw())->~ExtensionSet();

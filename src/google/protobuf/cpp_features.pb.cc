@@ -155,8 +155,7 @@ CppFeatures::CppFeatures(
     : ::google::protobuf::Message(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
       _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
 }
 PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -181,7 +180,7 @@ inline void CppFeatures::SharedDtor(MessageLite& self) {
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
+  this_._internal_metadata_.Delete();
   ABSL_DCHECK(this_.GetArena() == nullptr);
   this_._impl_.~Impl_();
 }
@@ -290,7 +289,7 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
         reinterpret_cast<char*>(&_impl_.string_type_)) + sizeof(_impl_.enum_name_uses_string_view_));
   }
   _impl_._has_bits_.Clear();
-  _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
+  _internal_metadata_.Clear();
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -396,8 +395,7 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
   }
   _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
-      from._internal_metadata_);
+  _this->_internal_metadata_.MergeFrom(from._internal_metadata_);
 }
 
 void CppFeatures::CopyFrom(const CppFeatures& from) {

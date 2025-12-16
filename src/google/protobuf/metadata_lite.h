@@ -55,11 +55,10 @@ class PROTOBUF_EXPORT InternalMetadata {
   // It is designed to be used as part of a Message class's destructor call, so
   // that when control eventually gets to ~InternalMetadata(), we don't need to
   // check for have_unknown_fields() again.
-  template <typename T>
   void Delete() {
     // Note that Delete<> should be called not more than once.
     if (have_unknown_fields()) {
-      DeleteOutOfLineHelper<T>();
+      vtable()->delete_instance(this);
     }
   }
 
@@ -98,35 +97,21 @@ class PROTOBUF_EXPORT InternalMetadata {
     }
   }
 
-  template <typename T>
-  PROTOBUF_NDEBUG_INLINE void Swap(InternalMetadata* other) {
-    // Semantics here are that we swap only the unknown fields, not the arena
-    // pointer. We cannot simply swap ptr_ with other->ptr_ because we need to
-    // maintain our own arena ptr. Also, our ptr_ and other's ptr_ may be in
-    // different states (direct arena pointer vs. container with UFS) so we
-    // cannot simply swap ptr_ and then restore the arena pointers. We reuse
-    // UFS's swap implementation instead.
-    if (have_unknown_fields() || other->have_unknown_fields()) {
-      DoSwap<T>(other->mutable_unknown_fields<T>());
-    }
-  }
-
   PROTOBUF_NDEBUG_INLINE void InternalSwap(
       InternalMetadata* PROTOBUF_RESTRICT other) {
     std::swap(ptr_, other->ptr_);
   }
 
-  template <typename T>
   PROTOBUF_NDEBUG_INLINE void MergeFrom(const InternalMetadata& other) {
     if (other.have_unknown_fields()) {
-      DoMergeFrom<T>(other.unknown_fields<T>(nullptr));
+      // Use other.vtable because we might not have one yet.
+      other.vtable()->merge_from(this, other);
     }
   }
 
-  template <typename T>
   PROTOBUF_NDEBUG_INLINE void Clear() {
     if (have_unknown_fields()) {
-      DoClear<T>();
+      vtable()->clear(this);
     }
   }
 
@@ -149,22 +134,47 @@ class PROTOBUF_EXPORT InternalMetadata {
   }
 
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
+  struct VTable {
+    void (*delete_instance)(InternalMetadata*);
+    void (*clear)(InternalMetadata*);
+    void (*merge_from)(InternalMetadata*, const InternalMetadata&);
+  };
+
   struct ContainerBase {
     Arena* arena;
+    const VTable* vtable;
+  };
+
+  const VTable* vtable() const {
+    ABSL_DCHECK(have_unknown_fields());
+    return PtrValue<ContainerBase>()->vtable;
+  }
+
+  template <typename T>
+  static void DeleteImpl(InternalMetadata* m) {
+    delete m->PtrValue<Container<T>>();
+    // TODO:  This store is load-bearing.  Since we are
+    // destructing the message at this point, see if we can eliminate it.
+    m->ptr_ = 0;
+  }
+
+  template <typename T>
+  static void ClearImpl(InternalMetadata* m);
+
+  template <typename T>
+  static void MergeFromImpl(InternalMetadata* m, const InternalMetadata& from);
+
+  template <typename T>
+  static inline constexpr VTable kVTable = {
+      DeleteImpl<T>,
+      ClearImpl<T>,
+      MergeFromImpl<T>,
   };
 
   template <typename T>
   struct Container : public ContainerBase {
     T unknown_fields;
   };
-
-  template <typename T>
-  PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
-    delete PtrValue<Container<T>>();
-    // TODO:  This store is load-bearing.  Since we are destructing
-    // the message at this point, see if we can eliminate it.
-    ptr_ = 0;
-  }
 
   template <typename T>
   PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
@@ -175,50 +185,36 @@ class PROTOBUF_EXPORT InternalMetadata {
     ptr_ = reinterpret_cast<intptr_t>(container);
     ptr_ |= kUnknownFieldsTagMask;
     container->arena = my_arena;
+    container->vtable = &kVTable<T>;
     return &(container->unknown_fields);
-  }
-
-  // Templated functions.
-
-  template <typename T>
-  PROTOBUF_NOINLINE void DoClear() {
-    mutable_unknown_fields<T>()->Clear();
-  }
-
-  template <typename T>
-  PROTOBUF_NOINLINE void DoMergeFrom(const T& other) {
-    mutable_unknown_fields<T>()->MergeFrom(other);
-  }
-
-  template <typename T>
-  PROTOBUF_NOINLINE void DoSwap(T* other) {
-    mutable_unknown_fields<T>()->Swap(other);
   }
 
   // Private helper with debug checks for ~InternalMetadata()
   void CheckedDestruct();
 };
 
-// String Template specializations.
-
+// Instantiated once in message_lite.cc to prevent much duplication across
+// translation units of a large build.
 template <>
-PROTOBUF_EXPORT void InternalMetadata::DoClear<std::string>();
+PROTOBUF_EXPORT void InternalMetadata::ClearImpl<std::string>(
+    InternalMetadata*);
 template <>
-PROTOBUF_EXPORT void InternalMetadata::DoMergeFrom<std::string>(
-    const std::string& other);
-template <>
-PROTOBUF_EXPORT void InternalMetadata::DoSwap<std::string>(std::string* other);
+PROTOBUF_EXPORT void InternalMetadata::MergeFromImpl<std::string>(
+    InternalMetadata*, const InternalMetadata&);
+extern template PROTOBUF_EXPORT const InternalMetadata::VTable
+    InternalMetadata::kVTable<std::string>;
 
 // Instantiated once in message.cc (where the definition of UnknownFieldSet is
 // known) to prevent much duplication across translation units of a large build.
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DoClear<UnknownFieldSet>();
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DoMergeFrom<UnknownFieldSet>(const UnknownFieldSet& other);
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
-extern template PROTOBUF_EXPORT void
-InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
+template <>
+PROTOBUF_EXPORT void InternalMetadata::ClearImpl<UnknownFieldSet>(
+    InternalMetadata*);
+template <>
+PROTOBUF_EXPORT void InternalMetadata::MergeFromImpl<UnknownFieldSet>(
+    InternalMetadata*, const InternalMetadata&);
+extern template PROTOBUF_EXPORT const InternalMetadata::VTable
+    InternalMetadata::kVTable<UnknownFieldSet>;
+
 extern template PROTOBUF_EXPORT UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 

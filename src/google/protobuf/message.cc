@@ -499,11 +499,21 @@ const internal::RepeatedFieldAccessor* Reflection::RepeatedFieldAccessor(
 }
 
 namespace internal {
-template void InternalMetadata::DoClear<UnknownFieldSet>();
-template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
-    const UnknownFieldSet& other);
-template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
-template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
+
+template <>
+void InternalMetadata::ClearImpl<UnknownFieldSet>(InternalMetadata* m) {
+  m->mutable_unknown_fields<UnknownFieldSet>()->Clear();
+}
+
+template <>
+void InternalMetadata::MergeFromImpl<UnknownFieldSet>(
+    InternalMetadata* m, const InternalMetadata& from) {
+  m->mutable_unknown_fields<UnknownFieldSet>()->MergeFrom(
+      from.unknown_fields<UnknownFieldSet>(nullptr));
+}
+
+template const InternalMetadata::VTable
+    InternalMetadata::kVTable<UnknownFieldSet>;
 template UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 }  // namespace internal

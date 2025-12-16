@@ -728,19 +728,18 @@ namespace internal {
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.
 template <>
-void InternalMetadata::DoClear<std::string>() {
-  mutable_unknown_fields<std::string>()->clear();
+void InternalMetadata::ClearImpl<std::string>(InternalMetadata* m) {
+  m->mutable_unknown_fields<std::string>()->clear();
 }
 
 template <>
-void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
-  mutable_unknown_fields<std::string>()->append(other);
+void InternalMetadata::MergeFromImpl<std::string>(
+    InternalMetadata* m, const InternalMetadata& from) {
+  m->mutable_unknown_fields<std::string>()->append(
+      from.unknown_fields<std::string>(nullptr));
 }
 
-template <>
-void InternalMetadata::DoSwap<std::string>(std::string* other) {
-  mutable_unknown_fields<std::string>()->swap(*other);
-}
+template const InternalMetadata::VTable InternalMetadata::kVTable<std::string>;
 
 }  // namespace internal
 

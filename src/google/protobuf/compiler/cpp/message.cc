@@ -3036,7 +3036,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
         inline void $classname$::SharedDtor(MessageLite& self) {
           $classname$& this_ = static_cast<$classname$&>(self);
           $has_bit_consistency$;
-          this_._internal_metadata_.Delete<$unknown_fields_type$>();
+          this_._internal_metadata_.Delete();
           $DCHK$(this_.GetArena() == nullptr);
           $WeakDescriptorSelfPin$;
           $field_dtors$;
@@ -3430,8 +3430,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
               $classname$* const _this = this;
               (void)_this;
-              _internal_metadata_.MergeFrom<$unknown_fields_type$>(
-                  from._internal_metadata_);
+              _internal_metadata_.MergeFrom(from._internal_metadata_);
               $copy_construct_impl$;
               $copy_init_fields$;
               $force_allocation$;
@@ -3501,8 +3500,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           : $superclass$(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
             _impl_(from._impl_) {
-        _internal_metadata_.MergeFrom<$unknown_fields_type$>(
-            from._internal_metadata_);
+        _internal_metadata_.MergeFrom(from._internal_metadata_);
       }
     )cc");
   } else {
@@ -3751,7 +3749,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
     format("$has_bits$.Clear();\n");
   }
 
-  format("_internal_metadata_.Clear<$unknown_fields_type$>();\n");
+  format("_internal_metadata_.Clear();\n");
 
   format.Outdent();
   format("}\n");
@@ -4546,8 +4544,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $merge_oneof$;
           $merge_weak_fields$;
           $merge_extensions$;
-          _this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(
-              from._internal_metadata_);
+          _this->_internal_metadata_.MergeFrom(from._internal_metadata_);
         }
       )cc");
 }
