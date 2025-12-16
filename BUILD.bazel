@@ -679,7 +679,7 @@ cc_proto_library(
         "//conformance:__pkg__",
         "//src:__subpackages__",
     ],
-    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+    deps = ["//conformance/test_protos:test_messages_proto2_proto"],
 )
 
 cc_proto_library(
@@ -688,7 +688,7 @@ cc_proto_library(
         "//conformance:__pkg__",
         "//src:__subpackages__",
     ],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//conformance/test_protos:test_messages_proto3_proto"],
 )
 
 java_proto_library(
@@ -697,7 +697,7 @@ java_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+    deps = ["//conformance/test_protos:test_messages_proto2_proto"],
 )
 
 java_proto_library(
@@ -706,7 +706,7 @@ java_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//conformance/test_protos:test_messages_proto3_proto"],
 )
 
 java_lite_proto_library(
@@ -715,7 +715,7 @@ java_lite_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
+    deps = ["//conformance/test_protos:test_messages_proto2_proto"],
 )
 
 java_lite_proto_library(
@@ -724,7 +724,7 @@ java_lite_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
+    deps = ["//conformance/test_protos:test_messages_proto3_proto"],
 )
 
 internal_objc_proto_library(
