@@ -8,9 +8,9 @@
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_python//python:defs.bzl", "py_binary")
+load("//bazel/private:copts.bzl", "UPB_DEFAULT_COPTS")
 load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
-load("//upb/bazel:amalgamation.bzl", "upb_amalgamation")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//bazel/private/oss:amalgamation.bzl", "upb_amalgamation")
 
 package(default_applicable_licenses = ["//:license"])
 

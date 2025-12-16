@@ -7,8 +7,8 @@
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//bazel/private:copts.bzl", "UPB_DEFAULT_CPPOPTS")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
 
 package(default_applicable_licenses = ["//:license"])
 

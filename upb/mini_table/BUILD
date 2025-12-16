@@ -14,7 +14,7 @@ load(
     "upb_minitable_proto_library",
 )
 load(
-    "//upb/bazel:build_defs.bzl",
+    "//bazel/private:copts.bzl",
     "UPB_DEFAULT_COPTS",
 )
 load(

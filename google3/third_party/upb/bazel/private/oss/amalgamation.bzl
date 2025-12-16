@@ -54,7 +54,7 @@ upb_amalgamation = rule(
         "_amalgamator": attr.label(
             executable = True,
             cfg = "exec",
-            default = "//upb/bazel:amalgamate",
+            default = "//bazel/private/oss:amalgamate",
         ),
         "prefix": attr.string(
             default = "",

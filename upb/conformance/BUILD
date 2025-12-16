@@ -12,11 +12,8 @@ load(
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
-load(
-    "//upb/bazel:build_defs.bzl",
-    "UPB_DEFAULT_COPTS",
-    "make_shell_script",
-)
+load("//bazel/private:copts.bzl", "UPB_DEFAULT_COPTS")
+load(":build_defs.bzl", "make_shell_script")
 
 package(default_applicable_licenses = ["//:license"])
 

@@ -6,11 +6,11 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load(
-    "//upb/bazel:build_defs.bzl",
+    "//bazel/private:copts.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
+load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//upb_generator:bootstrap_compiler.bzl", "bootstrap_cc_binary")
 
 package(default_applicable_licenses = ["//:license"])

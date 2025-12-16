@@ -8,7 +8,7 @@ load(
     "upb_c_proto_library",
     "upb_proto_reflection_library",
 )
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+load("//bazel/private:copts.bzl", "UPB_DEFAULT_COPTS")
 
 package(default_applicable_licenses = ["//:license"])
 

@@ -30,17 +30,20 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
-import re
 import os
+import re
+import sys
 
 INCLUDE_RE = re.compile('^#include "([^"]*)"')
+
 
 def parse_include(line):
   match = INCLUDE_RE.match(line)
   return match.groups()[0] if match else None
 
+
 class Amalgamator:
+
   def __init__(self, h_out, c_out):
     self.include_paths = ["."]
     self.included = set()
@@ -53,7 +56,9 @@ class Amalgamator:
     self.output_c.write("/* Amalgamated source file */\n")
     self.output_c.write('#include "%s"\n' % (self.h_out))
     if self.h_out == "ruby-upb.h":
-      self.output_h.write("// Ruby is still using proto3 enum semantics for proto2\n")
+      self.output_h.write(
+          "// Ruby is still using proto3 enum semantics for proto2\n"
+      )
       self.output_h.write("#define UPB_DISABLE_CLOSED_ENUM_CHECKING\n")
 
     self.output_h.write("/* Amalgamated source file */\n")
@@ -103,7 +108,9 @@ class Amalgamator:
         or include.startswith("google")
     ):
       return False
-    if include and (include.endswith("port/def.inc") or include.endswith("port/undef.inc")):
+    if include and (
+        include.endswith("port/def.inc") or include.endswith("port/undef.inc")
+    ):
       # Skip, we handle this separately
       return True
     if include.endswith("hpp"):
@@ -124,7 +131,13 @@ class Amalgamator:
         self.included.add(include)
         self._process_file(h_file, self.output_h)
         return True
-      raise RuntimeError("Couldn't find include: " + include + ", h_files=" + repr(self.h_files))
+      raise RuntimeError(
+          "Couldn't find include: "
+          + include
+          + ", h_files="
+          + repr(self.h_files)
+      )
+
 
 # ---- main ----
 

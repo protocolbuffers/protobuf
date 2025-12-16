@@ -18,7 +18,7 @@ load(
     "upb_proto_reflection_library",
 )
 load(
-    "//upb/bazel:build_defs.bzl",
+    "//bazel/private:copts.bzl",
     "UPB_DEFAULT_CPPOPTS",
 )
 

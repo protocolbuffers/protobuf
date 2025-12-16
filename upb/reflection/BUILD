@@ -7,12 +7,12 @@
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//bazel/private:copts.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//editions:defaults.bzl",
     "compile_edition_defaults",
     "embed_edition_defaults",
 )
-load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
 load(
     "//upb/cmake:build_defs.bzl",
     "staleness_test",
