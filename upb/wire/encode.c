@@ -185,7 +185,11 @@ UPB_NOINLINE static char* encode_longvarint(char* ptr, upb_encstate* e,
       "add %[addr], %[addr], %[cnt], lsl #" UPB_BTI_SHIFT_IMM
       "mov %w[mask], #0x80\n"
       "br %[addr]\n"
+      // Work around llvm/llvm-project#47432, where alignment directives inside
+      // functions crash the compiler when generating SEH info on windows.
+      #ifndef __SEH__
       ".p2align " UPB_BTI_SHIFT_IMM
+      #endif
       "0:\n"
       // We don't need addr any more, but we've got the register for our whole
       // assembly block so we'll use it as scratch to store the shift+masked
