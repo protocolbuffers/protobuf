@@ -55,7 +55,7 @@ pub trait MessageMut<'msg>: SealedInternal
     // Write traits:
     + Clear + ClearAndParse + TakeFrom + CopyFrom + MergeFrom
     // Thread safety:
-    + Sync
+    + Send + Sync
     // Copy/Clone:
     // (Neither)
     // C++ Interop:
