@@ -1658,8 +1658,8 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                       using InternalArenaConstructable_ = void;
                       using DestructorSkippable_ = void;
                     };
-                    static_assert(::std::is_trivially_copy_constructible<Split>::value);
-                    static_assert(::std::is_trivially_destructible<Split>::value);
+                    static_assert(::std::is_trivially_copy_constructible_v<Split>);
+                    static_assert(::std::is_trivially_destructible_v<Split>);
                     Split* $nonnull$ _split_;
                   )cc");
         }},

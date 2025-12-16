@@ -206,7 +206,7 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
                                  uint16_t flat_capacity) {
   // Arena::CreateArray already requires a trivially destructible type, but
   // ensure this constraint is not violated in the future.
-  static_assert(std::is_trivially_destructible<KeyValue>::value,
+  static_assert(std::is_trivially_destructible_v<KeyValue>,
                 "CreateArray requires a trivially destructible type");
   // A const-cast is needed, but this is safe as we are about to deallocate the
   // array.

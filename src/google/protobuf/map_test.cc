@@ -297,8 +297,8 @@ TEST(MapTest, ErasingEnoughCausesDownwardRehashOnNextInsert) {
 // public API will still use size_t to avoid changing the API. Test that.
 TEST(MapTest, SizeTypeIsSizeT) {
   using M = Map<int, int>;
-  EXPECT_TRUE((std::is_same<M::size_type, size_t>::value));
-  EXPECT_TRUE((std::is_same<decltype(M().size()), size_t>::value));
+  EXPECT_TRUE((std::is_same_v<M::size_type, size_t>));
+  EXPECT_TRUE((std::is_same_v<decltype(M().size()), size_t>));
   size_t x = 0;
   x = std::max(M().size(), x);
   (void)x;
