@@ -1617,6 +1617,41 @@ TEST_F(CommandLineInterfaceTest, ImportOptions_MissingImport) {
   ExpectErrorSubstring("options.proto: File not found");
 }
 
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto: Foo.bar has been removed but does not specify a removal "
+      "error.");
+}
+
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportValid) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+          removal_error: "Custom removal error"
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   CreateTempFile("foo.proto",
                  R"schema(

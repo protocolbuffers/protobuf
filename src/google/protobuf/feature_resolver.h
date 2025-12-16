@@ -73,6 +73,21 @@ class PROTOBUF_EXPORT FeatureResolver {
       Edition edition, const Message& option,
       const Descriptor* pool_descriptor);
 
+  // Validates feature support on features and options
+  // to enforce feature support to be written correctly.
+  //
+  // This will return error status and error message for incorrectly written
+  // feature support.
+  static absl::Status ValidateFeatureSupport(
+      const FieldOptions::FeatureSupport& support, absl::string_view full_name);
+
+  // Calls ValidateFeatureSupport on fields during proto parsing.
+  // This will handle feature validation on fields of different types,
+  // especially of type ENUM.
+  //
+  // This will return error status and error message of ValidateFeatureSupport.
+  static absl::Status ValidateFieldFeatureSupport(const FieldDescriptor& field);
+
  private:
   explicit FeatureResolver(FeatureSet defaults)
       : defaults_(std::move(defaults)) {}

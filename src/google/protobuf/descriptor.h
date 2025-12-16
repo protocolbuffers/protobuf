@@ -1594,9 +1594,9 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   EnumValueDescriptor& operator=(const EnumValueDescriptor&) = delete;
 #endif
 
-  absl::string_view name() const;   // Name of this enum constant.
-  int index() const;                // Index within the enums's Descriptor.
-  int number() const;               // Numeric value of this enum constant.
+  absl::string_view name() const;  // Name of this enum constant.
+  int index() const;               // Index within the enums's Descriptor.
+  int number() const;              // Numeric value of this enum constant.
 
   // The full_name of an enum value is a sibling symbol of the enum type.
   // e.g. the full name of FieldDescriptorProto::TYPE_INT32 is actually
@@ -2365,6 +2365,14 @@ class PROTOBUF_EXPORT DescriptorPool {
   // of this enforcement.
   void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
 
+  // Enforce validation of feature support.
+  //
+  // This is used to guard feature support validation for the lifetimes of
+  // options and features.
+  void EnforceFeatureSupportValidation(bool enforce) {
+    enforce_feature_support_validation_ = enforce;
+  }
+
   // Enforce symbol visibility rules.  This will enable enforcement of the
   // `export` and `local` keywords added in edition 2024, honoring the behavior
   // of the `default_symbol_visibility` feature.
@@ -2670,6 +2678,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   bool enforce_naming_style_;
+  bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;
 
@@ -3221,8 +3230,8 @@ PROTOBUF_EXPORT inline bool IsTrackingEnabled() {
 }
 
 template <typename F>
-auto VisitDescriptorsInFileOrder(const Descriptor* desc,
-                                 F& f) -> decltype(f(desc)) {
+auto VisitDescriptorsInFileOrder(const Descriptor* desc, F& f)
+    -> decltype(f(desc)) {
   for (int i = 0; i < desc->nested_type_count(); i++) {
     if (auto res = VisitDescriptorsInFileOrder(desc->nested_type(i), f)) {
       return res;
@@ -3238,8 +3247,8 @@ auto VisitDescriptorsInFileOrder(const Descriptor* desc,
 // If any call returns a "truthy" value, it stops visitation and returns that
 // value right away. Otherwise returns `{}` after visiting all types.
 template <typename F>
-auto VisitDescriptorsInFileOrder(const FileDescriptor* file,
-                                 F f) -> decltype(f(file->message_type(0))) {
+auto VisitDescriptorsInFileOrder(const FileDescriptor* file, F f)
+    -> decltype(f(file->message_type(0))) {
   for (int i = 0; i < file->message_type_count(); i++) {
     if (auto res = VisitDescriptorsInFileOrder(file->message_type(i), f)) {
       return res;

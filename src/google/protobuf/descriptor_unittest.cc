@@ -4904,6 +4904,154 @@ TEST(CustomOptions, DebugString) {
       descriptor->DebugString());
 }
 
+TEST(CustomOptions, FeatureSupportInvalidDeprecatedAfterRemoved) {
+  DescriptorPool pool;
+  pool.EnforceFeatureSupportValidation(true);
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "file_opt1"
+          number: 7739974
+          label: LABEL_OPTIONAL
+          type: TYPE_UINT64
+          extendee: ".google.protobuf.FieldOptions"
+          options {
+            feature_support {
+              edition_introduced: EDITION_2023
+              edition_deprecated: EDITION_2024
+              deprecation_warning: "warning"
+              edition_removed: EDITION_2024
+              removal_error: "Custom feature removal error"
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.file_opt1: OPTION_NAME: proto"
+            "2_unittest.file_opt1 was deprecated after it was removed.\n");
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueDeprecatedAfterOption) {
+  DescriptorPool pool;
+  pool.EnforceFeatureSupportValidation(true);
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        dependency: "google/protobuf/descriptor.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_deprecated: EDITION_99997_TEST_ONLY
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          extension {
+            name: "bool_field"
+            number: 7739973
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            extendee: ".google.protobuf.FieldOptions"
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_deprecated: EDITION_2024
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr(
+                  "foo.proto: proto2_unittest.Bar.bool_field: "
+                  "OPTION_NAME: value proto2_unittest.VALUE was "
+                  "deprecated after proto2_unittest.Bar.bool_field was.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportValid) {
+  DescriptorPool pool;
+  pool.EnforceFeatureSupportValidation(true);
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        dependency: "google/protobuf/descriptor.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_introduced: EDITION_2024
+                edition_deprecated: EDITION_99997_TEST_ONLY
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          extension {
+            name: "bool_field"
+            number: 7739971
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            extendee: ".google.protobuf.FieldOptions"
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_removed: EDITION_99998_TEST_ONLY
+                removal_error: "removed"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  EXPECT_NE(pool.BuildFile(file_proto), nullptr);
+}
+
 // ===================================================================
 
 TEST_F(ValidationErrorTest, AlreadyDefined) {

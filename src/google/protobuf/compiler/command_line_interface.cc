@@ -1367,6 +1367,7 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   descriptor_pool->EnforceWeakDependencies(true);
   descriptor_pool->EnforceSymbolVisibility(true);
   descriptor_pool->EnforceNamingStyle(true);
+  descriptor_pool->EnforceFeatureSupportValidation(true);
 
   if (!SetupFeatureResolution(*descriptor_pool)) {
     return EXIT_FAILURE;

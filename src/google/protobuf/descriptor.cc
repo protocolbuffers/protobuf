@@ -1638,7 +1638,9 @@ class DescriptorPool::DeferredValidation {
   }
 
   bool Validate() {
-    if (lifetimes_info_map_.empty()) return true;
+    if (lifetimes_info_map_.empty()) {
+      return true;
+    }
 
     static absl::string_view feature_set_name = "google.protobuf.FeatureSet";
     bool has_errors = false;
@@ -5013,6 +5015,9 @@ class DescriptorBuilder {
                        const DescriptorProto::ExtensionRange& proto) {}
   void ValidateExtensionRangeOptions(const DescriptorProto& proto,
                                      const Descriptor& message);
+  void MaybeAddFeatureSupportError(const absl::Status& feature_support_status,
+                                   const Message& proto,
+                                   absl::string_view full_name);
   void ValidateExtensionDeclaration(
       absl::string_view full_name,
       const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
@@ -8503,10 +8508,27 @@ void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,
 }
 
 
+void DescriptorBuilder::MaybeAddFeatureSupportError(
+    const absl::Status& feature_support_status, const Message& proto,
+    absl::string_view full_name) {
+  if (feature_support_status.ok()) {
+    return;
+  }
+  std::string feature_support_error(feature_support_status.message());
+  AddError(full_name, proto, DescriptorPool::ErrorCollector::OPTION_NAME,
+           feature_support_error.c_str());
+}
+
 void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
                                         const FieldDescriptorProto& proto) {
   if (pool_->lazily_build_dependencies_ && (!field || !field->message_type())) {
     return;
+  }
+  if (pool_->enforce_feature_support_validation_) {
+    absl::Status feature_support_status =
+        FeatureResolver::ValidateFieldFeatureSupport(*field);
+    MaybeAddFeatureSupportError(feature_support_status, proto,
+                                field->full_name());
   }
 
   ValidateFieldFeatures(field, proto);
@@ -8838,10 +8860,15 @@ void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
   }
 }
 
-void DescriptorBuilder::ValidateOptions(
-    const EnumValueDescriptor* /* enum_value */,
-    const EnumValueDescriptorProto& /* proto */) {
-  // Nothing to do so far.
+void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
+                                        const EnumValueDescriptorProto& proto) {
+  if (pool_->enforce_feature_support_validation_) {
+    absl::Status feature_support_result =
+        FeatureResolver::ValidateFeatureSupport(
+            enum_value->options().feature_support(), enum_value->full_name());
+    MaybeAddFeatureSupportError(feature_support_result, proto,
+                                enum_value->full_name());
+  }
 }
 
 namespace {
