@@ -11,18 +11,18 @@
 """
 
 load(
-    "//bazel:upb_c_proto_library.bzl",
+    "//upb/bazel:upb_c_proto_library.bzl",
     _UpbWrappedCcInfo = "UpbWrappedCcInfo",
     _upb_c_proto_library = "upb_c_proto_library",
     _upb_c_proto_library_aspect = "upb_c_proto_library_aspect",
 )
 load(
-    "//bazel:upb_proto_reflection_library.bzl",
+    "//upb/bazel:upb_proto_reflection_library.bzl",
     _upb_proto_reflection_library = "upb_proto_reflection_library",
 )
-load("//bazel:visibility.bzl", "upb_clients")
+load("//upb/bazel:visibility.bzl", "upb_clients")
 load(
-    "//bazel/private:upb_proto_library_internal/aspect.bzl",
+    "//upb/bazel/private:upb_proto_library_internal/aspect.bzl",
     _GeneratedSrcsInfo = "GeneratedSrcsInfo",
 )
 
