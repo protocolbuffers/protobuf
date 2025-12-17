@@ -155,16 +155,10 @@ option cc_enable_arenas = true;
 // In order to reset a field's value to the default, the field must
 // be in the mask and set to the default value in the provided resource.
 // Hence, in order to reset all fields of a resource, provide a default
-// instance of the resource and set all fields in the mask, or do
-// not provide a mask as described below.
+// instance of the resource and set all fields in the mask.
 //
 // If a field mask is not present on update, the operation applies to
-// all fields (as if a field mask of all fields has been specified).
-// Note that in the presence of schema evolution, this may mean that
-// fields the client does not know and has therefore not filled into
-// the request will be reset to their default. If this is unwanted
-// behavior, a specific service may require a client to always specify
-// a field mask, producing an error if not.
+// all fields that are populated (have a non-empty value).
 //
 // As with get operations, the location of the resource which
 // describes the updated values in the request message depends on the
