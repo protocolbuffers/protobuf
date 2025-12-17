@@ -371,10 +371,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
   }
 
-  protected static boolean canUseUnsafe() {
-    return UnsafeUtil.hasUnsafeArrayOperations() && UnsafeUtil.hasUnsafeByteBufferOperations();
-  }
-
   protected static IntList emptyIntList() {
     return IntArrayList.emptyList();
   }
@@ -1090,13 +1086,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
         }
       } else {
         result = (T) extension.fromReflectionType(value);
-      }
-
-      // If the lazy field is corrupted, we need to invalidate the memoized size in case the
-      // corrupted message data was replaced with an empty ByteString and yet a previous serialized
-      // size was memoized.
-      if (extensions.lazyFieldCorrupted(descriptor)) {
-        setMemoizedSerializedSize(-1);
       }
       return result;
     }

@@ -1617,6 +1617,41 @@ TEST_F(CommandLineInterfaceTest, ImportOptions_MissingImport) {
   ExpectErrorSubstring("options.proto: File not found");
 }
 
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportError) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+      "foo.proto: Foo.bar has been removed but does not specify a removal "
+      "error.");
+}
+
+TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportValid) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2023";
+    option features.field_presence = IMPLICIT;
+    message Foo {
+      int32 bar = 1 [
+        feature_support = {
+          edition_removed: EDITION_2023
+          removal_error: "Custom removal error"
+        }
+      ];
+    })schema");
+  Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto");
+  ExpectNoErrors();
+}
+
 TEST_F(CommandLineInterfaceTest, FeatureValidationError) {
   CreateTempFile("foo.proto",
                  R"schema(
@@ -2631,7 +2666,8 @@ TEST_F(CommandLineInterfaceTest, JavaMultipleFilesEdition2024Invalid) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "The `java_multiple_files` behavior is enabled by default");
+      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
+      "2024: This behavior is enabled by default");
 }
 
 
@@ -2645,7 +2681,8 @@ TEST_F(CommandLineInterfaceTest, JavaNestInFileClassFor) {
   Run("protocol_compiler --proto_path=$tmpdir "
       "foo.proto --test_out=$tmpdir --experimental_editions");
   ExpectErrorSubstring(
-      "The `java_multiple_files` behavior is enabled by default");
+      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
+      "2024: This behavior is enabled by default");
 }
 
 
@@ -5564,7 +5601,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
   message.set_optional_int32(123);
   message.set_optional_string("foo");
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   RedirectStdinFromText(data);
   EXPECT_TRUE(Run("--decode_raw", /*specify_proto_files=*/false));

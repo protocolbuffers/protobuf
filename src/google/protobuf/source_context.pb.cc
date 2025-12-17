@@ -187,7 +187,6 @@ constexpr auto SourceContext::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_SourceContext_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &SourceContext::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<SourceContext>(),

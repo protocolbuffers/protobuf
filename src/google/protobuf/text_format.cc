@@ -667,7 +667,8 @@ class TextFormat::Parser::ParserImpl {
         DO(ConsumeString(&tmp));
         MessageFactory* factory =
             finder_ ? finder_->FindExtensionFactory(field) : nullptr;
-        reflection->MutableMessage(message, field, factory)
+        // TODO: Remove this suppression.
+        (void)reflection->MutableMessage(message, field, factory)
             ->ParseFromString(tmp);
         return skip_parsing(true);
       }
@@ -1283,7 +1284,8 @@ class TextFormat::Parser::ParserImpl {
     DO(ConsumeMessage(value.get(), sub_delimiter));
 
     if (allow_partial_) {
-      value->AppendPartialToString(serialized_value);
+      // TODO: Remove this suppression.
+      (void)value->AppendPartialToString(serialized_value);
     } else {
       if (!value->IsInitialized()) {
         std::vector<std::string> missing_fields;
@@ -1294,7 +1296,8 @@ class TextFormat::Parser::ParserImpl {
             absl::StrJoin(missing_fields, ", ")));
         return false;
       }
-      value->AppendToString(serialized_value);
+      // TODO: Remove this suppression.
+      (void)value->AppendToString(serialized_value);
     }
     return true;
   }

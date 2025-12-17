@@ -285,8 +285,10 @@ absl::StatusOr<google::protobuf::Message*> CreateNewMessage(PyObject* py_msg) {
 bool CopyToOwnedMsg(google::protobuf::Message** copy, const google::protobuf::Message& message) {
   *copy = message.New();
   std::string wire;
-  message.SerializePartialToString(&wire);
-  (*copy)->ParsePartialFromString(wire);
+  // TODO: Remove this suppression.
+      (void)message.SerializePartialToString(&wire);
+  // TODO: Remove this suppression.
+      (void)(*copy)->ParsePartialFromString(wire);
   return true;
 }
 
@@ -378,6 +380,17 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   PyObject* DescriptorPool_FromPool(
       const google::protobuf::DescriptorPool* pool) const override {
     return google::protobuf::python::PyDescriptorPool_FromPool(pool);
+  }
+  PyObject* DescriptorPool_FromPool(
+      std::unique_ptr<const google::protobuf::DescriptorPool> pool,
+      std::unique_ptr<const google::protobuf::DescriptorDatabase> database)
+      const override {
+    return google::protobuf::python::PyDescriptorPool_FromPool(std::move(pool),
+                                                     std::move(database));
+  }
+  const google::protobuf::DescriptorPool* DescriptorPool_AsPool(
+      PyObject* pool) const override {
+    return google::protobuf::python::PyDescriptorPool_AsPool(pool);
   }
 };
 

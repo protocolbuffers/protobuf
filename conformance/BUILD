@@ -287,6 +287,7 @@ cc_test(
         "//src/google/protobuf",
         "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

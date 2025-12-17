@@ -50,6 +50,7 @@ enum ValueLifetimeFeature {
     edition_deprecated: EDITION_99998_TEST_ONLY
     deprecation_warning: "Custom feature deprecation warning"
     edition_removed: EDITION_99999_TEST_ONLY
+    removal_error: "Custom feature removal error"
   }];
   VALUE_LIFETIME_EMPTY_SUPPORT = 3 [feature_support = {}];
   VALUE_LIFETIME_FUTURE = 4
@@ -60,6 +61,7 @@ enum ValueLifetimeFeature {
   }];
   VALUE_LIFETIME_REMOVED = 6 [feature_support = {
     edition_deprecated: EDITION_2023
+    deprecation_warning: "Custom feature deprecation warning"
     edition_removed: EDITION_99997_TEST_ONLY
     removal_error: "Custom feature removal error"
   }];

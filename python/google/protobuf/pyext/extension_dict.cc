@@ -197,7 +197,7 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
   }
 
-  if (descriptor->label() != FieldDescriptor::LABEL_OPTIONAL ||
+  if (descriptor->is_repeated() || descriptor->is_required() ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     PyErr_SetString(PyExc_TypeError,
                     "Extension is repeated and/or composite "
@@ -218,7 +218,7 @@ static const FieldDescriptor* FindMessageSetExtension(
     if (extension->is_extension() &&
         extension->containing_type()->options().message_set_wire_format() &&
         extension->type() == FieldDescriptor::TYPE_MESSAGE &&
-        extension->label() == FieldDescriptor::LABEL_OPTIONAL &&
+        (!extension->is_repeated() && !extension->is_required()) &&
         extension->message_type() == message_descriptor) {
       return extension;
     }

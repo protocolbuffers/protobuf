@@ -66,7 +66,13 @@ void ExtensionSet::AppendToList(
           //   AppendToList() is called.
 
           if (ext.descriptor == nullptr) {
-            output->push_back(pool->FindExtensionByNumber(extendee, number));
+            const FieldDescriptor* field =
+                pool->FindExtensionByNumber(extendee, number);
+            // TODO This should be limited to and only reachable by
+            // lite extensions on full messages.
+            if (field != nullptr) {
+              output->push_back(field);
+            }
           } else {
             output->push_back(ext.descriptor);
           }

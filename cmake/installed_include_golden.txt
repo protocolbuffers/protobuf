@@ -155,6 +155,7 @@ google/protobuf/wire_format_lite.h
 google/protobuf/wrappers.pb.h
 google/protobuf/wrappers.proto
 upb/base/descriptor_constants.h
+upb/base/error_handler.h
 upb/base/status.h
 upb/base/status.hpp
 upb/base/string_view.h

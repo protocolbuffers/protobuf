@@ -118,16 +118,6 @@ absl::string_view TypeId::name() const {
   return reinterpret_cast<const char*>(data_) + sizeof(internal::ClassData);
 }
 
-void MessageLite::OnDemandRegisterArenaDtor(Arena* arena) {
-  if (arena == nullptr) return;
-  auto* data = GetClassData();
-  ABSL_DCHECK(data != nullptr);
-
-  if (data->on_demand_register_arena_dtor != nullptr) {
-    data->on_demand_register_arena_dtor(*this, *arena);
-  }
-}
-
 std::string MessageLite::InitializationErrorString() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
@@ -299,7 +289,8 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
   explicit ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
   bool Next(const void** data, int* size) final {
     if (!cis_->GetDirectBufferPointer(data, size)) return false;
-    cis_->Skip(*size);
+    // TODO: Remove this suppression.
+    (void)cis_->Skip(*size);
     return true;
   }
   void BackUp(int count) final { cis_->Advance(-count); }
@@ -489,7 +480,8 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
         &stream, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
         &ptr);
     ptr = msg._InternalSerialize(ptr, &out);
-    out.Trim(ptr);
+    // TODO: Remove this suppression.
+    (void)out.Trim(ptr);
     ABSL_DCHECK(!out.HadError() && stream.ByteCount() == size);
     return target + size;
   } else {
@@ -559,7 +551,8 @@ bool MessageLite::SerializePartialToZeroCopyStream(
       output, io::CodedOutputStream::IsDefaultSerializationDeterministic(),
       &target);
   target = _InternalSerialize(target, &stream);
-  stream.Trim(target);
+  // TODO: Remove this suppression.
+  (void)stream.Trim(target);
   if (stream.HadError()) return false;
   return true;
 }
@@ -700,7 +693,8 @@ bool MessageLite::AppendPartialToString(absl::Cord* output) const {
       target, static_cast<int>(available.size()), &output_stream,
       io::CodedOutputStream::IsDefaultSerializationDeterministic(), &target);
   target = _InternalSerialize(target, &out);
-  out.Trim(target);
+  // TODO: Remove this suppression.
+  (void)out.Trim(target);
   if (out.HadError()) return false;
   *output = output_stream.Consume();
   ABSL_DCHECK_EQ(output->size(), total_size);

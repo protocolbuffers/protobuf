@@ -1218,11 +1218,6 @@ TEST_F(DescriptorTest, FieldType) {
 }
 
 TEST_F(DescriptorTest, FieldLabel) {
-  EXPECT_EQ(FieldDescriptor::LABEL_REQUIRED, foo_->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, bar_->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_REPEATED, baz_->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, moo_->label());
-
   EXPECT_TRUE(foo_->is_required());
   EXPECT_FALSE((!foo_->is_repeated() && !foo_->is_required()));
   EXPECT_FALSE(foo_->is_repeated());
@@ -1386,6 +1381,217 @@ TEST_F(DescriptorTest, AbslStringifyWorks) {
   EXPECT_THAT(absl::StrFormat("%v", *foo_), HasSubstr(foo_->name()));
 }
 
+
+static void ExtendStringTo(std::string* str, int size) {
+  ABSL_CHECK_LE(str->size(), size);
+  str->replace(0, 0, size - str->size(), 'x');
+  ABSL_CHECK_EQ(str->size(), size);
+}
+
+static void TestBuildFileOnNameLimits(const FileDescriptorProto& proto,
+                                      std::string* str, int limit,
+                                      absl::string_view error) {
+  // Builds correctly.
+  {
+    ExtendStringTo(str, limit);
+    DescriptorPool pool;
+    MockErrorCollector error_collector;
+    EXPECT_NE(pool.BuildFileCollectingErrors(proto, &error_collector), nullptr);
+    EXPECT_EQ(error_collector.text_, "");
+  }
+
+  ExtendStringTo(str, limit + 1);
+  DescriptorPool pool;
+  MockErrorCollector error_collector;
+  EXPECT_EQ(pool.BuildFileCollectingErrors(proto, &error_collector), nullptr);
+  // Fails with the expected error.
+  EXPECT_THAT(error_collector.text_, HasSubstr(error));
+}
+
+static FileDescriptorProto MakeFile(absl::string_view in) {
+  FileDescriptorProto proto;
+  ABSL_CHECK(TextFormat::ParseFromString(in, &proto));
+  return proto;
+}
+
+TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
+  auto limits = internal::NameLimits();
+  FileDescriptorProto proto;
+
+  // This limit comes from how AllocateNames is implemented and the math for
+  // that leaks below.
+  // Ideally we would have hard and predictable limits on each kind of symbol
+  // instead.
+  constexpr int kNamesImplLimit = std::numeric_limits<uint16_t>::max();
+
+  // FileDescriptor::package
+  proto = MakeFile(R"pb(name: "foo.proto" package: "Package")pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_package(), limits.kPackageName,
+                            "Package name is too long");
+
+  // Descriptor::name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        message_type { name: "Message" })pb");
+  TestBuildFileOnNameLimits(proto,
+                            proto.mutable_message_type(0)->mutable_name(),
+                            kNamesImplLimit, "Name too long");
+  // Descriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type { name: "Message" })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_message_type(0)->mutable_name(),
+      kNamesImplLimit - proto.package().size() - 1, "Name too long");
+  // Descriptor::reserved_name
+  proto = MakeFile(
+      R"pb(name: "foo.proto"
+           package: "Package"
+           message_type { name: "Message" reserved_name: "Reserved" })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_message_type(0)->mutable_reserved_name(0),
+      limits.kReservedName, "Reserved name too long");
+  // No FieldDescriptor::name, because that is always within a message.
+  // FieldDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          field { name: 'field' number: 1 type: TYPE_INT64 }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_message_type(0)->mutable_field(0)->mutable_name(),
+      kNamesImplLimit - proto.message_type(0).name().size() -
+          proto.package().size() - 2,
+      "Name too long");
+  // FieldDescriptor::json_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          field {
+                            name: 'field'
+                            number: 1
+                            type: TYPE_INT64
+                            json_name: "other"
+                          }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto,
+      proto.mutable_message_type(0)->mutable_field(0)->mutable_json_name(),
+      // the math here leaks the implementation details of AllocateFieldNames.
+      kNamesImplLimit - 3 * (1 + proto.message_type(0).field(0).name().size()) -
+          proto.message_type(0).name().size() - proto.package().size() - 3,
+      "Name too long");
+  // FieldDescriptor::name (extension)
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        message_type {
+                          name: "Message"
+                          extension_range { start: 1 end: 2 }
+                        }
+                        extension {
+                          name: "extension"
+                          number: 1
+                          type: TYPE_INT32
+                          extendee: "Message"
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_extension(0)->mutable_name(),
+                            kNamesImplLimit - 1, "Name too long");
+  // FieldDescriptor::full_name (extension)
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          extension_range { start: 1 end: 2 }
+                        }
+                        extension {
+                          name: "extension"
+                          number: 1
+                          type: TYPE_INT32
+                          extendee: "Message"
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_extension(0)->mutable_name(),
+                            kNamesImplLimit - proto.package().size() - 1,
+                            "Name too long");
+  // No OneofDescriptor::name, because that is always within a message.
+  // OneofDescriptor::full_name
+  proto = MakeFile(
+      R"pb(name: "foo.proto"
+           message_type {
+             name: "Message"
+             oneof_decl { name: "oneof" }
+             field { name: 'field' number: 1 type: TYPE_INT64 oneof_index: 0 }
+           }
+      )pb");
+  TestBuildFileOnNameLimits(
+      proto,
+      proto.mutable_message_type(0)->mutable_oneof_decl(0)->mutable_name(),
+      kNamesImplLimit - proto.message_type(0).name().size() - 1,
+      "Name too long");
+  // EnumDescriptor::name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_enum_type(0)->mutable_name(),
+                            kNamesImplLimit, "Name too long");
+  // EnumDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_enum_type(0)->mutable_name(),
+                            kNamesImplLimit - proto.package().size() - 1,
+                            "Name too long");
+  // EnumDescriptor::reserved_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                          reserved_name: "reserved"
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_enum_type(0)->mutable_reserved_name(0),
+      limits.kReservedName, "Reserved name too long");
+  // EnumValueDescriptor::name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_enum_type(0)->mutable_value(0)->mutable_name(),
+      kNamesImplLimit, "Name too long");
+  // EnumValueDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        enum_type {
+                          name: "Enum"
+                          value { name: "VALUE" number: 1 }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_enum_type(0)->mutable_value(0)->mutable_name(),
+      kNamesImplLimit - proto.package().size() - 1, "Name too long");
+  // ServiceDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        service { name: "Service" })pb");
+  TestBuildFileOnNameLimits(proto, proto.mutable_service(0)->mutable_name(),
+                            kNamesImplLimit - proto.package().size() - 1,
+                            "Name too long");
+  // MethodDescriptor::full_name
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        message_type { name: "M" }
+                        service {
+                          name: "Service"
+                          method { name: "A" input_type: "M" output_type: "M" }
+                        })pb");
+  TestBuildFileOnNameLimits(
+      proto, proto.mutable_service(0)->mutable_method(0)->mutable_name(),
+      kNamesImplLimit - proto.service(0).name().size() - 1, "Name too long");
+}
 
 // ===================================================================
 
@@ -2337,10 +2543,12 @@ TEST_F(ExtensionDescriptorTest, Extensions) {
   EXPECT_EQ(moo_, bar_->extension(0)->message_type());
   EXPECT_EQ(moo_, bar_->extension(1)->message_type());
 
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, foo_file_->extension(0)->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_REPEATED, foo_file_->extension(1)->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_OPTIONAL, bar_->extension(0)->label());
-  EXPECT_EQ(FieldDescriptor::LABEL_REPEATED, bar_->extension(1)->label());
+  EXPECT_FALSE(foo_file_->extension(0)->is_required());
+  EXPECT_FALSE(foo_file_->extension(0)->is_repeated());
+  EXPECT_TRUE(foo_file_->extension(1)->is_repeated());
+  EXPECT_FALSE(bar_->extension(0)->is_required());
+  EXPECT_FALSE(bar_->extension(0)->is_repeated());
+  EXPECT_TRUE(bar_->extension(1)->is_repeated());
 
   EXPECT_EQ(foo_, foo_file_->extension(0)->containing_type());
   EXPECT_EQ(foo_, foo_file_->extension(1)->containing_type());
@@ -3531,11 +3739,9 @@ INSTANTIATE_TEST_SUITE_P(
 enum DescriptorPoolMode { NO_DATABASE, FALLBACK_DATABASE };
 
 class AllowUnknownDependenciesTest
-    : public testing::TestWithParam<
-          std::tuple<DescriptorPoolMode, const char*>> {
+    : public testing::TestWithParam<DescriptorPoolMode> {
  protected:
-  DescriptorPoolMode mode() { return std::get<0>(GetParam()); }
-  const char* syntax() { return std::get<1>(GetParam()); }
+  DescriptorPoolMode mode() { return GetParam(); }
 
   void SetUp() override {
     FileDescriptorProto foo_proto, bar_proto;
@@ -3552,35 +3758,47 @@ class AllowUnknownDependenciesTest
     pool_->AllowUnknownDependencies();
 
     ASSERT_TRUE(TextFormat::ParseFromString(
-        "name: 'foo.proto'"
-        "dependency: 'bar.proto'"
-        "dependency: 'baz.proto'"
-        "message_type {"
-        "  name: 'Foo'"
-        "  field { name:'bar' number:1 label:LABEL_OPTIONAL type_name:'Bar' }"
-        "  field { name:'baz' number:2 label:LABEL_OPTIONAL type_name:'Baz' }"
-        "  field { name:'moo' number:3 label:LABEL_OPTIONAL"
-        "    type_name: '.corge.Moo'"
-        "    type: TYPE_ENUM"
-        "    options {"
-        "      uninterpreted_option {"
-        "        name {"
-        "          name_part: 'grault'"
-        "          is_extension: true"
-        "        }"
-        "        positive_int_value: 1234"
-        "      }"
-        "    }"
-        "  }"
-        "}",
+        R"pb(
+          name: 'foo.proto'
+          edition: EDITION_2024
+          dependency: 'bar.proto'
+          dependency: 'baz.proto'
+          option_dependency: 'qux.proto'
+          message_type {
+            name: 'Foo'
+            field {
+              name: 'bar'
+              number: 1
+              label: LABEL_OPTIONAL
+              type_name: 'Bar'
+            }
+            field {
+              name: 'baz'
+              number: 2
+              label: LABEL_OPTIONAL
+              type_name: 'Baz'
+            }
+            field {
+              name: 'moo'
+              number: 3
+              label: LABEL_OPTIONAL
+              type_name: '.corge.Moo'
+              type: TYPE_ENUM
+              options {
+                uninterpreted_option {
+                  name { name_part: 'grault' is_extension: true }
+                  positive_int_value: 1234
+                }
+              }
+            }
+          }
+        )pb",
         &foo_proto));
-    foo_proto.set_syntax(syntax());
 
     ASSERT_TRUE(
         TextFormat::ParseFromString("name: 'bar.proto'"
                                     "message_type { name: 'Bar' }",
                                     &bar_proto));
-    bar_proto.set_syntax(syntax());
 
     // Collect pointers to stuff.
     bar_file_ = BuildFile(bar_proto);
@@ -3640,7 +3858,6 @@ TEST_P(AllowUnknownDependenciesTest, PlaceholderFile) {
   // Placeholder files should not be findable.
   EXPECT_EQ(bar_file_, pool_->FindFileByName(bar_file_->name()));
   EXPECT_TRUE(pool_->FindFileByName(baz_file->name()) == nullptr);
-
   // Copy*To should not crash for placeholder files.
   FileDescriptorProto baz_file_proto;
   baz_file->CopyTo(&baz_file_proto);
@@ -3672,6 +3889,15 @@ TEST_P(AllowUnknownDependenciesTest, PlaceholderTypes) {
   EXPECT_EQ(bar_type_, pool_->FindMessageTypeByName(bar_type_->full_name()));
   EXPECT_TRUE(pool_->FindMessageTypeByName(baz_type->full_name()) == nullptr);
   EXPECT_TRUE(pool_->FindEnumTypeByName(moo_type->full_name()) == nullptr);
+}
+
+TEST_P(AllowUnknownDependenciesTest, UnknownOptionDependency) {
+  ASSERT_EQ(1, foo_file_->option_dependency_count());
+  EXPECT_EQ("qux.proto", foo_file_->option_dependency_name(0));
+
+  // Unknown option dependencies should not be findable.
+  EXPECT_TRUE(pool_->FindFileByName(foo_file_->option_dependency_name(0)) ==
+              nullptr);
 }
 
 TEST_P(AllowUnknownDependenciesTest, CopyTo) {
@@ -3857,9 +4083,7 @@ TEST_P(AllowUnknownDependenciesTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(DatabaseSource, AllowUnknownDependenciesTest,
-                         testing::Combine(testing::Values(NO_DATABASE,
-                                                          FALLBACK_DATABASE),
-                                          testing::Values("proto2", "proto3")));
+                         testing::Values(NO_DATABASE, FALLBACK_DATABASE));
 
 // ===================================================================
 
@@ -4675,6 +4899,154 @@ TEST(CustomOptions, DebugString) {
       "}\n"
       "\n",
       descriptor->DebugString());
+}
+
+TEST(CustomOptions, FeatureSupportInvalidDeprecatedAfterRemoved) {
+  DescriptorPool pool;
+  pool.EnforceFeatureSupportValidation(true);
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        dependency: "google/protobuf/descriptor.proto"
+        extension {
+          name: "file_opt1"
+          number: 7739974
+          label: LABEL_OPTIONAL
+          type: TYPE_UINT64
+          extendee: ".google.protobuf.FieldOptions"
+          options {
+            feature_support {
+              edition_introduced: EDITION_2023
+              edition_deprecated: EDITION_2024
+              deprecation_warning: "warning"
+              edition_removed: EDITION_2024
+              removal_error: "Custom feature removal error"
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ(error_collector.text_,
+            "foo.proto: proto2_unittest.file_opt1: OPTION_NAME: proto"
+            "2_unittest.file_opt1 was deprecated after it was removed.\n");
+}
+
+TEST(CustomOptions, FeatureSupportInvalidValueDeprecatedAfterOption) {
+  DescriptorPool pool;
+  pool.EnforceFeatureSupportValidation(true);
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        dependency: "google/protobuf/descriptor.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_deprecated: EDITION_99997_TEST_ONLY
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          extension {
+            name: "bool_field"
+            number: 7739973
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            extendee: ".google.protobuf.FieldOptions"
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_deprecated: EDITION_2024
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  MockErrorCollector error_collector;
+  EXPECT_FALSE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_THAT(error_collector.text_,
+              testing::HasSubstr(
+                  "foo.proto: proto2_unittest.Bar.bool_field: "
+                  "OPTION_NAME: value proto2_unittest.VALUE was "
+                  "deprecated after proto2_unittest.Bar.bool_field was.\n"));
+}
+
+TEST(CustomOptions, FeatureSupportValid) {
+  DescriptorPool pool;
+  pool.EnforceFeatureSupportValidation(true);
+
+  FileDescriptorProto file_proto;
+  FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      R"pb(
+        name: "foo.proto"
+        edition: EDITION_2024
+        package: "proto2_unittest"
+        dependency: "google/protobuf/descriptor.proto"
+        enum_type {
+          name: "Foo"
+          value { name: "UNKNOWN" number: 0 }
+          value {
+            name: "VALUE"
+            number: 1
+            options {
+              feature_support {
+                edition_introduced: EDITION_2024
+                edition_deprecated: EDITION_99997_TEST_ONLY
+                deprecation_warning: "warning"
+              }
+            }
+          }
+        }
+        message_type {
+          name: "Bar"
+          extension {
+            name: "bool_field"
+            number: 7739971
+            label: LABEL_OPTIONAL
+            type: TYPE_ENUM
+            type_name: "Foo"
+            extendee: ".google.protobuf.FieldOptions"
+            options {
+              feature_support {
+                edition_introduced: EDITION_2023
+                edition_removed: EDITION_99998_TEST_ONLY
+                removal_error: "removed"
+              }
+            }
+          }
+        })pb",
+      &file_proto));
+
+  EXPECT_NE(pool.BuildFile(file_proto), nullptr);
 }
 
 // ===================================================================
@@ -5969,6 +6341,20 @@ TEST_F(ImportOptionValidationErrorTest, OptionDefinedInOptionDependency) {
     message Foo {
       int32 foo = 1 [(bar) = {baz: 1}];
     })schema");
+}
+
+TEST_F(ImportOptionValidationErrorTest,
+       OptionDefinedInUnknownOptionDependencyErrors) {
+  BuildDescriptorMessagesInTestPool();
+  ParseAndBuildFileWithErrors("bar.proto",
+                              R"schema(
+    edition = "2024";
+    import option "baz.proto";
+    message Bar {
+      int32 bar = 1 [(baz) = {baz: 1}];
+    })schema",
+                              "bar.proto: baz.proto: IMPORT: Import "
+                              "\"baz.proto\" has not been loaded.\n");
 }
 
 TEST_F(ImportOptionValidationErrorTest,
@@ -9248,7 +9634,6 @@ TEST_F(FeaturesTest, RestoresLabelRoundTrip) {
     }
   )pb");
   const FieldDescriptor* field = file->message_type(0)->field(0);
-  ASSERT_EQ(field->label(), FieldDescriptor::LABEL_REQUIRED);
   ASSERT_TRUE(field->is_required());
 
   FileDescriptorProto proto;
@@ -12291,6 +12676,49 @@ TEST_F(FeaturesTest, RemovedFeature) {
       "foo.proto: foo.proto: NAME: "
       "pb.TestFeatures.removed_feature has been removed in edition 2024: "
       "Custom feature removal error\n");
+}
+
+TEST_F(FeaturesTest, RemovedOption) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        options { java_multiple_files: true }
+      )pb",
+      "foo.proto: foo.proto: NAME: "
+      "google.protobuf.FileOptions.java_multiple_files has been removed in edition "
+      "2024: This behavior is enabled by default in "
+      "editions 2024 and above. To disable it, you can set "
+      "`features.(pb.java).nest_in_file_class = YES` on individual messages, "
+      "enums, or services.\n");
+}
+
+TEST_F(FeaturesTest, RemoveOptionAndFeature) {
+  BuildDescriptorMessagesInTestPool();
+  BuildFileInTestPool(pb::TestFeatures::descriptor()->file());
+  BuildFileWithErrors(
+      R"pb(
+        name: "foo.proto"
+        syntax: "editions"
+        edition: EDITION_2024
+        dependency: "google/protobuf/unittest_features.proto"
+        options {
+          java_multiple_files: true
+          features {
+            [pb.test] { removed_feature: VALUE9 }
+          }
+        }
+      )pb",
+      "foo.proto: foo.proto: NAME: "
+      "pb.TestFeatures.removed_feature has been removed in edition 2024: "
+      "Custom feature removal error\n"
+      "foo.proto: foo.proto: NAME: google.protobuf.FileOptions.java_multiple_files has "
+      "been removed in edition 2024: This behavior is enabled by default in "
+      "editions 2024 and above. To disable it, you can set "
+      "`features.(pb.java).nest_in_file_class = YES` on individual messages, "
+      "enums, or services.\n");
 }
 
 TEST_F(FeaturesTest, RemovedFeatureDefault) {

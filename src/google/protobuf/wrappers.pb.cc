@@ -445,7 +445,6 @@ constexpr auto DoubleValue::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_DoubleValue_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &DoubleValue::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<DoubleValue>(),
@@ -692,7 +691,6 @@ constexpr auto FloatValue::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FloatValue_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &FloatValue::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FloatValue>(),
@@ -939,7 +937,6 @@ constexpr auto Int64Value::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Int64Value_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Int64Value::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Int64Value>(),
@@ -1187,7 +1184,6 @@ constexpr auto UInt64Value::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_UInt64Value_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &UInt64Value::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<UInt64Value>(),
@@ -1435,7 +1431,6 @@ constexpr auto Int32Value::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Int32Value_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Int32Value::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Int32Value>(),
@@ -1683,7 +1678,6 @@ constexpr auto UInt32Value::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_UInt32Value_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &UInt32Value::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<UInt32Value>(),
@@ -1931,7 +1925,6 @@ constexpr auto BoolValue::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_BoolValue_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &BoolValue::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<BoolValue>(),
@@ -2192,7 +2185,6 @@ constexpr auto StringValue::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_StringValue_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &StringValue::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<StringValue>(),
@@ -2467,7 +2459,6 @@ constexpr auto BytesValue::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_BytesValue_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &BytesValue::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<BytesValue>(),

@@ -239,7 +239,8 @@ void TextFormatConformanceTestSuiteImpl<
     MessageType>::RunValidUnknownTextFormatTest(const std::string& test_name,
                                                 const Message& message) {
   std::string serialized_input;
-  message.SerializeToString(&serialized_input);
+  // TODO: Remove this suppression.
+  (void)message.SerializeToString(&serialized_input);
   MessageType prototype;
   ConformanceRequestSetting setting1(
       RECOMMENDED, conformance::PROTOBUF, conformance::TEXT_FORMAT,

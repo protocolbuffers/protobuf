@@ -57,7 +57,8 @@ class KotlinMetadataTest : public ::testing::Test {
       std::string unencoded_annotation_string;
       absl::Base64Unescape(encoded_annotations_line,
                            &unencoded_annotation_string);
-      output->file_info.ParseFromString(unencoded_annotation_string);
+      ABSL_CHECK(
+          output->file_info.ParseFromString(unencoded_annotation_string));
     }
     return result;
   }

@@ -112,7 +112,7 @@ class WireFormatTest : public testing::Test,
       DynamicMessageFactory factory;
       std::unique_ptr<Message> msg(
           factory.GetPrototype(TestMessageSet::descriptor())->New());
-      msg->ParseFromString(data);
+      ABSL_CHECK(msg->ParseFromString(data));
       auto* reflection = msg->GetReflection();
       std::vector<const FieldDescriptor*> fields;
       reflection->ListFields(*msg, &fields);
@@ -165,7 +165,7 @@ TYPED_TEST_P(WireFormatTest, Parse) {
 
   // Serialize using the generated code.
   TestUtil::SetAllFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
 
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
@@ -182,7 +182,7 @@ TYPED_TEST_P(WireFormatTest, ParseExtensions) {
 
   // Serialize using the generated code.
   TestUtil::SetAllExtensions(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
 
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
@@ -199,7 +199,7 @@ TYPED_TEST_P(WireFormatTest, ParsePacked) {
 
   // Serialize using the generated code.
   TestUtil::SetPackedFields(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
 
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
@@ -248,7 +248,7 @@ TYPED_TEST_P(WireFormatTest, ParsePackedExtensions) {
 
   // Serialize using the generated code.
   TestUtil::SetPackedExtensions(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
 
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
@@ -265,7 +265,7 @@ TYPED_TEST_P(WireFormatTest, ParseOneof) {
 
   // Serialize using the generated code.
   TestUtil::SetOneof1(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
 
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
@@ -477,7 +477,7 @@ TYPED_TEST_P(WireFormatTest, ParseMultipleExtensionRanges) {
   std::string data;
 
   TestUtil::SetAllFieldsAndExtensions(&source);
-  source.SerializeToString(&data);
+  ABSL_CHECK(source.SerializeToString(&data));
 
   {
     typename TestFixture::TestFieldOrderings dest;
@@ -608,7 +608,7 @@ TYPED_TEST_P(WireFormatTest, ParseMessageSet) {
                           ->number());
     typename TestFixture::TestMessageSetExtension1 message;
     message.set_i(123);
-    message.SerializeToString(item->mutable_message());
+    ABSL_CHECK(message.SerializeToString(item->mutable_message()));
   }
 
   {
@@ -618,7 +618,7 @@ TYPED_TEST_P(WireFormatTest, ParseMessageSet) {
                           ->number());
     typename TestFixture::TestMessageSetExtension2 message;
     message.set_str("foo");
-    message.SerializeToString(item->mutable_message());
+    ABSL_CHECK(message.SerializeToString(item->mutable_message()));
   }
 
   {
@@ -779,7 +779,7 @@ TYPED_TEST_P(WireFormatTest, ParseMessageSetWithDeepRecReverseOrder) {
       m->set_i(i);
       mset = m->mutable_recursive();
     }
-    message_set.ByteSizeLong();
+    EXPECT_GT(message_set.ByteSizeLong(), 0);
     // Serialize with reverse payload tag order
     io::StringOutputStream output_stream(&data);
     io::CodedOutputStream coded_output(&output_stream);
@@ -834,7 +834,7 @@ TYPED_TEST_P(WireFormatTest, ParseFailMalformedMessageSetReverseOrder) {
     // SerializeReverseOrder() assumes "recursive" is always present.
     m->mutable_recursive();
 
-    message_set.ByteSizeLong();
+    EXPECT_GT(message_set.ByteSizeLong(), 0);
 
     // Serialize with reverse payload tag order
     io::StringOutputStream output_stream(&data);
@@ -859,7 +859,7 @@ TYPED_TEST_P(WireFormatTest, RecursionLimit) {
   typename TestFixture::TestRecursiveMessage message;
   message.mutable_a()->mutable_a()->mutable_a()->mutable_a()->set_i(1);
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   {
     io::ArrayInputStream raw_input(data.data(), data.size());
@@ -924,7 +924,7 @@ TYPED_TEST_P(WireFormatTest, UnknownFieldRecursionLimit) {
       ->AddGroup(1234)
       ->AddVarint(1234, 123);
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   {
     io::ArrayInputStream raw_input(data.data(), data.size());
@@ -1067,7 +1067,7 @@ TYPED_TEST_P(WireFormatTest, CompatibleTypes) {
   typename TestFixture::Int64Message msg1;
   msg1.set_data(data);
   std::string serialized;
-  msg1.SerializeToString(&serialized);
+  ABSL_CHECK(msg1.SerializeToString(&serialized));
 
   // Test int64 is compatible with bool
   typename TestFixture::BoolMessage msg2;
@@ -1099,11 +1099,11 @@ TYPED_TEST_P(WireFormatTest, MessageSetLargeTypeId) {
     item->set_type_id((1 << 29) +
                       10);  // Type_id bigger than normal range of fieldnums
     item->set_message("");
-    ms.SerializeToString(&s);
+    ABSL_CHECK(ms.SerializeToString(&s));
   }
   {
     typename TestFixture::TestMessageSet ms;
-    ms.ParseFromString(s);
+    ABSL_CHECK(ms.ParseFromString(s));
     EXPECT_FALSE(ms.unknown_fields().empty());
     // No truncation of type_id
     EXPECT_TRUE(TestUtil::EqualsToSerialized(ms, s));
@@ -1277,7 +1277,7 @@ class Proto3PrimitiveRepeatedWireFormatTest<void(
   template <class Proto>
   void TestParsing(Proto* message, const std::string& compatible_data) {
     message->Clear();
-    message->ParseFromString(compatible_data);
+    ABSL_CHECK(message->ParseFromString(compatible_data));
     ExpectProto3PrimitiveRepeatedFieldsSet(*message);
 
     message->Clear();
@@ -1393,7 +1393,7 @@ TYPED_TEST_P(WireFormatInvalidInputTest, InvalidMessageWithExtraZero) {
     // Serialize a valid proto
     typename TestFixture::TestAllTypes message;
     message.set_optional_int32(1);
-    message.SerializeToString(&data);
+    ABSL_CHECK(message.SerializeToString(&data));
     data.push_back(0);  // Append invalid zero tag
   }
 
@@ -1468,7 +1468,7 @@ TYPED_TEST_P(WireFormatInvalidInputTest, InvalidStringInUnknownGroup) {
   typename TestFixture::TestAllTypes message;
   message.set_optional_string("foo foo foo foo");
   std::string data;
-  message.SerializeToString(&data);
+  ABSL_CHECK(message.SerializeToString(&data));
 
   // Chop some bytes off the end.
   data.resize(data.size() - 4);
@@ -1493,7 +1493,7 @@ bool WriteMessage(absl::string_view value, T* message,
                   std::string* wire_buffer) {
   message->set_data(value);
   wire_buffer->clear();
-  message->AppendToString(wire_buffer);
+  ABSL_CHECK(message->AppendToString(wire_buffer));
   return (!wire_buffer->empty());
 }
 

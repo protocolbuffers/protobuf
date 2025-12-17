@@ -250,13 +250,17 @@ public class LazyFieldLite {
       return;
     }
 
-    // At least one is parsed and both contain data. We won't drop any extensions here directly, but
-    // in the case that the extension registries are not the same then we might in the future if we
-    // need to serialize and parse a message again.
+    // At least one is parsed and both contain data. We will follow "this.mergeFrom(other)", and
+    // then whichever contains null value will be parsed using the other's default instance.
     if (this.value == null && other.value != null) {
-      setValue(mergeValueAndBytes(other.value, this.delayedBytes, this.extensionRegistry));
+      setValue(
+          getValue(other.value.getDefaultInstanceForType()).toBuilder()
+              .mergeFrom(other.value)
+              .build());
       return;
-    } else if (this.value != null && other.value == null) {
+    }
+
+    if (this.value != null && other.value == null) {
       setValue(mergeValueAndBytes(this.value, other.delayedBytes, other.extensionRegistry));
       return;
     }
@@ -332,10 +336,10 @@ public class LazyFieldLite {
   public int getSerializedSize() {
     // We *must* return delayed bytes size if it was ever set because the dependent messages may
     // have memoized serialized size based off of it.
-    if (memoizedBytes != null) {
-      return memoizedBytes.size();
-    } else if (delayedBytes != null) {
+    if (delayedBytes != null) {
       return delayedBytes.size();
+    } else if (memoizedBytes != null) {
+      return memoizedBytes.size();
     } else if (value != null) {
       return value.getSerializedSize();
     } else {
@@ -345,13 +349,13 @@ public class LazyFieldLite {
 
   /** Returns a BytesString for this field in a thread-safe way. */
   public ByteString toByteString() {
-    if (memoizedBytes != null) {
-      return memoizedBytes;
-    }
     // We *must* return delayed bytes if it was set because the dependent messages may have
     // memoized serialized size based off of it.
     if (delayedBytes != null) {
       return delayedBytes;
+    }
+    if (memoizedBytes != null) {
+      return memoizedBytes;
     }
     synchronized (this) {
       if (memoizedBytes != null) {

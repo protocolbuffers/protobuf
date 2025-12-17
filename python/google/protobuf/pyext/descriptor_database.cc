@@ -13,7 +13,6 @@
 #include <Python.h>
 
 #include <cstdint>
-#include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"

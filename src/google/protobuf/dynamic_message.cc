@@ -400,7 +400,6 @@ struct DynamicMessageFactory::TypeInfo {
       internal::ClassData{
           nullptr,  // default_instance
           nullptr,  // tc_table
-          nullptr,  // on_demand_register_arena_dtor
           &DynamicMessage::IsInitializedImpl,
           &DynamicMessage::MergeImpl,
           internal::MessageCreator(),  // to be filled later
@@ -1048,8 +1047,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       type_info->oneof_case_offset,
       static_cast<int>(type_info->class_data.allocation_size()),
       type_info->weak_field_map_offset,
-      nullptr,  // inlined_string_indices_
-      0,        // inlined_string_donated_offset_
       -1,       // split_offset_
       -1,       // sizeof_split_
   };

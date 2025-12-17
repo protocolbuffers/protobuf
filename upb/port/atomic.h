@@ -139,7 +139,8 @@ static bool upb_Atomic_CompareExchangeMscP64(uint64_t volatile* addr,
 
 #else
 
-UPB_INLINE void _upb_Atomic_StoreP(void* addr, uint64_t val, size_t size) {
+UPB_INLINE void _upb_Atomic_StoreP(void volatile* addr, uint64_t val,
+                                   size_t size) {
   if (size == sizeof(int32_t)) {
     (void)_InterlockedExchange((int32_t volatile*)addr, (int32_t)val);
   } else {
@@ -150,7 +151,7 @@ UPB_INLINE void _upb_Atomic_StoreP(void* addr, uint64_t val, size_t size) {
 #define upb_Atomic_Store(addr, val, order) \
   _upb_Atomic_StoreP(addr, val, sizeof(*addr))
 
-UPB_INLINE int64_t _upb_Atomic_LoadP(void* addr, size_t size) {
+UPB_INLINE int64_t _upb_Atomic_LoadP(void volatile* addr, size_t size) {
   if (size == sizeof(int32_t)) {
     return (int64_t)upb_Atomic_LoadMsc32((int32_t volatile*)addr);
   } else {
@@ -158,9 +159,10 @@ UPB_INLINE int64_t _upb_Atomic_LoadP(void* addr, size_t size) {
   }
 }
 
-#define upb_Atomic_Load(addr, order) _upb_Atomic_LoadP(addr, sizeof(*addr))
+#define upb_Atomic_Load(addr, order) \
+  (void*)_upb_Atomic_LoadP((void volatile*)addr, sizeof(*addr))
 
-UPB_INLINE int64_t _upb_Atomic_ExchangeP(void* addr, uint64_t val,
+UPB_INLINE int64_t _upb_Atomic_ExchangeP(void volatile* addr, uint64_t val,
                                          size_t size) {
   if (size == sizeof(int32_t)) {
     return (int64_t)_InterlockedExchange((int32_t volatile*)addr, (int32_t)val);
@@ -169,10 +171,12 @@ UPB_INLINE int64_t _upb_Atomic_ExchangeP(void* addr, uint64_t val,
   }
 }
 
-#define upb_Atomic_Exchange(addr, val, order) \
-  _upb_Atomic_ExchangeP(addr, val, sizeof(*addr))
+#define upb_Atomic_Exchange(addr, val, order)                       \
+  (void*)_upb_Atomic_ExchangeP((void volatile*)addr, (uint64_t)val, \
+                               sizeof(*addr))
 
-UPB_INLINE bool _upb_Atomic_CompareExchangeMscP(void* addr, void* expected,
+UPB_INLINE bool _upb_Atomic_CompareExchangeMscP(void volatile* addr,
+                                                void* expected,
                                                 uint64_t desired, size_t size) {
   if (size == sizeof(int32_t)) {
     return upb_Atomic_CompareExchangeMscP32(
@@ -185,11 +189,13 @@ UPB_INLINE bool _upb_Atomic_CompareExchangeMscP(void* addr, void* expected,
 
 #define upb_Atomic_CompareExchangeStrong(addr, expected, desired,      \
                                          success_order, failure_order) \
-  _upb_Atomic_CompareExchangeMscP(addr, expected, desired, sizeof(*addr))
+  _upb_Atomic_CompareExchangeMscP(addr, expected, (uint64_t)desired,   \
+                                  sizeof(*addr))
 
 #define upb_Atomic_CompareExchangeWeak(addr, expected, desired, success_order, \
                                        failure_order)                          \
-  _upb_Atomic_CompareExchangeMscP(addr, expected, desired, sizeof(*addr))
+  _upb_Atomic_CompareExchangeMscP(addr, expected, (uint64_t)desired,           \
+                                  sizeof(*addr))
 
 #endif
 

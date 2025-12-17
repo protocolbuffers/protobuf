@@ -115,7 +115,27 @@ register_toolchains(
     dev_dependency = True,
 )
 
-# Proto toolchains
+# Define toolchains that use pre-built protoc binaries.
+prebuilt_protoc = use_extension("//bazel/private:prebuilt_protoc_extension.bzl", "protoc")
+use_repo(
+    prebuilt_protoc,
+    "prebuilt_protoc.linux_aarch_64",
+    "prebuilt_protoc.osx_aarch_64",
+    "prebuilt_protoc.linux_ppcle_64",
+    "prebuilt_protoc.linux_s390_64",
+    "prebuilt_protoc.linux_x86_32",
+    "prebuilt_protoc.linux_x86_64",
+    "prebuilt_protoc.osx_x86_64",
+    "prebuilt_protoc.win32",
+    "prebuilt_protoc.win64",
+)
+
+# However this registration only matters if the config_setting for prefer_prebuilt_protoc is true,
+# using --@protobuf//bazel/toolchains:prefer_prebuilt_protoc
+register_toolchains("//bazel/private/toolchains/prebuilt:all")
+
+# From-source protobuf toolchains
+# Fallback if nothing is already registered
 register_toolchains("//bazel/private/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [

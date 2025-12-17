@@ -206,7 +206,7 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ const $Map$& $name$() const;
-    $DEPRECATED$ $Map$* $nonnull$ $mutable_name$();
+    [[nodiscard]] $DEPRECATED$ $Map$* $nonnull$ $mutable_name$();
 
     private:
     const $Map$& $_internal_name$() const;

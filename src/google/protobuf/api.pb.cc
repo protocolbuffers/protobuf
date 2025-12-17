@@ -476,7 +476,6 @@ constexpr auto Api::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Api_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Api::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Api>(),
@@ -1070,7 +1069,6 @@ constexpr auto Method::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Method_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Method::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Method>(),
@@ -1592,7 +1590,6 @@ constexpr auto Mixin::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Mixin_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Mixin::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Mixin>(),

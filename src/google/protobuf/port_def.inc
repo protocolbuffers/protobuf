@@ -144,15 +144,6 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Renames DescriptorPool::AddUnusedImportTrackFile
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT 1
-
-// Removes google::protobuf::util::MessageDifferencer::AddIgnoreCriteria that takes a
-// raw pointer as an argument in favor of the overload that takes a unique_ptr.
-// Owner: mkruskal@, natebrennan@
-#define PROTOBUF_FUTURE_REMOVE_ADD_IGNORE_CRITERIA 1
-
 // Marks several logically constant operations on Repeated*Field as nodiscard.
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]

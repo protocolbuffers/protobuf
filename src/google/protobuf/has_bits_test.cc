@@ -209,7 +209,7 @@ TEST(HasBitsTest, HasBitsSetOnMutableMap) {
         << "Test only applies with hasbits for repeated fields enabled";
   }
   TestMap msg;
-  msg.mutable_map_int32_int32();
+  (void)msg.mutable_map_int32_int32();
   EXPECT_TRUE(HasBitsTestPeer::HasBitSet(msg, "map_int32_int32"));
 }
 
@@ -219,7 +219,7 @@ TEST(HasBitsTest, HasBitsClearedOnMapFieldClear) {
         << "Test only applies with hasbits for repeated fields enabled";
   }
   TestMap msg;
-  msg.mutable_map_int32_int32();
+  (void)msg.mutable_map_int32_int32();
   msg.clear_map_int32_int32();
   EXPECT_FALSE(HasBitsTestPeer::HasBitSet(msg, "map_int32_int32"));
 }
@@ -241,7 +241,7 @@ TEST(HasBitsTest, HasBitsClearedOnMapFieldClearWithReflection) {
         << "Test only applies with hasbits for repeated fields enabled";
   }
   TestMap msg;
-  msg.mutable_map_int32_int32();
+  (void)msg.mutable_map_int32_int32();
   msg.GetReflection()->ClearField(
       &msg, msg.GetDescriptor()->FindFieldByName("map_int32_int32"));
   EXPECT_FALSE(HasBitsTestPeer::HasBitSet(msg, "map_int32_int32"));

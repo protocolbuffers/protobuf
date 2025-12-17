@@ -29,15 +29,11 @@ static bool upb_DecodeFast_SingleString(upb_Decoder* d, const char** ptr,
 
   if (!upb_DecodeFast_DecodeSize(d, ptr, &size, next)) return false;
 
-  if (!_upb_Decoder_ReadString(d, ptr, size, sv)) {
+  if (!_upb_Decoder_ReadString(d, ptr, size, sv, validate_utf8)) {
     sv->size = 0;
     // TODO: ReadString can actually return NULL for invalid wire format.
     // Need to fix ReadString to return a more granular error.
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
-  }
-
-  if (validate_utf8 && !_upb_Decoder_VerifyUtf8Inline(sv->data, sv->size)) {
-    return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_BadUtf8, next);
   }
 
   return true;

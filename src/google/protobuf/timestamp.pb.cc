@@ -179,7 +179,6 @@ constexpr auto Timestamp::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Timestamp_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Timestamp::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Timestamp>(),

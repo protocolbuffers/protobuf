@@ -122,7 +122,8 @@ void CollectExtensions(const FileDescriptor& file, const Options& options,
                        FieldDescriptorSet* optional_extensions) {
   FileDescriptorProto file_proto = StripSourceRetentionOptions(file);
   std::string file_data;
-  file_proto.SerializeToString(&file_data);
+  // TODO: Remove this suppression.
+  (void)file_proto.SerializeToString(&file_data);
   const Descriptor* file_proto_desc = file.pool()->FindMessageTypeByName(
       file_proto.GetDescriptor()->full_name());
 
@@ -482,24 +483,26 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   } else {
   }
 
+  std::string method_prefix = "_clinit_autosplit_dinit";
   int bytecode_estimate = 0;
   int method_num = 0;
-
   for (int i = 0; i < file_->message_type_count(); i++) {
     bytecode_estimate +=
         message_generators_[i]->GenerateStaticVariableInitializers(printer);
     MaybeRestartJavaMethod(
         printer, &bytecode_estimate, &method_num,
-        "_clinit_autosplit_dinit_$method_num$();\n",
-        "private static void _clinit_autosplit_dinit_$method_num$() {\n");
+        "$method_prefix$_$method_num$();\n",
+        "private static void $method_prefix$_$method_num$() {\n");
   }
+
+
   for (int i = 0; i < file_->extension_count(); i++) {
     bytecode_estimate +=
         extension_generators_[i]->GenerateNonNestedInitializationCode(printer);
     MaybeRestartJavaMethod(
         printer, &bytecode_estimate, &method_num,
-        "_clinit_autosplit_dinit_$method_num$();\n",
-        "private static void _clinit_autosplit_dinit_$method_num$() {\n");
+        "$method_prefix$_$method_num$();\n",
+        "private static void $method_prefix$_$method_num$() {\n");
   }
   // Feature resolution for Java features uses extension registry
   // which must happen after internalInit() from
@@ -548,8 +551,8 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       bytecode_estimate += generator->GenerateRegistrationCode(printer);
       MaybeRestartJavaMethod(
           printer, &bytecode_estimate, &method_num,
-          "_clinit_autosplit_dinit_$method_num$(registry);\n",
-          "private static void _clinit_autosplit_dinit_$method_num$(\n"
+          "$method_prefix$_$method_num$(registry);\n",
+          "private static void $method_prefix$_$method_num$(\n"
           "    com.google.protobuf.ExtensionRegistry registry) {\n");
     }
     for (const FieldDescriptor* field : optional_extensions) {
@@ -567,8 +570,8 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       bytecode_estimate += 8;
       MaybeRestartJavaMethod(
           printer, &bytecode_estimate, &method_num,
-          "_clinit_autosplit_dinit_$method_num$(registry);\n",
-          "private static void _clinit_autosplit_dinit_$method_num$(\n"
+          "$method_prefix$_$method_num$(registry);\n",
+          "private static void $method_prefix$_$method_num$(\n"
           "    com.google.protobuf.ExtensionRegistry registry) {\n");
     }
     printer->Print(
@@ -625,7 +628,8 @@ static void GenerateSibling(
   if (annotate_code) {
     std::unique_ptr<io::ZeroCopyOutputStream> info_output(
         context->Open(info_full_path));
-    annotations.SerializeToZeroCopyStream(info_output.get());
+    // TODO: Remove this suppression.
+    (void)annotations.SerializeToZeroCopyStream(info_output.get());
     annotation_list->push_back(info_full_path);
   }
 }

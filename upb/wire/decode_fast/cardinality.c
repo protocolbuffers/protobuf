@@ -10,6 +10,6 @@ const char* upb_DecodeFast_IsDoneFallback(upb_Decoder* d, const char* ptr) {
   upb_IsDoneStatus status = UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
       &d->input, ptr, &overrun);
   UPB_ASSERT(status == kUpb_IsDoneStatus_NeedFallback);
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallbackInline)(
-      &d->input, ptr, overrun, _upb_Decoder_BufferFlipCallback);
+  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(&d->input, ptr,
+                                                            overrun);
 }

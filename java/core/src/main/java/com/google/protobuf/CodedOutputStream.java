@@ -728,18 +728,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     return FIXED32_SIZE;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode an {@code int64} field, including
-   * tag.
-   */
+  /** Compute the number of bytes that would be needed to encode an {@code int64} field. */
   public static int computeInt64SizeNoTag(final long value) {
     return computeUInt64SizeNoTag(value);
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code uint64} field, including
-   * tag.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code uint64} field. */
   public static int computeUInt64SizeNoTag(long value) {
     int clz = Long.numberOfLeadingZeros(value);
     // See computeUInt32SizeNoTag for explanation
@@ -761,18 +755,12 @@ public abstract class CodedOutputStream extends ByteOutput {
     return FIXED64_SIZE;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code float} field, including
-   * tag.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code float} field. */
   public static int computeFloatSizeNoTag(@SuppressWarnings("unused") final float unused) {
     return FIXED32_SIZE;
   }
 
-  /**
-   * Compute the number of bytes that would be needed to encode a {@code double} field, including
-   * tag.
-   */
+  /** Compute the number of bytes that would be needed to encode a {@code double} field. */
   public static int computeDoubleSizeNoTag(@SuppressWarnings("unused") final double unused) {
     return FIXED64_SIZE;
   }

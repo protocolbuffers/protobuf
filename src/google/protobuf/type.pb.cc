@@ -623,7 +623,6 @@ constexpr auto Type::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Type_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Type::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Type>(),
@@ -1174,7 +1173,6 @@ constexpr auto Field::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Field_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Field::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Field>(),
@@ -1843,7 +1841,6 @@ constexpr auto Enum::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Enum_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Enum::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Enum>(),
@@ -2340,7 +2337,6 @@ constexpr auto EnumValue::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_EnumValue_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &EnumValue::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<EnumValue>(),
@@ -2700,7 +2696,6 @@ constexpr auto Option::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Option_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Option::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<Option>(),

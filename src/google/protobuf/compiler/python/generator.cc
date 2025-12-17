@@ -243,7 +243,7 @@ bool Generator::Generate(const FileDescriptor* file,
   std::string filename = GetFileName(file, ".py");
 
   proto_ = StripSourceRetentionOptions(*file_);
-  proto_.SerializeToString(&file_descriptor_serialized_);
+  ABSL_CHECK(proto_.SerializeToString(&file_descriptor_serialized_));
 
   if (!opensource_runtime_ && GeneratingDescriptorProto()) {
     std::string bootstrap_filename =
@@ -467,8 +467,8 @@ std::string Generator::GetResolvedFeatures(
   auto message_factory = absl::make_unique<DynamicMessageFactory>();
   auto features =
       absl::WrapUnique(message_factory->GetPrototype(feature_set)->New());
-  features->ParseFromString(
-      GetResolvedSourceFeatures(descriptor).SerializeAsString());
+  ABSL_CHECK(features->ParseFromString(
+      GetResolvedSourceFeatures(descriptor).SerializeAsString()));
 
   // Collect all of the resolved features.
   std::vector<std::string> feature_args;
@@ -666,7 +666,7 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor,
       "  create_key=_descriptor._internal_create_key,\n"
       "  values=[\n";
   std::string options_string;
-  proto.options().SerializeToString(&options_string);
+  ABSL_CHECK(proto.options().SerializeToString(&options_string));
   printer_->Print(m, enum_descriptor_template);
   printer_->Indent();
   printer_->Indent();
@@ -681,7 +681,6 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor,
   printer_->Print("containing_type=None,\n");
   printer_->Print("serialized_options=$options_value$,\n", "options_value",
                   OptionsValue(options_string));
-  EnumDescriptorProto edp;
   printer_->Outdent();
   printer_->Print(")\n");
   printer_->Print("_sym_db.RegisterEnumDescriptor($name$)\n", "name",
@@ -822,7 +821,7 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor,
   printer_->Outdent();
   printer_->Print("],\n");
   std::string options_string;
-  proto.options().SerializeToString(&options_string);
+  ABSL_CHECK(proto.options().SerializeToString(&options_string));
   printer_->Print(
       "serialized_options=$options_value$,\n"
       "is_extendable=$extendable$",
@@ -1150,7 +1149,7 @@ void Generator::PrintEnumValueDescriptor(
   // TODO: Fix up EnumValueDescriptor "type" fields.
   // More circular references.  ::sigh::
   std::string options_string;
-  proto.options().SerializeToString(&options_string);
+  ABSL_CHECK(proto.options().SerializeToString(&options_string));
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["name"] = std::string(descriptor.name());
   m["index"] = absl::StrCat(descriptor.index());
@@ -1168,7 +1167,7 @@ void Generator::PrintEnumValueDescriptor(
 void Generator::PrintFieldDescriptor(const FieldDescriptor& field,
                                      const FieldDescriptorProto& proto) const {
   std::string options_string;
-  proto.options().SerializeToString(&options_string);
+  ABSL_CHECK(proto.options().SerializeToString(&options_string));
   absl::flat_hash_map<absl::string_view, std::string> m;
   m["name"] = std::string(field.name());
   m["full_name"] = std::string(field.full_name());
@@ -1313,7 +1312,7 @@ template <typename DescriptorProtoT>
 void Generator::PrintSerializedPbInterval(
     const DescriptorProtoT& descriptor_proto, absl::string_view name) const {
   std::string sp;
-  descriptor_proto.SerializeToString(&sp);
+  ABSL_CHECK(descriptor_proto.SerializeToString(&sp));
   size_t offset = file_descriptor_serialized_.find(sp);
   ABSL_CHECK_GE(offset, 0);
 

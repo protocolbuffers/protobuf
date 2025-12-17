@@ -2355,8 +2355,8 @@ TEST(MessageDifferencerTest, PrintMapKeysTest) {
       diff);
 
   google::protobuf::Any any1, any2;
-  any1.PackFrom(msg1);
-  any2.PackFrom(msg2);
+  ABSL_CHECK(any1.PackFrom(msg1));
+  ABSL_CHECK(any2.PackFrom(msg2));
   std::string diff_with_any;
   differencer.ReportDifferencesToString(&diff_with_any);
   EXPECT_FALSE(differencer.Compare(any1, any2));
@@ -3889,8 +3889,8 @@ TEST_F(ComparisonTest, MapEntryPartialEmptyKeyTest) {
   differencer.set_scope(util::MessageDifferencer::PARTIAL);
   // TODO: Remove the round trip
   std::string serialized_value;
-  map1.SerializeToString(&serialized_value);
-  map1.ParseFromString(serialized_value);
+  ABSL_CHECK(map1.SerializeToString(&serialized_value));
+  ABSL_CHECK(map1.ParseFromString(serialized_value));
   EXPECT_FALSE(differencer.Compare(map1, map2));
 }
 
@@ -4270,8 +4270,8 @@ TEST(AnyTest, Simple) {
   value2.set_a(21);
 
   proto2_unittest::TestAny m1, m2;
-  m1.mutable_any_value()->PackFrom(value1);
-  m2.mutable_any_value()->PackFrom(value2);
+  ABSL_CHECK(m1.mutable_any_value()->PackFrom(value1));
+  ABSL_CHECK(m2.mutable_any_value()->PackFrom(value2));
   util::MessageDifferencer message_differencer;
   std::string difference_string;
   message_differencer.ReportDifferencesToString(&difference_string);
@@ -4286,8 +4286,8 @@ TEST(AnyTest, DifferentTypes) {
   value2.set_c(30);
 
   proto2_unittest::TestAny m1, m2;
-  m1.mutable_any_value()->PackFrom(value1);
-  m2.mutable_any_value()->PackFrom(value2);
+  ABSL_CHECK(m1.mutable_any_value()->PackFrom(value1));
+  ABSL_CHECK(m2.mutable_any_value()->PackFrom(value2));
   util::MessageDifferencer message_differencer;
   std::string difference_string;
   message_differencer.ReportDifferencesToString(&difference_string);
@@ -4307,10 +4307,10 @@ TEST(Anytest, TreatAsSet) {
   value2.set_b(31);
 
   proto2_unittest::TestAny m1, m2;
-  m1.add_repeated_any_value()->PackFrom(value1);
-  m1.add_repeated_any_value()->PackFrom(value2);
-  m2.add_repeated_any_value()->PackFrom(value2);
-  m2.add_repeated_any_value()->PackFrom(value1);
+  ABSL_CHECK(m1.add_repeated_any_value()->PackFrom(value1));
+  ABSL_CHECK(m1.add_repeated_any_value()->PackFrom(value2));
+  ABSL_CHECK(m2.add_repeated_any_value()->PackFrom(value2));
+  ABSL_CHECK(m2.add_repeated_any_value()->PackFrom(value1));
 
   util::MessageDifferencer message_differencer;
   message_differencer.TreatAsSet(GetFieldDescriptor(m1, "repeated_any_value"));
@@ -4325,10 +4325,10 @@ TEST(Anytest, TreatAsSet_DifferentType) {
   value2.add_rv(40);
 
   proto2_unittest::TestAny m1, m2;
-  m1.add_repeated_any_value()->PackFrom(value1);
-  m1.add_repeated_any_value()->PackFrom(value2);
-  m2.add_repeated_any_value()->PackFrom(value2);
-  m2.add_repeated_any_value()->PackFrom(value1);
+  ABSL_CHECK(m1.add_repeated_any_value()->PackFrom(value1));
+  ABSL_CHECK(m1.add_repeated_any_value()->PackFrom(value2));
+  ABSL_CHECK(m2.add_repeated_any_value()->PackFrom(value2));
+  ABSL_CHECK(m2.add_repeated_any_value()->PackFrom(value1));
 
   util::MessageDifferencer message_differencer;
   message_differencer.TreatAsSet(GetFieldDescriptor(m1, "repeated_any_value"));

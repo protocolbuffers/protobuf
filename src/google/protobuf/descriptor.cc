@@ -1611,8 +1611,9 @@ class DescriptorPool::DeferredValidation {
   }
 
   struct LifetimesInfo {
-    const FeatureSet* proto_features;
+    const Message* option_to_validate;  // features or options to validate
     const Message* proto;
+    bool is_feature;
     absl::string_view full_name;
     absl::string_view filename;
   };
@@ -1637,19 +1638,24 @@ class DescriptorPool::DeferredValidation {
   }
 
   bool Validate() {
-    if (lifetimes_info_map_.empty()) return true;
+    if (lifetimes_info_map_.empty()) {
+      return true;
+    }
 
     static absl::string_view feature_set_name = "google.protobuf.FeatureSet";
-    const Descriptor* feature_set =
-        pool_->FindMessageTypeByName(feature_set_name);
-
     bool has_errors = false;
     for (const auto& it : lifetimes_info_map_) {
       const FileDescriptor* file = it.first;
 
       for (const auto& info : it.second) {
+        const Descriptor* feature_set_descriptor = nullptr;
+        // TODO: Support custom options
+        if (info.is_feature) {
+          feature_set_descriptor =
+              pool_->FindMessageTypeByName(feature_set_name);
+        }
         auto results = FeatureResolver::ValidateFeatureLifetimes(
-            file->edition(), *info.proto_features, feature_set);
+            file->edition(), *info.option_to_validate, feature_set_descriptor);
         for (const auto& error : results.errors) {
           has_errors = true;
           if (error_collector_ == nullptr) {
@@ -2494,8 +2500,10 @@ const DescriptorPool* DescriptorPool::generated_pool() {
   // runtime. We have to avoid registering it pre-main, because we need to
   // ensure that the linker --gc-sections step can strip out the full runtime if
   // it is unused.
-  DescriptorProto::descriptor();
-  pb::CppFeatures::descriptor();
+  // TODO: Remove this suppression.
+  (void)DescriptorProto::descriptor();
+  // TODO: Remove this suppression.
+  (void)pb::CppFeatures::descriptor();
   return pool;
 }
 
@@ -3955,7 +3963,8 @@ void FieldDescriptor::DebugString(
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
   if (is_map() || real_containing_oneof() ||
-      (!is_required() && !is_repeated() && !has_optional_keyword())) {
+      (!is_required() && !is_repeated() && !proto3_optional_ &&
+       file()->edition() == Edition::EDITION_PROTO3)) {
     label.clear();
   }
   // Label is omitted for optional and required fields under editions.
@@ -4275,12 +4284,6 @@ bool FieldDescriptor::legacy_enum_field_treated_as_closed() const {
   return type() == TYPE_ENUM &&
          (features().GetExtension(pb::cpp).legacy_closed_enum() ||
           enum_type()->is_closed());
-}
-
-bool FieldDescriptor::has_optional_keyword() const {
-  return proto3_optional_ ||
-         (file()->edition() == Edition::EDITION_PROTO2 && !is_required() &&
-          !is_repeated() && !containing_oneof());
 }
 
 FieldDescriptor::CppStringType FieldDescriptor::CalculateCppStringType() const {
@@ -5012,6 +5015,9 @@ class DescriptorBuilder {
                        const DescriptorProto::ExtensionRange& proto) {}
   void ValidateExtensionRangeOptions(const DescriptorProto& proto,
                                      const Descriptor& message);
+  void MaybeAddFeatureSupportError(const absl::Status& feature_support_status,
+                                   const Message& proto,
+                                   absl::string_view full_name);
   void ValidateExtensionDeclaration(
       absl::string_view full_name,
       const RepeatedPtrField<ExtensionRangeOptions_Declaration>& declarations,
@@ -6225,6 +6231,11 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
   }
 }
 
+template <typename OptionT>
+bool IsDefaultInstance(const OptionT& opt) {
+  return &opt == &OptionT::default_instance();
+}
+
 const FileDescriptor* DescriptorBuilder::BuildFile(
     const FileDescriptorProto& proto) {
   // Ensure the generated pool has been lazily initialized.  This is most
@@ -6270,8 +6281,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     }
   }
 
-  static const int kMaximumPackageLength = 511;
-  if (proto.package().size() > kMaximumPackageLength) {
+  if (proto.package().size() > internal::NameLimits::kPackageName) {
     AddError(proto.package(), proto, DescriptorPool::ErrorCollector::NAME,
              "Package name is too long");
     return nullptr;
@@ -6589,11 +6599,13 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
     SuggestFieldNumbers(result, proto);
   }
 
-  if (!options_to_interpret_.empty()) {
-    // If there are options to interpret, report an error on any unknown option
-    // dependencies.
-    for (const std::string& name : unknown_option_dependencies) {
-      AddImportError(proto, name);
+  if (!pool_->allow_unknown_) {
+    if (!options_to_interpret_.empty()) {
+      // If there are options to interpret, report an error on any unknown
+      // option dependencies.
+      for (const std::string& name : unknown_option_dependencies) {
+        AddImportError(proto, name);
+      }
     }
   }
 
@@ -6681,10 +6693,17 @@ FileDescriptor* DescriptorBuilder::BuildFileImpl(
   if (!had_errors_ && !pool_->lazily_build_dependencies_) {
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
-          if (descriptor.proto_features_ != &FeatureSet::default_instance()) {
+          if (!IsDefaultInstance(*descriptor.proto_features_)) {
             deferred_validation_.ValidateFeatureLifetimes(
-                GetFile(descriptor), {descriptor.proto_features_, &desc_proto,
-                                      GetFullName(descriptor), proto.name()});
+                GetFile(descriptor),
+                {descriptor.proto_features_, &desc_proto, /*is_feature=*/true,
+                 GetFullName(descriptor), proto.name()});
+          }
+          if (!IsDefaultInstance(*descriptor.options_)) {
+            deferred_validation_.ValidateFeatureLifetimes(
+                GetFile(descriptor),
+                {descriptor.options_, &desc_proto,
+                 /*is_feature=*/false, GetFullName(descriptor), proto.name()});
           }
         });
   }
@@ -6820,6 +6839,10 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
+    if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
+      AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Reserved name too long.");
+    }
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
@@ -7525,6 +7548,10 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
+    if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
+      AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+               "Reserved name too long.");
+    }
     result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
@@ -7597,6 +7624,11 @@ void DescriptorBuilder::BuildEnumValue(const EnumValueDescriptorProto& proto,
   full_name.reserve(scope_len + proto.name().size());
   full_name.append(parent->full_name().data(), scope_len);
   full_name.append(proto.name());
+
+  if (full_name.size() > std::numeric_limits<uint16_t>::max()) {
+    AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
+             "Name too long.");
+  }
 
   result->all_names_ =
       alloc.AllocateStrings(proto.name(), std::move(full_name));
@@ -8390,13 +8422,6 @@ void DescriptorBuilder::ValidateOptions(const FileDescriptor* file,
   }
 
   if (file->edition() >= Edition::EDITION_2024) {
-    if (file->options().has_java_multiple_files()) {
-      AddError(file->name(), proto, DescriptorPool::ErrorCollector::OPTION_NAME,
-               "The `java_multiple_files` behavior is enabled by default in "
-               "editions 2024 and above.  To disable it, you can set "
-               "`features.(pb.java).nest_in_file_class = YES` on individual "
-               "messages, enums, or services.");
-    }
     if (file->weak_dependency_count() > 0) {
       AddError("weak", proto, DescriptorPool::ErrorCollector::IMPORT,
                "weak imports are not allowed under edition 2024 and beyond.");
@@ -8483,10 +8508,27 @@ void DescriptorBuilder::ValidateOptions(const OneofDescriptor* /*oneof*/,
 }
 
 
+void DescriptorBuilder::MaybeAddFeatureSupportError(
+    const absl::Status& feature_support_status, const Message& proto,
+    absl::string_view full_name) {
+  if (feature_support_status.ok()) {
+    return;
+  }
+  std::string feature_support_error(feature_support_status.message());
+  AddError(full_name, proto, DescriptorPool::ErrorCollector::OPTION_NAME,
+           feature_support_error.c_str());
+}
+
 void DescriptorBuilder::ValidateOptions(const FieldDescriptor* field,
                                         const FieldDescriptorProto& proto) {
   if (pool_->lazily_build_dependencies_ && (!field || !field->message_type())) {
     return;
+  }
+  if (pool_->enforce_feature_support_validation_) {
+    absl::Status feature_support_status =
+        FeatureResolver::ValidateFieldFeatureSupport(*field);
+    MaybeAddFeatureSupportError(feature_support_status, proto,
+                                field->full_name());
   }
 
   ValidateFieldFeatures(field, proto);
@@ -8818,10 +8860,15 @@ void DescriptorBuilder::ValidateOptions(const EnumDescriptor* enm,
   }
 }
 
-void DescriptorBuilder::ValidateOptions(
-    const EnumValueDescriptor* /* enum_value */,
-    const EnumValueDescriptorProto& /* proto */) {
-  // Nothing to do so far.
+void DescriptorBuilder::ValidateOptions(const EnumValueDescriptor* enum_value,
+                                        const EnumValueDescriptorProto& proto) {
+  if (pool_->enforce_feature_support_validation_) {
+    absl::Status feature_support_result =
+        FeatureResolver::ValidateFeatureSupport(
+            enum_value->options().feature_support(), enum_value->full_name());
+    MaybeAddFeatureSupportError(feature_support_result, proto,
+                                enum_value->full_name());
+  }
 }
 
 namespace {
@@ -9232,7 +9279,7 @@ bool IsValidUpperSnakeCaseName(absl::string_view name, std::string* error) {
 }
 
 constexpr absl::string_view kNamingStyleOptOutMessage =
-    " (feature.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
+    " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
 
 }  // namespace
@@ -10228,7 +10275,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     return false;
   } else {
     std::string serial;
-    dynamic->SerializeToString(&serial);  // Never fails
+    ABSL_CHECK(dynamic->SerializeToString(&serial));  // Never fails
     if (option_field->type() == FieldDescriptor::TYPE_MESSAGE) {
       unknown_fields->AddLengthDelimited(option_field->number(), serial);
     } else {

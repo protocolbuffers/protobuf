@@ -21,6 +21,31 @@ internal_csharp_proto_library(
     srcs = ["test_messages_edition2023.proto"],
 )
 
+# Aliases for older monolithic conformance test protos defined elsewhere.
+alias(
+    name = "test_messages_proto2_editions_proto",
+    actual = "//editions:test_messages_proto2_editions_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_messages_proto3_editions_proto",
+    actual = "//editions:test_messages_proto3_editions_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_messages_proto2_proto",
+    actual = "//src/google/protobuf:test_messages_proto2_proto",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_messages_proto3_proto",
+    actual = "//src/google/protobuf:test_messages_proto3_proto",
+    visibility = ["//visibility:public"],
+)
+
 proto_library(
     name = "test_messages_edition2023_proto",
     srcs = ["test_messages_edition2023.proto"],

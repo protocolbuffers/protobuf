@@ -453,8 +453,9 @@ class PROTOBUF_EXPORT Method final : public ::google::protobuf::Message
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL mutable_options();
+  [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+  mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
@@ -758,8 +759,9 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 
   public:
   void clear_methods() ;
-  ::google::protobuf::Method* PROTOBUF_NONNULL mutable_methods(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL mutable_methods();
+  [[nodiscard]] ::google::protobuf::Method* PROTOBUF_NONNULL mutable_methods(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL
+  mutable_methods();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
@@ -777,8 +779,9 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 
   public:
   void clear_options() ;
-  ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL mutable_options();
+  [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
+  mutable_options();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
@@ -796,8 +799,9 @@ class PROTOBUF_EXPORT Api final : public ::google::protobuf::Message
 
   public:
   void clear_mixins() ;
-  ::google::protobuf::Mixin* PROTOBUF_NONNULL mutable_mixins(int index);
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL mutable_mixins();
+  [[nodiscard]] ::google::protobuf::Mixin* PROTOBUF_NONNULL mutable_mixins(int index);
+  [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL
+  mutable_mixins();
 
   private:
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;

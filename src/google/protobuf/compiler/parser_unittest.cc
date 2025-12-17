@@ -1198,8 +1198,8 @@ TEST_F(ParseMessageTest, CanHandleErrorOnFirstToken) {
   ExpectHasEarlyExitErrors(
       "/",
       "0:0: Expected top-level statement (e.g. \"message\").\n"
-      "0:0: File must begin with a syntax statement, e.g. 'syntax = "
-      "\"proto2\";'.\n");
+      "0:0: File must begin with an edition or syntax statement, "
+      "e.g. 'edition = \"2023\";'.\n");
 }
 
 // ===================================================================
@@ -1562,9 +1562,10 @@ typedef ParserTest ParseErrorTest;
 
 TEST_F(ParseErrorTest, MissingSyntaxIdentifier) {
   require_syntax_identifier_ = true;
-  ExpectHasEarlyExitErrors("message TestMessage {}",
-                           "0:0: File must begin with a syntax statement, e.g. "
-                           "'syntax = \"proto2\";'.\n");
+  ExpectHasEarlyExitErrors(
+      "message TestMessage {}",
+      "0:0: File must begin with an edition or syntax statement, e.g. "
+      "'edition = \"2023\";'.\n");
   EXPECT_EQ("", parser_->GetSyntaxIdentifier());
 }
 

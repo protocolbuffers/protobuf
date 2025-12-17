@@ -27,7 +27,8 @@ class TestUtilLite {
   // Set every field in the message to a unique value.
   static void SetAllFields(unittest::TestAllTypesLite* message);
   static void SetAllExtensions(unittest::TestAllExtensionsLite* message);
-  static void SetPackedFields(unittest::TestPackedTypesLite* message);
+  static void SetPackedFields(unittest::TestPackedTypesLite* message,
+                              bool use_large_values = true);
   static void SetPackedExtensions(unittest::TestPackedExtensionsLite* message);
 
   // Use the repeated versions of the set_*() accessors to modify all the

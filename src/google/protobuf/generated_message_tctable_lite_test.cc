@@ -90,8 +90,8 @@ TEST(FastVarints, NameHere) {
   constexpr uint8_t kFieldOffset = 24;
 
   const ClassData class_data(
-      nullptr, nullptr, nullptr, nullptr, nullptr, MessageCreator(), nullptr,
-      nullptr, nullptr, nullptr, /*cached_size_offset=*/16, /*is_lite*/ true);
+      nullptr, nullptr, nullptr, nullptr, MessageCreator(), nullptr, nullptr,
+      nullptr, nullptr, /*cached_size_offset=*/16, /*is_lite*/ true);
 
   const TcParseTable<0, 1, 0, 0, 2> parse_table = {
       {
@@ -901,7 +901,7 @@ TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
   }
 
   proto2_unittest::TestPackedEnumSmallRange new_proto;
-  new_proto.ParseFromString(proto.SerializeAsString());
+  ABSL_CHECK(new_proto.ParseFromString(proto.SerializeAsString()));
 
   // We should have reserved exactly the right size for new_proto's `vals`,
   // rather than growing it on demand like we did in `proto`.
@@ -985,7 +985,8 @@ TEST(GeneratedMessageTctableLiteTest,
   // field 1, because it notices that the input serialized proto is much smaller
   // than 2^20 bytes.
   proto2_unittest::TestPackedEnumSmallRange proto;
-  proto.MergeFromString(serialized);
+  // TODO: Remove this suppression.
+  (void)proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
 }
 

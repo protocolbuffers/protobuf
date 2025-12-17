@@ -227,7 +227,6 @@ constexpr auto FieldMask::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_FieldMask_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &FieldMask::MergeImpl,
           ::google::protobuf::Message::GetNewImpl<FieldMask>(),

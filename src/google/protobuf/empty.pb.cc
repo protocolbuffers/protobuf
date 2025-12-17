@@ -135,7 +135,6 @@ constexpr auto Empty::InternalGenerateClassData_() {
       ::google::protobuf::internal::ClassData{
           &_Empty_default_instance_._instance,
           &_table_.header,
-          nullptr,  // OnDemandRegisterArenaDtor
           nullptr,  // IsInitialized
           &Empty::MergeImpl,
           ::google::protobuf::internal::ZeroFieldsBase::GetNewImpl<Empty>(),

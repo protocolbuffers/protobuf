@@ -67,7 +67,7 @@ class UnknownFieldSetTest : public testing::Test {
   void SetUp() override {
     descriptor_ = unittest::TestAllTypes::descriptor();
     TestUtil::SetAllFields(&all_fields_);
-    all_fields_.SerializeToString(&all_fields_data_);
+    ABSL_CHECK(all_fields_.SerializeToString(&all_fields_data_));
     ASSERT_TRUE(empty_message_.ParseFromString(all_fields_data_));
     unknown_fields_ = empty_message_.mutable_unknown_fields();
   }
@@ -312,7 +312,7 @@ TEST_F(UnknownFieldSetTest, Serialize) {
   // again.
 
   std::string data;
-  empty_message_.SerializeToString(&data);
+  ABSL_CHECK(empty_message_.SerializeToString(&data));
 
   // Don't use EXPECT_EQ because we don't want to dump raw binary data to
   // stdout.
@@ -432,7 +432,7 @@ TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
   unittest::TestEmptyMessageLite destination;
 
   source.set_optional_fixed32(42);
-  destination.ParseFromString(source.SerializeAsString());
+  ABSL_CHECK(destination.ParseFromString(source.SerializeAsString()));
 
   UnknownFieldSet unknown_field_set;
   EXPECT_TRUE(unknown_field_set.MergeFromMessage(destination));
@@ -564,7 +564,7 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
     unknown_fields->AddVarint(repeated_field->number(), 4);  // not valid
     unknown_fields->AddVarint(repeated_field->number(), TestAllTypes::BAZ);
     unknown_fields->AddVarint(repeated_field->number(), 6);  // not valid
-    empty_message.SerializeToString(&data);
+    ABSL_CHECK(empty_message.SerializeToString(&data));
   }
 
   {

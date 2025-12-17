@@ -225,7 +225,7 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
     // Set up.
     UNITTEST::TestAllTypes message;
     TestUtil::SetAllFields(&message);
-    message.SerializeToString(&data);
+    ABSL_CHECK(message.SerializeToString(&data));
   }
 
   {
@@ -349,7 +349,7 @@ TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
 
   q.mutable_child()->set_dummy(500);
   q = p;
-  q.ParsePartialFromString(q.SerializePartialAsString());
+  ABSL_CHECK(q.ParsePartialFromString(q.SerializePartialAsString()));
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, o.SerializePartialAsString()));
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, p.SerializePartialAsString()));
 }
@@ -861,12 +861,12 @@ TEST(MESSAGE_TEST_NAME, DynamicCastMessageInvalidReferenceType) {
   UNITTEST::TestAllTypes test_all_types;
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
 #if defined(ABSL_HAVE_EXCEPTIONS)
-  EXPECT_THROW(DynamicCastMessage<UNITTEST::TestRequired>(
+  EXPECT_THROW((void)DynamicCastMessage<UNITTEST::TestRequired>(
                    test_all_types_pointer_const_ref),
                std::bad_cast);
 #else
   ASSERT_DEATH(
-      DynamicCastMessage<UNITTEST::TestRequired>(
+      (void)DynamicCastMessage<UNITTEST::TestRequired>(
           test_all_types_pointer_const_ref),
       absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
                    UNITTEST::TestRequired::default_instance().GetTypeName()));
@@ -903,7 +903,7 @@ TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidPointerType) {
   MessageLite* test_all_types_pointer = &test_all_types;
 
   ASSERT_DEBUG_DEATH(
-      DownCastMessage<UNITTEST::TestRequired>(test_all_types_pointer),
+      (void)DownCastMessage<UNITTEST::TestRequired>(test_all_types_pointer),
       absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
                    UNITTEST::TestRequired::default_instance().GetTypeName()));
 }
@@ -914,7 +914,7 @@ TEST(MESSAGE_TEST_NAME, DownCastMessageInvalidReferenceType) {
   MessageLite& test_all_types_ref = test_all_types;
 
   ASSERT_DEBUG_DEATH(
-      DownCastMessage<UNITTEST::TestRequired>(test_all_types_ref),
+      (void)DownCastMessage<UNITTEST::TestRequired>(test_all_types_ref),
       absl::StrCat("Cannot downcast ", test_all_types.GetTypeName(), " to ",
                    UNITTEST::TestRequired::default_instance().GetTypeName()));
 }
@@ -1233,9 +1233,9 @@ TEST(MESSAGE_TEST_NAME, ParsingMerge) {
 #undef ASSIGN_REPEATED_GROUP
 
   std::string buffer;
-  generator.SerializeToString(&buffer);
+  ABSL_CHECK(generator.SerializeToString(&buffer));
   UNITTEST::TestParsingMerge parsing_merge;
-  parsing_merge.ParseFromString(buffer);
+  ABSL_CHECK(parsing_merge.ParseFromString(buffer));
 
   // Required and optional fields should be merged.
   ExpectMessageMerged(parsing_merge.required_all_types());
@@ -1449,10 +1449,10 @@ TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   in_message.SetExtension(UNITTEST::TestExtensionRangeSerialize::bar_five, 5);
 
   std::string buffer;
-  in_message.SerializeToString(&buffer);
+  ABSL_CHECK(in_message.SerializeToString(&buffer));
 
   UNITTEST::TestExtensionRangeSerialize out_message;
-  out_message.ParseFromString(buffer);
+  ABSL_CHECK(out_message.ParseFromString(buffer));
 
   EXPECT_EQ(1, out_message.foo_one());
   EXPECT_EQ(2, out_message.foo_two());

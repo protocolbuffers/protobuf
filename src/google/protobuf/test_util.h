@@ -1256,19 +1256,19 @@ inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
   std::string expected;
   unittest::TestFieldOrderings message;
   message.set_my_int(1);  // Field 1.
-  message.AppendToString(&expected);
+  ABSL_CHECK(message.AppendToString(&expected));
   message.Clear();
   message.SetExtension(unittest::my_extension_int, 23);  // Field 5.
-  message.AppendToString(&expected);
+  ABSL_CHECK(message.AppendToString(&expected));
   message.Clear();
   message.set_my_string("foo");  // Field 11.
-  message.AppendToString(&expected);
+  ABSL_CHECK(message.AppendToString(&expected));
   message.Clear();
   message.SetExtension(unittest::my_extension_string, "bar");  // Field 50.
-  message.AppendToString(&expected);
+  ABSL_CHECK(message.AppendToString(&expected));
   message.Clear();
   message.set_my_float(1.0);  // Field 101.
-  message.AppendToString(&expected);
+  ABSL_CHECK(message.AppendToString(&expected));
   message.Clear();
 
   // We don't EXPECT_EQ() since we don't want to print raw bytes to stdout.

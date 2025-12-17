@@ -508,6 +508,8 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
                             absl::StrCat("registry.add(", PACKAGE_IMPORT_PREFIX,
                                          "foo.FooProto.fileOpt);")));
 }
+
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler

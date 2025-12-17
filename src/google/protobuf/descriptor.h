@@ -337,6 +337,11 @@ bool IsEnumFullySequential(const EnumDescriptor* enum_desc);
 const std::string& DefaultValueStringAsString(const FieldDescriptor* field);
 const std::string& NameOfEnumAsString(const EnumValueDescriptor* descriptor);
 
+struct NameLimits {
+  static constexpr int kPackageName = 511;
+  static constexpr int kReservedName = std::numeric_limits<uint16_t>::max();
+};
+
 }  // namespace internal
 
 // Provide an Abseil formatter for edition names.
@@ -926,11 +931,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Name of the C++ type.
   absl::string_view cpp_type_name() const;
 
-  // This should never be called directly. Use is_required() and is_repeated()
-  // helper methods instead.
-  ABSL_DEPRECATED("Use is_required() or is_repeated() instead.")
-  Label label() const;  // optional/required/repeated
-
 #ifndef SWIG
   CppStringType cpp_string_type() const;  // The C++ string type of this field.
 #endif
@@ -939,9 +939,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Editions LEGACY_REQUIRED fields.
   bool is_required() const;
   bool is_repeated() const;  // Whether or not the field is repeated/map field.
-
-  ABSL_DEPRECATE_AND_INLINE()
-  bool is_optional() const;  // Use !is_required() && !is_repeated() instead.
 
   bool is_packable() const;  // shorthand for is_repeated() &&
                              //               IsTypePackable(type())
@@ -1134,11 +1131,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   friend class compiler::cpp::CppGenerator;
   int legacy_proto_ctype() const { return legacy_proto_ctype_; }
   bool has_legacy_proto_ctype() const;
-
-  // Returns true if this field was syntactically written with "optional" in the
-  // .proto file. Excludes singular proto3 fields that do not have a label.
-  ABSL_DEPRECATED("Use has_presence() instead.")
-  bool has_optional_keyword() const;
 
   // Get the merged features that apply to this field.  These are specified in
   // the .proto file through the feature options in the message definition.
@@ -1597,9 +1589,9 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   EnumValueDescriptor& operator=(const EnumValueDescriptor&) = delete;
 #endif
 
-  absl::string_view name() const;   // Name of this enum constant.
-  int index() const;                // Index within the enums's Descriptor.
-  int number() const;               // Numeric value of this enum constant.
+  absl::string_view name() const;  // Name of this enum constant.
+  int index() const;               // Index within the enums's Descriptor.
+  int number() const;              // Numeric value of this enum constant.
 
   // The full_name of an enum value is a sibling symbol of the enum type.
   // e.g. the full name of FieldDescriptorProto::TYPE_INT32 is actually
@@ -2368,6 +2360,14 @@ class PROTOBUF_EXPORT DescriptorPool {
   // of this enforcement.
   void EnforceNamingStyle(bool enforce) { enforce_naming_style_ = enforce; }
 
+  // Enforce validation of feature support.
+  //
+  // This is used to guard feature support validation for the lifetimes of
+  // options and features.
+  void EnforceFeatureSupportValidation(bool enforce) {
+    enforce_feature_support_validation_ = enforce;
+  }
+
   // Enforce symbol visibility rules.  This will enable enforcement of the
   // `export` and `local` keywords added in edition 2024, honoring the behavior
   // of the `default_symbol_visibility` feature.
@@ -2513,17 +2513,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   void AddDirectInputFile(absl::string_view file_name,
                           bool unused_import_is_error = false);
   void ClearDirectInputFiles();
-
-#if !defined(PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT) && !defined(SWIG)
-  ABSL_DEPRECATED("Use AddDirectInputFile")
-  void AddUnusedImportTrackFile(absl::string_view file_name,
-                                bool is_error = false) {
-    AddDirectInputFile(file_name, is_error);
-  }
-  ABSL_DEPRECATED("Use AddDirectInputFile")
-  void ClearUnusedImportTrackFiles() { ClearDirectInputFiles(); }
-#endif  // !PROTOBUF_FUTURE_RENAME_ADD_UNUSED_IMPORT && !SWIG
-
 
  private:
   friend class Descriptor;
@@ -2684,6 +2673,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool disallow_enforce_utf8_;
   bool deprecated_legacy_json_field_conflicts_;
   bool enforce_naming_style_;
+  bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;
 
@@ -2930,16 +2920,6 @@ inline const Descriptor* FieldDescriptor::extension_scope() const {
   return scope_.extension_scope;
 }
 
-inline FieldDescriptor::Label FieldDescriptor::label() const {
-  if (is_required()) {
-    return LABEL_REQUIRED;
-  } else if (is_repeated()) {
-    return LABEL_REPEATED;
-  } else {
-    return LABEL_OPTIONAL;
-  }
-}
-
 inline FieldDescriptor::Type FieldDescriptor::type() const {
   return static_cast<Type>(type_);
 }
@@ -2948,10 +2928,6 @@ inline FieldDescriptor::CppStringType FieldDescriptor::cpp_string_type() const {
   ABSL_DCHECK_EQ(cpp_string_type_,
                  static_cast<uint8_t>(CalculateCppStringType()));
   return static_cast<FieldDescriptor::CppStringType>(cpp_string_type_);
-}
-
-inline bool FieldDescriptor::is_optional() const {
-  return !is_repeated() && !is_required();
 }
 
 inline bool FieldDescriptor::is_repeated() const {
@@ -3239,8 +3215,8 @@ PROTOBUF_EXPORT inline bool IsTrackingEnabled() {
 }
 
 template <typename F>
-auto VisitDescriptorsInFileOrder(const Descriptor* desc,
-                                 F& f) -> decltype(f(desc)) {
+auto VisitDescriptorsInFileOrder(const Descriptor* desc, F& f)
+    -> decltype(f(desc)) {
   for (int i = 0; i < desc->nested_type_count(); i++) {
     if (auto res = VisitDescriptorsInFileOrder(desc->nested_type(i), f)) {
       return res;
@@ -3256,8 +3232,8 @@ auto VisitDescriptorsInFileOrder(const Descriptor* desc,
 // If any call returns a "truthy" value, it stops visitation and returns that
 // value right away. Otherwise returns `{}` after visiting all types.
 template <typename F>
-auto VisitDescriptorsInFileOrder(const FileDescriptor* file,
-                                 F f) -> decltype(f(file->message_type(0))) {
+auto VisitDescriptorsInFileOrder(const FileDescriptor* file, F f)
+    -> decltype(f(file->message_type(0))) {
   for (int i = 0; i < file->message_type_count(); i++) {
     if (auto res = VisitDescriptorsInFileOrder(file->message_type(i), f)) {
       return res;

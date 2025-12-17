@@ -719,6 +719,7 @@ set(libupb_srcs
 # @//pkg:upb
 set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/base/descriptor_constants.h
+  ${protobuf_SOURCE_DIR}/upb/base/error_handler.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/endian.h
   ${protobuf_SOURCE_DIR}/upb/base/internal/log2.h
   ${protobuf_SOURCE_DIR}/upb/base/status.h

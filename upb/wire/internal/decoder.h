@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/error_handler.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/internal/arena.h"
@@ -50,8 +51,7 @@ typedef struct upb_Decoder {
     upb_Arena arena;
     void* foo[UPB_ARENA_SIZE_HACK];
   };
-  upb_DecodeStatus status;
-  jmp_buf err;
+  upb_ErrorHandler err;
 
 #ifndef NDEBUG
   const char* debug_tagstart;
@@ -67,7 +67,17 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
                                         const upb_ExtensionRegistry* extreg,
                                         int options, upb_Arena* arena,
                                         char* trace_buf, size_t trace_size) {
-  upb_EpsCopyInputStream_Init(&d->input, &buf, size);
+  upb_ErrorHandler_Init(&d->err);
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, &d->err);
+
+  UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
+                    "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_OutOfMemory == (int)kUpb_ErrorCode_OutOfMemory,
+      "mismatched error codes");
+  UPB_STATIC_ASSERT(
+      (int)kUpb_DecodeStatus_Malformed == (int)kUpb_ErrorCode_Malformed,
+      "mismatched error codes");
 
   if (options & kUpb_DecodeOption_AlwaysValidateUtf8) {
     // Fasttable decoder does not support this option.
@@ -79,7 +89,6 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->end_group = DECODE_NOGROUP;
   d->options = (uint16_t)options;
   d->missing_required = false;
-  d->status = kUpb_DecodeStatus_Ok;
   d->message_is_done = false;
 #ifndef NDEBUG
   d->trace_buf = trace_buf;
@@ -100,7 +109,7 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
 UPB_INLINE upb_DecodeStatus upb_Decoder_Destroy(upb_Decoder* d,
                                                 upb_Arena* arena) {
   UPB_PRIVATE(_upb_Arena_SwapOut)(arena, &d->arena);
-  return d->status;
+  return (upb_DecodeStatus)d->err.code;
 }
 
 #ifndef NDEBUG
@@ -168,27 +177,9 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
   return (const upb_MiniTable*)(table >> 8);
 }
 
-const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
-                                        const char* ptr, int overrun);
-
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
                                        const upb_MiniTable* layout);
-
-UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  return UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneWithCallback)(
-      &d->input, ptr, &_upb_Decoder_IsDoneFallback);
-}
-
-UPB_NORETURN void* _upb_Decoder_ErrorJmp(upb_Decoder* d,
-                                         upb_DecodeStatus status);
-
-UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
-    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
-  upb_Decoder* d = (upb_Decoder*)e;
-  if (!old_end) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  return new_start;
-}
 
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
@@ -204,11 +195,16 @@ UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
 }
 
 UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
-                                        size_t size, upb_StringView* sv) {
+                                        size_t size, upb_StringView* sv,
+                                        bool validate_utf8) {
   upb_StringView tmp;
   *ptr =
       upb_EpsCopyInputStream_ReadStringAlwaysAlias(&d->input, *ptr, size, &tmp);
   if (*ptr == NULL) return false;
+  if (validate_utf8 && !utf8_range_IsValid(tmp.data, tmp.size)) {
+    upb_ErrorHandler_ThrowError(&d->err, kUpb_DecodeStatus_BadUtf8);
+    return false;
+  }
   if ((d->options & kUpb_DecodeOption_AliasString) == 0) {
     char* data = (char*)upb_Arena_Malloc(&d->arena, tmp.size);
     if (!data) return false;

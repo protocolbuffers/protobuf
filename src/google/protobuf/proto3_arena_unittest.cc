@@ -104,7 +104,7 @@ TEST(Proto3ArenaTest, Parsing) {
 
   Arena arena;
   TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
   ExpectAllFieldsSet(*arena_message);
 }
 
@@ -114,7 +114,7 @@ TEST(Proto3ArenaTest, UnknownFields) {
 
   Arena arena;
   TestAllTypes* arena_message = Arena::Create<TestAllTypes>(&arena);
-  arena_message->ParseFromString(original.SerializeAsString());
+  ABSL_CHECK(arena_message->ParseFromString(original.SerializeAsString()));
   ExpectAllFieldsSet(*arena_message);
 
   // In proto3 we can still get a pointer to the UnknownFieldSet through
@@ -162,12 +162,13 @@ TEST(Proto3ArenaTest, GetArenaWithUnknown) {
 
   // Tests arena-allocated message and submessages.
   auto* arena_message1 = Arena::Create<TestAllTypes>(&arena);
-  arena_message1->GetReflection()->MutableUnknownFields(arena_message1);
+  (void)arena_message1->GetReflection()->MutableUnknownFields(arena_message1);
   auto* arena_submessage1 = arena_message1->mutable_optional_foreign_message();
-  arena_submessage1->GetReflection()->MutableUnknownFields(arena_submessage1);
+  (void)arena_submessage1->GetReflection()->MutableUnknownFields(
+      arena_submessage1);
   auto* arena_repeated_submessage1 =
       arena_message1->add_repeated_foreign_message();
-  arena_repeated_submessage1->GetReflection()->MutableUnknownFields(
+  (void)arena_repeated_submessage1->GetReflection()->MutableUnknownFields(
       arena_repeated_submessage1);
   EXPECT_EQ(&arena, arena_message1->GetArena());
   EXPECT_EQ(&arena, arena_submessage1->GetArena());
@@ -179,10 +180,10 @@ TEST(Proto3ArenaTest, GetArenaWithUnknown) {
   arena_message2->mutable_repeated_foreign_message()->AddAllocated(
       new ForeignMessage());
   auto* submessage2 = arena_message2->mutable_optional_foreign_message();
-  submessage2->GetReflection()->MutableUnknownFields(submessage2);
+  (void)submessage2->GetReflection()->MutableUnknownFields(submessage2);
   auto* repeated_submessage2 =
       arena_message2->mutable_repeated_foreign_message(0);
-  repeated_submessage2->GetReflection()->MutableUnknownFields(
+  (void)repeated_submessage2->GetReflection()->MutableUnknownFields(
       repeated_submessage2);
   EXPECT_EQ(nullptr, submessage2->GetArena());
   EXPECT_EQ(nullptr, repeated_submessage2->GetArena());
@@ -249,12 +250,12 @@ TEST(Proto3OptionalTest, OptionalFields) {
   EXPECT_TRUE(msg.has_optional_int32());
 
   std::string serialized;
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_GT(serialized.size(), 0);
 
   msg.clear_optional_int32();
   EXPECT_FALSE(msg.has_optional_int32());
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_EQ(serialized.size(), 0);
 }
 
@@ -350,12 +351,12 @@ TEST(Proto3OptionalTest, OptionalField) {
   EXPECT_TRUE(msg.has_optional_int32());
 
   std::string serialized;
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_GT(serialized.size(), 0);
 
   msg.clear_optional_int32();
   EXPECT_FALSE(msg.has_optional_int32());
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_EQ(serialized.size(), 0);
 }
 
@@ -566,7 +567,7 @@ TEST(Proto3OptionalTest, BinaryRoundTrip) {
 
   proto2_unittest::TestProto3Optional msg2;
   std::string serialized;
-  msg.SerializeToString(&serialized);
+  ABSL_CHECK(msg.SerializeToString(&serialized));
   EXPECT_TRUE(msg2.ParseFromString(serialized));
   TestAllFieldsZero(msg2);
   TestAllFieldsSet(msg2, true);
