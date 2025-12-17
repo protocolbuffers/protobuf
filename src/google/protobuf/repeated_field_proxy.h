@@ -23,10 +23,18 @@ namespace protobuf {
 template <typename ElementType>
 class RepeatedFieldProxy;
 
+template <typename ElementType>
+class RepeatedFieldOrProxy;
+
 template <int&... DeductionBarrier, typename T, typename Pred>
 size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred);
 template <int&... DeductionBarrier, typename T, typename U>
 size_t erase(RepeatedFieldProxy<T> cont, const U& value);
+template <int&... DeductionBarrier, typename T, typename Pred>
+size_t erase_if(RepeatedFieldOrProxy<T> cont, Pred pred);
+template <int&... DeductionBarrier, typename T, typename U>
+size_t erase(RepeatedFieldOrProxy<T> cont, const U& value);
+
 template <int&... DeductionBarrier, typename T, typename Compare>
 void c_sort(RepeatedFieldProxy<T> cont, Compare cmp);
 template <int&... DeductionBarrier, typename T>
@@ -35,6 +43,14 @@ template <int&... DeductionBarrier, typename T, typename Compare>
 void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp);
 template <int&... DeductionBarrier, typename T>
 void c_stable_sort(RepeatedFieldProxy<T> cont);
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_sort(RepeatedFieldOrProxy<T> cont, Compare cmp);
+template <int&... DeductionBarrier, typename T>
+void c_sort(RepeatedFieldOrProxy<T> cont);
+template <int&... DeductionBarrier, typename T, typename Compare>
+void c_stable_sort(RepeatedFieldOrProxy<T> cont, Compare cmp);
+template <int&... DeductionBarrier, typename T>
+void c_stable_sort(RepeatedFieldOrProxy<T> cont);
 
 namespace internal {
 
@@ -424,6 +440,9 @@ class RepeatedFieldProxyWithEmplaceBack<
 template <typename ElementType, typename Enable = void>
 class RepeatedFieldProxyWithResize {
  public:
+  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
+  // than the current size, the field is truncated. Otherwise, the field is
+  // extended with copies of `value`.
   void resize(size_t new_size, const ElementType& value) const {
     ToProxyType(this).field().resize(new_size, value);
   }
@@ -435,6 +454,9 @@ class RepeatedFieldProxyWithResize<
     ElementType, std::enable_if_t<RepeatedElementTypeIsString<ElementType> &&
                                   !std::is_same_v<ElementType, absl::Cord>>> {
  public:
+  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
+  // than the current size, the field is truncated. Otherwise, the field is
+  // extended with copies of `value`.
   void resize(size_t new_size, absl::string_view value) const {
     ToProxyType(this).field().resize(new_size, value);
   }
@@ -445,6 +467,9 @@ template <typename ElementType>
 class RepeatedFieldProxyWithResize<
     ElementType, std::enable_if_t<std::is_same_v<ElementType, absl::Cord>>> {
  public:
+  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
+  // than the current size, the field is truncated. Otherwise, the field is
+  // extended with copies of `value`.
   void resize(size_t new_size, const absl::Cord& value) const {
     ToProxyType(this).field().resize(new_size, value);
   }
@@ -464,7 +489,7 @@ class RepeatedFieldProxyWithResize<
 // PROXY` annotation. This annotation is currently only available in edition
 // `UNSTABLE`, but will eventually be available in an upcoming edition.
 template <typename ElementType>
-class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy
     : public internal::RepeatedFieldProxyBase<ElementType>,
       public internal::RepeatedFieldProxyWithSet<ElementType>,
       public internal::RepeatedFieldProxyWithPushBack<ElementType>,
@@ -595,11 +620,13 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 
   // Because we have an overload of `resize` in this class, we need to
   // explicitly inherit the overload from the base class to avoid hiding it.
-
-  // Resizes the repeated field to `new_size` elements. If `new_size` is smaller
-  // than the current size, the field is truncated. Otherwise, the field is
-  // extended with copies of `value`.
   using internal::RepeatedFieldProxyWithResize<ElementType>::resize;
+
+ protected:
+  RepeatedFieldProxy(RepeatedFieldType& field, Arena* arena)
+      : Base(field), arena_(arena) {
+    ABSL_DCHECK_EQ(arena, field.GetArena());
+  }
 
  private:
   friend RepeatedFieldProxy<const ElementType>;
@@ -626,11 +653,6 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
   template <int&... DeductionBarrier, typename T>
   friend void c_stable_sort(RepeatedFieldProxy<T> cont);
 
-  RepeatedFieldProxy(RepeatedFieldType& field, Arena* arena)
-      : Base(field), arena_(arena) {
-    ABSL_DCHECK_EQ(arena, field.GetArena());
-  }
-
   // The following methods all forward to the backing repeated fields. This is
   // done here for access to private members of the legacy containers, which
   // only need to friend `RepeatedFieldProxy`.
@@ -652,7 +674,7 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxy final
 };
 
 template <typename ElementType>
-class RepeatedFieldProxy<const ElementType> final
+class RepeatedFieldProxy<const ElementType>
     : public internal::RepeatedFieldProxyBase<const ElementType> {
   // A specialization of RepeatedFieldProxy for const proxies. This is needed
   // for mutating methods to not be exposed on const proxies.
@@ -723,6 +745,230 @@ RepeatedFieldProxy<ElementType> ToProxyType(const C<ElementType>* proxy) {
 
 }  // namespace internal
 
+// A mutable proxy for a repeated field of type `ElementType` in a Protobuf
+// message. Proxies alias the repeated field and provide an interface to read or
+// modify it, following STL naming conventions.
+//
+// Unlike `RepeatedFieldProxy`, `RepeatedFieldOrProxy` can be constructed from
+// the legacy repeated field containers (`google::protobuf::RepeatedField` and
+// `google::protobuf::RepeatedPtrField`). This container can be used in code which has not
+// yet fully migrated to proxies. It is particularly useful for function
+// parameters that have many callers, allowing the callers to be migrated to
+// proxies incrementally.
+//
+// Proxies themselves are value types, meaning they should be passed around by
+// value similar to `absl::string_view` or `absl::Span`.
+template <typename ElementType>
+class RepeatedFieldOrProxy final : private RepeatedFieldProxy<ElementType> {
+  // `const ElementType` is specialized below.
+  static_assert(!std::is_const_v<ElementType>);
+
+  using Base = RepeatedFieldProxy<ElementType>;
+  using RepeatedFieldType = Base::RepeatedFieldType;
+
+  // Inherit constructors.
+  using Base::Base;
+
+ public:
+  // Re-expose container trait types from the base class.
+  using typename Base::const_iterator;
+  using typename Base::const_reference;
+  using typename Base::const_reverse_iterator;
+  using typename Base::difference_type;
+  using typename Base::iterator;
+  using typename Base::reverse_iterator;
+  using typename Base::size_type;
+  using typename Base::value_type;
+
+  // Allow implicit conversion from a RepeatedField to a RepeatedFieldOrProxy.
+  //
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  PROTOBUF_ALWAYS_INLINE RepeatedFieldOrProxy(RepeatedFieldType& field)
+      : Base(field, field.GetArena()) {}
+
+  // Allow implicit conversion from a RepeatedField* to a RepeatedFieldOrProxy,
+  // but inline this to call the RepeatedFieldOrProxy(RepeatedFieldType& field)
+  // constructor.
+  //
+  // This will be used to ease migration along for functions that currently take
+  // a RepeatedField* parameter. If we allow implicit conversion from
+  // RepeatedField* to RepeatedFieldOrProxy, then we can change the type of the
+  // parameter from RepeatedField<T>* to RepeatedFieldOrProxy<T> without
+  // updating any callers. Then, the C++ inliner will later come along and
+  // dereference the repeated field pointer argument to the method at callsites.
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  RepeatedFieldOrProxy(RepeatedFieldType* field)
+      : RepeatedFieldOrProxy(*field) {}
+
+  // Allow implicit conversion from a RepeatedFieldProxy to a
+  // RepeatedFieldOrProxy.
+  //
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  PROTOBUF_ALWAYS_INLINE RepeatedFieldOrProxy(Base proxy) : Base(proxy) {}
+
+  // Allow explicit conversion to the legacy repeated field container.
+  explicit operator std::remove_const_t<RepeatedFieldType>() const {
+    return RepeatedFieldType(static_cast<const Base&>(*this));
+  }
+
+  using Base::empty;
+  using Base::size;
+  using Base::operator[];
+  using Base::get;
+
+  // Iterator methods.
+  using Base::begin;
+  using Base::cbegin;
+  using Base::cend;
+  using Base::end;
+  using Base::rbegin;
+  using Base::rend;
+
+  // Mutating methods.
+  using Base::clear;
+  using Base::emplace_back;
+  using Base::erase;
+  using Base::pop_back;
+  using Base::push_back;
+  using Base::reserve;
+  using Base::resize;
+  using Base::set;
+
+  // Note: we do not directly expose the following methods from the base class
+  // because they have overloads that take a `RepeatedFieldProxy`. We re-define
+  // them below with overloads that take `RepeatedFieldOrProxy`.
+
+  // Copy-assigns `other` into this repeated field.
+  //
+  // This method exists because proxies cannot be reassigned through the `=`
+  // assignment operator.
+  void assign(RepeatedFieldOrProxy<const ElementType> other) const {
+    Base::field().CopyFrom(other.field());
+  }
+
+  // Copy-assigns the elements in the range `[begin, end)` to the repeated
+  // field.
+  //
+  // If `begin` or `end` is an iterator into this repeated field, the behavior
+  // is undefined.
+  template <typename Iter>
+  void assign(Iter begin, Iter end) const {
+    Base::assign(begin, end);
+  }
+
+  // Move-assigns `other` into this repeated field. `other` is left in a valid
+  // but unspecified state.
+  void move_assign(RepeatedFieldOrProxy other) const {
+    Base::move_assign(other);
+  }
+
+  // Swaps the contents of this repeated field with `other`.
+  //
+  // Invalidates all iterators. Pointer stability is not guaranteed across the
+  // swap for any element of either repeated field.
+  //
+  // If the underlying repeated fields are on different arenas, this may force
+  // deep copies of the elements.
+  void swap(RepeatedFieldOrProxy other) const {
+    Base::field().Swap(&other.field());
+  }
+
+ private:
+  friend RepeatedFieldProxy<ElementType>;
+  friend RepeatedFieldOrProxy<const ElementType>;
+
+  template <int&... DeductionBarrier, typename T, typename Pred>
+  friend size_t erase_if(RepeatedFieldOrProxy<T> cont, Pred pred);
+  template <int&... DeductionBarrier, typename T, typename U>
+  friend size_t erase(RepeatedFieldOrProxy<T> cont, const U& value);
+
+  template <int&... DeductionBarrier, typename T, typename Compare>
+  friend void c_sort(RepeatedFieldOrProxy<T> cont, Compare cmp);
+  template <int&... DeductionBarrier, typename T>
+  friend void c_sort(RepeatedFieldOrProxy<T> cont);
+  template <int&... DeductionBarrier, typename T, typename Compare>
+  friend void c_stable_sort(RepeatedFieldOrProxy<T> cont, Compare cmp);
+  template <int&... DeductionBarrier, typename T>
+  friend void c_stable_sort(RepeatedFieldOrProxy<T> cont);
+};
+
+// A const proxy for a repeated field of type `ElementType` in a Protobuf
+// message. Proxies alias the repeated field and provide an interface to read or
+// modify it, following STL naming conventions.
+//
+// Unlike `RepeatedFieldProxy`, `RepeatedFieldOrProxy` can be constructed from
+// the legacy repeated field containers (`google::protobuf::RepeatedField` and
+// `google::protobuf::RepeatedPtrField`). This container can be used in code which has not
+// yet fully migrated to proxies. It is particularly useful for function
+// parameters that have many callers, allowing the callers to be migrated to
+// proxies incrementally.
+//
+// Proxies themselves are value types, meaning they should be passed around by
+// value similar to `absl::string_view` or `absl::Span`.
+template <typename ElementType>
+class RepeatedFieldOrProxy<const ElementType> final
+    : private RepeatedFieldProxy<const ElementType> {
+  using Base = RepeatedFieldProxy<const ElementType>;
+  using RepeatedFieldType = Base::RepeatedFieldType;
+
+  // Inherit constructors.
+  using Base::Base;
+
+ public:
+  // Re-expose container trait types from the base class.
+  using typename Base::const_iterator;
+  using typename Base::const_reference;
+  using typename Base::const_reverse_iterator;
+  using typename Base::difference_type;
+  using typename Base::iterator;
+  using typename Base::reverse_iterator;
+  using typename Base::size_type;
+  using typename Base::value_type;
+
+  // Allow implicit conversion from a mutable RepeatedFieldOrProxy to a const
+  // RepeatedFieldOrProxy.
+  //
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  RepeatedFieldOrProxy(RepeatedFieldOrProxy<ElementType> other)
+      : Base(other.field()) {}
+
+  // Allow implicit conversion from a RepeatedField to a RepeatedFieldOrProxy.
+  //
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  PROTOBUF_ALWAYS_INLINE RepeatedFieldOrProxy(const RepeatedFieldType& field)
+      : Base(field) {}
+
+  // Allow implicit conversion from a RepeatedFieldProxy to a
+  // RepeatedFieldOrProxy.
+  //
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  PROTOBUF_ALWAYS_INLINE RepeatedFieldOrProxy(Base proxy) : Base(proxy) {}
+
+  // Allow explicit conversion to the legacy repeated field container.
+  explicit operator RepeatedFieldType() const {
+    return RepeatedFieldType(static_cast<const Base&>(*this));
+  }
+
+  using Base::empty;
+  using Base::size;
+  using Base::operator[];
+  using Base::get;
+
+  // Iterator methods.
+  using Base::begin;
+  using Base::cbegin;
+  using Base::cend;
+  using Base::end;
+  using Base::rbegin;
+  using Base::rend;
+
+ private:
+  friend RepeatedFieldOrProxy<ElementType>;
+};
+
+namespace internal {}  // namespace internal
+
 // Like C++20's std::erase_if, for RepeatedFieldProxy
 template <int&... DeductionBarrier, typename T, typename Pred>
 size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred) {
@@ -732,6 +978,18 @@ size_t erase_if(RepeatedFieldProxy<T> cont, Pred pred) {
 // Like C++20's std::erase, for RepeatedFieldProxy
 template <int&... DeductionBarrier, typename T, typename U>
 size_t erase(RepeatedFieldProxy<T> cont, const U& value) {
+  return google::protobuf::erase(cont.field(), value);
+}
+
+// Like C++20's std::erase_if, for RepeatedFieldOrProxy.
+template <int&... DeductionBarrier, typename T, typename Pred>
+size_t erase_if(RepeatedFieldOrProxy<T> cont, Pred pred) {
+  return google::protobuf::erase_if(cont.field(), pred);
+}
+
+// Like C++20's std::erase, for RepeatedFieldOrProxy.
+template <int&... DeductionBarrier, typename T, typename U>
+size_t erase(RepeatedFieldOrProxy<T> cont, const U& value) {
   return google::protobuf::erase(cont.field(), value);
 }
 
@@ -754,6 +1012,28 @@ void c_stable_sort(RepeatedFieldProxy<T> cont, Compare cmp) {
 // comparison.
 template <int&... DeductionBarrier, typename T>
 void c_stable_sort(RepeatedFieldProxy<T> cont) {
+  google::protobuf::c_stable_sort(cont.field());
+}
+
+// Like C++20's std::sort, for RepeatedFieldOrProxy.
+template <int&..., typename T, typename Compare>
+void c_sort(RepeatedFieldOrProxy<T> cont, Compare cmp) {
+  google::protobuf::c_sort(cont.field(), cmp);
+}
+// Like C++20's std::sort, for RepeatedFieldOrProxy, with default comparison.
+template <int&..., typename T>
+void c_sort(RepeatedFieldOrProxy<T> cont) {
+  google::protobuf::c_sort(cont.field());
+}
+// Like C++20's std::stable_sort, for RepeatedFieldOrProxy.
+template <int&..., typename T, typename Compare>
+void c_stable_sort(RepeatedFieldOrProxy<T> cont, Compare cmp) {
+  google::protobuf::c_stable_sort(cont.field(), cmp);
+}
+// Like C++20's std::stable_sort, for RepeatedFieldOrProxy, with default
+// comparison.
+template <int&..., typename T>
+void c_stable_sort(RepeatedFieldOrProxy<T> cont) {
   google::protobuf::c_stable_sort(cont.field());
 }
 
