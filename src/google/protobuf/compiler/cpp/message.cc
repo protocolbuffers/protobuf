@@ -633,6 +633,8 @@ std::vector<Sub> ClassVars(const Descriptor* desc, Options opts) {
       {"classtype", QualifiedClassName(desc, opts)},
       {"full_name", desc->full_name()},
       {"superclass", SuperClassName(desc, opts)},
+      // TODO: Enable this everywhere.
+      {"nodiscard", opts.opensource_runtime ? "[[nodiscard]]" : ""},
 
       Sub("WeakDescriptorSelfPin",
           UsingImplicitWeakDescriptor(desc->file(), opts)
@@ -1545,7 +1547,7 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           parse_function_generator_->GenerateDataDecls(p);
         }}},
       R"cc(
-        class $classname$ final
+        class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED $classname$ final
             : public $pbi$::MapEntry<$key_cpp$, $val_cpp$,
                                      $pbi$::WireFormatLite::$key_wire_type$,
                                      $pbi$::WireFormatLite::$val_wire_type$> {
@@ -1766,96 +1768,98 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
 void MessageGenerator::GenerateAnyMethodDefinition(io::Printer* p) {
   ABSL_DCHECK(IsAnyMessage(descriptor_));
 
-  p->Emit({{"any_methods",
-            [&] {
-              if (HasDescriptorMethods(descriptor_->file(), options_)) {
-                p->Emit(
-                    R"cc(
-                      bool PackFrom(const $pb$::Message& message) {
-                        $DCHK$_NE(&message, this);
-                        return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
-                      }
-                      bool PackFrom(const $pb$::Message& message,
-                                    ::absl::string_view type_url_prefix) {
-                        $DCHK$_NE(&message, this);
-                        return $pbi$::InternalPackFrom(message, type_url_prefix,
-                                                       mutable_type_url(),
-                                                       mutable_value());
-                      }
-                      bool UnpackTo($pb$::Message* $nonnull$ message) const {
-                        return $pbi$::InternalUnpackTo(
-                            _internal_type_url(), _internal_value(), message);
-                      }
-                      static bool GetAnyFieldDescriptors(
-                          const $pb$::Message& message,
-                          const $pb$::FieldDescriptor * $nullable$ *
-                              $nonnull$ type_url_field,
-                          const $pb$::FieldDescriptor * $nullable$ *
-                              $nonnull$ value_field);
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const $pb$::Message&>::value>::type>
-                      bool PackFrom(const T& message) {
-                        return $pbi$::InternalPackFrom<T>(
-                            message, mutable_type_url(), mutable_value());
-                      }
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const $pb$::Message&>::value>::type>
-                      bool PackFrom(const T& message,
-                                    ::absl::string_view type_url_prefix) {
-                        return $pbi$::InternalPackFrom<T>(
-                            message, type_url_prefix, mutable_type_url(),
-                            mutable_value());
-                      }
-                      template <
-                          typename T,
-                          class = typename std::enable_if<!std::is_convertible<
-                              T, const $pb$::Message&>::value>::type>
-                      bool UnpackTo(T* $nonnull$ message) const {
-                        return $pbi$::InternalUnpackTo<T>(
-                            _internal_type_url(), _internal_value(), message);
-                      }
-                    )cc");
-              } else {
-                p->Emit(
-                    R"cc(
-                      template <typename T>
-                      bool PackFrom(const T& message) {
-                        return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
-                      }
-                      template <typename T>
-                      bool PackFrom(const T& message,
-                                    ::absl::string_view type_url_prefix) {
-                        return $pbi$::InternalPackFrom(message, type_url_prefix,
-                                                       mutable_type_url(),
-                                                       mutable_value());
-                      }
-                      template <typename T>
-                      bool UnpackTo(T* $nonnull$ message) const {
-                        return $pbi$::InternalUnpackTo(
-                            _internal_type_url(), _internal_value(), message);
-                      }
-                    )cc");
-              }
-            }}},
-          R"cc(
-            // implements Any
-            // -----------------------------------------------
+  p->Emit(
+      {{"any_methods",
+        [&] {
+          if (HasDescriptorMethods(descriptor_->file(), options_)) {
+            p->Emit(
+                R"cc(
+                  $nodiscard $ bool PackFrom(const $pb$::Message& message) {
+                    $DCHK$_NE(&message, this);
+                    return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
+                  }
+                  $nodiscard $ bool PackFrom(
+                      const $pb$::Message& message,
+                      ::absl::string_view type_url_prefix) {
+                    $DCHK$_NE(&message, this);
+                    return $pbi$::InternalPackFrom(message, type_url_prefix,
+                                                   mutable_type_url(),
+                                                   mutable_value());
+                  }
+                  $nodiscard $ bool UnpackTo($pb$::Message* $nonnull$ message) const {
+                    return $pbi$::InternalUnpackTo(_internal_type_url(),
+                                                   _internal_value(), message);
+                  }
+                  $nodiscard $ static bool GetAnyFieldDescriptors(
+                      const $pb$::Message& message,
+                      const $pb$::FieldDescriptor * $nullable$ *
+                          $nonnull$ type_url_field,
+                      const $pb$::FieldDescriptor * $nullable$ *
+                          $nonnull$ value_field);
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const $pb$::Message&>::value>::type>
+                  $nodiscard $ bool PackFrom(const T& message) {
+                    return $pbi$::InternalPackFrom<T>(
+                        message, mutable_type_url(), mutable_value());
+                  }
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const $pb$::Message&>::value>::type>
+                  $nodiscard $ bool PackFrom(
+                      const T& message, ::absl::string_view type_url_prefix) {
+                    return $pbi$::InternalPackFrom<T>(message, type_url_prefix,
+                                                      mutable_type_url(),
+                                                      mutable_value());
+                  }
+                  template <
+                      typename T,
+                      class = typename std::enable_if<!std::is_convertible<
+                          T, const $pb$::Message&>::value>::type>
+                  $nodiscard $ bool UnpackTo(T* $nonnull$ message) const {
+                    return $pbi$::InternalUnpackTo<T>(
+                        _internal_type_url(), _internal_value(), message);
+                  }
+                )cc");
+          } else {
+            p->Emit(
+                R"cc(
+                  template <typename T>
+                  $nodiscard $ bool PackFrom(const T& message) {
+                    return $pbi$::InternalPackFrom(message, mutable_type_url(), mutable_value());
+                  }
+                  template <typename T>
+                  $nodiscard $ bool PackFrom(
+                      const T& message, ::absl::string_view type_url_prefix) {
+                    return $pbi$::InternalPackFrom(message, type_url_prefix,
+                                                   mutable_type_url(),
+                                                   mutable_value());
+                  }
+                  template <typename T>
+                  $nodiscard $ bool UnpackTo(T* $nonnull$ message) const {
+                    return $pbi$::InternalUnpackTo(_internal_type_url(),
+                                                   _internal_value(), message);
+                  }
+                )cc");
+          }
+        }}},
+      R"cc(
+        // implements Any
+        // -----------------------------------------------
 
-            $any_methods$;
+        $any_methods$;
 
-            template <typename T>
-            bool Is() const {
-              return $pbi$::InternalIs<T>(_internal_type_url());
-            }
-            static bool ParseAnyTypeUrl(
-                //~
-                ::absl::string_view type_url,
-                std::string* $nonnull$ full_type_name);
-          )cc");
+        template <typename T>
+        $nodiscard $ bool Is() const {
+          return $pbi$::InternalIs<T>(_internal_type_url());
+        }
+        $nodiscard $ static bool ParseAnyTypeUrl(
+            //~
+            ::absl::string_view type_url,
+            std::string* $nonnull$ full_type_name);
+      )cc");
 }
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
@@ -1891,7 +1895,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
 
           p->Emit(R"cc(
-            static const $pb$::Descriptor* $nonnull$ descriptor() {
+            $nodiscard $ static const $pb$::Descriptor* $nonnull$ descriptor() {
               return GetDescriptor();
             }
           )cc");
@@ -1909,10 +1913,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
 
           p->Emit(R"cc(
-            static const $pb$::Descriptor* $nonnull$ GetDescriptor() {
+            $nodiscard $ static const $pb$::Descriptor* $nonnull$
+            GetDescriptor() {
               return default_instance().GetMetadata().descriptor;
             }
-            static const $pb$::Reflection* $nonnull$ GetReflection() {
+            $nodiscard $ static const $pb$::Reflection* $nonnull$ GetReflection() {
               return default_instance().GetMetadata().reflection;
             }
           )cc");
@@ -2010,7 +2015,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           if (NeedsIsInitialized()) {
             p->Emit(R"cc(
-              bool IsInitialized() const {
+              $nodiscard $ bool IsInitialized() const {
                 $WeakDescriptorSelfPin$;
                 return IsInitializedImpl(*this);
               }
@@ -2022,7 +2027,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             )cc");
           } else {
             p->Emit(R"cc(
-              bool IsInitialized() const {
+              $nodiscard $ bool IsInitialized() const {
                 $WeakDescriptorSelfPin$;
                 return true;
               }
@@ -2040,21 +2045,21 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
               private:
-              static ::size_t ByteSizeLong(const $pb$::MessageLite& msg);
-              static $uint8$* $nonnull$ _InternalSerialize(
+              $nodiscard $ static ::size_t ByteSizeLong(const $pb$::MessageLite& msg);
+              $nodiscard $ static $uint8$* $nonnull$ _InternalSerialize(
                   const $pb$::MessageLite& msg, $uint8$* $nonnull$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
 
               public:
-              ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-              $uint8$* $nonnull$ _InternalSerialize(
+              $nodiscard $ ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
+              $nodiscard $ $uint8$* $nonnull$ _InternalSerialize(
                   $uint8$* $nonnull$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
                 return _InternalSerialize(*this, target, stream);
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
-              ::size_t ByteSizeLong() const final;
-              $uint8$* $nonnull$ _InternalSerialize(
+              $nodiscard $ ::size_t ByteSizeLong() const final;
+              $nodiscard $ $uint8$* $nonnull$ _InternalSerialize(
                   //~
                   $uint8$* $nonnull$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const final;
@@ -2076,7 +2081,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
           p->Emit(
               R"cc(
-                int GetCachedSize() const { return $cached_size$.Get(); }
+                $nodiscard $ int GetCachedSize() const {
+                  return $cached_size$.Get();
+                }
 
                 private:
                 void SharedCtor($pb$::Arena* $nullable$ arena);
@@ -2102,7 +2109,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           if (!HasDescriptorMethods(descriptor_->file(), options_)) return;
 
           p->Emit(R"cc(
-            $pb$::Metadata GetMetadata() const;
+            $nodiscard $ $pb$::Metadata GetMetadata() const;
           )cc");
         }},
        {"decl_split_methods",
@@ -2214,7 +2221,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   )cc");
         }}},
       R"cc(
-        class $dllexport_decl $$classname$ final : public $superclass$
+        class $dllexport_decl $ PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
+            $classname$ final : public $superclass$
         /* @@protoc_insertion_point(class_definition:$full_name$) */ {
          public:
           inline $classname$() : $classname$(nullptr) {}
@@ -2252,20 +2260,20 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
           $decl_verify_func$;
 
-          inline const $unknown_fields_type$& unknown_fields() const
-              ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $nodiscard $ inline const $unknown_fields_type$& unknown_fields()
+              const ABSL_ATTRIBUTE_LIFETIME_BOUND {
             $annotate_unknown_fields$;
             return $unknown_fields$;
           }
-          inline $unknown_fields_type$* $nonnull$ mutable_unknown_fields()
-              ABSL_ATTRIBUTE_LIFETIME_BOUND {
+          $nodiscard $ inline $unknown_fields_type$* $nonnull$
+          mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
             $annotate_mutable_unknown_fields$;
             return $mutable_unknown_fields$;
           }
 
           $descriptor_accessor$;
           $get_descriptor$;
-          static const $classname$& default_instance() {
+          $nodiscard $ static const $classname$& default_instance() {
             return *reinterpret_cast<const $classname$*>(
                 &_$classname$_default_instance_);
           }
@@ -2289,7 +2297,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
           // implements Message ----------------------------------------------
 
-          $classname$* $nonnull$ New($pb$::Arena* $nullable$ arena = nullptr) const {
+          $nodiscard $ $classname$* $nonnull$
+          New($pb$::Arena* $nullable$ arena = nullptr) const {
             return $superclass$::DefaultConstruct<$classname$>(arena);
           }
           $generated_methods$;
@@ -2454,7 +2463,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
                 }
                 p->Emit(
                     R"cc(
-                      bool $classname$::GetAnyFieldDescriptors(
+                      $nodiscard $ bool $classname$::GetAnyFieldDescriptors(
                           const $pb$::Message& message,
                           const $pb$::FieldDescriptor** type_url_field,
                           const $pb$::FieldDescriptor** value_field) {
@@ -2464,7 +2473,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               }}},
             R"cc(
               $any_field_descriptor$;
-              bool $classname$::ParseAnyTypeUrl(
+              $nodiscard $ bool $classname$::ParseAnyTypeUrl(
                   //~
                   ::absl::string_view type_url,
                   std::string* $nonnull$ full_type_name) {
