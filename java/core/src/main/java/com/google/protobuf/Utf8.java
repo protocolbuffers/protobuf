@@ -212,6 +212,9 @@ final class Utf8 {
    */
   static String decodeUtf8(ByteBuffer buffer, int index, int size)
       throws InvalidProtocolBufferException {
+    if (size == 0) {
+      return "";
+    }
     return processor.decodeUtf8(buffer, index, size);
   }
 
@@ -222,6 +225,9 @@ final class Utf8 {
    */
   static String decodeUtf8(byte[] bytes, int index, int size)
       throws InvalidProtocolBufferException {
+    if (size == 0) {
+      return "";
+    }
     return processor.decodeUtf8(bytes, index, size);
   }
 
