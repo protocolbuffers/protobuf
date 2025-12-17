@@ -333,6 +333,7 @@ class RustMapHelper;
 // ABSL_CHECK-fail, because the full size_t resolution is still returned from
 // ByteSizeLong() and checked against INT_MAX; we can catch the overflow
 // there.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline int ToCachedSize(size_t size) { return static_cast<int>(size); }
 
 // We mainly calculate sizes in terms of size_t, but some functions that
@@ -340,6 +341,7 @@ inline int ToCachedSize(size_t size) { return static_cast<int>(size); }
 // positive. This function is more efficient than casting an int to size_t
 // directly on 64-bit platforms because it avoids making the compiler emit a
 // sign extending instruction, which we don't want and don't want to pay for.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline size_t FromIntSize(int size) {
   // Convert to unsigned before widening so sign extension is not necessary.
   return static_cast<unsigned int>(size);
@@ -348,6 +350,7 @@ inline size_t FromIntSize(int size) {
 // For cases where a legacy function returns an integer size.  We ABSL_DCHECK()
 // that the conversion will fit within an integer; if this is false then we
 // are losing information.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline int ToIntSize(size_t size) {
   ABSL_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
   return static_cast<int>(size);
@@ -549,7 +552,7 @@ class PROTOBUF_EXPORT MessageLite {
   // Basic Operations ------------------------------------------------
 
   // Get the name of this message type, e.g. "foo.bar.BazProto".
-  absl::string_view GetTypeName() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view GetTypeName() const;
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
@@ -620,69 +623,76 @@ class PROTOBUF_EXPORT MessageLite {
   // format.  A successful return does not indicate the entire input is
   // consumed, ensure you call ConsumedEntireMessage() to check that if
   // applicable.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromCodedStream(
-      io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromCodedStream(io::CodedInputStream* input);
   // Like ParseFromCodedStream(), but accepts messages that are missing
   // required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromCodedStream(
-      io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromCodedStream(io::CodedInputStream* input);
   // Read a protocol buffer from the given zero-copy input stream.  If
   // successful, the entire input will be consumed.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromZeroCopyStream(
-      io::ZeroCopyInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromZeroCopyStream(io::ZeroCopyInputStream* input);
   // Like ParseFromZeroCopyStream(), but accepts messages that are missing
   // required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromZeroCopyStream(
-      io::ZeroCopyInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromZeroCopyStream(io::ZeroCopyInputStream* input);
   // Parse a protocol buffer from a file descriptor.  If successful, the entire
   // input will be consumed.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromFileDescriptor(
-      int file_descriptor);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromFileDescriptor(int file_descriptor);
   // Like ParseFromFileDescriptor(), but accepts messages that are missing
   // required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromFileDescriptor(
-      int file_descriptor);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromFileDescriptor(int file_descriptor);
   // Parse a protocol buffer from a C++ istream.  If successful, the entire
   // input will be consumed.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromIstream(std::istream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromIstream(std::istream* input);
   // Like ParseFromIstream(), but accepts messages that are missing
   // required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromIstream(
-      std::istream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromIstream(std::istream* input);
   // Read a protocol buffer from the given zero-copy input stream, expecting
   // the message to be exactly "size" bytes long.  If successful, exactly
   // this many bytes will have been consumed from the input.
-  bool MergePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
-                                             int size);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool
+  MergePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
+                                        int size);
   // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
   // missing required fields.
-  bool MergeFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromBoundedZeroCopyStream(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromBoundedZeroCopyStream(
       io::ZeroCopyInputStream* input, int size);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input, int size);
   // Like ParseFromBoundedZeroCopyStream(), but accepts messages that are
   // missing required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromBoundedZeroCopyStream(
-      io::ZeroCopyInputStream* input, int size);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
+                                        int size);
   // Parses a protocol buffer contained in a string or Cord. Returns true on
   // success. This function takes a string in the (non-human-readable) binary
   // wire format, matching the encoding output by
   // MessageLite::SerializeToString(). If you'd like to convert a human-readable
   // string into a protocol buffer object, see
   // google::protobuf::TextFormat::ParseFromString().
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromString(absl::string_view data);
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromString(const absl::Cord& data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromString(absl::string_view data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromString(const absl::Cord& data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
-      absl::string_view data);
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
-      const absl::Cord& data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromString(absl::string_view data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromString(const absl::Cord& data);
   // Parse a protocol buffer contained in an array of bytes.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromArray(const void* data, int size);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromArray(const void* data, int size);
   // Like ParseFromArray(), but accepts messages that are missing
   // required fields.
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParsePartialFromArray(const void* data,
-                                                          int size);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromArray(const void* data, int size);
 
 
   // Reads a protocol buffer from the stream and merges it into this
@@ -696,23 +706,29 @@ class PROTOBUF_EXPORT MessageLite {
   //
   // ParseFromCodedStream() is implemented as Clear() followed by
   // MergeFromCodedStream().
-  bool MergeFromCodedStream(io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromCodedStream(
+      io::CodedInputStream* input);
 
   // Like MergeFromCodedStream(), but succeeds even if required fields are
   // missing in the input.
   //
   // MergeFromCodedStream() is just implemented as MergePartialFromCodedStream()
   // followed by IsInitialized().
-  bool MergePartialFromCodedStream(io::CodedInputStream* input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergePartialFromCodedStream(
+      io::CodedInputStream* input);
 
   // Merge a protocol buffer contained in a string.
-  bool MergeFromString(absl::string_view data);
-  bool MergeFromString(const absl::Cord& data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromString(
+      absl::string_view data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromString(
+      const absl::Cord& data);
 
   // Like MergeFromString(), but accepts messages that are missing required
   // fields.
-  bool MergePartialFromString(absl::string_view data);
-  bool MergePartialFromString(const absl::Cord& data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergePartialFromString(
+      absl::string_view data);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergePartialFromString(
+      const absl::Cord& data);
 
   // Serialization ---------------------------------------------------
   // Methods for serializing in protocol buffer format.  Most of these
@@ -721,28 +737,38 @@ class PROTOBUF_EXPORT MessageLite {
   // Write a protocol buffer of this message to the given output.  Returns
   // false on a write error.  If the message is missing required fields,
   // this may ABSL_CHECK-fail.
-  bool SerializeToCodedStream(io::CodedOutputStream* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToCodedStream(
+      io::CodedOutputStream* output) const;
   // Like SerializeToCodedStream(), but allows missing required fields.
-  bool SerializePartialToCodedStream(io::CodedOutputStream* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToCodedStream(
+      io::CodedOutputStream* output) const;
   // Write the message to the given zero-copy output stream.  All required
   // fields must be set.
-  bool SerializeToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToZeroCopyStream(
+      io::ZeroCopyOutputStream* output) const;
   // Like SerializeToZeroCopyStream(), but allows missing required fields.
-  bool SerializePartialToZeroCopyStream(io::ZeroCopyOutputStream* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToZeroCopyStream(
+      io::ZeroCopyOutputStream* output) const;
   // Serialize the message and store it in the given string.  All required
   // fields must be set.
-  bool SerializeToString(std::string* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToString(
+      std::string* output) const;
   // Serialize the message and store it in the given Cord.  All required
   // fields must be set.
-  bool SerializeToString(absl::Cord* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToString(
+      absl::Cord* output) const;
   // Like SerializeToString(), but allows missing required fields.
-  bool SerializePartialToString(std::string* output) const;
-  bool SerializePartialToString(absl::Cord* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToString(
+      std::string* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToString(
+      absl::Cord* output) const;
   // Serialize the message and store it in the given byte array.  All required
   // fields must be set.
-  bool SerializeToArray(void* data, int size) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToArray(void* data,
+                                                            int size) const;
   // Like SerializeToArray(), but allows missing required fields.
-  bool SerializePartialToArray(void* data, int size) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToArray(
+      void* data, int size) const;
 
   // Make a string encoding the message. Is equivalent to calling
   // SerializeToString() on a string and using that.  Returns the empty
@@ -750,79 +776,93 @@ class PROTOBUF_EXPORT MessageLite {
   // Note: If you intend to generate many such strings, you may
   // reduce heap fragmentation by instead re-using the same string
   // object with calls to SerializeToString().
-  std::string SerializeAsString() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::string SerializeAsString() const;
   // Like SerializeAsString(), but allows missing required fields.
-  std::string SerializePartialAsString() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::string SerializePartialAsString()
+      const;
 
   // Serialize the message and write it to the given file descriptor.  All
   // required fields must be set.
-  bool SerializeToFileDescriptor(int file_descriptor) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToFileDescriptor(
+      int file_descriptor) const;
   // Like SerializeToFileDescriptor(), but allows missing required fields.
-  bool SerializePartialToFileDescriptor(int file_descriptor) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToFileDescriptor(
+      int file_descriptor) const;
   // Serialize the message and write it to the given C++ ostream.  All
   // required fields must be set.
-  bool SerializeToOstream(std::ostream* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToOstream(
+      std::ostream* output) const;
   // Like SerializeToOstream(), but allows missing required fields.
-  bool SerializePartialToOstream(std::ostream* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToOstream(
+      std::ostream* output) const;
 
   // Like SerializeToString(), but appends to the data to the string's
   // existing contents.  All required fields must be set.
-  bool AppendToString(std::string* output) const;
-  bool AppendToString(absl::Cord* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AppendToString(
+      std::string* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AppendToString(
+      absl::Cord* output) const;
   // Like AppendToString(), but allows missing required fields.
-  bool AppendPartialToString(std::string* output) const;
-  bool AppendPartialToString(absl::Cord* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AppendPartialToString(
+      std::string* output) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AppendPartialToString(
+      absl::Cord* output) const;
 
   // Reads a protocol buffer from a Cord and merges it into this message.
-  PROTOBUF_DEPRECATE_AND_INLINE() bool MergeFromCord(const absl::Cord& data) {
-    return MergeFromString(data);
-  }
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
+  bool MergeFromCord(const absl::Cord& data) { return MergeFromString(data); }
   // Like MergeFromCord(), but accepts messages that are missing
   // required fields.
   PROTOBUF_DEPRECATE_AND_INLINE()
-  bool MergePartialFromCord(const absl::Cord& data) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergePartialFromCord(
+      const absl::Cord& data) {
     return MergePartialFromString(data);
   }
   // Parse a protocol buffer contained in a Cord.
   PROTOBUF_DEPRECATE_AND_INLINE()
-  ABSL_ATTRIBUTE_REINITIALIZES bool ParseFromCord(const absl::Cord& data) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParseFromCord(const absl::Cord& data) {
     return ParseFromString(data);
   }
   // Like ParseFromCord(), but accepts messages that are missing
   // required fields.
   PROTOBUF_DEPRECATE_AND_INLINE()
-  ABSL_ATTRIBUTE_REINITIALIZES
-  bool ParsePartialFromCord(const absl::Cord& data) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD ABSL_ATTRIBUTE_REINITIALIZES bool
+  ParsePartialFromCord(const absl::Cord& data) {
     return ParsePartialFromString(data);
   }
 
   // Serialize the message and store it in the given Cord.  All required
   // fields must be set.
   PROTOBUF_DEPRECATE_AND_INLINE()
-  bool SerializeToCord(absl::Cord* output) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializeToCord(
+      absl::Cord* output) const {
     return SerializeToString(output);
   }
   // Like SerializeToCord(), but allows missing required fields.
   PROTOBUF_DEPRECATE_AND_INLINE()
-  bool SerializePartialToCord(absl::Cord* output) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool SerializePartialToCord(
+      absl::Cord* output) const {
     return SerializePartialToString(output);
   }
 
   // Make a Cord encoding the message. Is equivalent to calling
   // SerializeToCord() on a Cord and using that.  Returns an empty
   // Cord if SerializeToCord() would have returned an error.
-  absl::Cord SerializeAsCord() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::Cord SerializeAsCord() const;
   // Like SerializeAsCord(), but allows missing required fields.
-  absl::Cord SerializePartialAsCord() const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::Cord SerializePartialAsCord() const;
 
   // Like SerializeToCord(), but appends to the data to the Cord's existing
   // contents.  All required fields must be set.
-  PROTOBUF_DEPRECATE_AND_INLINE() bool AppendToCord(absl::Cord* output) const {
-    return AppendToString(output);
-  }
+  PROTOBUF_DEPRECATE_AND_INLINE()
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
+  bool AppendToCord(absl::Cord* output) const { return AppendToString(output); }
   // Like AppendToCord(), but allows missing required fields.
   PROTOBUF_DEPRECATE_AND_INLINE()
-  bool AppendPartialToCord(absl::Cord* output) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool AppendPartialToCord(
+      absl::Cord* output) const {
     return AppendPartialToString(output);
   }
 
@@ -832,14 +872,19 @@ class PROTOBUF_EXPORT MessageLite {
   // ByteSizeLong() is generally linear in the number of fields defined for the
   // proto.
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  size_t ByteSizeLong() const { return _class_data_->byte_size_long(*this); }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD size_t ByteSizeLong() const {
+    return _class_data_->byte_size_long(*this);
+  }
 #else
-  virtual size_t ByteSizeLong() const = 0;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual size_t ByteSizeLong() const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 
   // Legacy ByteSize() API.
-  [[deprecated("Please use ByteSizeLong() instead")]] int ByteSize() const {
+  [[deprecated(
+      "Please use ByteSizeLong() "
+      "instead")]] PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int
+  ByteSize() const {
     return internal::ToIntSize(ByteSizeLong());
   }
 
@@ -860,7 +905,8 @@ class PROTOBUF_EXPORT MessageLite {
   // must point at a byte array of at least ByteSize() bytes.  Whether to use
   // deterministic serialization, e.g., maps in sorted order, is determined by
   // CodedOutputStream::IsDefaultSerializationDeterministic().
-  uint8_t* SerializeWithCachedSizesToArray(uint8_t* target) const;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* SerializeWithCachedSizesToArray(
+      uint8_t* target) const;
 
   // Returns the result of the last call to ByteSize().  An embedded message's
   // size is needed both to serialize it (only true for length-prefixed
@@ -881,7 +927,8 @@ class PROTOBUF_EXPORT MessageLite {
   [[nodiscard]] int GetCachedSize() const;
 #endif
 
-  const char* _InternalParse(const char* ptr, internal::ParseContext* ctx);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* _InternalParse(
+      const char* ptr, internal::ParseContext* ctx);
 
  protected:
   // Message implementations require access to internally visible API.
@@ -1072,22 +1119,22 @@ class PROTOBUF_EXPORT MessageLite {
   };
 
   template <ParseFlags flags, typename T>
-  bool ParseFrom(const T& input);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool ParseFrom(const T& input);
 
   // Fast path when conditions match (ie. non-deterministic)
   //  uint8_t* _InternalSerialize(uint8_t* ptr) const;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  uint8_t* _InternalSerialize(uint8_t* ptr,
-                              io::EpsCopyOutputStream* stream) const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* _InternalSerialize(
+      uint8_t* ptr, io::EpsCopyOutputStream* stream) const {
     return _class_data_->serialize(*this, ptr, stream);
   }
 #else   // PROTOBUF_CUSTOM_VTABLE
-  virtual uint8_t* _InternalSerialize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD virtual uint8_t* _InternalSerialize(
       uint8_t* ptr, io::EpsCopyOutputStream* stream) const = 0;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Identical to IsInitialized() except that it logs an error message.
-  bool IsInitializedWithErrors() const {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool IsInitializedWithErrors() const {
     if (IsInitialized()) return true;
     LogInitializationErrorMessage();
     return false;
@@ -1229,7 +1276,8 @@ namespace internal {
 // `Type`, the otherwise virtual `GetClassData()` call is resolved and inlined
 // at compile time (via `MessageTraits`).
 template <typename T>
-PROTOBUF_NDEBUG_INLINE const ClassData* GetClassData(const T& msg) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_NDEBUG_INLINE const ClassData*
+GetClassData(const T& msg) {
   static_assert(std::is_base_of_v<MessageLite, T>);
   if constexpr (std::is_same_v<T, MessageLite> || std::is_same_v<Message, T>) {
     PROTOBUF_DEBUG_COUNTER("GetClassData.Virtual").Inc();
@@ -1241,9 +1289,10 @@ PROTOBUF_NDEBUG_INLINE const ClassData* GetClassData(const T& msg) {
 }
 
 template <bool alias>
-bool MergeFromImpl(absl::string_view input, MessageLite* msg,
-                   const internal::TcParseTableBase* tc_table,
-                   MessageLite::ParseFlags parse_flags);
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromImpl(
+    absl::string_view input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     absl::string_view input, MessageLite* msg,
     const internal::TcParseTableBase* tc_table,
@@ -1254,9 +1303,10 @@ extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<true>(
     MessageLite::ParseFlags parse_flags);
 
 template <bool alias>
-bool MergeFromImpl(io::ZeroCopyInputStream* input, MessageLite* msg,
-                   const internal::TcParseTableBase* tc_table,
-                   MessageLite::ParseFlags parse_flags);
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromImpl(
+    io::ZeroCopyInputStream* input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     io::ZeroCopyInputStream* input, MessageLite* msg,
     const internal::TcParseTableBase* tc_table,
@@ -1272,9 +1322,10 @@ struct BoundedZCIS {
 };
 
 template <bool alias>
-bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
-                   const internal::TcParseTableBase* tc_table,
-                   MessageLite::ParseFlags parse_flags);
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromImpl(
+    BoundedZCIS input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags);
 extern template PROTOBUF_EXPORT_TEMPLATE_DECLARE bool MergeFromImpl<false>(
     BoundedZCIS input, MessageLite* msg,
     const internal::TcParseTableBase* tc_table,
@@ -1288,16 +1339,18 @@ template <typename T>
 struct SourceWrapper;
 
 template <bool alias, typename T>
-bool MergeFromImpl(const SourceWrapper<T>& input, MessageLite* msg,
-                   const internal::TcParseTableBase* tc_table,
-                   MessageLite::ParseFlags parse_flags) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MergeFromImpl(
+    const SourceWrapper<T>& input, MessageLite* msg,
+    const internal::TcParseTableBase* tc_table,
+    MessageLite::ParseFlags parse_flags) {
   return input.template MergeInto<alias>(msg, tc_table, parse_flags);
 }
 
 }  // namespace internal
 
 template <MessageLite::ParseFlags flags, typename T>
-bool MessageLite::ParseFrom(const T& input) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool MessageLite::ParseFrom(
+    const T& input) {
   if (flags & kParse) Clear();
   constexpr bool alias = (flags & kMergeWithAliasing) != 0;
   const internal::TcParseTableBase* tc_table;
@@ -1454,7 +1507,9 @@ PROTOBUF_ALWAYS_INLINE MessageLite* MessageCreator::New(
 
 }  // namespace internal
 
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 std::string ShortFormat(const MessageLite& message_lite);
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 std::string Utf8Format(const MessageLite& message_lite);
 
 // Cast functions for message pointer/references.
@@ -1474,7 +1529,8 @@ std::string Utf8Format(const MessageLite& message_lite);
 // !NDEBUG. It should only be used when the caller is certain that the input
 // message is of instance `T`.
 template <typename T>
-const T* DynamicCastMessage(const MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* DynamicCastMessage(
+    const MessageLite* from) {
   static_assert(std::is_base_of<MessageLite, T>::value, "");
 
   // We might avoid the call to T::GetClassData() altogether if T were to
@@ -1487,7 +1543,7 @@ const T* DynamicCastMessage(const MessageLite* from) {
 }
 
 template <typename T>
-T* DynamicCastMessage(MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T* DynamicCastMessage(MessageLite* from) {
   return const_cast<T*>(
       DynamicCastMessage<T>(static_cast<const MessageLite*>(from)));
 }
@@ -1498,7 +1554,8 @@ namespace internal {
 }  // namespace internal
 
 template <typename T>
-const T& DynamicCastMessage(const MessageLite& from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& DynamicCastMessage(
+    const MessageLite& from) {
   const T* destination_message = DynamicCastMessage<T>(&from);
   if (ABSL_PREDICT_FALSE(destination_message == nullptr)) {
     // If exceptions are enabled, throw.
@@ -1514,13 +1571,14 @@ const T& DynamicCastMessage(const MessageLite& from) {
 }
 
 template <typename T>
-T& DynamicCastMessage(MessageLite& from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& DynamicCastMessage(MessageLite& from) {
   return const_cast<T&>(
       DynamicCastMessage<T>(static_cast<const MessageLite&>(from)));
 }
 
 template <typename T>
-const T* DownCastMessage(const MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* DownCastMessage(
+    const MessageLite* from) {
   internal::StrongReferenceToType<T>();
   ABSL_DCHECK(DynamicCastMessage<T>(from) == from)
       << "Cannot downcast " << from->GetTypeName() << " to "
@@ -1529,27 +1587,30 @@ const T* DownCastMessage(const MessageLite* from) {
 }
 
 template <typename T>
-T* DownCastMessage(MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T* DownCastMessage(MessageLite* from) {
   return const_cast<T*>(
       DownCastMessage<T>(static_cast<const MessageLite*>(from)));
 }
 
 template <typename T>
-const T& DownCastMessage(const MessageLite& from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& DownCastMessage(
+    const MessageLite& from) {
   return *DownCastMessage<T>(&from);
 }
 
 template <typename T>
-T& DownCastMessage(MessageLite& from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& DownCastMessage(MessageLite& from) {
   return *DownCastMessage<T>(&from);
 }
 
 template <>
-inline const MessageLite* DynamicCastMessage(const MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const MessageLite*
+DynamicCastMessage(const MessageLite* from) {
   return from;
 }
 template <>
-inline const MessageLite* DownCastMessage(const MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline const MessageLite* DownCastMessage(
+    const MessageLite* from) {
   return from;
 }
 
@@ -1557,55 +1618,64 @@ inline const MessageLite* DownCastMessage(const MessageLite* from) {
 // Prefer the ones above.
 template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
-const T* DynamicCastToGenerated(const MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* DynamicCastToGenerated(
+    const MessageLite* from) {
   return DynamicCastMessage<T>(from);
 }
 
 template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
-T* DynamicCastToGenerated(MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T* DynamicCastToGenerated(
+    MessageLite* from) {
   return DynamicCastMessage<T>(from);
 }
 
 template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
-const T& DynamicCastToGenerated(const MessageLite& from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& DynamicCastToGenerated(
+    const MessageLite& from) {
   return DynamicCastMessage<T>(from);
 }
 
 template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
-T& DynamicCastToGenerated(MessageLite& from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& DynamicCastToGenerated(
+    MessageLite& from) {
   return DynamicCastMessage<T>(from);
 }
 
 template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
-const T* DownCastToGenerated(const MessageLite* from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T* DownCastToGenerated(
+    const MessageLite* from) {
   return DownCastMessage<T>(from);
 }
 
 template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
-T* DownCastToGenerated(MessageLite* from) {
+
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T* DownCastToGenerated(MessageLite* from) {
+  return DownCastMessage<T>(from);
+}
+
+template <typename T>
+
+PROTOBUF_DEPRECATE_AND_INLINE()
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const T& DownCastToGenerated(
+    const MessageLite& from) {
   return DownCastMessage<T>(from);
 }
 
 template <typename T>
 PROTOBUF_DEPRECATE_AND_INLINE()
-const T& DownCastToGenerated(const MessageLite& from) {
-  return DownCastMessage<T>(from);
-}
-
-template <typename T>
-PROTOBUF_DEPRECATE_AND_INLINE()
-T& DownCastToGenerated(MessageLite& from) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD T& DownCastToGenerated(MessageLite& from) {
   return DownCastMessage<T>(from);
 }
 
 // Overloads for `std::shared_ptr` to substitute `std::dynamic_pointer_cast`
 template <typename T>
-std::shared_ptr<T> DynamicCastMessage(std::shared_ptr<MessageLite> ptr) {
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<T> DynamicCastMessage(
+    std::shared_ptr<MessageLite> ptr) {
   if (auto* res = DynamicCastMessage<T>(ptr.get())) {
     // Use aliasing constructor to keep the same control block.
     return std::shared_ptr<T>(std::move(ptr), res);
@@ -1615,7 +1685,7 @@ std::shared_ptr<T> DynamicCastMessage(std::shared_ptr<MessageLite> ptr) {
 }
 
 template <typename T>
-std::shared_ptr<const T> DynamicCastMessage(
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::shared_ptr<const T> DynamicCastMessage(
     std::shared_ptr<const MessageLite> ptr) {
   if (auto* res = DynamicCastMessage<T>(ptr.get())) {
     // Use aliasing constructor to keep the same control block.
