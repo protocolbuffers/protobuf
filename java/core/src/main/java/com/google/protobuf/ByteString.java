@@ -405,6 +405,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   static ByteString copyFrom(byte[] bytes, int offset, int size, boolean requireUtf8)
       throws InvalidProtocolBufferException {
+    if (size == 0) {
+      return EMPTY;
+    }
     checkRange(offset, offset + size, bytes.length);
     if (requireUtf8 && !Utf8.isValidUtf8(bytes, offset, offset + size)) {
       throw InvalidProtocolBufferException.invalidUtf8();
@@ -437,6 +440,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
   static ByteString wrap(ByteBuffer buffer, boolean requireUtf8)
       throws InvalidProtocolBufferException {
+    if (buffer.remaining() == 0) {
+      return EMPTY;
+    }
     if (requireUtf8 && !Utf8.isValidUtf8(buffer)) {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
@@ -465,10 +471,12 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   static ByteString wrap(byte[] bytes, boolean requireUtf8) throws InvalidProtocolBufferException {
+    if (bytes.length == 0) {
+      return EMPTY;
+    }
     if (requireUtf8 && !Utf8.isValidUtf8(bytes)) {
       throw InvalidProtocolBufferException.invalidUtf8();
     }
-    // TODO: Return EMPTY when bytes are empty to reduce allocations?
     return new LiteralByteString(bytes);
   }
 
@@ -503,6 +511,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @throws IndexOutOfBoundsException if {@code size > bytes.remaining()}
    */
   public static ByteString copyFrom(ByteBuffer bytes, int size) {
+    if (size == 0) {
+      return EMPTY;
+    }
     checkRange(0, size, bytes.remaining());
     byte[] copy = new byte[size];
     bytes.get(copy);
@@ -530,6 +541,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public static ByteString copyFrom(String text, String charsetName)
       throws UnsupportedEncodingException {
+    if (text.isEmpty()) {
+      return EMPTY;
+    }
     return new LiteralByteString(text.getBytes(charsetName));
   }
 
@@ -542,6 +556,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFrom(String text, Charset charset) {
+    if (text.isEmpty()) {
+      return EMPTY;
+    }
     return new LiteralByteString(text.getBytes(charset));
   }
 
@@ -553,6 +570,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFromUtf8(String text) {
+    if (text.isEmpty()) {
+      return EMPTY;
+    }
     return new LiteralByteString(text.getBytes(Internal.UTF_8));
   }
 
