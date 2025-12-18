@@ -3525,6 +3525,67 @@ namespace Google.Protobuf.Reflection
             Assert.That(map[2], Is.EqualTo(20));
         }
 
+        [Test]
+        public void JsonFormatter_Struct_RoundTrip()
+        {
+            // Create a dynamic descriptor for Struct
+            var descriptorData = Google.Protobuf.WellKnownTypes.Struct.Descriptor.File.SerializedData;
+            var fileDescriptors = FileDescriptor.BuildFromByteStrings(new[] { descriptorData });
+            var fileDescriptor = fileDescriptors[0];
+            var structDescriptor = fileDescriptor.MessageTypes.Single(mt => mt.Name == "Struct");
+            var valueDescriptor = fileDescriptor.MessageTypes.Single(mt => mt.Name == "Value");
+
+            // Create a DynamicMessage for Struct
+            var message = new DynamicMessage(structDescriptor);
+            var fieldsField = structDescriptor.FindFieldByName("fields");
+
+            // Create a Value message (string)
+            var stringValue = new DynamicMessage(valueDescriptor);
+            var stringValueField = valueDescriptor.FindFieldByName("string_value");
+            stringValue.SetField(stringValueField, "bar");
+
+            // Create a Value message (number)
+            var numberValue = new DynamicMessage(valueDescriptor);
+            var numberValueField = valueDescriptor.FindFieldByName("number_value");
+            numberValue.SetField(numberValueField, 123.0);
+
+            // Add to map
+            var fields = message.GetField(fieldsField);
+            // DynamicMessage returns a mutable IDictionary for map fields
+            var fieldsDict = (System.Collections.IDictionary)fields;
+            fieldsDict["foo"] = stringValue;
+            fieldsDict["baz"] = numberValue;
+
+            var formatter = JsonFormatter.Default;
+            var json = formatter.Format(message);
+
+            // Round-trip
+            var parsed = JsonParser.Default.Parse(json, structDescriptor);
+            Assert.That(parsed, Is.EqualTo(message));
+        }
+
+        [Test]
+        public void JsonFormatter_Value_Null_RoundTrip()
+        {
+            var descriptorData = Google.Protobuf.WellKnownTypes.Struct.Descriptor.File.SerializedData;
+            var fileDescriptors = FileDescriptor.BuildFromByteStrings(new[] { descriptorData });
+            var fileDescriptor = fileDescriptors[0];
+            var valueDescriptor = fileDescriptor.MessageTypes.Single(mt => mt.Name == "Value");
+
+            var message = new DynamicMessage(valueDescriptor);
+            var nullValueField = valueDescriptor.FindFieldByName("null_value");
+            message.SetField(nullValueField, 0); // NullValue.NullValue is 0
+
+            var formatter = JsonFormatter.Default;
+            var json = formatter.Format(message);
+
+            Assert.AreEqual("null", json);
+
+            // Round-trip
+            var parsed = JsonParser.Default.Parse(json, valueDescriptor);
+            Assert.That(parsed, Is.EqualTo(message));
+        }
+
         #endregion
     }
 }
