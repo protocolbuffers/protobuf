@@ -136,6 +136,21 @@ hpb_proto_library(
 )
 
 proto_library(
+    name = "trivial_proto",
+    srcs = [
+        "trivial.proto",
+    ],
+)
+
+hpb_proto_library(
+    name = "trivial_hpb_proto",
+    visibility = [
+        "//hpb:__subpackages__",
+    ],
+    deps = [":trivial_proto"],
+)
+
+proto_library(
     name = "set_alias_proto",
     srcs = ["set_alias.proto"],
 )
