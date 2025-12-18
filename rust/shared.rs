@@ -70,14 +70,6 @@ mod string;
 #[path = "upb/lib.rs"]
 mod upb;
 
-#[cfg(not(bzl))]
-mod utf8;
-
-// Forces the utf8 crate to be accessible from crate::.
-#[cfg(bzl)]
-#[allow(clippy::single_component_path_imports)]
-use utf8;
-
 // If the Upb and C++ kernels are both linked into the same binary, this symbol
 // will be defined twice and cause a link error.
 #[unsafe(no_mangle)]
