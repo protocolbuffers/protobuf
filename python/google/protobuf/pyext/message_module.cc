@@ -38,7 +38,7 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
 
   ~ProtoAPIDescriptorDatabase() {};
 
-  bool FindFileByName(StringViewArg filename,
+  bool FindFileByName(absl::string_view filename,
                       google::protobuf::FileDescriptorProto* output) override {
     PyObject* pyfile_name =
         PyUnicode_FromStringAndSize(filename.data(), filename.size());
@@ -75,13 +75,13 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
     return ok;
   }
 
-  bool FindFileContainingSymbol(StringViewArg symbol_name,
+  bool FindFileContainingSymbol(absl::string_view symbol_name,
                                 google::protobuf::FileDescriptorProto* output) override {
     return false;
   }
 
   bool FindFileContainingExtension(
-      StringViewArg containing_type, int field_number,
+      absl::string_view containing_type, int field_number,
       google::protobuf::FileDescriptorProto* output) override {
     return false;
   }
