@@ -88,7 +88,7 @@ public final class RuntimeVersion {
     if (domain != DOMAIN) {
       throw new ProtobufRuntimeVersionException(
           String.format(
-              Locale.US,
+              Locale.ROOT,
               "Detected mismatched Protobuf Gencode/Runtime domains when loading %s: gencode %s,"
                   + " runtime %s. Cross-domain usage of Protobuf is not supported.",
               location,
@@ -104,7 +104,7 @@ public final class RuntimeVersion {
       }
       logger.warning(
           String.format(
-              Locale.US,
+              Locale.ROOT,
               " Protobuf prelease version %s in use. This is not recommended for "
                   + "production use.\n"
                   + " You can ignore this message if you are deliberately testing a prerelease."

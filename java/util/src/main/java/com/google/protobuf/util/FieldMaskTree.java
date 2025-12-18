@@ -16,6 +16,7 @@ import com.google.protobuf.Message;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -245,6 +246,7 @@ final class FieldMaskTree {
     if (source.getDescriptorForType() != destination.getDescriptorForType()) {
       throw new IllegalArgumentException(
           String.format(
+              Locale.ROOT,
               "source (%s) and destination (%s) descriptor must be equal",
               source.getDescriptorForType().getFullName(),
               destination.getDescriptorForType().getFullName()));

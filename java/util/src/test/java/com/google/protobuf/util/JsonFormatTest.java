@@ -899,7 +899,9 @@ public class JsonFormatTest {
     final String incorrectTimestampString = "{\"seconds\":1800,\"nanos\":0}";
     try {
       TestTimestamp.Builder builder = TestTimestamp.newBuilder();
-      mergeFromJson(String.format("{\"timestamp_value\": %s}", incorrectTimestampString), builder);
+      mergeFromJson(
+          String.format(Locale.ROOT, "{\"timestamp_value\": %s}", incorrectTimestampString),
+          builder);
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
@@ -924,7 +926,8 @@ public class JsonFormatTest {
     final String incorrectDurationString = "{\"seconds\":10,\"nanos\":500}";
     try {
       TestDuration.Builder builder = TestDuration.newBuilder();
-      mergeFromJson(String.format("{\"duration_value\": %s}", incorrectDurationString), builder);
+      mergeFromJson(
+          String.format(Locale.ROOT, "{\"duration_value\": %s}", incorrectDurationString), builder);
       assertWithMessage("expected exception").fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.

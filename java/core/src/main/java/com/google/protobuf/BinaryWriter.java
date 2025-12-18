@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 
@@ -1905,7 +1906,12 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     public void write(byte[] value, int offset, int length) {
       if (offset < 0 || offset + length > value.length) {
         throw new ArrayIndexOutOfBoundsException(
-            String.format("value.length=%d, offset=%d, length=%d", value.length, offset, length));
+            String.format(
+                Locale.ROOT,
+                "value.length=%d, offset=%d, length=%d",
+                value.length,
+                offset,
+                length));
       }
       requireSpace(length);
 
@@ -1917,7 +1923,12 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     public void writeLazy(byte[] value, int offset, int length) {
       if (offset < 0 || offset + length > value.length) {
         throw new ArrayIndexOutOfBoundsException(
-            String.format("value.length=%d, offset=%d, length=%d", value.length, offset, length));
+            String.format(
+                Locale.ROOT,
+                "value.length=%d, offset=%d, length=%d",
+                value.length,
+                offset,
+                length));
       }
       if (spaceLeft() < length) {
         // We consider the value to be immutable (likely the internals of a ByteString). Just
