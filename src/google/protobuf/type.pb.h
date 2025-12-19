@@ -133,7 +133,11 @@ inline bool Field_Kind_IsValid(int value) {
   return 0 <= value && value <= 18;
 }
 inline constexpr int Field_Kind_Kind_ARRAYSIZE = 18 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Kind_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+Field_Kind_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(Field_Kind) {
+  return Field_Kind_descriptor();
+}
 template <typename T>
 const ::std::string& Field_Kind_Name(T value) {
   static_assert(::std::is_same<T, Field_Kind>::value ||
@@ -171,7 +175,11 @@ inline bool Field_Cardinality_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
 inline constexpr int Field_Cardinality_Cardinality_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Field_Cardinality_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+Field_Cardinality_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(Field_Cardinality) {
+  return Field_Cardinality_descriptor();
+}
 template <typename T>
 const ::std::string& Field_Cardinality_Name(T value) {
   static_assert(::std::is_same<T, Field_Cardinality>::value ||
@@ -208,7 +216,11 @@ inline bool Syntax_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int Syntax_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Syntax_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+Syntax_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(Syntax) {
+  return Syntax_descriptor();
+}
 template <typename T>
 const ::std::string& Syntax_Name(T value) {
   static_assert(::std::is_same<T, Syntax>::value ||

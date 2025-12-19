@@ -103,7 +103,11 @@ inline bool NullValue_IsValid(int value) {
   return 0 <= value && value <= 0;
 }
 inline constexpr int NullValue_ARRAYSIZE = 0 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL NullValue_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+NullValue_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(NullValue) {
+  return NullValue_descriptor();
+}
 template <typename T>
 const ::std::string& NullValue_Name(T value) {
   static_assert(::std::is_same<T, NullValue>::value ||
