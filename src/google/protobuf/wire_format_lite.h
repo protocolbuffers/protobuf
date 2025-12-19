@@ -644,6 +644,15 @@ class PROTOBUF_EXPORT WireFormatLite {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t EnumSizeWithPackedTagSize(
       const RepeatedField<int>& value, size_t tag_size,
       const internal::CachedSize& cached_size);
+  template <typename EnumType,
+            typename = std::enable_if_t<std::is_enum_v<EnumType>>>
+  static PROTOBUF_ALWAYS_INLINE size_t EnumSizeWithPackedTagSize(
+      const RepeatedField<EnumType>& value, size_t tag_size,
+      const internal::CachedSize& cached_size) {
+    return EnumSizeWithPackedTagSize(
+        reinterpret_cast<const RepeatedField<int>&>(value), tag_size,
+        cached_size);
+  }
 
   // These types always have the same size.
   static constexpr size_t kFixed32Size = 4;

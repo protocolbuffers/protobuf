@@ -523,7 +523,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   friend class internal::TcParser;
   friend class internal::WireFormat;
 
-  friend class RepeatedFieldProxy<Element>;
+  template <typename ElementT>
+  friend class RepeatedFieldProxy;
 
   // For access to private arena constructor.
   friend class UnknownFieldSet;
