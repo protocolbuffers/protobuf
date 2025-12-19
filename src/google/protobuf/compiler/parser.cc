@@ -13,6 +13,8 @@
 
 #include "google/protobuf/compiler/parser.h"
 
+#include <cassert>
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -21,6 +23,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -75,12 +78,33 @@ const TypeNameMap& GetTypeNameTable() {
   return *table;
 }
 
-const TypeNameMap& GetUnstableVarintTypeNameTable() {
+const TypeNameMap& GetFixedFirstTypeNameTable() {
   static auto* table = new auto([]() {
     TypeNameMap result;
 
+    result["double"] = FieldDescriptorProto::TYPE_DOUBLE;
+    result["float"] = FieldDescriptorProto::TYPE_FLOAT;
+    result["uint64"] = FieldDescriptorProto::TYPE_UINT64;
+    result["fixed64"] = FieldDescriptorProto::TYPE_FIXED64;
+    result["fixed32"] = FieldDescriptorProto::TYPE_FIXED32;
+    result["bool"] = FieldDescriptorProto::TYPE_BOOL;
+    result["string"] = FieldDescriptorProto::TYPE_STRING;
+    result["group"] = FieldDescriptorProto::TYPE_GROUP;
+
+    result["bytes"] = FieldDescriptorProto::TYPE_BYTES;
+    result["uint32"] = FieldDescriptorProto::TYPE_UINT32;
+    result["sfixed32"] = FieldDescriptorProto::TYPE_SFIXED32;
+    result["sfixed64"] = FieldDescriptorProto::TYPE_SFIXED64;
+    result["int32"] = FieldDescriptorProto::TYPE_INT32;
+    result["int64"] = FieldDescriptorProto::TYPE_INT64;
+    result["sint32"] = FieldDescriptorProto::TYPE_SINT32;
+    result["sint64"] = FieldDescriptorProto::TYPE_SINT64;
+
+    // New types added to preserve legacy behavior.
     result["varint32"] = FieldDescriptorProto::TYPE_INT32;
     result["varint64"] = FieldDescriptorProto::TYPE_INT64;
+    result["uvarint32"] = FieldDescriptorProto::TYPE_UINT32;
+    result["uvarint64"] = FieldDescriptorProto::TYPE_UINT64;
     result["zigzag32"] = FieldDescriptorProto::TYPE_SINT32;
     result["zigzag64"] = FieldDescriptorProto::TYPE_SINT64;
 
@@ -466,7 +490,7 @@ void Parser::LocationRecorder::AttachComments(
   if (!trailing->empty()) {
     location_->mutable_trailing_comments()->swap(*trailing);
   }
-  for (int i = 0; i < detached_comments->size(); ++i) {
+  for (size_t i = 0; i < detached_comments->size(); ++i) {
     location_->add_leading_detached_comments()->swap((*detached_comments)[i]);
   }
   detached_comments->clear();
@@ -1313,7 +1337,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(absl::StrCat(value));
+      absl::StrAppend(default_value, value);
       break;
     }
 
@@ -1336,7 +1360,7 @@ bool Parser::ParseDefaultAssignment(
       DO(ConsumeInteger64(max_value, &value,
                           "Expected integer for field default value."));
       // And stringify it again.
-      default_value->append(absl::StrCat(value));
+      absl::StrAppend(default_value, value);
       break;
     }
 
@@ -2425,9 +2449,16 @@ bool Parser::ParseLabel(FieldDescriptorProto::Label* label,
   return true;
 }
 
+bool Parser::ShouldUseFixedFirstType() const {
+  return syntax_identifier_ == "editions" &&
+         edition_ == Edition::EDITION_UNSTABLE;
+}
+
 bool Parser::ParseType(FieldDescriptorProto::Type* type,
                        std::string* type_name) {
-  const auto& type_names_table = GetTypeNameTable();
+  const auto& type_names_table = ShouldUseFixedFirstType()
+                                     ? GetFixedFirstTypeNameTable()
+                                     : GetTypeNameTable();
   auto iter = type_names_table.find(input_->current().text);
   if (iter != type_names_table.end()) {
     if (syntax_identifier_ == "editions" &&
@@ -2440,17 +2471,6 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
     *type = iter->second;
     input_->Next();
   } else {
-    // EDITION_UNSTABLE supports new numeric types.
-    if (syntax_identifier_ == "editions" &&
-        edition_ == Edition::EDITION_UNSTABLE) {
-      const auto& type_names_table = GetUnstableVarintTypeNameTable();
-      auto iter = type_names_table.find(input_->current().text);
-      if (iter != type_names_table.end()) {
-        *type = iter->second;
-        input_->Next();
-        return true;
-      }
-    }
     DO(ParseUserDefinedType(type_name));
   }
   return true;
