@@ -6,33 +6,26 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <gtest/gtest.h>
-#include "hpb_generator/tests/trivial.hpb.h"
+#include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb/arena.h"
 #include "hpb/hpb.h"
 #include "hpb/ptr.h"
 
-// Tests in this file are run against both backends {upb, cpp} to ensure
-// api conformance, compatibility, and correctness.
-
 namespace hpb::testing {
 namespace {
 
-using ::hpb_unittest::protos::Trivial;
-using ::hpb_unittest::protos::TRIVIAL_PAINTING_SARGENT;
+using ::hpb_unittest::protos::TestModel;
+using ::hpb_unittest::protos::TestModel_Category_IMAGES;
+
+// Tests in this file are run against both backends {upb, cpp} to ensure
+// api conformance, compatibility, and correctness.
 
 TEST(CppBackend, CanCreateMessage) {
   hpb::Arena arena;
-  hpb::Ptr<Trivial> trivial_ptr = hpb::CreateMessage<Trivial>(arena);
-  (void)trivial_ptr;
+  hpb::Ptr<TestModel> test_model_ptr = hpb::CreateMessage<TestModel>(arena);
+  (void)test_model_ptr;
 }
 
-TEST(CppBackend, Enums) { EXPECT_EQ(2, TRIVIAL_PAINTING_SARGENT); }
-
-TEST(CppBackend, Booleans) {
-  Trivial cpp_trivial;
-  EXPECT_FALSE(cpp_trivial.b());
-  // TODO: set, clear
-}
-
+TEST(CppBackend, MessageEnums) { EXPECT_EQ(5, TestModel_Category_IMAGES); }
 }  // namespace
 }  // namespace hpb::testing

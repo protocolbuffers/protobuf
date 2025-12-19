@@ -69,7 +69,6 @@ cc_library(
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
         "//src/google/protobuf/compiler:plugin",
-        "//src/google/protobuf/compiler/cpp:names",
         "//upb_generator:common",
         "//upb_generator:file_layout",
         "//upb_generator/c:names",

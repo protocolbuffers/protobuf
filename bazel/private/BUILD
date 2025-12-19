@@ -117,10 +117,7 @@ bzl_library(
         "bazel_cc_proto_library.bzl",
         "cc_proto_support.bzl",
     ],
-    visibility = [
-        "//bazel:__subpackages__",
-        "//hpb/bazel:__subpackages__",
-    ],
+    visibility = ["//bazel:__subpackages__"],
     deps = [
         ":toolchain_helpers_bzl",
         "//bazel/common:proto_common_bzl",

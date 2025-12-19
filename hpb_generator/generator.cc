@@ -16,7 +16,6 @@
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/code_generator_lite.h"
-#include "google/protobuf/compiler/cpp/names.h"
 #include "hpb_generator/context.h"
 #include "hpb_generator/gen_enums.h"
 #include "hpb_generator/gen_extensions.h"
@@ -53,22 +52,6 @@ void WriteForwardDecls(const google::protobuf::FileDescriptor* file, Context& ct
   }
   const auto this_file_messages = SortedMessages(file);
   WriteTypedefForwardingHeader(file, this_file_messages, ctx);
-}
-
-std::string ScalarGetters(const google::protobuf::Descriptor* message) {
-  std::string res;
-  for (int i = 0; i < message->field_count(); ++i) {
-    const auto* field = message->field(i);
-    if (field->is_repeated() || field->is_map() || field->is_extension()) {
-      continue;
-    }
-    if (field->type() == google::protobuf::FieldDescriptor::TYPE_BOOL) {
-      absl::StrAppend(
-          &res, google::protobuf::FieldDescriptor::CppTypeName(field->cpp_type()), " ",
-          field->name(), "() const { return msg_.", field->name(), "(); }\n");
-    }
-  }
-  return res;
 }
 
 void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
@@ -122,10 +105,7 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
     const auto msgs = SortedMessages(file);
     for (auto message : msgs) {
       ctx.Emit({{"type", QualifiedClassName(message)},
-                {"cpp_backend_type",
-                 google::protobuf::compiler::cpp::QualifiedClassName(message)},
                 {"class_name", ClassName(message)},
-                {"scalar_getters", ScalarGetters(message)},
                 {"namespace", absl::StrCat(absl::StrReplaceAll(file->package(),
                                                                {{".", "::"}}),
                                            "::protos")}},
@@ -143,11 +123,12 @@ void WriteHeader(const google::protobuf::FileDescriptor* file, Context& ctx) {
 
                    $class_name$() = default;
 
-                  $scalar_getters$
+                  private:
+                   $class_name$($type$* msg) : msg_(msg) {}
 
-                      private : $cpp_backend_type$ msg_;
+                   $type$* msg_;
 
-                   const $cpp_backend_type$* msg() const { return &msg_; }
+                   $type$* msg() const { return msg_; }
 
                    friend struct ::hpb::internal::PrivateAccess;
                  };
@@ -326,9 +307,6 @@ void WriteHeaderMessageForwardDecls(const google::protobuf::FileDescriptor* file
   if (ctx.options().backend == Backend::UPB) {
     ctx.Emit({{"upb_filename", UpbCFilename(file)}},
              "#include \"$upb_filename$\"\n");
-  } else if (ctx.options().backend == Backend::CPP) {
-    ctx.Emit({{"cpp_header", ProtoFilename(file)}},
-             "#include \"$cpp_header$\"\n");
   }
   WriteForwardDecls(file, ctx);
   // Import forward-declaration of types in dependencies.

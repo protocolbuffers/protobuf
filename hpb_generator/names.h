@@ -25,7 +25,6 @@ std::string QualifiedInternalClassName(const google::protobuf::Descriptor* descr
 
 std::string CppSourceFilename(const google::protobuf::FileDescriptor* file);
 std::string UpbCFilename(const google::protobuf::FileDescriptor* file);
-std::string ProtoFilename(const google::protobuf::FileDescriptor* file);
 std::string CppHeaderFilename(const google::protobuf::FileDescriptor* file);
 
 void WriteStartNamespace(const google::protobuf::FileDescriptor* file, Context& ctx);
