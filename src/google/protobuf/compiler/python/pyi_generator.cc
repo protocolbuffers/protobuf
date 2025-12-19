@@ -74,6 +74,8 @@ struct ImportModules {
   bool has_callable = false;    // typing.Callable
   bool has_well_known_type = false;
   bool has_datetime = false;
+  bool has_typed_dict = false;
+  bool has_literal = false;
 };
 
 // Checks whether a descriptor name matches a well-known type.
@@ -97,6 +99,7 @@ void CheckImportModules(const Descriptor* descriptor,
   }
   if (descriptor->enum_type_count() > 0) {
     import_modules->has_enums = true;
+    import_modules->has_literal = true;
   }
   if (IsWellKnownType(descriptor->full_name())) {
     import_modules->has_well_known_type = true;
@@ -130,7 +133,6 @@ void CheckImportModules(const Descriptor* descriptor,
       }
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         import_modules->has_union = true;
-        import_modules->has_mapping = true;
         const absl::string_view name = field->message_type()->full_name();
         if (name == "google.protobuf.Duration" ||
             name == "google.protobuf.Timestamp") {
@@ -187,9 +189,11 @@ void PyiGenerator::PrintImports() const {
   ImportModules import_modules;
   if (file_->message_type_count() > 0) {
     import_modules.has_messages = true;
+    import_modules.has_typed_dict = true;
   }
   if (file_->enum_type_count() > 0) {
     import_modules.has_enums = true;
+    import_modules.has_literal = true;
   }
   if (!opensource_runtime_ && file_->service_count() > 0) {
     import_modules.has_callable = true;
@@ -291,6 +295,12 @@ void PyiGenerator::PrintImports() const {
   if (import_modules.has_union) {
     printer_->Print(", Union as _Union");
   }
+  if (import_modules.has_typed_dict) {
+    printer_->Print(", TypedDict as _TypedDict");
+  }
+  if (import_modules.has_literal) {
+    printer_->Print(", Literal as _Literal");
+  }
   printer_->Print("\n");
 
   // Public imports
@@ -331,6 +341,16 @@ void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   printer_->Indent();
   PrintEnumValues(enum_descriptor, /* is_classvar = */ true);
   printer_->Outdent();
+  std::string literals = "_Literal[";
+  for (int k = 0; k < enum_descriptor.value_count(); ++k) {
+    absl::StrAppend(&literals, "\"", enum_descriptor.value(k)->name(), "\"");
+    if (k < enum_descriptor.value_count() - 1) {
+      absl::StrAppend(&literals, ", ");
+    }
+  }
+  absl::StrAppend(&literals, "]");
+  printer_->Print("_$enum_name$_Literal = $literals$\n", "enum_name",
+                  enum_descriptor.name(), "literals", literals);
 }
 
 void PyiGenerator::PrintEnumValues(const EnumDescriptor& enum_descriptor,
@@ -421,6 +441,87 @@ std::string PyiGenerator::ExtraInitTypes(const Descriptor& msg_des) const {
     return "datetime.timedelta, ";
   } else {
     return "";
+  }
+}
+
+std::string PyiGenerator::ModuleLevelTypedDictName(
+    const Descriptor& descriptor) const {
+  std::string typed_dict_name = absl::StrCat(
+      "_", NamePrefixedWithNestedTypes(descriptor, "_"), "_TypedDict");
+  if (descriptor.file() != file_) {
+    std::string module_alias;
+    const absl::string_view filename = descriptor.file()->name();
+    auto it = import_map_.find(filename);
+    if (it == import_map_.end()) {
+      std::string module_name = ModuleName(descriptor.file()->name());
+      std::vector<absl::string_view> tokens = absl::StrSplit(module_name, '.');
+      module_alias = absl::StrCat("_", tokens.back());
+    } else {
+      module_alias = it->second;
+    }
+    typed_dict_name = absl::StrCat(module_alias, ".", typed_dict_name);
+  }
+  return typed_dict_name;
+}
+
+void PyiGenerator::PrintKwargsFieldType(
+    const FieldDescriptor& field_des, const Descriptor& containing_des) const {
+  if (field_des.is_map()) {
+    const Descriptor* map_entry = field_des.message_type();
+    const FieldDescriptor* value_des = map_entry->field(1);
+    printer_->Print("_Mapping[$key_type$, ", "key_type",
+                    GetFieldType(*map_entry->field(0), containing_des));
+    if (value_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      const Descriptor* msg_des = value_des->message_type();
+      printer_->Print("_Union[$type_name$, $typed_dict_name$]]", "type_name",
+                      ModuleLevelName(*msg_des), "typed_dict_name",
+                      ModuleLevelTypedDictName(*msg_des));
+    } else if (value_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      std::string enum_module_level_name =
+          ModuleLevelName(*value_des->enum_type());
+      size_t last_dot = enum_module_level_name.rfind('.');
+      std::string enum_literal =
+          last_dot == std::string::npos
+              ? absl::StrCat("_", enum_module_level_name, "_Literal")
+              : absl::StrCat(enum_module_level_name.substr(0, last_dot), "._",
+                             enum_module_level_name.substr(last_dot + 1),
+                             "_Literal");
+      printer_->Print("_Union[$type_name$, $enum_literal$]]", "type_name",
+                      enum_module_level_name, "enum_literal", enum_literal);
+    } else {
+      printer_->Print("$value_type$]", "value_type",
+                      GetFieldType(*value_des, containing_des));
+    }
+    return;
+  }
+  if (field_des.is_repeated()) {
+    printer_->Print("_Iterable[");
+  }
+  if (field_des.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    const auto& extra_init_types = ExtraInitTypes(*field_des.message_type());
+    const Descriptor* msg_des = field_des.message_type();
+    printer_->Print("_Union[$extra_init_types$$type_name$, $typed_dict_name$]",
+                    "extra_init_types", extra_init_types, "type_name",
+                    ModuleLevelName(*msg_des), "typed_dict_name",
+                    ModuleLevelTypedDictName(*msg_des));
+  } else if (field_des.cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+    std::string enum_module_level_name =
+        ModuleLevelName(*field_des.enum_type());
+    size_t last_dot = enum_module_level_name.rfind('.');
+    std::string enum_literal =
+        last_dot == std::string::npos
+            ? absl::StrCat("_", enum_module_level_name, "_Literal")
+            : absl::StrCat(enum_module_level_name.substr(0, last_dot), "._",
+                           enum_module_level_name.substr(last_dot + 1),
+                           "_Literal");
+    printer_->Print("_Union[$type_name$, $enum_literal$]", "type_name",
+                    enum_module_level_name, "enum_literal", enum_literal);
+  } else {
+    printer_->Print("$type_name$", "type_name",
+                    GetFieldType(field_des, containing_des));
+  }
+  if (field_des.is_repeated()) {
+    printer_->Print("]");
   }
 }
 
@@ -541,37 +642,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     printer_->Print(", $field_name$: ", "field_name", field_name);
     Annotate("field_name", field_des);
     printer_->Print("_Optional[");
-    if (field_des->is_map()) {
-      const Descriptor* map_entry = field_des->message_type();
-      printer_->Print(
-          "_Mapping[$key_type$, $value_type$]", "key_type",
-          GetFieldType(*map_entry->field(0), message_descriptor),
-          "value_type",
-          GetFieldType(*map_entry->field(1), message_descriptor));
-    } else {
-      if (field_des->is_repeated()) {
-        printer_->Print("_Iterable[");
-      }
-      if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        const auto& extra_init_types =
-            ExtraInitTypes(*field_des->message_type());
-        printer_->Print("_Union[$extra_init_types$$type_name$, _Mapping]",
-                        "extra_init_types", extra_init_types, "type_name",
-                        GetFieldType(*field_des, message_descriptor));
-      } else {
-        if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-          printer_->Print("_Union[$type_name$, str]", "type_name",
-                          ModuleLevelName(*field_des->enum_type()));
-        } else {
-          printer_->Print(
-              "$type_name$", "type_name",
-              GetFieldType(*field_des, message_descriptor));
-        }
-      }
-      if (field_des->is_repeated()) {
-        printer_->Print("]");
-      }
-    }
+    PrintKwargsFieldType(*field_des, message_descriptor);
     printer_->Print("] = ...");
   }
   if (has_python_keywords) {
@@ -585,6 +656,38 @@ void PyiGenerator::PrintMessages() const {
   // Deterministically order the descriptors.
   for (int i = 0; i < file_->message_type_count(); ++i) {
     PrintMessage(*file_->message_type(i), false);
+  }
+
+  std::vector<const Descriptor*> descriptors;
+  std::function<void(const Descriptor*)> collect_messages =
+      [&](const Descriptor* d) {
+        descriptors.push_back(d);
+        for (int i = 0; i < d->nested_type_count(); ++i) {
+          collect_messages(d->nested_type(i));
+        }
+      };
+  for (int i = 0; i < file_->message_type_count(); ++i) {
+    collect_messages(file_->message_type(i));
+  }
+
+  for (const auto& message_descriptor : descriptors) {
+    printer_->Print("\nclass $name$(_TypedDict, total=False):\n", "name",
+                    ModuleLevelTypedDictName(*message_descriptor));
+    printer_->Indent();
+    if (message_descriptor->field_count() == 0) {
+      printer_->Print("pass\n");
+    }
+    for (int i = 0; i < message_descriptor->field_count(); ++i) {
+      const FieldDescriptor* field_des = message_descriptor->field(i);
+      if (IsPythonKeyword(field_des->name())) {
+        continue;
+      }
+      std::string field_name = std::string(field_des->name());
+      printer_->Print("$field_name$: _Optional[", "field_name", field_name);
+      PrintKwargsFieldType(*field_des, *message_descriptor);
+      printer_->Print("]\n");
+    }
+    printer_->Outdent();
   }
 }
 

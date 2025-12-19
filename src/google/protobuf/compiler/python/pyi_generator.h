@@ -77,10 +77,13 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor, bool is_nested) const;
   void PrintServices() const;
-  std::string GetFieldType(
-      const FieldDescriptor& field_des, const Descriptor& containing_des) const;
+  std::string GetFieldType(const FieldDescriptor& field_des,
+                           const Descriptor& containing_des) const;
+  void PrintKwargsFieldType(const FieldDescriptor& field_des,
+                            const Descriptor& containing_des) const;
   template <typename DescriptorT>
   std::string ModuleLevelName(const DescriptorT& descriptor) const;
+  std::string ModuleLevelTypedDictName(const Descriptor& descriptor) const;
   std::string PublicPackage() const;
   std::string InternalPackage() const;
   std::string ExtraInitTypes(const Descriptor& msg_des) const;
