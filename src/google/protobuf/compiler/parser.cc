@@ -75,6 +75,20 @@ const TypeNameMap& GetTypeNameTable() {
   return *table;
 }
 
+const TypeNameMap& GetUnstableVarintTypeNameTable() {
+  static auto* table = new auto([]() {
+    TypeNameMap result;
+
+    result["varint32"] = FieldDescriptorProto::TYPE_INT32;
+    result["varint64"] = FieldDescriptorProto::TYPE_INT64;
+    result["zigzag32"] = FieldDescriptorProto::TYPE_SINT32;
+    result["zigzag64"] = FieldDescriptorProto::TYPE_SINT64;
+
+    return result;
+  }());
+  return *table;
+}
+
 // Camel-case the field name and append "Entry" for generated map entry name.
 // e.g. map<KeyType, ValueType> foo_map => FooMapEntry
 std::string MapEntryName(absl::string_view field_name) {
@@ -2426,6 +2440,17 @@ bool Parser::ParseType(FieldDescriptorProto::Type* type,
     *type = iter->second;
     input_->Next();
   } else {
+    // EDITION_UNSTABLE supports new numeric types.
+    if (syntax_identifier_ == "editions" &&
+        edition_ == Edition::EDITION_UNSTABLE) {
+      const auto& type_names_table = GetUnstableVarintTypeNameTable();
+      auto iter = type_names_table.find(input_->current().text);
+      if (iter != type_names_table.end()) {
+        *type = iter->second;
+        input_->Next();
+        return true;
+      }
+    }
     DO(ParseUserDefinedType(type_name));
   }
   return true;
