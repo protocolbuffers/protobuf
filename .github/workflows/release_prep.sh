@@ -37,6 +37,7 @@ mkdir -p ${PREFIX}/bazel/private
 cat >${INTEGRITY_FILE} <<EOF
 "Generated during release by release_prep.sh"
 
+RELEASE_VERSION="${TAG}"
 RELEASED_BINARY_INTEGRITY = $(
 curl -s https://api.github.com/repos/protocolbuffers/protobuf/releases/tags/${TAG} \
   | jq -f <(echo "$filter_releases")
