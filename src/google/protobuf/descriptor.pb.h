@@ -317,7 +317,11 @@ inline bool ExtensionRangeOptions_VerificationState_IsValid(int value) {
   return 0 <= value && value <= 1;
 }
 inline constexpr int ExtensionRangeOptions_VerificationState_VerificationState_ARRAYSIZE = 1 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL ExtensionRangeOptions_VerificationState_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+ExtensionRangeOptions_VerificationState_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(ExtensionRangeOptions_VerificationState) {
+  return ExtensionRangeOptions_VerificationState_descriptor();
+}
 template <typename T>
 const ::std::string& ExtensionRangeOptions_VerificationState_Name(T value) {
   static_assert(::std::is_same<T, ExtensionRangeOptions_VerificationState>::value ||
@@ -365,7 +369,11 @@ inline bool FieldDescriptorProto_Type_IsValid(int value) {
   return 1 <= value && value <= 18;
 }
 inline constexpr int FieldDescriptorProto_Type_Type_ARRAYSIZE = 18 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Type_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FieldDescriptorProto_Type_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FieldDescriptorProto_Type) {
+  return FieldDescriptorProto_Type_descriptor();
+}
 template <typename T>
 const ::std::string& FieldDescriptorProto_Type_Name(T value) {
   static_assert(::std::is_same<T, FieldDescriptorProto_Type>::value ||
@@ -398,7 +406,11 @@ inline bool FieldDescriptorProto_Label_IsValid(int value) {
   return 1 <= value && value <= 3;
 }
 inline constexpr int FieldDescriptorProto_Label_Label_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldDescriptorProto_Label_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FieldDescriptorProto_Label_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FieldDescriptorProto_Label) {
+  return FieldDescriptorProto_Label_descriptor();
+}
 template <typename T>
 const ::std::string& FieldDescriptorProto_Label_Name(T value) {
   static_assert(::std::is_same<T, FieldDescriptorProto_Label>::value ||
@@ -431,7 +443,11 @@ inline bool FileOptions_OptimizeMode_IsValid(int value) {
   return 1 <= value && value <= 3;
 }
 inline constexpr int FileOptions_OptimizeMode_OptimizeMode_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FileOptions_OptimizeMode_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FileOptions_OptimizeMode_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FileOptions_OptimizeMode) {
+  return FileOptions_OptimizeMode_descriptor();
+}
 template <typename T>
 const ::std::string& FileOptions_OptimizeMode_Name(T value) {
   static_assert(::std::is_same<T, FileOptions_OptimizeMode>::value ||
@@ -464,7 +480,11 @@ inline bool FieldOptions_CType_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FieldOptions_CType_CType_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_CType_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FieldOptions_CType_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FieldOptions_CType) {
+  return FieldOptions_CType_descriptor();
+}
 template <typename T>
 const ::std::string& FieldOptions_CType_Name(T value) {
   static_assert(::std::is_same<T, FieldOptions_CType>::value ||
@@ -497,7 +517,11 @@ inline bool FieldOptions_JSType_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FieldOptions_JSType_JSType_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_JSType_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FieldOptions_JSType_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FieldOptions_JSType) {
+  return FieldOptions_JSType_descriptor();
+}
 template <typename T>
 const ::std::string& FieldOptions_JSType_Name(T value) {
   static_assert(::std::is_same<T, FieldOptions_JSType>::value ||
@@ -530,7 +554,11 @@ inline bool FieldOptions_OptionRetention_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FieldOptions_OptionRetention_OptionRetention_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionRetention_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FieldOptions_OptionRetention_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FieldOptions_OptionRetention) {
+  return FieldOptions_OptionRetention_descriptor();
+}
 template <typename T>
 const ::std::string& FieldOptions_OptionRetention_Name(T value) {
   static_assert(::std::is_same<T, FieldOptions_OptionRetention>::value ||
@@ -570,7 +598,11 @@ inline bool FieldOptions_OptionTargetType_IsValid(int value) {
   return 0 <= value && value <= 9;
 }
 inline constexpr int FieldOptions_OptionTargetType_OptionTargetType_ARRAYSIZE = 9 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FieldOptions_OptionTargetType_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FieldOptions_OptionTargetType_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FieldOptions_OptionTargetType) {
+  return FieldOptions_OptionTargetType_descriptor();
+}
 template <typename T>
 const ::std::string& FieldOptions_OptionTargetType_Name(T value) {
   static_assert(::std::is_same<T, FieldOptions_OptionTargetType>::value ||
@@ -603,7 +635,11 @@ inline bool MethodOptions_IdempotencyLevel_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int MethodOptions_IdempotencyLevel_IdempotencyLevel_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL MethodOptions_IdempotencyLevel_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+MethodOptions_IdempotencyLevel_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(MethodOptions_IdempotencyLevel) {
+  return MethodOptions_IdempotencyLevel_descriptor();
+}
 template <typename T>
 const ::std::string& MethodOptions_IdempotencyLevel_Name(T value) {
   static_assert(::std::is_same<T, MethodOptions_IdempotencyLevel>::value ||
@@ -638,7 +674,11 @@ inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_IsValid(int val
   return 0 <= value && value <= 4;
 }
 inline constexpr int FeatureSet_VisibilityFeature_DefaultSymbolVisibility_DefaultSymbolVisibility_ARRAYSIZE = 4 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_VisibilityFeature_DefaultSymbolVisibility) {
+  return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_VisibilityFeature_DefaultSymbolVisibility>::value ||
@@ -672,7 +712,11 @@ inline bool FeatureSet_FieldPresence_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
 inline constexpr int FeatureSet_FieldPresence_FieldPresence_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_FieldPresence_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_FieldPresence_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_FieldPresence) {
+  return FeatureSet_FieldPresence_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_FieldPresence_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_FieldPresence>::value ||
@@ -705,7 +749,11 @@ inline bool FeatureSet_EnumType_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FeatureSet_EnumType_EnumType_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnumType_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_EnumType_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_EnumType) {
+  return FeatureSet_EnumType_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_EnumType_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_EnumType>::value ||
@@ -738,7 +786,11 @@ inline bool FeatureSet_RepeatedFieldEncoding_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FeatureSet_RepeatedFieldEncoding_RepeatedFieldEncoding_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_RepeatedFieldEncoding_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_RepeatedFieldEncoding_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_RepeatedFieldEncoding) {
+  return FeatureSet_RepeatedFieldEncoding_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_RepeatedFieldEncoding_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_RepeatedFieldEncoding>::value ||
@@ -771,7 +823,11 @@ inline bool FeatureSet_Utf8Validation_IsValid(int value) {
   return 0 <= value && value <= 3 && ((13u >> value) & 1) != 0;
 }
 inline constexpr int FeatureSet_Utf8Validation_Utf8Validation_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_Utf8Validation_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_Utf8Validation_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_Utf8Validation) {
+  return FeatureSet_Utf8Validation_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_Utf8Validation_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_Utf8Validation>::value ||
@@ -804,7 +860,11 @@ inline bool FeatureSet_MessageEncoding_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FeatureSet_MessageEncoding_MessageEncoding_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_MessageEncoding_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_MessageEncoding_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_MessageEncoding) {
+  return FeatureSet_MessageEncoding_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_MessageEncoding_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_MessageEncoding>::value ||
@@ -837,7 +897,11 @@ inline bool FeatureSet_JsonFormat_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FeatureSet_JsonFormat_JsonFormat_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_JsonFormat_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_JsonFormat_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_JsonFormat) {
+  return FeatureSet_JsonFormat_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_JsonFormat_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_JsonFormat>::value ||
@@ -870,7 +934,11 @@ inline bool FeatureSet_EnforceNamingStyle_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int FeatureSet_EnforceNamingStyle_EnforceNamingStyle_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL FeatureSet_EnforceNamingStyle_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+FeatureSet_EnforceNamingStyle_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(FeatureSet_EnforceNamingStyle) {
+  return FeatureSet_EnforceNamingStyle_descriptor();
+}
 template <typename T>
 const ::std::string& FeatureSet_EnforceNamingStyle_Name(T value) {
   static_assert(::std::is_same<T, FeatureSet_EnforceNamingStyle>::value ||
@@ -903,7 +971,11 @@ inline bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int GeneratedCodeInfo_Annotation_Semantic_Semantic_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation_Semantic_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+GeneratedCodeInfo_Annotation_Semantic_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(GeneratedCodeInfo_Annotation_Semantic) {
+  return GeneratedCodeInfo_Annotation_Semantic_descriptor();
+}
 template <typename T>
 const ::std::string& GeneratedCodeInfo_Annotation_Semantic_Name(T value) {
   static_assert(::std::is_same<T, GeneratedCodeInfo_Annotation_Semantic>::value ||
@@ -945,7 +1017,11 @@ inline constexpr Edition Edition_MAX =
 inline bool Edition_IsValid(int value) {
   return ::google::protobuf::internal::ValidateEnum(value, Edition_internal_data_);
 }
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL Edition_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+Edition_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(Edition) {
+  return Edition_descriptor();
+}
 template <typename T>
 const ::std::string& Edition_Name(T value) {
   static_assert(::std::is_same<T, Edition>::value ||
@@ -973,7 +1049,11 @@ inline bool SymbolVisibility_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int SymbolVisibility_ARRAYSIZE = 2 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL SymbolVisibility_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+SymbolVisibility_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(SymbolVisibility) {
+  return SymbolVisibility_descriptor();
+}
 template <typename T>
 const ::std::string& SymbolVisibility_Name(T value) {
   static_assert(::std::is_same<T, SymbolVisibility>::value ||

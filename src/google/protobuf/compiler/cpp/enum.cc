@@ -203,9 +203,14 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
   }
 
   if (has_reflection_) {
-    p->Emit(R"(
-      $dllexport_decl $const $pb$::EnumDescriptor* $nonnull$ $Msg_Enum$_descriptor();
-    )");
+    p->Emit(R"cc(
+      $dllexport_decl $const $pb$::EnumDescriptor* $nonnull$
+      $Msg_Enum$_descriptor();
+      //~ ADL Hook
+      inline auto ProtobufInternalGetEnumDescriptor($Msg_Enum$) {
+        return $Msg_Enum$_descriptor();
+      }
+    )cc");
   } else {
     p->Emit(R"cc(
       $return_type$ $Msg_Enum$_Name($Msg_Enum$ value);

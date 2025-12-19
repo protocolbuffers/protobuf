@@ -107,7 +107,11 @@ inline bool CodeGeneratorResponse_Feature_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = 2 + 1;
-PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CodeGeneratorResponse_Feature_descriptor();
+PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+CodeGeneratorResponse_Feature_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(CodeGeneratorResponse_Feature) {
+  return CodeGeneratorResponse_Feature_descriptor();
+}
 template <typename T>
 const ::std::string& CodeGeneratorResponse_Feature_Name(T value) {
   static_assert(::std::is_same<T, CodeGeneratorResponse_Feature>::value ||

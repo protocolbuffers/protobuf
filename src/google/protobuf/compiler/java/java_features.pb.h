@@ -105,7 +105,11 @@ inline bool JavaFeatures_NestInFileClassFeature_NestInFileClass_IsValid(int valu
   return 0 <= value && value <= 3;
 }
 inline constexpr int JavaFeatures_NestInFileClassFeature_NestInFileClass_NestInFileClass_ARRAYSIZE = 3 + 1;
-PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor();
+PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(JavaFeatures_NestInFileClassFeature_NestInFileClass) {
+  return JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor();
+}
 template <typename T>
 const ::std::string& JavaFeatures_NestInFileClassFeature_NestInFileClass_Name(T value) {
   static_assert(::std::is_same<T, JavaFeatures_NestInFileClassFeature_NestInFileClass>::value ||
@@ -138,7 +142,11 @@ inline bool JavaFeatures_Utf8Validation_IsValid(int value) {
   return 0 <= value && value <= 2;
 }
 inline constexpr int JavaFeatures_Utf8Validation_Utf8Validation_ARRAYSIZE = 2 + 1;
-PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL JavaFeatures_Utf8Validation_descriptor();
+PROTOC_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+JavaFeatures_Utf8Validation_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(JavaFeatures_Utf8Validation) {
+  return JavaFeatures_Utf8Validation_descriptor();
+}
 template <typename T>
 const ::std::string& JavaFeatures_Utf8Validation_Name(T value) {
   static_assert(::std::is_same<T, JavaFeatures_Utf8Validation>::value ||

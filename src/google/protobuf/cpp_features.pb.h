@@ -95,7 +95,11 @@ inline bool CppFeatures_StringType_IsValid(int value) {
   return 0 <= value && value <= 3;
 }
 inline constexpr int CppFeatures_StringType_StringType_ARRAYSIZE = 3 + 1;
-PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL CppFeatures_StringType_descriptor();
+PROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* PROTOBUF_NONNULL
+CppFeatures_StringType_descriptor();
+inline auto ProtobufInternalGetEnumDescriptor(CppFeatures_StringType) {
+  return CppFeatures_StringType_descriptor();
+}
 template <typename T>
 const ::std::string& CppFeatures_StringType_Name(T value) {
   static_assert(::std::is_same<T, CppFeatures_StringType>::value ||
