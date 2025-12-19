@@ -641,6 +641,62 @@ message NewVarintTypes {
       "2:2: \"zigzag64\" is not defined.\n");
 }
 
+TEST_F(ParseMessageTest, Uvarint32Unstable) {
+  ExpectParsesTo(
+      R"(edition = "UNSTABLE";
+message NewVarintTypes {
+  uvarint32 uint32_field = 1;
+})",
+      R"(message_type {
+  name: "NewVarintTypes"
+  field {
+    name: "uint32_field"
+    number: 1
+    label: LABEL_OPTIONAL
+    type: TYPE_UINT32
+  }
+}
+syntax: "editions"
+edition: EDITION_UNSTABLE)");
+}
+
+TEST_F(ParseMessageTest, Uvarint32StableFails) {
+  ExpectHasValidationErrors(
+      R"(edition = "2024";
+message NewVarintTypes {
+  uvarint32 uint32_field = 1;
+})",
+      "2:2: \"uvarint32\" is not defined.\n");
+}
+
+TEST_F(ParseMessageTest, Uvarint64Unstable) {
+  ExpectParsesTo(
+      R"(edition = "UNSTABLE";
+message NewVarintTypes {
+  uvarint64 uint64_field = 1;
+})",
+      R"(message_type {
+  name: "NewVarintTypes"
+  field {
+    name: "uint64_field"
+    number: 1
+    label: LABEL_OPTIONAL
+    type: TYPE_UINT64
+  }
+}
+syntax: "editions"
+edition: EDITION_UNSTABLE)");
+}
+
+TEST_F(ParseMessageTest, Uvarint64StableFails) {
+  ExpectHasValidationErrors(
+      R"(edition = "2024";
+message NewVarintTypes {
+  uvarint64 uint64_field = 1;
+})",
+      "2:2: \"uvarint64\" is not defined.\n");
+}
+
 TEST_F(ParseMessageTest, FieldOptions) {
   ExpectParsesTo(
       "message TestMessage {\n"
