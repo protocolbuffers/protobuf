@@ -175,6 +175,27 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "reflection_test",
+    srcs = [
+        "reflection_test.cc",
+    ],
+    deps = [
+        ":reflection",
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_upb_c_proto",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/test:parse_text_proto",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 compile_edition_defaults(
     name = "upb_edition_defaults",
     srcs = [
