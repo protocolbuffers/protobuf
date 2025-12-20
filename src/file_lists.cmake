@@ -1455,6 +1455,7 @@ set(util_test_files
 
 # @//src/google/protobuf/util:test_proto_srcs
 set(util_test_protos_files
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_mask_util_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/json_format.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/json_format_proto3.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer_unittest.proto
