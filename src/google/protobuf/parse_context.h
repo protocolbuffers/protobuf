@@ -66,6 +66,11 @@ inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* unknown);
 inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                  UnknownFieldSet* unknown);
 
+// Counts the number of varints in the array, assuming that end - ptr >= 8.
+// If varints are valid only up to some point, then returns at least the number
+// of valid varints.
+int CountVarintsAssumingLargeArray(const char* ptr, const char* end);
+
 
 // The basic abstraction the parser is designed for is a slight modification
 // of the ZeroCopyInputStream (ZCIS) abstraction. A ZCIS presents a serialized
@@ -1389,13 +1394,13 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
   // field, than parsing, so count the number of ints first and preallocate.
   // Assume that varint are valid and just count the number of bytes with
   // continuation bit not set. In a valid varint there is only 1 such byte.
-  if ((end - ptr) >= 16 && (out.Capacity() - out.size() < end - ptr)) {
+  if (end - ptr >= 16 && out.Capacity() - out.size() < end - ptr) {
     int old_size = out.size();
     int count = out.Capacity() - out.size();
     // We are not guaranteed to have enough space for worst possible case,
     // do an actual count and reserve.
     if (count < end - ptr) {
-      count = std::count_if(ptr, end, [](char c) { return (c & 0x80) == 0; });
+      count = CountVarintsAssumingLargeArray(ptr, end);
       // We can overread, so if the last byte has a continuation bit set,
       // we need to account for that.
       if (end[-1] & 0x80) count++;
@@ -1408,8 +1413,8 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     });
     int new_size = x - out.data();
     ABSL_DCHECK_LE(new_size, old_size + count);
-    // We may have overreserved if there was enough capacitiy.
-    // Or encountered malformed data, so set the actaul size to
+    // We may have overreserved if there was enough capacity.
+    // Or encountered malformed data, so set the actual size to
     // avoid exposing uninitialized memory.
     out.Truncate(new_size);
     return ptr;

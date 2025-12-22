@@ -19,6 +19,7 @@
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -766,6 +767,27 @@ template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<false>(
     int, int);
 template std::pair<const char*, bool> EpsCopyInputStream::DoneFallback<true>(
     int, int);
+
+int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
+  // The number of varints is the number of bytes with the highest bit clear.
+  // This is easier to compute as the total number of bytes, minus the number
+  // of bytes with the highest bit set.
+  int num_varints = end - ptr;
+  ABSL_DCHECK_GE(num_varints, int{sizeof(uint64_t)});
+
+  // Count in whole blocks, except for the last one.
+  const char* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    num_varints -=
+        absl::popcount(EndianHelper<8>::Load(ptr) & 0x8080808080808080);
+    ptr += sizeof(uint64_t);
+  }
+
+  // Count in the last, possibly incomplete block.
+  return num_varints -
+         absl::popcount(EndianHelper<8>::Load(limit) &
+                        (0x8080808080808080 << ((ptr - limit) * 8)));
+}
 
 }  // namespace internal
 }  // namespace protobuf
