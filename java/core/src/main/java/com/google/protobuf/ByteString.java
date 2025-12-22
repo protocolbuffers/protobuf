@@ -739,7 +739,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   // iterable.
   private static ByteString balancedConcat(Iterator<ByteString> iterator, int length) {
     if (length < 1) {
-      throw new IllegalArgumentException(String.format("length (%s) must be >= 1", length));
+      throw new IllegalArgumentException(
+          String.format(Locale.ROOT, "length (%s) must be >= 1", length));
     }
     ByteString result;
     if (length == 1) {
@@ -1253,8 +1254,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     @Override
     public String toString() {
       return String.format(
+          Locale.ROOT,
           "<ByteString.Output@%s size=%d>",
-          Integer.toHexString(System.identityHashCode(this)), size());
+          Integer.toHexString(System.identityHashCode(this)),
+          size());
     }
 
     /**

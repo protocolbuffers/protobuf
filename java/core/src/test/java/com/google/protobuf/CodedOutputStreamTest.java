@@ -182,29 +182,6 @@ public class CodedOutputStreamTest {
     }
   }
 
-  private static final class ByteOutputWrappingArrayCoder implements Coder {
-    private final CodedOutputStream stream;
-    private final byte[] bytes;
-
-    ByteOutputWrappingArrayCoder(int size) {
-      bytes = new byte[size];
-      // Any ByteOutput subclass would do. All CodedInputStreams implement ByteOutput, so it
-      // seemed most convenient to this this with a CodedInputStream.newInstance(byte[]).
-      ByteOutput byteOutput = CodedOutputStream.newInstance(bytes);
-      stream = CodedOutputStream.newInstance(byteOutput, size);
-    }
-
-    @Override
-    public CodedOutputStream stream() {
-      return stream;
-    }
-
-    @Override
-    public byte[] toByteArray() {
-      return Arrays.copyOf(bytes, stream.getTotalBytesWritten());
-    }
-  }
-
   private enum OutputType {
     ARRAY() {
       @Override
@@ -250,12 +227,6 @@ public class CodedOutputStreamTest {
         // Block Size 0 gets rounded up to minimum block size, see AbstractBufferedEncoder.
         return new OutputStreamCoder(size, /* blockSize= */ 0);
       }
-    },
-    BYTE_OUTPUT_WRAPPING_ARRAY() {
-      @Override
-      Coder newCoder(int size) {
-        return new ByteOutputWrappingArrayCoder(size);
-      }
     };
 
     abstract Coder newCoder(int size);
@@ -266,7 +237,6 @@ public class CodedOutputStreamTest {
       switch (this) {
         case STREAM:
         case STREAM_MINIMUM_BUFFER_SIZE:
-        case BYTE_OUTPUT_WRAPPING_ARRAY:
           return false;
         default:
           return true;
@@ -858,8 +828,6 @@ public class CodedOutputStreamTest {
   @Test
   public void testSerializeInvalidUtf8FollowedByOutOfSpace() throws Exception {
     final int notEnoughBytes = 4;
-    // This test fails for BYTE_OUTPUT_WRAPPING_ARRAY
-    assume().that(outputType).isNotEqualTo(OutputType.BYTE_OUTPUT_WRAPPING_ARRAY);
 
     Coder coder = outputType.newCoder(notEnoughBytes);
 
