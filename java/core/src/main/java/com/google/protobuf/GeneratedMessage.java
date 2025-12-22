@@ -113,8 +113,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    */
   protected abstract FieldAccessorTable internalGetFieldAccessorTable();
 
-  // TODO: Remove this in a future breaking change for compatibility with old generated
-  // code in OSS. Try removing in google3 earlier once old generated code is updated (e.g. UTP).
+  // TODO: For compatibility with < 4.34.x gencode. To be removed in breaking change.
   @Override
   public Descriptor getDescriptorForType() {
     return internalGetFieldAccessorTable().descriptor;
