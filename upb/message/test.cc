@@ -19,6 +19,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/cleanup/cleanup.h"
+#include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
