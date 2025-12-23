@@ -179,6 +179,7 @@ cc_library(
 cc_library(
     name = "test_runner",
     hdrs = ["test_runner.h"],
+    visibility = ["//src/google/protobuf:__pkg__"],
     deps = ["@abseil-cpp//absl/strings:string_view"],
 )
 
