@@ -40,6 +40,12 @@ class ProtoAPIDescriptorDatabase : public google::protobuf::DescriptorDatabase {
 
   bool FindFileByName(absl::string_view filename,
                       google::protobuf::FileDescriptorProto* output) override {
+    if (PyErr_Occurred()) {
+      // If an error has already occurred, PyObject_CallMethod will assert.
+      // Reset it so we can continue.
+      PyErr_Clear();
+    }
+
     PyObject* pyfile_name =
         PyUnicode_FromStringAndSize(filename.data(), filename.size());
     if (pyfile_name == nullptr) {
