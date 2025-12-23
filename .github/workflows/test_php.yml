@@ -42,14 +42,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v2
         with:
           ref: ${{ inputs.safe-checkout }}
-<<<<<<< HEAD
-      - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v2
-        with:
-          cache-prefix: php-${{ matrix.version-short }}
-          directory: php
-=======
->>>>>>> 9d60ddf81 (Don't ignore platform requirements)
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
@@ -92,15 +84,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
-<<<<<<< HEAD
-      - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v2
-        with:
-          cache-prefix: php-${{ matrix.version }}
-          directory: php
-
-=======
->>>>>>> 9d60ddf81 (Don't ignore platform requirements)
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
@@ -132,15 +115,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
-<<<<<<< HEAD
-      - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v2
-        with:
-          cache-prefix: php-8.0
-          directory: php
-
-=======
->>>>>>> 9d60ddf81 (Don't ignore platform requirements)
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v2
         with:
