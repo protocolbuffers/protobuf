@@ -56,6 +56,7 @@ xcode_config(
     versions = [
         ":version14_2_14C18",
         ":version14_1_0_14B47b",
+        ":version15_2_15C500b"
     ],
 )
 
