@@ -258,8 +258,6 @@ class MessageDefPtr {
     return upb_MessageDef_ExtensionRangeCount(ptr_);
   }
 
-  upb_Syntax syntax() const { return upb_MessageDef_Syntax(ptr_); }
-
   // These return null pointers if the field is not found.
   FieldDefPtr FindFieldByNumber(uint32_t number) const {
     return FieldDefPtr(upb_MessageDef_FindFieldByNumber(ptr_, number));
@@ -488,9 +486,6 @@ class FileDefPtr {
 
   // Package name for definitions inside the file (eg. "foo.bar").
   const char* package() const { return upb_FileDef_Package(ptr_); }
-
-  // Syntax for the file.  Defaults to proto2.
-  upb_Syntax syntax() const { return upb_FileDef_Syntax(ptr_); }
 
   // Get the list of dependencies from the file.  These are returned in the
   // order that they were added to the FileDefPtr.

@@ -21,6 +21,8 @@ cc_library(
     deps = [
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//upb/base",
+        "//upb/mem",
+        "//upb/message",
         "//upb/port",
         "//upb/reflection",
         "//upb/reflection:internal",
