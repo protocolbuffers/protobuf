@@ -118,6 +118,10 @@ const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f) {
   return f->weak_deps;
 }
 
+bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f) {
+  return upb_DefPool_ClosedEnumCheckingDisabled(f->symtab);
+}
+
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f) {
   return f->top_lvl_enum_count;
 }
