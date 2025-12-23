@@ -240,15 +240,3 @@ rb_test(
         "@protobuf_bundle",
     ],
 )
-
-pkg_files(
-    name = "dist_files",
-    srcs = glob([
-        "*.proto",
-        "*.rb",
-    ]) + [
-        "BUILD.bazel",
-    ],
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//ruby:__pkg__"],
-)
