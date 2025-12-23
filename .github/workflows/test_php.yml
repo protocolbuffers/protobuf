@@ -62,12 +62,6 @@ jobs:
         uses: protocolbuffers/protobuf-ci/checkout@v4
         with:
           ref: ${{ inputs.safe-checkout }}
-      - name: Setup composer
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/composer-setup@v4
-        with:
-          cache-prefix: php-${{ matrix.version-short }}
-          directory: php
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v4
@@ -117,13 +111,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
-      - name: Setup composer
-        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/composer-setup@v4
-        with:
-          cache-prefix: php-${{ matrix.version }}
-          directory: php
-
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/docker@v4
@@ -136,7 +123,7 @@ jobs:
             /bin/bash -cex '
             PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH";
             cd php && php -v && php -m;
-            composer update --ignore-platform-reqs;
+            composer update;
             composer ${{ matrix.test }}'
 
   linux-aarch64:
@@ -156,12 +143,6 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-aarch64
 
-      - name: Setup composer
-        uses: protocolbuffers/protobuf-ci/composer-setup@v4
-        with:
-          cache-prefix: php-8.1
-          directory: php
-
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/docker@v4
         with:
@@ -172,7 +153,7 @@ jobs:
           command: >-
             -cex '
             cd php;
-            composer update --ignore-platform-reqs;
+            composer update;
             composer test;
             composer test_c'
 
