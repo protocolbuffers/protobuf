@@ -21,7 +21,6 @@
 #include "absl/container/btree_set.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
-#include "google/protobuf/descriptor.h"
 
 
 // Must be included last.
