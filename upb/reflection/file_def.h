@@ -37,8 +37,6 @@ int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
 const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i);
 int upb_FileDef_ServiceCount(const upb_FileDef* f);
 
-UPB_API upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
-
 const upb_EnumDef* upb_FileDef_TopLevelEnum(const upb_FileDef* f, int i);
 int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f);
 
