@@ -1193,7 +1193,8 @@ TEST_P(JsonTest, TestAny) {
 
   auto round_trip = ToProto<google::protobuf::Any>(*ToJson(any));
   ASSERT_OK(round_trip);
-  EXPECT_THAT(any, testing::EqualsProto(*round_trip));
+  EXPECT_EQ(round_trip->type_url(), "type.googleapis.com/proto3.TestMessage");
+  EXPECT_EQ(round_trip->value(), "");
 }
 
 TEST_P(JsonTest, TestDuration) {
