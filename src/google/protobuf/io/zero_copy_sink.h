@@ -10,6 +10,7 @@
 
 #include <cstddef>
 
+#include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
 
