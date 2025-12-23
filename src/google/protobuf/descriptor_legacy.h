@@ -10,7 +10,7 @@
 namespace google {
 namespace protobuf {
 
-// TODO(b/317813624) Remove this deprecated API entirely.
+// TODO Remove this deprecated API entirely.
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorLegacy {
  public:
   explicit FileDescriptorLegacy(const FileDescriptor* file) : file_(file) {}

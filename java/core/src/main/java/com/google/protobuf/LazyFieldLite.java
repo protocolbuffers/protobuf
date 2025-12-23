@@ -317,7 +317,7 @@ public class LazyFieldLite {
     // this may result in some extensions being lost that shouldn't have been, but its the
     // best that we can do if we reach this point and is not expected to occur in real use.
     if (defaultInstance == null) {
-      // TODO: Consider throwing an exception here.
+      // TODO: b/467739361 - Consider throwing an exception here.
       this.delayedBytes = this.delayedBytes.concat(other.delayedBytes);
       return;
     }

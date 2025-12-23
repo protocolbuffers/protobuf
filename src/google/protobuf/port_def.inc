@@ -599,7 +599,7 @@ static_assert(PROTOBUF_ABSL_MIN(20230125, 3),
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
 
-// TODO(b/174574783) remove these flags once the feature is stable.
+// TODO remove these flags once the feature is stable.
 #ifndef PROTOBUF_INTERNAL_DISABLE_REMOVED_ARENA_PTRS
 #define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_PTR_FIELD 1
 #define PROTOBUF_INTERNAL_REMOVE_ARENA_PTRS_REPEATED_FIELD 1

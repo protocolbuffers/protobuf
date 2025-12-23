@@ -5980,13 +5980,13 @@ void DescriptorBuilder::ResolveFeatures(const FileDescriptorProto& proto,
 
 void DescriptorBuilder::PostProcessFieldFeatures(
     FieldDescriptor& field, const FieldDescriptorProto& proto) {
-  // TODO(b/285013359) This can be replace by a runtime check in `is_required`
+  // TODO This can be replace by a runtime check in `is_required`
   // once the `label` getter is hidden.
   if (field.features().field_presence() == FeatureSet::LEGACY_REQUIRED &&
       field.label_ == FieldDescriptor::LABEL_OPTIONAL) {
     field.label_ = FieldDescriptor::LABEL_REQUIRED;
   }
-  // TODO(b/285024320) This can be replace by a runtime check of `is_delimited`
+  // TODO This can be replace by a runtime check of `is_delimited`
   // once the `TYPE_GROUP` value is removed.
   if (field.type_ == FieldDescriptor::TYPE_MESSAGE &&
       !field.containing_type()->options().map_entry() &&
@@ -7046,7 +7046,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     if (descriptor->features().json_format() ==
             FeatureSet::LEGACY_BEST_EFFORT &&
         involves_default) {
-      // TODO(b/261750676) Upgrade this to an error once downstream protos
+      // TODO Upgrade this to an error once downstream protos
       // have been fixed.
       AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
                  make_error);
@@ -7982,7 +7982,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     // In case of weak fields we force building the dependency. We need to know
     // if the type exist or not. If it doesn't exist we substitute Empty which
     // should only be done if the type can't be found in the generated pool.
-    // TODO(gerbens) Ideally we should query the database directly to check
+    // TODO Ideally we should query the database directly to check
     // if weak fields exist or not so that we don't need to force building
     // weak dependencies. However the name lookup rules for symbols are
     // somewhat complicated, so I defer it too another CL.
@@ -9636,7 +9636,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
 
       // Special handling to prevent feature use in the same file as the
       // definition.
-      // TODO(b/340953843) Add proper support for cases where this can work.
+      // TODO Add proper support for cases where this can work.
       if (field->file() == builder_->file_ &&
           uninterpreted_option_->name(0).name_part() == "features" &&
           !uninterpreted_option_->name(0).is_extension()) {

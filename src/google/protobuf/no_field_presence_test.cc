@@ -523,7 +523,7 @@ TEST_F(NoFieldPresenceSwapFieldTest,
   m1_.set_oneof_uint32(1);
   m2_.set_oneof_string("test");
 
-  // NOTE:-
+  // NOTE: Calling swap on any field descriptor within the oneof works --
   // even a completely unrelated field.
   const FieldDescriptor* never_set_field = d1_->FindFieldByName("oneof_enum");
 
@@ -549,7 +549,7 @@ TEST_F(NoFieldPresenceSwapFieldTest,
   m1_.set_oneof_uint32(1);
   m2_.set_oneof_string("test");
 
-  // NOTE:-
+  // NOTE: Calling swap on any field descriptor within the oneof works --
   // even a completely unrelated field.
   const FieldDescriptor* never_set_field = d1_->FindFieldByName("oneof_enum");
   const FieldDescriptor* f1 = d1_->FindFieldByName("oneof_uint32");
@@ -997,7 +997,7 @@ TEST(NoFieldPresenceTest, ExtraZeroesInWireMergeTest) {
   std::string wire = source.SerializeAsString();
   ASSERT_THAT(wire, StrEq(absl::string_view{"\x08\x00", 2}));
 
-  // TODO:- Add conformance tests to ensure this behaviour is
+  // TODO: b/356132170 -- Add conformance tests to ensure this behaviour is
   //                      well-defined.
   // As implemented, the C++ "merge" operation does not distinguish between
   // implicit and explicit fields when reading from the wire.
@@ -1017,7 +1017,7 @@ TEST(NoFieldPresenceTest, ExtraZeroesInWireLastWins) {
   absl::string_view wire{"\x08\x01\x08\x00", /*len=*/4};  // note the null-byte.
   ForeignMessage dest;
 
-  // TODO:- Add conformance tests to ensure this behaviour is
+  // TODO: b/356132170 -- Add conformance tests to ensure this behaviour is
   //                      well-defined.
   // As implemented, the C++ "merge" operation does not distinguish between
   // implicit and explicit fields when reading from the wire.
@@ -1044,7 +1044,7 @@ TEST(NoFieldPresenceTest, IsInitializedTest) {
   EXPECT_EQ(true, message.IsInitialized());
 }
 
-// TODO: `if constexpr` can be used here once C++17 is baseline.
+// TODO: b/358616816 - `if constexpr` can be used here once C++17 is baseline.
 template <typename T>
 bool TestSerialize(const MessageLite& message, T* output);
 

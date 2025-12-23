@@ -178,7 +178,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // end up with an invalid limit and it can lead to integer overflows.
     limit_ = limit_ + std::move(delta).token();
     if (ABSL_PREDICT_FALSE(!EndedAtLimit())) return false;
-    // TODO(gerbens) We could remove this line and hoist the code to
+    // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
     return true;
@@ -399,7 +399,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res;
   }
 
-  // TODO(b/432303376) Can V1 enjoy a code deduplication benefit by using this?
+  // TODO Can V1 enjoy a code deduplication benefit by using this?
   const char* InitFrom(const BoundedZCIS& bounded_zcis) {
     return InitFrom(bounded_zcis.zcis, bounded_zcis.limit);
   }
@@ -509,7 +509,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       }
       ptr += chunk_size;
       size -= chunk_size;
-      // TODO(gerbens) Next calls NextBuffer which generates buffers with
+      // TODO Next calls NextBuffer which generates buffers with
       // overlap and thus incurs cost of copying the slop regions. This is not
       // necessary for reading strings. We should just call Next buffers.
       if (limit_ <= kSlopBytes) return nullptr;

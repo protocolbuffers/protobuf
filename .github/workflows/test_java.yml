@@ -31,7 +31,7 @@ jobs:
           - name: OpenJDK 8
             cache_key: '8'
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8.0.1-8-b77fdae6d4771789dfc66a56bf8d806354e8011a
-            # TODO: enable the layering check. Currently it does
+            # TODO: b/318555165 - enable the layering check. Currently it does
             # not work correctly with the toolchain in this Docker image.
             targets: //java/... //java/internal:java_version --features=-layering_check
             flags: --java_language_version=8
@@ -53,7 +53,7 @@ jobs:
             image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:7.6.1-e0df73e51131ccaf53451355d22577f377357604
             targets: //java/... //java/internal:java_version //compatibility/...
             flags: --noenable_bzlmod
-          # TODO: restore this test once runtime uses / emulates aarch64.
+          # TODO: b/395623141 - restore this test once runtime uses / emulates aarch64.
           # - name: aarch64
           #   cache_key: 'aarch64'
           #   image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.6.1-aarch64-f0d1e209ed9369f69d93ce418990ecff3aa08d6f
@@ -76,7 +76,7 @@ jobs:
           bazel-cache: java_linux/${{ matrix.cache_key }}
           bazel: test ${{ matrix.targets }} ${{ matrix.flags }} --test_env=KOKORO_JAVA_VERSION
 
-# TODO(b/311232187) restore this test (or a better one) when gRPC has rebuilt with 26.x
+# TODO restore this test (or a better one) when gRPC has rebuilt with 26.x
   # linkage-monitor:
   #   name: Linux Linkage Monitor
   #   runs-on: ubuntu-latest
@@ -91,7 +91,7 @@ jobs:
   #         image: us-docker.pkg.dev/protobuf-build/containers/test/linux/java:8-1fdbb997433cb22c1e49ef75ad374a8d6bb88702
   #         credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
   #         bazel-cache: java_linux/8
-  #         # TODO: enable the layering check. Currently it does
+  #         # TODO: b/318555165 - enable the layering check. Currently it does
   #         # not work correctly with the toolchain in this Docker image.
   #         bazel: test --test_output=all //java:linkage_monitor --spawn_strategy=standalone --features=-layering_check
 

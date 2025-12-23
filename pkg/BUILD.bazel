@@ -229,7 +229,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/php:names",
-        # TODO(b/395949071) Make these private in the next breaking C++ release.
+        # TODO Make these private in the next breaking C++ release.
         "//src/google/protobuf/compiler/cpp:generator_headers",
         "//src/google/protobuf/compiler/csharp:generator_headers",
         "//src/google/protobuf/compiler/java:generator_headers",

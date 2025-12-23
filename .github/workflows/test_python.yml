@@ -52,7 +52,7 @@ jobs:
           - type: C++
             version: aarch64
             targets: //python/... //python:aarch64_test
-            # TODO(b/262628111) Enable this once conformance tests are fixed.
+            # TODO Enable this once conformance tests are fixed.
             flags: --define=use_fast_cpp_protos=true --test_tag_filters=-conformance
             image: us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:7.6.1-aarch64-f0d1e209ed9369f69d93ce418990ecff3aa08d6f
 

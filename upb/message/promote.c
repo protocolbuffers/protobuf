@@ -191,7 +191,7 @@ upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
   return ret;
 }
 
-// Warning: See TODO(b/267655898)
+// Warning: See TODO
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,

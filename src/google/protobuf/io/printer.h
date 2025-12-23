@@ -75,7 +75,7 @@ class PROTOBUF_EXPORT AnnotationCollector {
     AddAnnotation(begin_offset, end_offset, file_path, path);
   }
 
-  // TODO(gerbens) I don't see why we need virtuals here. Just a vector of
+  // TODO I don't see why we need virtuals here. Just a vector of
   // range, payload pairs stored in a context should suffice.
   virtual void AddAnnotationNew(Annotation&) {}
 };

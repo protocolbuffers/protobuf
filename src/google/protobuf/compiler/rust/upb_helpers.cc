@@ -27,7 +27,7 @@ uint32_t UpbMiniTableFieldIndex(const FieldDescriptor& field) {
   auto* parent = field.containing_type();
   ABSL_CHECK(parent != nullptr);
 
-  // TODO: We should get the field_index from
+  // TODO: b/361751487 - We should get the field_index from
   // UpbDefs directly, instead of independently matching
   // the sort order here.
 

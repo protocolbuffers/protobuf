@@ -641,7 +641,7 @@ Error, UINTPTR_MAX is undefined
 
 // Workaround for https://github.com/llvm/llvm-project/issues/167577 until it's
 // fixed.  Some function must exist for the constructor to work properly.
-// TODO(b/460538289) Remove this or gate it on a future version of clang.
+// TODO Remove this or gate it on a future version of clang.
 #if defined(__clang__) && defined(__arm__)
 #define _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                            \
   __attribute__((used, visibility("hidden"))) void UPB_PRIVATE(unique_name)( \

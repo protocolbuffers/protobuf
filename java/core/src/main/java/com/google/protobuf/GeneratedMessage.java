@@ -278,7 +278,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   /**
    * Called by subclasses to parse an unknown field.
    *
-   * <p>TODO(b/248153893) remove this method
+   * <p>TODO remove this method
    *
    * @return {@code true} unless the tag is an end-group tag.
    */
@@ -298,7 +298,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    * Delegates to parseUnknownField. This method is obsolete, but we must retain it for
    * compatibility with older generated code.
    *
-   * <p>TODO(b/248153893) remove this method
+   * <p>TODO remove this method
    */
   protected boolean parseUnknownFieldProto3(
       CodedInputStream input,
@@ -1201,7 +1201,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     /**
      * For compatibility with older gencode.
      *
-     * <p>TODO(b/346588832) Remove this in the next breaking release.
+     * <p>TODO Remove this in the next breaking release.
      *
      * @deprecated Use {@link newExtensionSerializer()} instead.
      */
@@ -2373,29 +2373,73 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
           final Class<? extends GeneratedMessage> messageClass,
           final Class<? extends Builder<?>> builderClass) {
         this.descriptor = descriptor;
-        caseMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
-        caseMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
-        clearMethod = getMethodOrDie(builderClass, "clear" + camelCaseName);
+        this.messageClass = messageClass;
+        this.builderClass = builderClass;
+        this.camelCaseName = camelCaseName;
       }
 
       private final Descriptor descriptor;
-      private final Method caseMethod;
-      private final Method caseMethodBuilder;
-      private final Method clearMethod;
+      private final Class<? extends GeneratedMessage> messageClass;
+      private final Class<? extends Builder<?>> builderClass;
+      private final String camelCaseName;
+
+      private volatile Method caseMethod;
+      private volatile Method caseMethodBuilder;
+      private volatile Method clearMethod;
+
+      private Method getCaseMethod() {
+        Method method = caseMethod;
+        if (method == null) {
+          synchronized (this) {
+            method = caseMethod;
+            if (method == null) {
+              caseMethod = method = getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
+            }
+          }
+        }
+        return method;
+      }
+
+      private Method getCaseMethodBuilder() {
+        Method method = caseMethodBuilder;
+        if (method == null) {
+          synchronized (this) {
+            method = caseMethodBuilder;
+            if (method == null) {
+              caseMethodBuilder =
+                  method = getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
+            }
+          }
+        }
+        return method;
+      }
+
+      private Method getClearMethod() {
+        Method method = clearMethod;
+        if (method == null) {
+          synchronized (this) {
+            method = clearMethod;
+            if (method == null) {
+              clearMethod = method = getMethodOrDie(builderClass, "clear" + camelCaseName);
+            }
+          }
+        }
+        return method;
+      }
 
       @Override
       public boolean has(final GeneratedMessage message) {
-        return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() != 0;
+        return ((Internal.EnumLite) invokeOrDie(getCaseMethod(), message)).getNumber() != 0;
       }
 
       @Override
       public boolean has(GeneratedMessage.Builder<?> builder) {
-        return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() != 0;
+        return ((Internal.EnumLite) invokeOrDie(getCaseMethodBuilder(), builder)).getNumber() != 0;
       }
 
       @Override
       public FieldDescriptor get(final GeneratedMessage message) {
-        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
+        int fieldNumber = ((Internal.EnumLite) invokeOrDie(getCaseMethod(), message)).getNumber();
         if (fieldNumber > 0) {
           return descriptor.findFieldByNumber(fieldNumber);
         }
@@ -2404,7 +2448,8 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
       @Override
       public FieldDescriptor get(GeneratedMessage.Builder<?> builder) {
-        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
+        int fieldNumber =
+            ((Internal.EnumLite) invokeOrDie(getCaseMethodBuilder(), builder)).getNumber();
         if (fieldNumber > 0) {
           return descriptor.findFieldByNumber(fieldNumber);
         }
@@ -2414,7 +2459,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       @Override
       public void clear(final Builder<?> builder) {
         // TODO: remove the unused variable
-        Object unused = invokeOrDie(clearMethod, builder);
+        Object unused = invokeOrDie(getClearMethod(), builder);
       }
     }
 
@@ -2475,15 +2520,6 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
 
       private static final class ReflectionInvoker implements MethodInvoker {
-        private final Method getMethod;
-        private final Method getMethodBuilder;
-        private final Method setMethod;
-        private final Method hasMethod;
-        private final Method hasMethodBuilder;
-        private final Method clearMethod;
-        private final Method caseMethod;
-        private final Method caseMethodBuilder;
-
         ReflectionInvoker(
             final String camelCaseName,
             final Class<? extends GeneratedMessage> messageClass,
@@ -2491,64 +2527,181 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
             final String containingOneofCamelCaseName,
             boolean isOneofField,
             boolean hasHasMethod) {
-          getMethod = getMethodOrDie(messageClass, "get" + camelCaseName);
-          getMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName);
-          Class<?> type = getMethod.getReturnType();
-          setMethod = getMethodOrDie(builderClass, "set" + camelCaseName, type);
-          hasMethod = hasHasMethod ? getMethodOrDie(messageClass, "has" + camelCaseName) : null;
-          hasMethodBuilder =
-              hasHasMethod ? getMethodOrDie(builderClass, "has" + camelCaseName) : null;
-          clearMethod = getMethodOrDie(builderClass, "clear" + camelCaseName);
-          caseMethod =
-              isOneofField
-                  ? getMethodOrDie(messageClass, "get" + containingOneofCamelCaseName + "Case")
-                  : null;
-          caseMethodBuilder =
-              isOneofField
-                  ? getMethodOrDie(builderClass, "get" + containingOneofCamelCaseName + "Case")
-                  : null;
+          this.camelCaseName = camelCaseName;
+          this.messageClass = messageClass;
+          this.builderClass = builderClass;
+          this.containingOneofCamelCaseName = containingOneofCamelCaseName;
+          this.isOneofField = isOneofField;
+          this.hasHasMethod = hasHasMethod;
+        }
+
+        private final String camelCaseName;
+        private final Class<? extends GeneratedMessage> messageClass;
+        private final Class<? extends Builder<?>> builderClass;
+        private final String containingOneofCamelCaseName;
+        private final boolean isOneofField;
+        private final boolean hasHasMethod;
+
+        private volatile Method getMethod;
+        private volatile Method getMethodBuilder;
+        private volatile Method setMethod;
+        private volatile Method hasMethod;
+        private volatile Method hasMethodBuilder;
+        private volatile Method clearMethod;
+        private volatile Method caseMethod;
+        private volatile Method caseMethodBuilder;
+
+        private Method getGetMethod() {
+          Method method = getMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = getMethod;
+              if (method == null) {
+                getMethod = method = getMethodOrDie(messageClass, "get" + camelCaseName);
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getGetMethodBuilder() {
+          Method method = getMethodBuilder;
+          if (method == null) {
+            synchronized (this) {
+              method = getMethodBuilder;
+              if (method == null) {
+                getMethodBuilder = method = getMethodOrDie(builderClass, "get" + camelCaseName);
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getSetMethod() {
+          Method method = setMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = setMethod;
+              if (method == null) {
+                setMethod =
+                    method =
+                        getMethodOrDie(
+                            builderClass, "set" + camelCaseName, getGetMethod().getReturnType());
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getHasMethod() {
+          Method method = hasMethod;
+          if (method == null && hasHasMethod) {
+            synchronized (this) {
+              method = hasMethod;
+              if (method == null && hasHasMethod) {
+                hasMethod = method = getMethodOrDie(messageClass, "has" + camelCaseName);
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getHasMethodBuilder() {
+          Method method = hasMethodBuilder;
+          if (method == null && hasHasMethod) {
+            synchronized (this) {
+              method = hasMethodBuilder;
+              if (method == null && hasHasMethod) {
+                hasMethodBuilder = method = getMethodOrDie(builderClass, "has" + camelCaseName);
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getClearMethod() {
+          Method method = clearMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = clearMethod;
+              if (method == null) {
+                clearMethod = method = getMethodOrDie(builderClass, "clear" + camelCaseName);
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getCaseMethod() {
+          Method method = caseMethod;
+          if (method == null && isOneofField) {
+            synchronized (this) {
+              method = caseMethod;
+              if (method == null && isOneofField) {
+                caseMethod =
+                    method =
+                        getMethodOrDie(messageClass, "get" + containingOneofCamelCaseName + "Case");
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getCaseMethodBuilder() {
+          Method method = caseMethodBuilder;
+          if (method == null && isOneofField) {
+            synchronized (this) {
+              method = caseMethodBuilder;
+              if (method == null && isOneofField) {
+                caseMethodBuilder =
+                    method =
+                        getMethodOrDie(builderClass, "get" + containingOneofCamelCaseName + "Case");
+              }
+            }
+          }
+          return method;
         }
 
         @Override
         public Object get(final GeneratedMessage message) {
-          return invokeOrDie(getMethod, message);
+          return invokeOrDie(getGetMethod(), message);
         }
 
         @Override
         public Object get(GeneratedMessage.Builder<?> builder) {
-          return invokeOrDie(getMethodBuilder, builder);
+          return invokeOrDie(getGetMethodBuilder(), builder);
         }
 
         @Override
         public int getOneofFieldNumber(final GeneratedMessage message) {
-          return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
+          return ((Internal.EnumLite) invokeOrDie(getCaseMethod(), message)).getNumber();
         }
 
         @Override
         public int getOneofFieldNumber(final GeneratedMessage.Builder<?> builder) {
-          return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
+          return ((Internal.EnumLite) invokeOrDie(getCaseMethodBuilder(), builder)).getNumber();
         }
 
         @Override
         public void set(final GeneratedMessage.Builder<?> builder, final Object value) {
           // TODO: remove the unused variable
-          Object unused = invokeOrDie(setMethod, builder, value);
+          Object unused = invokeOrDie(getSetMethod(), builder, value);
         }
 
         @Override
         public boolean has(final GeneratedMessage message) {
-          return (Boolean) invokeOrDie(hasMethod, message);
+          return (Boolean) invokeOrDie(getHasMethod(), message);
         }
 
         @Override
         public boolean has(GeneratedMessage.Builder<?> builder) {
-          return (Boolean) invokeOrDie(hasMethodBuilder, builder);
+          return (Boolean) invokeOrDie(getHasMethodBuilder(), builder);
         }
 
         @Override
         public void clear(final GeneratedMessage.Builder<?> builder) {
           // TODO: remove the unused variable
-          Object unused = invokeOrDie(clearMethod, builder);
+          Object unused = invokeOrDie(getClearMethod(), builder);
         }
       }
 
@@ -2707,81 +2860,209 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
 
       private static final class ReflectionInvoker implements MethodInvoker {
-        private final Method getMethod;
-        private final Method getMethodBuilder;
-        private final Method getRepeatedMethod;
-        private final Method getRepeatedMethodBuilder;
-        private final Method setRepeatedMethod;
-        private final Method addRepeatedMethod;
-        private final Method getCountMethod;
-        private final Method getCountMethodBuilder;
-        private final Method clearMethod;
-
         ReflectionInvoker(
             final String camelCaseName,
             final Class<? extends GeneratedMessage> messageClass,
             final Class<? extends Builder<?>> builderClass) {
-          getMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "List");
-          getMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "List");
-          getRepeatedMethod = getMethodOrDie(messageClass, "get" + camelCaseName, Integer.TYPE);
-          getRepeatedMethodBuilder =
-              getMethodOrDie(builderClass, "get" + camelCaseName, Integer.TYPE);
-          Class<?> type = getRepeatedMethod.getReturnType();
-          setRepeatedMethod =
-              getMethodOrDie(builderClass, "set" + camelCaseName, Integer.TYPE, type);
-          addRepeatedMethod = getMethodOrDie(builderClass, "add" + camelCaseName, type);
-          getCountMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Count");
-          getCountMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Count");
-          clearMethod = getMethodOrDie(builderClass, "clear" + camelCaseName);
+          this.camelCaseName = camelCaseName;
+          this.messageClass = messageClass;
+          this.builderClass = builderClass;
+        }
+
+        private final String camelCaseName;
+        private final Class<? extends GeneratedMessage> messageClass;
+        private final Class<? extends Builder<?>> builderClass;
+
+        private volatile Method getMethod;
+        private volatile Method getMethodBuilder;
+        private volatile Method getRepeatedMethod;
+        private volatile Method getRepeatedMethodBuilder;
+        private volatile Method setRepeatedMethod;
+        private volatile Method addRepeatedMethod;
+        private volatile Method getCountMethod;
+        private volatile Method getCountMethodBuilder;
+        private volatile Method clearMethod;
+
+        private Method getGetMethod() {
+          Method method = getMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = getMethod;
+              if (method == null) {
+                getMethod = method = getMethodOrDie(messageClass, "get" + camelCaseName + "List");
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getGetMethodBuilder() {
+          Method method = getMethodBuilder;
+          if (method == null) {
+            synchronized (this) {
+              method = getMethodBuilder;
+              if (method == null) {
+                getMethodBuilder =
+                    method = getMethodOrDie(builderClass, "get" + camelCaseName + "List");
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getGetRepeatedMethod() {
+          Method method = getRepeatedMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = getRepeatedMethod;
+              if (method == null) {
+                getRepeatedMethod =
+                    method = getMethodOrDie(messageClass, "get" + camelCaseName, Integer.TYPE);
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getGetRepeatedMethodBuilder() {
+          Method method = getRepeatedMethodBuilder;
+          if (method == null) {
+            synchronized (this) {
+              method = getRepeatedMethodBuilder;
+              if (method == null) {
+                getRepeatedMethodBuilder =
+                    method = getMethodOrDie(builderClass, "get" + camelCaseName, Integer.TYPE);
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getSetRepeatedMethod() {
+          Method method = setRepeatedMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = setRepeatedMethod;
+              if (method == null) {
+                setRepeatedMethod =
+                    method =
+                        getMethodOrDie(
+                            builderClass,
+                            "set" + camelCaseName,
+                            Integer.TYPE,
+                            getGetRepeatedMethod().getReturnType());
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getAddRepeatedMethod() {
+          Method method = addRepeatedMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = addRepeatedMethod;
+              if (method == null) {
+                addRepeatedMethod =
+                    method =
+                        getMethodOrDie(
+                            builderClass,
+                            "add" + camelCaseName,
+                            getGetRepeatedMethod().getReturnType());
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getGetCountMethod() {
+          Method method = getCountMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = getCountMethod;
+              if (method == null) {
+                getCountMethod =
+                    method = getMethodOrDie(messageClass, "get" + camelCaseName + "Count");
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getGetCountMethodBuilder() {
+          Method method = getCountMethodBuilder;
+          if (method == null) {
+            synchronized (this) {
+              method = getCountMethodBuilder;
+              if (method == null) {
+                getCountMethodBuilder =
+                    method = getMethodOrDie(builderClass, "get" + camelCaseName + "Count");
+              }
+            }
+          }
+          return method;
+        }
+
+        private Method getClearMethod() {
+          Method method = clearMethod;
+          if (method == null) {
+            synchronized (this) {
+              method = clearMethod;
+              if (method == null) {
+                clearMethod = method = getMethodOrDie(builderClass, "clear" + camelCaseName);
+              }
+            }
+          }
+          return method;
         }
 
         @Override
         public Object get(final GeneratedMessage message) {
-          return invokeOrDie(getMethod, message);
+          return invokeOrDie(getGetMethod(), message);
         }
 
         @Override
         public Object get(GeneratedMessage.Builder<?> builder) {
-          return invokeOrDie(getMethodBuilder, builder);
+          return invokeOrDie(getGetMethodBuilder(), builder);
         }
 
         @Override
         public Object getRepeated(final GeneratedMessage message, final int index) {
-          return invokeOrDie(getRepeatedMethod, message, index);
+          return invokeOrDie(getGetRepeatedMethod(), message, index);
         }
 
         @Override
         public Object getRepeated(GeneratedMessage.Builder<?> builder, int index) {
-          return invokeOrDie(getRepeatedMethodBuilder, builder, index);
+          return invokeOrDie(getGetRepeatedMethodBuilder(), builder, index);
         }
 
         @Override
         public void setRepeated(
             final GeneratedMessage.Builder<?> builder, final int index, final Object value) {
           // TODO: remove the unused variable
-          Object unused = invokeOrDie(setRepeatedMethod, builder, index, value);
+          Object unused = invokeOrDie(getSetRepeatedMethod(), builder, index, value);
         }
 
         @Override
         public void addRepeated(final GeneratedMessage.Builder<?> builder, final Object value) {
           // TODO: remove the unused variable
-          Object unused = invokeOrDie(addRepeatedMethod, builder, value);
+          Object unused = invokeOrDie(getAddRepeatedMethod(), builder, value);
         }
 
         @Override
         public int getRepeatedCount(final GeneratedMessage message) {
-          return (Integer) invokeOrDie(getCountMethod, message);
+          return (Integer) invokeOrDie(getGetCountMethod(), message);
         }
 
         @Override
         public int getRepeatedCount(GeneratedMessage.Builder<?> builder) {
-          return (Integer) invokeOrDie(getCountMethodBuilder, builder);
+          return (Integer) invokeOrDie(getGetCountMethodBuilder(), builder);
         }
 
         @Override
         public void clear(final GeneratedMessage.Builder<?> builder) {
           // TODO: remove the unused variable
-          Object unused = invokeOrDie(clearMethod, builder);
+          Object unused = invokeOrDie(getClearMethod(), builder);
         }
       }
 

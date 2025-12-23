@@ -337,7 +337,7 @@ uint64_t SerialArena::SpaceUsed() const {
   // ThreadSafeArena::SpaceUsed).  However, worst-case space_used_ will have
   // stale data and the calculation will incorrectly assume 100%
   // usage of the *current* block.
-  // TODO(mkruskal) Consider eliminating this race in exchange for a possible
+  // TODO Consider eliminating this race in exchange for a possible
   // performance hit on ARM (see cl/455186837).
 
   uint64_t space_used = 0;

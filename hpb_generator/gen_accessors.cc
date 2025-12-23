@@ -93,7 +93,7 @@ void WriteFieldAccessorsInHeader(const google::protobuf::Descriptor* desc, Conte
       WriteMapFieldAccessors(desc, field, resolved_field_name,
                              resolved_upbc_name, ctx);
     } else if (desc->options().map_entry()) {
-      // TODO(b/237399867) Implement map entry
+      // TODO Implement map entry
     } else if (field->is_repeated()) {
       WriteRepeatedFieldsInMessageHeader(desc, field, resolved_field_name,
                                          resolved_upbc_name, ctx);
@@ -245,7 +245,7 @@ void WriteAccessorsInSource(const google::protobuf::Descriptor* desc, Context& c
       WriteMapAccessorDefinitions(desc, field, resolved_field_name, class_name,
                                   ctx);
     } else if (desc->options().map_entry()) {
-      // TODO(b/237399867) Implement map entry
+      // TODO Implement map entry
     } else if (field->is_repeated()) {
       if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         WriteRepeatedMessageAccessor(desc, field, resolved_field_name,
@@ -699,7 +699,7 @@ void WriteUsingAccessorsInHeader(const google::protobuf::Descriptor* desc,
         }
       }
     } else if (desc->options().map_entry()) {
-      // TODO(b/237399867) Implement map entry
+      // TODO Implement map entry
     } else if (field->is_repeated()) {
       WriteRepeatedFieldUsingAccessors(field, class_name, resolved_field_name,
                                        ctx, read_only);

@@ -245,7 +245,7 @@ proto_library(
     testonly = True,
     srcs = [
         "package_disabiguation1.proto",
-        # TODO: Uncomment once we support ambiguous messages.
+        # TODO: b/321220129 - Uncomment once we support ambiguous messages.
         # "package_disabiguation2.proto",
     ],
 )

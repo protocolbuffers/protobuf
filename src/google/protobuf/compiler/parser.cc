@@ -1232,7 +1232,7 @@ void Parser::GenerateMapEntry(const MapField& map_field,
         field->options().uninterpreted_option(i);
     // Legacy handling for the `enforce_utf8` option, which bears a striking
     // similarity to features in many respects.
-    // TODO(b/289755572) Delete this once proto2/proto3 have been turned down.
+    // TODO Delete this once proto2/proto3 have been turned down.
     if (option.name_size() == 1 &&
         option.name(0).name_part() == "enforce_utf8" &&
         !option.name(0).is_extension()) {

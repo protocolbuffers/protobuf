@@ -55,7 +55,7 @@ struct upb_FileDef {
 };
 
 UPB_API const char* upb_FileDef_EditionName(int edition) {
-  // TODO(b/309669951) Synchronize this with descriptor.proto better.
+  // TODO Synchronize this with descriptor.proto better.
   switch (edition) {
     case UPB_DESC(EDITION_PROTO2):
       return "PROTO2";
