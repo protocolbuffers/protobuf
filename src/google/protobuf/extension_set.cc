@@ -1714,12 +1714,6 @@ const RepeatedPrimitiveDefaults* RepeatedPrimitiveDefaults::default_instance() {
   return instance;
 }
 
-const RepeatedStringTypeTraits::RepeatedFieldType*
-RepeatedStringTypeTraits::GetDefaultRepeatedField() {
-  static auto instance = OnShutdownDelete(new RepeatedFieldType);
-  return instance;
-}
-
 uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
     const MessageLite* extendee, const ExtensionSet* extension_set, int number,
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
