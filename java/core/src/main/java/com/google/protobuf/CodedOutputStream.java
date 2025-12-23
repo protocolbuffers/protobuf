@@ -1682,14 +1682,28 @@ public abstract class CodedOutputStream extends ByteOutput {
     }
   }
 
-  /** Abstract base class for buffered encoders. */
-  private abstract static class AbstractBufferedEncoder extends CodedOutputStream {
-    final byte[] buffer;
-    final int limit;
-    int position;
-    int totalBytesWritten;
+  /**
+   * An encoder that writes into an OutputStream. This internally uses an array for buffering to
+   * improve efficiency.
+   */
+  private static final class OutputStreamEncoder extends CodedOutputStream {
+    private final byte[] buffer;
+    private final int limit;
+    private int position;
+    private int totalBytesWritten;
 
-    AbstractBufferedEncoder(int bufferSize) {
+    /**
+     * An {@link CodedOutputStream} that decorates an {@link OutputStream}. It performs internal
+     * buffering to optimize writes to the {@link OutputStream}.
+     */
+    private final OutputStream out;
+
+    OutputStreamEncoder(OutputStream out, int bufferSize) {
+      if (out == null) {
+        throw new NullPointerException("out");
+      }
+      this.out = out;
+
       if (bufferSize < 0) {
         throw new IllegalArgumentException("bufferSize must be >= 0");
       }
@@ -1842,22 +1856,6 @@ public abstract class CodedOutputStream extends ByteOutput {
       buffer[position++] = (byte) (value >> 56);
       this.position = position;
       totalBytesWritten += FIXED64_SIZE;
-    }
-  }
-
-  /**
-   * An {@link CodedOutputStream} that decorates an {@link OutputStream}. It performs internal
-   * buffering to optimize writes to the {@link OutputStream}.
-   */
-  private static final class OutputStreamEncoder extends AbstractBufferedEncoder {
-    private final OutputStream out;
-
-    OutputStreamEncoder(OutputStream out, int bufferSize) {
-      super(bufferSize);
-      if (out == null) {
-        throw new NullPointerException("out");
-      }
-      this.out = out;
     }
 
     @Override
