@@ -1179,6 +1179,23 @@ TEST_P(JsonTest, TestOverwriteRepeated) {
 }
 
 
+TEST_P(JsonTest, TestAny) {
+  // Not setting 'value' is legal because it is the the representation of an
+  // empty message (since 'bytes' is an implicit presence field).
+  google::protobuf::Any any;
+  any.set_type_url("type.googleapis.com/proto3.TestMessage");
+  EXPECT_THAT(
+      ToJson(any),
+      IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
+  EXPECT_THAT(
+      ToJson(any, {.allow_legacy_nonconformant_behavior = false}),
+      IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
+
+  auto round_trip = ToProto<google::protobuf::Any>(*ToJson(any));
+  ASSERT_OK(round_trip);
+  EXPECT_THAT(any, testing::EqualsProto(*round_trip));
+}
+
 TEST_P(JsonTest, TestDuration) {
   auto m = ToProto<proto3::TestDuration>(R"json(
     {

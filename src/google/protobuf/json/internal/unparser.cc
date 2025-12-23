@@ -745,9 +745,6 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
     return absl::OkStatus();
   } else if (!has_type_url) {
     return absl::InvalidArgumentError("broken Any: missing type URL");
-  } else if (!has_value &&
-             !writer.options().allow_legacy_nonconformant_behavior) {
-    return absl::InvalidArgumentError("broken Any: missing value");
   }
 
   writer.Write("{");
