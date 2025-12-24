@@ -11132,14 +11132,14 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   return _upb_EnumValueDef_At(e->values, i);
 }
 
+static bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
+  return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
+         UPB_DESC(FeatureSet_CLOSED);
+}
+
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
   if (UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN) return false;
   return upb_EnumDef_IsSpecifiedAsClosed(e);
-}
-
-bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
-  return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
-         UPB_DESC(FeatureSet_CLOSED);
 }
 
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
@@ -11232,21 +11232,35 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
 
   values = UPB_DESC(EnumDescriptorProto_value)(enum_proto, &n_value);
 
+  if (n_value == 0) {
+    _upb_DefBuilder_Errf(ctx, "enums must contain at least one value (%s)",
+                         e->full_name);
+  }
+
+  e->defaultval = UPB_DESC(EnumValueDescriptorProto_number)(values[0]);
+
+  // When the special UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN is enabled, we have to
+  // exempt closed enums from this check, even when we are treating them as
+  // open.
+  //
+  // We rely on the fact that the proto compiler will have already ensured that
+  // implicit presence fields do not use closed enums, even if we are treating
+  // them as open.
+  if (!upb_EnumDef_IsSpecifiedAsClosed(e) && e->defaultval != 0) {
+    _upb_DefBuilder_Errf(ctx,
+                         "for open enums, the first value must be zero (%s)",
+                         upb_EnumDef_FullName(e));
+  }
+
   bool ok = upb_strtable_init(&e->ntoi, n_value, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   ok = upb_inttable_init(&e->iton, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  e->defaultval = 0;
   e->value_count = n_value;
   e->values = _upb_EnumValueDefs_New(ctx, prefix, n_value, values,
                                      e->resolved_features, e, &e->is_sorted);
-
-  if (n_value == 0) {
-    _upb_DefBuilder_Errf(ctx, "enums must contain at least one value (%s)",
-                         e->full_name);
-  }
 
   res_ranges =
       UPB_DESC(EnumDescriptorProto_reserved_range)(enum_proto, &n_res_range);
@@ -11442,18 +11456,6 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 
-static void _upb_EnumValueDef_CheckZeroValue(upb_DefBuilder* ctx,
-                                             const upb_EnumDef* e,
-                                             const upb_EnumValueDef* v, int n) {
-  // When the special UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN is enabled, we have to
-  // exempt closed enums from this check, even when we are treating them as
-  // open.
-  if (upb_EnumDef_IsSpecifiedAsClosed(e) || n == 0 || v[0].number == 0) return;
-
-  _upb_DefBuilder_Errf(ctx, "for open enums, the first value must be zero (%s)",
-                       upb_EnumDef_FullName(e));
-}
-
 // Allocate and initialize an array of |n| enum value defs owned by |e|.
 upb_EnumValueDef* _upb_EnumValueDefs_New(
     upb_DefBuilder* ctx, const char* prefix, int n,
@@ -11473,8 +11475,6 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
     if (previous > current) *is_sorted = false;
     previous = current;
   }
-
-  _upb_EnumValueDef_CheckZeroValue(ctx, e, v, n);
 
   return v;
 }
@@ -12046,7 +12046,8 @@ invalid:
                        (int)upb_FieldDef_Type(f));
 }
 
-static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f) {
+static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f,
+                                bool must_be_empty) {
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Int32:
     case kUpb_CType_Int64:
@@ -12068,8 +12069,14 @@ static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f) {
       f->defaultval.boolean = false;
       break;
     case kUpb_CType_Enum: {
-      const upb_EnumValueDef* v = upb_EnumDef_Value(f->sub.enumdef, 0);
-      f->defaultval.sint = upb_EnumValueDef_Number(v);
+      f->defaultval.sint = upb_EnumDef_Default(f->sub.enumdef);
+      if (must_be_empty && f->defaultval.sint != 0) {
+        _upb_DefBuilder_Errf(ctx,
+                             "Implicit presence field (%s) cannot use an enum "
+                             "type with a non-zero default (%s)",
+                             f->full_name,
+                             upb_EnumDef_FullName(f->sub.enumdef));
+      }
       break;
     }
     case kUpb_CType_Message:
@@ -12497,11 +12504,28 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
 static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
                             const UPB_DESC(FieldDescriptorProto) *
                                 field_proto) {
+  // Implicit presence fields should always have an effective default of 0.
+  // This should naturally fall out of the validations that protoc performs:
+  // - Implicit presence fields cannot specify a default value.
+  // - Implicit presence fields for for enums can only use open enums, which
+  //   are required to have zero as their default.
+  //   - Even if we are treating all enums as open, the proto compiler will
+  //     still reject using a nominally closed enum with an implicit presence
+  //     field.
+  bool must_be_empty = !f->has_presence && !upb_FieldDef_IsRepeated(f);
+
   // Have to delay resolving of the default value until now because of the enum
   // case, since enum defaults are specified with a label.
   if (UPB_DESC(FieldDescriptorProto_has_default_value)(field_proto)) {
     upb_StringView defaultval =
         UPB_DESC(FieldDescriptorProto_default_value)(field_proto);
+
+    if (must_be_empty) {
+      _upb_DefBuilder_Errf(ctx,
+                           "fields with implicit presence cannot have "
+                           "explicit defaults (%s)",
+                           f->full_name);
+    }
 
     if (upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3) {
       _upb_DefBuilder_Errf(ctx,
@@ -12518,7 +12542,7 @@ static void resolve_default(upb_DefBuilder* ctx, upb_FieldDef* f,
     parse_default(ctx, defaultval.data, defaultval.size, f);
     f->has_default = true;
   } else {
-    set_default_default(ctx, f);
+    set_default_default(ctx, f, must_be_empty);
     f->has_default = false;
   }
 }
