@@ -25,13 +25,13 @@ jobs:
           destination: "platform=macOS"
           xc_project: "ProtocolBuffers_OSX.xcodeproj"
         - platform: "iOS"
-          destination: "platform=iOS Simulator,name=iPhone 14,OS=latest"
+          destination: "platform=iOS Simulator,name=iPhone 15,OS=latest"
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
 
-    name: Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
-    runs-on: macos-13
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
+    runs-on: macos-14
     env:
-      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -49,6 +49,7 @@ jobs:
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
+          CODE_SIGN_IDENTITY: "-"
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           command: |
@@ -71,10 +72,15 @@ jobs:
         # Add back 'watchos'. See CocoaPods/CocoaPods#11558
         PLATFORM: ["ios", "macos", "tvos"]
         CONFIGURATION: ["Debug", "Release"]
-    name: CocoaPods ${{ matrix.PLATFORM}} ${{ matrix.CONFIGURATION}}
-    runs-on: macos-13
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_14.1.app/Contents/Developer
+        include:
+          - OS: macos-14
+            XCODE: "15.2"
+          # We run presubmits on all "Debug" entries, but not on "Release" entries
+          - CONFIGURATION: "Debug"
+          - CONFIGURATION: "Release"
+            continuous-only: true
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} CocoaPods ${{ matrix.PLATFORM }} ${{ matrix.CONFIGURATION }}
+    runs-on: ${{ matrix.OS }}
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
@@ -114,8 +120,8 @@ jobs:
         include:
         - platform: "macOS"
           bazel_targets: //objectivec/...
-    name: Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
-    runs-on: macos-13
+    name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
+    runs-on: macos-14
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2
