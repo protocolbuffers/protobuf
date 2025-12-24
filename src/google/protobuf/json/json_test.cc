@@ -1184,11 +1184,13 @@ TEST_P(JsonTest, TestAny) {
   // empty message (since 'bytes' is an implicit presence field).
   google::protobuf::Any any;
   any.set_type_url("type.googleapis.com/proto3.TestMessage");
+  PrintOptions options;
+  options.allow_legacy_nonconformant_behavior = false;
   EXPECT_THAT(
       ToJson(any),
       IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
   EXPECT_THAT(
-      ToJson(any, {.allow_legacy_nonconformant_behavior = false}),
+      ToJson(any, options),
       IsOkAndHolds(R"({"@type":"type.googleapis.com/proto3.TestMessage"})"));
 
   auto round_trip = ToProto<google::protobuf::Any>(*ToJson(any));
