@@ -789,6 +789,22 @@ int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
                         (0x8080808080808080 << ((ptr - limit) * 8)));
 }
 
+bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end) {
+  ABSL_DCHECK_GE(end - ptr, int{sizeof(uint64_t)});
+
+  // Verify whole blocks, except for the last one.
+  uint64_t bit_or = 0;
+  const char* const limit = end - sizeof(uint64_t);
+  while (ptr < limit) {
+    bit_or |= EndianHelper<8>::Load(ptr);
+    ptr += 8;
+  }
+  // Verify the last, possibly incomplete block.
+  bit_or |= EndianHelper<8>::Load(limit);
+
+  return (bit_or & ~0x0101010101010101) == 0;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
