@@ -28,14 +28,14 @@ def _check_crate_mapping(actions, target_name):
             target_name,
             fw_actions,
         ))
-    expected_content = """grand_parent_proto
+    expected_content = """_y__y_third_party_y_protobuf_y_rust_y_test_y_rust_proto_library_unit_test_x_grand_d_parent_proto
 2
 rust/test/rust_proto_library_unit_test/grandparent1.proto
 rust/test/rust_proto_library_unit_test/grandparent2.proto
-parent_proto
+_y__y_third_party_y_protobuf_y_rust_y_test_y_rust_proto_library_unit_test_x_parent_proto
 1
 rust/test/rust_proto_library_unit_test/parent.proto
-parent2_proto
+_y__y_third_party_y_protobuf_y_rust_y_test_y_rust_proto_library_unit_test_x_parent2_proto
 1
 rust/test/rust_proto_library_unit_test/parent2.proto
 """
