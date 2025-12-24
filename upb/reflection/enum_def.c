@@ -161,14 +161,14 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   return _upb_EnumValueDef_At(e->values, i);
 }
 
+static bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
+  return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
+         UPB_DESC(FeatureSet_CLOSED);
+}
+
 bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
   if (UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN) return false;
   return upb_EnumDef_IsSpecifiedAsClosed(e);
-}
-
-bool upb_EnumDef_IsSpecifiedAsClosed(const upb_EnumDef* e) {
-  return UPB_DESC(FeatureSet_enum_type)(e->resolved_features) ==
-         UPB_DESC(FeatureSet_CLOSED);
 }
 
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
@@ -261,21 +261,35 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
 
   values = UPB_DESC(EnumDescriptorProto_value)(enum_proto, &n_value);
 
+  if (n_value == 0) {
+    _upb_DefBuilder_Errf(ctx, "enums must contain at least one value (%s)",
+                         e->full_name);
+  }
+
+  e->defaultval = UPB_DESC(EnumValueDescriptorProto_number)(values[0]);
+
+  // When the special UPB_TREAT_CLOSED_ENUMS_LIKE_OPEN is enabled, we have to
+  // exempt closed enums from this check, even when we are treating them as
+  // open.
+  //
+  // We rely on the fact that the proto compiler will have already ensured that
+  // implicit presence fields do not use closed enums, even if we are treating
+  // them as open.
+  if (!upb_EnumDef_IsSpecifiedAsClosed(e) && e->defaultval != 0) {
+    _upb_DefBuilder_Errf(ctx,
+                         "for open enums, the first value must be zero (%s)",
+                         upb_EnumDef_FullName(e));
+  }
+
   bool ok = upb_strtable_init(&e->ntoi, n_value, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   ok = upb_inttable_init(&e->iton, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  e->defaultval = 0;
   e->value_count = n_value;
   e->values = _upb_EnumValueDefs_New(ctx, prefix, n_value, values,
                                      e->resolved_features, e, &e->is_sorted);
-
-  if (n_value == 0) {
-    _upb_DefBuilder_Errf(ctx, "enums must contain at least one value (%s)",
-                         e->full_name);
-  }
 
   res_ranges =
       UPB_DESC(EnumDescriptorProto_reserved_range)(enum_proto, &n_res_range);
