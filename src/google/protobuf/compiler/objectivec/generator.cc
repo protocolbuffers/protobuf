@@ -88,6 +88,10 @@ bool ObjectiveCGenerator::GenerateAll(
   Options validation_options;
   GenerationOptions generation_options;
 
+  // Set default value for extension generation mode to class based.
+  generation_options.extension_generation_mode =
+      ExtensionGenerationMode::kClassBased;
+
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
   for (size_t i = 0; i < options.size(); i++) {
@@ -298,6 +302,36 @@ bool ObjectiveCGenerator::GenerateAll(
       generation_options.annotation_pragma_name = options[i].second;
     } else if (options[i].first == "annotation_guard_name") {
       generation_options.annotation_guard_name = options[i].second;
+    } else if (options[i].first == "extension_generation_mode") {
+      // This option controls the generation mode for extension code. The
+      // available options are:
+      //   "c_function": Root classes are removed. Extension descriptor and
+      //     registry functions are generated as C functions. This is the
+      //     preferred mode for new code, because it avoids potential namespace
+      //     collisions, allows the generated code to be stripped by the linker,
+      //     reduces binary size, and defers some initialization logic to the
+      //     first use instead of at app startup.
+      //   "class_based": Root classes are kept. Extension descriptor and
+      //     registry functions are generated as ObjC classes & methods.
+      //   "migration": C function based descriptor and registry functions are
+      //     generated alongside ObjC classes and methods. This is intended to
+      //     be a transitional state to help with migration to C function mode.
+      if (options[i].second == "c_function") {
+        generation_options.extension_generation_mode =
+            ExtensionGenerationMode::kCFunction;
+      } else if (options[i].second == "class_based") {
+        generation_options.extension_generation_mode =
+            ExtensionGenerationMode::kClassBased;
+      } else if (options[i].second == "migration") {
+        generation_options.extension_generation_mode =
+            ExtensionGenerationMode::kMigration;
+      } else {
+        *error = absl::StrCat(
+            "error: Unknown value for extension_generation_mode. Expected one "
+            "of 'c_function', 'class_based', or 'migration'. Got: ",
+            options[i].second);
+        return false;
+      }
     } else {
       *error =
           absl::StrCat("error: Unknown generator option: ", options[i].first);
