@@ -544,9 +544,9 @@ class PhpImplementationTest extends TestBase
 
     public function testArraysForMessagesThrowsException()
     {
-        $this->expectException(Exception::class);
+        $this->expectException(TypeError::class);
         $this->expectExceptionMessage(
-            'Expect Foo\TestMessage\Sub.');
+            'Argument #1 ($var) must be of type Foo\TestMessage\Sub, array given');
 
         $m = new TestMessage([
             'optional_message' => [
@@ -555,29 +555,13 @@ class PhpImplementationTest extends TestBase
         ]);
     }
 
-    public function testArrayConstructorWithNullValues()
-    {
-        $requestData = [
-            'optional_bool' => null,
-            'optional_string' => null,
-            'optional_bytes' => null,
-            'optional_message' => null,
-        ];
-
-        $m = new TestMessage($requestData);
-
-        $this->assertSame(false, $m->getOptionalBool());
-        $this->assertSame('', $m->getOptionalString());
-        $this->assertSame('', $m->getOptionalBytes());
-        $this->assertSame(null, $m->getOptionalMessage());
-    }
-
     /**
      * @dataProvider provideArrayConstructorWithNullValuesThrowsException
      */
     public function testArrayConstructorWithNullValuesThrowsException($requestData)
     {
-        $this->expectException(Exception::class);
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('Argument #1 ($var) must be of type');
 
         $m = new TestMessage($requestData);
     }
@@ -585,6 +569,10 @@ class PhpImplementationTest extends TestBase
     public function provideArrayConstructorWithNullValuesThrowsException()
     {
         return [
+            [['optional_bool' => null]],
+            [['optional_string' => null]],
+            [['optional_bytes' => null]],
+            [['optional_message' => null]],
             [['optional_int32' => null]],
             [['optional_int64' => null]],
             [['optional_uint32' => null]],
