@@ -63,6 +63,9 @@ function doTest($request)
                 case 'protobuf_test_messages.editions.TestAllTypesEdition2023':
                     $response->setSkipped('PHP doesn\'t support editions-specific features yet');
                     return $response;
+                case 'protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable':
+                    $response->setSkipped('PHP doesn\'t support editions-specific features yet');
+                    return $response;
                 case '':
                     trigger_error(
                         'Protobuf request doesn\'t have specific payload type',
