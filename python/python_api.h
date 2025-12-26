@@ -38,4 +38,12 @@ PyAPI_FUNC(const char*)
     PyUnicode_AsUTF8AndSize(PyObject* unicode, Py_ssize_t* size);
 #endif
 
+// Py_BEGIN_CRITICAL_SECTION and Py_END_CRITICAL_SECTION were added in 3.13
+// mostly for use under the free-threaded build. We're defining the macro here
+// for use with the stable ABI and older Pythons.
+#if defined(Py_LIMITED_API) || PY_VERSION_HEX < 0x030D00B3
+#  define Py_BEGIN_CRITICAL_SECTION(op) {
+#  define Py_END_CRITICAL_SECTION() }
+#endif
+
 #endif  // PYUPB_PYTHON_H__
