@@ -224,7 +224,8 @@ bool UnknownFieldSet::SerializeToString(std::string* output) const {
   const size_t size =
       google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
   absl::strings_internal::STLStringResizeUninitializedAmortized(output, size);
-  google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+  // TODO: Remove this suppression.
+  (void)google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
       *this, reinterpret_cast<uint8_t*>(const_cast<char*>(output->data())));
   return true;
 }

@@ -222,7 +222,8 @@ void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
 }
 
 GzipOutputStream::~GzipOutputStream() {
-  Close();
+  // TODO: Remove this suppression.
+  (void)Close();
   internal::SizedDelete(input_buffer_, input_buffer_length_);
 }
 

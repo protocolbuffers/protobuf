@@ -2392,8 +2392,8 @@ class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
 TEST(MessageDifferencerTest, TreatRepeatedFieldAsSetWithIgnoredFields) {
   proto2_unittest::TestDiffMessage msg1;
   proto2_unittest::TestDiffMessage msg2;
-  TextFormat::MergeFromString("rm { a: 11\n b: 12 }", &msg1);
-  TextFormat::MergeFromString("rm { a: 11\n b: 13 }", &msg2);
+  EXPECT_TRUE(TextFormat::MergeFromString("rm { a: 11\n b: 12 }", &msg1));
+  EXPECT_TRUE(TextFormat::MergeFromString("rm { a: 11\n b: 13 }", &msg2));
   util::MessageDifferencer differ;
   differ.TreatAsSet(GetFieldDescriptor(msg1, "rm"));
   differ.AddIgnoreCriteria(std::make_unique<TestIgnorer>());
@@ -2403,8 +2403,10 @@ TEST(MessageDifferencerTest, TreatRepeatedFieldAsSetWithIgnoredFields) {
 TEST(MessageDifferencerTest, TreatRepeatedFieldAsMapWithIgnoredKeyFields) {
   proto2_unittest::TestDiffMessage msg1;
   proto2_unittest::TestDiffMessage msg2;
-  TextFormat::MergeFromString("rm { a: 11\n m { a: 12\n b: 13\n } }", &msg1);
-  TextFormat::MergeFromString("rm { a: 11\n m { a: 12\n b: 14\n } }", &msg2);
+  EXPECT_TRUE(TextFormat::MergeFromString(
+      "rm { a: 11\n m { a: 12\n b: 13\n } }", &msg1));
+  EXPECT_TRUE(TextFormat::MergeFromString(
+      "rm { a: 11\n m { a: 12\n b: 14\n } }", &msg2));
   util::MessageDifferencer differ;
   differ.TreatAsMap(GetFieldDescriptor(msg1, "rm"),
                     GetFieldDescriptor(msg1, "rm.m"));

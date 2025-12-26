@@ -1980,13 +1980,13 @@ TEST(GeneratedMessageReflection, SwapImplicitPresenceShouldWork) {
 
 TEST(GeneratedMessageReflection, UnvalidatedStringsAreDowngradedToBytes) {
   proto2_unittest::TestChildExtension parsed_msg;
-  google::protobuf::TextFormat::ParseFromString(
+  ASSERT_TRUE(google::protobuf::TextFormat::ParseFromString(
       R"pb(
         optional_extension <
           [proto2_unittest.repeated_string_extension]: "foo"
         >
       )pb",
-      &parsed_msg);
+      &parsed_msg));
   proto2_unittest::TestChildExtension msg;
   msg.mutable_optional_extension()->AddExtension(
       proto2_unittest::repeated_string_extension, "bar");

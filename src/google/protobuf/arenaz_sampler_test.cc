@@ -598,7 +598,7 @@ TEST(ThreadSafeArenazSamplerTest, UsedAndWasted) {
   // Do enough small allocations to completely fill 3 first blocks.
   // Test that they are fully used and none wasted.
   for (int i = 0; i < 1000; ++i) {
-    Arena::Create<char>(&arena);
+    (void)Arena::Create<char>(&arena);
   }
   sampler.Iterate([&](const ThreadSafeArenaStats& h) {
     for (size_t i = 0; i < 3; ++i) {

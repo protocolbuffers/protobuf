@@ -2552,6 +2552,7 @@ cc_library(
     deps = [
         ":protobuf",
         ":protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
     ],
 )
 

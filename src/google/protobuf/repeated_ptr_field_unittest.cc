@@ -1173,12 +1173,14 @@ TEST(RepeatedPtrFieldTest, DeleteSubrange) {
 
 TEST(RepeatedPtrFieldTest, Cleanups) {
   Arena arena;
-  auto growth = internal::CleanupGrowth(
-      arena, [&] { Arena::Create<RepeatedPtrField<std::string>>(&arena); });
+  auto growth = internal::CleanupGrowth(arena, [&] {
+    (void)Arena::Create<RepeatedPtrField<std::string>>(&arena);
+  });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 
-  growth = internal::CleanupGrowth(
-      arena, [&] { Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena); });
+  growth = internal::CleanupGrowth(arena, [&] {
+    (void)Arena::Create<RepeatedPtrField<TestAllTypes>>(&arena);
+  });
   EXPECT_THAT(growth.cleanups, testing::IsEmpty());
 }
 

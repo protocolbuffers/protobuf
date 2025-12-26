@@ -45,15 +45,18 @@ struct EnumEntry {
 };
 
 // Looks up a numeric enum value given the string name.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT bool LookUpEnumValue(const EnumEntry* enums, size_t size,
                                      absl::string_view name, int* value);
 
 // Looks up an enum name given the numeric value.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT int LookUpEnumName(const EnumEntry* enums,
                                    const int* sorted_indices, size_t size,
                                    int value);
 
 // Initializes the list of enum names in std::string form.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT bool InitializeEnumStrings(
     const EnumEntry* enums, const int* sorted_indices, size_t size,
     internal::ExplicitlyConstructed<std::string>* enum_strings);
@@ -71,10 +74,13 @@ PROTOBUF_EXPORT bool InitializeEnumStrings(
 // y - [ variable length of int32_t values ]
 //
 // where the bitmap starts right after the end of the sequence.
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT bool ValidateEnum(int value, const uint32_t* data);
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT std::vector<uint32_t> GenerateEnumData(
     absl::Span<const int32_t> values);
 
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_ALWAYS_INLINE bool ValidateEnumInlined(int value,
                                                 const uint32_t* data) {
   const int16_t min_seq = static_cast<int16_t>(data[0] & 0xFFFF);

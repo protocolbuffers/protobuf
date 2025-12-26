@@ -291,17 +291,17 @@ TEST_F(MapImplTest, MutableAt) {
 #if GTEST_HAS_DEATH_TEST
 
 TEST_F(MapImplTest, MutableAtNonExistDeathTest) {
-  EXPECT_DEATH(map_.at(0), "");
+  EXPECT_DEATH((void)map_.at(0), "");
 }
 
 TEST_F(MapImplTest, ImmutableAtNonExistDeathTest) {
-  EXPECT_DEATH(const_map_.at(0), "");
+  EXPECT_DEATH((void)const_map_.at(0), "");
 }
 
 TEST_F(MapImplTest, UsageErrors) {
   MapKey key;
   key.SetInt64Value(1);
-  EXPECT_DEATH(key.GetUInt64Value(),
+  EXPECT_DEATH((void)key.GetUInt64Value(),
                "Protocol Buffer map usage error:\n"
                "MapKey::GetUInt64Value type does not match\n"
                "  Expected : uint64\n"
@@ -1461,8 +1461,8 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_EQ(cm.at(key), 1);
 
 #if GTEST_HAS_DEATH_TEST
-  EXPECT_DEATH(m.at(miss_key), "");
-  EXPECT_DEATH(cm.at(miss_key), "");
+  EXPECT_DEATH((void)m.at(miss_key), "");
+  EXPECT_DEATH((void)cm.at(miss_key), "");
 #endif  // GTEST_HAS_DEATH_TEST
 
   EXPECT_EQ(m.count(key), 1);
@@ -2621,9 +2621,9 @@ TEST(GeneratedMapFieldTest, DynamicMessageMergeFromDynamicMessage) {
   // Test MergeFrom does not sync to repeated fields and
   // there is no duplicate keys in text format.
   std::string output1, output2, output3;
-  TextFormat::PrintToString(*message1, &output1);
-  TextFormat::PrintToString(*message2, &output2);
-  TextFormat::PrintToString(*message3, &output3);
+  ASSERT_TRUE(TextFormat::PrintToString(*message1, &output1));
+  ASSERT_TRUE(TextFormat::PrintToString(*message2, &output2));
+  ASSERT_TRUE(TextFormat::PrintToString(*message3, &output3));
   EXPECT_EQ(output1, output2);
   EXPECT_EQ(output1, output3);
 }
@@ -2696,8 +2696,8 @@ TEST(GeneratedMapFieldTest, NonEmptyMergeFrom) {
   message2.MergeFrom(message1);
 
   std::string output1, output2;
-  TextFormat::PrintToString(message1, &output1);
-  TextFormat::PrintToString(message2, &output2);
+  ASSERT_TRUE(TextFormat::PrintToString(message1, &output1));
+  ASSERT_TRUE(TextFormat::PrintToString(message2, &output2));
   EXPECT_EQ(output1, output2);
 }
 
@@ -3717,7 +3717,7 @@ TEST(WireFormatForMapFieldTest, ParseMap) {
   // Parse using WireFormat.
   io::ArrayInputStream raw_input(data.data(), data.size());
   io::CodedInputStream input(&raw_input);
-  WireFormat::ParseAndMergePartial(&input, &dest);
+  ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &dest));
 
   // Check.
   MapTestUtil::ExpectMapFieldsSet(dest);
@@ -4095,7 +4095,7 @@ TEST(TextFormatMapTest, SerializeAndParse) {
 
   // Test compact ASCII
   TextFormat::Printer printer;
-  printer.PrintToString(source, &output);
+  ASSERT_TRUE(printer.PrintToString(source, &output));
   TextFormat::Parser parser;
   EXPECT_TRUE(parser.ParseFromString(output, &dest));
   MapTestUtil::ExpectMapFieldsSet(dest);
@@ -4110,7 +4110,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
   tester.SetMapFieldsViaReflection(message.get());
 
   std::string actual_text;
-  TextFormat::PrintToString(*message, &actual_text);
+  ASSERT_TRUE(TextFormat::PrintToString(*message, &actual_text));
   EXPECT_EQ(actual_text, GetGoldenMessageTextProto());
 }
 
@@ -4121,14 +4121,14 @@ TEST(TextFormatMapTest, Sorted) {
 
   TextFormat::Printer printer;
   std::string actual_text;
-  printer.PrintToString(message, &actual_text);
+  ASSERT_TRUE(printer.PrintToString(message, &actual_text));
   EXPECT_EQ(actual_text, GetGoldenMessageTextProto());
 
   // Test again on the reverse order.
   UNITTEST::TestMap message2;
   tester.SetMapFieldsViaReflection(&message2);
   tester.SwapMapsViaReflection(&message2);
-  printer.PrintToString(message2, &actual_text);
+  ASSERT_TRUE(printer.PrintToString(message2, &actual_text));
   EXPECT_EQ(actual_text, GetGoldenMessageTextProto());
 }
 
@@ -4147,7 +4147,7 @@ TEST(TextFormatMapTest, NoDisableIterator) {
   // iterator previously.
   std::string output;
   TextFormat::Printer printer;
-  printer.PrintToString(source, &output);
+  ASSERT_TRUE(printer.PrintToString(source, &output));
 
   // Modify map via the iterator (invalidated in previous implementation.).
   iter->second = 2;
@@ -4155,7 +4155,7 @@ TEST(TextFormatMapTest, NoDisableIterator) {
   // In previous implementation, the new change won't be reflected in text
   // format, because the previous iterator has been invalidated.
   output.clear();
-  printer.PrintToString(source, &output);
+  ASSERT_TRUE(printer.PrintToString(source, &output));
   std::string expected =
       "map_int32_int32 {\n"
       "  key: 1\n"
@@ -4183,7 +4183,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   // iterator previously.
   std::string output;
   TextFormat::Printer printer;
-  printer.PrintToString(source, &output);
+  ASSERT_TRUE(printer.PrintToString(source, &output));
 
   // Modify map via the iterator (invalidated in previous implementation.).
   const Reflection* map_entry_reflection = iter->GetReflection();
@@ -4194,7 +4194,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   // In previous implementation, the new change won't be reflected in text
   // format, because the previous iterator has been invalidated.
   output.clear();
-  printer.PrintToString(source, &output);
+  ASSERT_TRUE(printer.PrintToString(source, &output));
   std::string expected =
       "map_int32_int32 {\n"
       "  key: 1\n"
@@ -4250,7 +4250,7 @@ TEST(ArenaTest, ReflectionInTextFormat) {
   UNITTEST::TestArenaMap* to = Arena::Create<UNITTEST::TestArenaMap>(&arena);
 
   MapTestUtil::SetArenaMapFields(from);
-  printer.PrintToString(*from, &data);
+  ASSERT_TRUE(printer.PrintToString(*from, &data));
 
   EXPECT_TRUE(parser.ParseFromString(data, to));
   MapTestUtil::ExpectArenaMapFieldsSet(*to);

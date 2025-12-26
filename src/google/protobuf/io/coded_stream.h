@@ -518,7 +518,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedInputStream {
 
   // Get the MessageFactory set via SetExtensionRegistry(), or NULL if no
   // factory has been provided.
-  MessageFactory* GetExtensionFactory();
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD MessageFactory* GetExtensionFactory();
 
  private:
   const uint8_t* buffer_;
@@ -1162,7 +1162,8 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedOutputStream {
   // there are not enough bytes available, returns NULL.  The return pointer is
   // invalidated as soon as any other non-const method of CodedOutputStream
   // is called.
-  inline uint8_t* GetDirectBufferForNBytesAndAdvance(int size) {
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline uint8_t*
+  GetDirectBufferForNBytesAndAdvance(int size) {
     return impl_.GetDirectBufferForNBytesAndAdvance(size, &cur_);
   }
 

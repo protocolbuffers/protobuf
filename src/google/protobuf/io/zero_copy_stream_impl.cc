@@ -164,7 +164,7 @@ FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
       is_closed_(false),
       errno_(0) {}
 
-FileOutputStream::~FileOutputStream() { Flush(); }
+FileOutputStream::~FileOutputStream() { (void)Flush(); }
 
 FileOutputStream::CopyingFileOutputStream::~CopyingFileOutputStream() {
   if (close_on_delete_) {
@@ -261,7 +261,7 @@ int IstreamInputStream::CopyingIstreamInputStream::Read(void* buffer,
 OstreamOutputStream::OstreamOutputStream(std::ostream* output, int block_size)
     : copying_output_(output), impl_(&copying_output_, block_size) {}
 
-OstreamOutputStream::~OstreamOutputStream() { impl_.Flush(); }
+OstreamOutputStream::~OstreamOutputStream() { (void)impl_.Flush(); }
 
 bool OstreamOutputStream::Next(void** data, int* size) {
   return impl_.Next(data, size);

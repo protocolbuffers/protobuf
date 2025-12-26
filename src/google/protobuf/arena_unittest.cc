@@ -231,7 +231,7 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
   {
     actions.clear();
     Arena arena;
-    Arena::Create<TraitsProber>(&arena);
+    (void)Arena::Create<TraitsProber>(&arena);
   }
   EXPECT_THAT(actions, ElementsAreArray(def));
 
@@ -239,14 +239,14 @@ void TestCtorAndDtorTraits(std::vector<absl::string_view> def,
   {
     actions.clear();
     Arena arena;
-    Arena::Create<TraitsProber>(&arena, p);
+    EXPECT_NE(Arena::Create<TraitsProber>(&arena, p), nullptr);
   }
   EXPECT_THAT(actions, ElementsAreArray(copy));
 
   {
     actions.clear();
     Arena arena;
-    Arena::Create<TraitsProber>(&arena, 17);
+    EXPECT_NE(Arena::Create<TraitsProber>(&arena, 17), nullptr);
   }
   EXPECT_THAT(actions, ElementsAreArray(with_int));
 }
@@ -255,7 +255,7 @@ TEST(ArenaTest, ZeroAllocDoesNotReturnNull) {
   Arena arena;
   EXPECT_NE(arena.AllocateAligned(0), nullptr);
   // Try again after allocating some memory.
-  arena.AllocateAligned(10000);
+  (void)arena.AllocateAligned(10000);
   EXPECT_NE(arena.AllocateAligned(0), nullptr);
 }
 
@@ -524,7 +524,7 @@ struct OnlyArenaConstructible {
 
 TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
   Arena arena;
-  Arena::Create<OnlyArenaConstructible>(&arena);
+  (void)Arena::Create<OnlyArenaConstructible>(&arena);
 }
 
 TEST(ArenaTest, GetConstructTypeWorks) {
@@ -599,13 +599,15 @@ TEST(ArenaTest, CreateArenaConstructable) {
 TEST(ArenaTest, CreateArenaCheckFailsOnTooLargeInput) {
   size_t max = std::numeric_limits<size_t>::max();
 
-  EXPECT_DEATH(Arena::CreateArray<double>(nullptr, max / sizeof(double) + 1),
-               "Requested size is too large to fit into size_t");
+  EXPECT_DEATH(
+      (void)Arena::CreateArray<double>(nullptr, max / sizeof(double) + 1),
+      "Requested size is too large to fit into size_t");
 
   // For int32_t we trap even at this level because rounding up to 8 bytes will
   // overflow.
-  EXPECT_DEATH(Arena::CreateArray<int32_t>(nullptr, max / sizeof(int32_t)),
-               "Requested size is too large to fit into size_t");
+  EXPECT_DEATH(
+      (void)Arena::CreateArray<int32_t>(nullptr, max / sizeof(int32_t)),
+      "Requested size is too large to fit into size_t");
 }
 
 TEST(ArenaTest, CreateRepeatedPtrField) {
@@ -621,26 +623,26 @@ TEST(ArenaTest, CreateRepeatedPtrField) {
 
 TEST(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr);
+  (void)Arena::Create<DispatcherTestProto>(nullptr);
   EXPECT_EQ(hook_called, "default");
 
   DispatcherTestProto& ref = dispatcher_test_proto_instance;
   const DispatcherTestProto& cref = ref;
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr);
+  (void)Arena::Create<DispatcherTestProto>(nullptr);
   EXPECT_EQ(hook_called, "default");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, ref);
+  (void)Arena::Create<DispatcherTestProto>(nullptr, ref);
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, cref);
+  (void)Arena::Create<DispatcherTestProto>(nullptr, cref);
   EXPECT_EQ(hook_called, "copy");
 
   hook_called = "";
-  Arena::Create<DispatcherTestProto>(nullptr, 1);
+  (void)Arena::Create<DispatcherTestProto>(nullptr, 1);
   EXPECT_EQ(hook_called, "fallback");
 }
 
@@ -1711,7 +1713,7 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(0, arena_1.SpaceAllocated());
   EXPECT_EQ(0, arena_1.SpaceUsed());
   EXPECT_EQ(0, arena_1.Reset());
-  Arena::CreateArray<char>(&arena_1, 320);
+  EXPECT_NE(Arena::CreateArray<char>(&arena_1, 320), nullptr);
   // Arena will allocate slightly more than 320 for the block headers.
   EXPECT_LE(320, arena_1.SpaceAllocated());
   EXPECT_EQ(Align8(320), arena_1.SpaceUsed());
@@ -1728,7 +1730,7 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(1024, arena_2.SpaceAllocated());
   EXPECT_EQ(0, arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
-  Arena::CreateArray<char>(&arena_2, 55);
+  EXPECT_NE(Arena::CreateArray<char>(&arena_2, 55), nullptr);
   EXPECT_EQ(1024, arena_2.SpaceAllocated());
   EXPECT_EQ(Align8(55), arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
@@ -1741,12 +1743,12 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
 
   // Allocate a tiny block and record the allocation size.
   constexpr size_t kTinySize = 8;
-  Arena::CreateArray<char>(&arena, kTinySize);
+  EXPECT_NE(Arena::CreateArray<char>(&arena, kTinySize), nullptr);
   uint64_t space_allocated = arena.SpaceAllocated();
 
   // Next allocation expects to fill up the block but no new block.
   uint64_t next_size = space_allocated - overhead - kTinySize;
-  Arena::CreateArray<char>(&arena, next_size);
+  EXPECT_NE(Arena::CreateArray<char>(&arena, next_size), nullptr);
 
   EXPECT_EQ(space_allocated, arena.SpaceAllocated());
 }
@@ -1764,7 +1766,7 @@ TEST(ArenaTest, StartingBlockSize) {
   EXPECT_EQ(0, default_arena.SpaceAllocated());
 
   // Allocate something to get starting block size.
-  Arena::CreateArray<char>(&default_arena, 1);
+  EXPECT_NE(Arena::CreateArray<char>(&default_arena, 1), nullptr);
   ArenaOptions options;
   // First block size should be the default starting block size.
   EXPECT_EQ(default_arena.SpaceAllocated(), options.start_block_size);
@@ -1772,7 +1774,7 @@ TEST(ArenaTest, StartingBlockSize) {
   // Use a custom starting block size.
   options.start_block_size *= 2;
   Arena custom_arena(options);
-  Arena::CreateArray<char>(&custom_arena, 1);
+  EXPECT_NE(Arena::CreateArray<char>(&custom_arena, 1), nullptr);
   EXPECT_EQ(custom_arena.SpaceAllocated(), options.start_block_size);
 }
 
@@ -1782,12 +1784,12 @@ TEST(ArenaTest, BlockSizeDoubling) {
   EXPECT_EQ(0, arena.SpaceAllocated());
 
   // Allocate something to get initial block size.
-  Arena::CreateArray<char>(&arena, 1);
+  EXPECT_NE(Arena::CreateArray<char>(&arena, 1), nullptr);
   auto first_block_size = arena.SpaceAllocated();
 
   // Keep allocating until space used increases.
   while (arena.SpaceAllocated() == first_block_size) {
-    Arena::CreateArray<char>(&arena, 1);
+    EXPECT_NE(Arena::CreateArray<char>(&arena, 1), nullptr);
   }
   ASSERT_GT(arena.SpaceAllocated(), first_block_size);
   auto second_block_size = (arena.SpaceAllocated() - first_block_size);
@@ -1866,7 +1868,8 @@ TEST(ArenaTest, CleanupDestructionOrder) {
   {
     Arena arena;
     for (int i = 0; i < 3; i++) {
-      Arena::Create<DestroyOrderRecorder>(&arena, &destroy_order, i);
+      EXPECT_NE(Arena::Create<DestroyOrderRecorder>(&arena, &destroy_order, i),
+                nullptr);
     }
   }
   EXPECT_THAT(destroy_order, testing::ElementsAre(2, 1, 0));

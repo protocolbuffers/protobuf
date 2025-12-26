@@ -158,7 +158,6 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
 // test Generate in cpp_generator.cc
 TEST(BootstrapTest, OptionNotExist) {
   cpp::CppGenerator generator;
-  DescriptorPool pool;
   GeneratorContext* generator_context = nullptr;
   std::string parameter = "aaa";
   std::string error;

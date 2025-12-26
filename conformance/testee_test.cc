@@ -26,10 +26,10 @@ using ::testing::Return;
 MATCHER_P(RequestEquals, expected_textproto, "") {
   ::conformance::ConformanceRequest request, expected;
   ABSL_CHECK(request.ParseFromString(arg));
-  TextFormat::ParseFromString(expected_textproto, &expected);
+  ABSL_CHECK(TextFormat::ParseFromString(expected_textproto, &expected));
   if (!util::MessageDifferencer::Equals(request, expected)) {
     std::string request_string;
-    TextFormat::PrintToString(request, &request_string);
+    ABSL_CHECK(TextFormat::PrintToString(request, &request_string));
     *result_listener << "with equivalent text format:\n" << request_string;
     return false;
   }
@@ -38,7 +38,7 @@ MATCHER_P(RequestEquals, expected_textproto, "") {
 
 auto RespondWith(absl::string_view textproto) {
   ::conformance::ConformanceResponse response;
-  TextFormat::ParseFromString(textproto, &response);
+  ABSL_CHECK(TextFormat::ParseFromString(textproto, &response));
   return Return(response.SerializeAsString());
 }
 

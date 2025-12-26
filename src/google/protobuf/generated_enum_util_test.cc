@@ -41,9 +41,9 @@ namespace {
 TEST(GenerateEnumDataTest, DebugChecks) {
 #if GTEST_HAS_DEATH_TEST
   // Not unique
-  EXPECT_DEBUG_DEATH(GenerateEnumData({1, 1}), "sorted_and_unique");
+  EXPECT_DEBUG_DEATH((void)GenerateEnumData({1, 1}), "sorted_and_unique");
   // Not sorted
-  EXPECT_DEBUG_DEATH(GenerateEnumData({2, 1}), "sorted_and_unique");
+  EXPECT_DEBUG_DEATH((void)GenerateEnumData({2, 1}), "sorted_and_unique");
 #endif
 }
 

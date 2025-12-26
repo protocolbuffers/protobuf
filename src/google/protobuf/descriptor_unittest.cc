@@ -7808,14 +7808,14 @@ TEST_F(ValidationErrorTest, MapEntryBase) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
   std::string text_proto;
-  TextFormat::PrintToString(file_proto, &text_proto);
+  (void)TextFormat::PrintToString(file_proto, &text_proto);
   BuildFile(text_proto);
 }
 
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "extension_range { "
       "  start: 10 end: 20 "
       "} ",
@@ -7826,7 +7826,7 @@ TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
 TEST_F(ValidationErrorTest, MapEntryExtension) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "extension { "
       "  name: 'foo_ext' extendee: '.Bar' number: 5"
       "} ",
@@ -7837,7 +7837,7 @@ TEST_F(ValidationErrorTest, MapEntryExtension) {
 TEST_F(ValidationErrorTest, MapEntryNestedType) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "nested_type { "
       "  name: 'Bar' "
       "} ",
@@ -7848,7 +7848,7 @@ TEST_F(ValidationErrorTest, MapEntryNestedType) {
 TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "enum_type { "
       "  name: 'BarEnum' "
       "  value { name: 'BAR_BAR' number:0 } "
@@ -7860,7 +7860,7 @@ TEST_F(ValidationErrorTest, MapEntryEnumTypes) {
 TEST_F(ValidationErrorTest, MapEntryExtraField) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "field { "
       "  name: 'other_field' "
       "  label: LABEL_OPTIONAL "
@@ -8028,7 +8028,7 @@ TEST_F(ValidationErrorTest, MapEntryKeyTypeMessage) {
 TEST_F(ValidationErrorTest, MapEntryConflictsWithField) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "field { "
       "  name: 'FooMapEntry' "
       "  type: TYPE_INT32 "
@@ -8048,7 +8048,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithField) {
 TEST_F(ValidationErrorTest, MapEntryConflictsWithMessage) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "nested_type { "
       "  name: 'FooMapEntry' "
       "}",
@@ -8064,7 +8064,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithMessage) {
 TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "enum_type { "
       "  name: 'FooMapEntry' "
       "  value { name: 'ENTRY_FOO' number: 0 }"
@@ -8244,7 +8244,7 @@ TEST_F(ValidationErrorTest, EnumValuesConflictLegacyBehavior) {
 TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
-  TextFormat::MergeFromString(
+  (void)TextFormat::MergeFromString(
       "oneof_decl { "
       "  name: 'FooMapEntry' "
       "}"
@@ -8967,7 +8967,7 @@ TEST_F(FeaturesTest, Proto2Features) {
   FileDescriptorProto proto;
   file->CopyTo(&proto);
   std::string file_textproto;
-  google::protobuf::TextFormat::PrintToString(file_proto, &file_textproto);
+  (void)google::protobuf::TextFormat::PrintToString(file_proto, &file_textproto);
   EXPECT_THAT(proto, EqualsProto(file_textproto));
 }
 
@@ -9049,7 +9049,7 @@ TEST_F(FeaturesTest, Proto3Features) {
   FileDescriptorProto proto;
   file->CopyTo(&proto);
   std::string file_textproto;
-  google::protobuf::TextFormat::PrintToString(file_proto, &file_textproto);
+  (void)google::protobuf::TextFormat::PrintToString(file_proto, &file_textproto);
   EXPECT_THAT(proto, EqualsProto(file_textproto));
 }
 
@@ -14492,14 +14492,14 @@ TEST_F(DatabaseBackedPoolTest, FeatureResolution) {
     FileDescriptorProto proto;
     FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
     std::string text_proto;
-    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    (void)google::protobuf::TextFormat::PrintToString(proto, &text_proto);
     AddToDatabase(&database_, text_proto);
   }
   {
     FileDescriptorProto proto;
     pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
     std::string text_proto;
-    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    (void)google::protobuf::TextFormat::PrintToString(proto, &text_proto);
     AddToDatabase(&database_, text_proto);
   }
   AddToDatabase(&database_, R"pb(
@@ -14549,14 +14549,14 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeError) {
     FileDescriptorProto proto;
     FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
     std::string text_proto;
-    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    (void)google::protobuf::TextFormat::PrintToString(proto, &text_proto);
     AddToDatabase(&database_, text_proto);
   }
   {
     FileDescriptorProto proto;
     pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
     std::string text_proto;
-    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    (void)google::protobuf::TextFormat::PrintToString(proto, &text_proto);
     AddToDatabase(&database_, text_proto);
   }
   AddToDatabase(&database_, R"pb(
@@ -14589,14 +14589,14 @@ TEST_F(DatabaseBackedPoolTest, FeatureLifetimeErrorUnknownDependencies) {
     FileDescriptorProto proto;
     FileDescriptorProto::descriptor()->file()->CopyTo(&proto);
     std::string text_proto;
-    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    (void)google::protobuf::TextFormat::PrintToString(proto, &text_proto);
     AddToDatabase(&database_, text_proto);
   }
   {
     FileDescriptorProto proto;
     pb::TestFeatures::descriptor()->file()->CopyTo(&proto);
     std::string text_proto;
-    google::protobuf::TextFormat::PrintToString(proto, &text_proto);
+    (void)google::protobuf::TextFormat::PrintToString(proto, &text_proto);
     AddToDatabase(&database_, text_proto);
   }
   AddToDatabase(&database_, R"pb(

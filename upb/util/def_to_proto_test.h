@@ -30,8 +30,6 @@ namespace upb_test {
 MATCHER_P(EqualsProtoTreatNansAsEqual, proto,
           negation ? "are not equal" : "are equal") {
   upb::DefPool defpool;
-  google::protobuf::DescriptorPool pool;
-  google::protobuf::DynamicMessageFactory factory;
   std::string differences;
   google::protobuf::util::DefaultFieldComparator comparator;
   comparator.set_treat_nan_as_equal(true);

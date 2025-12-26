@@ -65,13 +65,13 @@ class PROTOBUF_EXPORT FeatureResolver {
   // This will return error messages for any explicitly set features used before
   // their introduction or after their removal.  Warnings will be included for
   // any explicitly set features that have been deprecated.
-  struct ValidationResults {
+  struct PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ValidationResults {
     std::vector<std::string> errors;
     std::vector<std::string> warnings;
   };
-  static ValidationResults ValidateFeatureLifetimes(
-      Edition edition, const Message& option,
-      const Descriptor* pool_descriptor);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static ValidationResults
+  ValidateFeatureLifetimes(Edition edition, const Message& option,
+                           const Descriptor* pool_descriptor);
 
   // Validates feature support on features and options
   // to enforce feature support to be written correctly.
