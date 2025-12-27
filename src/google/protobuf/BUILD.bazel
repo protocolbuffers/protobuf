@@ -1353,7 +1353,7 @@ proto_library(
     strip_import_prefix = "/src",
     visibility = [
         "//:__pkg__",
-        "//conformance:__pkg__",
+        "//conformance:__subpackages__",
         "//lua:__subpackages__",
         "//python:__subpackages__",
         "//upb:__subpackages__",
@@ -1366,7 +1366,7 @@ proto_library(
     strip_import_prefix = "/src",
     visibility = [
         "//:__pkg__",
-        "//conformance:__pkg__",
+        "//conformance:__subpackages__",
         "//lua:__subpackages__",
         "//python:__subpackages__",
         "//upb:__subpackages__",
