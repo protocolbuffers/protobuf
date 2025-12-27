@@ -90,6 +90,7 @@
 #include "google/protobuf/symbol_checker.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "thread/thread.h"
 
 
 // Must be included last.
@@ -2201,6 +2202,9 @@ inline void DescriptorPool::Tables::FindAllExtensions(
   ExtensionsGroupedByDescriptorMap::const_iterator it =
       extensions_.lower_bound(std::make_pair(extendee, 0));
   for (; it != extensions_.end() && it->first.first == extendee; ++it) {
+    ABSL_LOG(INFO) << "FindAllExtensions for: " << extendee->full_name()
+                   << " on thread: "
+                   << LiveThread_Name(Thread_GetMyLiveThread());
     out->push_back(it->second);
   }
 }
@@ -2764,6 +2768,9 @@ void DescriptorPool::FindAllExtensions(
     tables_->FindAllExtensions(extendee, &extensions);
     if (underlay_ != nullptr) {
       underlay_->FindAllExtensions(extendee, &extensions);
+      ABSL_LOG(INFO) << "UNDERAY FindAllExtensions: " << extendee->full_name()
+                     << " on thread: "
+                     << LiveThread_Name(Thread_GetMyLiveThread());
     }
   }
   if (deferred_validation.Validate()) {
