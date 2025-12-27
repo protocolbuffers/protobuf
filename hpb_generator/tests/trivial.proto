@@ -1,0 +1,20 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2024";
+
+package hpb_unittest;
+
+message Trivial {
+  bool b = 1;
+}
+
+enum TrivialPainting {
+  TRIVIAL_PAINTING_UNSPECIFIED = 0;
+  TRIVIAL_PAINTING_BOUGUEREAU = 1;
+  TRIVIAL_PAINTING_SARGENT = 2;
+}

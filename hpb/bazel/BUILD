@@ -18,6 +18,7 @@ bzl_library(
     deps = [
         "//bazel:upb_proto_library_bzl",
         "//bazel/common:proto_common_bzl",
+        "//bazel/private:bazel_cc_proto_library_bzl",
         "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",
     ],

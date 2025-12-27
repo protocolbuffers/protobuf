@@ -15,6 +15,7 @@ load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel:upb_proto_library.bzl", "GeneratedSrcsInfo", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:bazel_cc_proto_library.bzl", "cc_proto_aspect")
 load("//bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
 
 def upb_use_cpp_toolchain():
@@ -89,13 +90,19 @@ def _get_proto_deps(ctx):
     return [dep for dep in ctx.rule.attr.deps if ProtoInfo in dep]
 
 def _upb_cc_proto_aspect_impl(target, ctx, cc_provider, file_provider):
-    deps = _get_proto_deps(ctx) + ctx.attr._upbprotos
+    deps = _get_proto_deps(ctx) + ctx.attr._runtimedeps
     dep_ccinfos = [dep[CcInfo] for dep in deps if CcInfo in dep]
     dep_ccinfos += [dep[UpbWrappedCcInfo].cc_info for dep in deps if UpbWrappedCcInfo in dep]
     dep_ccinfos += [dep[_HpbWrappedCcInfo].cc_info for dep in deps if _HpbWrappedCcInfo in dep]
-    if UpbWrappedCcInfo not in target:
-        fail("Target should have UpbWrappedCcInfo provider")
-    dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+
+    backend = ctx.attr._hpb_backend
+
+    if backend == "upb" and UpbWrappedCcInfo in target:
+        dep_ccinfos.append(target[UpbWrappedCcInfo].cc_info)
+
+    if backend == "cpp" and CcInfo in target:
+        dep_ccinfos.append(target[CcInfo])
+
     proto_info = target[ProtoInfo]
 
     if not getattr(ctx.rule.attr, "srcs", []):
@@ -125,7 +132,10 @@ _hpb_proto_library_aspect = aspect(
         "_hpb_lang_toolchain": attr.label(
             default = "//hpb_generator:toolchain",
         ),
-        "_upbprotos": attr.label_list(
+        "_hpb_backend": attr.string(
+            default = "upb",
+        ),
+        "_runtimedeps": attr.label_list(
             default = [
                 # TODO: Add dependencies for cc runtime (absl/string etc..)
                 "//upb:generated_cpp_support",
@@ -146,6 +156,9 @@ _hpb_proto_library_aspect = aspect(
         _HpbWrappedCcInfo,
         _WrappedCcGeneratedSrcsInfo,
     ],
+    requires = [
+        upb_proto_library_aspect,
+    ],
     required_aspect_providers = [
         UpbWrappedCcInfo,
     ],
@@ -155,16 +168,115 @@ _hpb_proto_library_aspect = aspect(
     required_providers = [ProtoInfo],
 )
 
-hpb_proto_library = rule(
+# multibackend
+_hpb_proto_library_aspect_cpp = aspect(
+    implementation = _upb_cc_proto_library_aspect_impl,
+    attr_aspects = ["deps"],
+    requires = [cc_proto_aspect],
+    required_aspect_providers = [CcInfo],
+    attrs = {
+        "_runtimedeps": attr.label_list(
+            default = [
+                "//hpb/internal:os_macros",
+                "@abseil-cpp//absl/log:absl_check",
+                "@abseil-cpp//absl/strings",
+                "@abseil-cpp//absl/status:statusor",
+            ],
+        ),
+        "_hpb_backend": attr.string(
+            default = "cpp",
+        ),
+        "_hpb_lang_toolchain": attr.label(
+            default = "//hpb_generator:toolchain",
+        ),
+    },
+    exec_groups = {
+        "proto_compiler": exec_group(),
+    },
+    toolchains = upb_use_cpp_toolchain(),
+    fragments = ["cpp"],
+    required_providers = [ProtoInfo],
+    provides = [
+        _HpbWrappedCcInfo,
+        _WrappedCcGeneratedSrcsInfo,
+    ],
+)
+
+_hpb_proto_library_cpp = rule(
     implementation = _hpb_proto_rule_impl,
     attrs = {
         "deps": attr.label_list(
-            aspects = [
-                upb_proto_library_aspect,
-                _hpb_proto_library_aspect,
-            ],
+            aspects = [_hpb_proto_library_aspect_cpp],
             allow_rules = ["proto_library"],
             providers = [ProtoInfo],
         ),
     },
 )
+
+_hpb_proto_library_upb = rule(
+    implementation = _hpb_proto_rule_impl,
+    attrs = {
+        "deps": attr.label_list(
+            aspects = [_hpb_proto_library_aspect],
+            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
+        ),
+    },
+)
+
+def hpb_multibackend_proto_library(name, deps, visibility = None, **kwargs):
+    """
+    Macro to create an hpb_proto_library target.
+
+    This macro conditionally applies different aspects based on the
+    //hpb:hpb_backend configuration.
+
+    Args:
+      name: The name of the target.
+      deps: Propagated dependencies.
+      visibility: Propagated visibility.
+      **kwargs: Additional arguments to pass to the underlying rules.
+    """
+    cpp_target_name = name + "BACKEND_cpp"
+    upb_target_name = name + "BACKEND_upb"
+
+    # Instantiate the C++ specific version of the rule
+    _hpb_proto_library_cpp(
+        name = cpp_target_name,
+        deps = deps,
+        target_compatible_with = select({
+            "//hpb:hpb_backend_cpp": [],
+            "//hpb:hpb_backend_upb": [
+                "@platforms//:incompatible",
+            ],
+        }),
+        visibility = ["//visibility:private"],
+        **kwargs
+    )
+
+    # Instantiate the UPB specific version of the rule
+    _hpb_proto_library_upb(
+        name = upb_target_name,
+        deps = deps,
+        target_compatible_with = select({
+            "//hpb:hpb_backend_upb": [],
+            "//hpb:hpb_backend_cpp": [
+                "@platforms//:incompatible",
+            ],
+        }),
+        visibility = ["//visibility:private"],
+        **kwargs
+    )
+
+    # Alias to select the correct version based on the configuration
+    native.alias(
+        name = name,
+        actual = select({
+            "//hpb:hpb_backend_cpp": ":" + cpp_target_name,
+            "//hpb:hpb_backend_upb": ":" + upb_target_name,
+        }),
+        visibility = visibility,
+        **kwargs
+    )
+
+hpb_proto_library = _hpb_proto_library_upb
