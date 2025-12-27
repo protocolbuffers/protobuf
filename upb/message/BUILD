@@ -381,13 +381,13 @@ cc_test(
 )
 
 bool_flag(
-    name = "fuzz_dump_minitable",
+    name = "fuzz_debug",
     build_setting_default = False,
 )
 
 config_setting(
-    name = "fuzz_dump_minitable_enabled",
-    flag_values = {":fuzz_dump_minitable": "True"},
+    name = "fuzz_debug_enabled",
+    flag_values = {":fuzz_debug": "True"},
 )
 
 # This test doesn't directly include any files from this subdir so it probably
@@ -397,7 +397,7 @@ cc_test(
     srcs = ["test.cc"],
     args = ["--fuzztest_stack_limit_kb=256"],
     copts = UPB_DEFAULT_CPPOPTS + select({
-        ":fuzz_dump_minitable_enabled": ["-DUPB_FUZZ_DUMP_MINITABLE"],
+        ":fuzz_debug_enabled": ["-DUPB_FUZZ_DEBUG"],
         "//conditions:default": [],
     }),
     deps = [
@@ -424,6 +424,7 @@ cc_test(
         "//upb/wire:reader",
         "//upb/wire:writer",
         "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
