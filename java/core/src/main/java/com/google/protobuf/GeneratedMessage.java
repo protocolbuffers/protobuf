@@ -3511,7 +3511,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
               .newBuilderForType()
               .setKey(entry.getKey())
               .setValue(entry.getValue())
-              .build());
+              .buildPartial());
     }
   }
 }
